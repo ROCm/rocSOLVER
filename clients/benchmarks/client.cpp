@@ -37,47 +37,47 @@ int main(int argc, char* argv[])
          ". Diabled if not specified. If enabled, user specified m,n,k will be nullified")
         
         ("sizem,m",
-         po::value<rocblas_int>(&argus.M)->default_value(128),
+         po::value<rocblas_int>(&argus.M)->default_value(1024),
          "Specific matrix size testing: sizem is only applicable to BLAS-2 & BLAS-3: the number of "
          "rows.")
         
         ("sizen,n",
-         po::value<rocblas_int>(&argus.N)->default_value(128),
+         po::value<rocblas_int>(&argus.N)->default_value(1024),
          "Specific matrix/vector size testing: BLAS-1: the length of the vector. BLAS-2 & "
          "BLAS-3: the number of columns")
 
         ("sizek,k",
-         po::value<rocblas_int>(&argus.K)->default_value(128),
+         po::value<rocblas_int>(&argus.K)->default_value(1024),
          "Specific matrix size testing:sizek is only applicable to BLAS-3: the number of columns in "
          "A & C  and rows in B.")
 
         ("lda",
-         po::value<rocblas_int>(&argus.lda)->default_value(128),
+         po::value<rocblas_int>(&argus.lda)->default_value(1024),
          "Specific leading dimension of matrix A, is only applicable to "
          "BLAS-2 & BLAS-3: the number of rows.")
 
         ("ldb",
-         po::value<rocblas_int>(&argus.ldb)->default_value(128),
+         po::value<rocblas_int>(&argus.ldb)->default_value(1024),
          "Specific leading dimension of matrix B, is only applicable to BLAS-2 & BLAS-3: the number "
          "of rows.")
 
         ("ldc",
-         po::value<rocblas_int>(&argus.ldc)->default_value(128),
+         po::value<rocblas_int>(&argus.ldc)->default_value(1024),
          "Specific leading dimension of matrix C, is only applicable to BLAS-2 & "
          "BLAS-3: the number of rows.")
 
         ("bsa",
-         po::value<rocblas_int>(&argus.bsa)->default_value(128*128),
+         po::value<rocblas_int>(&argus.bsa)->default_value(1024*1024),
          "Specific stride of strided_batched matrix B, is only applicable to strided batched"
          "BLAS-2 and BLAS-3: second dimension * leading dimension.")
 
         ("bsb",
-         po::value<rocblas_int>(&argus.bsb)->default_value(128*128),
+         po::value<rocblas_int>(&argus.bsb)->default_value(1024*1024),
          "Specific stride of strided_batched matrix B, is only applicable to strided batched"
          "BLAS-2 and BLAS-3: second dimension * leading dimension.")
 
         ("bsc",
-         po::value<rocblas_int>(&argus.bsc)->default_value(128*128),
+         po::value<rocblas_int>(&argus.bsc)->default_value(1024*1024),
          "Specific stride of strided_batched matrix B, is only applicable to strided batched"
          "BLAS-2 and BLAS-3: second dimension * leading dimension.")
 
@@ -96,8 +96,8 @@ int main(int argc, char* argv[])
          po::value<double>(&argus.beta)->default_value(0.0), "specifies the scalar beta")
               
         ("function,f",
-         po::value<std::string>(&function)->default_value("gemv"),
-         "BLAS function to test. Options: gemv, ger, syr, trsm, trmm, symv, syrk, syr2k")
+         po::value<std::string>(&function)->default_value("potf2"),
+         "LAPACK function to test. Options: potf2")
         
         ("precision,r", 
          po::value<char>(&precision)->default_value('s'), "Options: h,s,d,c,z")
