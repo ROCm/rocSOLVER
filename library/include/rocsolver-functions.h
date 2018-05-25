@@ -6,14 +6,13 @@
 #ifndef _ROCLAPACK_FUNCTIONS_H
 #define _ROCLAPACK_FUNCTIONS_H
 
-#include <rocblas.h>
 #include "rocsolver-types.h"
+#include <rocblas.h>
 
 /*!\file
- * \brief rocsolver_netlib.h provides Basic Linear Algebra Subprograms of Level 1, 2 and 3,
- *  using HIP optimized for AMD HCC-based GPU hardware. This library can also run on CUDA-based
- * NVIDIA GPUs.
- *  This file exposes C89 BLAS interface
+ * \brief rocsolver_netlib.h provides Basic Linear Algebra Subprograms of Level
+ * 1, 2 and 3, using HIP optimized for AMD HCC-based GPU hardware. This library
+ * can also run on CUDA-based NVIDIA GPUs. This file exposes C89 BLAS interface
  */
 
 /*
@@ -57,8 +56,10 @@ lda       rocsolver_int
 
 ********************************************************************/
 
-ROCSOLVER_EXPORT rocsolver_status rocsolver_spotf2(
-    rocsolver_handle handle, rocsolver_fill uplo, rocsolver_int n, float* A, rocsolver_int lda);
+ROCSOLVER_EXPORT rocsolver_status rocsolver_spotf2(rocsolver_handle handle,
+                                                   rocsolver_fill uplo,
+                                                   rocsolver_int n, float *A,
+                                                   rocsolver_int lda);
 
 /*! \brief LAPACK API
 
@@ -89,8 +90,10 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_spotf2(
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotf2(
-    rocsolver_handle handle, rocsolver_fill uplo, rocsolver_int n, double* A, rocsolver_int lda);
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotf2(rocsolver_handle handle,
+                                                   rocsolver_fill uplo,
+                                                   rocsolver_int n, double *A,
+                                                   rocsolver_int lda);
 
 #ifdef __cplusplus
 }

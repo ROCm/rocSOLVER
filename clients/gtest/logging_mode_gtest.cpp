@@ -2,17 +2,17 @@
  * Copyright 2016 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include <gtest/gtest.h>
-#include <stdexcept>
-#include <string>
-#include <stdio.h>
-#include <stdlib.h>
+#include "arg_check.h"
 #include "rocblas.h"
 #include "rocblas.hpp"
-#include "utility.h"
-#include "arg_check.h"
 #include "rocblas_test_unique_ptr.hpp"
 #include "testing_logging.hpp"
+#include "utility.h"
+#include <gtest/gtest.h>
+#include <stdexcept>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
 
 using namespace std;
 
