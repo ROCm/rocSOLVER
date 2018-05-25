@@ -12,6 +12,8 @@
 /* system headers */
 #include <stdbool.h>
 
+#include "rocsolver-export.h"
+
 /* library headers */
 #include "rocsolver-auxiliary.h"
 #include "rocsolver-export.h"
