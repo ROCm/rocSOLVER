@@ -48,10 +48,12 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
   inpsHost[1] = static_cast<T>(-1);
 
   T resHost[4];
-  resHost[3] = 1;
+  resHost[3] = static_cast<T>(1);
 
   // allocate a tiny bit of memory on device to avoid going onto CPU and needing
-  // to synchronize (eventually)
+  // to synchronize
+  // TODO (jmd) once this is all stabilized, this should be turned into single
+  // arrays
   T *results;
   T *inputs;
   hipMalloc(&results, 4 * sizeof(T));
@@ -136,8 +138,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
   if (resHost[3] <= 0.0) {
     const size_t elem = static_cast<size_t>(fabs(resHost[3]));
     cerr << "ERROR: Input matrix not strictly positive definite. Last "
-            "occurance of this in "
-            "element "
+            "occurance of this in element "
          << elem << endl;
     hipFree(results);
     hipFree(inputs);
