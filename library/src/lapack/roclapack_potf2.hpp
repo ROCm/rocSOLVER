@@ -19,22 +19,28 @@
 
 using namespace std;
 
+#define POTF2_INPONE 0
+#define POTF2_INPMINONE 1
+#define POTF2_RESPOSDEF 2
+#define POTF2_RESDOT 3
+#define POTF2_RESINVDOT 4
+
 template <typename T> __global__ void sqrtDiagFirst(T *a, size_t loc, T *res) {
   const T t = a[loc];
   if (t <= 0.0) {
-    res[3] = -loc;
+    res[POTF2_RESPOSDEF] = -loc;
   } // error for non-positive definiteness
   a[loc] = sqrt(t);
-  res[2] = 1 / a[loc];
+  res[POTF2_RESINVDOT] = 1 / a[loc];
 }
 
 template <typename T> __global__ void sqrtDiagOnward(T *a, size_t loc, T *res) {
-  const T t = a[loc] - res[0];
+  const T t = a[loc] - res[POTF2_RESDOT];
   if (t <= 0.0) {
-    res[3] = -loc;
+    res[POTF2_RESPOSDEF] = -loc;
   } // error for non-positive definiteness
   a[loc] = sqrt(t);
-  res[2] = 1 / a[loc];
+  res[POTF2_RESINVDOT] = 1 / a[loc];
 }
 
 template <typename T>
@@ -43,24 +49,16 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         rocblas_int lda) {
 
   rocblas_int oneInt = 1;
-  T inpsHost[3];
-  inpsHost[0] = static_cast<T>(1);
-  inpsHost[1] = static_cast<T>(-1);
-
-  T resHost[4];
-  resHost[3] = static_cast<T>(1);
+  T inpsResHost[5];
+  inpsResHost[POTF2_INPONE] = static_cast<T>(1);
+  inpsResHost[POTF2_INPMINONE] = static_cast<T>(-1);
+  inpsResHost[POTF2_RESPOSDEF] = static_cast<T>(1);
 
   // allocate a tiny bit of memory on device to avoid going onto CPU and needing
-  // to synchronize
-  // TODO (jmd) once this is all stabilized, this should be turned into single
-  // arrays
-  T *results;
-  T *inputs;
-  hipMalloc(&results, 4 * sizeof(T));
-  hipMalloc(&inputs, 3 * sizeof(T));
-  hipMemcpy(inputs, &inpsHost[0], 2 * sizeof(T), hipMemcpyHostToDevice);
-  hipMemcpy(&results[3], &resHost[3], sizeof(T),
-            hipMemcpyHostToDevice); // initialize error signal to 1.0
+  // to synchronize.
+  T *inpsResGPU;
+  hipMalloc(&inpsResGPU, 5 * sizeof(T));
+  hipMemcpy(inpsResGPU, &inpsResHost[0], 5 * sizeof(T), hipMemcpyHostToDevice);
 
   hipStream_t stream;
   rocblas_get_stream(handle, &stream);
@@ -85,22 +83,22 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
       // Compute U(J,J) and test for non-positive-definiteness.
       if (j > 0) {
         rocblas_dot<T>(handle, j, &a[idx2D(0, j, lda)], oneInt,
-                       &a[idx2D(0, j, lda)], oneInt, &results[0]);
+                       &a[idx2D(0, j, lda)], oneInt, &inpsResGPU[POTF2_RESDOT]);
         hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(1), dim3(1), 0, stream, a,
-                           idx2D(j, j, lda), results);
+                           idx2D(j, j, lda), inpsResGPU);
       } else {
         hipLaunchKernelGGL(sqrtDiagFirst<T>, dim3(1), dim3(1), 0, stream, a,
-                           idx2D(j, j, lda), results);
+                           idx2D(j, j, lda), inpsResGPU);
       }
 
       // Compute elements J+1:N of row J
 
       if (j < n - 1) {
         rocblas_gemv<T>(handle, rocblas_operation_transpose, j, n - j - 1,
-                        &(inputs[1]), &a[idx2D(0, j + 1, lda)], lda,
-                        &a[idx2D(0, j, lda)], oneInt, &(inputs[0]),
+                        &(inpsResGPU[POTF2_INPMINONE]), &a[idx2D(0, j + 1, lda)], lda,
+                        &a[idx2D(0, j, lda)], oneInt, &(inpsResGPU[POTF2_INPONE]),
                         &a[idx2D(j, j + 1, lda)], lda);
-        rocblas_scal<T>(handle, n - j - 1, &results[2],
+        rocblas_scal<T>(handle, n - j - 1, &inpsResGPU[POTF2_RESINVDOT],
                         &a[idx2D(j, j + 1, lda)], lda);
       }
     }
@@ -112,43 +110,47 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
       // Compute L(J,J) and test for non-positive-definiteness.
       if (j > 0) {
         rocblas_dot<T>(handle, j, &a[idx2D(j, 0, lda)], lda,
-                       &a[idx2D(j, 0, lda)], lda, &results[0]);
+                       &a[idx2D(j, 0, lda)], lda, &inpsResGPU[POTF2_RESDOT]);
         hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(1), dim3(1), 0, stream, a,
-                           idx2D(j, j, lda), results);
+                           idx2D(j, j, lda), inpsResGPU);
       } else {
         hipLaunchKernelGGL(sqrtDiagFirst<T>, dim3(1), dim3(1), 0, stream, a,
-                           idx2D(j, j, lda), results);
+                           idx2D(j, j, lda), inpsResGPU);
       }
 
       // Compute elements J+1:N of row J
 
       if (j < n - 1) {
         rocblas_gemv<T>(handle, rocblas_operation_none, n - j - 1, j,
-                        &(inputs[1]), &a[idx2D(j + 1, 0, lda)], lda,
-                        &a[idx2D(j, 0, lda)], lda, &(inputs[0]),
+                        &(inpsResGPU[POTF2_INPMINONE]), &a[idx2D(j + 1, 0, lda)], lda,
+                        &a[idx2D(j, 0, lda)], lda, &(inpsResGPU[POTF2_INPONE]),
                         &a[idx2D(j + 1, j, lda)], oneInt);
-        rocblas_scal<T>(handle, n - j - 1, &results[2],
+        rocblas_scal<T>(handle, n - j - 1, &inpsResGPU[POTF2_RESINVDOT],
                         &a[idx2D(j + 1, j, lda)], oneInt);
       }
     }
   }
 
   // get the error code using memcpy and return internal error if there is one
-  hipMemcpy(&resHost[3], &results[3], sizeof(T), hipMemcpyDeviceToHost);
-  if (resHost[3] <= 0.0) {
-    const size_t elem = static_cast<size_t>(fabs(resHost[3]));
+  hipMemcpy(&inpsResHost[POTF2_RESPOSDEF], &inpsResGPU[POTF2_RESPOSDEF], sizeof(T), hipMemcpyDeviceToHost);
+  if (inpsResHost[POTF2_RESPOSDEF] <= 0.0) {
+    const size_t elem = static_cast<size_t>(fabs(inpsResHost[POTF2_RESPOSDEF]));
     cerr << "ERROR: Input matrix not strictly positive definite. Last "
             "occurance of this in element "
          << elem << endl;
-    hipFree(results);
-    hipFree(inputs);
+    hipFree(inpsResGPU);
     return rocblas_status_internal_error;
   }
 
-  hipFree(results);
-  hipFree(inputs);
+  hipFree(inpsResGPU);
 
   return rocblas_status_success;
 }
+
+#undef POTF2_INPONE
+#undef POTF2_INPMINONE
+#undef POTF2_RESPOSDEF
+#undef POTF2_RESDOT
+#undef POTF2_RESINVDOT
 
 #endif /* ROCLAPACK_POTF2_HPP */
