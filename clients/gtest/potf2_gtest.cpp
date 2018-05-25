@@ -79,7 +79,7 @@ Arguments setup_potf2_arguments(potf2_tuple tup)
     Arguments arg;
 
     // see the comments about matrix_size_range above
-    arg.N   = matrix_size[0];
+    arg.M   = matrix_size[0];
     arg.lda = matrix_size[1];
 
     arg.uplo_option = uplo;
@@ -113,11 +113,11 @@ TEST_P(potf2_gtest, potf2_gtest_float)
     if(status != rocblas_status_success)
     {
 
-        if(arg.N < 0)
+        if(arg.M < 0)
         {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         }
-        else if(arg.lda < arg.N)
+        else if(arg.lda < arg.M)
         {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         }
@@ -139,11 +139,11 @@ TEST_P(potf2_gtest, potf2_gtest_double)
     if(status != rocblas_status_success)
     {
 
-        if(arg.N < 0)
+        if(arg.M < 0)
         {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         }
-        else if(arg.lda < arg.N)
+        else if(arg.lda < arg.M)
         {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         }
