@@ -2,31 +2,31 @@
  * Copyright 2016 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
+#include <boost/program_options.hpp>
 #include <iostream>
 #include <stdio.h>
-#include <boost/program_options.hpp>
 
-#include "utility.h"
 #include "testing_potf2.hpp"
+#include "utility.h"
 
 namespace po = boost::program_options;
 
-int main(int argc, char* argv[])
-{
-    Arguments argus;
-    argus.unit_check =
-        0;            // disable unit_check in client benchmark, it is only used in gtest unit test
-    argus.timing = 1; // enable timing check,otherwise no performance data collected
+int main(int argc, char *argv[]) {
+  Arguments argus;
+  argus.unit_check = 0; // disable unit_check in client benchmark, it is only
+                        // used in gtest unit test
+  argus.timing =
+      1; // enable timing check,otherwise no performance data collected
 
-    std::string function;
-    char precision;
+  std::string function;
+  char precision;
 
-    rocblas_int device_id;
-    vector<rocblas_int> range = {-1, -1, -1};
+  rocblas_int device_id;
+  vector<rocblas_int> range = {-1, -1, -1};
 
-    po::options_description desc("rocblas client command line options");
-    desc.add_options()("help,h", "produces this help message")
-        // clang-format off
+  po::options_description desc("rocblas client command line options");
+  desc.add_options()("help,h", "produces this help message")
+      // clang-format off
         ("range",
          po::value<vector<rocblas_int>>(&range)->multitoken(),
          "Range matrix size testing: BLAS-3 benchmarking only. Accept three positive integers. "
@@ -137,60 +137,52 @@ int main(int argc, char* argv[])
         ("device",
          po::value<rocblas_int>(&device_id)->default_value(0),
          "Set default device to be used for subsequent program runs");
-    // clang-format on
+  // clang-format on
 
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
 
-    if(vm.count("help"))
-    {
-        std::cout << desc << std::endl;
-        return 0;
-    }
-
-    if(precision != 'h' && precision != 's' && precision != 'd' && precision != 'c' &&
-       precision != 'z')
-    {
-        std::cerr << "Invalid value for --precision" << std::endl;
-        return -1;
-    }
-
-    // Device Query
-    rocblas_int device_count = query_device_property();
-
-    if(device_count <= device_id)
-    {
-        printf("Error: invalid device ID. There may not be such device ID. Will exit \n");
-        return -1;
-    }
-    else
-    {
-        set_device(device_id);
-    }
-    /* ============================================================================================
-     */
-    if(argus.M < 0 || argus.N < 0 || argus.K < 0)
-    {
-        printf("Invalide matrix dimension\n");
-    }
-
-    argus.start = range[0];
-    argus.step  = range[1];
-    argus.end   = range[2];
-
-    if(function == "potf2")
-    {
-        if(precision == 's')
-            testing_potf2<float>(argus);
-        else if(precision == 'd')
-            testing_potf2<double>(argus);
-    }
-    else
-    {
-        printf("Invalid value for --function \n");
-        return -1;
-    }
-
+  if (vm.count("help")) {
+    std::cout << desc << std::endl;
     return 0;
+  }
+
+  if (precision != 'h' && precision != 's' && precision != 'd' &&
+      precision != 'c' && precision != 'z') {
+    std::cerr << "Invalid value for --precision" << std::endl;
+    return -1;
+  }
+
+  // Device Query
+  rocblas_int device_count = query_device_property();
+
+  if (device_count <= device_id) {
+    printf("Error: invalid device ID. There may not be such device ID. Will "
+           "exit \n");
+    return -1;
+  } else {
+    set_device(device_id);
+  }
+  /* ============================================================================================
+   */
+  if (argus.M < 0 || argus.N < 0 || argus.K < 0) {
+    printf("Invalide matrix dimension\n");
+  }
+
+  argus.start = range[0];
+  argus.step = range[1];
+  argus.end = range[2];
+
+  if (function == "potf2") {
+    if (precision == 's')
+      testing_potf2<float>(argus);
+    else if (precision == 'd')
+      testing_potf2<double>(argus);
+  } else {
+    printf("Invalid value for --function \n");
+    return -1;
+  }
+
+  return 0;
 }

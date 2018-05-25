@@ -2,21 +2,21 @@
  * Copyright 2018 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include <stdlib.h>
-#include <iostream>
+#include <cmath> // std::abs
 #include <fstream>
-#include <vector>
+#include <iostream>
 #include <limits> // std::numeric_limits<T>::epsilon();
-#include <cmath>  // std::abs
+#include <stdlib.h>
 #include <string>
+#include <vector>
 
-#include "rocsolver.hpp"
 #include "arg_check.h"
-#include "rocblas_test_unique_ptr.hpp"
-#include "utility.h"
 #include "cblas_interface.h"
 #include "norm.h"
+#include "rocblas_test_unique_ptr.hpp"
+#include "rocsolver.hpp"
 #include "unit.h"
+#include "utility.h"
 
 // this is for the single precision case, which is not very stable
 #define ERROR_EPS_MULTIPLIER 2000
@@ -24,194 +24,170 @@
 using namespace std;
 
 template <typename T>
-void printMatrix(const string name, T* A, rocblas_int m, rocblas_int n, rocblas_int lda)
-{
-    cout << "---------- " << name << " ----------" << endl;
-    for(int i = 0; i < m; i++)
-    {
-        for(int j = 0; j < n; j++)
-        {
-            printf("%f ", A[i + j * lda]);
-        }
-        printf("\n");
+void printMatrix(const string name, T *A, rocblas_int m, rocblas_int n,
+                 rocblas_int lda) {
+  cout << "---------- " << name << " ----------" << endl;
+  for (int i = 0; i < m; i++) {
+    for (int j = 0; j < n; j++) {
+      printf("%f ", A[i + j * lda]);
     }
+    printf("\n");
+  }
 }
 
-template <typename T>
-rocblas_status testing_potf2(Arguments argus)
-{
+template <typename T> rocblas_status testing_potf2(Arguments argus) {
 
-    rocblas_int M   = argus.M;
-    rocblas_int lda = argus.lda;
+  rocblas_int M = argus.M;
+  rocblas_int lda = argus.lda;
 
-    char char_uplo = argus.uplo_option;
+  char char_uplo = argus.uplo_option;
 
-    rocblas_int safe_size = 100; // arbitrarily set to 100
+  rocblas_int safe_size = 100; // arbitrarily set to 100
 
-    rocblas_fill uplo = char2rocblas_fill(char_uplo);
+  rocblas_fill uplo = char2rocblas_fill(char_uplo);
 
-    rocblas_int size_A = lda * M;
+  rocblas_int size_A = lda * M;
 
-    rocblas_status status;
+  rocblas_status status;
 
-    std::unique_ptr<rocblas_test::handle_struct> unique_ptr_handle(new rocblas_test::handle_struct);
-    rocblas_handle handle = unique_ptr_handle->handle;
+  std::unique_ptr<rocblas_test::handle_struct> unique_ptr_handle(
+      new rocblas_test::handle_struct);
+  rocblas_handle handle = unique_ptr_handle->handle;
 
-    // check here to prevent undefined memory allocation error
-    if(M < 0 || lda < M)
-    {
-        auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * safe_size),
-                                             rocblas_test::device_free};
-        T* dA = (T*)dA_managed.get();
-        if(!dA)
-        {
-            PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
-            return rocblas_status_memory_error;
-        }
-
-        status = rocsolver_potf2<T>(handle, uplo, M, dA, lda);
-
-        potf2_arg_check(status, M);
-
-        return status;
+  // check here to prevent undefined memory allocation error
+  if (M < 0 || lda < M) {
+    auto dA_managed =
+        rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * safe_size),
+                           rocblas_test::device_free};
+    T *dA = (T *)dA_managed.get();
+    if (!dA) {
+      PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
+      return rocblas_status_memory_error;
     }
 
-    // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory
-    vector<T> hA(size_A);
-    vector<T> AAT(size_A);
+    status = rocsolver_potf2<T>(handle, uplo, M, dA, lda);
 
-    double gpu_time_used, cpu_time_used;
-    T error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    T eps                  = std::numeric_limits<T>::epsilon();
+    potf2_arg_check(status, M);
 
-    // allocate memory on device
-    auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * size_A),
-                                         rocblas_test::device_free};
-    T* dA = (T*)dA_managed.get();
-    if(!dA)
-    {
-        PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
-        return rocblas_status_memory_error;
+    return status;
+  }
+
+  // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory
+  vector<T> hA(size_A);
+  vector<T> AAT(size_A);
+
+  double gpu_time_used, cpu_time_used;
+  T error_eps_multiplier = ERROR_EPS_MULTIPLIER;
+  T eps = std::numeric_limits<T>::epsilon();
+
+  // allocate memory on device
+  auto dA_managed =
+      rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * size_A),
+                         rocblas_test::device_free};
+  T *dA = (T *)dA_managed.get();
+  if (!dA) {
+    PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
+    return rocblas_status_memory_error;
+  }
+
+  //  Random lower triangular matrices are not positive-definite as required
+  //  by the Cholesky decomposition
+  //
+  //  We start with full random matrix A. Calculate symmetric AAT <- A A^T.
+  //  Make AAT strictly diagonal dominant. A strictly diagonal dominant matrix
+  //  is SPD so we can use Cholesky to calculate L L^T = AAT.
+
+  //  initialize full random matrix hA with all entries in [1, 10]
+  rocblas_init<T>(hA, M, M, lda);
+
+  //  pad untouched area into zero
+  for (int i = M; i < lda; i++) {
+    for (int j = 0; j < M; j++) {
+      hA[i + j * lda] = 0.0;
+    }
+  }
+
+  // put it into [0, 1]
+  for (int i = M; i < lda; i++) {
+    for (int j = 0; j < M; j++) {
+      hA[i + j * lda] = (hA[i + j * lda] - 1.0) / 10.0;
+    }
+  }
+
+  //  calculate AAT = hA * hA ^ T
+  cblas_gemm(rocblas_operation_none, rocblas_operation_transpose, M, M, M,
+             (T)1.0, hA.data(), lda, hA.data(), lda, (T)0.0, AAT.data(), lda);
+
+  //  copy AAT into hA, make hA positive-definite
+  for (int i = 0; i < M; i++) {
+    T t = 0.0;
+    for (int j = 0; j < M; j++) {
+      hA[i + j * lda] = AAT[i + j * lda];
+      // t += AAT[i + j * lda] > 0 ? AAT[i + j * lda] : -AAT[i + j * lda];
+    }
+    hA[i + i * lda] += 1;
+  }
+
+  // copy data from CPU to device
+  CHECK_HIP_ERROR(
+      hipMemcpy(dA, hA.data(), sizeof(T) * size_A, hipMemcpyHostToDevice));
+
+  T max_err_1 = 0.0;
+  if (argus.unit_check || argus.norm_check) {
+    // calculate dXorB <- A^(-1) B rocblas_pointer_mode_host
+    CHECK_ROCBLAS_ERROR(rocsolver_potf2<T>(handle, uplo, M, dA, lda));
+
+    CHECK_HIP_ERROR(
+        hipMemcpy(AAT.data(), dA, sizeof(T) * size_A, hipMemcpyDeviceToHost));
+
+    cblas_potf2<T>(uplo, M, hA.data(), lda);
+
+    // Error Check
+    // AAT contains calculated decomposition, so error is hA - AAT
+    for (int i = 0; i < M; i++) {
+      for (int j = 0; j < M; j++) {
+        AAT[i + j * lda] = abs(AAT[i + j * lda] - hA[i + j * lda]);
+      }
     }
 
-    //  Random lower triangular matrices are not positive-definite as required
-    //  by the Cholesky decomposition
-    //
-    //  We start with full random matrix A. Calculate symmetric AAT <- A A^T.
-    //  Make AAT strictly diagonal dominant. A strictly diagonal dominant matrix
-    //  is SPD so we can use Cholesky to calculate L L^T = AAT.
-
-    //  initialize full random matrix hA with all entries in [1, 10]
-    rocblas_init<T>(hA, M, M, lda);
-
-    //  pad untouched area into zero
-    for(int i = M; i < lda; i++)
-    {
-        for(int j = 0; j < M; j++)
-        {
-            hA[i + j * lda] = 0.0;
-        }
+    for (int i = 0; i < M; i++) {
+      for (int j = 0; j < M; j++) {
+        max_err_1 = max_err_1 > AAT[j + i * lda] ? max_err_1 : AAT[j + i * lda];
+      }
     }
+    potf2_err_res_check<T>(max_err_1, M, error_eps_multiplier, eps);
+  }
 
-    // put it into [0, 1]
-    for(int i = M; i < lda; i++)
-    {
-        for(int j = 0; j < M; j++)
-        {
-            hA[i + j * lda] = (hA[i + j * lda] - 1.0) / 10.0;
-        }
-    }
+  if (argus.timing) {
+    // GPU rocBLAS
+    gpu_time_used = get_time_us(); // in microseconds
 
-    //  calculate AAT = hA * hA ^ T
-    cblas_gemm(rocblas_operation_none,
-               rocblas_operation_transpose,
-               M,
-               M,
-               M,
-               (T)1.0,
-               hA.data(),
-               lda,
-               hA.data(),
-               lda,
-               (T)0.0,
-               AAT.data(),
-               lda);
+    CHECK_ROCBLAS_ERROR(rocsolver_potf2<T>(handle, uplo, M, dA, lda));
 
-    //  copy AAT into hA, make hA positive-definite
-    for(int i = 0; i < M; i++)
-    {
-        T t = 0.0;
-        for(int j = 0; j < M; j++)
-        {
-            hA[i + j * lda] = AAT[i + j * lda];
-            // t += AAT[i + j * lda] > 0 ? AAT[i + j * lda] : -AAT[i + j * lda];
-        }
-        hA[i + i * lda] += 1;
-    }
+    gpu_time_used = get_time_us() - gpu_time_used;
 
-    // copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(T) * size_A, hipMemcpyHostToDevice));
+    // CPU cblas
+    cpu_time_used = get_time_us();
 
-    T max_err_1 = 0.0;
-    if(argus.unit_check || argus.norm_check)
-    {
-        // calculate dXorB <- A^(-1) B rocblas_pointer_mode_host
-        CHECK_ROCBLAS_ERROR(rocsolver_potf2<T>(handle, uplo, M, dA, lda));
+    cblas_potf2<T>(uplo, M, hA.data(), lda);
 
-        CHECK_HIP_ERROR(hipMemcpy(AAT.data(), dA, sizeof(T) * size_A, hipMemcpyDeviceToHost));
+    cpu_time_used = get_time_us() - cpu_time_used;
 
-        cblas_potf2<T>(uplo, M, hA.data(), lda);
+    // only norm_check return an norm error, unit check won't return anything
+    cout << "N,lda,uplo,us,us";
 
-        // Error Check
-        // AAT contains calculated decomposition, so error is hA - AAT
-        for(int i = 0; i < M; i++)
-        {
-            for(int j = 0; j < M; j++)
-            {
-                AAT[i + j * lda] = abs(AAT[i + j * lda] - hA[i + j * lda]);
-            }
-        }
+    if (argus.norm_check)
+      cout << ",norm_error_host_ptr";
 
-        for(int i = 0; i < M; i++)
-        {
-            for(int j = 0; j < M; j++)
-            {
-                max_err_1 = max_err_1 > AAT[j + i * lda] ? max_err_1 : AAT[j + i * lda];
-            }
-        }
-        potf2_err_res_check<T>(max_err_1, M, error_eps_multiplier, eps);
-    }
+    cout << endl;
 
-    if(argus.timing)
-    {
-        // GPU rocBLAS
-        gpu_time_used = get_time_us(); // in microseconds
+    cout << M << ',' << lda << ',' << char_uplo << ',' << gpu_time_used << ','
+         << cpu_time_used;
 
-        CHECK_ROCBLAS_ERROR(rocsolver_potf2<T>(handle, uplo, M, dA, lda));
+    if (argus.norm_check)
+      cout << "," << max_err_1;
 
-        gpu_time_used = get_time_us() - gpu_time_used;
-
-        // CPU cblas
-        cpu_time_used = get_time_us();
-
-        cblas_potf2<T>(uplo, M, hA.data(), lda);
-
-        cpu_time_used = get_time_us() - cpu_time_used;
-
-        // only norm_check return an norm error, unit check won't return anything
-        cout << "N,lda,uplo,us,us";
-
-        if(argus.norm_check)
-            cout << ",norm_error_host_ptr";
-
-        cout << endl;
-
-        cout << M << ',' << lda << ',' << char_uplo << ',' << gpu_time_used << ',' << cpu_time_used;
-
-        if(argus.norm_check)
-            cout << "," << max_err_1;
-
-        cout << endl;
-    }
-    return rocblas_status_success;
+    cout << endl;
+  }
+  return rocblas_status_success;
 }
