@@ -50,8 +50,8 @@ rocblas_status rocsolver_potf2_template(
 
     rocblas_int oneInt = 1;
     T inpsHost[3];
-    inpsHost[0] = static_cast<T>(1.0f);
-    inpsHost[1] = static_cast<T>(-1.0f);
+    inpsHost[0] = static_cast<T>(1);
+    inpsHost[1] = static_cast<T>(-1);
 
     T resHost[4];
     resHost[3] = 1;
