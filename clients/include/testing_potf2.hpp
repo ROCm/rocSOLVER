@@ -19,7 +19,7 @@
 #include "utility.h"
 
 // this is for the single precision case, which is not very stable
-#define ERROR_EPS_MULTIPLIER 2000
+#define ERROR_EPS_MULTIPLIER 4000
 
 using namespace std;
 
@@ -144,14 +144,14 @@ template <typename T> rocblas_status testing_potf2(Arguments argus) {
 
     // Error Check
     // AAT contains calculated decomposition, so error is hA - AAT
-    for (int i = 0; i < M; i++) {
-      for (int j = 0; j < M; j++) {
+    for (int j = 0; j < M; j++) {
+      for (int i = 0; i < M; i++) {
         AAT[i + j * lda] = abs(AAT[i + j * lda] - hA[i + j * lda]);
       }
     }
 
-    for (int i = 0; i < M; i++) {
-      for (int j = 0; j < M; j++) {
+    for (int j = 0; j < M; j++) {
+      for (int i = 0; i < M; i++) {
         max_err_1 = max_err_1 > AAT[j + i * lda] ? max_err_1 : AAT[j + i * lda];
       }
     }
