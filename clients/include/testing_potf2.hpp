@@ -41,7 +41,7 @@ template <typename T>
 rocblas_status testing_potf2(Arguments argus)
 {
 
-    rocblas_int N   = argus.N;
+    rocblas_int M   = argus.M;
     rocblas_int lda = argus.lda;
 
     char char_uplo = argus.uplo_option;
@@ -50,7 +50,7 @@ rocblas_status testing_potf2(Arguments argus)
 
     rocblas_fill uplo = char2rocblas_fill(char_uplo);
 
-    rocblas_int size_A = lda * N;
+    rocblas_int size_A = lda * M;
 
     rocblas_status status;
 
@@ -58,7 +58,7 @@ rocblas_status testing_potf2(Arguments argus)
     rocblas_handle handle = unique_ptr_handle->handle;
 
     // check here to prevent undefined memory allocation error
-    if(N < 0 || lda < N)
+    if(M < 0 || lda < M)
     {
         auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * safe_size),
                                              rocblas_test::device_free};
@@ -69,9 +69,9 @@ rocblas_status testing_potf2(Arguments argus)
             return rocblas_status_memory_error;
         }
 
-        status = rocsolver_potf2<T>(handle, uplo, N, dA, lda);
+        status = rocsolver_potf2<T>(handle, uplo, M, dA, lda);
 
-        potf2_arg_check(status, N);
+        potf2_arg_check(status, M);
 
         return status;
     }
@@ -102,21 +102,21 @@ rocblas_status testing_potf2(Arguments argus)
     //  is SPD so we can use Cholesky to calculate L L^T = AAT.
 
     //  initialize full random matrix hA with all entries in [1, 10]
-    rocblas_init<T>(hA, N, N, lda);
+    rocblas_init<T>(hA, M, M, lda);
 
     //  pad untouched area into zero
-    for(int i = N; i < lda; i++)
+    for(int i = M; i < lda; i++)
     {
-        for(int j = 0; j < N; j++)
+        for(int j = 0; j < M; j++)
         {
             hA[i + j * lda] = 0.0;
         }
     }
 
     // put it into [0, 1]
-    for(int i = N; i < lda; i++)
+    for(int i = M; i < lda; i++)
     {
-        for(int j = 0; j < N; j++)
+        for(int j = 0; j < M; j++)
         {
             hA[i + j * lda] = (hA[i + j * lda] - 1.0) / 10.0;
         }
@@ -125,9 +125,9 @@ rocblas_status testing_potf2(Arguments argus)
     //  calculate AAT = hA * hA ^ T
     cblas_gemm(rocblas_operation_none,
                rocblas_operation_transpose,
-               N,
-               N,
-               N,
+               M,
+               M,
+               M,
                (T)1.0,
                hA.data(),
                lda,
@@ -138,10 +138,10 @@ rocblas_status testing_potf2(Arguments argus)
                lda);
 
     //  copy AAT into hA, make hA positive-definite
-    for(int i = 0; i < N; i++)
+    for(int i = 0; i < M; i++)
     {
         T t = 0.0;
-        for(int j = 0; j < N; j++)
+        for(int j = 0; j < M; j++)
         {
             hA[i + j * lda] = AAT[i + j * lda];
             // t += AAT[i + j * lda] > 0 ? AAT[i + j * lda] : -AAT[i + j * lda];
@@ -156,30 +156,30 @@ rocblas_status testing_potf2(Arguments argus)
     if(argus.unit_check || argus.norm_check)
     {
         // calculate dXorB <- A^(-1) B rocblas_pointer_mode_host
-        CHECK_ROCBLAS_ERROR(rocsolver_potf2<T>(handle, uplo, N, dA, lda));
+        CHECK_ROCBLAS_ERROR(rocsolver_potf2<T>(handle, uplo, M, dA, lda));
 
         CHECK_HIP_ERROR(hipMemcpy(AAT.data(), dA, sizeof(T) * size_A, hipMemcpyDeviceToHost));
 
-        cblas_potf2<T>(uplo, N, hA.data(), lda);
+        cblas_potf2<T>(uplo, M, hA.data(), lda);
 
         // Error Check
         // AAT contains calculated decomposition, so error is hA - AAT
-        for(int i = 0; i < N; i++)
+        for(int i = 0; i < M; i++)
         {
-            for(int j = 0; j < N; j++)
+            for(int j = 0; j < M; j++)
             {
                 AAT[i + j * lda] = abs(AAT[i + j * lda] - hA[i + j * lda]);
             }
         }
 
-        for(int i = 0; i < N; i++)
+        for(int i = 0; i < M; i++)
         {
-            for(int j = 0; j < N; j++)
+            for(int j = 0; j < M; j++)
             {
                 max_err_1 = max_err_1 > AAT[j + i * lda] ? max_err_1 : AAT[j + i * lda];
             }
         }
-        potf2_err_res_check<T>(max_err_1, N, error_eps_multiplier, eps);
+        potf2_err_res_check<T>(max_err_1, M, error_eps_multiplier, eps);
     }
 
     if(argus.timing)
@@ -187,14 +187,14 @@ rocblas_status testing_potf2(Arguments argus)
         // GPU rocBLAS
         gpu_time_used = get_time_us(); // in microseconds
 
-        CHECK_ROCBLAS_ERROR(rocsolver_potf2<T>(handle, uplo, N, dA, lda));
+        CHECK_ROCBLAS_ERROR(rocsolver_potf2<T>(handle, uplo, M, dA, lda));
 
         gpu_time_used = get_time_us() - gpu_time_used;
 
         // CPU cblas
         cpu_time_used = get_time_us();
 
-        cblas_potf2<T>(uplo, N, hA.data(), lda);
+        cblas_potf2<T>(uplo, M, hA.data(), lda);
 
         cpu_time_used = get_time_us() - cpu_time_used;
 
@@ -206,7 +206,7 @@ rocblas_status testing_potf2(Arguments argus)
 
         cout << endl;
 
-        cout << N << ',' << lda << ',' << char_uplo << ',' << gpu_time_used << ',' << cpu_time_used;
+        cout << M << ',' << lda << ',' << char_uplo << ',' << gpu_time_used << ',' << cpu_time_used;
 
         if(argus.norm_check)
             cout << "," << max_err_1;
