@@ -11,7 +11,7 @@ properties([
       daysToKeepStr: '',
       numToKeepStr: '10')),
     disableConcurrentBuilds(),
-    // parameters([booleanParam( name: 'push_image_to_docker_hub', defaultValue: false, description: 'Push rocblas image to rocm docker-hub' )]),
+    // parameters([booleanParam( name: 'push_image_to_docker_hub', defaultValue: false, description: 'Push rocsolver image to rocm docker-hub' )]),
     [$class: 'CopyArtifactPermissionProperty', projectNames: '*']
    ])
 
@@ -121,7 +121,7 @@ void checkout_and_version( project_paths paths )
 
   dir( paths.project_src_prefix )
   {
-    // checkout rocblas
+    // checkout rocsolver
     checkout([
       $class: 'GitSCM',
       branches: scm.branches,
@@ -148,7 +148,7 @@ void checkout_and_version( project_paths paths )
 // The docker images contains all dependencies, including OS platform, to build
 def docker_build_image( docker_data docker_args, project_paths paths )
 {
-  String build_image_name = "build-rocblas-hip-artifactory"
+  String build_image_name = "build-rocsolver-hip-artifactory"
   def build_image = null
 
   dir( paths.project_src_prefix )
@@ -207,7 +207,7 @@ def docker_build_inside_image( def build_image, compiler_data compiler_args, doc
           sh """#!/usr/bin/env bash
                 set -x
                 cd ${paths.project_build_prefix}/build/release/clients/staging
-                LD_LIBRARY_PATH=/opt/rocm/hcc/lib ./rocblas-test${build_type_postfix} --gtest_output=xml --gtest_color=yes #--gtest_filter=*nightly*
+                LD_LIBRARY_PATH=/opt/rocm/hcc/lib ./rocsolver-test${build_type_postfix} --gtest_output=xml --gtest_color=yes #--gtest_filter=*nightly*
             """
           junit "${paths.project_build_prefix}/build/release/clients/staging/*.xml"
         }
@@ -217,7 +217,7 @@ def docker_build_inside_image( def build_image, compiler_data compiler_args, doc
                 set -x
                 cd ${paths.project_build_prefix}/build/release/clients/staging
                 LD_LIBRARY_PATH=/opt/rocm/hcc/lib ./example-sscal${build_type_postfix}
-                LD_LIBRARY_PATH=/opt/rocm/hcc/lib ./rocblas-test${build_type_postfix} --gtest_output=xml --gtest_color=yes #--gtest_filter=*checkin* 
+                LD_LIBRARY_PATH=/opt/rocm/hcc/lib ./rocsolver-test${build_type_postfix} --gtest_output=xml --gtest_color=yes #--gtest_filter=*checkin* 
             """
           junit "${paths.project_build_prefix}/build/release/clients/staging/*.xml"
         }
@@ -232,7 +232,7 @@ def docker_build_inside_image( def build_image, compiler_data compiler_args, doc
             make package
           """
 
-        if( paths.project_name.equalsIgnoreCase( 'rocblas-ubuntu' ) )
+        if( paths.project_name.equalsIgnoreCase( 'rocsolver-ubuntu' ) )
         {
           sh  """#!/usr/bin/env bash
               set -x
@@ -256,7 +256,7 @@ def docker_build_inside_image( def build_image, compiler_data compiler_args, doc
             '''
           }
         }
-        else if( paths.project_name.equalsIgnoreCase( 'rocblas-fedora' ) )
+        else if( paths.project_name.equalsIgnoreCase( 'rocsolver-fedora' ) )
         {
           sh  """#!/usr/bin/env bash
               set -x
@@ -277,11 +277,11 @@ def docker_build_inside_image( def build_image, compiler_data compiler_args, doc
 ////////////////////////////////////////////////////////////////////////
 // This builds a fresh docker image FROM a clean base image, with no build dependencies included
 // Uploads the new docker image to internal artifactory
-// String docker_test_install( String hcc_ver, String artifactory_org, String from_image, String rocblas_src_rel, String build_dir_rel )
-String docker_test_install( compiler_data compiler_args, docker_data docker_args, project_paths rocblas_paths, String job_name )
+// String docker_test_install( String hcc_ver, String artifactory_org, String from_image, String rocsolver_src_rel, String build_dir_rel )
+String docker_test_install( compiler_data compiler_args, docker_data docker_args, project_paths rocsolver_paths, String job_name )
 {
-  def rocblas_install_image = null
-  String image_name = "rocblas-hip-${compiler_args.compiler_name}-ubuntu-16.04"
+  def rocsolver_install_image = null
+  String image_name = "rocsolver-hip-${compiler_args.compiler_name}-ubuntu-16.04"
   String docker_context = "${compiler_args.build_config}/${compiler_args.compiler_name}"
 
   stage( "Install ${compiler_args.compiler_name} ${compiler_args.build_config}" )
@@ -290,17 +290,17 @@ String docker_test_install( compiler_data compiler_args, docker_data docker_args
     sh  """#!/usr/bin/env bash
         set -x
         mkdir -p ${docker_context}
-        cp -r ${rocblas_paths.project_src_prefix}/docker/* ${docker_context}
+        cp -r ${rocsolver_paths.project_src_prefix}/docker/* ${docker_context}
       """
 
     // Docker 17.05 introduced the ability to use ARG values in FROM statements
     // Docker inspect failing on FROM statements with ARG https://issues.jenkins-ci.org/browse/JENKINS-44836
-    // rocblas_install_image = docker.build( "${job_name}/${image_name}:${env.BUILD_NUMBER}", "--pull -f ${build_dir_rel}/dockerfile-rocblas-ubuntu-16.04 --build-arg base_image=${from_image} ${build_dir_rel}" )
+    // rocsolver_install_image = docker.build( "${job_name}/${image_name}:${env.BUILD_NUMBER}", "--pull -f ${build_dir_rel}/dockerfile-rocsolver-ubuntu-16.04 --build-arg base_image=${from_image} ${build_dir_rel}" )
 
     // JENKINS-44836 workaround by using a bash script instead of docker.build()
     sh """docker build -t ${job_name}/${image_name} --pull -f ${docker_context}/${docker_args.install_docker_file} \
         --build-arg base_image=${docker_args.from_image} ${docker_context}"""
-    rocblas_install_image = docker.image( "${job_name}/${image_name}" )
+    rocsolver_install_image = docker.image( "${job_name}/${image_name}" )
 
   // NOTE: Don't push to artifactory yet, just test install package
 
@@ -316,8 +316,8 @@ String docker_test_install( compiler_data compiler_args, docker_data docker_args
   //     {
   //       docker.withRegistry('http://compute-artifactory:5001', 'artifactory-cred' )
   //       {
-  //         rocblas_install_image.push( "${env.BUILD_NUMBER}" )
-  //         rocblas_install_image.push( 'latest' )
+  //         rocsolver_install_image.push( "${env.BUILD_NUMBER}" )
+  //         rocsolver_install_image.push( 'latest' )
   //       }
   //     }
   //   }
@@ -387,7 +387,7 @@ String hip_integration_testing( String inside_args, String job, String build_con
   // Tag image name with this build number
   String hip_test_image_name = "hip:${env.BUILD_NUMBER}"
 
-  def rocblas_integration_image = null
+  def rocsolver_integration_image = null
 
   dir( 'integration-testing' )
   {
@@ -403,15 +403,15 @@ String hip_integration_testing( String inside_args, String job, String build_con
   }
 
   // Checkout source code, dependencies and version files
-  String rocblas_src_rel = checkout_and_version( job )
+  String rocsolver_src_rel = checkout_and_version( job )
 
   // Conctruct a binary directory path based on build config
-  String rocblas_bin_rel = build_directory_rel( build_config )
+  String rocsolver_bin_rel = build_directory_rel( build_config )
 
-  // Build rocblas inside of the build environment
-  rocblas_integration_image = docker_build_image( job, testing_org_name, '', rocblas_src_rel, "${testing_org_name}/${hip_test_image_name}" )
+  // Build rocsolver inside of the build environment
+  rocsolver_integration_image = docker_build_image( job, testing_org_name, '', rocsolver_src_rel, "${testing_org_name}/${hip_test_image_name}" )
 
-  docker_build_inside_image( rocblas_integration_image, inside_args, job, '', build_config, rocblas_src_rel, rocblas_bin_rel )
+  docker_build_inside_image( rocsolver_integration_image, inside_args, job, '', build_config, rocsolver_src_rel, rocsolver_bin_rel )
 
   docker_clean_images( testing_org_name, '*' )
 }
@@ -450,35 +450,35 @@ class project_paths implements Serializable
 // Following this line is the start of MAIN of this Jenkinsfile
 
 // This defines a common build pipeline used by most targets
-def build_pipeline( compiler_data compiler_args, docker_data docker_args, project_paths rocblas_paths, def docker_inside_closure )
+def build_pipeline( compiler_data compiler_args, docker_data docker_args, project_paths rocsolver_paths, def docker_inside_closure )
 {
   ansiColor( 'vga' )
   {
     stage( "Build ${compiler_args.compiler_name} ${compiler_args.build_config}" )
     {
       // Checkout source code, dependencies and version files
-      checkout_and_version( rocblas_paths )
+      checkout_and_version( rocsolver_paths )
 
       // Conctruct a binary directory path based on build config
-      build_directory_rel( rocblas_paths, compiler_args );
+      build_directory_rel( rocsolver_paths, compiler_args );
 
-      // Create/reuse a docker image that represents the rocblas build environment
-      def rocblas_build_image = docker_build_image( docker_args, rocblas_paths )
+      // Create/reuse a docker image that represents the rocsolver build environment
+      def rocsolver_build_image = docker_build_image( docker_args, rocsolver_paths )
 
       // Print system information for the log
-      rocblas_build_image.inside( docker_args.docker_run_args, docker_inside_closure )
+      rocsolver_build_image.inside( docker_args.docker_run_args, docker_inside_closure )
 
-      // Build rocblas inside of the build environment
-      docker_build_inside_image( rocblas_build_image, compiler_args, docker_args, rocblas_paths )
+      // Build rocsolver inside of the build environment
+      docker_build_inside_image( rocsolver_build_image, compiler_args, docker_args, rocsolver_paths )
     }
 
-    if( !rocblas_paths.project_name.equalsIgnoreCase( 'rocblas-hcc-ctu' ) )
+    if( !rocsolver_paths.project_name.equalsIgnoreCase( 'rocsolver-hcc-ctu' ) )
     {
       // After a successful build, upload a docker image of the results
       String job_name = env.JOB_NAME.toLowerCase( )
-      String rocblas_image_name = docker_test_install( compiler_args, docker_args, rocblas_paths, job_name )
+      String rocsolver_image_name = docker_test_install( compiler_args, docker_args, rocsolver_paths, job_name )
 
-      docker_clean_images( job_name, rocblas_image_name )
+      docker_clean_images( job_name, rocsolver_image_name )
     }
   }
 }
@@ -502,8 +502,8 @@ parallel hcc_ctu:
           build_config:'Release',
           compiler_path:'/opt/rocm/bin/hcc' )
 
-      def rocblas_paths = new project_paths(
-          project_name:'rocblas-hcc-ctu',
+      def rocsolver_paths = new project_paths(
+          project_name:'rocsolver-hcc-ctu',
           src_prefix:'src',
           build_prefix:'src',
           build_command: './install.sh -c' )
@@ -515,7 +515,7 @@ parallel hcc_ctu:
           """
       }
 
-      build_pipeline( compiler_args, docker_args, rocblas_paths, print_version_closure )
+      build_pipeline( compiler_args, docker_args, rocsolver_paths, print_version_closure )
     }
   }
   catch( err )
@@ -539,8 +539,8 @@ rocm_ubuntu:
         build_config:'Release',
         compiler_path:'/opt/rocm/bin/hcc' )
 
-    def rocblas_paths = new project_paths(
-        project_name:'rocblas-ubuntu',
+    def rocsolver_paths = new project_paths(
+        project_name:'rocsolver-ubuntu',
         src_prefix:'src',
         build_prefix:'src',
         build_command: './install.sh -c' )
@@ -552,7 +552,7 @@ rocm_ubuntu:
         """
     }
 
-    build_pipeline( hcc_compiler_args, hcc_docker_args, rocblas_paths, print_version_closure )
+    build_pipeline( hcc_compiler_args, hcc_docker_args, rocsolver_paths, print_version_closure )
   }
 } 
 //,
@@ -572,8 +572,8 @@ rocm_ubuntu:
 //         build_config:'Release',
 //         compiler_path:'/opt/rocm/bin/hcc' )
 
-//     def rocblas_paths = new project_paths(
-//         project_name:'rocblas-fedora',
+//     def rocsolver_paths = new project_paths(
+//         project_name:'rocsolver-fedora',
 //         src_prefix:'src',
 //         build_prefix:'src',
 //         build_command: './install.sh -c' )
@@ -585,7 +585,7 @@ rocm_ubuntu:
 //         """
 //     }
 
-//     build_pipeline( hcc_compiler_args, hcc_docker_args, rocblas_paths, print_version_closure )
+//     build_pipeline( hcc_compiler_args, hcc_docker_args, rocsolver_paths, print_version_closure )
 //   }
 // },
 // nvcc:
@@ -604,8 +604,8 @@ rocm_ubuntu:
 //         build_config:'Release',
 //         compiler_path:'/opt/rocm/bin/hipcc' )
 
-//     def rocblas_paths = new project_paths(
-//         project_name:'rocblas-cuda',
+//     def rocsolver_paths = new project_paths(
+//         project_name:'rocsolver-cuda',
 //         src_prefix:'src',
 //         build_prefix:'build' )
 
@@ -617,6 +617,6 @@ rocm_ubuntu:
 //         """
 //     }
 
-//     build_pipeline( hcc_compiler_args, hcc_docker_args, rocblas_paths, print_version_closure )
+//     build_pipeline( hcc_compiler_args, hcc_docker_args, rocsolver_paths, print_version_closure )
 //   }
 // }
