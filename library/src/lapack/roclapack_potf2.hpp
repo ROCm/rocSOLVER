@@ -137,7 +137,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
   if (inpsResHost[POTF2_RESPOSDEF] <= 0.0) {
     const size_t elem = static_cast<size_t>(fabs(inpsResHost[POTF2_RESPOSDEF]));
     cerr << "ERROR: Input matrix not strictly positive definite. Last "
-            "occurance of this in element "
+            "occurrence of this in element "
          << elem << endl;
     hipFree(inpsResGPU);
     return rocblas_status_internal_error;
