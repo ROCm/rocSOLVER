@@ -48,6 +48,18 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         rocblas_fill uplo, rocblas_int n, T *a,
                                         rocblas_int lda) {
 
+
+  if (n == 0) {
+    // quick return
+    return rocblas_status_success;
+  } else if (n < 0) {
+    // less than zero dimensions in a matrix?!
+    return rocblas_status_invalid_size;
+  } else if (lda < max(1, n)) {
+    // mismatch of provided first matrix dimension
+    return rocblas_status_invalid_size;
+  }
+    
   rocblas_int oneInt = 1;
   T inpsResHost[5];
   inpsResHost[POTF2_INPONE] = static_cast<T>(1);
@@ -62,17 +74,6 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
 
   hipStream_t stream;
   rocblas_get_stream(handle, &stream);
-
-  if (n == 0) {
-    // quick return
-    return rocblas_status_success;
-  } else if (n < 0) {
-    // less than zero dimensions in a matrix?!
-    return rocblas_status_invalid_size;
-  } else if (lda < max(1, n)) {
-    // mismatch of provided first matrix dimension
-    return rocblas_status_invalid_size;
-  }
 
   // in order to get the indices right, we check what the fill mode is
   if (uplo == rocblas_fill_upper) {
@@ -136,7 +137,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
   if (inpsResHost[POTF2_RESPOSDEF] <= 0.0) {
     const size_t elem = static_cast<size_t>(fabs(inpsResHost[POTF2_RESPOSDEF]));
     cerr << "ERROR: Input matrix not strictly positive definite. Last "
-            "occurance of this in element "
+            "occurrence of this in element "
          << elem << endl;
     hipFree(inpsResGPU);
     return rocblas_status_internal_error;
