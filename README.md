@@ -1,22 +1,14 @@
-rocSOLVER
-=========
+# rocSOLVER
 
-rocSOLVER implements a subset of LAPACK functionality.
+rocSOLVER is a work-in-progress implementation of a subset of LAPACK functionality on the ROCm platform. It uses rocBLAS as a companion GPU BLAS implementation.
 
-# TODO
-Functionality to implement:
-* Xgeam
-* Xpotrf
-* Xgetrf
-* Xgetrs
-* Xgeqrf
-* unmqr
-* ungqr
-* Xheevd
-* Xgesvd
+# Build
+Requires `cmake` and `ROCm` including `hcc` and `rocBLAS` to be installed.
 
-Functionality to be implemented (in rocBLAS ?):
-* XgetriBatched
-* XgetrfBatched
-* XmatInvBatched
-* XgetrsBatched
+```bash
+mkdir build && cd build
+CXX=/opt/rocm/bin/hcc cmake ..
+make
+```
+# Implemented functions in LAPACK notation
+Cholesky decomposition: `rocsolver_spotf2() rocsolver_dpotf2()`
