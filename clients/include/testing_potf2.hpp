@@ -167,8 +167,8 @@ template <typename T> rocblas_status testing_potf2(Arguments argus) {
 
     cout << endl;
 
-    cout << M << " , " << lda << " , " << char_uplo << " , " << gpu_time_used << " , "
-         << cpu_time_used;
+    cout << M << " , " << lda << " , " << char_uplo << " , " << gpu_time_used
+         << " , " << cpu_time_used;
 
     if (argus.norm_check)
       cout << " , " << max_err_1;
