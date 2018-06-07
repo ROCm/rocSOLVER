@@ -23,18 +23,6 @@
 
 using namespace std;
 
-template <typename T>
-void printMatrix(const string name, T *A, rocblas_int m, rocblas_int n,
-                 rocblas_int lda) {
-  cout << "---------- " << name << " ----------" << endl;
-  for (int i = 0; i < m; i++) {
-    for (int j = 0; j < n; j++) {
-      printf("%f ", A[i + j * lda]);
-    }
-    printf("\n");
-  }
-}
-
 template <typename T> rocblas_status testing_potf2(Arguments argus) {
 
   rocblas_int M = argus.M;
@@ -120,10 +108,8 @@ template <typename T> rocblas_status testing_potf2(Arguments argus) {
 
   //  copy AAT into hA, make hA positive-definite
   for (int i = 0; i < M; i++) {
-    T t = 0.0;
     for (int j = 0; j < M; j++) {
       hA[i + j * lda] = AAT[i + j * lda];
-      // t += AAT[i + j * lda] > 0 ? AAT[i + j * lda] : -AAT[i + j * lda];
     }
     hA[i + i * lda] += 1;
   }
@@ -152,7 +138,7 @@ template <typename T> rocblas_status testing_potf2(Arguments argus) {
 
     for (int j = 0; j < M; j++) {
       for (int i = 0; i < M; i++) {
-        max_err_1 = max_err_1 > AAT[j + i * lda] ? max_err_1 : AAT[j + i * lda];
+        max_err_1 = max_err_1 > AAT[i + j * lda] ? max_err_1 : AAT[i + j * lda];
       }
     }
     potf2_err_res_check<T>(max_err_1, M, error_eps_multiplier, eps);
@@ -174,18 +160,18 @@ template <typename T> rocblas_status testing_potf2(Arguments argus) {
     cpu_time_used = get_time_us() - cpu_time_used;
 
     // only norm_check return an norm error, unit check won't return anything
-    cout << "N,lda,uplo,us,us";
+    cout << "M , lda , uplo , us [gpu] , us [cpu]";
 
     if (argus.norm_check)
-      cout << ",norm_error_host_ptr";
+      cout << " , norm_error_host_ptr";
 
     cout << endl;
 
-    cout << M << ',' << lda << ',' << char_uplo << ',' << gpu_time_used << ','
+    cout << M << " , " << lda << " , " << char_uplo << " , " << gpu_time_used << " , "
          << cpu_time_used;
 
     if (argus.norm_check)
-      cout << "," << max_err_1;
+      cout << " , " << max_err_1;
 
     cout << endl;
   }
