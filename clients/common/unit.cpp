@@ -151,3 +151,19 @@ void potf2_err_res_check(double max_error, rocblas_int N,
   ASSERT_LE(max_error, forward_tolerance * eps * N);
 #endif
 }
+
+template <>
+void getf2_err_res_check(float max_error, rocblas_int M, rocblas_int N,
+                         float forward_tolerance, float eps) {
+#ifdef GOOGLE_TEST
+  ASSERT_LE(max_error, forward_tolerance * eps);
+#endif
+}
+
+template <>
+void getf2_err_res_check(double max_error, rocblas_int M, rocblas_int N,
+                         double forward_tolerance, double eps) {
+#ifdef GOOGLE_TEST
+  ASSERT_LE(max_error, forward_tolerance * eps);
+#endif
+}

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdio.h>
 
+#include "testing_getf2.hpp"
 #include "testing_potf2.hpp"
 #include "utility.h"
 
@@ -97,7 +98,7 @@ int main(int argc, char *argv[]) {
               
         ("function,f",
          po::value<std::string>(&function)->default_value("potf2"),
-         "LAPACK function to test. Options: potf2")
+         "LAPACK function to test. Options: potf2, getf2")
         
         ("precision,r", 
          po::value<char>(&precision)->default_value('s'), "Options: h,s,d,c,z")
@@ -179,6 +180,11 @@ int main(int argc, char *argv[]) {
       testing_potf2<float>(argus);
     else if (precision == 'd')
       testing_potf2<double>(argus);
+  } else if (function == "getf2") {
+    if (precision == 's')
+      testing_getf2<float>(argus);
+    else if (precision == 'd')
+      testing_getf2<double>(argus);
   } else {
     printf("Invalid value for --function \n");
     return -1;

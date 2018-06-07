@@ -31,6 +31,8 @@
 
 void potf2_arg_check(rocsolver_status status, rocsolver_int N);
 
+void getf2_arg_check(rocsolver_status status, rocsolver_int M, rocsolver_int N);
+
 template <typename T> void verify_not_nan(T arg);
 
 template <typename T> void verify_equal(T arg1, T arg2, const char *message);
