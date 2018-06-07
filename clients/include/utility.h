@@ -381,4 +381,16 @@ public:
   }
 };
 
+template <typename T>
+void printMatrix(const string name, T *A, rocblas_int m, rocblas_int n,
+                 rocblas_int lda) {
+  cout << "---------- " << name << " ----------" << endl;
+  for (int i = 0; i < m; i++) {
+    for (int j = 0; j < n; j++) {
+      printf("%f ", A[i + j * lda]);
+    }
+    printf("\n");
+  }
+}
+
 #endif

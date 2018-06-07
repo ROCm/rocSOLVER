@@ -29,6 +29,9 @@ set( rocsolver_auxiliary_source
 )
 
 set( rocsolver_lapack_source
+  lapack/helpers.cpp
+  lapack/rocblas.cpp
+  lapack/roclapack_getf2.cpp
   lapack/roclapack_potf2.cpp
 )
 

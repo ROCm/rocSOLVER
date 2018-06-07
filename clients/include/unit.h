@@ -41,4 +41,8 @@ template <typename T>
 void potf2_err_res_check(T max_error, rocblas_int N, T forward_tolerance,
                          T eps);
 
+template <typename T>
+void getf2_err_res_check(T max_error, rocblas_int M, rocblas_int N,
+                         T forward_tolerance, T eps);
+
 #endif
