@@ -13,7 +13,6 @@ static void *device_malloc(size_t byte_size) {
 
 // device_free wraps hipFree and provides same API as free
 static void device_free(void *ptr) { PRINT_IF_HIP_ERROR(hipFree(ptr)); }
-
 } // namespace rocsolver
 
 using rocsolver_unique_ptr = std::unique_ptr<void, void (*)(void *)>;

@@ -48,7 +48,6 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         rocblas_fill uplo, rocblas_int n, T *a,
                                         rocblas_int lda) {
 
-
   if (n == 0) {
     // quick return
     return rocblas_status_success;
@@ -59,7 +58,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     // mismatch of provided first matrix dimension
     return rocblas_status_invalid_size;
   }
-    
+
   rocblas_int oneInt = 1;
   T inpsResHost[5];
   inpsResHost[POTF2_INPONE] = static_cast<T>(1);
@@ -96,8 +95,9 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
 
       if (j < n - 1) {
         rocblas_gemv<T>(handle, rocblas_operation_transpose, j, n - j - 1,
-                        &(inpsResGPU[POTF2_INPMINONE]), &a[idx2D(0, j + 1, lda)], lda,
-                        &a[idx2D(0, j, lda)], oneInt, &(inpsResGPU[POTF2_INPONE]),
+                        &(inpsResGPU[POTF2_INPMINONE]),
+                        &a[idx2D(0, j + 1, lda)], lda, &a[idx2D(0, j, lda)],
+                        oneInt, &(inpsResGPU[POTF2_INPONE]),
                         &a[idx2D(j, j + 1, lda)], lda);
         rocblas_scal<T>(handle, n - j - 1, &inpsResGPU[POTF2_RESINVDOT],
                         &a[idx2D(j, j + 1, lda)], lda);
@@ -123,8 +123,9 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
 
       if (j < n - 1) {
         rocblas_gemv<T>(handle, rocblas_operation_none, n - j - 1, j,
-                        &(inpsResGPU[POTF2_INPMINONE]), &a[idx2D(j + 1, 0, lda)], lda,
-                        &a[idx2D(j, 0, lda)], lda, &(inpsResGPU[POTF2_INPONE]),
+                        &(inpsResGPU[POTF2_INPMINONE]),
+                        &a[idx2D(j + 1, 0, lda)], lda, &a[idx2D(j, 0, lda)],
+                        lda, &(inpsResGPU[POTF2_INPONE]),
                         &a[idx2D(j + 1, j, lda)], oneInt);
         rocblas_scal<T>(handle, n - j - 1, &inpsResGPU[POTF2_RESINVDOT],
                         &a[idx2D(j + 1, j, lda)], oneInt);
@@ -133,7 +134,8 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
   }
 
   // get the error code using memcpy and return internal error if there is one
-  hipMemcpy(&inpsResHost[POTF2_RESPOSDEF], &inpsResGPU[POTF2_RESPOSDEF], sizeof(T), hipMemcpyDeviceToHost);
+  hipMemcpy(&inpsResHost[POTF2_RESPOSDEF], &inpsResGPU[POTF2_RESPOSDEF],
+            sizeof(T), hipMemcpyDeviceToHost);
   if (inpsResHost[POTF2_RESPOSDEF] <= 0.0) {
     const size_t elem = static_cast<size_t>(fabs(inpsResHost[POTF2_RESPOSDEF]));
     cerr << "ERROR: Input matrix not strictly positive definite. Last "

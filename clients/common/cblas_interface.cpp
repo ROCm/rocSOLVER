@@ -44,6 +44,13 @@ void cpotf2_(char *uplo, int *n, rocblas_float_complex *A, int *lda, int *info);
 void zpotf2_(char *uplo, int *n, rocblas_double_complex *A, int *lda,
              int *info);
 
+void sgetf2_(int *m, int *n, float *A, int *lda, int *ipiv, int *info);
+void dgetf2_(int *m, int *n, double *A, int *lda, int *ipiv, int *info);
+void cgetf2_(int *m, int *n, rocblas_float_complex *A, int *lda, int *ipiv,
+             int *info);
+void zgetf2_(int *m, int *n, rocblas_double_complex *A, int *lda, int *ipiv,
+             int *info);
+
 #ifdef __cplusplus
 }
 #endif
@@ -573,6 +580,23 @@ rocblas_int cblas_potf2(rocblas_fill uplo, rocblas_int n, double *A,
   rocblas_int info;
   char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
   dpotf2_(&uploC, &n, A, &lda, &info);
+  return info;
+}
+
+// getf2
+template <>
+rocblas_int cblas_getf2(rocblas_int m, rocblas_int n, float *A, rocblas_int lda,
+                        rocblas_int *ipiv) {
+  rocblas_int info;
+  sgetf2_(&m, &n, A, &lda, ipiv, &info);
+  return info;
+}
+
+template <>
+rocblas_int cblas_getf2(rocblas_int m, rocblas_int n, double *A,
+                        rocblas_int lda, rocblas_int *ipiv) {
+  rocblas_int info;
+  dgetf2_(&m, &n, A, &lda, ipiv, &info);
   return info;
 }
 
