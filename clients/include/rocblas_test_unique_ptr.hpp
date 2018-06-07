@@ -29,7 +29,6 @@ struct handle_struct {
 
   ~handle_struct() { rocsolver_destroy_handle(handle); }
 };
-
 } // namespace rocblas_test
 
 using rocblas_unique_ptr = std::unique_ptr<void, void (*)(void *)>;
