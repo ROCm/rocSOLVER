@@ -28,18 +28,6 @@ template <typename T>
 rocblas_status rocblas_scal(rocblas_handle handle, rocblas_int n,
                             const T *alpha, T *x, rocblas_int incx);
 
-template <>
-rocblas_status rocblas_scal(rocblas_handle handle, rocblas_int n,
-                            const float *alpha, float *x, rocblas_int incx) {
-  return rocblas_sscal(handle, n, alpha, x, incx);
-}
-
-template <>
-rocblas_status rocblas_scal(rocblas_handle handle, rocblas_int n,
-                            const double *alpha, double *x, rocblas_int incx) {
-  return rocblas_dscal(handle, n, alpha, x, incx);
-}
-
 template <typename T>
 rocblas_status rocblas_copy(rocblas_handle handle, rocblas_int n, const T *x,
                             rocblas_int incx, T *y, rocblas_int incy);
@@ -52,20 +40,6 @@ template <typename T>
 rocblas_status rocblas_dot(rocblas_handle handle, rocblas_int n, const T *x,
                            rocblas_int incx, const T *y, rocblas_int incy,
                            T *result);
-
-template <>
-rocblas_status rocblas_dot(rocblas_handle handle, rocblas_int n, const float *x,
-                           rocblas_int incx, const float *y, rocblas_int incy,
-                           float *result) {
-  return rocblas_sdot(handle, n, x, incx, y, incy, result);
-}
-
-template <>
-rocblas_status rocblas_dot(rocblas_handle handle, rocblas_int n,
-                           const double *x, rocblas_int incx, const double *y,
-                           rocblas_int incy, double *result) {
-  return rocblas_ddot(handle, n, x, incx, y, incy, result);
-}
 
 template <typename T1, typename T2>
 rocblas_status rocblas_asum(rocblas_handle handle, rocblas_int n, const T1 *x,
@@ -104,26 +78,6 @@ rocblas_status rocblas_gemv(rocblas_handle handle, rocblas_operation transA,
                             const T *A, rocblas_int lda, const T *x,
                             rocblas_int incx, const T *beta, T *y,
                             rocblas_int incy);
-
-template <>
-rocblas_status rocblas_gemv(rocblas_handle handle, rocblas_operation transA,
-                            rocblas_int m, rocblas_int n, const float *alpha,
-                            const float *A, rocblas_int lda, const float *x,
-                            rocblas_int incx, const float *beta, float *y,
-                            rocblas_int incy) {
-  return rocblas_sgemv(handle, transA, m, n, alpha, A, lda, x, incx, beta, y,
-                       incy);
-}
-
-template <>
-rocblas_status rocblas_gemv(rocblas_handle handle, rocblas_operation transA,
-                            rocblas_int m, rocblas_int n, const double *alpha,
-                            const double *A, rocblas_int lda, const double *x,
-                            rocblas_int incx, const double *beta, double *y,
-                            rocblas_int incy) {
-  return rocblas_dgemv(handle, transA, m, n, alpha, A, lda, x, incx, beta, y,
-                       incy);
-}
 
 template <typename T>
 rocblas_status rocblas_symv(rocblas_handle handle, rocblas_fill uplo,
