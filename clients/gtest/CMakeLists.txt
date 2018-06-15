@@ -34,6 +34,7 @@ find_package( Threads REQUIRED )
 
 set(roclapack_test_source
     getf2_gtest.cpp
+    getrf_gtest.cpp
     potf2_gtest.cpp
     )
 
