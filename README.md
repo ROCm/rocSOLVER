@@ -12,3 +12,5 @@ make
 ```
 # Implemented functions in LAPACK notation
 Cholesky decomposition: `rocsolver_spotf2() rocsolver_dpotf2()`
+unblocked LU decomposition: `rocsolver_sgetf2() rocsolver_dgetf2()`
+blocked LU decomposition: `rocsolver_sgetrf() rocsolver_dgetrf()`

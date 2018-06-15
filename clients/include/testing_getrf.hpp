@@ -22,11 +22,11 @@
 #endif
 
 // this is max error PER element after the LU
-#define GETF2_ERROR_EPS_MULTIPLIER 5000
+#define GETRF_ERROR_EPS_MULTIPLIER 500
 
 using namespace std;
 
-template <typename T> rocblas_status testing_getf2(Arguments argus) {
+template <typename T> rocblas_status testing_getrf(Arguments argus) {
 
   rocblas_int M = argus.M;
   rocblas_int N = argus.N;
@@ -58,9 +58,9 @@ template <typename T> rocblas_status testing_getf2(Arguments argus) {
                            rocblas_test::device_free};
     rocblas_int *dIpiv = (rocblas_int *)dIpiv_managed.get();
 
-    status = rocsolver_getf2<T>(handle, M, N, dA, lda, dIpiv);
+    status = rocsolver_getrf<T>(handle, M, N, dA, lda, dIpiv);
 
-    getf2_arg_check(status, M, N);
+    getrf_arg_check(status, M, N);
 
     return status;
   }
@@ -70,7 +70,7 @@ template <typename T> rocblas_status testing_getf2(Arguments argus) {
   vector<T> AAT(size_A);
 
   double gpu_time_used, cpu_time_used;
-  T error_eps_multiplier = GETF2_ERROR_EPS_MULTIPLIER;
+  T error_eps_multiplier = GETRF_ERROR_EPS_MULTIPLIER;
   T eps = std::numeric_limits<T>::epsilon();
 
   // allocate memory on device
@@ -120,12 +120,12 @@ template <typename T> rocblas_status testing_getf2(Arguments argus) {
   if (argus.unit_check || argus.norm_check) {
     // calculate dXorB <- A^(-1) B rocblas_pointer_mode_host
     const rocblas_status retGPU =
-        rocsolver_getf2<T>(handle, M, N, dA, lda, dIpiv);
+        rocsolver_getrf<T>(handle, M, N, dA, lda, dIpiv);
 
     CHECK_HIP_ERROR(
         hipMemcpy(AAT.data(), dA, sizeof(T) * size_A, hipMemcpyDeviceToHost));
 
-    const int retCBLAS = cblas_getf2<T>(M, N, hA.data(), lda, hIpiv.data());
+    const int retCBLAS = cblas_getrf<T>(M, N, hA.data(), lda, hIpiv.data());
 
     if (retCBLAS != 0) {
       // error encountered - we expect the same to happen from the GPU!
@@ -165,7 +165,7 @@ template <typename T> rocblas_status testing_getf2(Arguments argus) {
               max_err_1 > AAT[i + j * lda] ? max_err_1 : AAT[i + j * lda];
         }
       }
-      getf2_err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
+      getrf_err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
     }
   }
 
@@ -174,14 +174,14 @@ template <typename T> rocblas_status testing_getf2(Arguments argus) {
     gpu_time_used = get_time_us(); // in microseconds
 
     const rocblas_status retGPU =
-        rocsolver_getf2<T>(handle, M, N, dA, lda, dIpiv);
+        rocsolver_getrf<T>(handle, M, N, dA, lda, dIpiv);
 
     gpu_time_used = get_time_us() - gpu_time_used;
 
     // CPU cblas
     cpu_time_used = get_time_us();
 
-    const int retCBLAS = cblas_getf2<T>(M, N, hA.data(), lda, hIpiv.data());
+    const int retCBLAS = cblas_getrf<T>(M, N, hA.data(), lda, hIpiv.data());
 
     if (retCBLAS != 0) {
       // error encountered - we expect the same to happen from the GPU!
@@ -213,4 +213,4 @@ template <typename T> rocblas_status testing_getf2(Arguments argus) {
   return rocblas_status_success;
 }
 
-#undef GETF2_ERROR_EPS_MULTIPLIER
+#undef GETRF_ERROR_EPS_MULTIPLIER
