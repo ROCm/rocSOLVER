@@ -87,3 +87,45 @@ rocblas_status rocblas_gemv(rocblas_handle handle, rocblas_operation transA,
   return rocblas_dgemv(handle, transA, m, n, alpha, A, lda, x, incx, beta, y,
                        incy);
 }
+
+template <>
+rocblas_status rocblas_gemm(rocblas_handle handle, rocblas_operation transA,
+                            rocblas_operation transB, rocblas_int m,
+                            rocblas_int n, rocblas_int k, const float *alpha,
+                            const float *A, rocblas_int lda, const float *B,
+                            rocblas_int ldb, const float *beta, float *C,
+                            rocblas_int ldc) {
+  return rocblas_sgemm(handle, transA, transB, m, n, k, alpha, A, lda, B, ldb,
+                       beta, C, ldc);
+}
+
+template <>
+rocblas_status rocblas_gemm(rocblas_handle handle, rocblas_operation transA,
+                            rocblas_operation transB, rocblas_int m,
+                            rocblas_int n, rocblas_int k, const double *alpha,
+                            const double *A, rocblas_int lda, const double *B,
+                            rocblas_int ldb, const double *beta, double *C,
+                            rocblas_int ldc) {
+  return rocblas_dgemm(handle, transA, transB, m, n, k, alpha, A, lda, B, ldb,
+                       beta, C, ldc);
+}
+
+template <>
+rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
+                            rocblas_fill uplo, rocblas_operation transA,
+                            rocblas_diagonal diag, rocblas_int m, rocblas_int n,
+                            const float *alpha, float *A, rocblas_int lda,
+                            float *B, rocblas_int ldb) {
+  return rocblas_strsm(handle, side, uplo, transA, diag, m, n, alpha, A, lda, B,
+                       ldb);
+}
+
+template <>
+rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
+                            rocblas_fill uplo, rocblas_operation transA,
+                            rocblas_diagonal diag, rocblas_int m, rocblas_int n,
+                            const double *alpha, double *A, rocblas_int lda,
+                            double *B, rocblas_int ldb) {
+  return rocblas_dtrsm(handle, side, uplo, transA, diag, m, n, alpha, A, lda, B,
+                       ldb);
+}

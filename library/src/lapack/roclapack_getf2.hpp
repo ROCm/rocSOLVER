@@ -16,6 +16,7 @@
 
 #include "definitions.h"
 #include "helpers.h"
+#include "ideal_sizes.hpp"
 
 using namespace std;
 
@@ -90,9 +91,9 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, rocblas_int m,
   hipStream_t stream;
   rocblas_get_stream(handle, &stream);
 
-  rocblas_int blocksPivot = (n - 1) / 256 + 1;
+  rocblas_int blocksPivot = (n - 1) / GETF2_BLOCKSIZE + 1;
   dim3 gridPivot(blocksPivot, 1, 1);
-  dim3 threads(256, 1, 1);
+  dim3 threads(GETF2_BLOCKSIZE, 1, 1);
 
   for (rocblas_int j = 0; j < min(m, n); ++j) {
 
@@ -110,7 +111,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, rocblas_int m,
 
     // Compute elements J+1:M of J'th column
 
-    rocblas_int blocksScal = (m - j - 2) / 256 + 1;
+    rocblas_int blocksScal = (m - j - 2) / GETF2_BLOCKSIZE + 1;
 
     dim3 gridScal(blocksScal, 1, 1);
     hipLaunchKernelGGL(getf2_scal<T>, gridScal, threads, 0, stream, (m - j - 1),
