@@ -79,6 +79,27 @@ void getrf_arg_check(rocblas_status status, rocblas_int M, rocblas_int N) {
 #endif
 }
 
+void getrs_arg_check(rocblas_status status, rocblas_int M, rocblas_int nhrs,
+                     rocblas_int lda, rocblas_int ldb) {
+#ifdef GOOGLE_TEST
+  if (M < 0 || nhrs < 0 || lda < std::max(1, M) || ldb < std::max(1, M)) {
+    ASSERT_EQ(status, rocblas_status_invalid_size);
+  } else {
+    ASSERT_EQ(status, rocblas_status_success);
+  }
+#else
+  if (M < 0 || nhrs < 0 || lda < std::max(1, M) || ldb < std::max(1, M)) {
+    if (status != rocblas_status_invalid_size)
+      std::cerr << "result should be invalid size for size " << M << " and "
+                << nhrs << std::endl;
+  } else {
+    if (status != rocblas_status_success)
+      std::cerr << "result should be success for size " << M << " and " << nhrs
+                << std::endl;
+  }
+#endif
+}
+
 void verify_rocblas_status_invalid_pointer(rocblas_status status,
                                            const char *message) {
 #ifdef GOOGLE_TEST
