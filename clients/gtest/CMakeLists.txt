@@ -35,6 +35,7 @@ find_package( Threads REQUIRED )
 set(roclapack_test_source
     getf2_gtest.cpp
     getrf_gtest.cpp
+    getrs_gtest.cpp
     potf2_gtest.cpp
     )
 
@@ -53,6 +54,8 @@ set( rocsolver_benchmark_common
 
 add_executable( rocsolver-test ${roclapack_test_source} ${rocsolver_test_source} ${rocsolver_benchmark_common} )
 target_compile_features( rocsolver-test PRIVATE cxx_static_assert cxx_nullptr cxx_auto_type )
+
+rocm_clang_tidy_check(rocsolver-test)
 
 target_compile_definitions( rocsolver-test PRIVATE BUILD_WITH_TENSILE=0 GOOGLE_TEST )
 
