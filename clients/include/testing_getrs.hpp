@@ -21,20 +21,32 @@
 #include <gtest/gtest.h>
 #endif
 
-// this is max error PER element after the LU
+// this is max error PER element after the solution
 #define GETRF_ERROR_EPS_MULTIPLIER 500
 
 using namespace std;
 
-template <typename T> rocblas_status testing_getrf(Arguments argus) {
+template <typename T> rocblas_status testing_getrs(Arguments argus) {
 
   rocblas_int M = argus.M;
-  rocblas_int N = argus.N;
+  rocblas_int nhrs = argus.N;
   rocblas_int lda = argus.lda;
+  rocblas_int ldb = argus.ldb;
+  char trans = argus.transA_option;
+
+  rocblas_operation transRoc;
+  if (trans == 'N') {
+    transRoc = rocblas_operation_none;
+  } else if (trans == 'T') {
+    transRoc = rocblas_operation_transpose;
+  } else {
+    throw runtime_error("Unsupported transpose operation.");
+  }
 
   rocblas_int safe_size = 100; // arbitrarily set to 100
 
-  rocblas_int size_A = max(lda, M) * N;
+  rocblas_int size_A = max(lda, M) * M;
+  rocblas_int size_B = max(ldb, M) * nhrs;
 
   rocblas_status status;
 
@@ -43,7 +55,7 @@ template <typename T> rocblas_status testing_getrf(Arguments argus) {
   rocblas_handle handle = unique_ptr_handle->handle;
 
   // check here to prevent undefined memory allocation error
-  if (M < 0 || N < 0 || lda < M) {
+  if (M < 0 || nhrs < 0 || lda < std::max(1, M) || ldb < std::max(1, M)) {
     auto dA_managed =
         rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * safe_size),
                            rocblas_test::device_free};
@@ -53,21 +65,32 @@ template <typename T> rocblas_status testing_getrf(Arguments argus) {
       return rocblas_status_memory_error;
     }
 
+    auto dB_managed =
+        rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * safe_size),
+                           rocblas_test::device_free};
+    T *dB = (T *)dB_managed.get();
+    if (!dB) {
+      PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
+      return rocblas_status_memory_error;
+    }
+
     auto dIpiv_managed =
-        rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(int) * min(M, N)),
+        rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(int) * M),
                            rocblas_test::device_free};
     rocblas_int *dIpiv = (rocblas_int *)dIpiv_managed.get();
 
-    status = rocsolver_getrf<T>(handle, M, N, dA, lda, dIpiv);
+    status =
+        rocsolver_getrs<T>(handle, transRoc, M, nhrs, dA, lda, dIpiv, dB, ldb);
 
-    getrf_arg_check(status, M, N);
+    getrs_arg_check(status, M, nhrs, lda, ldb);
 
     return status;
   }
 
   // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory
   vector<T> hA(size_A);
-  vector<T> AAT(size_A);
+  vector<T> hB(size_B);
+  vector<T> hBRes(size_B);
 
   double gpu_time_used, cpu_time_used;
   T error_eps_multiplier = GETRF_ERROR_EPS_MULTIPLIER;
@@ -83,49 +106,74 @@ template <typename T> rocblas_status testing_getrf(Arguments argus) {
     return rocblas_status_memory_error;
   }
 
-  //  initialize full random matrix hA with all entries in [1, 10]
-  rocblas_init<T>(hA, M, N, lda);
+  auto dB_managed =
+      rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * size_B),
+                         rocblas_test::device_free};
+  T *dB = (T *)dB_managed.get();
+  if (!dB) {
+    PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
+    return rocblas_status_memory_error;
+  }
+
+  //  initialize full random matrix hA, hB with all entries in [1, 10]
+  rocblas_init<T>(hA, M, M, lda);
+  rocblas_init<T>(hB, M, nhrs, ldb);
 
   //  pad untouched area into zero
   for (int i = M; i < lda; i++) {
-    for (int j = 0; j < N; j++) {
+    for (int j = 0; j < M; j++) {
       hA[i + j * lda] = 0.0;
+    }
+  }
+  for (int i = M; i < ldb; i++) {
+    for (int j = 0; j < nhrs; j++) {
+      hB[i + j * ldb] = 0.0;
     }
   }
 
   // put it into [0, 1]
   for (int i = M; i < lda; i++) {
-    for (int j = 0; j < N; j++) {
+    for (int j = 0; j < M; j++) {
       hA[i + j * lda] = (hA[i + j * lda] - 1.0) / 10.0;
     }
   }
 
   // now make it diagonally dominant
-  for (int i = 0; i < min(M, N); i++) {
+  for (int i = 0; i < M; i++) {
     hA[i + i * lda] *= 420.0;
   }
 
-  // copy data from CPU to device
+  // allocate space for the pivoting array
+  vector<int> hIpiv(M);
+  auto dIpiv_managed = rocblas_unique_ptr{
+      rocblas_test::device_malloc(sizeof(int) * M), rocblas_test::device_free};
+  rocblas_int *dIpiv = (rocblas_int *)dIpiv_managed.get();
+
+  // do the LU decomposition of matrix A w/ the reference LAPACK routine
+  const int retCBLAS = cblas_getrf<T>(M, M, hA.data(), lda, hIpiv.data());
+  if (retCBLAS != 0) {
+    // error encountered - unlucky pick of random numbers? no use to continue
+    return rocblas_status_success;
+  }
+
+  // now copy pivoting indices and matrices to the GPU
   CHECK_HIP_ERROR(
       hipMemcpy(dA, hA.data(), sizeof(T) * size_A, hipMemcpyHostToDevice));
-
-  // allocate space for the pivoting array
-  vector<int> hIpiv(min(M, N));
-  auto dIpiv_managed =
-      rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(int) * min(M, N)),
-                         rocblas_test::device_free};
-  rocblas_int *dIpiv = (rocblas_int *)dIpiv_managed.get();
+  CHECK_HIP_ERROR(
+      hipMemcpy(dB, hB.data(), sizeof(T) * size_B, hipMemcpyHostToDevice));
+  CHECK_HIP_ERROR(
+      hipMemcpy(dIpiv, hIpiv.data(), sizeof(int) * M, hipMemcpyHostToDevice));
 
   T max_err_1 = 0.0;
   if (argus.unit_check || argus.norm_check) {
-    // calculate dXorB <- A^(-1) B rocblas_pointer_mode_host
     const rocblas_status retGPU =
-        rocsolver_getrf<T>(handle, M, N, dA, lda, dIpiv);
+        rocsolver_getrs<T>(handle, transRoc, M, nhrs, dA, lda, dIpiv, dB, ldb);
 
     CHECK_HIP_ERROR(
-        hipMemcpy(AAT.data(), dA, sizeof(T) * size_A, hipMemcpyDeviceToHost));
+        hipMemcpy(hBRes.data(), dB, sizeof(T) * size_B, hipMemcpyDeviceToHost));
 
-    const int retCBLAS = cblas_getrf<T>(M, N, hA.data(), lda, hIpiv.data());
+    const int retCBLAS = cblas_getrs<T>(trans, M, nhrs, hA.data(), lda,
+                                        hIpiv.data(), hB.data(), ldb);
 
     if (retCBLAS != 0) {
       // error encountered - we expect the same to happen from the GPU!
@@ -138,34 +186,20 @@ template <typename T> rocblas_status testing_getrf(Arguments argus) {
 
       // Error Check
 
-      // check if the pivoting returned is identical
-      vector<int> hIpivGPU(min(M, N));
-      CHECK_HIP_ERROR(hipMemcpy(hIpivGPU.data(), dIpiv, sizeof(int) * min(M, N),
-                                hipMemcpyDeviceToHost));
-      for (int j = 0; j < min(M, N); j++) {
-        const int refPiv = hIpiv[j];
-        const int gpuPiv = hIpivGPU[j];
-        if (refPiv != gpuPiv) {
-          cerr << "reference pivot " << j << ": " << refPiv << " vs " << gpuPiv
-               << endl;
-          return rocblas_status_internal_error;
-        }
-      }
-
-      // AAT contains calculated decomposition, so error is hA - AAT
+      // hBRes contains calculated decomposition, so error is hBres - hB
       for (int i = 0; i < M; i++) {
-        for (int j = 0; j < N; j++) {
-          AAT[i + j * lda] = abs(AAT[i + j * lda] - hA[i + j * lda]);
+        for (int j = 0; j < nhrs; j++) {
+          hBRes[i + j * ldb] = abs(hBRes[i + j * ldb] - hB[i + j * ldb]);
         }
       }
 
       for (int i = 0; i < M; i++) {
-        for (int j = 0; j < N; j++) {
+        for (int j = 0; j < nhrs; j++) {
           max_err_1 =
-              max_err_1 > AAT[i + j * lda] ? max_err_1 : AAT[i + j * lda];
+              max_err_1 > hBRes[i + j * ldb] ? max_err_1 : hBRes[i + j * ldb];
         }
       }
-      getrf_err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
+      getrs_err_res_check<T>(max_err_1, M, nhrs, error_eps_multiplier, eps);
     }
   }
 
@@ -174,14 +208,15 @@ template <typename T> rocblas_status testing_getrf(Arguments argus) {
     gpu_time_used = get_time_us(); // in microseconds
 
     const rocblas_status retGPU =
-        rocsolver_getrf<T>(handle, M, N, dA, lda, dIpiv);
+        rocsolver_getrs<T>(handle, transRoc, M, nhrs, dA, lda, dIpiv, dB, ldb);
 
     gpu_time_used = get_time_us() - gpu_time_used;
 
     // CPU cblas
     cpu_time_used = get_time_us();
 
-    const int retCBLAS = cblas_getrf<T>(M, N, hA.data(), lda, hIpiv.data());
+    const int retCBLAS = cblas_getrs<T>(trans, M, nhrs, hA.data(), lda,
+                                        hIpiv.data(), hB.data(), ldb);
 
     if (retCBLAS != 0) {
       // error encountered - we expect the same to happen from the GPU!
@@ -195,15 +230,15 @@ template <typename T> rocblas_status testing_getrf(Arguments argus) {
     cpu_time_used = get_time_us() - cpu_time_used;
 
     // only norm_check return an norm error, unit check won't return anything
-    cout << "M , N , lda , us [gpu] , us [cpu]";
+    cout << "M , nhrs , lda , ldb , us [gpu] , us [cpu]";
 
     if (argus.norm_check)
-      cout << ",norm_error_host_ptr";
+      cout << ", norm_error_host_ptr";
 
     cout << endl;
 
-    cout << M << " , " << N << " , " << lda << " , " << gpu_time_used << " , "
-         << cpu_time_used;
+    cout << M << " , " << nhrs << " , " << lda << " , " << ldb << " , "
+         << gpu_time_used << " , " << cpu_time_used;
 
     if (argus.norm_check)
       cout << " , " << max_err_1;

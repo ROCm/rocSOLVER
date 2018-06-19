@@ -106,6 +106,11 @@ rocblas_int cblas_getrf(rocblas_int m, rocblas_int n, T *A, rocblas_int lda,
                         rocblas_int *ipiv);
 
 template <typename T>
+rocblas_int cblas_getrs(char trans, rocblas_int n, rocblas_int nrhs, T *A,
+                        rocblas_int lda, rocblas_int *ipiv, T *B,
+                        rocblas_int ldb);
+
+template <typename T>
 rocblas_int cblas_potrf(char uplo, rocblas_int m, T *A, rocblas_int lda);
 /* ============================================================================================
  */

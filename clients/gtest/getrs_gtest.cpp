@@ -3,7 +3,7 @@
  *
  * ************************************************************************ */
 
-#include "testing_getrf.hpp"
+#include "testing_getrs.hpp"
 #include "utility.h"
 #include <gtest/gtest.h>
 #include <math.h>
@@ -19,7 +19,7 @@ using namespace std;
 // only GCC/VS 2010 comes with std::tr1::tuple, but it is unnecessary,
 // std::tuple is good enough;
 
-typedef std::tuple<vector<int>, int> getrf_tuple;
+typedef std::tuple<vector<int>, vector<int>, char> getrs_tuple;
 
 /* =====================================================================
 README: This file contains testers to verify the correctness of
@@ -41,21 +41,27 @@ necessary
 
 // vector of vector, each vector is a {M, lda};
 // add/delete as a group
-const vector<vector<int>> matrix_size_range = {
+const vector<vector<int>> matrix_sizeA_range = {
     {-1, 1}, {10, 10}, {10, 20}, {500, 500}, {500, 750},
 };
 
-// each is a N
-const vector<int> n_size_range = {
-    1, 20, 40, 600, 600,
+// vector of vector, each vector is a {M, lda};
+// add/delete as a group
+const vector<vector<int>> matrix_sizeB_range = {
+    {-1, 1}, {10, 10}, {10, 20}, {500, 500}, {500, 750},
 };
 
-const vector<vector<int>> large_matrix_size_range = {
+const vector<vector<int>> large_matrix_sizeA_range = {
     {192, 192}, {640, 640}, {1000, 1000}, {1024, 1024}, {2000, 2000},
 };
 
-const vector<int> large_n_size_range = {
-    192, 640, 1000, 1024, 2000,
+const vector<vector<int>> large_matrix_sizeB_range = {
+    {192, 192}, {640, 640}, {1000, 1000}, {1024, 1024}, {2000, 2000},
+};
+
+const vector<char> transpose = {
+    'N',
+    'T',
 };
 
 /* ===============Google Unit
@@ -76,40 +82,42 @@ const vector<int> large_n_size_range = {
 // by std:tuple, you have unpack it with extreme care for each one by like
 // "std::get<0>" which is not intuitive and error-prone
 
-Arguments setup_getrf_arguments(getrf_tuple tup) {
+Arguments setup_getrs_arguments(getrs_tuple tup) {
 
-  vector<int> matrix_size = std::get<0>(tup);
-  int n_size = std::get<1>(tup);
+  vector<int> matrix_sizeA = std::get<0>(tup);
+  vector<int> matrix_sizeB = std::get<1>(tup);
 
   Arguments arg;
 
   // see the comments about matrix_size_range above
-  arg.M = matrix_size[0];
-  arg.N = n_size;
-  arg.lda = matrix_size[1];
+  arg.M = matrix_sizeA[0];
+  arg.N = matrix_sizeB[0];
+  arg.lda = matrix_sizeA[1];
+  arg.ldb = matrix_sizeB[1];
+  arg.transA_option = std::get<2>(tup);
 
   arg.timing = 0;
 
   return arg;
 }
 
-class getrf_gtest : public ::TestWithParam<getrf_tuple> {
+class getrs_gtest : public ::TestWithParam<getrs_tuple> {
 protected:
-  getrf_gtest() {}
-  virtual ~getrf_gtest() {}
+  getrs_gtest() {}
+  virtual ~getrs_gtest() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
 
-TEST_P(getrf_gtest, getrf_gtest_float) {
+TEST_P(getrs_gtest, getrs_gtest_float) {
   // GetParam return a tuple. Tee setup routine unpack the tuple
   // and initializes arg(Arguments) which will be passed to testing routine
   // The Arguments data struture have physical meaning associated.
   // while the tuple is non-intuitive.
 
-  Arguments arg = setup_getrf_arguments(GetParam());
+  Arguments arg = setup_getrs_arguments(GetParam());
 
-  rocblas_status status = testing_getrf<float>(arg);
+  rocblas_status status = testing_getrs<float>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -117,21 +125,21 @@ TEST_P(getrf_gtest, getrf_gtest_float) {
 
     if (arg.M < 0 || arg.N < 0) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M) {
+    } else if (arg.lda < arg.M || arg.ldb < arg.M) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
     }
   }
 }
 
-TEST_P(getrf_gtest, getrf_gtest_double) {
+TEST_P(getrs_gtest, getrs_gtest_double) {
   // GetParam return a tuple. Tee setup routine unpack the tuple
   // and initializes arg(Arguments) which will be passed to testing routine
   // The Arguments data struture have physical meaning associated.
   // while the tuple is non-intuitive.
 
-  Arguments arg = setup_getrf_arguments(GetParam());
+  Arguments arg = setup_getrs_arguments(GetParam());
 
-  rocblas_status status = testing_getrf<double>(arg);
+  rocblas_status status = testing_getrs<double>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -139,7 +147,7 @@ TEST_P(getrf_gtest, getrf_gtest_double) {
 
     if (arg.M < 0 || arg.N < 0) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M) {
+    } else if (arg.lda < arg.M || arg.ldb < arg.M) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
     }
   }
@@ -151,12 +159,14 @@ TEST_P(getrf_gtest, getrf_gtest_double) {
 // test_p The combinations are  { {M, N, lda}}
 
 // This function mainly test the scope of matrix_size.
-INSTANTIATE_TEST_CASE_P(daily_lapack, getrf_gtest,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_CASE_P(daily_lapack, getrs_gtest,
+                        Combine(ValuesIn(large_matrix_sizeA_range),
+                                ValuesIn(large_matrix_sizeB_range),
+                                ValuesIn(transpose)));
 
 // THis function mainly test the scope of uplo_range, the scope of
 // matrix_size_range is small
-INSTANTIATE_TEST_CASE_P(checkin_lapack, getrf_gtest,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_CASE_P(checkin_lapack, getrs_gtest,
+                        Combine(ValuesIn(matrix_sizeA_range),
+                                ValuesIn(matrix_sizeA_range),
+                                ValuesIn(transpose)));

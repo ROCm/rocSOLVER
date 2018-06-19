@@ -46,6 +46,10 @@ void getf2_err_res_check(T max_error, rocblas_int M, rocblas_int N,
                          T forward_tolerance, T eps);
 
 template <typename T>
+void getrs_err_res_check(T max_error, rocblas_int M, rocblas_int nhrs,
+                         T forward_tolerance, T eps);
+
+template <typename T>
 void getrf_err_res_check(T max_error, rocblas_int M, rocblas_int N,
                          T forward_tolerance, T eps);
 
