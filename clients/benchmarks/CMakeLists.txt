@@ -39,6 +39,8 @@ set( rocsolver_benchmark_common
 add_executable( rocsolver-bench client.cpp ${rocsolver_benchmark_common} )
 target_compile_features( rocsolver-bench PRIVATE cxx_static_assert cxx_nullptr cxx_auto_type )
 
+rocm_clang_tidy_check(rocsolver-bench)
+
 if( BUILD_WITH_TENSILE )
     target_compile_definitions( rocsolver-bench PRIVATE BUILD_WITH_TENSILE=1 )
 else()
