@@ -14,16 +14,14 @@
  * ===========================================================================
  */
 
-extern "C" rocblas_status rocsolver_sgetrf(rocsolver_handle handle,
-                                           rocsolver_int m, rocsolver_int n,
-                                           float *A, rocsolver_int lda,
-                                           rocsolver_int *ipiv) {
+extern "C" ROCSOLVER_EXPORT rocblas_status
+rocsolver_sgetrf(rocsolver_handle handle, rocsolver_int m, rocsolver_int n,
+                 float *A, rocsolver_int lda, rocsolver_int *ipiv) {
   return rocsolver_getrf_template<float>(handle, m, n, A, lda, ipiv);
 }
 
-extern "C" rocblas_status rocsolver_dgetrf(rocsolver_handle handle,
-                                           rocsolver_int m, rocsolver_int n,
-                                           double *A, rocsolver_int lda,
-                                           rocsolver_int *ipiv) {
+extern "C" ROCSOLVER_EXPORT rocblas_status
+rocsolver_dgetrf(rocsolver_handle handle, rocsolver_int m, rocsolver_int n,
+                 double *A, rocsolver_int lda, rocsolver_int *ipiv) {
   return rocsolver_getrf_template<double>(handle, m, n, A, lda, ipiv);
 }

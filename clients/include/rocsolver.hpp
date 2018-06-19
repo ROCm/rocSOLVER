@@ -59,4 +59,26 @@ inline rocblas_status rocsolver_getrf(rocblas_handle handle, rocblas_int m,
   return rocsolver_dgetrf(handle, m, n, A, lda, ipiv);
 }
 
+template <typename T>
+inline rocblas_status
+rocsolver_getrs(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, const T *A, rocblas_int lda,
+                const rocblas_int *ipiv, T *B, rocblas_int ldb);
+
+template <>
+inline rocblas_status
+rocsolver_getrs(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, const float *A, rocblas_int lda,
+                const rocblas_int *ipiv, float *B, rocblas_int ldb) {
+  return rocsolver_sgetrs(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, const double *A, rocblas_int lda,
+                const rocblas_int *ipiv, double *B, rocblas_int ldb) {
+  return rocsolver_dgetrs(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
 #endif /* ROCSOLVER_HPP */

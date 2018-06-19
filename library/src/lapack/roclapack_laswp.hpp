@@ -15,10 +15,11 @@
 using namespace std;
 
 template <typename T>
-__global__ void laswp_external(rocblas_int n, T *a, rocblas_int lda,
-                               rocblas_int exch1, rocblas_int *exch2) {
+__global__ void laswp_external(const rocblas_int n, T *a, const rocblas_int lda,
+                               const rocblas_int exch1,
+                               const rocblas_int *exch2) {
 
-  int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+  const int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
   if (tid < n) {
     const T orig = a[exch1 + lda * tid];
     a[exch1 + lda * tid] = a[(*exch2 - 1) + lda * tid];
@@ -74,7 +75,7 @@ __global__ void laswp_external(rocblas_int n, T *a, rocblas_int lda,
 template <typename T>
 void roclapack_laswp_template(rocblas_handle handle, rocblas_int n, T *A,
                               rocblas_int lda, rocblas_int k1, rocblas_int k2,
-                              rocblas_int *ipiv, rocblas_int incx) {
+                              const rocblas_int *ipiv, rocblas_int incx) {
 
   if (n == 0) {
     // quick return
@@ -83,8 +84,8 @@ void roclapack_laswp_template(rocblas_handle handle, rocblas_int n, T *A,
 
   rocblas_int start, end;
   if (incx < 0) {
-    start = k2;
-    end = k1;
+    start = k2 - 1;
+    end = k1 - 1;
   } else {
     start = k1;
     end = k2;
@@ -99,13 +100,14 @@ void roclapack_laswp_template(rocblas_handle handle, rocblas_int n, T *A,
    * of ipiv to the host and check there. this causes the current limitation
    * that incx == 1
    */
-  if (incx != 1) {
+  if (incx != 1 && incx != -1) {
     throw runtime_error("roclapack_laswp increment must be one.");
   }
 
-  vector<int> ipivHost(end - start);
-  hipMemcpy(ipivHost.data(), &ipiv[start], sizeof(rocblas_int) * (end - start),
-            hipMemcpyDeviceToHost);
+  vector<int> ipivHost(abs(end - start));
+  size_t startCpy = (incx < 0) ? end : start;
+  hipMemcpy(ipivHost.data(), &ipiv[startCpy],
+            sizeof(rocblas_int) * abs(end - start), hipMemcpyDeviceToHost);
 
   rocblas_int blocksPivot = (n - 1) / LASWP_BLOCKSIZE + 1;
   dim3 gridPivot(blocksPivot, 1, 1);
@@ -116,7 +118,7 @@ void roclapack_laswp_template(rocblas_handle handle, rocblas_int n, T *A,
 
   for (rocblas_int i = start; i != end; i += incx) {
 
-    if (ipivHost[i - start] == i + 1)
+    if (ipivHost[i - startCpy] == i + 1)
       continue;
 
     hipLaunchKernelGGL(laswp_external<T>, gridPivot, threads, 0, stream, n, A,

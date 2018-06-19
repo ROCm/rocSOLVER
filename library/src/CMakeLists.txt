@@ -33,6 +33,7 @@ set( rocsolver_lapack_source
   lapack/rocblas.cpp
   lapack/roclapack_getf2.cpp
   lapack/roclapack_getrf.cpp
+  lapack/roclapack_getrs.cpp
   lapack/roclapack_potf2.cpp
 )
 
@@ -40,14 +41,13 @@ prepend_path( ".." rocsolver_headers_public relative_rocsolver_headers_public )
 
 add_library( rocsolver
   ${rocsolver_lapack_source}
-  ${rocsolver_blas3_source}
-  ${rocsolver_blas2_source}
-  ${rocsolver_blas1_source}
   ${relative_rocsolver_headers_public}
   ${rocsolver_auxiliary_source}
 )
 
 add_library( roc::rocsolver ALIAS rocsolver )
+
+rocm_clang_tidy_check(rocsolver)
 
 target_link_libraries( rocsolver PRIVATE hip::hip_hcc hip::hip_device hcc::hccshared )
 target_link_libraries( rocsolver PRIVATE /opt/rocm/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})

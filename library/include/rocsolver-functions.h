@@ -263,6 +263,111 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrf(rocsolver_handle handle,
                                                    rocsolver_int lda,
                                                    rocsolver_int *ipiv);
 
+/*! \brief LAPACK API
+
+  \details
+  getrs solves a system of linear equations
+     A * X = B,  A**T * X = B,  or  A**H * X = B
+  with a general N-by-N matrix A using the LU factorization computed
+  by getrf.
+
+  @param[in]
+  trans
+           Specifies the form of the system of equations:
+           = 'N':  A * X = B     (No transpose)
+           = 'T':  A**T * X = B  (Transpose)
+           = 'C':  A**H * X = B  (Conjugate transpose)
+
+  @param[in]
+  n
+           The order of the matrix A.  N >= 0.
+
+  @param[in]
+  nrhs
+           The number of right hand sides, i.e., the number of columns
+           of the matrix B.  nrhs >= 0.
+
+  @param[in]
+  A
+           pointer storing matrix A on the GPU.
+
+  @param[in]
+  lda
+           The leading dimension of the array A.  lda >= max(1,n).
+
+  @param[in]
+  ipiv
+           The pivot indices from getrf; for 1<=i<=n, row i of the
+           matrix was interchanged with row ipiv(i). Assumes one-based indices!
+
+  @param[in,out]
+  B
+           pointer storing matrix B on the GPU., dimension (ldb,nrhs)
+           On entry, the right hand side matrix B.
+           On exit, the solution matrix X.
+
+  @param[in]
+  ldb
+           The leading dimension of the array B.  ldb >= max(1,n).
+
+   ********************************************************************/
+ROCSOLVER_EXPORT rocsolver_status rocsolver_sgetrs(
+    rocsolver_handle handle, rocsolver_operation trans, rocsolver_int n,
+    rocsolver_int nrhs, const float *A, rocsolver_int lda,
+    const rocsolver_int *ipiv, float *B, rocsolver_int ldb);
+
+/*! \brief LAPACK API
+
+  \details
+  getrs solves a system of linear equations
+     A * X = B,  A**T * X = B,  or  A**H * X = B
+  with a general N-by-N matrix A using the LU factorization computed
+  by getrf.
+
+  @param[in]
+  trans
+           Specifies the form of the system of equations:
+           = 'N':  A * X = B     (No transpose)
+           = 'T':  A**T * X = B  (Transpose)
+           = 'C':  A**H * X = B  (Conjugate transpose)
+
+  @param[in]
+  n
+           The order of the matrix A.  N >= 0.
+
+  @param[in]
+  nrhs
+           The number of right hand sides, i.e., the number of columns
+           of the matrix B.  nrhs >= 0.
+
+  @param[in]
+  A
+           pointer storing matrix A on the GPU.
+
+  @param[in]
+  lda
+           The leading dimension of the array A.  lda >= max(1,n).
+
+  @param[in]
+  ipiv
+           The pivot indices from getrf; for 1<=i<=n, row i of the
+           matrix was interchanged with row ipiv(i). Assumes one-based indices!
+
+  @param[in,out]
+  B
+           pointer storing matrix B on the GPU., dimension (ldb,nrhs)
+           On entry, the right hand side matrix B.
+           On exit, the solution matrix X.
+
+  @param[in]
+  ldb
+           The leading dimension of the array B.  ldb >= max(1,n).
+
+   ********************************************************************/
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrs(
+    rocsolver_handle handle, rocsolver_operation trans, rocsolver_int n,
+    rocsolver_int nrhs, const double *A, rocsolver_int lda,
+    const rocsolver_int *ipiv, double *B, rocsolver_int ldb);
 #ifdef __cplusplus
 }
 #endif

@@ -117,6 +117,63 @@ include( ROCMCreatePackage )
 include( ROCMInstallTargets )
 include( ROCMPackageConfigHelpers )
 include( ROCMInstallSymlinks )
+include( ROCMClangTidy )
+rocm_enable_clang_tidy(
+    CHECKS
+        *
+        -cert-env33-c
+        -android-cloexec-fopen
+        -cert-msc50-cpp
+        -clang-analyzer-alpha.core.CastToStruct
+        -clang-analyzer-optin.performance.Padding
+        -clang-diagnostic-deprecated-declarations
+        -clang-diagnostic-extern-c-compat
+        -clang-diagnostic-unused-command-line-argument
+        -cppcoreguidelines-pro-bounds-array-to-pointer-decay
+        -cppcoreguidelines-pro-bounds-constant-array-index
+        -cppcoreguidelines-pro-bounds-pointer-arithmetic
+        -cppcoreguidelines-pro-type-member-init
+        -cppcoreguidelines-pro-type-reinterpret-cast
+        -cppcoreguidelines-pro-type-union-access
+        -cppcoreguidelines-pro-type-vararg
+        -cppcoreguidelines-special-member-functions
+        -fuchsia-*
+        -google-readability-braces-around-statements
+        -google-readability-todo
+        -google-runtime-int
+        -google-runtime-references
+        -hicpp-braces-around-statements
+        -hicpp-explicit-conversions
+        -hicpp-no-array-decay
+        -hicpp-special-member-functions
+        -hicpp-use-override
+        # This check is broken
+        -hicpp-use-auto
+        -llvm-header-guard
+        -llvm-include-order
+        -misc-macro-parentheses
+        -modernize-use-auto
+        -modernize-use-override
+        -modernize-pass-by-value
+        -modernize-use-default-member-init
+        -modernize-use-transparent-functors
+        -performance-unnecessary-value-param
+        -readability-braces-around-statements
+        -readability-else-after-return
+        -readability-named-parameter
+        -*-explicit-constructor
+        -*-use-emplace
+        -*-use-equals-default
+    ERRORS
+        *
+        -readability-inconsistent-declaration-parameter-name
+    HEADER_FILTER
+        ".*hpp"
+    EXTRA_ARGS
+        -DROCSOLVER_USE_CLANG_TIDY
+    ANALYZE_TEMPORARY_DTORS ON
+
+)
 
 rocm_setup_version( VERSION 0.1.0 NO_GIT_TAG_VERSION )
 

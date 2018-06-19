@@ -51,6 +51,16 @@ void cgetf2_(int *m, int *n, rocblas_float_complex *A, int *lda, int *ipiv,
 void zgetf2_(int *m, int *n, rocblas_double_complex *A, int *lda, int *ipiv,
              int *info);
 
+void sgetrs_(char *trans, int *n, int *nrhs, float *A, int *lda, int *ipiv,
+             float *B, int *ldb, int *info);
+void dgetrs_(char *trans, int *n, int *nrhs, double *A, int *lda, int *ipiv,
+             double *B, int *ldb, int *info);
+void cgetrs_(char *trans, int *n, int *nrhs, rocblas_float_complex *A, int *lda,
+             int *ipiv, rocblas_float_complex *B, int *ldb, int *info);
+void zgetrs_(char *trans, int *n, int *nrhs, rocblas_double_complex *A,
+             int *lda, int *ipiv, rocblas_double_complex *B, int *ldb,
+             int *info);
+
 #ifdef __cplusplus
 }
 #endif
@@ -741,5 +751,45 @@ rocblas_int cblas_potrf<rocblas_double_complex>(char uplo, rocblas_int m,
                                                 rocblas_int lda) {
   rocblas_int info;
   zpotrf_(&uplo, &m, A, &lda, &info);
+  return info;
+}
+
+// getrs
+template <>
+rocblas_int cblas_getrs<float>(char trans, rocblas_int n, rocblas_int nrhs,
+                               float *A, rocblas_int lda, rocblas_int *ipiv,
+                               float *B, rocblas_int ldb) {
+  rocblas_int info;
+  sgetrs_(&trans, &n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
+  return info;
+}
+
+template <>
+rocblas_int cblas_getrs<double>(char trans, rocblas_int n, rocblas_int nrhs,
+                                double *A, rocblas_int lda, rocblas_int *ipiv,
+                                double *B, rocblas_int ldb) {
+  rocblas_int info;
+  dgetrs_(&trans, &n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
+  return info;
+}
+
+template <>
+rocblas_int
+cblas_getrs<rocblas_float_complex>(char trans, rocblas_int n, rocblas_int nrhs,
+                                   rocblas_float_complex *A, rocblas_int lda,
+                                   rocblas_int *ipiv, rocblas_float_complex *B,
+                                   rocblas_int ldb) {
+  rocblas_int info;
+  cgetrs_(&trans, &n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
+  return info;
+}
+
+template <>
+rocblas_int cblas_getrs<rocblas_double_complex>(
+    char trans, rocblas_int n, rocblas_int nrhs, rocblas_double_complex *A,
+    rocblas_int lda, rocblas_int *ipiv, rocblas_double_complex *B,
+    rocblas_int ldb) {
+  rocblas_int info;
+  zgetrs_(&trans, &n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
   return info;
 }

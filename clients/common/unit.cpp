@@ -183,3 +183,19 @@ void getrf_err_res_check(double max_error, rocblas_int M, rocblas_int N,
   ASSERT_LE(max_error, forward_tolerance * eps);
 #endif
 }
+
+template <>
+void getrs_err_res_check(float max_error, rocblas_int M, rocblas_int nhrs,
+                         float forward_tolerance, float eps) {
+#ifdef GOOGLE_TEST
+  ASSERT_LE(max_error, forward_tolerance * eps);
+#endif
+}
+
+template <>
+void getrs_err_res_check(double max_error, rocblas_int M, rocblas_int nhrs,
+                         double forward_tolerance, double eps) {
+#ifdef GOOGLE_TEST
+  ASSERT_LE(max_error, forward_tolerance * eps);
+#endif
+}

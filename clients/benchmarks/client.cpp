@@ -8,6 +8,7 @@
 
 #include "testing_getf2.hpp"
 #include "testing_getrf.hpp"
+#include "testing_getrs.hpp"
 #include "testing_potf2.hpp"
 #include "utility.h"
 
@@ -99,7 +100,7 @@ int main(int argc, char *argv[]) {
               
         ("function,f",
          po::value<std::string>(&function)->default_value("potf2"),
-         "LAPACK function to test. Options: potf2, getf2, getrf")
+         "LAPACK function to test. Options: potf2, getf2, getrf, getrs")
         
         ("precision,r", 
          po::value<char>(&precision)->default_value('s'), "Options: h,s,d,c,z")
@@ -191,6 +192,11 @@ int main(int argc, char *argv[]) {
       testing_getrf<float>(argus);
     else if (precision == 'd')
       testing_getrf<double>(argus);
+  } else if (function == "getrs") {
+    if (precision == 's')
+      testing_getrs<float>(argus);
+    else if (precision == 'd')
+      testing_getrs<double>(argus);
   } else {
     printf("Invalid value for --function \n");
     return -1;
