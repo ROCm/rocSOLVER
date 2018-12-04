@@ -22,7 +22,7 @@ typedef rocblas_fill rocsolver_fill;
 typedef rocblas_diagonal rocsolver_diagonal;
 typedef rocblas_side rocsolver_side;
 typedef rocblas_status rocsolver_status;
-typedef rocblas_precision rocsolver_precision;
+typedef rocblas_datatype rocsolver_precision;
 typedef rocblas_layer_mode rocsolver_layer_mode;
 
 #endif
