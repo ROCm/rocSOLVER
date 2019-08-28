@@ -200,7 +200,8 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   find_package( hip REQUIRED CONFIG PATHS /opt/rocm )
 endif( )
 
-find_package( rocblas REQUIRED CONFIG PATHS /opt/rocm )
+#find_package( rocblas REQUIRED CONFIG PATHS /opt/rocm )
+find_package( rocblas REQUIRED CONFIG PATHS ~/WORKSPACE/rocBLAS/build/release/rocblas-install/lib/cmake/ )
 include_directories( ${rocblas_INCLUDE_DIR} )
 
 # CMake list of machine targets

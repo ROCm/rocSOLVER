@@ -14,7 +14,7 @@
 #include <rocblas.hpp>
 
 #include "ideal_sizes.hpp"
-#include "roclapack_laswp.hpp"
+#include "../auxiliary/rocauxiliary_laswp.hpp"
 
 #define GETRS_INPONE 0
 
