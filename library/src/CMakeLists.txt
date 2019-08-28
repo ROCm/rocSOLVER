@@ -49,7 +49,8 @@ add_library( roc::rocsolver ALIAS rocsolver )
 
 rocm_clang_tidy_check(rocsolver)
 
-target_link_libraries( rocsolver PRIVATE hip::hip_hcc hip::hip_device hcc::hccshared )
+#target_link_libraries( rocsolver PRIVATE hip::hip_hcc hip::hip_device hcc::hccshared )
+target_link_libraries( rocsolver PRIVATE hip::hip_hcc hcc::hccshared hsa )
 target_link_libraries( rocsolver PRIVATE /opt/rocm/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
 
 # Test for specific compiler features if cmake version is recent enough
