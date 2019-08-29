@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright 2016 Advanced Micro Devices, Inc.
+# Copyright 2016-2019 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # The following helper functions wrap common cmake functions.  They are
@@ -13,13 +13,16 @@
 # ########################################################################
 function( target_compile_features target_name )
   # With Cmake v3.5, hipcc (with nvcc backend) does not work with target_compile_features
-  # Turn on -std=c++11 manually
+  # Turn on -std=c++14 manually
   if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
-    set_target_properties( ${target_name} PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON )
+    set_target_properties( ${target_name} PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
   else( )
     _target_compile_features( ${target_name} ${ARGN} )
   endif( )
 endfunction( )
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
 # ########################################################################
 # target_link_libraries() override
@@ -130,18 +133,18 @@ endif( )
 set( CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "\${CPACK_PACKAGING_INSTALL_PREFIX}" "\${CPACK_PACKAGING_INSTALL_PREFIX}/include" "\${CPACK_PACKAGING_INSTALL_PREFIX}/lib" )
 
 # Give rocsolver compiled for CUDA backend a different name
-if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
+if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" OR CXX_VERSION_STRING MATCHES "clang" )
     set( package_name rocsolver )
 else( )
     set( package_name rocsolver-alt )
 endif( )
 
-set( ROCSOLVER_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file" )
+set( ROCBLAS_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file" )
 
 rocm_create_package(
     NAME ${package_name}
     DESCRIPTION "Radeon Open Compute SOLVER library"
-    MAINTAINER "Johannes M Dieterich <Johannes.Dieterich@amd.com>"
+    MAINTAINER "Kent Knox <kent.knox@amd.com>"
     LDCONFIG
-    LDCONFIG_DIR ${ROCSOLVER_CONFIG_DIR}
+    LDCONFIG_DIR ${ROCBLAS_CONFIG_DIR}
 )

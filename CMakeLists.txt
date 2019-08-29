@@ -5,6 +5,11 @@
 # The ROCm platform requires Ubuntu 16.04 or Fedora 24, which has cmake 3.5
 cmake_minimum_required( VERSION 3.5 )
 
+# We use C++14 features, this will add compile option: -std=c++14
+set( CMAKE_CXX_STANDARD 14 )
+# Without this line, it will add -std=gnu++14 instead, which has some issues.
+set( CMAKE_CXX_EXTENSIONS OFF )
+
 # Consider removing this in the future
 # This should appear before the project command, because it does not use FORCE
 if( WIN32 )
@@ -30,6 +35,9 @@ endif()
 
 project( rocsolver LANGUAGES CXX )
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 # ########################################################################
 # NOTE:  CUDA compiling path
 # ########################################################################
@@ -42,7 +50,7 @@ project( rocsolver LANGUAGES CXX )
 # 2.  You must add HIP_SOURCE_PROPERTY_FORMAT OBJ properties to .cpp files
 # to get HIP_ADD_LIBRARY to recognize the file
 # 3.  HIP_ADD_LIBRARY invokes a call to add_custom_command() to compile files,
-# and rocSOLVER does the same.  The order in which custom commands execute is
+# and rocBLAS does the same.  The order in which custom commands execute is
 # undefined, and sometimes a file is attempted to be compiled before it has
 # been generated.  The fix for this is to create 'PHONY' targets, which I
 # don't desire.
@@ -61,9 +69,21 @@ project( rocsolver LANGUAGES CXX )
 # Main
 # ########################################################################
 
-if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
-  # For now, we assume hipcc compiler means to compile for CUDA backend
-  message( STATUS "HIPCC compiler detected; CUDA backend selected" )
+if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" OR CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
+  # Determine if CXX Compiler is hcc, hip-clang or nvcc
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} "--version" OUTPUT_VARIABLE CXX_OUTPUT
+                  OUTPUT_STRIP_TRAILING_WHITESPACE
+                  ERROR_STRIP_TRAILING_WHITESPACE)
+  string(REGEX MATCH "[A-Za-z]* ?clang version" TMP_CXX_VERSION ${CXX_OUTPUT})
+  string(REGEX MATCH "[A-Za-z]+" CXX_VERSION_STRING ${TMP_CXX_VERSION})
+endif()
+
+if( CXX_VERSION_STRING MATCHES "clang" )
+  message( STATUS "Use hip-clang to build for amdgpu backend" )
+# set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xclang -fallow-half-arguments-and-returns" )
+  set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__HIP_HCC_COMPAT_MODE__=1" )
+elseif( CXX_VERSION_STRING MATCHES "nvcc" )
+  message( STATUS "HIPCC nvcc compiler detected; CUDA backend selected" )
 
   set( CMAKE_C_COMPILE_OPTIONS_PIC "-Xcompiler ${CMAKE_C_COMPILE_OPTIONS_PIC}" )
   set( CMAKE_CXX_COMPILE_OPTIONS_PIC "-Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_PIC}" )
@@ -79,8 +99,9 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
   set( CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY "-Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}" )
   set( CMAKE_C_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN "-Xcompiler ${CMAKE_C_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN}" )
   set( CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN "-Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN}" )
-elseif( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
+elseif( CXX_VERSION_STRING MATCHES "HCC" )
   message( STATUS "HCC compiler set; ROCm backend selected [ CXX=/opt/rocm/bin/hcc cmake ... ]" )
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -hc")
 endif( )
 
 # This finds the rocm-cmake project, and installs it if not found
@@ -117,65 +138,10 @@ include( ROCMCreatePackage )
 include( ROCMInstallTargets )
 include( ROCMPackageConfigHelpers )
 include( ROCMInstallSymlinks )
-include( ROCMClangTidy )
-rocm_enable_clang_tidy(
-    CHECKS
-        *
-        -cert-env33-c
-        -android-cloexec-fopen
-        -cert-msc50-cpp
-        -clang-analyzer-alpha.core.CastToStruct
-        -clang-analyzer-optin.performance.Padding
-        -clang-diagnostic-deprecated-declarations
-        -clang-diagnostic-extern-c-compat
-        -clang-diagnostic-unused-command-line-argument
-        -cppcoreguidelines-pro-bounds-array-to-pointer-decay
-        -cppcoreguidelines-pro-bounds-constant-array-index
-        -cppcoreguidelines-pro-bounds-pointer-arithmetic
-        -cppcoreguidelines-pro-type-member-init
-        -cppcoreguidelines-pro-type-reinterpret-cast
-        -cppcoreguidelines-pro-type-union-access
-        -cppcoreguidelines-pro-type-vararg
-        -cppcoreguidelines-special-member-functions
-        -fuchsia-*
-        -google-readability-braces-around-statements
-        -google-readability-todo
-        -google-runtime-int
-        -google-runtime-references
-        -hicpp-braces-around-statements
-        -hicpp-explicit-conversions
-        -hicpp-no-array-decay
-        -hicpp-special-member-functions
-        -hicpp-use-override
-        # This check is broken
-        -hicpp-use-auto
-        -llvm-header-guard
-        -llvm-include-order
-        -misc-macro-parentheses
-        -modernize-use-auto
-        -modernize-use-override
-        -modernize-pass-by-value
-        -modernize-use-default-member-init
-        -modernize-use-transparent-functors
-        -performance-unnecessary-value-param
-        -readability-braces-around-statements
-        -readability-else-after-return
-        -readability-named-parameter
-        -*-explicit-constructor
-        -*-use-emplace
-        -*-use-equals-default
-    ERRORS
-        *
-        -readability-inconsistent-declaration-parameter-name
-    HEADER_FILTER
-        ".*hpp"
-    EXTRA_ARGS
-        -DROCSOLVER_USE_CLANG_TIDY
-    ANALYZE_TEMPORARY_DTORS ON
 
-)
-
-rocm_setup_version( VERSION 0.1.0 NO_GIT_TAG_VERSION )
+# Versioning via rocm-cmake
+set ( VERSION_STRING "2.7.0" )
+rocm_setup_version( VERSION ${VERSION_STRING} )
 
 # Append our library helper cmake path and the cmake path for hip (for convenience)
 # Users may override HIP path by specifying their own in CMAKE_MODULE_PATH
@@ -200,11 +166,8 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   find_package( hip REQUIRED CONFIG PATHS /opt/rocm )
 endif( )
 
-find_package( rocblas REQUIRED CONFIG PATHS /opt/rocm )
-include_directories( ${rocblas_INCLUDE_DIR} )
-
 # CMake list of machine targets
-set( AMDGPU_TARGETS gfx803;gfx900 CACHE STRING "List of specific machine types for library to target" )
+set( AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific machine types for library to target" )
 
 add_subdirectory( library )
 

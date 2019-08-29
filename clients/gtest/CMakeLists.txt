@@ -2,6 +2,10 @@
 # Copyright 2016 Advanced Micro Devices, Inc.
 # ########################################################################
 
+# For debugging, uncomment this
+# set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g -O0" )
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+
 # set( Boost_DEBUG ON )
 set( Boost_USE_MULTITHREADED ON )
 set( Boost_DETAILED_FAILURE_MSG ON )
@@ -53,9 +57,7 @@ set( rocsolver_benchmark_common
     )
 
 add_executable( rocsolver-test ${roclapack_test_source} ${rocsolver_test_source} ${rocsolver_benchmark_common} )
-target_compile_features( rocsolver-test PRIVATE cxx_static_assert cxx_nullptr cxx_auto_type )
-
-rocm_clang_tidy_check(rocsolver-test)
+#target_compile_features( rocsolver-test PRIVATE cxx_static_assert cxx_nullptr cxx_auto_type )
 
 target_compile_definitions( rocsolver-test PRIVATE BUILD_WITH_TENSILE=0 GOOGLE_TEST )
 
@@ -65,16 +67,45 @@ target_include_directories( rocsolver-test
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
 )
 
-# External header includes included as system files
-target_include_directories( rocsolver-test
-  SYSTEM PRIVATE
-    $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${GTEST_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
-    )
 
-target_link_libraries( rocsolver-test PRIVATE ${GTEST_LIBRARIES} ${Boost_LIBRARIES} cblas lapack roc::rocsolver Threads::Threads )
+#set( BLIS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/build/deps/blis/include/blis )
+#set( BLIS_LIBRARY ${CMAKE_SOURCE_DIR}/build/deps/blis/lib/libblis.so )
+
+if( EXISTS /etc/redhat-release)
+    set( OPENMP_INCLUDE_DIR /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/include )
+    set( OPENMP_LIBRARY /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/libgomp.so ) 
+    set( CLANG_INCLUDE_DIR /opt/rocm/hcc/lib/clang/9.0.0/include ) 
+
+    # External header includes included as system files
+    target_include_directories( rocsolver-test
+      SYSTEM PRIVATE
+        $<BUILD_INTERFACE:${CLANG_INCLUDE_DIR}> 
+#        $<BUILD_INTERFACE:${BLIS_INCLUDE_DIR}>
+        $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${HCC_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${GTEST_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${OPENMP_INCLUDE_DIR}> 
+        )
+
+    target_link_libraries( rocsolver-test PRIVATE ${GTEST_LIBRARIES} ${Boost_LIBRARIES} ${OPENMP_LIBRARY} cblas lapack roc::rocsolver )
+
+else()
+    # External header includes included as system files
+    target_include_directories( rocsolver-test
+      SYSTEM PRIVATE
+        $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${HCC_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${GTEST_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
+#        $<BUILD_INTERFACE:${BLIS_INCLUDE_DIR}>
+        )
+
+    target_link_libraries( rocsolver-test PRIVATE ${GTEST_LIBRARIES} ${Boost_LIBRARIES} cblas lapack roc::rocsolver )
+endif()
+
 target_link_libraries( rocsolver-test PRIVATE /opt/rocm/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
 
 get_target_property( HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE )
@@ -96,10 +127,14 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   # Remove following when hcc is fixed; hcc emits following spurious warning ROCm v1.6.1
   # "clang-5.0: warning: argument unused during compilation: '-isystem /opt/rocm/include'"
   target_compile_options( rocsolver-test PRIVATE -Wno-unused-command-line-argument -mf16c )
+  target_include_directories( rocsolver-test PRIVATE /opt/rocm/hsa/include)
+elseif( CMAKE_COMPILER_IS_GNUCXX OR CXX_VERSION_STRING MATCHES "clang" )
+  # GCC or hip-clang needs specific flag to turn on f16c intrinsics
+  target_compile_options( rocsolver-solver PRIVATE -mf16c )
+endif( )
 
-elseif( CMAKE_COMPILER_IS_GNUCXX )
-  # GCC needs specific flag to turn on f16c intrinsics
-  target_compile_options( rocsolver-test PRIVATE -mf16c )
+if( CXX_VERSION_STRING MATCHES "clang" )
+  target_link_libraries( rocsolver-test PRIVATE -lpthread -lm )
 endif( )
 
 set_target_properties( rocsolver-test PROPERTIES CXX_EXTENSIONS NO )

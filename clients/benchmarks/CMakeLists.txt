@@ -8,6 +8,12 @@ set( Boost_DETAILED_FAILURE_MSG ON )
 set( Boost_ADDITIONAL_VERSIONS 1.65.1 1.65 )
 set( Boost_USE_STATIC_LIBS OFF )
 
+if(EXISTS /etc/redhat-release)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread")
+endif()
+
 find_package( Boost COMPONENTS program_options )
 
 if( NOT Boost_FOUND )
@@ -19,6 +25,9 @@ if( NOT Boost_FOUND )
     message( FATAL_ERROR "boost is a required dependency and is not found;  try adding boost path to CMAKE_PREFIX_PATH" )
   endif( )
 endif( )
+
+set( THREADS_PREFER_PTHREAD_FLAG ON )
+find_package( Threads REQUIRED )
 
 # Linking lapack library requires fortran flags
 enable_language( Fortran )
@@ -39,7 +48,6 @@ set( rocsolver_benchmark_common
 add_executable( rocsolver-bench client.cpp ${rocsolver_benchmark_common} )
 target_compile_features( rocsolver-bench PRIVATE cxx_static_assert cxx_nullptr cxx_auto_type )
 
-rocm_clang_tidy_check(rocsolver-bench)
 
 if( BUILD_WITH_TENSILE )
     target_compile_definitions( rocsolver-bench PRIVATE BUILD_WITH_TENSILE=1 )
@@ -53,16 +61,44 @@ target_include_directories( rocsolver-bench
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
 )
 
-# External header includes included as system files
-target_include_directories( rocsolver-bench
-  SYSTEM PRIVATE
-    $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
-    )
+#set( BLIS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/build/deps/blis/include/blis )
+#set( BLIS_LIBRARY ${CMAKE_SOURCE_DIR}/build/deps/blis/lib/libblis.so )
 
-target_link_libraries( rocsolver-bench PRIVATE ${Boost_LIBRARIES} cblas lapack roc::rocsolver )
+if( EXISTS /etc/redhat-release)
+    set( OPENMP_INCLUDE_DIR /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/include )
+    set( OPENMP_LIBRARY /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/libgomp.so ) 
+    set( CLANG_INCLUDE_DIR /opt/rocm/hcc/lib/clang/9.0.0/include ) 
+
+    # External header includes included as system files
+    target_include_directories( rocsolver-bench
+      SYSTEM PRIVATE
+        $<BUILD_INTERFACE:${CLANG_INCLUDE_DIR}> 
+#        $<BUILD_INTERFACE:${BLIS_INCLUDE_DIR}>
+        $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${HCC_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${OPENMP_INCLUDE_DIR}> 
+        )
+
+    target_link_libraries( rocsolver-bench PRIVATE ${Boost_LIBRARIES} ${OPENMP_LIBRARY} cblas lapack roc::rocsolver )
+
+else()
+    # External header includes included as system files
+    target_include_directories( rocsolver-bench
+      SYSTEM PRIVATE
+        $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${HCC_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
+#        $<BUILD_INTERFACE:${BLIS_INCLUDE_DIR}>
+        )
+
+    target_link_libraries( rocsolver-bench PRIVATE ${Boost_LIBRARIES} cblas lapack roc::rocsolver )
+endif()
+
 target_link_libraries( rocsolver-bench PRIVATE /opt/rocm/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
+
 
 get_target_property( HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE )
 
@@ -83,9 +119,9 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   # Remove following when hcc is fixed; hcc emits following spurious warning ROCm v1.6.1
   # "clang-5.0: warning: argument unused during compilation: '-isystem /opt/rocm/include'"
   target_compile_options( rocsolver-bench PRIVATE -Wno-unused-command-line-argument -mf16c )
-
-elseif( CMAKE_COMPILER_IS_GNUCXX )
-  # GCC needs specific flags to turn on f16c intrinsics
+  target_include_directories( rocsolver-bench PRIVATE /opt/rocm/hsa/include)
+elseif( CMAKE_COMPILER_IS_GNUCXX OR CXX_VERSION_STRING MATCHES "clang")
+  # GCC or hip-clang needs specific flags to turn on f16c intrinsics
   target_compile_options( rocsolver-bench PRIVATE -mf16c )
 endif( )
 
