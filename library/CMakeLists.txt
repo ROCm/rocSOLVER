@@ -144,7 +144,7 @@ set( ROCBLAS_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBD
 rocm_create_package(
     NAME ${package_name}
     DESCRIPTION "Radeon Open Compute SOLVER library"
-    MAINTAINER "Kent Knox <kent.knox@amd.com>"
+    MAINTAINER "RocSOLVER maintainer <rocsolver-maintainer@amd.com>"
     LDCONFIG
     LDCONFIG_DIR ${ROCBLAS_CONFIG_DIR}
 )
