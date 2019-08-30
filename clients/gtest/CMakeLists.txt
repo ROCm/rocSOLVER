@@ -130,7 +130,7 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   target_include_directories( rocsolver-test PRIVATE /opt/rocm/hsa/include)
 elseif( CMAKE_COMPILER_IS_GNUCXX OR CXX_VERSION_STRING MATCHES "clang" )
   # GCC or hip-clang needs specific flag to turn on f16c intrinsics
-  target_compile_options( rocsolver-solver PRIVATE -mf16c )
+  target_compile_options( rocsolver-test PRIVATE -mf16c )
 endif( )
 
 if( CXX_VERSION_STRING MATCHES "clang" )
