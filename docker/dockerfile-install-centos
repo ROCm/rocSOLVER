@@ -4,14 +4,14 @@ ARG base_image
 FROM ${base_image}
 LABEL maintainer="rocsolver.maintainer@amd.com"
 
-# Copy the debian package of rocblas into the container from host
-COPY *.deb /tmp/
+# Copy the rpm package of rocblas into the container from host
+COPY *.rpm /tmp/
 
-# Install the debian package, and print out contents of expected changed locations
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --allow-unauthenticated -y \
-    /tmp/rocblas-*.deb \
-  && rm -f /tmp/*.deb \
-  && apt-get clean \
+# Install the rpm package, and print out contents of expected changed locations
+RUN yum -y update && yum install -y\
+    /tmp/rocblas-*.rpm \
+  && rm -f /tmp/*.rpm \
+  && yum -y clean all \
   && rm -rf /var/lib/apt/lists/* \
   && printf "ls -la /etc/ld.so.conf.d/\n" && ls -la /etc/ld.so.conf.d/ \
   && printf "ls -la /opt/rocm/include\n" && ls -la /opt/rocm/include \
