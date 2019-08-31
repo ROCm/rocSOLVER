@@ -23,16 +23,25 @@ endfunction( )
 # package_targets is used as a list of install target
 set( package_targets rocsolver )
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 set( rocsolver_auxiliary_source
-  include/definitions.h
-  include/rocsolver_unique_ptr.hpp
+  auxiliary/rocauxiliary_laswp.cpp
+)
+
+set( rocsolver_common_source
+  common/helpers.cpp
+  common/rocblas.cpp
 )
 
 set( rocsolver_lapack_source
-  lapack/helpers.cpp
-  lapack/rocblas.cpp
-  lapack/roclapack_getf2.cpp
   lapack/roclapack_getrf.cpp
+  lapack/roclapack_getrf_batched.cpp
+  lapack/roclapack_getrf_strided_batched.cpp
+  lapack/roclapack_getf2.cpp
+  lapack/roclapack_getf2_batched.cpp
+  lapack/roclapack_getf2_strided_batched.cpp
   lapack/roclapack_getrs.cpp
   lapack/roclapack_potf2.cpp
 )
@@ -43,25 +52,26 @@ add_library( rocsolver
   ${rocsolver_lapack_source}
   ${relative_rocsolver_headers_public}
   ${rocsolver_auxiliary_source}
+  ${rocsolver_common_source}  
 )
 
 add_library( roc::rocsolver ALIAS rocsolver )
 
-rocm_clang_tidy_check(rocsolver)
-
+# Remove this check when we no longer build with older rocm stack(ie < 1.8.2)
+if(TARGET hip::device)
+target_link_libraries( rocsolver PRIVATE hip::device )
+else()
 target_link_libraries( rocsolver PRIVATE hip::hip_hcc hip::hip_device hcc::hccshared )
-target_link_libraries( rocsolver PRIVATE /opt/rocm/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
+endif()
 
-# Test for specific compiler features if cmake version is recent enough
-target_compile_features( rocsolver PRIVATE cxx_static_assert cxx_nullptr cxx_auto_type )
+set_target_properties( rocsolver PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
 
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   # Remove following when hcc is fixed; hcc emits following spurious warning ROCm v1.6.1
   # "clang-5.0: warning: argument unused during compilation: '-isystem /opt/rocm/include'"
-  target_compile_options( rocsolver PRIVATE -Wno-unused-command-line-argument )
-
+  target_compile_options( rocsolver PRIVATE -Wno-unused-command-line-argument -fno-gpu-rdc )
   foreach( target ${AMDGPU_TARGETS} )
-    target_link_libraries( rocsolver PRIVATE --amdgpu-target=${target} )
+    target_compile_options( rocsolver PRIVATE --amdgpu-target=${target} )
   endforeach( )
 endif( )
 

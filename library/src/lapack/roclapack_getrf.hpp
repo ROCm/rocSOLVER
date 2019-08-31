@@ -12,11 +12,13 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
+#include "definitions.h"
+#include "helpers.h"
 #include "ideal_sizes.hpp"
-#include "roclapack_getf2.hpp"
-#include "../auxiliary/rocauxiliary_laswp.hpp"
 #include "common_device.hpp"
+#include "roclapack_getf2.hpp"
 #include "getrf_device.hpp"
+#include "../auxiliary/rocauxiliary_laswp.hpp"
 
 template <typename T, typename U>
 rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int m,

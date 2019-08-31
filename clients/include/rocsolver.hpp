@@ -24,39 +24,39 @@ inline rocblas_status rocsolver_potf2(rocblas_handle handle, rocblas_fill uplo,
 template <typename T>
 inline rocblas_status rocsolver_getf2(rocblas_handle handle, rocblas_int m,
                                       rocblas_int n, T *A, rocblas_int lda,
-                                      rocblas_int *ipiv);
+                                      rocblas_int *ipiv, rocblas_int *info);
 
 template <>
 inline rocblas_status rocsolver_getf2(rocblas_handle handle, rocblas_int m,
                                       rocblas_int n, float *A, rocblas_int lda,
-                                      rocblas_int *ipiv) {
-  return rocsolver_sgetf2(handle, m, n, A, lda, ipiv);
+                                      rocblas_int *ipiv, rocblas_int *info) {
+  return rocsolver_sgetf2(handle, m, n, A, lda, ipiv, info);
 }
 
 template <>
 inline rocblas_status rocsolver_getf2(rocblas_handle handle, rocblas_int m,
                                       rocblas_int n, double *A, rocblas_int lda,
-                                      rocblas_int *ipiv) {
-  return rocsolver_dgetf2(handle, m, n, A, lda, ipiv);
+                                      rocblas_int *ipiv, rocblas_int *info) {
+  return rocsolver_dgetf2(handle, m, n, A, lda, ipiv, info);
 }
 
 template <typename T>
 inline rocblas_status rocsolver_getrf(rocblas_handle handle, rocblas_int m,
                                       rocblas_int n, T *A, rocblas_int lda,
-                                      rocblas_int *ipiv);
+                                      rocblas_int *ipiv, rocblas_int *info);
 
 template <>
 inline rocblas_status rocsolver_getrf(rocblas_handle handle, rocblas_int m,
                                       rocblas_int n, float *A, rocblas_int lda,
-                                      rocblas_int *ipiv) {
-  return rocsolver_sgetrf(handle, m, n, A, lda, ipiv);
+                                      rocblas_int *ipiv, rocblas_int *info) {
+  return rocsolver_sgetrf(handle, m, n, A, lda, ipiv, info);
 }
 
 template <>
 inline rocblas_status rocsolver_getrf(rocblas_handle handle, rocblas_int m,
                                       rocblas_int n, double *A, rocblas_int lda,
-                                      rocblas_int *ipiv) {
-  return rocsolver_dgetrf(handle, m, n, A, lda, ipiv);
+                                      rocblas_int *ipiv, rocblas_int *info) {
+  return rocsolver_dgetrf(handle, m, n, A, lda, ipiv, info);
 }
 
 template <typename T>

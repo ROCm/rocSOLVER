@@ -29,8 +29,8 @@ rocsolver_getrs_template(rocblas_handle handle, rocblas_operation trans,
 
   // check for possible input problems
   if (n < 0 || nrhs < 0 || lda < max(1, n) || ldb < max(1, n)) {
-    cout << "Invalid size " << n << " " << nrhs << " " << lda << " " << ldb
-         << endl;
+    std::cout << "Invalid size " << n << " " << nrhs << " " << lda << " " << ldb
+         << std::endl;
     return rocblas_status_invalid_size;
   }
 
@@ -52,7 +52,7 @@ rocsolver_getrs_template(rocblas_handle handle, rocblas_operation trans,
 
     // solve A * X = B
     // first apply row interchanges to the right hand sides
-    roclapack_laswp_template<T>(handle, nrhs, B, ldb, 1, n, ipiv, 1);
+    rocsolver_laswp_template<T>(handle, nrhs, B, 0, ldb, 0, 1, n, ipiv, 0, 0, 1, 1);
 
     // solve L*X - B, overwriting B with X
     rocblas_trsm<T>(handle, rocblas_side_left, rocblas_fill_lower,
@@ -77,7 +77,7 @@ rocsolver_getrs_template(rocblas_handle handle, rocblas_operation trans,
                     const_cast<T *>(A), lda, B, ldb);
 
     // apply row interchanges to the solution vectors
-    roclapack_laswp_template<T>(handle, nrhs, B, ldb, 1, n, ipiv, -1);
+    rocsolver_laswp_template<T>(handle, nrhs, B, 0, ldb, 0, 1, n, ipiv, 0, 0, -1, 1);
   }
 
   hipFree(inpsResGPU);

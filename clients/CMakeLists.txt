@@ -22,6 +22,15 @@ endif()
 # This project may compile dependencies for clients
 project( rocsolver-clients LANGUAGES CXX )
 
+if(EXISTS /etc/redhat-release)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread")
+endif()
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 
 include( build-options )
@@ -35,7 +44,8 @@ if( NOT TARGET rocsolver )
 endif( )
 
 # Hip headers required of all clients; clients use hip to allocate device memory
-find_package( hip REQUIRED CONFIG PATHS /opt/rocm )
+list( APPEND CMAKE_PREFIX_PATH /opt/rocm )
+find_package( hip REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH} )
 
 # Quietly look for CUDA, but if not found it's not an error
 # The presense of hip is not sufficient to determine if we want a rocm or cuda backend
