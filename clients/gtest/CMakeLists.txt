@@ -37,8 +37,7 @@ set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
 
 set(roclapack_test_source
-    getf2_gtest.cpp
-    getrf_gtest.cpp
+    getf2_getrf_gtest.cpp
     getrs_gtest.cpp
     potf2_gtest.cpp
     )
