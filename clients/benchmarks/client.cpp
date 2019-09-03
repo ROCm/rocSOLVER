@@ -7,6 +7,8 @@
 #include <stdio.h>
 
 #include "testing_getf2_getrf.hpp"
+#include "testing_getf2_getrf_batched.hpp"
+#include "testing_getf2_getrf_strided_batched.hpp"
 #include "testing_getrs.hpp"
 #include "testing_potf2.hpp"
 #include "utility.h"
@@ -73,7 +75,7 @@ int main(int argc, char *argv[]) {
 
         ("bsa",
          po::value<rocblas_int>(&argus.bsa)->default_value(1024*1024),
-         "Specific stride of strided_batched matrix B, is only applicable to strided batched"
+         "Specific stride of strided_batched matrix A, is only applicable to strided batched"
          "BLAS-2 and BLAS-3: second dimension * leading dimension.")
 
         ("bsb",
@@ -85,6 +87,11 @@ int main(int argc, char *argv[]) {
          po::value<rocblas_int>(&argus.bsc)->default_value(1024*1024),
          "Specific stride of strided_batched matrix B, is only applicable to strided batched"
          "BLAS-2 and BLAS-3: second dimension * leading dimension.")
+
+        ("bsp",
+         po::value<rocblas_int>(&argus.bsp)->default_value(1024),
+         "Specific stride of batched pivots vector Ipiv, is only applicable to batched and strided_batched"
+         "factorizations: min(first dimension, second dimension).")
 
         ("incx",
          po::value<rocblas_int>(&argus.incx)->default_value(1),
@@ -187,15 +194,39 @@ int main(int argc, char *argv[]) {
   } 
   else if (function == "getf2") {
     if (precision == 's')
-      testing_getf2_getrf<float>(argus,0);
+      testing_getf2_getrf<float,0>(argus);
     else if (precision == 'd')
-      testing_getf2_getrf<double>(argus,0);
+      testing_getf2_getrf<double,0>(argus);
+  }
+  else if (function == "getf2_batched") {
+    if (precision == 's')
+      testing_getf2_getrf_batched<float,0>(argus);
+    else if (precision == 'd')
+      testing_getf2_getrf_batched<double,0>(argus);
+  }
+  else if (function == "getf2_strided_batched") {
+    if (precision == 's')
+      testing_getf2_getrf_strided_batched<float,0>(argus);
+    else if (precision == 'd')
+      testing_getf2_getrf_strided_batched<double,0>(argus);
   } 
   else if (function == "getrf") {
     if (precision == 's')
-      testing_getf2_getrf<float>(argus,1);
+      testing_getf2_getrf<float,1>(argus);
     else if (precision == 'd')
-      testing_getf2_getrf<double>(argus,1);
+      testing_getf2_getrf<double,1>(argus);
+  } 
+  else if (function == "getrf_batched") {
+    if (precision == 's')
+      testing_getf2_getrf_batched<float,1>(argus);
+    else if (precision == 'd')
+      testing_getf2_getrf_batched<double,1>(argus);
+  } 
+  else if (function == "getrf_strided_batched") {
+    if (precision == 's')
+      testing_getf2_getrf_strided_batched<float,1>(argus);
+    else if (precision == 'd')
+      testing_getf2_getrf_strided_batched<double,1>(argus);
   } 
   else if (function == "getrs") {
     if (precision == 's')

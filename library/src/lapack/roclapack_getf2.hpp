@@ -20,6 +20,7 @@
 #include "../auxiliary/rocauxiliary_laswp.hpp"
 
 
+
 template <typename T, typename U>
 rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
@@ -59,8 +60,8 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
     T* M;
 
     //info=0 (starting with a nonsingular matrix)
-    hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count); 
-
+    hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count);
+    
     // **** BATCH IS EXECUTED IN A FOR-LOOP UNTIL BATCH-BLAS
     //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
     //      BE MADE TO THE CORRESPONDING TEMPLATE_FUNCTIONS ****

@@ -36,12 +36,12 @@ set( rocsolver_common_source
 )
 
 set( rocsolver_lapack_source
-  lapack/roclapack_getrf.cpp
-  lapack/roclapack_getrf_batched.cpp
-  lapack/roclapack_getrf_strided_batched.cpp
   lapack/roclapack_getf2.cpp
+  lapack/roclapack_getrf.cpp
   lapack/roclapack_getf2_batched.cpp
+  lapack/roclapack_getrf_batched.cpp
   lapack/roclapack_getf2_strided_batched.cpp
+  lapack/roclapack_getrf_strided_batched.cpp
   lapack/roclapack_getrs.cpp
   lapack/roclapack_potf2.cpp
 )

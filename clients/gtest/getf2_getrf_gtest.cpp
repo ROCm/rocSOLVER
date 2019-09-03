@@ -55,18 +55,18 @@ Arguments setup_arguments(getf2_getrf_tuple tup) {
   return arg;
 }
 
-class getf2_getrf_gtest : public ::TestWithParam<getf2_getrf_tuple> {
+class LUfact : public ::TestWithParam<getf2_getrf_tuple> {
 protected:
-  getf2_getrf_gtest() {}
-  virtual ~getf2_getrf_gtest() {}
+  LUfact() {}
+  virtual ~LUfact() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
 
-TEST_P(getf2_getrf_gtest, getf2_float) {
+TEST_P(LUfact, getf2_float) {
   Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf<float>(arg,0);
+  rocblas_status status = testing_getf2_getrf<float,0>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -80,10 +80,10 @@ TEST_P(getf2_getrf_gtest, getf2_float) {
   }
 }
 
-TEST_P(getf2_getrf_gtest, getf2_double) {
+TEST_P(LUfact, getf2_double) {
   Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf<double>(arg,0);
+  rocblas_status status = testing_getf2_getrf<double,0>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -97,10 +97,10 @@ TEST_P(getf2_getrf_gtest, getf2_double) {
   }
 }
 
-TEST_P(getf2_getrf_gtest, getrf_float) {
+TEST_P(LUfact, getrf_float) {
   Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf<float>(arg,1);
+  rocblas_status status = testing_getf2_getrf<float,1>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -114,10 +114,10 @@ TEST_P(getf2_getrf_gtest, getrf_float) {
   }
 }
 
-TEST_P(getf2_getrf_gtest, getrf_double) {
+TEST_P(LUfact, getrf_double) {
   Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf<double>(arg,1);
+  rocblas_status status = testing_getf2_getrf<double,1>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -132,10 +132,10 @@ TEST_P(getf2_getrf_gtest, getrf_double) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, getf2_getrf_gtest,
+INSTANTIATE_TEST_CASE_P(daily_lapack, LUfact,
                         Combine(ValuesIn(large_matrix_size_range),
                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, getf2_getrf_gtest,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, LUfact,
                         Combine(ValuesIn(matrix_size_range),
                                 ValuesIn(n_size_range)));

@@ -20,7 +20,6 @@ rocblas_status rocsolver_getf2_batched_impl(rocblas_handle handle, const rocblas
         return rocblas_status_invalid_size;
 
     rocblas_int strideA = 0;
-
     return rocsolver_getf2_template<T>(handle,m,n,
                                             A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
                                             lda, strideA,

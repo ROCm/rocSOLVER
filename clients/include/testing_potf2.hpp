@@ -86,7 +86,7 @@ template <typename T> rocblas_status testing_potf2(Arguments argus) {
   //  is SPD so we can use Cholesky to calculate L L^T = AAT.
 
   //  initialize full random matrix hA with all entries in [1, 10]
-  rocblas_init<T>(hA, M, M, lda);
+  rocblas_init<T>(hA.data(), M, M, lda);
 
   //  pad untouched area into zero
   for (int i = M; i < lda; i++) {

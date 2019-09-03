@@ -4,7 +4,7 @@
 #include <hip/hip_runtime.h>
 
 template <typename T, typename U>
-__global__ void getf2_check_singularity(U AA, const rocblas_int shiftA, const rocblas_int strideA, 
+inline __global__ void getf2_check_singularity(U AA, const rocblas_int shiftA, const rocblas_int strideA, 
                                         rocblas_int* ipivA, const rocblas_int shiftP, 
                                         const rocblas_int strideP, const rocblas_int j,
                                         const rocblas_int lda,
@@ -31,7 +31,7 @@ __global__ void getf2_check_singularity(U AA, const rocblas_int shiftA, const ro
 }
 
 
-__global__ void getrf_check_singularity(const rocblas_int n, const rocblas_int j, rocblas_int *ipivA, const rocblas_int shiftP, 
+inline __global__ void getrf_check_singularity(const rocblas_int n, const rocblas_int j, rocblas_int *ipivA, const rocblas_int shiftP, 
                                 const rocblas_int strideP, const rocblas_int *iinfo, rocblas_int *info) {
     int id = hipBlockIdx_y;
     
