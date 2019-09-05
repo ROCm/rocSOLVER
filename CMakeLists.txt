@@ -29,6 +29,18 @@ if( POLICY CMP0066 )
   cmake_policy( SET CMP0066 NEW )
 endif( )
 
+# Sets rocBLAS path environment variable if not defined
+if( NOT DEFINED ENV{ROCBLAS_PATH} )
+  set( ROCBLAS_PATH /opt/rocm/rocblas )
+else()
+  set( ROCBLAS_PATH $ENV{ROCBLAS_PATH} )
+endif()
+
+# Set rocblas directory, then find rocblas package. If not found, it will download from repo
+set( ROCBLAS_DIR ${ROCBLAS_PATH}/lib/cmake/rocblas )
+find_package( rocblas REQUIRED)
+
+
 if ( NOT DEFINED CMAKE_Fortran_COMPILER AND NOT DEFINED ENV{FC} )
   set( CMAKE_Fortran_COMPILER  "gfortran" )
 endif()
