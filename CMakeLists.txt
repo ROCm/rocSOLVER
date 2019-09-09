@@ -38,8 +38,17 @@ endif()
 
 # Set rocblas directory, then find rocblas package. If not found, it will download from repo
 set( ROCBLAS_DIR ${ROCBLAS_PATH}/lib/cmake/rocblas )
-find_package( rocblas REQUIRED)
-
+find_package( rocBLAS QUIET CONFIG PATHS /opt/rocm )
+if( NOT rocBLAS_FOUND )
+  include( ExternalProject )
+  ExternalProject_Add( rocBLAS
+    GIT_REPOSITORY  "https://github.com/RocmSoftwarePlatform/rocBLAS.git"
+    GIT_TAG         master
+    SOURCE_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/rocBLAS/build"
+    CMAKE_ARGS      "-DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc"
+    INSTALL_COMMAND "./install.sh -cdi -lasm_ci"
+   )
+endif()
 
 if ( NOT DEFINED CMAKE_Fortran_COMPILER AND NOT DEFINED ENV{FC} )
   set( CMAKE_Fortran_COMPILER  "gfortran" )
