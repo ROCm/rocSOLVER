@@ -52,7 +52,7 @@ void near_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
   }
 }
 
-template <>
+/*template <>
 void near_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
                         rocblas_float_complex *hCPU,
                         rocblas_float_complex *hGPU, float abs_error) {
@@ -82,4 +82,4 @@ void near_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
 #endif
     }
   }
-}
+}*/

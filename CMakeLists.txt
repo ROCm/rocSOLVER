@@ -166,6 +166,10 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   find_package( hip REQUIRED CONFIG PATHS /opt/rocm )
 endif( )
 
+find_package( rocblas REQUIRED CONFIG PATHS /opt/rocm )
+include_directories( ${rocblas_INCLUDE_DIR} )
+
+
 # CMake list of machine targets
 set( AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific machine types for library to target" )
 
