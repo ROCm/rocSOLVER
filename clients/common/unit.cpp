@@ -23,7 +23,7 @@
 // Do not put a wrapper over ASSERT_FLOAT_EQ, sincer assert exit the current
 // function NOT the test case a wrapper will cause the loop keep going
 
-template <>
+/*template <>
 void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
                         rocblas_half *hCPU, rocblas_half *hGPU) {
 #pragma unroll
@@ -37,7 +37,7 @@ void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
 #endif
     }
   }
-}
+}*/
 
 template <>
 void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
@@ -67,7 +67,7 @@ void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
   }
 }
 
-template <>
+/*template <>
 void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
                         rocblas_float_complex *hCPU,
                         rocblas_float_complex *hGPU) {
@@ -111,7 +111,7 @@ void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
 #endif
     }
   }
-}
+}*/
 
 /* ========================================Gtest Unit Check TRSM
  * ==================================================== */
