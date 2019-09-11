@@ -177,3 +177,5 @@ template <typename T> rocblas_status testing_potf2(Arguments argus) {
   }
   return rocblas_status_success;
 }
+
+#undef ERROR_EPS_MULTIPLIER 

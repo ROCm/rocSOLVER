@@ -3,6 +3,24 @@
 
 #include "rocsolver.h"
 
+//larfg
+
+template <typename T>
+inline rocblas_status rocsolver_larfg(rocblas_handle handle, rocblas_int n, T *alpha, T *x, 
+                                      rocblas_int incx, T *tau);
+
+template <>
+inline rocblas_status rocsolver_larfg(rocblas_handle handle, rocblas_int n, float *alpha, float *x, 
+                                      rocblas_int incx, float *tau) {
+  return rocsolver_slarfg(handle, n, alpha, x, incx, tau);
+}
+
+template <>
+inline rocblas_status rocsolver_larfg(rocblas_handle handle, rocblas_int n, double *alpha, double *x, 
+                                      rocblas_int incx, double *tau) {
+  return rocsolver_dlarfg(handle, n, alpha, x, incx, tau);
+}
+
 //potf2
 
 template <typename T>

@@ -82,6 +82,60 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlaswp(rocsolver_handle handle,
                                                    const rocsolver_int k2, 
                                                    const rocsolver_int *ipiv, 
                                                    const rocblas_int incx);
+
+/*! \brief AUXILIARY API
+
+    \details
+    LARFG generates an orthogonal Householder reflector H of order n, such that 
+
+    H * [alpha] = [beta]
+        [  x  ]   [  0 ]
+
+    where x is an n-1 vector and alpha and beta are scalars. Matrix H can be 
+    generated as
+    
+    H = I - tau * [1] * [1 v']
+                  [v]  
+
+    with v an n-1 vector and tau a scalar. 
+
+    @param[in]
+    handle          rocblas_handle
+    @param[in]
+    n               rocblas_int
+                    The order (size) of reflector H
+    @param[inout]
+    alpha           pointer to scalar on the GPU.
+                    on input it points to scalar alpha, 
+                    on output it is overwritten with beta
+    @param[inout]      
+    x               pointer to a vector on the GPU (size at leadst n-1).
+                    on input it is the vector x, 
+                    on output it is overwritten with vector v
+    @param[in]
+    incx            rocblas_int
+                    The increment between consecutive elements of x
+    @param[out]
+    tau             pointer to scalar tau
+
+    *************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_slarfg(rocsolver_handle handle, 
+                                                 const rocsolver_int n, 
+                                                 float *alpha,
+                                                 float *x, 
+                                                 const rocblas_int incx, 
+                                                 float *tau);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfg(rocsolver_handle handle, 
+                                                 const rocsolver_int n, 
+                                                 double *alpha,
+                                                 double *x, 
+                                                 const rocblas_int incx, 
+                                                 double *tau);
+
+
+
 /*
  * ===========================================================================
  *      LAPACK functions

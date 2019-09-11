@@ -17,9 +17,22 @@
 #include "ideal_sizes.hpp"
 #include "common_device.hpp"
 #include "roclapack_getf2.hpp"
-#include "getrf_device.hpp"
 #include "../auxiliary/rocauxiliary_laswp.hpp"
 
+inline __global__ void getrf_check_singularity(const rocblas_int n, const rocblas_int j, rocblas_int *ipivA, const rocblas_int shiftP,
+                                const rocblas_int strideP, const rocblas_int *iinfo, rocblas_int *info) {
+    int id = hipBlockIdx_y;
+
+    rocblas_int *ipiv = ipivA + id*strideP + shiftP;
+
+    if (info[id] == 0 && iinfo[id] > 0)
+        info[id] = iinfo[id] + j;
+
+    int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if (tid < n)
+        ipiv[tid] += j;
+}
 
 
 template <typename T, typename U>
@@ -39,6 +52,8 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
         //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
         T* AA[batch_count];
         hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
+    #else
+        T* AA = A;
     #endif
 
     //constants to use when calling rocablas functions
@@ -69,7 +84,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
     rocblas_int jb, sizePivot;
 
     //info=0 (starting with a nonsingular matrix)
-    hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count);
+    hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count,0);
 
     // **** BATCH IS EXECUTED IN A FOR-LOOP UNTIL BATCH-BLAS
     //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
@@ -78,7 +93,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
     for (int j = 0; j < dim; j += GETRF_GETF2_SWITCHSIZE) {
         // Factor diagonal and subdiagonal blocks 
         jb = min(dim - j, GETRF_GETF2_SWITCHSIZE);  //number of columns in the block
-        hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,iinfo,batch_count);
+        hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,iinfo,batch_count,0);
         rocsolver_getf2_template<T>(handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, ipiv, shiftP + j, strideP, iinfo, batch_count);
         
         // adjust pivot indices and check singularity
@@ -98,11 +113,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
 
             // compute block row of U
             for (int b=0;b<batch_count;++b) {
-                #ifdef batched
-                    M = AA[b] + shiftA;
-                #else
-                    M = A + b*strideA + shiftA;
-                #endif
+                M = load_ptr_batch<T>(AA,shiftA,b,strideA);
                 rocblas_trsm(handle, rocblas_side_left, rocblas_fill_lower, rocblas_operation_none,
                              rocblas_diagonal_unit, jb, (n - j - jb), oneInt,
                              (M + idx2D(j, j, lda)), lda, (M + idx2D(j, j + jb, lda)), lda);
@@ -111,11 +122,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
             // update trailing submatrix
             if (j + jb < m) {
                 for (int b=0;b<batch_count;++b) {
-                    #ifdef batched
-                        M = AA[b] + shiftA;
-                    #else
-                        M = A + b*strideA + shiftA;
-                    #endif
+                    M = load_ptr_batch<T>(AA,shiftA,b,strideA);
                     rocblas_gemm(handle, rocblas_operation_none, rocblas_operation_none,
                                  (m - j - jb), (n - j - jb), jb, minoneInt,
                                  (M + idx2D(j + jb, j, lda)), lda, (M + idx2D(j, j + jb, lda)),

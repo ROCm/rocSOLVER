@@ -11,6 +11,7 @@
 #include "testing_getf2_getrf_strided_batched.hpp"
 #include "testing_getrs.hpp"
 #include "testing_potf2.hpp"
+#include "testing_larfg.hpp"
 #include "utility.h"
 
 namespace po = boost::program_options;
@@ -233,6 +234,12 @@ int main(int argc, char *argv[]) {
       testing_getrs<float>(argus);
     else if (precision == 'd')
       testing_getrs<double>(argus);
+  } 
+  else if (function == "larfg") {
+    if (precision == 's')
+      testing_larfg<float>(argus);
+    else if (precision == 'd')
+      testing_larfg<double>(argus);
   } 
   else {
     printf("Invalid value for --function \n");

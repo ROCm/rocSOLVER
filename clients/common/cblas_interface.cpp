@@ -61,15 +61,36 @@ void zgetrs_(char *trans, int *n, int *nrhs, rocblas_double_complex *A,
              int *lda, int *ipiv, rocblas_double_complex *B, int *ldb,
              int *info);
 
+void slarfg_(int *n, float *alpha, float *x, int *incx, float *tau);
+void dlarfg_(int *n, double *alpha, double *x, int *incx, double *tau);
+
 #ifdef __cplusplus
 }
 #endif
 
 /*
  * ===========================================================================
+ *    Auxiliary LAPACK
+ * ===========================================================================
+ */
+
+template <>
+void cblas_larfg<float>(rocblas_int n, float *alpha, float *x, rocblas_int incx, float *tau) {
+    slarfg_(&n, alpha, x, &incx, tau);
+}
+
+template <>
+void cblas_larfg<double>(rocblas_int n, double *alpha, double *x, rocblas_int incx, double *tau) {
+    dlarfg_(&n, alpha, x, &incx, tau);
+}
+
+
+/*
+ * ===========================================================================
  *    level 1 BLAS
  * ===========================================================================
  */
+
 // scal
 template <>
 void cblas_scal<float>(rocblas_int n, const float alpha, float *x,
