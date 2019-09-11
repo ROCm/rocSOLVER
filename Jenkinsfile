@@ -33,6 +33,7 @@ rocSOLVERCI:
     def nodes = new dockerNodes(['gfx900 && ubuntu', 'gfx906 && ubuntu'], rocsolver)
 
     boolean formatCheck = false
+    rocsolver.timeout.compile = 180
 
     def compileCommand =
     {

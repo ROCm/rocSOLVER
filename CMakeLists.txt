@@ -44,7 +44,7 @@ if( NOT rocBLAS_FOUND )
   ExternalProject_Add( rocBLAS
     GIT_REPOSITORY   "https://github.com/RocmSoftwarePlatform/rocBLAS.git"
     GIT_TAG          develop
-    SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/rocBLAS/build"
+    SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/rocBLAS-build"
     CMAKE_ARGS       "-DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc"
     INSTALL_COMMAND  "make install"
    )
