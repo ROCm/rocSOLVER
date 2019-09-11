@@ -42,11 +42,11 @@ find_package( rocBLAS QUIET CONFIG PATHS /opt/rocm )
 if( NOT rocBLAS_FOUND )
   include( ExternalProject )
   ExternalProject_Add( rocBLAS
-    GIT_REPOSITORY  "https://github.com/RocmSoftwarePlatform/rocBLAS.git"
-    GIT_TAG         master
-    SOURCE_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/rocBLAS/build"
-    CMAKE_ARGS      "-DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc"
-    INSTALL_COMMAND "./install.sh -cdi -lasm_ci"
+    GIT_REPOSITORY   "https://github.com/RocmSoftwarePlatform/rocBLAS.git"
+    GIT_TAG          develop
+    SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/rocBLAS/build"
+    CMAKE_ARGS       "-DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc"
+    INSTALL_COMMAND  "make install"
    )
 endif()
 
