@@ -50,7 +50,9 @@ rocSOLVERCI:
                     sudo apt-get install -f                   
                     cd ${project.paths.project_build_prefix}
                     sudo mkdir build && cd build
-                    CXX=/opt/rocm/bin/hcc ${project.paths.build_command}
+                    export CXX=/opt/rocm/bin/hcc
+                    export PATH=/opt/rocm/bin:$PATH 
+                    ${project.paths.build_command}
                     sudo make
                     """
 
