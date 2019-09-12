@@ -24,6 +24,7 @@ RUN yum install -y \
     gtest-devel \ 
     gtest \
     lapack-devel \
+    unzip \
     pkgconfig \
     python27 \
     python36 \
@@ -40,7 +41,7 @@ RUN yum install -y \
     libgomp \
     numactl-libs \
     rpm-build \
-    deltarpm
+    deltarpm 
 
 RUN echo '#!/bin/bash' | tee /etc/profile.d/devtoolset7.sh && echo \
     'source scl_source enable devtoolset-7' >>/etc/profile.d/devtoolset7.sh

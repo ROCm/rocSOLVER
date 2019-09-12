@@ -39,6 +39,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     zlib1g-dev \
     liblapack-dev \
     libgtest-dev \
+    unzip \
     && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
