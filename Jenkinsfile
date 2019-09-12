@@ -44,6 +44,10 @@ rocSOLVERCI:
 
         def command = """#!/usr/bin/env bash
                     set -x
+                    sudo wget http://10.216.151.18:8080/job/ROCmSoftwarePlatform/job/rocBLAS/job/develop/lastSuccessfulBuild/artifact/*zip*/archive.zip
+                    sudo unzip archive.zip
+                    sudo dpkg -Ri archive/*/*/*/*/*/*.deb
+                    sudo apt-get install -f                   
                     cd ${project.paths.project_build_prefix}
                     sudo mkdir build && cd build
                     CXX=/opt/rocm/bin/hcc ${project.paths.build_command}

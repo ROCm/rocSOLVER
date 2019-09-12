@@ -23,6 +23,7 @@ RUN yum install -y \
     gcc-gfortran \
     gtest-devel \ 
     gtest \
+    lapack-devel \
     pkgconfig \
     python27 \
     python36 \
