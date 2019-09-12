@@ -45,8 +45,6 @@ if( NOT rocBLAS_FOUND )
     GIT_REPOSITORY   "https://github.com/RocmSoftwarePlatform/rocBLAS.git"
     GIT_TAG          develop
     CMAKE_ARGS       "-DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc"
-    INSTALL_DIR       "${CMAKE_CURRENT_BINARY_DIR}"
-    INSTALL_COMMAND  "make install"
    )
 endif()
 
