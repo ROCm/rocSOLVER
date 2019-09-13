@@ -45,9 +45,8 @@ rocSOLVERCI:
                     set -x
                     cd ${project.paths.project_build_prefix}
                     sudo mkdir build && cd build
-                    export CXX=/opt/rocm/bin/hcc
-                    export PATH=/opt/rocm/bin:$PATH 
-                    sudo cmake ..
+                    export PATH=/opt/rocm/bin:$PATH
+                    CXX=/opt/rocm/bin/hcc sudo cmake ..
                     sudo make
                     """
 
