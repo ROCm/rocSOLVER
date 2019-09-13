@@ -46,8 +46,8 @@ rocSOLVERCI:
                     cd ${project.paths.project_build_prefix}
                     sudo mkdir build && cd build
                     export PATH=/opt/rocm/bin:$PATH
-                    CXX=/opt/rocm/bin/hcc sudo cmake ..
-                    sudo make
+                    sudo cmake -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..
+                    sudo make 
                     """
 
         platform.runCommand(this, command)
@@ -63,23 +63,23 @@ rocSOLVERCI:
         {
             command = """#!/usr/bin/env bash
                     set -x
-                    cd ${project.paths.project_build_prefix}/build/release/clients/staging
+                    cd ${project.paths.project_build_prefix}/build/clients/staging
                     LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=*daily_lapack*
                 """
 
             platform.runCommand(this, command)
-            junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
+            junit "${project.paths.project_build_prefix}/build/clients/staging/*.xml"
         }
         else
         {
             command = """#!/usr/bin/env bash
                     set -x
-                    cd ${project.paths.project_build_prefix}/build/release/clients/staging
+                    cd ${project.paths.project_build_prefix}/build/clients/staging
                     LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=*checkin_lapack*
                 """
             
             platform.runCommand(this, command)
-            junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
+            junit "${project.paths.project_build_prefix}/build/clients/staging/*.xml"
         }
     }
 
@@ -97,28 +97,28 @@ rocSOLVERCI:
         {
             command = """
                     set -x
-                    cd ${project.paths.project_build_prefix}/build/release
-                    make package
-                    mkdir -p package
-                    mv *.rpm package/
-                    rpm -qlp package/*.rpm
+                    cd ${project.paths.project_build_prefix}/build
+                    sudo make package
+                    sudo mkdir -p package
+                    sudo mv *.rpm package/
+                    sudo rpm -qlp package/*.rpm
                 """
 
             platform.runCommand(this, command)
-            platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/release/package/*.rpm""")
+            platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/package/*.rpm""")
         }
         else
         {
             command = """
                     set -x
-                    cd ${project.paths.project_build_prefix}/build/release
+                    cd ${project.paths.project_build_prefix}/build
                     sudo make package
                     sudo mkdir -p package
                     sudo mv *.deb package/
                 """
 
             platform.runCommand(this, command)
-            platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/release/package/*.deb""")
+            platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/package/*.deb""")
         }
     }
 
