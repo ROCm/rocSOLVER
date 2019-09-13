@@ -29,7 +29,7 @@ rocSOLVERCI:
 
     def rocsolver = new rocProject('rocSOLVER')
     // customize for project
-    rocsolver.paths.build_command = 'sudo cmake ..'
+    rocsolver.paths.build_command = 'sudo cmake .. -DCXX=/opt/rocm/bin/hcc'
 
     // Define test architectures, optional rocm version argument is available
     def nodes = new dockerNodes(['gfx900 && ubuntu', 'gfx906 && ubuntu'], rocsolver)
@@ -51,8 +51,8 @@ rocSOLVERCI:
                     cd ${project.paths.project_build_prefix}
                     sudo mkdir build && cd build
                     export PATH=/opt/rocm/bin:$PATH 
-                    CXX=/opt/rocm/bin/hcc ${project.paths.build_command}
-                    sudo make
+                    ${project.paths.build_command}
+                    sudo make -j32
                     """
 
         platform.runCommand(this, command)
