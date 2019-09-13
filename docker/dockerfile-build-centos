@@ -25,6 +25,7 @@ RUN yum install -y \
     gtest \
     lapack-devel \
     unzip \
+    wget \
     pkgconfig \
     python27 \
     python36 \

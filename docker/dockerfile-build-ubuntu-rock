@@ -40,6 +40,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     liblapack-dev \
     libgtest-dev \
     unzip \
+    wget \
     && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
