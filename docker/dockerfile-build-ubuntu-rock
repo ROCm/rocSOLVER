@@ -1,4 +1,4 @@
-# Parameters related to building hip
+# Parameters related to building rocSOLVER
 ARG base_image
 
 FROM ${base_image}
@@ -10,22 +10,37 @@ ARG user_uid
 # Dependencies:
 # * hcc-config.cmake: pkg-config
 # * tensile: python2.7, python-yaml
-# * rocblas-test: gfortran, googletest
-# * rocblas-bench: libboost-program-options-dev
+# * rocsolver-test: gfortran, googletest
+# * rocsolver-bench: libboost-program-options-dev
 # * libhsakmt.so: libnuma1
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    rock-dkms \
     sudo \
+    rocm_smi64 \
     ca-certificates \
     git \
     make \
     cmake \
-    clang-format-3.8 \
     pkg-config \
     python2.7 \
+    python3 \
     python-yaml \
+    python3-yaml \
+    python3-dev \
+    python3-pip \
+    python3-pytest \
+    python3-setuptools \
     gfortran \
+    llvm-6.0-dev \
     libboost-program-options-dev \
     libnuma1 \
+    libpthread-stubs0-dev \
+    libomp-dev \
+    zlib1g-dev \
+    liblapack-dev \
+    libgtest-dev \
+    unzip \
+    wget \
     && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -33,9 +48,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 # docker pipeline runs containers with particular uid
 # create a jenkins user with this specific uid so it can use sudo priviledges
 # Grant any member of sudo group password-less sudo privileges
-RUN useradd --create-home -u ${user_uid} -o -G sudo --shell /bin/bash jenkins && \
-    mkdir -p /etc/sudoers.d/ && \
-    echo '%sudo   ALL=(ALL) NOPASSWD:ALL' | tee /etc/sudoers.d/sudo-nopasswd
+RUN useradd --create-home -u ${user_uid} -o -G video --shell /bin/bash jenkins && \
+    echo '%video   ALL=(ALL) NOPASSWD:ALL' | tee /etc/sudoers.d/sudo-nopasswd && \
+    chmod 400 /etc/sudoers.d/sudo-nopasswd
 
 ARG ROCBLAS_SRC_ROOT=/usr/local/src/rocBLAS
 
