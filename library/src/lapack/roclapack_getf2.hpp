@@ -26,7 +26,7 @@ using namespace std;
 template <typename T>
 __global__ void getf2_check_singularity(T *A, rocblas_int *jp, rocblas_int j,
                                         rocblas_int lda,
-                                        rocblas_int *inpsResGPUInt) {
+                                        T *inpsResGPUInt) {
 
   (*jp) = j + (*jp); // jp is 1 index, j is zero
 
