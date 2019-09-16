@@ -20,7 +20,6 @@
 #include "../auxiliary/rocauxiliary_laswp.hpp"
 
 
-
 template <typename T, typename U>
 rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
