@@ -29,8 +29,6 @@ rocSOLVERCI:
 
     def rocsolver = new rocProject('rocSOLVER')
     
-    rocsolver.paths.build_command = 'sudo cmake -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..'
-
     def nodes = new dockerNodes(['internal && gfx900 && ubuntu', 'internal && gfx906 && ubuntu'], rocsolver)
 
     boolean formatCheck = false
@@ -44,7 +42,7 @@ rocSOLVERCI:
 
         project.paths.construct_build_prefix()
 
-        def rocsolver.paths.build_command = platform.jenkinsLabel.contains('centos') ? 'sudo cmake3 -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..' :
+        rocsolver.paths.build_command = platform.jenkinsLabel.contains('centos') ? 'sudo cmake3 -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..' :
                                             'sudo cmake -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..'
         
         def getRocBLAS = platform.jenkinsLabel.contains('centos') ? rocBLAS2 : rocBLAS
