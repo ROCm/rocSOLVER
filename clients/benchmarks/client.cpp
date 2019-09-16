@@ -12,6 +12,7 @@
 #include "testing_getrs.hpp"
 #include "testing_potf2.hpp"
 #include "testing_larfg.hpp"
+#include "testing_larf.hpp"
 #include "utility.h"
 
 namespace po = boost::program_options;
@@ -240,6 +241,12 @@ int main(int argc, char *argv[]) {
       testing_larfg<float>(argus);
     else if (precision == 'd')
       testing_larfg<double>(argus);
+  } 
+  else if (function == "larf") {
+    if (precision == 's')
+      testing_larf<float>(argus);
+    else if (precision == 'd')
+      testing_larf<double>(argus);
   } 
   else {
     printf("Invalid value for --function \n");

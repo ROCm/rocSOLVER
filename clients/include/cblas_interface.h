@@ -111,4 +111,7 @@ rocblas_int cblas_potrf(char uplo, rocblas_int m, T *A, rocblas_int lda);
 template <typename T>
 void cblas_larfg(rocblas_int n, T* alpha, T* x, rocblas_int incx, T* tau);
 
+template <typename T>
+void cblas_larf(char side, rocblas_int m, rocblas_int n, T* x, rocblas_int incx, T* alpha, T *A, rocblas_int lda, T *work);
+
 #endif /* _CBLAS_INTERFACE_ */

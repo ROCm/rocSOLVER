@@ -64,6 +64,9 @@ void zgetrs_(char *trans, int *n, int *nrhs, rocblas_double_complex *A,
 void slarfg_(int *n, float *alpha, float *x, int *incx, float *tau);
 void dlarfg_(int *n, double *alpha, double *x, int *incx, double *tau);
 
+void slarf_(char *side, int *m, int *n, float *x, int *incx, float *alpha, float *A, int *lda, float *work);
+void dlarf_(char *side, int *m, int *n, double *x, int *incx, double *alpha, double *A, int *lda, double *work);
+
 #ifdef __cplusplus
 }
 #endif
@@ -73,6 +76,8 @@ void dlarfg_(int *n, double *alpha, double *x, int *incx, double *tau);
  *    Auxiliary LAPACK
  * ===========================================================================
  */
+
+//larfg
 
 template <>
 void cblas_larfg<float>(rocblas_int n, float *alpha, float *x, rocblas_int incx, float *tau) {
@@ -84,6 +89,17 @@ void cblas_larfg<double>(rocblas_int n, double *alpha, double *x, rocblas_int in
     dlarfg_(&n, alpha, x, &incx, tau);
 }
 
+//larf
+
+template <>
+void cblas_larf<float>(char side, rocblas_int m, rocblas_int n, float *x, rocblas_int incx, float *alpha, float *A, rocblas_int lda, float *work) {
+    slarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
+}
+
+template <>
+void cblas_larf<double>(char side, rocblas_int m, rocblas_int n, double *x, rocblas_int incx, double *alpha, double *A, rocblas_int lda, double *work) {
+    dlarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
+}
 
 /*
  * ===========================================================================

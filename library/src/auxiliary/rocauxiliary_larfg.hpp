@@ -70,10 +70,14 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int
         T* xx = x;
     #endif
 
-    //memory in GPU
+    //memory in GPU (workspace)
     T *norms;
     hipMalloc(&norms, sizeof(T)*batch_count);    
 
+    // **** BATCH IS EXECUTED IN A FOR-LOOP UNTIL BATCH-BLAS
+    //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
+    //      BE MADE TO THE CORRESPONDING TEMPLATE_FUNCTIONS ****
+    
     //compute norm of x
     for (int b=0;b<batch_count;++b) {
         xp = load_ptr_batch(xx,shiftx,b,stridex);

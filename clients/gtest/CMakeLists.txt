@@ -43,6 +43,7 @@ set(roclapack_test_source
     getrs_gtest.cpp
     potf2_gtest.cpp
     larfg_gtest.cpp
+    larf_gtest.cpp
     )
 
 set(rocsolver_test_source

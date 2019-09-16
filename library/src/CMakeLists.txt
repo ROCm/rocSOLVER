@@ -29,6 +29,7 @@ find_package(Threads REQUIRED)
 set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_laswp.cpp
   auxiliary/rocauxiliary_larfg.cpp
+  auxiliary/rocauxiliary_larf.cpp
 )
 
 set( rocsolver_common_source

@@ -135,6 +135,69 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfg(rocsolver_handle handle,
                                                  double *tau);
 
 
+/*! \brief AUXILIARY API
+
+    \details
+    LARF applies a Householder reflector H of order m (or n), to a general m by n matrix A
+    from the left (or the right). H is given by 
+
+    H = I - alpha*x*x'
+
+    where alpha is a scalar and x a Householder vector, but it is never actually computed.
+
+    @param[in]
+    handle          rocblas_handle
+    @param[in]
+    side            rocblas_side
+                    If side = rocblas_side_left, then compute H*A
+                    If side = rocblas_side_right, then compute A*H
+    @param[in]
+    m               rocblas_int
+                    Number of rows of A
+    @param[in]
+    n               rocblas_int
+                    Number of columns of A
+    @param[in]
+    x               Pointer to a vector on the GPU
+                    Size is at least (1 + (m-1)*abs(incx)) if left side
+                    Size is at least (1 + (n-1)*abs(incx)) if right side
+    @param[in]
+    incx            rocblas_int
+                    Increment between to consecutive elements of x (x != 0)
+    @param[in]
+    alpha           Pointer to scalar in the GPU
+                    If alpha = 0, then H = I (A will remain the same, x is never used)
+    @param[inout]
+    A               Pointer to a matrix in the GPU
+                    On input, the matrix A. On output it is overwritten with
+                    H*A (or A*H)
+    @param[in]
+    lda             rocblas_int
+                    Leading dimension of A (lda >= m)
+                        
+    *************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_slarf(rocsolver_handle handle, 
+                                                const rocsolver_side side, 
+                                                const rocsolver_int m,
+                                                const rocsolver_int n, 
+                                                float* x, 
+                                                const rocsolver_int incx, 
+                                                const float* alpha,
+                                                float* A, 
+                                                const rocsolver_int lda);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlarf(rocsolver_handle handle, 
+                                                const rocsolver_side side, 
+                                                const rocsolver_int m,
+                                                const rocsolver_int n, 
+                                                double* x, 
+                                                const rocsolver_int incx, 
+                                                const double* alpha,
+                                                double* A, 
+                                                const rocsolver_int lda);
+
+
 
 /*
  * ===========================================================================
