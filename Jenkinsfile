@@ -32,15 +32,11 @@ rocSOLVERCI:
     rocsolver.paths.build_command = 'sudo cmake -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..'
 
     // Define test architectures, optional rocm version argument is available
-    def nodes = new dockerNodes(['gfx900 && ubuntu', 'gfx906 && ubuntu'], rocsolver)
+    def nodes = new dockerNodes(['internal && gfx900 && ubuntu', 'internal && gfx906 && ubuntu'], rocsolver)
 
     boolean formatCheck = false
 
-    String getRocBLAS = """ 
-		    sudo wget http://10.216.151.18:8080/job/ROCmSoftwarePlatform/job/rocBLAS/job/develop/lastSuccessfulBuild/artifact/*zip*/archive.zip
-                    sudo unzip archive.zip
-                    sudo dpkg -i archive/*/*/*/*/*/*.deb
-		"""
+    String getRocBLAS = auxiliary.getLibrary('rocBLAS','ubuntu', 'develop', true)
 
     def compileCommand =
     {
@@ -51,12 +47,12 @@ rocSOLVERCI:
         def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
-		    ${getRocBLAS}
+                    ${getRocBLAS}
                     sudo mkdir build && cd build
-                    export PATH=/opt/rocm/bin:$PATH 
+                    export PATH=/opt/rocm/bin:$PATH
                     ${project.paths.build_command}
                     sudo make -j32
-		"""
+                """
 
         platform.runCommand(this, command)
     }
@@ -72,7 +68,7 @@ rocSOLVERCI:
             command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}/build/clients/staging
-		    ${getRocBLAS}
+		            ${getRocBLAS}
                     LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=*daily_lapack*
                 """
 
@@ -84,7 +80,7 @@ rocSOLVERCI:
             command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}/build/clients/staging
-		    ${getRocBLAS}
+		            ${getRocBLAS}
                     LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=*checkin_lapack*
                 """
             
