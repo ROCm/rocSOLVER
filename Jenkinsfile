@@ -38,8 +38,8 @@ rocSOLVERCI:
     rocsolver.paths.build_command = 'sudo cmake -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..'
 
     // Define test architectures, optional rocm version argument is available
-    def firstNode = new dockerNodes(['gfx900 && ubuntu'], rocsolver)
-    def secondNode = new dockerNodes(['gfx906 && ubuntu'], rocsolver)
+    def firstNode = new dockerNodes(['gfx906 && ubuntu && rs'], rocsolver)
+    def secondNode = new dockerNodes(['gfx900 && ubuntu && rs'], rocsolver)
 
     boolean formatCheck = false
 
