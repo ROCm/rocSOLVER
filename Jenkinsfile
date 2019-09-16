@@ -28,15 +28,15 @@ rocSOLVERCI:
 {
 
     def rocsolver = new rocProject('rocSOLVER')
-    // customize for project
+    
     rocsolver.paths.build_command = 'sudo cmake -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..'
 
-    // Define test architectures, optional rocm version argument is available
     def nodes = new dockerNodes(['internal && gfx900 && ubuntu', 'internal && gfx906 && ubuntu'], rocsolver)
 
     boolean formatCheck = false
 
-    String getRocBLAS = auxiliary.getLibrary('rocBLAS','ubuntu', 'develop', true)
+    String rocBLAS = auxiliary.getLibrary('rocBLAS','ubuntu', 'develop', true)
+    String rocBLAS2 = auxiliary.getLibrary('rocBLAS', 'centos', 'develop', true)
 
     def compileCommand =
     {
@@ -44,6 +44,10 @@ rocSOLVERCI:
 
         project.paths.construct_build_prefix()
 
+        def rocsolver.paths.build_command = platform.jenkinsLabel.contains('centos') ? 'sudo cmake3 -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..' :
+                                            'sudo cmake -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..'
+        
+        def getRocBLAS = platform.jenkinsLabel.contains('centos') ? rocBLAS2 : rocBLAS
         def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
@@ -57,77 +61,37 @@ rocSOLVERCI:
         platform.runCommand(this, command)
     }
 
+    def testType = auxiliary.isJobStartedByTimer() ? '*daily_lapack*' : '*checkin_lapack*'
     def testCommand =
     {
         platform, project->
 
-        def command
-
-        if(auxiliary.isJobStartedByTimer())
+        try
         {
-            command = """#!/usr/bin/env bash
-                    set -x
-                    cd ${project.paths.project_build_prefix}/build/clients/staging
-		            ${getRocBLAS}
-                    LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=*daily_lapack*
-                """
+            def getRocBLAS = platform.jenkinsLabel.contains('centos') ? rocBLAS2 : rocBLAS
+            def command = """#!/usr/bin/env bash
+                        set -x
+                        cd ${project.paths.project_build_prefix}/build/clients/staging
+                        ${getRocBLAS}
+                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${testType}
+                    """
 
             platform.runCommand(this, command)
-            junit "${project.paths.project_build_prefix}/build/clients/staging/*.xml"
         }
-        else
+        finally
         {
-            command = """#!/usr/bin/env bash
-                    set -x
-                    cd ${project.paths.project_build_prefix}/build/clients/staging
-		            ${getRocBLAS}
-                    LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=*checkin_lapack*
-                """
-            
-            platform.runCommand(this, command)
             junit "${project.paths.project_build_prefix}/build/clients/staging/*.xml"
-        }
+        }        
     }
 
     def packageCommand =
     {
         platform, project->
 
-        def command
+        platform.jenkinsLabel.contains('hip-clang') ? packageCommand = null : packageCommand = platform.jenkinsLabel.contains('centos') ? 
+        platform.makePackage('rpm',"${project.paths.project_build_prefix}/build",true) : platform.makePackage('deb',"${project.paths.project_build_prefix}/build",true)
 
-        if(platform.jenkinsLabel.contains('hip-clang'))
-        {
-            packageCommand = null
-        }
-        else if(platform.jenkinsLabel.contains('centos'))
-        {
-            command = """
-                    set -x
-                    cd ${project.paths.project_build_prefix}/build
-                    sudo make package
-                    sudo mkdir -p package
-                    sudo mv *.rpm package/
-                    sudo rpm -qlp package/*.rpm
-                """
-
-            platform.runCommand(this, command)
-            platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/package/*.rpm""")
-        }
-        else
-        {
-            command = """
-                    set -x
-                    cd ${project.paths.project_build_prefix}/build/release
-                    sudo make package
-                    sudo mkdir -p package
-                    sudo mv *.deb package/
-                """
-
-            platform.runCommand(this, command)
-            platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/package/*.deb""")
-        }
     }
 
     buildProject(rocsolver, formatCheck, nodes.dockerArray, compileCommand, testCommand, packageCommand)
-
 }
