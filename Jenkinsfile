@@ -86,8 +86,8 @@ rocSOLVERCI:
     {
         platform, project->
 
-        def rpmDeb = platform.jenkinsLabel.contains('centos') ? platform.makePackage('rpm',"${project.paths.project_build_prefix}/build",true) : 
-                    platform.makePackage('deb',"${project.paths.project_build_prefix}/build",true)
+        def rpmDeb = platform.jenkinsLabel.contains('centos') ? platform.makePackage('rpm',"${project.paths.project_build_prefix}/build",false,true) : 
+                    platform.makePackage('deb',"${project.paths.project_build_prefix}/build",false,true)
 
         packageCommand = platform.jenkinsLabel.contains('hip-clang') ? null : rpmDeb
     }
