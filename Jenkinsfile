@@ -1,4 +1,4 @@
-brary('rocJenkins@getLibraryChange') _
+library('rocJenkins@getLibraryChange') _
 
 // This is file for internal AMD use.
 // If you are interested in running your own Jenkins, please raise a github issue for assistance.
