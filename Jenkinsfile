@@ -86,10 +86,10 @@ rocSOLVERCI:
     {
         platform, project->
 
-        def rpmDeb = platform.jenkinsLabel.contains('centos') ? platform.makePackage(this,'rpm',"${project.paths.project_build_prefix}/build",false,true) : 
-                    platform.makePackage(this,'deb',"${project.paths.project_build_prefix}/build",false,true)
+        def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build",false,true)  
 
-        packageCommand = platform.jenkinsLabel.contains('hip-clang') ? null : rpmDeb
+        platform.runCommand(this, packageHelper[0])
+        platform.archiveArtifacts(this, packageHelper[1])
     }
 
     buildProject(rocsolver, formatCheck, nodes.dockerArray, compileCommand, testCommand, packageCommand)
