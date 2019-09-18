@@ -1,6 +1,4 @@
-#!/usr/bin/env groovy
-// This shared library is available at https://github.com/ROCmSoftwarePlatform/rocJENKINS/
-@Library('rocJenkins') _
+brary('rocJenkins@getLibraryChange') _
 
 // This is file for internal AMD use.
 // If you are interested in running your own Jenkins, please raise a github issue for assistance.
@@ -33,9 +31,6 @@ rocSOLVERCI:
 
     boolean formatCheck = false
 
-    String rocBLAS = auxiliary.getLibrary('rocBLAS','ubuntu', 'develop', true)
-    String rocBLAS2 = auxiliary.getLibrary('rocBLAS', 'centos', 'develop', true)
-
     def compileCommand =
     {
         platform, project->
@@ -45,7 +40,7 @@ rocSOLVERCI:
         rocsolver.paths.build_command = platform.jenkinsLabel.contains('centos') ? 'sudo cmake3 -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..' :
                                             'sudo cmake -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..'
         
-        def getRocBLAS = platform.jenkinsLabel.contains('centos') ? rocBLAS2 : rocBLAS
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
         def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
@@ -66,19 +61,16 @@ rocSOLVERCI:
 
         try
         {
-            def getRocBLAS = platform.jenkinsLabel.contains('centos') ? rocBLAS2 : rocBLAS
+            def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
             def command = """#!/usr/bin/env bash
                         set -x
                         cd ${project.paths.project_build_prefix}/build/clients/staging
-                        ${getRocBLAS}
-                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${testType}
                     """
 
             platform.runCommand(this, command)
         }
         finally
         {
-            junit "${project.paths.project_build_prefix}/build/clients/staging/*.xml"
         }        
     }
 
@@ -86,6 +78,7 @@ rocSOLVERCI:
     {
         platform, project->
 
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
         def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build",false,true)  
 
         platform.runCommand(this, packageHelper[0])
@@ -94,3 +87,4 @@ rocSOLVERCI:
 
     buildProject(rocsolver, formatCheck, nodes.dockerArray, compileCommand, testCommand, packageCommand)
 }
+
