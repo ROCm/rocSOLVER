@@ -71,6 +71,7 @@ rocSOLVERCI:
         }
         finally
         {
+            junit "${project.paths.project_build_prefix}/build/clients/staging/*.xml"
         }        
     }
 
