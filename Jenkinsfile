@@ -1,5 +1,3 @@
-#!/usr/bin/env groovy
-// This shared library is available at https://github.com/ROCmSoftwarePlatform/rocJENKINS/
 @Library('rocJenkins') _
 
 // This is file for internal AMD use.
@@ -28,19 +26,10 @@ rocSOLVERCI:
 {
 
     def rocsolver = new rocProject('rocSOLVER')
-    // customize for project
-    rocsolver.paths.build_command = 'sudo cmake -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..'
-
-    // Define test architectures, optional rocm version argument is available
-    def nodes = new dockerNodes(['gfx900 && ubuntu', 'gfx906 && ubuntu'], rocsolver)
+    
+    def nodes = new dockerNodes(['internal && gfx900 && ubuntu', 'internal && gfx906 && ubuntu'], rocsolver)
 
     boolean formatCheck = false
-
-    String getRocBLAS = """ 
-		    sudo wget http://10.216.151.18:8080/job/ROCmSoftwarePlatform/job/rocBLAS/job/develop/lastSuccessfulBuild/artifact/*zip*/archive.zip
-                    sudo unzip archive.zip
-                    sudo dpkg -i archive/*/*/*/*/*/*.deb
-		"""
 
     def compileCommand =
     {
@@ -48,90 +37,57 @@ rocSOLVERCI:
 
         project.paths.construct_build_prefix()
 
+        rocsolver.paths.build_command = platform.jenkinsLabel.contains('centos') ? 'sudo cmake3 -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..' :
+                                            'sudo cmake -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..'
+        
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
         def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
-		    ${getRocBLAS}
+                    ${getRocBLAS}
                     sudo mkdir build && cd build
-                    export PATH=/opt/rocm/bin:$PATH 
+                    export PATH=/opt/rocm/bin:$PATH
                     ${project.paths.build_command}
                     sudo make -j32
-		"""
+                """
 
         platform.runCommand(this, command)
     }
 
+    def testType = auxiliary.isJobStartedByTimer() ? '*daily_lapack*' : '*checkin_lapack*'
     def testCommand =
     {
         platform, project->
 
-        def command
-
-        if(auxiliary.isJobStartedByTimer())
+        try
         {
-            command = """#!/usr/bin/env bash
-                    set -x
-                    cd ${project.paths.project_build_prefix}/build/clients/staging
-		    ${getRocBLAS}
-                    LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=*daily_lapack*
-                """
+            def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
+            def command = """#!/usr/bin/env bash
+                        set -x
+                        cd ${project.paths.project_build_prefix}/build/clients/staging
+                        ${getRocBLAS}
+                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=${testType}
+                    """
 
             platform.runCommand(this, command)
-            junit "${project.paths.project_build_prefix}/build/clients/staging/*.xml"
         }
-        else
+        finally
         {
-            command = """#!/usr/bin/env bash
-                    set -x
-                    cd ${project.paths.project_build_prefix}/build/clients/staging
-		    ${getRocBLAS}
-                    LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=*checkin_lapack*
-                """
-            
-            platform.runCommand(this, command)
             junit "${project.paths.project_build_prefix}/build/clients/staging/*.xml"
-        }
+        }        
     }
 
     def packageCommand =
     {
         platform, project->
 
-        def command
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
+        def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build",false,true)  
 
-        if(platform.jenkinsLabel.contains('hip-clang'))
-        {
-            packageCommand = null
-        }
-        else if(platform.jenkinsLabel.contains('centos'))
-        {
-            command = """
-                    set -x
-                    cd ${project.paths.project_build_prefix}/build
-                    sudo make package
-                    sudo mkdir -p package
-                    sudo mv *.rpm package/
-                    sudo rpm -qlp package/*.rpm
-                """
-
-            platform.runCommand(this, command)
-            platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/package/*.rpm""")
-        }
-        else
-        {
-            command = """
-                    set -x
-                    cd ${project.paths.project_build_prefix}/build/release
-                    sudo make package
-                    sudo mkdir -p package
-                    sudo mv *.deb package/
-                """
-
-            platform.runCommand(this, command)
-            platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/package/*.deb""")
-        }
+        platform.runCommand(this, packageHelper[0])
+        platform.archiveArtifacts(this, packageHelper[1])
     }
 
     buildProject(rocsolver, formatCheck, nodes.dockerArray, compileCommand, testCommand, packageCommand)
-
 }
+
