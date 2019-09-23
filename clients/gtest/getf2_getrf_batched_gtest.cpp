@@ -37,7 +37,7 @@ const vector<vector<int>> large_matrix_size_range = {
 };
 
 const vector<vector<int>> large_n_size_range = {
-    {45, 1}, {64, 0}, {520, 0}, {1000, 0}, {1024, 0}, {3000, 0},
+    {45, 1}, {64, 0}, {520, 0}, {1000, 0}, {1024, 0},
 };
 
 
