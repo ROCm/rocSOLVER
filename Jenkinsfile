@@ -37,10 +37,10 @@ rocSOLVERCI:
 
         project.paths.construct_build_prefix()
 
-        rocsolver.paths.build_command = platform.jenkinsLabel.contains('centos') ? 'sudo cmake3 -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..' :
-                                            'sudo cmake -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..'
+        rocsolver.paths.build_command = platform.jenkinsLabel.contains('centos') ? 'cmake3 -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..' :
+                                            'cmake -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..'
         
-        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop')
         def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
@@ -48,7 +48,7 @@ rocSOLVERCI:
                     sudo mkdir build && cd build
                     export PATH=/opt/rocm/bin:$PATH
                     ${project.paths.build_command}
-                    sudo make -j32
+                    make -j32
                 """
 
         platform.runCommand(this, command)
@@ -65,8 +65,7 @@ rocSOLVERCI:
             def command = """#!/usr/bin/env bash
                         set -x
                         cd ${project.paths.project_build_prefix}/build/clients/staging
-                        ${getRocBLAS}
-                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=${testType}
+                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=${testType}
                     """
 
             platform.runCommand(this, command)
@@ -81,8 +80,7 @@ rocSOLVERCI:
     {
         platform, project->
 
-        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
-        def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build",false,true)  
+        def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build")  
 
         platform.runCommand(this, packageHelper[0])
         platform.archiveArtifacts(this, packageHelper[1])
