@@ -116,8 +116,8 @@ template <typename T> rocblas_status testing_getrs(Arguments argus) {
   }
 
   //  initialize full random matrix hA, hB with all entries in [1, 10]
-  rocblas_init<T>(hA, M, M, lda);
-  rocblas_init<T>(hB, M, nhrs, ldb);
+  rocblas_init<T>(hA.data(), M, M, lda);
+  rocblas_init<T>(hB.data(), M, nhrs, ldb);
 
   //  pad untouched area into zero
   for (int i = M; i < lda; i++) {
@@ -150,7 +150,8 @@ template <typename T> rocblas_status testing_getrs(Arguments argus) {
   rocblas_int *dIpiv = (rocblas_int *)dIpiv_managed.get();
 
   // do the LU decomposition of matrix A w/ the reference LAPACK routine
-  const int retCBLAS = cblas_getrf<T>(M, M, hA.data(), lda, hIpiv.data());
+  int retCBLAS;
+  cblas_getrf<T>(M, M, hA.data(), lda, hIpiv.data(), &retCBLAS);
   if (retCBLAS != 0) {
     // error encountered - unlucky pick of random numbers? no use to continue
     return rocblas_status_success;

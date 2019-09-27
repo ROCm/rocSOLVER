@@ -89,8 +89,8 @@ rocblas_int cblas_potf2(rocblas_fill uplo, rocblas_int n, T *A,
                         rocblas_int lda);
 
 template <typename T>
-rocblas_int cblas_getf2(rocblas_int m, rocblas_int n, T *A, rocblas_int lda,
-                        rocblas_int *ipiv);
+void cblas_getf2(rocblas_int m, rocblas_int n, T *A, rocblas_int lda,
+                        rocblas_int *ipiv, rocblas_int *info);
 
 template <typename T>
 rocblas_int cblas_trtri(char uplo, char diag, rocblas_int n, T *A,
@@ -102,8 +102,8 @@ void cblas_trmm(rocblas_side side, rocblas_fill uplo, rocblas_operation transA,
                 const T *A, rocblas_int lda, T *B, rocblas_int ldb);
 
 template <typename T>
-rocblas_int cblas_getrf(rocblas_int m, rocblas_int n, T *A, rocblas_int lda,
-                        rocblas_int *ipiv);
+void cblas_getrf(rocblas_int m, rocblas_int n, T *A, rocblas_int lda,
+                        rocblas_int *ipiv, rocblas_int *info);
 
 template <typename T>
 rocblas_int cblas_getrs(char trans, rocblas_int n, rocblas_int nrhs, T *A,
