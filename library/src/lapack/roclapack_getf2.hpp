@@ -10,139 +10,111 @@
 #define ROCLAPACK_GETF2_H
 
 #include <hip/hip_runtime.h>
-#include <rocblas.hpp>
-
+#include "rocblas.hpp"
 #include "rocsolver.h"
-
 #include "definitions.h"
 #include "helpers.h"
 #include "ideal_sizes.hpp"
+#include "common_device.hpp"
+#include "getrf_device.hpp"
+#include "../auxiliary/rocauxiliary_laswp.hpp"
 
-using namespace std;
 
-#define GETF2_INPMINONE 0
-#define GETF2_RESSING 1
-
-template <typename T>
-__global__ void getf2_check_singularity(T *A, rocblas_int *jp, rocblas_int j,
-                                        rocblas_int lda,
-                                        T *inpsResGPUInt) {
-
-  (*jp) = j + (*jp); // jp is 1 index, j is zero
-
-  if (A[j * lda + (*jp) - 1] == 0) {
-    inpsResGPUInt[GETF2_RESSING] = -j;
-    // to not run into NaNs subsequently
-    A[j * lda + (*jp) - 1] = static_cast<T>(1e-6);
-  }
-}
-
-template <typename T>
-__global__ void getf2_pivot(rocblas_int n, T *x, rocblas_int incx,
-                            rocblas_int j, rocblas_int *jp) {
-  int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-
-  if ((j != (*jp) - 1) && (*jp) > 0 && tid < n) {
-    T tmp = x[tid * incx + j];
-    x[tid * incx + j] = x[tid * incx + (*jp) - 1];
-    x[tid * incx + (*jp) - 1] = tmp;
-  }
-}
-
-template <typename T>
-__global__ void getf2_scal(rocblas_int n, const T *alpha, T *x) {
-  int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-  // bound
-  if (tid < n) {
-    x[tid] = (x[tid]) / (*alpha);
-  }
-}
-
-template <typename T>
-rocblas_status rocsolver_getf2_template(rocblas_handle handle, rocblas_int m,
-                                        rocblas_int n, T *A, rocblas_int lda,
-                                        rocblas_int *ipiv) {
-
-  if (m == 0 || n == 0) {
+template <typename T, typename U>
+rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int m,
+                                        const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
+                                        rocblas_int const strideA, rocblas_int *ipiv, const rocblas_int shiftP, 
+                                        const rocblas_int strideP, rocblas_int* info, const rocblas_int batch_count)
+{
     // quick return
-    return rocblas_status_success;
-  } else if (m < 0) {
-    // less than zero dimensions in a matrix?!
-    return rocblas_status_invalid_size;
-  } else if (n < 0) {
-    // less than zero dimensions in a matrix?!
-    return rocblas_status_invalid_size;
-  } else if (lda < max(1, m)) {
-    // mismatch of provided first matrix dimension
-    return rocblas_status_invalid_size;
-  }
+    if (m == 0 || n == 0 || batch_count == 0) 
+        return rocblas_status_success;
+    
+    #ifdef batched
+        // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
+        //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
+        T* AA[batch_count];
+        hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
+    #endif
 
-  rocblas_int oneInt = 1;
-  T inpsResHost[2];
-  inpsResHost[GETF2_INPMINONE] = static_cast<T>(-1);
-  inpsResHost[GETF2_RESSING] = static_cast<T>(42);
+    //constants to use when calling rocablas functions
+    rocblas_int oneInt = 1;       //constant 1 in host
+    T minone = -1;                //constant -1 in host
+    T* minoneInt;                 //constant -1 in device
+    hipMalloc(&minoneInt, sizeof(T));
+    hipMemcpy(minoneInt, &minone, sizeof(T), hipMemcpyHostToDevice);
 
-  // allocate a tiny bit of memory on device to avoid going onto CPU and needing
-  // to synchronize.
-  T *inpsResGPU;
-  hipMalloc(&inpsResGPU, 2 * sizeof(T));
-  hipMemcpy(inpsResGPU, &inpsResHost[0], 2 * sizeof(T), hipMemcpyHostToDevice);
+    //pivoting info in device (to avoid continuous synchronization with CPU)
+    T *pivotGPU; 
+    hipMalloc(&pivotGPU, sizeof(T)*batch_count);
 
-  hipStream_t stream;
-  rocblas_get_stream(handle, &stream);
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+    rocblas_int blocksPivot = (n - 1) / GETF2_BLOCKSIZE + 1;
+    rocblas_int blocksReset = (batch_count - 1) / GETF2_BLOCKSIZE + 1;
+    dim3 gridPivot(blocksPivot, batch_count, 1);
+    dim3 gridReset(blocksReset, 1, 1);
+    dim3 threads(GETF2_BLOCKSIZE, 1, 1);
+    rocblas_int dim = min(m, n);    //total number of pivots
+    T* M;
 
-  rocblas_int blocksPivot = (n - 1) / GETF2_BLOCKSIZE + 1;
-  dim3 gridPivot(blocksPivot, 1, 1);
-  dim3 threads(GETF2_BLOCKSIZE, 1, 1);
+    //info=0 (starting with a nonsingular matrix)
+    hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count);
+    
+    // **** BATCH IS EXECUTED IN A FOR-LOOP UNTIL BATCH-BLAS
+    //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
+    //      BE MADE TO THE CORRESPONDING TEMPLATE_FUNCTIONS ****
 
-  for (rocblas_int j = 0; j < min(m, n); ++j) {
+    for (rocblas_int j = 0; j < dim; ++j) {
+        // find pivot. Use Fortran 1-based indexing for the ipiv array as iamax does that as well!
+        for (int b=0;b<batch_count;++b) {
+            #ifdef batched
+                M = AA[b];
+            #else
+                M = A + b*strideA;
+            #endif
+            rocblas_iamax(handle, m - j, (M + shiftA + idx2D(j, j, lda)), 1, 
+                        (ipiv + shiftP + b*strideP + j));
+        }
 
-    // find pivot and test for singularity
-    rocblas_iamax(handle, m - j, &A[idx2D(j, j, lda)], 1, &ipiv[j]);
+        // adjust pivot indices and check singularity
+        hipLaunchKernelGGL(getf2_check_singularity<T>, dim3(batch_count), dim3(1), 0, stream,
+                  A, shiftA, strideA, ipiv, shiftP, strideP, j, lda, pivotGPU, info);
 
-    // use Fortran 1-based indexing for the ipiv array as iamax does that as
-    // well!
-    hipLaunchKernelGGL(getf2_check_singularity<T>, dim3(1), dim3(1), 0, stream,
-                       A, &ipiv[j], j, lda, inpsResGPU);
+        // Swap pivot row and j-th row 
+        rocsolver_laswp_template<T>(handle, n, A, shiftA, lda, strideA, j+1, j+1, ipiv, shiftP, strideP, 1, batch_count);
 
-    // Apply the interchange to columns 1:N
-    hipLaunchKernelGGL(getf2_pivot<T>, gridPivot, threads, 0, stream, n, A, lda,
-                       j, &ipiv[j]);
+        // Compute elements J+1:M of J'th column
+        for (int b=0;b<batch_count;++b) {
+            #ifdef batched
+                M = AA[b];
+            #else
+                M = A + b*strideA;
+            #endif
+            rocblas_scal(handle, (m-j-1), (pivotGPU + b), 
+                            (M + shiftA + idx2D(j + 1, j, lda)), oneInt); 
+        }
 
-    // Compute elements J+1:M of J'th column
-
-    rocblas_int blocksScal = (m - j - 2) / GETF2_BLOCKSIZE + 1;
-
-    dim3 gridScal(blocksScal, 1, 1);
-    hipLaunchKernelGGL(getf2_scal<T>, gridScal, threads, 0, stream, (m - j - 1),
-                       &A[idx2D(j, j, lda)], &A[idx2D(j + 1, j, lda)]);
-
-    if (j < min(m, n) - 1) {
-      // update trailing submatrix
-      rocblas_ger(handle, m - j - 1, n - j - 1, &inpsResGPU[GETF2_INPMINONE],
-                  &A[idx2D(j + 1, j, lda)], oneInt, &A[idx2D(j, j + 1, lda)],
-                  lda, &A[idx2D(j + 1, j + 1, lda)], lda);
+        // update trailing submatrix
+        if (j < min(m, n) - 1) {
+            for (int b=0;b<batch_count;++b) {
+                #ifdef batched
+                    M = AA[b];
+                #else
+                    M = A + b*strideA;
+                #endif
+                rocblas_ger(handle, m - j - 1, n - j - 1, minoneInt,
+                        (M + shiftA + idx2D(j + 1, j, lda)), oneInt, 
+                        (M + shiftA + idx2D(j, j + 1, lda)), lda,
+                        (M + shiftA + idx2D(j + 1, j + 1, lda)), lda);
+            }
+        }
     }
-  }
 
-  // let's see if we encountered any singularity
-  hipMemcpy(&inpsResHost[GETF2_RESSING], &inpsResGPU[GETF2_RESSING], sizeof(T),
-            hipMemcpyDeviceToHost);
-  if (inpsResHost[GETF2_RESSING] <= 0.0) {
-    const size_t elem = static_cast<size_t>(fabs(inpsResHost[GETF2_RESSING]));
-    cerr << "ERROR: Input matrix has singularity/-ies. Last "
-            "occurrence of this in element "
-         << elem << endl;
-    hipFree(inpsResGPU);
-    return rocblas_status_internal_error;
-  }
+    hipFree(pivotGPU);
+    hipFree(minoneInt);
 
-  hipFree(inpsResGPU);
-
-  return rocblas_status_success;
+    return rocblas_status_success;
 }
-
-#undef GETF2_INPMINONE
-#undef GETF2_RESSING
 
 #endif /* ROCLAPACK_GETF2_H */

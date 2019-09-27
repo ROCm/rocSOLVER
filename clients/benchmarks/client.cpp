@@ -6,8 +6,9 @@
 #include <iostream>
 #include <stdio.h>
 
-#include "testing_getf2.hpp"
-#include "testing_getrf.hpp"
+#include "testing_getf2_getrf.hpp"
+#include "testing_getf2_getrf_batched.hpp"
+#include "testing_getf2_getrf_strided_batched.hpp"
 #include "testing_getrs.hpp"
 #include "testing_potf2.hpp"
 #include "utility.h"
@@ -16,10 +17,13 @@ namespace po = boost::program_options;
 
 int main(int argc, char *argv[]) {
   Arguments argus;
-  argus.unit_check = 0; // disable unit_check in client benchmark, it is only
-                        // used in gtest unit test
-  argus.timing =
-      1; // enable timing check,otherwise no performance data collected
+  
+  //disable unit_check in client benchmark, it is only
+  // used in gtest unit test
+  argus.unit_check = 0; 
+
+  // enable timing check,otherwise no performance data collected
+  argus.timing = 1;
 
   std::string function;
   char precision;
@@ -71,7 +75,7 @@ int main(int argc, char *argv[]) {
 
         ("bsa",
          po::value<rocblas_int>(&argus.bsa)->default_value(1024*1024),
-         "Specific stride of strided_batched matrix B, is only applicable to strided batched"
+         "Specific stride of strided_batched matrix A, is only applicable to strided batched"
          "BLAS-2 and BLAS-3: second dimension * leading dimension.")
 
         ("bsb",
@@ -83,6 +87,11 @@ int main(int argc, char *argv[]) {
          po::value<rocblas_int>(&argus.bsc)->default_value(1024*1024),
          "Specific stride of strided_batched matrix B, is only applicable to strided batched"
          "BLAS-2 and BLAS-3: second dimension * leading dimension.")
+
+        ("bsp",
+         po::value<rocblas_int>(&argus.bsp)->default_value(1024),
+         "Specific stride of batched pivots vector Ipiv, is only applicable to batched and strided_batched"
+         "factorizations: min(first dimension, second dimension).")
 
         ("incx",
          po::value<rocblas_int>(&argus.incx)->default_value(1),
@@ -182,22 +191,50 @@ int main(int argc, char *argv[]) {
       testing_potf2<float>(argus);
     else if (precision == 'd')
       testing_potf2<double>(argus);
-  } else if (function == "getf2") {
+  } 
+  else if (function == "getf2") {
     if (precision == 's')
-      testing_getf2<float>(argus);
+      testing_getf2_getrf<float,0>(argus);
     else if (precision == 'd')
-      testing_getf2<double>(argus);
-  } else if (function == "getrf") {
+      testing_getf2_getrf<double,0>(argus);
+  }
+  else if (function == "getf2_batched") {
     if (precision == 's')
-      testing_getrf<float>(argus);
+      testing_getf2_getrf_batched<float,0>(argus);
     else if (precision == 'd')
-      testing_getrf<double>(argus);
-  } else if (function == "getrs") {
+      testing_getf2_getrf_batched<double,0>(argus);
+  }
+  else if (function == "getf2_strided_batched") {
+    if (precision == 's')
+      testing_getf2_getrf_strided_batched<float,0>(argus);
+    else if (precision == 'd')
+      testing_getf2_getrf_strided_batched<double,0>(argus);
+  } 
+  else if (function == "getrf") {
+    if (precision == 's')
+      testing_getf2_getrf<float,1>(argus);
+    else if (precision == 'd')
+      testing_getf2_getrf<double,1>(argus);
+  } 
+  else if (function == "getrf_batched") {
+    if (precision == 's')
+      testing_getf2_getrf_batched<float,1>(argus);
+    else if (precision == 'd')
+      testing_getf2_getrf_batched<double,1>(argus);
+  } 
+  else if (function == "getrf_strided_batched") {
+    if (precision == 's')
+      testing_getf2_getrf_strided_batched<float,1>(argus);
+    else if (precision == 'd')
+      testing_getf2_getrf_strided_batched<double,1>(argus);
+  } 
+  else if (function == "getrs") {
     if (precision == 's')
       testing_getrs<float>(argus);
     else if (precision == 'd')
       testing_getrs<double>(argus);
-  } else {
+  } 
+  else {
     printf("Invalid value for --function \n");
     return -1;
   }

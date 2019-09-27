@@ -27,15 +27,21 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 set( rocsolver_auxiliary_source
-  include/definitions.h
-  include/rocsolver_unique_ptr.hpp
+  auxiliary/rocauxiliary_laswp.cpp
+)
+
+set( rocsolver_common_source
+  common/helpers.cpp
+  common/rocblas.cpp
 )
 
 set( rocsolver_lapack_source
-  lapack/helpers.cpp
-  lapack/rocblas.cpp
   lapack/roclapack_getf2.cpp
   lapack/roclapack_getrf.cpp
+  lapack/roclapack_getf2_batched.cpp
+  lapack/roclapack_getrf_batched.cpp
+  lapack/roclapack_getf2_strided_batched.cpp
+  lapack/roclapack_getrf_strided_batched.cpp
   lapack/roclapack_getrs.cpp
   lapack/roclapack_potf2.cpp
 )
@@ -46,6 +52,7 @@ add_library( rocsolver
   ${rocsolver_lapack_source}
   ${relative_rocsolver_headers_public}
   ${rocsolver_auxiliary_source}
+  ${rocsolver_common_source}  
 )
 
 add_library( roc::rocsolver ALIAS rocsolver )

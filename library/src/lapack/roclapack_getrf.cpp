@@ -1,12 +1,31 @@
-/* ************************************************************************
- * Derived from the BSD2-licensed
- * LAPACK routine (version 3.1) --
- *     Univ. of Tennessee, Univ. of California Berkeley and NAG Ltd..
- *     November 2006
- * Copyright 2018 Advanced Micro Devices, Inc.
- * ************************************************************************ */
-
 #include "roclapack_getrf.hpp"
+
+template <typename T, typename U>
+rocblas_status rocsolver_getrf_impl(rocblas_handle handle, const rocblas_int m,
+                                        const rocblas_int n, U A, const rocblas_int lda,
+                                        rocblas_int *ipiv, rocblas_int* info) {
+    if(!handle)
+        return rocblas_status_invalid_handle;
+    
+    //logging is missing ???    
+
+    if (m < 0 || n < 0 || lda < 1 || lda < m) 
+        return rocblas_status_invalid_size;
+    if (!A || !ipiv || !info)
+        return rocblas_status_invalid_pointer;
+
+    rocblas_int strideA = 0;
+    rocblas_int strideP = 0;
+    rocblas_int batch_count = 1;
+
+    return rocsolver_getrf_template<T>(handle,m,n,
+                                        A,0,    //The matrix is shifted 0 entries (will work on the entire matrix)
+                                        lda,strideA,
+                                        ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)
+                                        strideP,
+                                        info,batch_count);
+}
+
 
 /*
  * ===========================================================================
@@ -14,14 +33,18 @@
  * ===========================================================================
  */
 
-extern "C" ROCSOLVER_EXPORT rocblas_status
-rocsolver_sgetrf(rocsolver_handle handle, rocsolver_int m, rocsolver_int n,
-                 float *A, rocsolver_int lda, rocsolver_int *ipiv) {
-  return rocsolver_getrf_template<float>(handle, m, n, A, lda, ipiv);
+extern "C" {
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf(rocsolver_handle handle, const rocsolver_int m, const rocsolver_int n,
+                 float *A, const rocsolver_int lda, rocsolver_int *ipiv, rocblas_int* info) 
+{
+    return rocsolver_getrf_impl<float>(handle, m, n, A, lda, ipiv, info);
 }
 
-extern "C" ROCSOLVER_EXPORT rocblas_status
-rocsolver_dgetrf(rocsolver_handle handle, rocsolver_int m, rocsolver_int n,
-                 double *A, rocsolver_int lda, rocsolver_int *ipiv) {
-  return rocsolver_getrf_template<double>(handle, m, n, A, lda, ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf(rocsolver_handle handle, const rocsolver_int m, const rocsolver_int n,
+                 double *A, const rocsolver_int lda, rocsolver_int *ipiv, rocblas_int* info) 
+{
+    return rocsolver_getrf_impl<double>(handle, m, n, A, lda, ipiv, info);
 }
+
+} //extern C
