@@ -18,7 +18,7 @@
 template <typename T, typename U>
 rocblas_status rocsolver_larf_template(rocsolver_handle handle, const rocsolver_side side, const rocsolver_int m,
                                         const rocsolver_int n, U x, const rocblas_int shiftx, const rocsolver_int incx, 
-                                        const rocblas_int stridex, const T* alpha, U A, const rocblas_int shiftA, 
+                                        const rocblas_int stridex, const T* alpha, const rocblas_int stridep, U A, const rocblas_int shiftA, 
                                         const rocsolver_int lda, const rocblas_int stridea, const rocblas_int batch_count)
 {
     // quick return
@@ -75,22 +75,22 @@ rocblas_status rocsolver_larf_template(rocsolver_handle handle, const rocsolver_
     
     //compute the matrix vector product
     for (int b=0;b<batch_count;++b) {
-        xp = load_ptr_batch(xx,shiftx,b,stridex);
-        Ap = load_ptr_batch(AA,shiftA,b,stridea);
-        rocblas_gemv(handle, trans, m, n, (alpha + b), Ap, lda, xp, incx, zeroInt, (workvec + b*order), 1);
+        xp = load_ptr_batch<T>(xx,shiftx,b,stridex);
+        Ap = load_ptr_batch<T>(AA,shiftA,b,stridea);
+        rocblas_gemv(handle, trans, m, n, (alpha + b*stridep), Ap, lda, xp, incx, zeroInt, (workvec + b*order), 1);
     }
 
     //compute the rank-1 update
     if (leftside) {
         for (int b=0;b<batch_count;++b) {
-            xp = load_ptr_batch(xx,shiftx,b,stridex);
-            Ap = load_ptr_batch(AA,shiftA,b,stridea);
+            xp = load_ptr_batch<T>(xx,shiftx,b,stridex);
+            Ap = load_ptr_batch<T>(AA,shiftA,b,stridea);
             rocblas_ger(handle, m, n, minoneInt, xp, incx, (workvec + b*order), 1, Ap, lda);
         }
     } else {
         for (int b=0;b<batch_count;++b) {
-            xp = load_ptr_batch(xx,shiftx,b,stridex);
-            Ap = load_ptr_batch(AA,shiftA,b,stridea);
+            xp = load_ptr_batch<T>(xx,shiftx,b,stridex);
+            Ap = load_ptr_batch<T>(AA,shiftA,b,stridea);
             rocblas_ger(handle, m, n, minoneInt, (workvec + b*order), 1, xp, incx, Ap, lda);
         }
     }

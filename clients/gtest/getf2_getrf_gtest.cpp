@@ -31,11 +31,11 @@ const vector<int> n_size_range = {
 };
 
 const vector<vector<int>> large_matrix_size_range = {
-    {192, 192}, {640, 640}, {1000, 1024}, {2547, 2547},
+    {192, 192}, {640, 640}, {1000, 1024}, 
 };
 
 const vector<int> large_n_size_range = {
-    45, 64, 520, 1024, 2000, 3000
+    45, 64, 520, 1024, 2000, 
 };
 
 

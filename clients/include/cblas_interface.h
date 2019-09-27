@@ -114,4 +114,11 @@ void cblas_larfg(rocblas_int n, T* alpha, T* x, rocblas_int incx, T* tau);
 template <typename T>
 void cblas_larf(char side, rocblas_int m, rocblas_int n, T* x, rocblas_int incx, T* alpha, T *A, rocblas_int lda, T *work);
 
+template <typename T>
+void cblas_geqr2(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work);
+
+template <typename T>
+void cblas_geqrf(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work);
+
+
 #endif /* _CBLAS_INTERFACE_ */

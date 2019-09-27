@@ -10,14 +10,10 @@ rocblas_status rocsolver_getrf_batched_impl(rocblas_handle handle, rocblas_int m
     
     //logging is missing ???    
 
-    if (m < 0 || n < 0 || lda < 1 || lda < m) 
+    if (m < 0 || n < 0 || batch_count < 0 || lda < m) 
         return rocblas_status_invalid_size;
     if (!A || !ipiv || !info)
         return rocblas_status_invalid_pointer;
-    if (batch_count < 0)
-        return rocblas_status_invalid_size;
-    if (strideP < min(m,n))
-        return rocblas_status_invalid_size;
 
     rocblas_int strideA = 0;
 

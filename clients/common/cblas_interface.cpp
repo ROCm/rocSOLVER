@@ -67,6 +67,12 @@ void dlarfg_(int *n, double *alpha, double *x, int *incx, double *tau);
 void slarf_(char *side, int *m, int *n, float *x, int *incx, float *alpha, float *A, int *lda, float *work);
 void dlarf_(char *side, int *m, int *n, double *x, int *incx, double *alpha, double *A, int *lda, double *work);
 
+void sgeqr2_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *info);
+void dgeqr2_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *info);
+void sgeqrf_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
+void dgeqrf_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
+
+
 #ifdef __cplusplus
 }
 #endif
@@ -817,4 +823,36 @@ rocblas_int cblas_getrs<rocblas_double_complex>(
   rocblas_int info;
   zgetrs_(&trans, &n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
   return info;
+}
+
+// geqrf
+template <>
+void cblas_geqrf<float>(rocblas_int m, rocblas_int n, float *A,
+                               rocblas_int lda, float *ipiv, float *work) {
+  int info;
+  int lwork = n;
+  sgeqrf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_geqrf<double>(rocblas_int m, rocblas_int n, double *A,
+                               rocblas_int lda, double *ipiv, double *work) {
+  int info;
+  int lwork = n;
+  dgeqrf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+// geqr2
+template <>
+void cblas_geqr2<float>(rocblas_int m, rocblas_int n, float *A,
+                               rocblas_int lda, float *ipiv, float *work) {
+  int info;
+  sgeqr2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_geqr2<double>(rocblas_int m, rocblas_int n, double *A,
+                               rocblas_int lda, double *ipiv, double *work) {
+  int info;
+  dgeqr2_(&m, &n, A, &lda, ipiv, work, &info);
 }

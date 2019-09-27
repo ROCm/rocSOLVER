@@ -13,6 +13,7 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n, 
         return rocblas_status_invalid_pointer;
 
     rocblas_int stridex = 0;
+    rocblas_int strideP = 0;
     rocblas_int batch_count=1;
 
     return rocsolver_larfg_template<T>(handle,n,
@@ -20,7 +21,8 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n, 
                                         x,0,        //the vector is shifted 0 entries,
                                         incx,
                                         stridex,
-                                        tau, 
+                                        tau,
+                                        strideP, 
                                         batch_count);
 }
 

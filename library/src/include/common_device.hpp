@@ -6,8 +6,19 @@
 template<typename T, typename U>
 __forceinline__ __global__ void reset_info(T *info, const rocblas_int n, U val) {
     int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
     if (idx < n)
         info[idx] = T(val);
+}
+
+template<typename T, typename U>
+__forceinline__ __global__ void reset_batch_info(T *info, const rocblas_int stride, const rocblas_int n, U val) {
+    int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    int b = hipBlockIdx_y;
+
+    T* inf = info + b * stride;
+    if (idx < n)
+        inf[idx] = T(val);
 }
 
 template<typename T>

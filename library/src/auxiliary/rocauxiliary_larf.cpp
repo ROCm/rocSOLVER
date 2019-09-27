@@ -17,6 +17,7 @@ rocblas_status rocsolver_larf_impl(rocsolver_handle handle, const rocsolver_side
 
     rocblas_int stridex = 0;
     rocblas_int stridea = 0;
+    rocblas_int stridep = 0;
     rocblas_int batch_count=1;
 
     return rocsolver_larf_template<T>(handle,side, 
@@ -25,6 +26,7 @@ rocblas_status rocsolver_larf_impl(rocsolver_handle handle, const rocsolver_side
                                       incx,
                                       stridex,
                                       alpha,
+                                      stridep,
                                       A,0,       //matrix shifted 0 entries
                                       lda,
                                       stridea, 

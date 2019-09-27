@@ -3,7 +3,7 @@
  *
  * ************************************************************************ */
 
-#include "testing_getf2_getrf_batched.hpp"
+#include "testing_geqr2_geqrf_batched.hpp"
 #include "utility.h"
 #include <gtest/gtest.h>
 #include <math.h>
@@ -17,7 +17,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 
-typedef std::tuple<vector<int>, vector<int>> getf2_getrf_tuple;
+typedef std::tuple<vector<int>, vector<int>> qr_tuple;
 
 // **** ONLY TESTING NORMNAL USE CASES
 //      I.E. WHEN STRIDEA >= LDA*N AND STRIDEP >= MIN(M,N) ****
@@ -31,19 +31,19 @@ const vector<vector<int>> matrix_size_range = {
 // if stP == 0: stridep is min(M,N)
 // if stP == 1: stridep > min(M,N)
 const vector<vector<int>> n_size_range = {
-    {-1, 0}, {0, 0}, {20, 0}, {40, 1}, {100, 0}
+    {-1, 0}, {0, 0}, {16, 0}, {20, 1}, {40, 0} 
 };
 
 const vector<vector<int>> large_matrix_size_range = {
-    {192, 192}, {640, 640}, {1000, 1024}, 
+    {452, 492}, {640, 640}, {1000, 1024}
 };
 
 const vector<vector<int>> large_n_size_range = {
-    {45, 1}, {64, 0}, {520, 0}, {1000, 0}, {1024, 0},
+    {64, 0}, {98, 0}, {102, 0}, {220, 1}, {400, 0}, 
 };
 
 
-Arguments setup_arguments_b(getf2_getrf_tuple tup) 
+Arguments setup_arguments_qrb(qr_tuple tup) 
 {
   vector<int> matrix_size = std::get<0>(tup);
   vector<int> n_size = std::get<1>(tup);
@@ -60,35 +60,18 @@ Arguments setup_arguments_b(getf2_getrf_tuple tup)
   return arg;
 }
 
-class LUfact_b : public ::TestWithParam<getf2_getrf_tuple> {
+class QRfact_b : public ::TestWithParam<qr_tuple> {
 protected:
-  LUfact_b() {}
-  virtual ~LUfact_b() {}
+  QRfact_b() {}
+  virtual ~QRfact_b() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
 
-TEST_P(LUfact_b, getf2_batched_float) {
-  Arguments arg = setup_arguments_b(GetParam());
+TEST_P(QRfact_b, geqr2_batched_float) {
+  Arguments arg = setup_arguments_qrb(GetParam());
 
-  rocblas_status status = testing_getf2_getrf_batched<float,0>(arg);
-
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else {
-      cerr << "unknown error...";
-      EXPECT_EQ(1000, status);
-    }
-  }
-}
-
-TEST_P(LUfact_b, getf2_batched_double) {
-  Arguments arg = setup_arguments_b(GetParam());
-
-  rocblas_status status = testing_getf2_getrf_batched<double,0>(arg);
+  rocblas_status status = testing_geqr2_geqrf_batched<float,0>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -102,27 +85,10 @@ TEST_P(LUfact_b, getf2_batched_double) {
   }
 }
 
-TEST_P(LUfact_b, getrf_batched_float) {
-  Arguments arg = setup_arguments_b(GetParam());
+TEST_P(QRfact_b, geqr2_batched_double) {
+  Arguments arg = setup_arguments_qrb(GetParam());
 
-  rocblas_status status = testing_getf2_getrf_batched<float,1>(arg);
-
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else {
-      cerr << "unknown error...";
-      EXPECT_EQ(1000, status);
-    }
-  }
-}
-
-TEST_P(LUfact_b, getrf_batched_double) {
-  Arguments arg = setup_arguments_b(GetParam());
-
-  rocblas_status status = testing_getf2_getrf_batched<double,1>(arg);
+  rocblas_status status = testing_geqr2_geqrf_batched<double,0>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -136,11 +102,47 @@ TEST_P(LUfact_b, getrf_batched_double) {
   }
 }
 
+/*TEST_P(QRfact_b, geqrf_batched_float) {
+  Arguments arg = setup_arguments_qrb(GetParam());
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, LUfact_b,
+  rocblas_status status = testing_geqr2_geqrf_batched<float,1>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else {
+      cerr << "unknown error...";
+      EXPECT_EQ(1000, status);
+    }
+  }
+}
+
+TEST_P(QRfact_b, geqrf_batched_double) {
+  Arguments arg = setup_arguments_qrb(GetParam());
+
+  rocblas_status status = testing_geqr2_geqrf_batched<double,1>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else {
+      cerr << "unknown error...";
+      EXPECT_EQ(1000, status);
+    }
+  }
+}*/
+
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, QRfact_b,
                         Combine(ValuesIn(large_matrix_size_range),
                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, LUfact_b,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, QRfact_b,
                         Combine(ValuesIn(matrix_size_range),
                                 ValuesIn(n_size_range)));
+
+

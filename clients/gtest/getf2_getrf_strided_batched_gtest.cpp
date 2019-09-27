@@ -19,28 +19,30 @@ using namespace std;
 
 typedef std::tuple<vector<int>, vector<int>> getf2_getrf_tuple;
 
+// **** ONLY TESTING NORMNAL USE CASES
+//      I.E. WHEN STRIDEA >= LDA*N AND STRIDEP >= MIN(M,N) ****
+
+
 // vector of vector, each vector is a {M, lda, stA};
 // if stA == 0: strideA is lda*N
 // if stA == 1: strideA > lda*N 
-// if stA == -1: strideA is invalid (< lda*N)
 const vector<vector<int>> matrix_size_range = {
-    {0, 1, 0}, {-1, 1, 0}, {20, 5, 0}, {32, 32, -1}, {50, 50, 1}, {70, 100, 0}
+    {0, 1, 0}, {-1, 1, 0}, {20, 5, 0}, {50, 50, 1}, {70, 100, 0}
 };
 
 // each is a {N, stP}
 // if stP == 0: stridep is min(M,N)
 // if stP == 1: stridep > min(M,N)
-// if stP == -1: stridep is invalid (< min(M,N))
 const vector<vector<int>> n_size_range = {
-    {-1, 0}, {0, 0}, {16, -1}, {20, 0}, {40, 1}, {100, 0}
+    {-1, 0}, {0, 0}, {20, 0}, {40, 1}, {100, 0}
 };
 
 const vector<vector<int>> large_matrix_size_range = {
-    {192, 192, 1}, {640, 640, 0}, {1000, 1024, 0}, {2547, 2547, 0},
+    {192, 192, 1}, {640, 640, 0}, {1000, 1024, 0}, 
 };
 
 const vector<vector<int>> large_n_size_range = {
-    {45, 1}, {64, 0}, {520, 0}, {1000, 0}, {1024, 0}, {3000, 0},
+    {45, 1}, {64, 0}, {520, 0}, {1000, 0}, {1024, 0}, 
 };
 
 
@@ -78,7 +80,7 @@ TEST_P(LUfact_sb, getf2_strided_batched_float) {
   // if not success, then the input argument is problematic, so detect the error
   // message
   if (status != rocblas_status_success) {
-    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M || arg.bsa < arg.lda * arg.N || arg.bsp < min(arg.M, arg.N)) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
     } else {
       cerr << "unknown error...";
@@ -95,7 +97,7 @@ TEST_P(LUfact_sb, getf2_strided_batched_double) {
   // if not success, then the input argument is problematic, so detect the error
   // message
   if (status != rocblas_status_success) {
-    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M || arg.bsa < arg.lda * arg.N || arg.bsp < min(arg.M, arg.N)) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
     } else {
       cerr << "unknown error...";
@@ -112,7 +114,7 @@ TEST_P(LUfact_sb, getrf_strided_batched_float) {
   // if not success, then the input argument is problematic, so detect the error
   // message
   if (status != rocblas_status_success) {
-    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M || arg.bsa < arg.lda * arg.N || arg.bsp < min(arg.M, arg.N)) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
     } else {
       cerr << "unknown error...";
@@ -129,7 +131,7 @@ TEST_P(LUfact_sb, getrf_strided_batched_double) {
   // if not success, then the input argument is problematic, so detect the error
   // message
   if (status != rocblas_status_success) {
-    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M || arg.bsa < arg.lda * arg.N || arg.bsp < min(arg.M, arg.N)) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
     } else {
       cerr << "unknown error...";

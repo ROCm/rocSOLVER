@@ -16,11 +16,12 @@
 #include "common_device.hpp"
 
 template <typename T, typename U>
-__global__ void set_taubeta(T *tau, T *norms, U alpha, const rocblas_int shifta, const rocblas_int stride)
+__global__ void set_taubeta(T *tau, const rocblas_int strideP, T *norms, U alpha, const rocblas_int shifta, const rocblas_int stride)
 {
     int b = hipBlockIdx_x;
 
-    T* a = load_ptr_batch(alpha,shifta,b,stride);
+    T* a = load_ptr_batch<T>(alpha,shifta,b,stride);
+    T* t = tau + b*strideP;
 
     if(norms[b] > 0) {
         T n = T(sqrt(norms[b]*norms[b] + a[0]*a[0]));
@@ -29,12 +30,12 @@ __global__ void set_taubeta(T *tau, T *norms, U alpha, const rocblas_int shifta,
         //scalling factor:
         norms[b] = 1.0 / (a[0] - n);
         //tau:
-        tau[b] = (n - a[0]) / n;
+        t[0] = (n - a[0]) / n;
         //beta:
         a[0] = n;
     } else {
         norms[b] = 1;
-        tau[b] = 0;
+        t[0] = 0;
     }
 }
 
@@ -42,7 +43,7 @@ __global__ void set_taubeta(T *tau, T *norms, U alpha, const rocblas_int shifta,
 template <typename T, typename U>
 rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int n, U alpha, const rocblas_int shifta, 
                                         U x, const rocblas_int shiftx, const rocblas_int incx, const rocblas_int stridex,
-                                        T *tau, const rocblas_int batch_count)
+                                        T *tau, const rocblas_int strideP, const rocblas_int batch_count)
 {
     // quick return
     if (n == 0 || !batch_count)
@@ -51,11 +52,10 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int
     //if n==1 return tau=0
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
-    dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(BLOCKSIZE, 1, 1); 
+    dim3 gridReset(1, batch_count, 1);
+    dim3 threads(1, 1, 1); 
     if (n == 1) {
-        hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,tau,batch_count,0);
+        hipLaunchKernelGGL(reset_batch_info,gridReset,threads,0,stream,tau,strideP,1,0);
         return rocblas_status_success;    
     } 
 
@@ -80,18 +80,18 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int
     
     //compute norm of x
     for (int b=0;b<batch_count;++b) {
-        xp = load_ptr_batch(xx,shiftx,b,stridex);
+        xp = load_ptr_batch<T>(xx,shiftx,b,stridex);
         rocblas_nrm2(handle, n - 1, xp, incx, (norms + b));
     }
 
     //set value of tau and beta and scalling factor for vector x
     //alpha <- beta
     //norms <- scalling   
-    hipLaunchKernelGGL(set_taubeta<T>,dim3(batch_count),dim3(1),0,stream,tau,norms,alpha,shifta,stridex);
+    hipLaunchKernelGGL(set_taubeta<T>,dim3(batch_count),dim3(1),0,stream,tau,strideP,norms,alpha,shifta,stridex);
      
     //compute vector v=x*norms
     for (int b=0;b<batch_count;++b) {
-        xp = load_ptr_batch(xx,shiftx,b,stridex);
+        xp = load_ptr_batch<T>(xx,shiftx,b,stridex);
         rocblas_scal(handle, n - 1, (norms + b), xp, incx);
     }
 
