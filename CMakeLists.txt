@@ -167,8 +167,7 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
 endif( )
 
 
-#find_package( rocblas REQUIRED CONFIG PATHS /opt/rocm )
-find_package( rocblas REQUIRED CONFIG PATHS /home/jzuniga-/WORKSPACE/rocBLAS/build/release/rocblas-install/rocblas )
+find_package( rocblas REQUIRED CONFIG PATHS /opt/rocm )
 include_directories( ${rocblas_INCLUDE_DIR} )
 
 
