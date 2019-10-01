@@ -10,15 +10,10 @@
 #include "rocblas.h"
 
 /*!\file
- * \brief provide template functions interfaces to CBLAS C89 interfaces, it is
+ * \brief provide template functions interfaces to CBLAS and LAPACK interfaces, it is
  * only used for testing not part of the GPU library
  */
 
-/*
- * ===========================================================================
- *    level 1 BLAS
- * ===========================================================================
- */
 template <typename T>
 void cblas_iamax(rocblas_int n, const T *x, rocblas_int incx,
                  rocblas_int *result);
@@ -112,7 +107,18 @@ rocblas_int cblas_getrs(char trans, rocblas_int n, rocblas_int nrhs, T *A,
 
 template <typename T>
 rocblas_int cblas_potrf(char uplo, rocblas_int m, T *A, rocblas_int lda);
-/* ============================================================================================
- */
+
+template <typename T>
+void cblas_larfg(rocblas_int n, T* alpha, T* x, rocblas_int incx, T* tau);
+
+template <typename T>
+void cblas_larf(char side, rocblas_int m, rocblas_int n, T* x, rocblas_int incx, T* alpha, T *A, rocblas_int lda, T *work);
+
+template <typename T>
+void cblas_geqr2(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work);
+
+template <typename T>
+void cblas_geqrf(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work);
+
 
 #endif /* _CBLAS_INTERFACE_ */

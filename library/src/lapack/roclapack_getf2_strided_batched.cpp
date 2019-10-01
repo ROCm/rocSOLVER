@@ -13,11 +13,7 @@ rocblas_status rocsolver_getf2_strided_batched_impl(rocblas_handle handle, const
     
     if (!A || !ipiv || !info)
         return rocblas_status_invalid_pointer;
-    if (m < 0 || n < 0 || lda < m || lda < 1 || batch_count < 0)
-        return rocblas_status_invalid_size;
-    if (strideA < lda * n)
-        return rocblas_status_invalid_size;
-    if (strideP < min(m,n))
+    if (m < 0 || n < 0 || lda < m || batch_count < 0)
         return rocblas_status_invalid_size;
         
 

@@ -16,8 +16,29 @@
 #include "helpers.h"
 #include "ideal_sizes.hpp"
 #include "common_device.hpp"
-#include "getrf_device.hpp"
 #include "../auxiliary/rocauxiliary_laswp.hpp"
+
+template <typename T, typename U>
+inline __global__ void getf2_check_singularity(U AA, const rocblas_int shiftA, const rocblas_int strideA,
+                                        rocblas_int* ipivA, const rocblas_int shiftP,
+                                        const rocblas_int strideP, const rocblas_int j,
+                                        const rocblas_int lda,
+                                        T* invpivot, rocblas_int* info)
+{
+    int id = hipBlockIdx_x;
+
+    T* A = load_ptr_batch<T>(AA,shiftA,id,strideA);
+    rocblas_int *ipiv = ipivA + id*strideP + shiftP;
+
+    ipiv[j] += j;           //update the pivot index
+    if (A[j * lda + ipiv[j] - 1] == 0) {
+        invpivot[id] = 1.0;
+        if (info[id] == 0)
+           info[id] = j + 1;   //use Fortran 1-based indexing
+    }
+    else
+        invpivot[id] = 1.0 / A[j * lda + ipiv[j] - 1];
+}
 
 
 template <typename T, typename U>
@@ -35,6 +56,8 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
         //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
         T* AA[batch_count];
         hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
+    #else
+        T* AA = A;
     #endif
 
     //constants to use when calling rocablas functions
@@ -59,7 +82,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
     T* M;
 
     //info=0 (starting with a nonsingular matrix)
-    hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count);
+    hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count,0);
     
     // **** BATCH IS EXECUTED IN A FOR-LOOP UNTIL BATCH-BLAS
     //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
@@ -68,12 +91,8 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
     for (rocblas_int j = 0; j < dim; ++j) {
         // find pivot. Use Fortran 1-based indexing for the ipiv array as iamax does that as well!
         for (int b=0;b<batch_count;++b) {
-            #ifdef batched
-                M = AA[b];
-            #else
-                M = A + b*strideA;
-            #endif
-            rocblas_iamax(handle, m - j, (M + shiftA + idx2D(j, j, lda)), 1, 
+            M = load_ptr_batch<T>(AA,shiftA,b,strideA);
+            rocblas_iamax(handle, m - j, (M + idx2D(j, j, lda)), 1, 
                         (ipiv + shiftP + b*strideP + j));
         }
 
@@ -86,27 +105,19 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
 
         // Compute elements J+1:M of J'th column
         for (int b=0;b<batch_count;++b) {
-            #ifdef batched
-                M = AA[b];
-            #else
-                M = A + b*strideA;
-            #endif
+            M = load_ptr_batch<T>(AA,shiftA,b,strideA);
             rocblas_scal(handle, (m-j-1), (pivotGPU + b), 
-                            (M + shiftA + idx2D(j + 1, j, lda)), oneInt); 
+                            (M + idx2D(j + 1, j, lda)), oneInt); 
         }
 
         // update trailing submatrix
         if (j < min(m, n) - 1) {
             for (int b=0;b<batch_count;++b) {
-                #ifdef batched
-                    M = AA[b];
-                #else
-                    M = A + b*strideA;
-                #endif
+                M = load_ptr_batch<T>(AA,shiftA,b,strideA);
                 rocblas_ger(handle, m - j - 1, n - j - 1, minoneInt,
-                        (M + shiftA + idx2D(j + 1, j, lda)), oneInt, 
-                        (M + shiftA + idx2D(j, j + 1, lda)), lda,
-                        (M + shiftA + idx2D(j + 1, j + 1, lda)), lda);
+                        (M + idx2D(j + 1, j, lda)), oneInt, 
+                        (M + idx2D(j, j + 1, lda)), lda,
+                        (M + idx2D(j + 1, j + 1, lda)), lda);
             }
         }
     }

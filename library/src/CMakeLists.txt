@@ -28,6 +28,8 @@ find_package(Threads REQUIRED)
 
 set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_laswp.cpp
+  auxiliary/rocauxiliary_larfg.cpp
+  auxiliary/rocauxiliary_larf.cpp
 )
 
 set( rocsolver_common_source
@@ -37,13 +39,19 @@ set( rocsolver_common_source
 
 set( rocsolver_lapack_source
   lapack/roclapack_getf2.cpp
-  lapack/roclapack_getrf.cpp
   lapack/roclapack_getf2_batched.cpp
-  lapack/roclapack_getrf_batched.cpp
   lapack/roclapack_getf2_strided_batched.cpp
+  lapack/roclapack_getrf.cpp
+  lapack/roclapack_getrf_batched.cpp
   lapack/roclapack_getrf_strided_batched.cpp
   lapack/roclapack_getrs.cpp
   lapack/roclapack_potf2.cpp
+  lapack/roclapack_geqr2.cpp
+  lapack/roclapack_geqr2_batched.cpp
+  lapack/roclapack_geqr2_strided_batched.cpp
+  lapack/roclapack_geqrf.cpp
+  lapack/roclapack_geqrf_batched.cpp
+  lapack/roclapack_geqrf_strided_batched.cpp
 )
 
 prepend_path( ".." rocsolver_headers_public relative_rocsolver_headers_public )

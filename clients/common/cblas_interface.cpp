@@ -61,15 +61,58 @@ void zgetrs_(char *trans, int *n, int *nrhs, rocblas_double_complex *A,
              int *lda, int *ipiv, rocblas_double_complex *B, int *ldb,
              int *info);
 
+void slarfg_(int *n, float *alpha, float *x, int *incx, float *tau);
+void dlarfg_(int *n, double *alpha, double *x, int *incx, double *tau);
+
+void slarf_(char *side, int *m, int *n, float *x, int *incx, float *alpha, float *A, int *lda, float *work);
+void dlarf_(char *side, int *m, int *n, double *x, int *incx, double *alpha, double *A, int *lda, double *work);
+
+void sgeqr2_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *info);
+void dgeqr2_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *info);
+void sgeqrf_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
+void dgeqrf_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
+
+
 #ifdef __cplusplus
 }
 #endif
 
 /*
  * ===========================================================================
+ *    Auxiliary LAPACK
+ * ===========================================================================
+ */
+
+//larfg
+
+template <>
+void cblas_larfg<float>(rocblas_int n, float *alpha, float *x, rocblas_int incx, float *tau) {
+    slarfg_(&n, alpha, x, &incx, tau);
+}
+
+template <>
+void cblas_larfg<double>(rocblas_int n, double *alpha, double *x, rocblas_int incx, double *tau) {
+    dlarfg_(&n, alpha, x, &incx, tau);
+}
+
+//larf
+
+template <>
+void cblas_larf<float>(char side, rocblas_int m, rocblas_int n, float *x, rocblas_int incx, float *alpha, float *A, rocblas_int lda, float *work) {
+    slarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
+}
+
+template <>
+void cblas_larf<double>(char side, rocblas_int m, rocblas_int n, double *x, rocblas_int incx, double *alpha, double *A, rocblas_int lda, double *work) {
+    dlarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
+}
+
+/*
+ * ===========================================================================
  *    level 1 BLAS
  * ===========================================================================
  */
+
 // scal
 template <>
 void cblas_scal<float>(rocblas_int n, const float alpha, float *x,
@@ -780,4 +823,36 @@ rocblas_int cblas_getrs<rocblas_double_complex>(
   rocblas_int info;
   zgetrs_(&trans, &n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
   return info;
+}
+
+// geqrf
+template <>
+void cblas_geqrf<float>(rocblas_int m, rocblas_int n, float *A,
+                               rocblas_int lda, float *ipiv, float *work) {
+  int info;
+  int lwork = n;
+  sgeqrf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_geqrf<double>(rocblas_int m, rocblas_int n, double *A,
+                               rocblas_int lda, double *ipiv, double *work) {
+  int info;
+  int lwork = n;
+  dgeqrf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+// geqr2
+template <>
+void cblas_geqr2<float>(rocblas_int m, rocblas_int n, float *A,
+                               rocblas_int lda, float *ipiv, float *work) {
+  int info;
+  sgeqr2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_geqr2<double>(rocblas_int m, rocblas_int n, double *A,
+                               rocblas_int lda, double *ipiv, double *work) {
+  int info;
+  dgeqr2_(&m, &n, A, &lda, ipiv, work, &info);
 }
