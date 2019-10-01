@@ -1,6 +1,18 @@
 #include "rocblas.hpp"
 
 template <>
+rocblas_status rocblas_nrm2(rocblas_handle handle, rocblas_int n,
+                            const float* x, const rocblas_int incx, float* result) {
+  return rocblas_snrm2(handle, n, x, incx, result);
+}
+
+template <>
+rocblas_status rocblas_nrm2(rocblas_handle handle, rocblas_int n,
+                            const double* x, const rocblas_int incx, double* result) {
+  return rocblas_dnrm2(handle, n, x, incx, result);
+}
+
+template <>
 rocblas_status rocblas_scal(rocblas_handle handle, rocblas_int n,
                             const float *alpha, float *x, rocblas_int incx) {
   return rocblas_sscal(handle, n, alpha, x, incx);

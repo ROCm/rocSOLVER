@@ -9,7 +9,7 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle, const rocblas_int m,
     
     //logging is missing ???    
 
-    if (m < 0 || n < 0 || lda < 1 || lda < m) 
+    if (m < 0 || n < 0 || lda < m) 
         return rocblas_status_invalid_size;
     if (!A || !ipiv || !info)
         return rocblas_status_invalid_pointer;

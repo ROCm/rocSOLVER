@@ -2,6 +2,7 @@
 #define IDEAL_SIZES_HPP
 
 
+#define BLOCKSIZE 256
 #define LASWP_BLOCKSIZE 256
 #define GETF2_BLOCKSIZE 256
 

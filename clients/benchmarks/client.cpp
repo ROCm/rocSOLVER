@@ -9,13 +9,19 @@
 #include "testing_getf2_getrf.hpp"
 #include "testing_getf2_getrf_batched.hpp"
 #include "testing_getf2_getrf_strided_batched.hpp"
+#include "testing_geqr2_geqrf.hpp"
+#include "testing_geqr2_geqrf_batched.hpp"
+#include "testing_geqr2_geqrf_strided_batched.hpp"
 #include "testing_getrs.hpp"
 #include "testing_potf2.hpp"
+#include "testing_larfg.hpp"
+#include "testing_larf.hpp"
 #include "utility.h"
 
 namespace po = boost::program_options;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) 
+{
   Arguments argus;
   
   //disable unit_check in client benchmark, it is only
@@ -228,11 +234,59 @@ int main(int argc, char *argv[]) {
     else if (precision == 'd')
       testing_getf2_getrf_strided_batched<double,1>(argus);
   } 
+  else if (function == "geqr2") {
+    if (precision == 's')
+      testing_geqr2_geqrf<float,0>(argus);
+    else if (precision == 'd')
+      testing_geqr2_geqrf<double,0>(argus);
+  }
+  else if (function == "geqr2_batched") {
+    if (precision == 's')
+      testing_geqr2_geqrf_batched<float,0>(argus);
+    else if (precision == 'd')
+      testing_geqr2_geqrf_batched<double,0>(argus);
+  }
+  else if (function == "geqr2_strided_batched") {
+    if (precision == 's')
+      testing_geqr2_geqrf_strided_batched<float,0>(argus);
+    else if (precision == 'd')
+      testing_geqr2_geqrf_strided_batched<double,0>(argus);
+  } 
+  else if (function == "geqrf") {
+    if (precision == 's')
+      testing_geqr2_geqrf<float,1>(argus);
+    else if (precision == 'd')
+      testing_geqr2_geqrf<double,1>(argus);
+  } 
+  else if (function == "geqrf_batched") {
+    if (precision == 's')
+      testing_geqr2_geqrf_batched<float,1>(argus);
+    else if (precision == 'd')
+      testing_geqr2_geqrf_batched<double,1>(argus);
+  } 
+  else if (function == "geqrf_strided_batched") {
+    if (precision == 's')
+      testing_geqr2_geqrf_strided_batched<float,1>(argus);
+    else if (precision == 'd')
+      testing_geqr2_geqrf_strided_batched<double,1>(argus);
+  } 
   else if (function == "getrs") {
     if (precision == 's')
       testing_getrs<float>(argus);
     else if (precision == 'd')
       testing_getrs<double>(argus);
+  } 
+  else if (function == "larfg") {
+    if (precision == 's')
+      testing_larfg<float>(argus);
+    else if (precision == 'd')
+      testing_larfg<double>(argus);
+  } 
+  else if (function == "larf") {
+    if (precision == 's')
+      testing_larf<float>(argus);
+    else if (precision == 'd')
+      testing_larf<double>(argus);
   } 
   else {
     printf("Invalid value for --function \n");

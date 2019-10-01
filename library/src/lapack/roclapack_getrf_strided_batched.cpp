@@ -9,14 +9,10 @@ rocblas_status rocsolver_getrf_strided_batched_impl(rocblas_handle handle, const
     
     //logging is missing ???    
 
-    if (m < 0 || n < 0 || lda < 1 || lda < m) 
+    if (m < 0 || n < 0 || batch_count  < 0 || lda < m) 
         return rocblas_status_invalid_size;
     if (!A || !ipiv || !info)
         return rocblas_status_invalid_pointer;
-    if (strideA < lda * n || batch_count < 0)
-        return rocblas_status_invalid_size;
-    if (strideP < min(m,n))
-        return rocblas_status_invalid_size;
 
     return rocsolver_getrf_template<T>(handle,m,n,
                                         A,0,    //The matrix is shifted 0 entries (will work on the entire matrix)

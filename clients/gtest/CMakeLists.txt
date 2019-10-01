@@ -40,6 +40,11 @@ set(roclapack_test_source
     getf2_getrf_gtest.cpp
     getf2_getrf_batched_gtest.cpp
     getf2_getrf_strided_batched_gtest.cpp
+    larfg_gtest.cpp
+    larf_gtest.cpp
+    geqr2_geqrf_gtest.cpp
+    geqr2_geqrf_batched_gtest.cpp
+    geqr2_geqrf_strided_batched_gtest.cpp
     getrs_gtest.cpp
     potf2_gtest.cpp
     )
@@ -108,6 +113,7 @@ else()
 endif()
 
 target_link_libraries( rocsolver-test PRIVATE /opt/rocm/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
+
 
 get_target_property( HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE )
 
