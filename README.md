@@ -11,7 +11,16 @@ CXX=/opt/rocm/bin/hcc cmake ..
 make
 ```
 # Implemented functions in LAPACK notation
-Cholesky decomposition: `rocsolver_spotf2() rocsolver_dpotf2()`  
-unblocked LU decomposition: `rocsolver_sgetf2() rocsolver_dgetf2()`  
-blocked LU decomposition: `rocsolver_sgetrf() rocsolver_dgetrf()`  
+Single and double precision:
+
+Cholesky decomposition:                 `rocsolver_potf2()` 
+unblocked LU decomposition:             `rocsolver_getf2()` 
+                                        `rocsolver_getf2_batched()`
+                                        `rocsolver_getf2_strided_batched()`
+blocked LU decomposition:               `rocsolver_getrf()`
+                                        `rocsolver_getrf_batched()`
+                                        `rocsolver_getrf_strided_batched()`
+unblocked QR decomposition:             `rocsolver_geqr2()`
+                                        `rocsolver_geqr2_batched()`
+                                        `rocsolver_geqr2_strided_batched()`
 solution of system of linear equations: `rocsolver_sgetrs() rocsolver_dgetrs()`  
