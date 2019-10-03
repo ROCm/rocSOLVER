@@ -1,6 +1,6 @@
 # rocSOLVER
 
-rocSOLVER is a work-in-progress implementation of a subset of LAPACK functionality on the ROCm platform. It uses rocBLAS as a companion GPU BLAS implementation.
+rocSOLVER is a work-in-progress implementation of a subset of LAPACK functionality on the ROCm platform. It requires rocBLAS as a companion GPU BLAS implementation.
 
 # Build
 Requires `cmake` and `ROCm` including `hcc` and `rocBLAS` to be installed.
