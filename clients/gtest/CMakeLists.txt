@@ -31,7 +31,9 @@ if( NOT cblas_FOUND )
   message( FATAL_ERROR "cblas is a required dependency and is not found;  try adding cblas path to CMAKE_PREFIX_PATH" )
 endif( )
 
+add_definitions(-DGTEST_LINKED_AS_SHARED_LIBRARY)
 find_package( GTest REQUIRED )
+
 
 set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
