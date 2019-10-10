@@ -64,10 +64,25 @@ target_include_directories( rocsolver-bench
 #set( BLIS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/build/deps/blis/include/blis )
 #set( BLIS_LIBRARY ${CMAKE_SOURCE_DIR}/build/deps/blis/lib/libblis.so )
 
-if( EXISTS /etc/redhat-release)
-    set( OPENMP_INCLUDE_DIR /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/include )
-    set( OPENMP_LIBRARY /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/libgomp.so ) 
-    set( CLANG_INCLUDE_DIR /opt/rocm/hcc/lib/clang/9.0.0/include ) 
+if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
+    if( OS_ID_rhel OR OS_ID_centos)
+        # defer OpenMP include as search order must come after clang
+        set( XXX_OPENMP_INCLUDE_DIR /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/include )
+        set( OPENMP_LIBRARY /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/libgomp.so )
+    else()
+    #SLES
+        set( OPENMP_INCLUDE_DIR /usr/lib64/gcc/x86_64-suse-linux/7/include/ )
+        set( OPENMP_LIBRARY /usr/lib64/gcc/x86_64-suse-linux/7/libgomp.so )
+    endif()
+
+    if(EXISTS /opt/rocm/hcc/lib/clang/10.0.0/include/immintrin.h)
+        set( CLANG_INCLUDE_DIR /opt/rocm/hcc/lib/clang/10.0.0/include )
+    elseif (EXISTS /opt/rocm/hcc/lib/clang/9.0.0/include/immintrin.h)
+        set( CLANG_INCLUDE_DIR /opt/rocm/hcc/lib/clang/9.0.0/include )
+    else()
+        error("cannot find immintrin.h")
+    endif()
+
 
     # External header includes included as system files
     target_include_directories( rocsolver-bench
@@ -124,6 +139,11 @@ elseif( CMAKE_COMPILER_IS_GNUCXX OR CXX_VERSION_STRING MATCHES "clang")
   # GCC or hip-clang needs specific flags to turn on f16c intrinsics
   target_compile_options( rocsolver-bench PRIVATE -mf16c )
 endif( )
+
+if( OS_ID_rhel OR OS_ID_centos)
+    # force clang includes to take precedence over devtoolset-7 which we only want for OpenMP
+    set(CMAKE_CXX_FLAGS "-isystem ${CLANG_INCLUDE_DIR} -isystem ${XXX_OPENMP_INCLUDE_DIR} ${CMAKE_CXX_FLAGS}")
+endif()
 
 set_target_properties( rocsolver-bench PROPERTIES CXX_EXTENSIONS NO )
 set_target_properties( rocsolver-bench PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
