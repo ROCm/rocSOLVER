@@ -72,7 +72,11 @@ else()
 target_link_libraries( rocsolver PRIVATE hip::hip_hcc hip::hip_device hcc::hccshared )
 endif()
 
-set_target_properties( rocsolver PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
+if( OS_ID_rhel OR OS_ID_centos)
+  set_target_properties( rocsolver PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON )
+else()
+  set_target_properties( rocsolver PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
+endif()
 
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   # Remove following when hcc is fixed; hcc emits following spurious warning ROCm v1.6.1
