@@ -51,5 +51,5 @@ RUN wget https://github.com/google/googletest/archive/release-1.10.0.tar.gz && \
     cp lib/libgtest*.a /usr/local/lib
 
 RUN cd /home/ && git clone https://github.com/Reference-LAPACK/lapack.git && cd lapack && \
-    mkdir build && cd build && cmake3 -DCMAKE_INSTALL_LIBDIR=$HOME/.local/lapack .. && \
-    cmake3 --build -j . --target install
+    mkdir build && cd build && cmake3 -DCMAKE_INSTALL_LIBDIR=/usr/local/lib/lapack .. && \
+    cmake3 --build -j . --target install && cd CBLAS && make cblas_testing
