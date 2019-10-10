@@ -54,3 +54,14 @@ RUN wget https://github.com/google/googletest/archive/release-1.10.0.tar.gz && \
 RUN cd /home/ && git clone https://github.com/Reference-LAPACK/lapack.git && cd lapack && \
     mkdir build && cd build && cmake3 -DCMAKE_INSTALL_LIBDIR=/usr/local/lapack .. && \
     cmake3 --build -j4 . --target install
+
+ARG ROCBLAS_SRC_ROOT=/usr/local/src/rocBLAS
+
+# Clone rocblas repo
+# Build client dependencies and install into /usr/local (LAPACK & GTEST)
+RUN mkdir -p ${ROCBLAS_SRC_ROOT} && cd ${ROCBLAS_SRC_ROOT} && \
+    git clone -b develop --depth=1 https://github.com/ROCmSoftwarePlatform/rocBLAS . && \
+    mkdir -p build/deps && cd build/deps && \
+    cmake -DBUILD_BOOST=OFF ${ROCBLAS_SRC_ROOT}/deps && \
+    make -j $(nproc) install && \
+    rm -rf ${ROCBLAS_SRC_ROOT}
