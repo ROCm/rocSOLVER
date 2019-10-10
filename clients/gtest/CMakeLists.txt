@@ -161,9 +161,7 @@ if( OS_ID_rhel OR OS_ID_centos)
     set(CMAKE_CXX_FLAGS "-isystem ${CLANG_INCLUDE_DIR} -isystem ${XXX_OPENMP_INCLUDE_DIR} ${CMAKE_CXX_FLAGS}")
 endif()
 
-if( CXX_VERSION_STRING MATCHES "clang" )
-  target_link_libraries( rocsolver-test PRIVATE -lpthread -lm )
-endif( )
+target_link_libraries( rocsolver-test PRIVATE -lpthread -lm )
 
 set_target_properties( rocsolver-test PROPERTIES CXX_EXTENSIONS NO )
 set_target_properties( rocsolver-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
