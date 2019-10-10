@@ -62,6 +62,6 @@ ARG ROCBLAS_SRC_ROOT=/usr/local/src/rocBLAS
 RUN mkdir -p ${ROCBLAS_SRC_ROOT} && cd ${ROCBLAS_SRC_ROOT} && \
     git clone -b develop --depth=1 https://github.com/ROCmSoftwarePlatform/rocBLAS . && \
     mkdir -p build/deps && cd build/deps && \
-    cmake -DBUILD_BOOST=OFF ${ROCBLAS_SRC_ROOT}/deps && \
+    cmake3 -DBUILD_BOOST=OFF ${ROCBLAS_SRC_ROOT}/deps && \
     make -j $(nproc) install && \
     rm -rf ${ROCBLAS_SRC_ROOT}
