@@ -48,7 +48,7 @@ rocSOLVERCI:
                     sudo mkdir build && cd build
                     export PATH=/opt/rocm/bin:$PATH
                     ${project.paths.build_command}
-                    sudo make -j32
+                    sudo make -j4
                 """
 
         platform.runCommand(this, command)
