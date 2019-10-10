@@ -59,4 +59,4 @@ RUN mkdir -p ${ROCBLAS_SRC_ROOT} && cd ${ROCBLAS_SRC_ROOT} && \
 RUN wget https://github.com/google/googletest/archive/release-1.10.0.tar.gz && \
     tar -xvzf *.gz && cd googletest* && mkdir build && cd build && cmake3 .. && \
     make -j && cp -r ../googletest/include /usr/local/include && \
-    cp -r ../googlemock/gtest/libgtest*.a /usr/local/lib  
+    cp -r ../lib/libgtest*.a /usr/local/lib  
