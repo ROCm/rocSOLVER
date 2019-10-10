@@ -17,13 +17,8 @@ RUN yum install -y \
     git \
     cmake3 \
     make \
-    clang \
-    clang-devel \
-    gcc-c++ \
     gcc-gfortran \
     gtest-devel \ 
-    gtest \
-    lapack-devel \
     unzip \
     wget \
     pkgconfig \
@@ -33,7 +28,6 @@ RUN yum install -y \
     python36-pip \
     python36-pytest \
     python36-setuptools \
-    PyYAML \
     llvm7.0-devel \
     llvm7.0-static \
     libcxx-devel \
@@ -43,6 +37,8 @@ RUN yum install -y \
     numactl-libs \
     rpm-build \
     deltarpm 
+
+RUN pip3 install wheel && pip3 install tox pyyaml
 
 RUN echo '#!/bin/bash' | tee /etc/profile.d/devtoolset7.sh && echo \
     'source scl_source enable devtoolset-7' >>/etc/profile.d/devtoolset7.sh
