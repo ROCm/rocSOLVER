@@ -18,7 +18,6 @@ RUN yum install -y \
     cmake3 \
     make \
     gcc-gfortran \
-    gtest-devel \ 
     unzip \
     wget \
     pkgconfig \
@@ -38,8 +37,6 @@ RUN yum install -y \
     rpm-build \
     deltarpm 
 
-RUN pip3 install wheel && pip3 install tox pyyaml
-
 RUN echo '#!/bin/bash' | tee /etc/profile.d/devtoolset7.sh && echo \
     'source scl_source enable devtoolset-7' >>/etc/profile.d/devtoolset7.sh
 
@@ -58,3 +55,8 @@ RUN mkdir -p ${ROCBLAS_SRC_ROOT} && cd ${ROCBLAS_SRC_ROOT} && \
     cmake3 -DBUILD_BOOST=OFF ${ROCBLAS_SRC_ROOT}/deps && \
     make -j $(nproc) install && \
     rm -rf ${ROCBLAS_SRC_ROOT}
+
+RUN wget https://github.com/google/googletest/archive/release-1.10.0.tar.gz && \
+    tar -xvzf *.gz && cd googletest* && mkdir build && cd build && cmake3 .. && \
+    make -j && cp -r ../googletest/include /usr/local/include && \
+    cp -r ../googlemock/gtest/libgtest*.a /usr/local/lib  
