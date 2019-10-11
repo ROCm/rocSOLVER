@@ -27,7 +27,7 @@ rocSOLVERCI:
 
     def rocsolver = new rocProject('rocSOLVER')
     
-    def nodes = new dockerNodes(['internal && gfx900 && ubuntu', 'internal && gfx906 && ubuntu', 'internal && gfx906 && centos7', 'internal && gfx900 && centos7'], rocsolver)
+    def nodes = new dockerNodes(['internal && gfx900 && ubuntu16', 'internal && gfx906 && ubuntu16', 'internal && gfx906 && centos7', 'internal && gfx900 && centos7'], rocsolver)
 
     boolean formatCheck = false
 
@@ -37,8 +37,9 @@ rocSOLVERCI:
 
         project.paths.construct_build_prefix()
 
-        rocsolver.paths.build_command = platform.jenkinsLabel.contains('centos') ? 'sudo cmake3 -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..' :
-                                            'sudo cmake -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc ..'
+        String cmake = platform.jenkinsLabel.contains('centos') ? 'cmake3' : 'cmake'
+
+        project.paths.build_command = "sudo ${cmake} -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc .."
         
         def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
         def command = """#!/usr/bin/env bash
