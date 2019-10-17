@@ -27,7 +27,8 @@ rocSOLVERCI:
 
     def rocsolver = new rocProject('rocSOLVER')
     
-    def nodes = new dockerNodes(['internal && gfx900 && ubuntu16', 'internal && gfx906 && ubuntu16', 'internal && gfx906 && centos7', 'internal && gfx900 && centos7'], rocsolver)
+    def nodes = new dockerNodes(['internal && gfx900 && ubuntu16', 'internal && gfx906 && ubuntu16', 'internal && gfx906 && centos7', 
+    'internal && gfx900 && centos7','internal && gfx900 && ubuntu16 && hip-clang', 'internal && gfx906 && ubuntu16 && hip-clang' ], rocsolver)
 
     boolean formatCheck = false
 
@@ -38,8 +39,8 @@ rocSOLVERCI:
         project.paths.construct_build_prefix()
 
         String cmake = platform.jenkinsLabel.contains('centos') ? 'cmake3' : 'cmake'
-
-        project.paths.build_command = "sudo ${cmake} -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc .."
+        String compiler = platform.jenkinsLabel.contains('hip-clang') ? 'hipcc' : 'hcc'
+	project.paths.build_command = "sudo ${cmake} -DCMAKE_CXX_COMPILER=/opt/rocm/bin/${compiler} .."
         
         def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
         def command = """#!/usr/bin/env bash
