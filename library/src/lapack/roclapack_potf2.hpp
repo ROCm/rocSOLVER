@@ -9,6 +9,7 @@
 #ifndef ROCLAPACK_POTF2_HPP
 #define ROCLAPACK_POTF2_HPP
 
+#include <iostream>
 #include <hip/hip_runtime.h>
 #include <rocblas.hpp>
 

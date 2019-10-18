@@ -9,6 +9,8 @@
 #ifndef ROCLAPACK_GETRS_HPP
 #define ROCLAPACK_GETRS_HPP
 
+#include <iostream>
+
 #include "rocsolver-export.h"
 #include <hip/hip_runtime.h>
 #include <rocblas.hpp>
