@@ -21,7 +21,6 @@ RUN yum install -y \
     clang-devel \
     gcc-c++ \
     gcc-gfortran \
-    lapack-devel \
     unzip \
     wget \
     pkgconfig \
