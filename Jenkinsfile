@@ -40,9 +40,11 @@ rocSOLVERCI:
 
         String cmake = platform.jenkinsLabel.contains('centos') ? 'cmake3' : 'cmake'
         String compiler = platform.jenkinsLabel.contains('hip-clang') ? 'hipcc' : 'hcc'
+        String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
+
 	    project.paths.build_command = "sudo ${cmake} -DCMAKE_CXX_COMPILER=/opt/rocm/bin/${compiler} .."
         
-        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,true)
         def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
@@ -63,7 +65,9 @@ rocSOLVERCI:
 
         try
         {
-            def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
+            String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
+            def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,true)
+
             def command = """#!/usr/bin/env bash
                         set -x
                         cd ${project.paths.project_build_prefix}/build/clients/staging
@@ -83,7 +87,8 @@ rocSOLVERCI:
     {
         platform, project->
 
-        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop',true)
+        String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,true)
         def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build",false,true,getRocBLAS)  
 
         platform.runCommand(this, packageHelper[0])
