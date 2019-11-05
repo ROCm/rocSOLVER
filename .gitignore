@@ -37,6 +37,7 @@ tags
 
 # build-in-source directory
 build*
+docBin
 
 # emacs temporary/backup files
 .\#*

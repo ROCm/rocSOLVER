@@ -2,9 +2,9 @@
  * Copyright 2016 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-/*!\file
- * \brief rocsolver.h includes other *.h and exposes a common interface
- */
+/*! \file
+    \brief rocsolver.h includes other *.h and exposes a common interface
+ ***************************************************************************/
 
 #ifndef _ROCSOLVER_H_
 #define _ROCSOLVER_H_
