@@ -41,8 +41,7 @@ rocSOLVERCI:
         String cmake = platform.jenkinsLabel.contains('centos') ? 'cmake3' : 'cmake'
         String compiler = platform.jenkinsLabel.contains('hip-clang') ? 'hipcc' : 'hcc'
         String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
-
-	    rocsolver.paths.build_command = "sudo ${cmake} -DCMAKE_CXX_COMPILER=/opt/rocm/bin/${compiler} .."
+	    String build_command = "sudo ${cmake} -DCMAKE_CXX_COMPILER=/opt/rocm/bin/${compiler} .."
         
         def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,true)
         def command = """#!/usr/bin/env bash
@@ -51,7 +50,7 @@ rocSOLVERCI:
                     ${getRocBLAS}
                     sudo mkdir build && cd build
                     export PATH=/opt/rocm/bin:$PATH
-                    ${rocsolver.paths.build_command}
+                    ${build_command}
                     sudo make -j32
                 """
 
