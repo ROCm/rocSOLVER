@@ -9,15 +9,23 @@ rocSOLVER API
 This section provides details of the rocSOLVER library API as in release 
 `ROCm 2.10 <https://github.com/ROCmSoftwarePlatform/rocSOLVER/tree/master-rocm-2.10>`_.
 
+
+
 Types
 =====
 
-All rocSOLVER types are aliases of rocBLAS types. 
+Most rocSOLVER types are aliases of rocBLAS types. 
 See rocBLAS types `here <https://rocblas.readthedocs.io/en/latest/api.html#types>`_.
+
+Definitions
+----------------
 
 rocsolver_int
 ^^^^^^^^^^^^^^^^^^
 .. doxygentypedef:: rocsolver_int
+
+Enums
+------------
 
 rocsolver_handle
 ^^^^^^^^^^^^^^^^^^
@@ -39,43 +47,71 @@ rocsolver_side
 ^^^^^^^^^^^^^^^^^^
 .. doxygentypedef:: rocsolver_side
 
+rocsolver_direct
+^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocsolver_direct
+
 rocsolver_status
 ^^^^^^^^^^^^^^^^^^
 .. doxygentypedef:: rocsolver_status
 
 
 
+
 Lapack Auxiliary Functions
 ============================
+
+These are functions that support more advanced Lapack routines.
+
+Matrix permutations and manipulations
+--------------------------------------
 
 rocsolver_<type>laswp()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dlaswp
 .. doxygenfunction:: rocsolver_slaswp
 
+Householder reflexions
+--------------------------
+
 rocsolver_<type>larfg()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dlarfg
 .. doxygenfunction:: rocsolver_slarfg
+
+rocsolver_<type>larft()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dlarft
+.. doxygenfunction:: rocsolver_slarft
 
 rocsolver_<type>larf()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dlarf
 .. doxygenfunction:: rocsolver_slarf
 
+rocsolver_<type>larfb()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dlarfb
+.. doxygenfunction:: rocsolver_slarfb
 
+
+
+
+Lapack Functions
+==================
+
+Lapack routines solve complex Numerical Linear Algebra problems.
 
 Special Matrix Factorizations
-=================================
+---------------------------------
 
 rocsolver_<type>potf2()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dpotf2
 .. doxygenfunction:: rocsolver_spotf2
 
-
 General Matrix Factorizations
-==============================
+------------------------------
 
 rocsolver_<type>getf2()
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -137,10 +173,8 @@ rocsolver_<type>geqrf_strided_batched()
 .. doxygenfunction:: rocsolver_dgeqrf_strided_batched
 .. doxygenfunction:: rocsolver_sgeqrf_strided_batched
 
-
-
 General systems solvers
-===============================
+--------------------------
 
 rocsolver_<type>getrs()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -149,11 +183,15 @@ rocsolver_<type>getrs()
 
 
 
+
 Auxiliaries
 =========================
 
 rocSOLVER auxiliary functions are aliases of rocBLAS auxiliary functions. See rocBLAS auxiliary functions 
 `here <https://rocblas.readthedocs.io/en/latest/api.html#auxiliary>`_.
+
+rocSOLVER handle auxiliaries
+------------------------------
 
 rocsolver_create_handle()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -174,6 +212,9 @@ rocsolver_set_stream()
 rocsolver_get_stream()
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_get_stream
+
+Other auxiliaries
+------------------------
 
 rocsolver_set_vector()
 ^^^^^^^^^^^^^^^^^^^^^^^

@@ -30,7 +30,6 @@ typedef rocblas_half rocsolver_half;
 typedef rocblas_handle rocsolver_handle;
 
 /*! \brief Used to specify whether the matrix is to be transposed.
- 
     \details rocsolver_operation is a rocblas_operation
  ***************************************************************************/
 typedef rocblas_operation rocsolver_operation;
@@ -56,5 +55,13 @@ typedef rocblas_side rocsolver_side;
 typedef rocblas_status rocsolver_status;
 
 typedef rocblas_layer_mode rocsolver_layer_mode;
+
+/*! \brief Used to specify the order in which multiple elementary matrices are applied together 
+ ********************************************************************************/ 
+typedef enum rocsolver_direct_
+{
+    rocsolver_forward_direction = 171, /**< Elementary matrices applied from the right. */
+    rocsolver_backward_direction = 172, /**< Elementary matrices applied from the left. */
+} rocsolver_direct;
 
 #endif
