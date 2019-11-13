@@ -309,6 +309,8 @@ public:
   rocblas_int lda = 128;
   rocblas_int ldb = 128;
   rocblas_int ldc = 128;
+  rocblas_int ldv = 128;
+  rocblas_int ldt = 128;
 
   rocblas_int incx = 1;
   rocblas_int incy = 1;
@@ -324,9 +326,11 @@ public:
 
   char transA_option = 'N';
   char transB_option = 'N';
+  char transH_option = 'N';
   char side_option = 'L';
   char uplo_option = 'L';
   char diag_option = 'N';
+  char direct_option = 'F';
 
   rocblas_int apiCallCount = 1;
   rocblas_int batch_count = 10;

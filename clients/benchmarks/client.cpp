@@ -16,6 +16,9 @@
 #include "testing_potf2.hpp"
 #include "testing_larfg.hpp"
 #include "testing_larf.hpp"
+#include "testing_larft.hpp"
+#include "testing_larfb.hpp"
+#include "testing_laswp.hpp"
 #include "utility.h"
 
 namespace po = boost::program_options;
@@ -37,31 +40,30 @@ int main(int argc, char *argv[])
   rocblas_int device_id;
   vector<rocblas_int> range = {-1, -1, -1};
 
-  po::options_description desc("rocblas client command line options");
+  po::options_description desc("rocsolver client command line options");
   desc.add_options()("help,h", "produces this help message")
       // clang-format off
-        ("range",
-         po::value<vector<rocblas_int>>(&range)->multitoken(),
-         "Range matrix size testing: BLAS-3 benchmarking only. Accept three positive integers. "
-         "Usage: "
-         "--range start end step"
-         ". e.g "
-         "--range 100 1000 200"
-         ". Diabled if not specified. If enabled, user specified m,n,k will be nullified")
+//        ("range",
+//         po::value<vector<rocblas_int>>(&range)->multitoken(),
+//         "Range matrix size testing: BLAS-3 benchmarking only. Accept three positive integers. "
+//         "Usage: "
+//         "--range start end step"
+//         ". e.g "
+//         "--range 100 1000 200"
+//         ". Diabled if not specified. If enabled, user specified m,n,k will be nullified")
         
         ("sizem,m",
          po::value<rocblas_int>(&argus.M)->default_value(1024),
-         "Specific matrix size testing: sizem is only applicable to BLAS-2 & BLAS-3: the number of "
-         "rows.")
+         "Specific matrix size testing: the number of rows of a matrix.")
         
         ("sizen,n",
          po::value<rocblas_int>(&argus.N)->default_value(1024),
-         "Specific matrix/vector size testing: BLAS-1: the length of the vector. BLAS-2 & "
-         "BLAS-3: the number of columns")
+         "Specific matrix/vector/order size testing: the number of columns of a matrix,"
+         "or the order of a system or transformation.")
 
         ("sizek,k",
          po::value<rocblas_int>(&argus.K)->default_value(1024),
-         "Specific matrix size testing:sizek is only applicable to BLAS-3: the number of columns in "
+         "Specific...  the number of columns in "
          "A & C  and rows in B.")
 
         ("lda",
@@ -78,6 +80,14 @@ int main(int argc, char *argv[])
          po::value<rocblas_int>(&argus.ldc)->default_value(1024),
          "Specific leading dimension of matrix C, is only applicable to BLAS-2 & "
          "BLAS-3: the number of rows.")
+
+        ("ldv",
+         po::value<rocblas_int>(&argus.ldv)->default_value(1024),
+         "Specific leading dimension.")
+        
+        ("ldt",
+         po::value<rocblas_int>(&argus.ldt)->default_value(1024),
+         "Specific leading dimension.")
 
         ("bsa",
          po::value<rocblas_int>(&argus.bsa)->default_value(1024*1024),
@@ -128,6 +138,10 @@ int main(int argc, char *argv[])
          po::value<char>(&argus.transB_option)->default_value('N'),
          "N = no transpose, T = transpose, C = conjugate transpose")
         
+        ("transposeH",
+         po::value<char>(&argus.transH_option)->default_value('N'),
+         "N = no transpose, T = transpose, C = conjugate transpose")
+        
         ("side",
          po::value<char>(&argus.side_option)->default_value('L'),
          "L = left, R = right. Only applicable to certain routines")
@@ -140,6 +154,10 @@ int main(int argc, char *argv[])
          po::value<char>(&argus.diag_option)->default_value('N'),
          "U = unit diagonal, N = non unit diagonal. Only applicable to certain routines") // xtrsm
                                                                                           // xtrmm
+        ("direct",
+         po::value<char>(&argus.direct_option)->default_value('F'),
+         "F = forward, B = backward. Only applicable to certain routines") // xtrsm
+        
         ("batch",
          po::value<rocblas_int>(&argus.batch_count)->default_value(1),
          "Number of matrices. Only applicable to batched routines") // xtrsm xtrmm xgemm
@@ -184,9 +202,9 @@ int main(int argc, char *argv[])
   }
   /* ============================================================================================
    */
-  if (argus.M < 0 || argus.N < 0 || argus.K < 0) {
-    printf("Invalide matrix dimension\n");
-  }
+ // if (argus.M < 0 || argus.N < 0 || argus.K < 0) {
+ //   printf("Invalide matrix dimension\n");
+ // }
 
   argus.start = range[0];
   argus.step = range[1];
@@ -198,6 +216,12 @@ int main(int argc, char *argv[])
     else if (precision == 'd')
       testing_potf2<double>(argus);
   } 
+  else if (function == "laswp") {
+    if (precision == 's')
+      testing_laswp<float>(argus);
+    else if (precision == 'd')
+      testing_laswp<double>(argus);
+  }
   else if (function == "getf2") {
     if (precision == 's')
       testing_getf2_getrf<float,0>(argus);
@@ -287,6 +311,18 @@ int main(int argc, char *argv[])
       testing_larf<float>(argus);
     else if (precision == 'd')
       testing_larf<double>(argus);
+  } 
+  else if (function == "larft") {
+    if (precision == 's')
+      testing_larft<float>(argus);
+    else if (precision == 'd')
+      testing_larft<double>(argus);
+  } 
+  else if (function == "larfb") {
+    if (precision == 's')
+      testing_larfb<float>(argus);
+    else if (precision == 'd')
+      testing_larfb<double>(argus);
   } 
   else {
     printf("Invalid value for --function \n");

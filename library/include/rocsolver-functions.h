@@ -139,22 +139,87 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarfg(rocsolver_handle handle,
                                                  double *tau);
 
 
+/*! \brief LARFT Generates the triangular factor T of a block reflector H of order n.
+
+    \details
+    The block reflector H is defined as the product of k Householder matrices as
+
+        H = H(1) * H(2) * ... * H(k)  (forward direction), or
+        H = H(k) * ... * H(2) * H(1)  (backward direction)
+
+    depending on the value of direct.  
+
+    The triangular matrix T is such that
+
+        H = I - V * T * V'
+
+    where the i-th column of matrix V contains the Householder vector associated to H(i).
+
+    @param[in]
+    handle              rocsolver_handle.
+    @param[in]
+    direct              rocsolver_direct.\n
+                        Specifies the direction in which the Householder matrices are applied.
+    @param[in]
+    n                   rocsolver_int. n >= 0.\n
+                        The order (size) of the block reflector.
+    @param[in]          
+    k                   rocsovler_int. k >= 1.\n
+                        The number of Householder matrices.
+    @param[in]          
+    V                   pointer to type. Array on the GPU of size ldv*k.\n
+                        The matrix of Householder vectors.
+    @param[in]
+    ldv                 rocsolver_int. ldv >= n.\n
+                        Leading dimension of V.
+    @param[in]
+    tau                 pointer to type. Array of k scalars on the GPU.\n
+                        The vector of all the scalars associated to the Householder matrices.
+    @param[out]
+    T                   pointer to type. Array on the GPU of dimension ldt*k.\n
+                        The triangular factor. T is upper triangular is forward operation, otherwise it is lower triangular.
+                        The rest of the array is not used. 
+    @param[in]  
+    ldt                 rocsolver_int. ldt >= k.\n
+                        The leading dimension of T.
+
+    **************************************************************************/ 
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_slarft(rocsolver_handle handle,
+                                                 const rocsolver_direct direct, 
+                                                 const rocsolver_int n, 
+                                                 const rocsolver_int k,
+                                                 float *V,
+                                                 const rocsolver_int ldv,
+                                                 float *tau,
+                                                 float *T, 
+                                                 const rocsolver_int ldt); 
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarft(rocsolver_handle handle,
+                                                 const rocsolver_direct direct, 
+                                                 const rocsolver_int n, 
+                                                 const rocsolver_int k,
+                                                 double *V,
+                                                 const rocsolver_int ldv,
+                                                 double *tau,
+                                                 double *T, 
+                                                 const rocsolver_int ldt); 
+
+
 /*! \brief LARF applies a Householder reflector H to a general matrix A.
 
     \details
     The Householder reflector H, of order m (or n), is to be applied to a m-by-n matrix A
     from the left (or the right). H is given by 
 
-    @verbatim
-    H = I - alpha * x * x'
-    @endverbatim    
-
+        H = I - alpha * x * x'
+    
     where alpha is a scalar and x a Householder vector. H is never actually computed.
 
     @param[in]
-    handle          rocsolver_handle
+    handle          rocsolver_handle.
     @param[in]
-    side            rocsolver_side\n
+    side            rocsolver_side.\n
                     If side = rocsolver_side_left, then compute H*A
                     If side = rocsolver_side_right, then compute A*H
     @param[in]
@@ -206,6 +271,100 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarf(rocsolver_handle handle,
                                                 const rocsolver_int lda);
 
 
+/*! \brief LARFB applies a block reflector H to a general m-by-n matrix A.
+
+    \details
+    The block reflector H is applied in one of the following forms, depending on 
+    the values of side and trans:
+
+        H  * A  (No transpose from the left)
+        H' * A  (Transpose from the left)
+        A * H   (No transpose from the right), and
+        A * H'  (Transpose from the right)
+
+    The block reflector H is defined as the product of k Householder matrices as
+
+        H = H(1) * H(2) * ... * H(k)  (forward direction), or
+        H = H(k) * ... * H(2) * H(1)  (backward direction)
+
+    depending on the value of direct. H is never stored. It is calculated as
+
+        H = I - V * T * V'
+
+    where the i-th column of matrix V contains the Householder vector associated to H(i),
+    and T is the triangular factor as computed by LARFT.
+
+    @param[in]
+    handle              rocsolver_handle.
+    @param[in]
+    side                rocsolver_side.\n
+                        Specifies from which side to apply H.
+    @param[in]
+    trans               rocsolver_operation.\n
+                        Specifies whether the block reflector or its transpose is to be applied.
+    @param[in]
+    direct              rocsolver_direct.\n
+                        Specifies the direction in which the Householder matrices are applied.
+    @param[in]
+    m                   rocsolver_int. m >= 0.\n
+                        Number of rows of matrix A.
+    @param[in]
+    n                   rocsolver_int. n >= 0.\n
+                        Number of columns of matrix A.
+    @param[in]          
+    k                   rocsovler_int. k >= 1.\n
+                        The number of Householder matrices.
+    @param[in]          
+    V                   pointer to type. Array on the GPU of size ldv*k.\n
+                        The matrix of Householder vectors.
+    @param[in]
+    ldv                 rocsolver_int. ldv >= m if side is left, or ldv >= n if side is right.\n
+                        Leading dimension of V.
+    @param[out]
+    T                   pointer to type. Array on the GPU of dimension ldt*k.\n
+                        The triangular factor of the block reflector.
+    @param[in]  
+    ldt                 rocsolver_int. ldt >= k.\n
+                        The leading dimension of T.
+    @param[inout]
+    A                   pointer to type. Array on the GPU of size lda*n.\n
+                        On input, the matrix A. On output it is overwritten with
+                        H*A, A*H, H'*A, or A*H'.  
+    @param[in]
+    lda                 rocsolver_int. lda >= m.\n
+                        Leading dimension of A. 
+
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_slarfb(rocsolver_handle handle,
+                                                 const rocsolver_side side,
+                                                 const rocsolver_operation trans,
+                                                 const rocsolver_direct direct, 
+                                                 const rocsolver_int m,
+                                                 const rocsolver_int n, 
+                                                 const rocsolver_int k,
+                                                 float *V,
+                                                 const rocsolver_int ldv,
+                                                 float *T, 
+                                                 const rocsolver_int ldt,
+                                                 float *A,
+                                                 const rocsolver_int lda); 
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarfb(rocsolver_handle handle,
+                                                 const rocsolver_side side,
+                                                 const rocsolver_operation trans,
+                                                 const rocsolver_direct direct, 
+                                                 const rocsolver_int m,
+                                                 const rocsolver_int n, 
+                                                 const rocsolver_int k,
+                                                 double *V,
+                                                 const rocsolver_int ldv,
+                                                 double *T, 
+                                                 const rocsolver_int ldt,
+                                                 double *A,
+                                                 const rocsolver_int lda); 
+
+
 
 /*
  * ===========================================================================
@@ -222,9 +381,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarf(rocsolver_handle handle,
 
     The factorization has the form
 
-    @verbatim
-    A = P * L * U
-    @endverbatim
+        A = P * L * U
 
     where P is a permutation matrix, L is lower triangular with unit
     diagonal elements (lower trapezoidal if m > n), and U is upper
@@ -284,9 +441,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetf2(rocsolver_handle handle,
 
     The factorization of matrix A_i in the batch has the form
 
-    @verbatim
-    A_i = P_i * L_i * U_i
-    @endverbatim
+        A_i = P_i * L_i * U_i
 
     where P_i is a permutation matrix, L_i is lower triangular with unit
     diagonal elements (lower trapezoidal if m > n), and U_i is upper
@@ -358,9 +513,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetf2_batched(rocsolver_handle hand
     
     The factorization of matrix A_i in the batch has the form
 
-    @verbatim
-    A_i = P_i * L_i * U_i
-    @endverbatim
+        A_i = P_i * L_i * U_i
 
     where P_i is a permutation matrix, L_i is lower triangular with unit
     diagonal elements (lower trapezoidal if m > n), and U_i is upper
@@ -438,9 +591,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetf2_strided_batched(rocsolver_han
 
     The factorization has the form
 
-    @verbatim
-    A = P * L * U
-    @endverbatim
+        A = P * L * U
 
     where P is a permutation matrix, L is lower triangular with unit
     diagonal elements (lower trapezoidal if m > n), and U is upper
@@ -499,9 +650,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrf(rocsolver_handle handle,
 
     The factorization of matrix A_i in the batch has the form
 
-    @verbatim
-    A_i = P_i * L_i * U_i
-    @endverbatim
+        A_i = P_i * L_i * U_i
 
     where P_i is a permutation matrix, L_i is lower triangular with unit
     diagonal elements (lower trapezoidal if m > n), and U_i is upper
@@ -573,9 +722,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrf_batched(rocsolver_handle hand
     
     The factorization of matrix A_i in the batch has the form
 
-    @verbatim
-    A_i = P_i * L_i * U_i
-    @endverbatim
+        A_i = P_i * L_i * U_i
 
     where P_i is a permutation matrix, L_i is lower triangular with unit
     diagonal elements (lower trapezoidal if m > n), and U_i is upper
@@ -653,22 +800,16 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrf_strided_batched(rocsolver_han
 
     The factorization has the form
 
-    @verbatim
-    A =  Q * R
-    @endverbatim
+        A =  Q * R
  
     where R is upper triangular (upper trapezoidal if m < n), and Q is 
     an orthogonal matrix represented as the product of Householder matrices
 
-    @verbatim
-    Q = H(1) * H(2) * ... * H(k), with k = min(m,n)
-    @endverbatim
+        Q = H(1) * H(2) * ... * H(k), with k = min(m,n)
 
     Each Householder matrix H(i), for i = 1,2,...,k, is given by
 
-    @verbatim
-    H(i) = I - ipiv[i-1] * v(i) * v(i)'
-    @endverbatim
+        H(i) = I - ipiv[i-1] * v(i) * v(i)'
     
     where the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
 
@@ -716,22 +857,16 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqr2(rocsolver_handle handle,
 
     The factorization of matrix A_j in the batch has the form
 
-    @verbatim
-    A_j =  Q_j * R_j 
-    @endverbatim
+        A_j =  Q_j * R_j 
 
     where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
     an orthogonal matrix represented as the product of Householder matrices
 
-    @verbatim
-    Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
-    @endverbatim
+        Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
     Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
 
-    @verbatim
-    H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
-    @endverbatim
+        H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
 
     where the first i-1 elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
 
@@ -792,22 +927,16 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqr2_batched(rocsolver_handle hand
 
     The factorization of matrix A_j in the batch has the form
 
-    @verbatim
-    A_j =  Q_j * R_j 
-    @endverbatim
+        A_j =  Q_j * R_j 
 
     where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
     an orthogonal matrix represented as the product of Householder matrices
 
-    @verbatim
-    Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
-    @endverbatim
+        Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
     Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
 
-    @verbatim
-    H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
-    @endverbatim
+        H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
 
     where the first i-1 elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
 
@@ -874,22 +1003,16 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqr2_strided_batched(rocsolver_han
 
     The factorization has the form
 
-    @verbatim
-    A =  Q * R
-    @endverbatim
+        A =  Q * R
  
     where R is upper triangular (upper trapezoidal if m < n), and Q is 
     an orthogonal matrix represented as the product of Householder matrices
 
-    @verbatim
-    Q = H(1) * H(2) * ... * H(k), with k = min(m,n)
-    @endverbatim
+        Q = H(1) * H(2) * ... * H(k), with k = min(m,n)
 
     Each Householder matrix H(i), for i = 1,2,...,k, is given by
 
-    @verbatim
-    H(i) = I - ipiv[i-1] * v(i) * v(i)'
-    @endverbatim
+        H(i) = I - ipiv[i-1] * v(i) * v(i)'
     
     where the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
 
@@ -937,22 +1060,16 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf(rocsolver_handle handle,
 
     The factorization of matrix A_j in the batch has the form
 
-    @verbatim
-    A_j =  Q_j * R_j 
-    @endverbatim
+        A_j =  Q_j * R_j 
 
     where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
     an orthogonal matrix represented as the product of Householder matrices
 
-    @verbatim
-    Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
-    @endverbatim
+        Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
     Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
 
-    @verbatim
-    H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
-    @endverbatim
+        H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
 
     where the first i-1 elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
 
@@ -1013,22 +1130,16 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf_batched(rocsolver_handle hand
 
     The factorization of matrix A_j in the batch has the form
 
-    @verbatim
-    A_j =  Q_j * R_j 
-    @endverbatim
+        A_j =  Q_j * R_j 
 
     where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
     an orthogonal matrix represented as the product of Householder matrices
 
-    @verbatim
-    Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
-    @endverbatim
+        Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
     Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
 
-    @verbatim
-    H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
-    @endverbatim
+        H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
 
     where the first i-1 elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
 
@@ -1094,11 +1205,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf_strided_batched(rocsolver_han
     \details
     It solves one of the following systems: 
 
-    @verbatim
-    A * X = B (no transpose),  
-    A' * X = B (transpose),  or  
-    A* * X = B (conjugate transpose)
-    @endverbatim
+        A  * X = B (no transpose),  
+        A' * X = B (transpose),  or  
+        A* * X = B (conjugate transpose)
 
     depending on the value of trans. 
 
