@@ -31,8 +31,6 @@ rocsolver_getrs_template(rocblas_handle handle, rocblas_operation trans,
 
   // check for possible input problems
   if (n < 0 || nrhs < 0 || lda < max(1, n) || ldb < max(1, n)) {
-    std::cout << "Invalid size " << n << " " << nrhs << " " << lda << " " << ldb
-         << std::endl;
     return rocblas_status_invalid_size;
   }
 

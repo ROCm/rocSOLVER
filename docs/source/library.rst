@@ -25,9 +25,75 @@ instructions will build and install rocSOLVER:
 
 .. code-block:: bash
    
-    mkdir build && cd build
+     mkdir build && cd build
     CXX=/opt/rocm/bin/hcc cmake ..
     make
     make install
 
-  
+Brief description and functionality
+====================================
+
+rocSolver Library is in early stages of active development. New features and functionality is being continuosly added. New 
+functionality is documented at each release of the ROCm platform. 
+
+The following table summarizes the LAPACK functionality implemented in rocSOLVER's last release.
+
+=============================== ====== ====== ============== ==============
+Lapack Auxiliary Function       single double single complex double complex
+=============================== ====== ====== ============== ==============
+**rocsolver_laswp**             x      x                        
+**rocsolver_larfg**             x      x                        
+**rocsolver_larft**             x      x
+**rocsolver_larf**              x      x
+**rocsolver_larfb**             x      x      
+=============================== ====== ====== ============== ==============
+
+=============================== ====== ====== ============== ==============
+Lapack Function                 single double single complex double complex
+=============================== ====== ====== ============== ==============
+**rocsolver_potf2**             x      x                        
+**rocsolver_getf2**             x      x                        
+rocsolver_getf2_batched         x      x
+rocsolver_getf2_strided_batched x      x
+**rocsolver_getrf**             x      x                        
+rocsolver_getrf_batched         x      x
+rocsolver_getrf_strided_batched x      x
+**rocsolver_geqr2**             x      x                        
+rocsolver_geqr2_batched         x      x
+rocsolver_geqr2_strided_batched x      x
+**rocsolver_geqrf**             x      x                        
+rocsolver_geqrf_batched         x      x 
+rocsolver_geqrf_strided_batched x      x
+**rocsolver_getrs**             x      x                        
+=============================== ====== ====== ============== ==============
+
+Benchmarking and testing
+==========================
+
+Additionaly, rocSOLVER has a basic/preliminary infrastructure for testing and benchmarking similar to that of rocBLAS. 
+
+On a normal installation, clients should be located in the directory **<rocsolverDIR>/build/clients/staging**. 
+
+**rocsolver-test** executes a suite of `Google tests <https://github.com/google/googletest>`_ (*gtest*) that verifies the correct
+functioning of the library; the results computed by rocSOLVER, for random input data, are compared with the results computed by 
+`NETLib LAPACK <http://www.netlib.org/lapack/>`_ on the CPU.
+
+Calling the rocSOLVER gtest client with the --help flag
+
+.. code-block:: bash
+    
+    ./rocsolver-test --help
+
+returns information on different flags that control the behavior of the gtests.   
+
+**rocsolver-bench** allows to run any rocSOLVER function with random data of the specified dimensions; it compares the computed results, and provides basic
+performance information (as for now, execution times). 
+
+Similarly, 
+
+.. code-block:: bash
+    
+    ./rocsolver-bench --help
+
+returns information on how to use the rocSOLVER benchmark client.   
+ 
