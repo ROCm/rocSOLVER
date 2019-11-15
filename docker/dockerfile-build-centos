@@ -41,7 +41,7 @@ RUN yum install -y \
     rpm-build \
     deltarpm 
 
-RUN yum remove -y rocblas
+RUN yum remove -y rocblas *gtest*
 
 RUN echo '#!/bin/bash' | tee /etc/profile.d/devtoolset7.sh && echo \
     'source scl_source enable devtoolset-7' >>/etc/profile.d/devtoolset7.sh
