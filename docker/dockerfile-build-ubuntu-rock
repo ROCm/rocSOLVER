@@ -37,8 +37,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libnuma1 \
     libpthread-stubs0-dev \
     libomp-dev \
-    libgtest-dev \
     zlib1g-dev \
+    wget \
+    unzip \
     && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -59,6 +60,6 @@ ARG ROCSOLVER_SRC_ROOT=/usr/local/src/rocSOLVER
 RUN mkdir -p ${ROCSOLVER_SRC_ROOT} && cd ${ROCSOLVER_SRC_ROOT} && \
     git clone -b develop --depth=1 https://github.com/ROCmSoftwarePlatform/rocSOLVER . && \
     mkdir -p build/deps && cd build/deps && \
-    cmake -DBUILD_BOOST=OFF -DBUILD_GTEST=OFF ${ROCSOLVER_SRC_ROOT}/deps && \
+    cmake -DBUILD_BOOST=OFF ${ROCSOLVER_SRC_ROOT}/deps && \
     make -j $(nproc) install && \
     rm -rf ${ROCSOLVER_SRC_ROOT}
