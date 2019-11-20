@@ -118,6 +118,10 @@ template <typename T>
 void cblas_larft(char direct, char storev, rocblas_int n, rocblas_int k, T* V, rocblas_int ldv, T* tau, T *F, rocblas_int ldt);
 
 template <typename T>
+void cblas_larfb(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
+                 T* V, rocblas_int ldv, T *F, rocblas_int ldt, T *A, rocblas_int lda, T *W, rocblas_int ldw);
+
+template <typename T>
 void cblas_geqr2(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work);
 
 template <typename T>

@@ -206,9 +206,9 @@ int main(int argc, char *argv[])
  //   printf("Invalide matrix dimension\n");
  // }
 
-  argus.start = range[0];
-  argus.step = range[1];
-  argus.end = range[2];
+  //argus.start = range[0];
+  //argus.step = range[1];
+  //argus.end = range[2];
 
   if (function == "potf2") {
     if (precision == 's')

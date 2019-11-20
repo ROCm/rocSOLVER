@@ -9,7 +9,6 @@
 #ifndef ROCLAPACK_LARFT_HPP
 #define ROCLAPACK_LARFT_HPP
 
-#include <vector>
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
@@ -97,24 +96,11 @@ rocblas_status rocsolver_larft_template(rocsolver_handle handle, const rocsolver
     if (direct == rocsolver_backward_direction)
         return rocblas_status_not_implemented;
 
-//    rocblas_int sizeF = ldf * k;
-//    std::vector<T> hF(sizeF);
-
-
     //Fix diagonal of T, make zero the non used triangular part, 
     //setup tau and account for the non-stored 1's on the householder vectors
     rocblas_int blocks = (k - 1)/32 + 1;
     hipLaunchKernelGGL(set_triangular,dim3(blocks,blocks,batch_count),dim3(32,32),0,stream,k,V,shiftV,ldv,strideV,tau,strideT,F,shiftF,ldf,strideF);
     hipLaunchKernelGGL(set_tau,dim3(batch_count,blocks),dim3(32,1),0,stream,k,tau,strideT);
-
-//            hipMemcpy(hF.data(), F, sizeof(T) * sizeF, hipMemcpyDeviceToHost);
-  //          for (int i=0;i<k;++i) {
-    //            for (int j=0;j<k;++j) {
-      //              printf("%2.15f ",hF[i+j*ldf]);
-        //        }
-          //      printf("\n");
-            //}
-    
 
     // **** FOR NOW, IT DOES NOT LOOK FOR TRAILING ZEROS 
     //      AS THIS WOULD REQUIRE SYNCHRONIZATION WITH GPU.
