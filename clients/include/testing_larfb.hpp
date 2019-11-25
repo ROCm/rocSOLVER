@@ -140,29 +140,6 @@ rocblas_status testing_larfb(Arguments argus)
         }
     } 
     
-
-/*    printf("\n");
-    for (int i=0;i<M;++i) {
-        for (int j=0;j<K;++j) {
-            printf("%2.15f ",hV[i+j*ldv]);
-        }
-        printf("\n");    
-    }
-    printf("\n");
-    for (int i=0;i<K;++i) {
-        for (int j=0;j<K;++j) {
-            printf("%2.15f ",hF[i+j*ldt]);
-        }
-        printf("\n");    
-    }
-    printf("\n");
-    for (int i=0;i<M;++i) {
-        for (int j=0;j<N;++j) {
-            printf("%2.15f ",hA[i+j*lda]);
-        }
-        printf("\n");    
-    }*/
-
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dV, hV.data(), sizeof(T) * sizeV, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dF, hF.data(), sizeof(T) * sizeF, hipMemcpyHostToDevice));
@@ -189,21 +166,6 @@ rocblas_status testing_larfb(Arguments argus)
         cpu_time_used = get_time_us();
         cblas_larfb<T>(sideC,transC,directC,'C',M,N,K,hV.data(),ldv,hF.data(),ldt,hA.data(),lda,hW.data(),ldw);
         cpu_time_used = get_time_us() - cpu_time_used;
-
-/*    printf("\n");
-    for (int i=0;i<M;++i) {
-        for (int j=0;j<N;++j) {
-            printf("%2.15f ",hA[i+j*lda]);
-        }
-        printf("\n");    
-    }
-    printf("\n");
-    for (int i=0;i<M;++i) {
-        for (int j=0;j<N;++j) {
-            printf("%2.15f ",hA_r[i+j*lda]);
-        }
-        printf("\n");    
-    }*/
 
         // +++++++++ Error Check +++++++++++++
         for (int i = 0; i < M; i++) {

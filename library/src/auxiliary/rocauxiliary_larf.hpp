@@ -14,6 +14,7 @@
 #include "rocsolver.h"
 #include "ideal_sizes.hpp"
 #include "common_device.hpp"
+#include <vector>
 
 template <typename T, typename U>
 rocblas_status rocsolver_larf_template(rocsolver_handle handle, const rocsolver_side side, const rocsolver_int m,
@@ -53,11 +54,11 @@ rocblas_status rocsolver_larf_template(rocsolver_handle handle, const rocsolver_
 
     //determine side and order of H
     bool leftside = (side == rocblas_side_left);
-    rocblas_int order = n;
+    rocblas_int order = m;
     rocblas_operation trans = rocblas_operation_none;
     if (leftside) {
         trans = rocblas_operation_transpose;
-        order = m;
+        order = n;
     }
 
     // **** FOR NOW, IT DOES NOT DETERMINE "NON-ZERO" DIMENSIONS
@@ -68,19 +69,20 @@ rocblas_status rocsolver_larf_template(rocsolver_handle handle, const rocsolver_
     //memory in GPU (workspace)
     T *workvec;
     hipMalloc(&workvec, sizeof(T)*order*batch_count);
+
     
     // **** BATCH IS EXECUTED IN A FOR-LOOP UNTIL BATCH-BLAS
     //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
     //      BE MADE TO THE CORRESPONDING TEMPLATE_FUNCTIONS ****
     
-    //compute the matrix vector product
+    //compute the matrix vector product  (W=tau*A'*X or W=tau*A*X)
     for (int b=0;b<batch_count;++b) {
         xp = load_ptr_batch<T>(xx,shiftx,b,stridex);
         Ap = load_ptr_batch<T>(AA,shiftA,b,stridea);
         rocblas_gemv(handle, trans, m, n, (alpha + b*stridep), Ap, lda, xp, incx, zeroInt, (workvec + b*order), 1);
     }
 
-    //compute the rank-1 update
+    //compute the rank-1 update  (A - V*W'  or A - W*V')
     if (leftside) {
         for (int b=0;b<batch_count;++b) {
             xp = load_ptr_batch<T>(xx,shiftx,b,stridex);

@@ -112,8 +112,7 @@ else()
     target_link_libraries( rocsolver-bench PRIVATE ${Boost_LIBRARIES} cblas lapack roc::rocsolver )
 endif()
 
-target_link_libraries( rocsolver-bench PRIVATE /home/jzuniga-/WORKSPACE/rocBLAS/build/release/rocblas-install/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
-#target_link_libraries( rocsolver-bench PRIVATE /opt/rocm/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
+target_link_libraries( rocsolver-bench PRIVATE /opt/rocm/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
 
 
 get_target_property( HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE )

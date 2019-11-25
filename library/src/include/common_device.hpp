@@ -31,5 +31,14 @@ __forceinline__ __device__ __host__ T* load_ptr_batch(T *const p[], rocblas_int 
     return p[batch] + shift;
 }
 
+template<typename T>
+__forceinline__ __global__ void get_array(T** out, T* in, rocblas_int stride, rocblas_int batch) 
+{
+    int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    
+    if (b < batch)
+        out[b] = in + b*stride;
+}
+
 
 #endif

@@ -153,12 +153,12 @@ rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver
                 rocblas_gemm(handle,transp,rocblas_operation_none,ldw,order,m-k,oneInt,
                              (Vp + idx2D(k,0,ldv)),ldv,
                              (Ap + idx2D(k,0,lda)),lda,
-                             oneInt,work,ldw);
+                             oneInt,(work + b*strideW),ldw);
             } else {
                 rocblas_gemm(handle,transp,rocblas_operation_none,ldw,order,n-k,oneInt,
                              (Ap + idx2D(0,k,lda)),lda,
                              (Vp + idx2D(k,0,ldv)),ldv,
-                             oneInt,work,ldw);
+                             oneInt,(work + b*strideW),ldw);
             }
         }
     }
@@ -186,11 +186,11 @@ rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver
             if (leftside) { 
                 rocblas_gemm(handle,transp,rocblas_operation_none,m-k,order,ldw,minoneInt,
                              (Vp + idx2D(k,0,ldv)),ldv,
-                             work,ldw,
+                             (work + b*strideW),ldw,
                              oneInt,(Ap + idx2D(k,0,lda)),lda);
             } else {
                 rocblas_gemm(handle,rocblas_operation_none,transp,ldw,n-k,order,minoneInt,
-                             work,ldw,
+                             (work + b*strideW),ldw,
                              (Vp + idx2D(k,0,ldv)),ldv,
                              oneInt,(Ap + idx2D(0,k,lda)),lda);
             }

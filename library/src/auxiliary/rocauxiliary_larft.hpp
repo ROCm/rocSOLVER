@@ -18,7 +18,7 @@
 template <typename T, typename U>
 __global__ void set_triangular(const rocsolver_int k, U V, const rocsolver_int shiftV, const rocsolver_int ldv, const rocsolver_int strideV, 
                          T* tau, const rocsolver_int strideT, 
-                         U F, const rocsolver_int shiftF, const rocsolver_int ldf, const rocsolver_int strideF)
+                         T* F, const rocsolver_int ldf, const rocsolver_int strideF)
 {
     const auto blocksize = hipBlockDim_x;
     const auto b = hipBlockIdx_z;
@@ -29,7 +29,7 @@ __global__ void set_triangular(const rocsolver_int k, U V, const rocsolver_int s
         T *Vp, *tp, *Fp;
         tp = tau + b*strideT;
         Vp = load_ptr_batch<T>(V,shiftV,b,strideV);
-        Fp = load_ptr_batch<T>(F,shiftF,b,strideF);
+        Fp = F + b*strideF;
 
         if (j < i) {
             Fp[j + i*ldf] = -tp[i] * Vp[i + j*ldv];
@@ -59,7 +59,7 @@ __global__ void set_tau(const rocsolver_int k, T* tau, const rocsolver_int strid
 template <typename T, typename U>
 rocblas_status rocsolver_larft_template(rocsolver_handle handle, const rocsolver_direct direct, const rocsolver_int n,
                                    const rocsolver_int k, U V, const rocblas_int shiftV, const rocsolver_int ldv, 
-                                   const rocsolver_int strideV, T* tau, const rocsolver_int strideT, U F, const rocsolver_int shiftF,
+                                   const rocsolver_int strideV, T* tau, const rocsolver_int strideT, T* F, 
                                    const rocsolver_int ldf, const rocsolver_int strideF, const rocsolver_int batch_count)
 {
     // quick return
@@ -85,11 +85,8 @@ rocblas_status rocsolver_larft_template(rocsolver_handle handle, const rocsolver
         //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
         T* VV[batch_count];
         hipMemcpy(VV, V, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
-        T* FF[batch_count];
-        hipMemcpy(FF, F, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
     #else
         T* VV = V;
-        T* FF = F;
     #endif
 
     // BACKWARD DIRECTION TO BE IMPLEMENTED...
@@ -97,9 +94,9 @@ rocblas_status rocsolver_larft_template(rocsolver_handle handle, const rocsolver
         return rocblas_status_not_implemented;
 
     //Fix diagonal of T, make zero the non used triangular part, 
-    //setup tau and account for the non-stored 1's on the householder vectors
+    //setup tau (changing signs) and account for the non-stored 1's on the householder vectors
     rocblas_int blocks = (k - 1)/32 + 1;
-    hipLaunchKernelGGL(set_triangular,dim3(blocks,blocks,batch_count),dim3(32,32),0,stream,k,V,shiftV,ldv,strideV,tau,strideT,F,shiftF,ldf,strideF);
+    hipLaunchKernelGGL(set_triangular,dim3(blocks,blocks,batch_count),dim3(32,32),0,stream,k,V,shiftV,ldv,strideV,tau,strideT,F,ldf,strideF);
     hipLaunchKernelGGL(set_tau,dim3(batch_count,blocks),dim3(32,1),0,stream,k,tau,strideT);
 
     // **** FOR NOW, IT DOES NOT LOOK FOR TRAILING ZEROS 
@@ -120,7 +117,7 @@ rocblas_status rocsolver_larft_template(rocsolver_handle handle, const rocsolver
         for (int b=0;b<batch_count;++b) {
             tp = tau + b*strideT;
             Vp = load_ptr_batch<T>(VV,shiftV,b,strideV);
-            Fp = load_ptr_batch<T>(FF,shiftF,b,strideF);
+            Fp = F + b*strideF;
             rocblas_gemv(handle, trans, n-1-i, i, (tp + i), (Vp + idx2D(i+1,0,ldv)),
                         ldv, (Vp + idx2D(i+1,i,ldv)), 1, oneInt, (Fp + idx2D(0,i,ldf)), 1);
         }
@@ -131,11 +128,14 @@ rocblas_status rocsolver_larft_template(rocsolver_handle handle, const rocsolver
         trans = rocblas_operation_none; 
         for (int b=0;b<batch_count;++b) {
             Vp = load_ptr_batch<T>(VV,shiftV,b,strideV);
-            Fp = load_ptr_batch<T>(FF,shiftF,b,strideF);
+            Fp = F + b*strideF;
             rocblas_gemv(handle, trans, i, i, oneInt, Fp, ldf, 
                         (Fp + idx2D(0,i,ldf)), 1, zeroInt, (Fp + idx2D(0,i,ldf)), 1);
         } 
     }
+
+    //restore tau
+    hipLaunchKernelGGL(set_tau,dim3(batch_count,blocks),dim3(32,1),0,stream,k,tau,strideT);
 
     hipFree(oneInt);
     hipFree(zeroInt);
