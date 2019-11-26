@@ -22,7 +22,7 @@ rocblas_status rocsolver_geqrf_impl(rocblas_handle handle, const rocblas_int m,
     return rocsolver_geqrf_template<T>(handle,m,n,
                                     A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
                                     lda,strideA,
-                                    ipiv,0,  //the vector tau is shifted 0 entries (will work on the entire vector)
+                                    ipiv,
                                     stridep,
                                     batch_count);
 }

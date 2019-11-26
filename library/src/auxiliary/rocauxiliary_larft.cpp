@@ -27,7 +27,7 @@ rocblas_status rocsolver_larft_impl(rocsolver_handle handle, const rocsolver_dir
                                       stridev,
                                       tau,
                                       stridet,
-                                      F,0,       //shifted 0 entries
+                                      F,
                                       ldf,
                                       stridef, 
                                       batch_count);

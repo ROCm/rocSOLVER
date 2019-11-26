@@ -70,6 +70,9 @@ void dlarf_(char *side, int *m, int *n, double *x, int *incx, double *alpha, dou
 void slarft_(char *direct, char *storev, int *n, int *k, float *V, int *ldv, float *tau, float *T, int *ldt);
 void dlarft_(char *direct, char *storev, int *n, int *k, double *V, int *ldv, double *tau, double *T, int *ldt);
 
+void slarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, float *V, int *ldv, float *T, int *ldt, float *A, int *lda, float *W, int *ldw);
+void dlarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, double *V, int *ldv, double *T, int *ldt, double *A, int *lda, double *W, int *ldw);
+
 void sgeqr2_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *info);
 void dgeqr2_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *info);
 void sgeqrf_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
@@ -120,6 +123,20 @@ void cblas_larft<float>(char direct, char storev, rocblas_int n, rocblas_int k, 
 template <>
 void cblas_larft<double>(char direct, char storev, rocblas_int n, rocblas_int k, double *V, rocblas_int ldv, double *tau, double *T, rocblas_int ldt) {
     dlarft_(&direct, &storev, &n, &k, V, &ldv, tau, T, &ldt);
+}
+
+//larfb
+
+template <>
+void cblas_larfb<float>(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
+                        float *V, rocblas_int ldv, float *T, rocblas_int ldt, float *A, rocblas_int lda, float *W, rocblas_int ldw) {
+    slarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
+}
+
+template <>
+void cblas_larfb<double>(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
+                         double *V, rocblas_int ldv, double *T, rocblas_int ldt, double *A, rocblas_int lda, double *W, rocblas_int ldw) {
+    dlarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
 }
 
 

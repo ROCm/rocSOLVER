@@ -147,4 +147,9 @@ rocblas_status rocblas_trtri_trsm(rocblas_handle handle, rocblas_fill uplo,
                                   rocblas_diagonal diag, rocblas_int n, T *A,
                                   rocblas_int lda, T *invA);
 
+template <typename T>
+rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side, rocblas_fill uplo,
+                            rocblas_operation trans, rocblas_diagonal diag, rocblas_int m, rocblas_int n,
+                            T *alpha, T *A, rocblas_int lda, T* B, rocblas_int ldb);
+
 #endif // _ROCBLAS_HPP_

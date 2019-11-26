@@ -141,3 +141,19 @@ rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
   return rocblas_dtrsm(handle, side, uplo, transA, diag, m, n, alpha, A, lda, B,
                        ldb);
 }
+
+template <>
+rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side, rocblas_fill uplo,
+                            rocblas_operation trans, rocblas_diagonal diag, rocblas_int m, rocblas_int n,
+                            float *alpha, float *A, rocblas_int lda, float* B, rocblas_int ldb)
+{
+    return rocblas_strmm(handle,side,uplo,trans,diag,m,n,alpha,A,lda,B,ldb);
+}
+
+template <>
+rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side, rocblas_fill uplo,
+                            rocblas_operation trans, rocblas_diagonal diag, rocblas_int m, rocblas_int n,
+                            double *alpha, double *A, rocblas_int lda, double* B, rocblas_int ldb)
+{
+    return rocblas_dtrmm(handle,side,uplo,trans,diag,m,n,alpha,A,lda,B,ldb);
+}

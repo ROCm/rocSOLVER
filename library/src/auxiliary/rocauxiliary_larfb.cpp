@@ -33,8 +33,8 @@ rocblas_status rocsolver_larfb_impl(rocsolver_handle handle, const rocsolver_sid
                                       ldf,
                                       stridef,
                                       A,0,      //shifted 0 entries
-                                      stridea,
-                                      lda, 
+                                      lda,
+                                      stridea, 
                                       batch_count);
 }
 

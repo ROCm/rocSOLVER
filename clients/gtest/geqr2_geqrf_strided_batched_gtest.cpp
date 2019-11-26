@@ -27,22 +27,22 @@ typedef std::tuple<vector<int>, vector<int>> qr_tuple;
 // if stA == 0: strideA is lda*N
 // if stA == 1: strideA > lda*N 
 const vector<vector<int>> matrix_size_range = {
-    {0, 1, 0}, {-1, 1, 0}, {20, 5, 0}, {50, 50, 1}, {70, 100, 0}
+    {0, 1, 0}, {-1, 1, 0}, {20, 5, 0}, {50, 50, 1}, {70, 100, 0}, {130, 130, 0}, {150, 200, 1}
 };
 
 // each is a {N, stP}
 // if stP == 0: stridep is min(M,N)
 // if stP == 1: stridep > min(M,N)
 const vector<vector<int>> n_size_range = {
-    {-1, 0}, {0, 0}, {16, 0}, {20, 1}, {40, 0}
+    {-1, 0}, {0, 0}, {16, 0}, {20, 1}, {130, 0}, {150, 1}
 };
 
 const vector<vector<int>> large_matrix_size_range = {
-    {452, 492, 1}, {640, 640, 0}, {1000, 1024, 0}, 
+    {152, 152, 0}, {640, 640, 0}, {1000, 1024, 0}, 
 };
 
 const vector<vector<int>> large_n_size_range = {
-    {64, 0}, {98, 0}, {102, 0}, {220, 1}, {400,0}
+    {64, 0}, {98, 0}, {130, 0}, {220, 1}, {400,0}
 };
 
 
@@ -106,7 +106,7 @@ TEST_P(QRfact_sb, geqr2_strided_batched_double) {
   }
 }
 
-/*TEST_P(QRfact_sb, geqrf_strided_batched_float) {
+TEST_P(QRfact_sb, geqrf_strided_batched_float) {
   Arguments arg = setup_arguments_sbqr(GetParam());
 
   rocblas_status status = testing_geqr2_geqrf_strided_batched<float,1>(arg);
@@ -138,7 +138,7 @@ TEST_P(QRfact_sb, geqrf_strided_batched_double) {
       EXPECT_EQ(1000, status);
     }
   }
-}*/
+}
 
 
 INSTANTIATE_TEST_CASE_P(daily_lapack, QRfact_sb,

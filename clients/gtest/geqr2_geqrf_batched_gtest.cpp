@@ -24,22 +24,22 @@ typedef std::tuple<vector<int>, vector<int>> qr_tuple;
 
 // vector of vector, each vector is a {M, lda};
 const vector<vector<int>> matrix_size_range = {
-    {0, 1}, {-1, 1}, {20, 5}, {50, 50}, {70, 100}
+    {0, 1}, {-1, 1}, {20, 5}, {50, 50}, {70, 100}, {130, 130}, {150, 200}
 };
 
 // each is a {N, stP}
 // if stP == 0: stridep is min(M,N)
 // if stP == 1: stridep > min(M,N)
 const vector<vector<int>> n_size_range = {
-    {-1, 0}, {0, 0}, {16, 0}, {20, 1}, {40, 0} 
+    {-1, 0}, {0, 0}, {16, 0}, {20, 1}, {130, 0}, {150, 1}    
 };
 
 const vector<vector<int>> large_matrix_size_range = {
-    {452, 492}, {640, 640}, {1000, 1024}
+    {152, 152}, {640, 640}, {1000, 1024}
 };
 
 const vector<vector<int>> large_n_size_range = {
-    {64, 0}, {98, 0}, {102, 0}, {220, 1}, {400, 0}, 
+    {64, 0}, {98, 0}, {130, 0}, {220, 1}, {400, 0}, 
 };
 
 
@@ -102,7 +102,7 @@ TEST_P(QRfact_b, geqr2_batched_double) {
   }
 }
 
-/*TEST_P(QRfact_b, geqrf_batched_float) {
+TEST_P(QRfact_b, geqrf_batched_float) {
   Arguments arg = setup_arguments_qrb(GetParam());
 
   rocblas_status status = testing_geqr2_geqrf_batched<float,1>(arg);
@@ -134,7 +134,7 @@ TEST_P(QRfact_b, geqrf_batched_double) {
       EXPECT_EQ(1000, status);
     }
   }
-}*/
+}
 
 
 INSTANTIATE_TEST_CASE_P(daily_lapack, QRfact_b,
