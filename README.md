@@ -11,18 +11,28 @@ CXX=/opt/rocm/bin/hcc cmake ..
 make
 ```
 # Implemented functions in LAPACK notation
-<pre>
-Single and double precision:
 
-Cholesky decomposition:                 rocsolver_potf2() 
-unblocked LU decomposition:             rocsolver_getf2() 
-                                        rocsolver_getf2_batched()
-                                        rocsolver_getf2_strided_batched()
-blocked LU decomposition:               rocsolver_getrf()
-                                        rocsolver_getrf_batched()
-                                        rocsolver_getrf_strided_batched()
-unblocked QR decomposition:             rocsolver_geqr2()
-                                        rocsolver_geqr2_batched()
-                                        rocsolver_geqr2_strided_batched()
-solution of system of linear equations: rocsolver_sgetrs() rocsolver_dgetrs()  
-</pre>
+| Lapack Auxiliary Function | single | double | single complex | double complex |
+| ------------------------- | ------ | ------ | -------------- | -------------- |
+|**rocsolver_laswp**        |     x  |    x   |                |                |
+|**rocsolver_larfg**        |     x  |    x   |                |                |
+|**rocsolver_larft**        |     x  |    x   |                |                |
+|**rocsolver_larf**         |     x  |    x   |                |                |
+|**rocsolver_larfb**        |     x  |    x   |                |                |
+
+| Lapack Function                 | single | double | single complex | double complex |
+| ------------------------------- | ------ | ------ | -------------- | -------------- |
+|**rocsolver_potf2**              |     x  |    x   |                |                |
+|**rocsolver_getf2**              |     x  |    x   |                |                |
+|rocsolver_getf2_batched          |     x  |    x   |                |                |
+|rocsolver_getf2_strided_batched  |     x  |    x   |                |                |
+|**rocsolver_getrf**              |x       |x       |                |                |
+|rocsolver_getrf_batched          |x       |x       |                |                |
+|rocsolver_getrf_strided_batched  |x       |x       |                |                |
+|**rocsolver_geqr2**              |x       |x       |                |                |
+|rocsolver_geqr2_batched          |x       | x      |                |                |
+|rocsolver_geqr2_strided_batched  |x       |x       |                |                |
+|**rocsolver_geqrf**              |x       |x       |                |                |
+|rocsolver_geqrf_batched          | x      |x       |                |                |
+|rocsolver_geqrf_strided_batched  |x       |x       |                |                |
+|**rocsolver_getrs**              |x       |x       |                |                |
