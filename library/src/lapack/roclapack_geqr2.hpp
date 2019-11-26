@@ -57,7 +57,7 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle, const rocblas_int
     hipMalloc(&diag,sizeof(T)*batch_count);
    
     rocblas_int dim = min(m, n);    //total number of pivots    
- 
+
     for (rocblas_int j = 0; j < dim; ++j) {
         // generate Householder reflector to work on column j
         rocsolver_larfg_template(handle,
@@ -70,7 +70,6 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle, const rocblas_int
 
         // insert one in A(j,j) tobuild/apply the householder matrix 
         hipLaunchKernelGGL(set_one_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(j,j,lda),strideA);
-
 
         // Apply Householder reflector to the rest of matrix from the left 
         if (j < n - 1) {

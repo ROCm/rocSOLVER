@@ -95,22 +95,6 @@ rocblas_status testing_larft(Arguments argus)
         }
     }
 
-//        printf("\n");
-  //      for (int i = 0; i < N; i++) {
-    //        for (int j = 0; j < K; j++) {
-      //          printf("%2.15f ",hV[i+j*ldt]);
-        //    }
-          //  printf("\n");
-//        }
-  //      printf("\n");
-    //    for (int i = 0; i < K; i++) {
-      //      printf("%2.15f ",htau[i]);
-        //}
-        //printf("\n\n");
-
-
-
-
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dV, hV.data(), sizeof(T) * sizeV, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dtau, htau.data(), sizeof(T) * K, hipMemcpyHostToDevice));
@@ -138,22 +122,6 @@ rocblas_status testing_larft(Arguments argus)
         cpu_time_used = get_time_us() - cpu_time_used;
 
         // +++++++++ Error Check +++++++++++++
-//        printf("\n");
-  //      for (int i = 0; i < K; i++) {
-    //        for (int j = 0; j < K; j++) {
-      //          printf("%2.15f ",hF[i+j*ldt]);
-        //    }
-          //  printf("\n");
-//        }
-  //      printf("\n");
-    //    for (int i = 0; i < K; i++) {
-      //      for (int j = 0; j < K; j++) {
-        //        printf("%2.15f ",hF_r[i+j*ldt]);
-          //  }
-//            printf("\n");
-  //      }
-
-
         for (int i = 0; i < K; i++) {
             for (int j = 0; j < K; j++) {
                 if ((j >= i && directchar == 'F') || (j <= i && directchar == 'B')) {

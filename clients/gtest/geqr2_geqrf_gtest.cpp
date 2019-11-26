@@ -21,20 +21,20 @@ typedef std::tuple<vector<int>, int> geqr_tuple;
 
 // vector of vector, each vector is a {M, lda};
 const vector<vector<int>> matrix_size_range = {
-    {0, 1}, {-1, 1}, {20, 5}, {50, 50}, {70, 100}
+    {0, 1}, {-1, 1}, {20, 5}, {50, 50}, {70, 100}, {130, 130}, {150, 200}
 };
 
 // each is a N
 const vector<int> n_size_range = {
-    -1, 0, 16, 20, 40,
+    -1, 0, 16, 20, 130, 150
 };
 
 const vector<vector<int>> large_matrix_size_range = {
-    {192, 192}, {640, 640}, {1000, 1024}, 
+    {152, 152}, {640, 640}, {1000, 1024}, 
 };
 
 const vector<int> large_n_size_range = {
-    64, 98, 102, 220, 400
+    64, 98, 130, 220, 400
 };
 
 
@@ -94,7 +94,7 @@ TEST_P(QRfact, geqr2_double) {
     }
 }
 
-/*TEST_P(QRfact, geqrf_float) {
+TEST_P(QRfact, geqrf_float) {
     Arguments arg = setup_arguments_qr(GetParam());
 
     rocblas_status status = testing_geqr2_geqrf<float,1>(arg);
@@ -124,7 +124,7 @@ TEST_P(QRfact, geqrf_double) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         }
     }
-}*/
+}
 
 
 INSTANTIATE_TEST_CASE_P(daily_lapack, QRfact,
