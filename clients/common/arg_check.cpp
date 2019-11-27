@@ -4,6 +4,7 @@
 
 #include "arg_check.h"
 #include "rocblas.h"
+#include <cstring>
 #include <iostream>
 
 #define PRINT_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                             \
@@ -150,11 +151,13 @@ void verify_rocblas_status_success(rocblas_status status, const char *message) {
 template <> void verify_not_nan(rocblas_half arg) {
 // check against 16 bit IEEE NaN immediate value, will work on machine without
 // 16 bit IEEE
+uint16_t t;
+std::memcpy(&t, &arg, sizeof(uint16_t));
 #ifdef GOOGLE_TEST
-  ASSERT_TRUE(static_cast<uint16_t>(arg & 0X7ff) <=
+  ASSERT_TRUE(static_cast<uint16_t>(t & 0X7ff) <=
               static_cast<uint16_t>(0X7C00));
 #else
-  if (static_cast<uint16_t>(arg & 0X7ff) > static_cast<uint16_t>(0X7C00)) {
+  if (static_cast<uint16_t>(t & 0X7ff) > static_cast<uint16_t>(0X7C00)) {
     std::cerr << "rocBLAS TEST ERROR: argument is NaN" << std::endl;
   }
 #endif
