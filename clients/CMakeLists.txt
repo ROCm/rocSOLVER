@@ -5,14 +5,6 @@
 # The ROCm platform requires Ubuntu 16.04 or Fedora 24, which has cmake 3.5
 cmake_minimum_required( VERSION 3.5 )
 
-# Consider removing this in the future
-# This should appear before the project command, because it does not use FORCE
-if( WIN32 )
-  set( CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/package" CACHE PATH "Install path prefix, prepended onto install directories" )
-else( )
-  set( CMAKE_INSTALL_PREFIX "/opt/rocm" CACHE PATH "Install path prefix, prepended onto install directories" )
-endif( )
-
 # This has to be initialized before the project() command appears
 # Set the default of CMAKE_BUILD_TYPE to be release, unless user specifies with -D.  MSVC_IDE does not use CMAKE_BUILD_TYPE
 if( NOT DEFINED CMAKE_CONFIGURATION_TYPES AND NOT DEFINED CMAKE_BUILD_TYPE )
@@ -22,11 +14,12 @@ endif()
 # This project may compile dependencies for clients
 project( rocsolver-clients LANGUAGES CXX )
 
-if(EXISTS /etc/redhat-release)
+if(OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread")
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread")
 endif()
+
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -40,12 +33,12 @@ include( build-options )
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
 if( NOT TARGET rocsolver )
-  find_package( rocsolver REQUIRED CONFIG PATHS /opt/rocm/rocsolver )
+  find_package( rocsolver REQUIRED CONFIG PATHS ${ROCM_PATH}/rocsolver /opt/rocm/rocsolver )
 endif( )
 
 # Hip headers required of all clients; clients use hip to allocate device memory
-list( APPEND CMAKE_PREFIX_PATH /opt/rocm )
-find_package( hip REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH} )
+list( APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} /opt/rocm )
+find_package( hip REQUIRED CONFIG PATHS ${ROCM_PATH} )
 
 # Quietly look for CUDA, but if not found it's not an error
 # The presense of hip is not sufficient to determine if we want a rocm or cuda backend
