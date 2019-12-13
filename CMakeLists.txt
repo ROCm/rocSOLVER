@@ -10,14 +10,6 @@ set( CMAKE_CXX_STANDARD 14 )
 # Without this line, it will add -std=gnu++14 instead, which has some issues.
 set( CMAKE_CXX_EXTENSIONS OFF )
 
-# Consider removing this in the future
-# This should appear before the project command, because it does not use FORCE
-if( WIN32 )
-  set( CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/package" CACHE PATH "Install path prefix, prepended onto install directories" )
-else( )
-  set( CMAKE_INSTALL_PREFIX "/opt/rocm" CACHE PATH "Install path prefix, prepended onto install directories" )
-endif( )
-
 # This has to be initialized before the project() command appears
 # Set the default of CMAKE_BUILD_TYPE to be release, unless user specifies with -D.  MSVC_IDE does not use CMAKE_BUILD_TYPE
 if( NOT DEFINED CMAKE_CONFIGURATION_TYPES AND NOT DEFINED CMAKE_BUILD_TYPE )
@@ -107,7 +99,7 @@ endif( )
 # This finds the rocm-cmake project, and installs it if not found
 # rocm-cmake contains common cmake code for rocm projects to help setup and install
 set( PROJECT_EXTERN_DIR ${CMAKE_CURRENT_BINARY_DIR}/extern )
-find_package( ROCM CONFIG QUIET PATHS /opt/rocm )
+find_package( ROCM CONFIG QUIET PATHS ${ROCM_PATH} /opt/rocm )
 if( NOT ROCM_FOUND )
   set( rocm_cmake_tag "master" CACHE STRING "rocm-cmake tag to download" )
   file( DOWNLOAD https://github.com/RadeonOpenCompute/rocm-cmake/archive/${rocm_cmake_tag}.zip
@@ -139,6 +131,10 @@ include( ROCMInstallTargets )
 include( ROCMPackageConfigHelpers )
 include( ROCMInstallSymlinks )
 
+include (cmake/os-detection.cmake)
+get_os_id(OS_ID)
+message (STATUS "OS detected is ${OS_ID}")
+
 # Versioning via rocm-cmake
 set ( VERSION_STRING "2.7.0" )
 rocm_setup_version( VERSION ${VERSION_STRING} )
@@ -148,7 +144,7 @@ rocm_setup_version( VERSION ${VERSION_STRING} )
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 
 # NOTE:  workaround until hcc & hip cmake modules fixes symlink logic in their config files; remove when fixed
-list( APPEND CMAKE_PREFIX_PATH /opt/rocm/hcc /opt/rocm/hip )
+list( APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hcc ${ROCM_PATH}/hip /opt/rocm/hcc /opt/rocm/hip )
 
 option( BUILD_VERBOSE "Output additional build information" OFF )
 
@@ -162,12 +158,12 @@ set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for librar
 
 # Find HCC/HIP dependencies
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
-  find_package( hcc REQUIRED CONFIG PATHS /opt/rocm )
-  find_package( hip REQUIRED CONFIG PATHS /opt/rocm )
+  find_package( hcc REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm )
+  find_package( hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm )
 endif( )
 
 
-find_package( rocblas REQUIRED CONFIG PATHS /opt/rocm )
+find_package( rocblas REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm )
 include_directories( ${rocblas_INCLUDE_DIR} )
 
 

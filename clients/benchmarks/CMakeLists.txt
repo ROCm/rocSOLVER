@@ -75,14 +75,14 @@ if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
         set( OPENMP_LIBRARY /usr/lib64/gcc/x86_64-suse-linux/7/libgomp.so )
     endif()
 
-    if(EXISTS /opt/rocm/hcc/lib/clang/10.0.0/include/immintrin.h)
-        set( CLANG_INCLUDE_DIR /opt/rocm/hcc/lib/clang/10.0.0/include )
-    elseif (EXISTS /opt/rocm/hcc/lib/clang/9.0.0/include/immintrin.h)
-        set( CLANG_INCLUDE_DIR /opt/rocm/hcc/lib/clang/9.0.0/include )
+    message(STATUS "RocmPath: ${ROCM_PATH}")
+    if(EXISTS "${ROCM_PATH}/hcc/lib/clang/10.0.0/include/immintrin.h")
+        set( CLANG_INCLUDE_DIR ${ROCM_PATH}/hcc/lib/clang/10.0.0/include )
+    elseif (EXISTS "${ROCM_PATH}/hcc/lib/clang/9.0.0/include/immintrin.h")
+        set( CLANG_INCLUDE_DIR ${ROCM_PATH}/hcc/lib/clang/9.0.0/include )
     else()
         error("cannot find immintrin.h")
     endif()
-
 
     # External header includes included as system files
     target_include_directories( rocsolver-bench
