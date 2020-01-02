@@ -320,7 +320,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarf(rocsolver_handle handle,
     @param[in]
     ldv                 rocsolver_int. ldv >= m if side is left, or ldv >= n if side is right.\n
                         Leading dimension of V.
-    @param[out]
+    @param[in]
     T                   pointer to type. Array on the GPU of dimension ldt*k.\n
                         The triangular factor of the block reflector.
     @param[in]  

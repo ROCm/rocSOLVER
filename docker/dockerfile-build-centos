@@ -20,9 +20,6 @@ RUN yum install -y \
     clang-devel \
     gcc-c++ \
     gcc-gfortran \
-    gtest-devel \ 
-    gtest \
-    lapack-devel \
     unzip \
     wget \
     pkgconfig \
@@ -43,6 +40,8 @@ RUN yum install -y \
     rpm-build \
     deltarpm 
 
+RUN yum remove -y rocblas *gtest*
+
 RUN echo '#!/bin/bash' | tee /etc/profile.d/devtoolset7.sh && echo \
     'source scl_source enable devtoolset-7' >>/etc/profile.d/devtoolset7.sh
 
@@ -58,6 +57,6 @@ ARG ROCSOLVER_SRC_ROOT=/usr/local/src/rocSOLVER
 RUN mkdir -p ${ROCSOLVER_SRC_ROOT} && cd ${ROCSOLVER_SRC_ROOT} && \
     git clone -b develop --depth=1 https://github.com/ROCmSoftwarePlatform/rocSOLVER . && \
     mkdir -p build/deps && cd build/deps && \
-    cmake3 -DBUILD_BOOST=OFF -DBUILD_GTEST=OFF ${ROCSOLVER_SRC_ROOT}/deps && \
+    cmake3 -DBUILD_BOOST=OFF ${ROCSOLVER_SRC_ROOT}/deps && \
     make -j $(nproc) install && \
     rm -rf ${ROCSOLVER_SRC_ROOT}
