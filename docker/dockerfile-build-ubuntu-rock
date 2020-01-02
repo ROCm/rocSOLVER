@@ -1,4 +1,4 @@
-# Parameters related to building hip
+# Parameters related to building rocsolver
 ARG base_image
 
 FROM ${base_image}
@@ -10,8 +10,8 @@ ARG user_uid
 # Dependencies:
 # * hcc-config.cmake: pkg-config
 # * tensile: python2.7, python-yaml
-# * rocblas-test: gfortran, googletest
-# * rocblas-bench: libboost-program-options-dev
+# * rocsolver-test: gfortran, googletest
+# * rocsolver-bench: libboost-program-options-dev
 # * libhsakmt.so: libnuma1
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     sudo \
@@ -54,7 +54,7 @@ RUN useradd --create-home -u ${user_uid} -o -G video --shell /bin/bash jenkins &
 
 ARG ROCSOLVER_SRC_ROOT=/usr/local/src/rocSOLVER
 
-# Clone rocblas repo
+# Clone rocsolver repo
 # Build client dependencies and install into /usr/local (LAPACK & GTEST)
 RUN mkdir -p ${ROCSOLVER_SRC_ROOT} && cd ${ROCSOLVER_SRC_ROOT} && \
     git clone -b develop --depth=1 https://github.com/ROCmSoftwarePlatform/rocSOLVER . && \
