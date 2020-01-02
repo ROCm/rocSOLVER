@@ -9,8 +9,7 @@ ARG user_uid
 # Install dependent packages
 RUN yum install -y \
     sudo \
-    rock-dkms \
-    rocm_smi64 \
+    rocm-dev \
     centos-release-scl \
     devtoolset-7 \
     ca-certificates \

@@ -28,7 +28,8 @@ rocSOLVERCI:
     def rocsolver = new rocProject('rocSOLVER')
     
     def nodes = new dockerNodes(['internal && gfx900 && ubuntu16', 'internal && gfx906 && ubuntu16', 'internal && gfx906 && centos7', 
-    'internal && gfx900 && centos7','internal && gfx900 && ubuntu16 && hip-clang', 'internal && gfx906 && ubuntu16 && hip-clang' ], rocsolver)
+    'internal && gfx900 && centos7','internal && gfx900 && ubuntu16 && hip-clang', 'internal && gfx906 && ubuntu16 && hip-clang',
+    'internal && gfx900 && sles', 'internal && gfx906 && sles'], rocsolver)
 
     boolean formatCheck = false
 

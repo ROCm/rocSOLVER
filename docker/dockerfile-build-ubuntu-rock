@@ -2,7 +2,7 @@
 ARG base_image
 
 FROM ${base_image}
-LABEL maintainer="kent.knox@amd"
+LABEL maintainer="rocsolver.maintainer@amd.com"
 
 ARG user_uid
 
@@ -14,9 +14,8 @@ ARG user_uid
 # * rocblas-bench: libboost-program-options-dev
 # * libhsakmt.so: libnuma1
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    rock-dkms \
     sudo \
-    rocm_smi64 \
+    rocm-dev \
     ca-certificates \
     git \
     make \
