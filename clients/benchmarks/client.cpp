@@ -13,6 +13,8 @@
 #include "testing_geqr2_geqrf_batched.hpp"
 #include "testing_geqr2_geqrf_strided_batched.hpp"
 #include "testing_getrs.hpp"
+#include "testing_getrs_batched.hpp"
+#include "testing_getrs_strided_batched.hpp"
 #include "testing_potf2.hpp"
 #include "testing_larfg.hpp"
 #include "testing_larf.hpp"
@@ -299,6 +301,18 @@ int main(int argc, char *argv[])
       testing_getrs<float>(argus);
     else if (precision == 'd')
       testing_getrs<double>(argus);
+  } 
+  else if (function == "getrs_batched") {
+    if (precision == 's')
+      testing_getrs_batched<float>(argus);
+    else if (precision == 'd')
+      testing_getrs_batched<double>(argus);
+  } 
+  else if (function == "getrs_strided_batched") {
+    if (precision == 's')
+      testing_getrs_strided_batched<float>(argus);
+    else if (precision == 'd')
+      testing_getrs_strided_batched<double>(argus);
   } 
   else if (function == "larfg") {
     if (precision == 's')

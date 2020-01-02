@@ -1218,7 +1218,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf_strided_batched(rocsolver_han
                 Specifies the form of the system of equations. 
     @param[in]
     n           rocsolver_int. n >= 0.\n
-                The order of the system, i.e. the number of columns of A.  
+                The order of the system, i.e. the number of columns and rows of A.  
     @param[in]
     nrhs        rocsolver_int. nrhs >= 0.\n
                 The number of right hand sides, i.e., the number of columns
@@ -1243,14 +1243,37 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf_strided_batched(rocsolver_han
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_sgetrs(
-    rocsolver_handle handle, rocsolver_operation trans, rocsolver_int n,
-    rocsolver_int nrhs, const float *A, rocsolver_int lda,
-    const rocsolver_int *ipiv, float *B, rocsolver_int ldb);
+    rocsolver_handle handle, const rocsolver_operation trans, const rocsolver_int n,
+    const rocsolver_int nrhs, float *A, const rocsolver_int lda,
+    const rocsolver_int *ipiv, float *B, const rocsolver_int ldb);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrs(
-    rocsolver_handle handle, rocsolver_operation trans, rocsolver_int n,
-    rocsolver_int nrhs, const double *A, rocsolver_int lda,
-    const rocsolver_int *ipiv, double *B, rocsolver_int ldb);
+    rocsolver_handle handle, const rocsolver_operation trans, const rocsolver_int n,
+    const rocsolver_int nrhs, double *A, const rocsolver_int lda,
+    const rocsolver_int *ipiv, double *B, const rocsolver_int ldb);
+
+
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_sgetrs_batched(
+                 rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+                 const rocblas_int nrhs, float *const A[], const rocblas_int lda,
+                 const rocblas_int *ipiv, const rocblas_int strideP, float *const B[], const rocblas_int ldb, const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrs_batched(
+                 rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+                 const rocblas_int nrhs, double *const A[], const rocblas_int lda,
+                 const rocblas_int *ipiv, const rocblas_int strideP, double *const B[], const rocblas_int ldb, const rocblas_int batch_count);
+
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_sgetrs_strided_batched(
+                 rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+                 const rocblas_int nrhs, float *A, const rocblas_int lda, const rocblas_int strideA,
+                 const rocblas_int *ipiv, const rocblas_int strideP, float *B, const rocblas_int ldb, const rocblas_int strideB, const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrs_strided_batched(
+                 rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+                 const rocblas_int nrhs, double *A, const rocblas_int lda, const rocblas_int strideA,
+                 const rocblas_int *ipiv, const rocblas_int strideP, double *B, const rocblas_int ldb, const rocblas_int strideB, const rocblas_int batch_count);
 
 
 /*! \brief POTF2 computes the Cholesky factorization of a real symmetric
