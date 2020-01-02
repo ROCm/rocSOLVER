@@ -42,7 +42,7 @@ rocSOLVERCI:
         String cmake = platform.jenkinsLabel.contains('centos') ? 'cmake3' : 'cmake'
         String compiler = platform.jenkinsLabel.contains('hip-clang') ? 'hipcc' : 'hcc'
         String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
-	    String build_command = "sudo ${cmake} -DCMAKE_CXX_COMPILER=/opt/rocm/bin/${compiler} .."
+	    String build_command = "sudo ${cmake} -DCMAKE_CXX_COMPILER=/opt/rocm/bin/${compiler} -Damd_comgr_DIR=/opt/rocm/lib/cmake/amd_comgr .."
         
         def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,true)
         def command = """#!/usr/bin/env bash
