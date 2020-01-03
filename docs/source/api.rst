@@ -181,6 +181,15 @@ rocsolver_<type>getrs()
 .. doxygenfunction:: rocsolver_dgetrs
 .. doxygenfunction:: rocsolver_sgetrs
 
+rocsolver_<type>getrs_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dgetrs_batched
+.. doxygenfunction:: rocsolver_sgetrs_batched
+
+rocsolver_<type>getrs_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dgetrs_strided_batched
+.. doxygenfunction:: rocsolver_sgetrs_strided_batched
 
 
 

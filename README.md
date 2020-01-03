@@ -36,3 +36,5 @@ make
 |rocsolver_geqrf_batched          | x      |x       |                |                |
 |rocsolver_geqrf_strided_batched  |x       |x       |                |                |
 |**rocsolver_getrs**              |x       |x       |                |                |
+|rocsolver_getrs_batched          | x      |x       |                |                |
+|rocsolver_getrs_strided_batched  |x       |x       |                |                |

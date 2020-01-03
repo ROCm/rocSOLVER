@@ -1218,7 +1218,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf_strided_batched(rocsolver_han
                 Specifies the form of the system of equations. 
     @param[in]
     n           rocsolver_int. n >= 0.\n
-                The order of the system, i.e. the number of columns of A.  
+                The order of the system, i.e. the number of columns and rows of A.  
     @param[in]
     nrhs        rocsolver_int. nrhs >= 0.\n
                 The number of right hand sides, i.e., the number of columns
@@ -1243,14 +1243,135 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf_strided_batched(rocsolver_han
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_sgetrs(
-    rocsolver_handle handle, rocsolver_operation trans, rocsolver_int n,
-    rocsolver_int nrhs, const float *A, rocsolver_int lda,
-    const rocsolver_int *ipiv, float *B, rocsolver_int ldb);
+    rocsolver_handle handle, const rocsolver_operation trans, const rocsolver_int n,
+    const rocsolver_int nrhs, float *A, const rocsolver_int lda,
+    const rocsolver_int *ipiv, float *B, const rocsolver_int ldb);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrs(
-    rocsolver_handle handle, rocsolver_operation trans, rocsolver_int n,
-    rocsolver_int nrhs, const double *A, rocsolver_int lda,
-    const rocsolver_int *ipiv, double *B, rocsolver_int ldb);
+    rocsolver_handle handle, const rocsolver_operation trans, const rocsolver_int n,
+    const rocsolver_int nrhs, double *A, const rocsolver_int lda,
+    const rocsolver_int *ipiv, double *B, const rocsolver_int ldb);
+
+
+/*! \brief GETRS_BATCHED solves a batch of systems of n linear equations on n variables 
+     using the LU factorization computed by GETRF_BATCHED.
+
+    \details
+    For each instance j in the batch, it solves one of the following systems: 
+
+        A_j  * X_j = B_j (no transpose),  
+        A_j' * X_j = B_j (transpose),  or  
+        A_j* * X_j = B_j (conjugate transpose)
+
+    depending on the value of trans. 
+
+    @param[in]
+    handle      rocsolver_handle.
+    @param[in]
+    trans       rocsolver_operation.\n
+                Specifies the form of the system of equations of each instance in the batch. 
+    @param[in]
+    n           rocsolver_int. n >= 0.\n
+                The order of the system, i.e. the number of columns and rows of all A_j matrices.  
+    @param[in]
+    nrhs        rocsolver_int. nrhs >= 0.\n
+                The number of right hand sides, i.e., the number of columns
+                of all the matrices B_j.
+    @param[in]
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by GETRF_BATCHED.
+    @param[in]
+    lda         rocsolver_int. lda >= n.\n
+                The leading dimension of matrices A_j.
+    @param[in]
+    ipiv        pointer to rocsolver_int. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of pivot indices returned by GETRF_BATCHED.
+    @param[in,out]
+    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n 
+                On entry, the right hand side matrices B_j.
+                On exit, the solution matrix X_j of each system in the batch.
+    @param[in]
+    ldb         rocsolver_int. ldb >= n.\n
+                The leading dimension of matrices B_j.
+    @param[in]
+    batch_count rocsolver_int. batch_count >= 0.\n
+                Number of instances (systems) in the batch. 
+
+   ********************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_sgetrs_batched(
+                 rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+                 const rocblas_int nrhs, float *const A[], const rocblas_int lda,
+                 const rocblas_int *ipiv, const rocblas_int strideP, float *const B[], const rocblas_int ldb, const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrs_batched(
+                 rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+                 const rocblas_int nrhs, double *const A[], const rocblas_int lda,
+                 const rocblas_int *ipiv, const rocblas_int strideP, double *const B[], const rocblas_int ldb, const rocblas_int batch_count);
+
+/*! \brief GETRS_STRIDED_BATCHED solves a batch of systems of n linear equations on n variables 
+     using the LU factorization computed by GETRF_STRIDED_BATCHED.
+
+    \details
+    For each instance j in the batch, it solves one of the following systems: 
+
+        A_j  * X_j = B_j (no transpose),  
+        A_j' * X_j = B_j (transpose),  or  
+        A_j* * X_j = B_j (conjugate transpose)
+
+    depending on the value of trans. 
+
+    @param[in]
+    handle      rocsolver_handle.
+    @param[in]
+    trans       rocsolver_operation.\n
+                Specifies the form of the system of equations of each instance in the batch. 
+    @param[in]
+    n           rocsolver_int. n >= 0.\n
+                The order of the system, i.e. the number of columns and rows of all A_j matrices.  
+    @param[in]
+    nrhs        rocsolver_int. nrhs >= 0.\n
+                The number of right hand sides, i.e., the number of columns
+                of all the matrices B_j.
+    @param[in]
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by GETRF_STRIDED_BATCHED.
+    @param[in]
+    lda         rocsolver_int. lda >= n.\n
+                The leading dimension of matrices A_j.
+    @param[in]
+    strideA     rocsolver_int.\n
+                Stride from the start of one matrix A_j and the next one A_(j+1). 
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[in]
+    ipiv        pointer to rocsolver_int. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of pivot indices returned by GETRF_STRIDED_BATCHED.
+    @param[in,out]
+    B           pointer to type. Array on the GPU (size depends on the value of strideB).\n
+                On entry, the right hand side matrices B_j.
+                On exit, the solution matrix X_j of each system in the batch.
+    @param[in]
+    ldb         rocsolver_int. ldb >= n.\n
+                The leading dimension of matrices B_j.
+    @param[in]
+    strideB     rocsolver_int.\n
+                Stride from the start of one matrix B_j and the next one B_(j+1). 
+                There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs.
+    @param[in]
+    batch_count rocsolver_int. batch_count >= 0.\n
+                Number of instances (systems) in the batch. 
+
+   ********************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_sgetrs_strided_batched(
+                 rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+                 const rocblas_int nrhs, float *A, const rocblas_int lda, const rocblas_int strideA,
+                 const rocblas_int *ipiv, const rocblas_int strideP, float *B, const rocblas_int ldb, const rocblas_int strideB, const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrs_strided_batched(
+                 rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+                 const rocblas_int nrhs, double *A, const rocblas_int lda, const rocblas_int strideA,
+                 const rocblas_int *ipiv, const rocblas_int strideP, double *B, const rocblas_int ldb, const rocblas_int strideB, const rocblas_int batch_count);
 
 
 /*! \brief POTF2 computes the Cholesky factorization of a real symmetric

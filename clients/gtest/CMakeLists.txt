@@ -49,6 +49,8 @@ set(roclapack_test_source
     geqr2_geqrf_batched_gtest.cpp
     geqr2_geqrf_strided_batched_gtest.cpp
     getrs_gtest.cpp
+    getrs_batched_gtest.cpp
+    getrs_strided_batched_gtest.cpp
     potf2_gtest.cpp
     )
 
