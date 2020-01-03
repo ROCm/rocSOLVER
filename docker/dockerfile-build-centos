@@ -1,8 +1,8 @@
-# Parameters related to building rocblas
+# Parameters related to building rocsolver
 ARG base_image
 
 FROM ${base_image}
-LABEL maintainer="andrew.chapman@amd.com"
+LABEL maintainer="rocsolver.maintainer@amd.com"
 
 ARG user_uid
 
@@ -10,7 +10,7 @@ ARG user_uid
 RUN yum install -y \
     sudo \
     rock-dkms \
-    rocm-smi-lib64 \
+    rocm-dev \
     centos-release-scl \
     devtoolset-7 \
     ca-certificates \
@@ -53,7 +53,7 @@ RUN useradd --create-home -u ${user_uid} -o -G video --shell /bin/bash jenkins &
 
 ARG ROCSOLVER_SRC_ROOT=/usr/local/src/rocSOLVER
 
-# Clone rocblas repo
+# Clone rocsolver repo
 # Build client dependencies and install into /usr/local (LAPACK & GTEST)
 RUN mkdir -p ${ROCSOLVER_SRC_ROOT} && cd ${ROCSOLVER_SRC_ROOT} && \
     git clone -b develop --depth=1 https://github.com/ROCmSoftwarePlatform/rocSOLVER . && \
