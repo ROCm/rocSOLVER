@@ -1,0 +1,5 @@
+# Parameters related to building rocsolver
+ARG base_image
+
+FROM ${base_image}
+LABEL maintainer="rocsolver-maintainer@amd.com"
