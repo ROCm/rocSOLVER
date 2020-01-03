@@ -95,6 +95,7 @@ target_include_directories( rocsolver
 
 set_target_properties( rocsolver PROPERTIES VERSION ${rocsolver_VERSION} SOVERSION ${rocsolver_SOVERSION} CXX_EXTENSIONS NO )
 set_target_properties( rocsolver PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
+rocm_set_soversion(rocsolver ${VERSION_STRING})
 
 # Package that helps me set visibility for function names exported from shared library
 include( GenerateExportHeader )
