@@ -3,7 +3,7 @@
  *
  * ************************************************************************ */
 
-#include "testing_getrs.hpp"
+#include "testing_getrs_strided_batched.hpp"
 #include "utility.h"
 #include <gtest/gtest.h>
 #include <math.h>
@@ -17,7 +17,11 @@ using ::testing::ValuesIn;
 using namespace std;
 
 
-typedef std::tuple<vector<int>, vector<int>> getrs_tuple;
+typedef std::tuple<vector<int>, vector<int>> getrsSB_tuple;
+
+// **** THIS FUNCTION ONLY TESTS NORMNAL USE CASE
+//      I.E. WHEN STRIDEA >= LDA*M,
+//      STRIDEB >= LDB*NRHS, AND STRIDEP >= M ****
 
 // vector of vector, each vector is a {N, lda, ldb};
 // add/delete as a group
@@ -25,11 +29,13 @@ const vector<vector<int>> matrix_sizeA_range = {
     {-1, 1, 1}, {0, 1, 1}, {10, 2, 10}, {10, 10, 2}, {20, 20, 20}, {30, 50, 30}, {30, 30, 50}, {50, 60, 60}
 };
 
-// vector of vector, each vector is a {nrhs, trans};
+// vector of vector, each vector is a {nrhs, trans, std};
 // if trans = 0 then no transpose
 // if trans = 1 then transpose
+// if std = 0 strides are the minimum
+// if std = 1 strides are larger
 const vector<vector<int>> matrix_sizeB_range = {
-    {-1, 0}, {0, 0}, {10, 0}, {20, 1}, {30, 0},
+    {-1, 0, 0}, {0, 0, 0}, {10, 0, 0}, {20, 1, 1}, {30, 0, 0},
 };
 
 const vector<vector<int>> large_matrix_sizeA_range = {
@@ -37,11 +43,11 @@ const vector<vector<int>> large_matrix_sizeA_range = {
 };
 
 const vector<vector<int>> large_matrix_sizeB_range = {
-    {100, 0}, {150, 0}, {200, 1}, {524, 1}, {1000, 0},
+    {100, 0, 0}, {150, 0, 1}, {200, 1, 0}, {524, 1, 1}, {1000, 0, 0},
 };
 
 
-Arguments setup_getrs_arguments(getrs_tuple tup) {
+Arguments setup_getrsSB_arguments(getrsSB_tuple tup) {
 
   vector<int> matrix_sizeA = std::get<0>(tup);
   vector<int> matrix_sizeB = std::get<1>(tup);
@@ -59,23 +65,28 @@ Arguments setup_getrs_arguments(getrs_tuple tup) {
   else
     arg.transA_option = 'T';
 
+  arg.bsa = arg.M * arg.lda + matrix_sizeB[2]*10;
+  arg.bsb = arg.N * arg.ldb + matrix_sizeB[2]*10;
+  arg.bsp = arg.M + matrix_sizeB[2]*10;
+
+  arg.batch_count = 3;
   arg.timing = 0;
 
   return arg;
 }
 
-class getrs_gtest : public ::TestWithParam<getrs_tuple> {
+class getrsSB_gtest : public ::TestWithParam<getrsSB_tuple> {
 protected:
-  getrs_gtest() {}
-  virtual ~getrs_gtest() {}
+  getrsSB_gtest() {}
+  virtual ~getrsSB_gtest() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
 
-TEST_P(getrs_gtest, getrs_float) {
-  Arguments arg = setup_getrs_arguments(GetParam());
+TEST_P(getrsSB_gtest, getrs_strided_batched_float) {
+  Arguments arg = setup_getrsSB_arguments(GetParam());
 
-  rocblas_status status = testing_getrs<float>(arg);
+  rocblas_status status = testing_getrs_strided_batched<float>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -89,10 +100,10 @@ TEST_P(getrs_gtest, getrs_float) {
   }
 }
 
-TEST_P(getrs_gtest, getrs_double) {
-  Arguments arg = setup_getrs_arguments(GetParam());
+TEST_P(getrsSB_gtest, getrs_strided_batched_double) {
+  Arguments arg = setup_getrsSB_arguments(GetParam());
 
-  rocblas_status status = testing_getrs<double>(arg);
+  rocblas_status status = testing_getrs_strided_batched<double>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -108,12 +119,12 @@ TEST_P(getrs_gtest, getrs_double) {
 
 
 // This function mainly test the scope of matrix_size.
-INSTANTIATE_TEST_CASE_P(daily_lapack, getrs_gtest,
+INSTANTIATE_TEST_CASE_P(daily_lapack, getrsSB_gtest,
                         Combine(ValuesIn(large_matrix_sizeA_range),
                                 ValuesIn(large_matrix_sizeB_range)));
 
 // THis function mainly test the scope of uplo_range, the scope of
 // matrix_size_range is small
-INSTANTIATE_TEST_CASE_P(checkin_lapack, getrs_gtest,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, getrsSB_gtest,
                         Combine(ValuesIn(matrix_sizeA_range),
                                 ValuesIn(matrix_sizeB_range)));
