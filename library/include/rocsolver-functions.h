@@ -86,6 +86,24 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlaswp(rocsolver_handle handle,
                                                    const rocsolver_int *ipiv, 
                                                    const rocsolver_int incx);
 
+ROCSOLVER_EXPORT rocsolver_status rocsolver_claswp(rocsolver_handle handle, 
+                                                   const rocsolver_int n,
+                                                   rocblas_float_complex *A, 
+                                                   const rocsolver_int lda, 
+                                                   const rocsolver_int k1, 
+                                                   const rocsolver_int k2, 
+                                                   const rocsolver_int *ipiv, 
+                                                   const rocsolver_int incx);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_zlaswp(rocsolver_handle handle, 
+                                                   const rocsolver_int n,
+                                                   rocblas_double_complex *A, 
+                                                   const rocsolver_int lda, 
+                                                   const rocsolver_int k1, 
+                                                   const rocsolver_int k2, 
+                                                   const rocsolver_int *ipiv, 
+                                                   const rocsolver_int incx);
+
 /*! \brief LARFG generates an orthogonal Householder reflector H of order n. 
 
     \details
