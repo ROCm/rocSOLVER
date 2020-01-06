@@ -42,9 +42,7 @@ void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
 template <>
 void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
                         float *hCPU, float *hGPU) {
-#pragma unroll
   for (rocblas_int j = 0; j < N; j++) {
-#pragma unroll
     for (rocblas_int i = 0; i < M; i++) {
 #ifdef GOOGLE_TEST
       ASSERT_FLOAT_EQ(hCPU[i + j * lda], hGPU[i + j * lda]);
@@ -56,9 +54,7 @@ void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
 template <>
 void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
                         double *hCPU, double *hGPU) {
-#pragma unroll
   for (rocblas_int j = 0; j < N; j++) {
-#pragma unroll
     for (rocblas_int i = 0; i < M; i++) {
 #ifdef GOOGLE_TEST
       ASSERT_DOUBLE_EQ(hCPU[i + j * lda], hGPU[i + j * lda]);
@@ -66,6 +62,33 @@ void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
     }
   }
 }
+
+template <>
+void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
+                        rocblas_float_complex *hCPU, rocblas_float_complex *hGPU) {
+  for (rocblas_int j = 0; j < N; j++) {
+    for (rocblas_int i = 0; i < M; i++) {
+#ifdef GOOGLE_TEST
+      ASSERT_FLOAT_EQ(std::real(hCPU[i + j * lda]), std::real(hGPU[i + j * lda]));
+      ASSERT_FLOAT_EQ(std::imag(hCPU[i + j * lda]), std::imag(hGPU[i + j * lda]));
+#endif
+    }
+  }
+}
+
+template <>
+void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
+                        rocblas_double_complex *hCPU, rocblas_double_complex *hGPU) {
+  for (rocblas_int j = 0; j < N; j++) {
+    for (rocblas_int i = 0; i < M; i++) {
+#ifdef GOOGLE_TEST
+      ASSERT_DOUBLE_EQ(std::real(hCPU[i + j * lda]), std::real(hGPU[i + j * lda]));
+      ASSERT_DOUBLE_EQ(std::imag(hCPU[i + j * lda]), std::imag(hGPU[i + j * lda]));
+#endif
+    }
+  }
+}
+
 
 /*template <>
 void unit_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,

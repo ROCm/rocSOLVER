@@ -3,6 +3,36 @@
 
 #include "rocsolver.h"
 
+//laswp
+
+template <typename T>
+inline rocblas_status rocsolver_laswp(rocblas_handle handle, rocblas_int n, T *A, rocblas_int lda,
+                                      rocblas_int k1, rocblas_int k2, rocblas_int *ipiv, rocblas_int inc);
+
+template <>
+inline rocblas_status rocsolver_laswp(rocblas_handle handle, rocblas_int n, float *A, rocblas_int lda,
+                                      rocblas_int k1, rocblas_int k2, rocblas_int *ipiv, rocblas_int inc) {
+  return rocsolver_slaswp(handle,n,A,lda,k1,k2,ipiv,inc);
+}
+
+template <>
+inline rocblas_status rocsolver_laswp(rocblas_handle handle, rocblas_int n, double *A, rocblas_int lda,
+                                      rocblas_int k1, rocblas_int k2, rocblas_int *ipiv, rocblas_int inc) {
+  return rocsolver_dlaswp(handle,n,A,lda,k1,k2,ipiv,inc);
+}
+
+template <>
+inline rocblas_status rocsolver_laswp(rocblas_handle handle, rocblas_int n, rocblas_float_complex *A, rocblas_int lda,
+                                      rocblas_int k1, rocblas_int k2, rocblas_int *ipiv, rocblas_int inc) {
+  return rocsolver_claswp(handle,n,A,lda,k1,k2,ipiv,inc);
+}
+
+template <>
+inline rocblas_status rocsolver_laswp(rocblas_handle handle, rocblas_int n, rocblas_double_complex *A, rocblas_int lda,
+                                      rocblas_int k1, rocblas_int k2, rocblas_int *ipiv, rocblas_int inc) {
+  return rocsolver_zlaswp(handle,n,A,lda,k1,k2,ipiv,inc);
+}
+
 //larfg
 
 template <typename T>

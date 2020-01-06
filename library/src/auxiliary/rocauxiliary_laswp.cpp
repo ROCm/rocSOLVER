@@ -49,5 +49,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dlaswp(rocsolver_handle handle, const 
     return rocsolver_laswp_impl<double>(handle, n, A, lda, k1, k2, ipiv, incx);
 }
 
+ROCSOLVER_EXPORT rocblas_status rocsolver_claswp(rocsolver_handle handle, const rocsolver_int n,
+                 rocblas_float_complex *A, const rocsolver_int lda, const rocsolver_int k1, const rocsolver_int k2, 
+                 const rocsolver_int *ipiv, const rocblas_int incx)
+{
+    return rocsolver_laswp_impl<rocblas_float_complex>(handle, n, A, lda, k1, k2, ipiv, incx);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlaswp(rocsolver_handle handle, const rocsolver_int n,
+                 rocblas_double_complex *A, const rocsolver_int lda, const rocsolver_int k1, const rocsolver_int k2, 
+                 const rocsolver_int *ipiv, const rocblas_int incx)
+{
+    return rocsolver_laswp_impl<rocblas_double_complex>(handle, n, A, lda, k1, k2, ipiv, incx);
+}
+
+
+
 } //extern C
 
