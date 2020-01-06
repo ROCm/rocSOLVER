@@ -68,6 +68,14 @@ int main(int argc, char *argv[])
          "Specific...  the number of columns in "
          "A & C  and rows in B.")
 
+        ("k1",
+         po::value<rocblas_int>(&argus.k1)->default_value(1),
+         "First index for row interchange, used with laswp. ")
+        
+        ("k2",
+         po::value<rocblas_int>(&argus.k2)->default_value(2),
+         "Last index for row interchange, used with laswp. ")
+        
         ("lda",
          po::value<rocblas_int>(&argus.lda)->default_value(1024),
          "Specific leading dimension of matrix A, is only applicable to "
@@ -223,6 +231,10 @@ int main(int argc, char *argv[])
       testing_laswp<float>(argus);
     else if (precision == 'd')
       testing_laswp<double>(argus);
+    else if (precision == 'c')
+      testing_laswp<rocblas_float_complex>(argus);
+    else if (precision == 'z')
+      testing_laswp<rocblas_double_complex>(argus);
   }
   else if (function == "getf2") {
     if (precision == 's')

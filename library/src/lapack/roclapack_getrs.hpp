@@ -9,13 +9,7 @@
 #ifndef ROCLAPACK_GETRS_HPP
 #define ROCLAPACK_GETRS_HPP
 
-//#include <iostream>
-
-//#include "rocsolver-export.h"
-//#include <hip/hip_runtime.h>
 #include <rocblas.hpp>
-
-//#include <vector>
 #include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_laswp.hpp"
 
@@ -57,18 +51,6 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_ope
 
         // first apply row interchanges to the right hand sides
         rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0, strideP, 1, batch_count);
-
-/*rocblas_int size_B = ldb * nrhs;
-std::vector<T> hBRes(size_B);
-hipMemcpy(hBRes.data(), B, sizeof(T) * size_B, hipMemcpyDeviceToHost);
-printf("\n");
-for(int i=0;i<n;++i) {
-    for(int j=0;j<nrhs;++j) {
-        printf("%2.15f ",hBRes[i+j*lda]);
-    }
-    printf("\n");
-}*/
-
 
         for (int b = 0; b < batch_count; ++b) {
             Ap = load_ptr_batch<T>(AA,shiftA,b,strideA);

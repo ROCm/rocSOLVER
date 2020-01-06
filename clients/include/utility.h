@@ -90,16 +90,25 @@ inline float half_to_float(rocblas_half val) {
 /* generate random number :*/
 
 /*! \brief  generate a random number between [0, 0.999...] . */
-template <typename T> T random_generator() {
+template <typename T> 
+T random_generator(int max) {
   // return rand()/( (T)RAND_MAX + 1);
-  return (T)(rand() % 10 + 1); // generate a integer number between [1, 10]
+  return (T)(rand() % max + 1); // generate a integer number between [1, 10]
 };
 
 // for rocblas_half, generate float, and convert to rocblas_half
-template <> inline rocblas_half random_generator<rocblas_half>() {
+template <> inline rocblas_half random_generator<rocblas_half>(int max) {
   return float_to_half(static_cast<float>(
-      (rand() % 3 + 1))); // generate a integer number between [1, 5]
+      (rand() % max + 1))); // generate a integer number between [1, 5]
 };
+
+template <> inline rocblas_float_complex random_generator<rocblas_float_complex>(int max) {
+    return {float(rand() % max + 1),float(rand() % max + 1)}; 
+}
+
+template <> inline rocblas_double_complex random_generator<rocblas_double_complex>(int max) {
+    return {double(rand() % max + 1),double(rand() % max + 1)}; 
+}
 
 /*! \brief  generate a random number between [0, 0.999...] . */
 template <typename T> T random_generator_negative() {
@@ -120,10 +129,10 @@ template <> inline rocblas_half random_generator_negative<rocblas_half>() {
 // for complex number, the real/imag part would be initialized with the same
 // value
 template <typename T>
-void rocblas_init(T* A, rocblas_int M, rocblas_int N, rocblas_int lda) {
+void rocblas_init(T* A, rocblas_int M, rocblas_int N, rocblas_int lda, int max=10) {
   for (rocblas_int i = 0; i < M; ++i) {
     for (rocblas_int j = 0; j < N; ++j) {
-      A[i + j * lda] = random_generator<T>();
+      A[i + j * lda] = random_generator<T>(max);
     }
   }
 };
@@ -305,6 +314,8 @@ public:
   rocblas_int M = 128;
   rocblas_int N = 128;
   rocblas_int K = 128;
+  rocblas_int k1 = 1;
+  rocblas_int k2 = 2;
 
   rocblas_int lda = 128;
   rocblas_int ldb = 128;
@@ -352,6 +363,8 @@ public:
     M = rhs.M;
     N = rhs.N;
     K = rhs.K;
+    k1 = rhs.k1;
+    k2 = rhs.k2;
 
     lda = rhs.lda;
     ldb = rhs.ldb;

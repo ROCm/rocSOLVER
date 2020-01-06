@@ -78,6 +78,11 @@ void dgeqr2_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, in
 void sgeqrf_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
 void dgeqrf_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
 
+void slaswp_(int *n, float *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
+void dlaswp_(int *n, double *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
+void claswp_(int *n, rocblas_float_complex *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
+void zlaswp_(int *n, rocblas_double_complex *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
+
 
 #ifdef __cplusplus
 }
@@ -88,6 +93,29 @@ void dgeqrf_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, in
  *    Auxiliary LAPACK
  * ===========================================================================
  */
+
+//laswp
+
+template <>
+void cblas_laswp<float>(rocblas_int n, float *A, rocblas_int lda, rocblas_int k1, rocblas_int k2, rocblas_int *ipiv, rocblas_int inc) {
+    slaswp_(&n,A,&lda,&k1,&k2,ipiv,&inc);
+}
+
+template <>
+void cblas_laswp<double>(rocblas_int n, double *A, rocblas_int lda, rocblas_int k1, rocblas_int k2, rocblas_int *ipiv, rocblas_int inc) {
+    dlaswp_(&n,A,&lda,&k1,&k2,ipiv,&inc);
+}
+
+template <>
+void cblas_laswp<rocblas_float_complex>(rocblas_int n, rocblas_float_complex *A, rocblas_int lda, rocblas_int k1, rocblas_int k2, rocblas_int *ipiv, rocblas_int inc) {
+    claswp_(&n,A,&lda,&k1,&k2,ipiv,&inc);
+}
+
+template <>
+void cblas_laswp<rocblas_double_complex>(rocblas_int n, rocblas_double_complex *A, rocblas_int lda, rocblas_int k1, rocblas_int k2, rocblas_int *ipiv, rocblas_int inc) {
+    zlaswp_(&n,A,&lda,&k1,&k2,ipiv,&inc);
+}
+
 
 //larfg
 

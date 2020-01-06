@@ -68,6 +68,8 @@ Matrix permutations and manipulations
 
 rocsolver_<type>laswp()
 ^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zlaswp
+.. doxygenfunction:: rocsolver_claswp
 .. doxygenfunction:: rocsolver_dlaswp
 .. doxygenfunction:: rocsolver_slaswp
 

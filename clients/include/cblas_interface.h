@@ -127,5 +127,7 @@ void cblas_geqr2(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T
 template <typename T>
 void cblas_geqrf(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work);
 
+template <typename T>
+void cblas_laswp(rocblas_int n, T* A, rocblas_int lda, rocblas_int k1, rocblas_int k2, rocblas_int *ipiv, rocblas_int inc);
 
 #endif /* _CBLAS_INTERFACE_ */
