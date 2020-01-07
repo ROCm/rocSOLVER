@@ -52,27 +52,28 @@ Lapack Auxiliary Function       single double single complex double complex
 Lapack Function                 single double single complex double complex
 =============================== ====== ====== ============== ==============
 **rocsolver_potf2**             x      x                        
-**rocsolver_getf2**             x      x                        
-rocsolver_getf2_batched         x      x
-rocsolver_getf2_strided_batched x      x
-**rocsolver_getrf**             x      x                        
-rocsolver_getrf_batched         x      x
-rocsolver_getrf_strided_batched x      x
+**rocsolver_getf2**             x      x          x             x
+rocsolver_getf2_batched         x      x          x             x
+rocsolver_getf2_strided_batched x      x          x             x
+**rocsolver_getrf**             x      x          x             x 
+rocsolver_getrf_batched         x      x          x             x
+rocsolver_getrf_strided_batched x      x          x             x
 **rocsolver_geqr2**             x      x                        
 rocsolver_geqr2_batched         x      x
 rocsolver_geqr2_strided_batched x      x
 **rocsolver_geqrf**             x      x                        
 rocsolver_geqrf_batched         x      x 
 rocsolver_geqrf_strided_batched x      x
+<<<<<<< HEAD
 **rocsolver_gelq2**             x      x                        
 rocsolver_gelq2_batched         x      x
 rocsolver_gelq2_strided_batched x      x
 **rocsolver_gelqf**             x      x                        
 rocsolver_gelqf_batched         x      x 
 rocsolver_gelqf_strided_batched x      x
-**rocsolver_getrs**             x      x                        
-rocsolver_getrs_batched         x      x 
-rocsolver_getrs_strided_batched x      x
+**rocsolver_getrs**             x      x          x             x 
+rocsolver_getrs_batched         x      x          x             x
+rocsolver_getrs_strided_batched x      x          x             x
 =============================== ====== ====== ============== ==============
 
 Benchmarking and testing

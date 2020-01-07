@@ -29,7 +29,7 @@ using namespace std;
 // **** THIS FUNCTION ONLY TESTS NORMNAL USE CASE
 //      I.E. WHEN STRIDEA >= LDA*N AND STRIDEP >= MIN(M,N) ****
 
-template <typename T, int getrf> 
+template <typename T, typename U, int getrf> 
 rocblas_status testing_getf2_getrf_strided_batched(Arguments argus) {
     rocblas_int M = argus.M;
     rocblas_int N = argus.N;
@@ -102,7 +102,7 @@ rocblas_status testing_getf2_getrf_strided_batched(Arguments argus) {
 
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<T>::epsilon();
+    double eps = std::numeric_limits<U>::epsilon();
     double max_err_1 = 0.0, max_val;
     double diff, err;
     int piverr = 0;
@@ -157,10 +157,9 @@ rocblas_status testing_getf2_getrf_strided_batched(Arguments argus) {
             // hAr contains calculated decomposition, so error is hA - hAr
             for (int i = 0; i < M; i++) {
                 for (int j = 0; j < N; j++) {
-                    diff = fabs((hA.data() + b*strideA)[i + j * lda]);
+                    diff = abs((hA.data() + b*strideA)[i + j * lda]);
                     max_val = max_val > diff ? max_val : diff;
-                    diff = (hA.data() + b*strideA)[i + j * lda];
-                    diff = fabs((hAr.data() + b*strideA)[i + j * lda] - diff);
+                    diff = abs((hAr.data() + b*strideA)[i + j * lda] - (hA.data() + b*strideA)[i + j * lda]);
                     err = err > diff ? err : diff;
                 }
             }
@@ -169,7 +168,7 @@ rocblas_status testing_getf2_getrf_strided_batched(Arguments argus) {
         }
 
         if(argus.unit_check && !piverr)
-            getf2_err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
+            getf2_err_res_check<U>(max_err_1, M, N, error_eps_multiplier, eps);
     }
  
 
