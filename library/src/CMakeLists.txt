@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright 2016 Advanced Micro Devices, Inc.
+# Copyright 2016-2019 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # ########################################################################
@@ -94,9 +94,10 @@ target_include_directories( rocsolver
           $<BUILD_INTERFACE:${Tensile_INC}>
           $<INSTALL_INTERFACE:include>
           )
-
-set_target_properties( rocsolver PROPERTIES VERSION ${rocsolver_VERSION} SOVERSION ${rocsolver_SOVERSION} CXX_EXTENSIONS NO )
+set_target_properties( rocsolver PROPERTIES CXX_EXTENSIONS NO )
 set_target_properties( rocsolver PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
+rocm_set_soversion(rocsolver ${rocsolver_SOVERSION})
+
 
 # Package that helps me set visibility for function names exported from shared library
 include( GenerateExportHeader )
