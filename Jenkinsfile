@@ -42,17 +42,17 @@ rocSOLVERCI:
         String cmake = platform.jenkinsLabel.contains('centos') ? 'cmake3' : 'cmake'
         String compiler = platform.jenkinsLabel.contains('hip-clang') ? 'hipcc' : 'hcc'
         String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
-	    String build_command = "sudo ${cmake} -DCMAKE_CXX_COMPILER=/opt/rocm/bin/${compiler} -Damd_comgr_DIR=/opt/rocm/lib/cmake/amd_comgr .."
+	    String build_command = "${cmake} -DCMAKE_CXX_COMPILER=/opt/rocm/bin/${compiler} -Damd_comgr_DIR=/opt/rocm/lib/cmake/amd_comgr .."
         
         def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,true)
         def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
                     ${getRocBLAS}
-                    sudo mkdir build && cd build
+                    mkdir build && cd build
                     export PATH=/opt/rocm/bin:$PATH
                     ${build_command}
-                    sudo make -j32
+                    make -j32
                 """
 
         platform.runCommand(this, command)
@@ -66,13 +66,14 @@ rocSOLVERCI:
         try
         {
             String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
+            String sudo = auxiliary.sudo(platform.jenkinsLabel)
             def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,true)
 
             def command = """#!/usr/bin/env bash
                         set -x
                         cd ${project.paths.project_build_prefix}/build/clients/staging
                         ${getRocBLAS}
-                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=${testType}
+                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ${sudo} ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=${testType}
                     """
 
             platform.runCommand(this, command)
