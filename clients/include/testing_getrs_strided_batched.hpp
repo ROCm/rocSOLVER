@@ -30,7 +30,7 @@ using namespace std;
 //      I.E. WHEN STRIDEA >= LDA*M,
 //      STRIDEB >= LDB*NRHS, AND STRIDEP >= M ****
 
-template <typename T> rocblas_status testing_getrs_strided_batched(Arguments argus) {
+template <typename T, typename U> rocblas_status testing_getrs_strided_batched(Arguments argus) {
 
     rocblas_int M = argus.M;
     rocblas_int nhrs = argus.N;
@@ -89,8 +89,8 @@ template <typename T> rocblas_status testing_getrs_strided_batched(Arguments arg
     vector<T> hBRes(size_B);
 
     double gpu_time_used, cpu_time_used;
-    T error_eps_multiplier = GETRF_ERROR_EPS_MULTIPLIER;
-    T eps = std::numeric_limits<T>::epsilon();
+    double error_eps_multiplier = GETRF_ERROR_EPS_MULTIPLIER;
+    double eps = std::numeric_limits<U>::epsilon();
 
     // allocate memory on device
     auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * size_A), rocblas_test::device_free};
@@ -165,10 +165,9 @@ template <typename T> rocblas_status testing_getrs_strided_batched(Arguments arg
             max_val = 0.0;
             for (int i = 0; i < M; i++) {
                 for (int j = 0; j < nhrs; j++) {
-                    diff = fabs((hB.data() + b*strideB)[i + j * ldb]);
+                    diff = abs((hB.data() + b*strideB)[i + j * ldb]);
                     max_val = max_val > diff ? max_val : diff;
-                    diff = (hB.data() + b*strideB)[i + j * ldb];
-                    diff = fabs((hBRes.data() + b*strideB)[i + j * ldb] - diff);
+                    diff = abs((hBRes.data() + b*strideB)[i + j * ldb] - (hB.data() + b*strideB)[i + j * ldb]);
                     err = err > diff ? err : diff;
                 }
             }
@@ -176,7 +175,7 @@ template <typename T> rocblas_status testing_getrs_strided_batched(Arguments arg
             max_err_1 = max_err_1 > err ? max_err_1 : err;
         }
 
-        getrs_err_res_check<T>(max_err_1, M, nhrs, error_eps_multiplier, eps);
+        getrs_err_res_check<U>(max_err_1, M, nhrs, error_eps_multiplier, eps);
     }
 
     if (argus.timing) {

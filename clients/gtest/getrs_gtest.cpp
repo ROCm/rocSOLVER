@@ -75,7 +75,7 @@ protected:
 TEST_P(getrs_gtest, getrs_float) {
   Arguments arg = setup_getrs_arguments(GetParam());
 
-  rocblas_status status = testing_getrs<float>(arg);
+  rocblas_status status = testing_getrs<float,float>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -92,7 +92,7 @@ TEST_P(getrs_gtest, getrs_float) {
 TEST_P(getrs_gtest, getrs_double) {
   Arguments arg = setup_getrs_arguments(GetParam());
 
-  rocblas_status status = testing_getrs<double>(arg);
+  rocblas_status status = testing_getrs<double,double>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -106,6 +106,39 @@ TEST_P(getrs_gtest, getrs_double) {
   }
 }
 
+TEST_P(getrs_gtest, getrs_float_complex) {
+  Arguments arg = setup_getrs_arguments(GetParam());
+
+  rocblas_status status = testing_getrs<rocblas_float_complex,float>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.M < 0 || arg.N < 0) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else if (arg.lda < arg.M || arg.ldb < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
+
+TEST_P(getrs_gtest, getrs_double_complex) {
+  Arguments arg = setup_getrs_arguments(GetParam());
+
+  rocblas_status status = testing_getrs<rocblas_double_complex,double>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.M < 0 || arg.N < 0) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else if (arg.lda < arg.M || arg.ldb < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
 
 // This function mainly test the scope of matrix_size.
 INSTANTIATE_TEST_CASE_P(daily_lapack, getrs_gtest,

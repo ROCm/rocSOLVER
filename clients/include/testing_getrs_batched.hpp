@@ -30,7 +30,7 @@ using namespace std;
 //      I.E. WHEN STRIDEP >= M **** 
 
 
-template <typename T> rocblas_status testing_getrs_batched(Arguments argus) {
+template <typename T, typename U> rocblas_status testing_getrs_batched(Arguments argus) {
 
     rocblas_int M = argus.M;
     rocblas_int nhrs = argus.N;
@@ -90,8 +90,8 @@ template <typename T> rocblas_status testing_getrs_batched(Arguments argus) {
     }        
 
     double gpu_time_used, cpu_time_used;
-    T error_eps_multiplier = GETRF_ERROR_EPS_MULTIPLIER;
-    T eps = std::numeric_limits<T>::epsilon();
+    double error_eps_multiplier = GETRF_ERROR_EPS_MULTIPLIER;
+    double eps = std::numeric_limits<U>::epsilon();
 
     // allocate memory on device
     T* A[batch_count];
@@ -173,10 +173,9 @@ template <typename T> rocblas_status testing_getrs_batched(Arguments argus) {
             max_val = 0.0;
             for (int i = 0; i < M; i++) {
                 for (int j = 0; j < nhrs; j++) {
-                    diff = fabs(hB[b][i + j * ldb]);
+                    diff = abs(hB[b][i + j * ldb]);
                     max_val = max_val > diff ? max_val : diff;
-                    diff = hB[b][i + j * ldb];
-                    diff = fabs(hBRes[b][i + j * ldb] - diff);
+                    diff = abs(hBRes[b][i + j * ldb] - hB[b][i + j * ldb]);
                     err = err > diff ? err : diff;
                 }
             }
@@ -184,7 +183,7 @@ template <typename T> rocblas_status testing_getrs_batched(Arguments argus) {
             max_err_1 = max_err_1 > err ? max_err_1 : err;
         }
 
-        getrs_err_res_check<T>(max_err_1, M, nhrs, error_eps_multiplier, eps);
+        getrs_err_res_check<U>(max_err_1, M, nhrs, error_eps_multiplier, eps);
     }
 
     if (argus.timing) {

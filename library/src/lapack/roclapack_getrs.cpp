@@ -54,3 +54,22 @@ rocsolver_dgetrs(rocblas_handle handle, const rocblas_operation trans, const roc
 {
   return rocsolver_getrs_impl<double>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
 }
+
+extern "C" ROCSOLVER_EXPORT rocsolver_status 
+rocsolver_cgetrs(
+    rocsolver_handle handle, const rocsolver_operation trans, const rocsolver_int n,
+    const rocsolver_int nrhs, rocblas_float_complex *A, const rocsolver_int lda,
+    const rocsolver_int *ipiv, rocblas_float_complex *B, const rocsolver_int ldb) 
+{
+  return rocsolver_getrs_impl<rocblas_float_complex>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
+extern "C" ROCSOLVER_EXPORT rocsolver_status 
+rocsolver_zgetrs(
+    rocsolver_handle handle, const rocsolver_operation trans, const rocsolver_int n,
+    const rocsolver_int nrhs, rocblas_double_complex *A, const rocsolver_int lda,
+    const rocsolver_int *ipiv, rocblas_double_complex *B, const rocsolver_int ldb)
+{
+  return rocsolver_getrs_impl<rocblas_double_complex>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
