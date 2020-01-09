@@ -71,7 +71,6 @@ rocSOLVERCI:
             def command = """#!/usr/bin/env bash
                         set -x
                         cd ${project.paths.project_build_prefix}/build/clients/staging
-                        ${getRocBLAS}
                         ${sudo} LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=${testType}
                     """
 
