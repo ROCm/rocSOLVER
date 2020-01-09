@@ -44,7 +44,7 @@ rocSOLVERCI:
         String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
 	    String build_command = "${cmake} -DCMAKE_CXX_COMPILER=/opt/rocm/bin/${compiler} -Damd_comgr_DIR=/opt/rocm/lib/cmake/amd_comgr .."
         
-        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,true)
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch)
         def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
@@ -67,13 +67,13 @@ rocSOLVERCI:
         {
             String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
             String sudo = auxiliary.sudo(platform.jenkinsLabel)
-            def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,true)
+            def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch)
 
             def command = """#!/usr/bin/env bash
                         set -x
                         cd ${project.paths.project_build_prefix}/build/clients/staging
                         ${getRocBLAS}
-                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ${sudo} ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=${testType}
+                        ${sudo} LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=${testType}
                     """
 
             platform.runCommand(this, command)
@@ -89,8 +89,8 @@ rocSOLVERCI:
         platform, project->
 
         String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
-        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,true)
-        def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build",false,true,getRocBLAS)  
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch)
+        def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build",false,getRocBLAS)  
 
         platform.runCommand(this, packageHelper[0])
         platform.archiveArtifacts(this, packageHelper[1])
