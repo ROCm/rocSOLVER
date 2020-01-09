@@ -67,13 +67,13 @@ rocSOLVERCI:
         {
             String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
             String sudo = auxiliary.sudo(platform.jenkinsLabel)
-            def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,true)
+            def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,sudo!='')
 
             def command = """#!/usr/bin/env bash
                         set -x
                         cd ${project.paths.project_build_prefix}/build/clients/staging
                         ${getRocBLAS}
-                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ${sudo} ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=${testType}
+                        ${sudo} LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml --gtest_color=yes  --gtest_filter=${testType}
                     """
 
             platform.runCommand(this, command)
