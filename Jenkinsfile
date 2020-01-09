@@ -1,4 +1,4 @@
-@Library('rocJenkins') _
+@Library('rocJenkins@getlibrary') _
 
 // This is file for internal AMD use.
 // If you are interested in running your own Jenkins, please raise a github issue for assistance.
@@ -44,7 +44,7 @@ rocSOLVERCI:
         String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
 	    String build_command = "${cmake} -DCMAKE_CXX_COMPILER=/opt/rocm/bin/${compiler} -Damd_comgr_DIR=/opt/rocm/lib/cmake/amd_comgr .."
         
-        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,true)
+        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch)
         def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
@@ -67,7 +67,6 @@ rocSOLVERCI:
         {
             String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
             String sudo = auxiliary.sudo(platform.jenkinsLabel)
-            def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,sudo!='')
 
             def command = """#!/usr/bin/env bash
                         set -x
@@ -89,8 +88,8 @@ rocSOLVERCI:
         platform, project->
 
         String branch = platform.jenkinsLabel.contains('hip-clang') ? 'hip-clang' : 'develop'
-        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,branch,true)
-        def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build",false,true,getRocBLAS)  
+
+        def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build",false,true)  
 
         platform.runCommand(this, packageHelper[0])
         platform.archiveArtifacts(this, packageHelper[1])
