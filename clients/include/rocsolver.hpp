@@ -457,5 +457,130 @@ inline rocblas_status rocsolver_geqrf_strided_batched(rocblas_handle handle, roc
   return rocsolver_dgeqrf_strided_batched(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
 }
 
+//gelq2
+
+template <typename T>
+inline rocblas_status rocsolver_gelq2(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, T *A, rocblas_int lda,
+                                      T *ipiv);
+
+template <>
+inline rocblas_status rocsolver_gelq2(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, float *A, rocblas_int lda,
+                                      float *ipiv) {
+  return rocsolver_sgelq2(handle, m, n, A, lda, ipiv);
+}
+
+template <>
+inline rocblas_status rocsolver_gelq2(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, double *A, rocblas_int lda,
+                                      double *ipiv) {
+  return rocsolver_dgelq2(handle, m, n, A, lda, ipiv);
+}
+
+//gelq2_batched
+
+template <typename T>
+inline rocblas_status rocsolver_gelq2_batched(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, T *const A[], rocblas_int lda,
+                                      T *ipiv, rocblas_int stridep, rocblas_int batch_count);
+
+template <>
+inline rocblas_status rocsolver_gelq2_batched(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, float *const A[], rocblas_int lda,
+                                      float *ipiv, rocblas_int stridep, rocblas_int batch_count) {
+  return rocsolver_sgelq2_batched(handle, m, n, A, lda, ipiv, stridep, batch_count);
+}
+
+template <>
+inline rocblas_status rocsolver_gelq2_batched(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, double *const A[], rocblas_int lda,
+                                      double *ipiv, rocblas_int stridep, rocblas_int batch_count) {
+  return rocsolver_dgelq2_batched(handle, m, n, A, lda, ipiv, stridep, batch_count);
+}
+
+//gelq2_strided_batched
+
+template <typename T>
+inline rocblas_status rocsolver_gelq2_strided_batched(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, T *A, rocblas_int lda, rocblas_int strideA,
+                                      T *ipiv, rocblas_int stridep, rocblas_int batch_count);
+
+template <>
+inline rocblas_status rocsolver_gelq2_strided_batched(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, float *A, rocblas_int lda, rocblas_int strideA,
+                                      float *ipiv, rocblas_int stridep, rocblas_int batch_count) {
+  return rocsolver_sgelq2_strided_batched(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
+}
+
+template <>
+inline rocblas_status rocsolver_gelq2_strided_batched(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, double *A, rocblas_int lda, rocblas_int strideA,
+                                      double *ipiv, rocblas_int stridep, rocblas_int batch_count) {
+  return rocsolver_dgelq2_strided_batched(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
+}
+
+//gelqf
+
+template <typename T>
+inline rocblas_status rocsolver_gelqf(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, T *A, rocblas_int lda,
+                                      T *ipiv);
+
+template <>
+inline rocblas_status rocsolver_gelqf(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, float *A, rocblas_int lda,
+                                      float *ipiv) {
+  return rocsolver_sgelqf(handle, m, n, A, lda, ipiv);
+}
+
+template <>
+inline rocblas_status rocsolver_gelqf(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, double *A, rocblas_int lda,
+                                      double *ipiv) {
+  return rocsolver_dgelqf(handle, m, n, A, lda, ipiv);
+}
+
+//gelqf_batched
+
+template <typename T>
+inline rocblas_status rocsolver_gelqf_batched(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, T *const A[], rocblas_int lda,
+                                      T *ipiv, rocblas_int stridep, rocblas_int batch_count);
+
+template <>
+inline rocblas_status rocsolver_gelqf_batched(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, float *const A[], rocblas_int lda,
+                                      float *ipiv, rocblas_int stridep, rocblas_int batch_count) {
+  return rocsolver_sgelqf_batched(handle, m, n, A, lda, ipiv, stridep, batch_count);
+}
+
+template <>
+inline rocblas_status rocsolver_gelqf_batched(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, double *const A[], rocblas_int lda,
+                                      double *ipiv, rocblas_int stridep, rocblas_int batch_count) {
+  return rocsolver_dgelqf_batched(handle, m, n, A, lda, ipiv, stridep, batch_count);
+}
+
+//gelqf_strided_batched
+
+template <typename T>
+inline rocblas_status rocsolver_gelqf_strided_batched(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, T *A, rocblas_int lda, rocblas_int strideA,
+                                      T *ipiv, rocblas_int stridep, rocblas_int batch_count);
+
+template <>
+inline rocblas_status rocsolver_gelqf_strided_batched(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, float *A, rocblas_int lda, rocblas_int strideA,
+                                      float *ipiv, rocblas_int stridep, rocblas_int batch_count) {
+  return rocsolver_sgelqf_strided_batched(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
+}
+
+template <>
+inline rocblas_status rocsolver_gelqf_strided_batched(rocblas_handle handle, rocblas_int m,
+                                      rocblas_int n, double *A, rocblas_int lda, rocblas_int strideA,
+                                      double *ipiv, rocblas_int stridep, rocblas_int batch_count) {
+  return rocsolver_dgelqf_strided_batched(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
+}
 
 #endif /* ROCSOLVER_HPP */

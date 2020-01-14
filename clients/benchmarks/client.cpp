@@ -12,6 +12,9 @@
 #include "testing_geqr2_geqrf.hpp"
 #include "testing_geqr2_geqrf_batched.hpp"
 #include "testing_geqr2_geqrf_strided_batched.hpp"
+#include "testing_gelq2_gelqf.hpp"
+#include "testing_gelq2_gelqf_batched.hpp"
+#include "testing_gelq2_gelqf_strided_batched.hpp"
 #include "testing_getrs.hpp"
 #include "testing_getrs_batched.hpp"
 #include "testing_getrs_strided_batched.hpp"
@@ -307,6 +310,42 @@ int main(int argc, char *argv[])
       testing_geqr2_geqrf_strided_batched<float,1>(argus);
     else if (precision == 'd')
       testing_geqr2_geqrf_strided_batched<double,1>(argus);
+  } 
+  else if (function == "gelq2") {
+    if (precision == 's')
+      testing_gelq2_gelqf<float,0>(argus);
+    else if (precision == 'd')
+      testing_gelq2_gelqf<double,0>(argus);
+  }
+  else if (function == "gelq2_batched") {
+    if (precision == 's')
+      testing_gelq2_gelqf_batched<float,0>(argus);
+    else if (precision == 'd')
+      testing_gelq2_gelqf_batched<double,0>(argus);
+  }
+  else if (function == "gelq2_strided_batched") {
+    if (precision == 's')
+      testing_gelq2_gelqf_strided_batched<float,0>(argus);
+    else if (precision == 'd')
+      testing_gelq2_gelqf_strided_batched<double,0>(argus);
+  } 
+  else if (function == "gelqf") {
+    if (precision == 's')
+      testing_gelq2_gelqf<float,1>(argus);
+    else if (precision == 'd')
+      testing_gelq2_gelqf<double,1>(argus);
+  } 
+  else if (function == "gelqf_batched") {
+    if (precision == 's')
+      testing_gelq2_gelqf_batched<float,1>(argus);
+    else if (precision == 'd')
+      testing_gelq2_gelqf_batched<double,1>(argus);
+  } 
+  else if (function == "gelqf_strided_batched") {
+    if (precision == 's')
+      testing_gelq2_gelqf_strided_batched<float,1>(argus);
+    else if (precision == 'd')
+      testing_gelq2_gelqf_strided_batched<double,1>(argus);
   } 
   else if (function == "getrs") {
     if (precision == 's')
