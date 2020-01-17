@@ -171,6 +171,10 @@ int main(int argc, char *argv[])
          po::value<char>(&argus.direct_option)->default_value('F'),
          "F = forward, B = backward. Only applicable to certain routines") // xtrsm
         
+        ("storev",
+         po::value<char>(&argus.storev)->default_value('C'),
+         "C = column_wise, R = row_wise. Only applicable to certain routines") // xtrsm
+        
         ("batch",
          po::value<rocblas_int>(&argus.batch_count)->default_value(1),
          "Number of matrices. Only applicable to batched routines") // xtrsm xtrmm xgemm

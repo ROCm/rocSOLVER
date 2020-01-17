@@ -167,11 +167,16 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarfg(rocsolver_handle handle,
 
     depending on the value of direct.  
 
-    The triangular matrix T is such that
+    The triangular matrix T is upper triangular in forward direction and lower triangular in backward direction. 
+    If storev is column-wise, then
 
         H = I - V * T * V'
 
-    where the i-th column of matrix V contains the Householder vector associated to H(i).
+    where the i-th column of matrix V contains the Householder vector associated to H(i). If storev is row-wise, then
+
+        H = I - V' * T * V
+
+    where the i-th row of matrix V contains the Householder vector associated to H(i). 
 
     @param[in]
     handle              rocsolver_handle.
@@ -179,16 +184,19 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarfg(rocsolver_handle handle,
     direct              rocsolver_direct.\n
                         Specifies the direction in which the Householder matrices are applied.
     @param[in]
+    storev              rocsolver_storev.\n
+                        Specifies how the Householder vectors are stored in matrix V.
+    @param[in]
     n                   rocsolver_int. n >= 0.\n
                         The order (size) of the block reflector.
     @param[in]          
     k                   rocsovler_int. k >= 1.\n
                         The number of Householder matrices.
     @param[in]          
-    V                   pointer to type. Array on the GPU of size ldv*k.\n
+    V                   pointer to type. Array on the GPU of size ldv*k if column-wise, or ldv*n if row-wise.\n
                         The matrix of Householder vectors.
     @param[in]
-    ldv                 rocsolver_int. ldv >= n.\n
+    ldv                 rocsolver_int. ldv >= n if column-wise, or ldv >= k if row-wise.\n
                         Leading dimension of V.
     @param[in]
     tau                 pointer to type. Array of k scalars on the GPU.\n
@@ -205,6 +213,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarfg(rocsolver_handle handle,
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_slarft(rocsolver_handle handle,
                                                  const rocsolver_direct direct, 
+                                                 const rocsolver_storev storev,
                                                  const rocsolver_int n, 
                                                  const rocsolver_int k,
                                                  float *V,
@@ -214,7 +223,8 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_slarft(rocsolver_handle handle,
                                                  const rocsolver_int ldt); 
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarft(rocsolver_handle handle,
-                                                 const rocsolver_direct direct, 
+                                                 const rocsolver_direct direct,
+                                                 const rocsolver_storev storev, 
                                                  const rocsolver_int n, 
                                                  const rocsolver_int k,
                                                  double *V,
@@ -309,8 +319,12 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarf(rocsolver_handle handle,
 
         H = I - V * T * V'
 
-    where the i-th column of matrix V contains the Householder vector associated to H(i),
-    and T is the triangular factor as computed by LARFT.
+    where the i-th column of matrix V contains the Householder vector associated to H(i), if storev is column-wise; or
+
+        H = I - V' * T * V
+
+    where the i-th row of matrix V contains the Householder vector associated to H(i), if storev is row-wise. 
+    T is the associated triangular factor as computed by LARFT.
 
     @param[in]
     handle              rocsolver_handle.
@@ -322,7 +336,10 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarf(rocsolver_handle handle,
                         Specifies whether the block reflector or its transpose is to be applied.
     @param[in]
     direct              rocsolver_direct.\n
-                        Specifies the direction in which the Householder matrices are applied.
+                        Specifies the direction in which the Householder matrices were to be applied to generate H.
+    @param[in]
+    storev              rocsolver_storev.\n
+                        Specifies how the Householder vectors are stored in matrix V.
     @param[in]
     m                   rocsolver_int. m >= 0.\n
                         Number of rows of matrix A.
@@ -333,10 +350,12 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarf(rocsolver_handle handle,
     k                   rocsovler_int. k >= 1.\n
                         The number of Householder matrices.
     @param[in]          
-    V                   pointer to type. Array on the GPU of size ldv*k.\n
+    V                   pointer to type. Array on the GPU of size ldv*k if column-wise, ldv*n if row-wise and applying from the right, 
+                        or ldv*m if row-wise and applying from the left.\n
                         The matrix of Householder vectors.
     @param[in]
-    ldv                 rocsolver_int. ldv >= m if side is left, or ldv >= n if side is right.\n
+    ldv                 rocsolver_int. ldv >= k if row-wise, ldv >= m if column-wise and applying from the left, or ldv >= n if
+                        column-wise and applying from the right.\n
                         Leading dimension of V.
     @param[in]
     T                   pointer to type. Array on the GPU of dimension ldt*k.\n
@@ -357,7 +376,8 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarf(rocsolver_handle handle,
 ROCSOLVER_EXPORT rocsolver_status rocsolver_slarfb(rocsolver_handle handle,
                                                  const rocsolver_side side,
                                                  const rocsolver_operation trans,
-                                                 const rocsolver_direct direct, 
+                                                 const rocsolver_direct direct,
+                                                 const rocsolver_storev storev, 
                                                  const rocsolver_int m,
                                                  const rocsolver_int n, 
                                                  const rocsolver_int k,
@@ -372,6 +392,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarfb(rocsolver_handle handle,
                                                  const rocsolver_side side,
                                                  const rocsolver_operation trans,
                                                  const rocsolver_direct direct, 
+                                                 const rocsolver_storev storev, 
                                                  const rocsolver_int m,
                                                  const rocsolver_int n, 
                                                  const rocsolver_int k,

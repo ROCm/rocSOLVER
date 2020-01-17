@@ -66,17 +66,19 @@ rocblas_status rocsolver_gelqf_template(rocblas_handle handle, const rocblas_int
         if (j + jb < m) {
             
             //compute block reflector
-            rocsolver_larft_template<T>(handle, rocsolver_forward_direction, m-j, jb, 
+            rocsolver_larft_template<T>(handle, rocsolver_forward_direction, 
+                                        rocsolver_row_wise, n-j, jb, 
                                         A, shiftA + idx2D(j,j,lda), lda, strideA, 
                                         (ipiv + j), strideP,
                                         work, ldw, strideW, batch_count);
 
             //apply the block reflector
-            rocsolver_larfb_template<T>(handle,rocblas_side_left,rocblas_operation_transpose,rocsolver_forward_direction,
-                                        m-j, n-j-jb, jb,
+            rocsolver_larfb_template<T>(handle,rocblas_side_right,rocblas_operation_none,
+                                        rocsolver_forward_direction,rocsolver_row_wise,
+                                        m-j-jb, n-j, jb,
                                         A, shiftA + idx2D(j,j,lda), lda, strideA,
                                         F, 0, ldw, strideW,
-                                        A, shiftA + idx2D(j,j+jb,lda), lda, strideA, batch_count);
+                                        A, shiftA + idx2D(j+jb,j,lda), lda, strideA, batch_count);
 
         }
         j += GEQRF_GEQR2_BLOCKSIZE;

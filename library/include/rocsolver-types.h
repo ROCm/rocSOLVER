@@ -64,4 +64,11 @@ typedef enum rocsolver_direct_
     rocsolver_backward_direction = 172, /**< Elementary matrices applied from the left. */
 } rocsolver_direct;
 
+/*! \brief Used to specify how householder vectors are stored in a matrix of vectors 
+ ********************************************************************************/ 
+typedef enum rocsolver_storev_
+{
+    rocsolver_column_wise = 181, /**< Householder vectors are stored in the columns of a matrix. */
+    rocsolver_row_wise = 182, /**< Householder vectors are stored in the rows of a matrix. */
+} rocsolver_storev;
 #endif

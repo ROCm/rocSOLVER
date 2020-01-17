@@ -51,6 +51,10 @@ rocsolver_direct
 ^^^^^^^^^^^^^^^^^^
 .. doxygenenum:: rocsolver_direct
 
+rocsolver_storev
+^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocsolver_storev
+
 rocsolver_status
 ^^^^^^^^^^^^^^^^^^
 .. doxygentypedef:: rocsolver_status
