@@ -342,6 +342,7 @@ public:
   char uplo_option = 'L';
   char diag_option = 'N';
   char direct_option = 'F';
+  char storev = 'C';
 
   rocblas_int apiCallCount = 1;
   rocblas_int batch_count = 10;
@@ -369,6 +370,8 @@ public:
     lda = rhs.lda;
     ldb = rhs.ldb;
     ldc = rhs.ldc;
+    ldv = rhs.ldv;
+    ldt = rhs.ldt;
 
     incx = rhs.incx;
     incy = rhs.incy;
@@ -384,16 +387,26 @@ public:
 
     transA_option = rhs.transA_option;
     transB_option = rhs.transB_option;
+    transH_option = rhs.transH_option;
     side_option = rhs.side_option;
     uplo_option = rhs.uplo_option;
     diag_option = rhs.diag_option;
+    direct_option = rhs.direct_option;
+    storev = rhs.storev;
 
     apiCallCount = rhs.apiCallCount;
     batch_count = rhs.batch_count;
 
+    bsa = rhs.bsa;
+    bsb = rhs.bsb;
+    bsc = rhs.bsc;
+    bsp = rhs.bsp;
+    
     norm_check = rhs.norm_check;
     unit_check = rhs.unit_check;
     timing = rhs.timing;
+
+    iters = rhs.iters;
 
     return *this;
   }

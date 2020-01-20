@@ -58,6 +58,7 @@ __global__ void addmatA1(const rocsolver_int ldw, const rocsolver_int order, U A
 template <typename T, typename U>
 rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver_side side, 
                                         const rocsolver_operation trans, const rocsolver_direct direct, 
+                                        const rocsolver_storev storev,
                                         const rocsolver_int m, const rocsolver_int n,
                                         const rocsolver_int k, U V, const rocblas_int shiftV, const rocsolver_int ldv, 
                                         const rocsolver_int strideV, U F, const rocsolver_int shiftF,
@@ -98,28 +99,43 @@ rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver
         T* AA = A;
     #endif
 
-    // BACKWARD DIRECTION TO BE IMPLEMENTED...
-    rocsolver_fill uploV = rocblas_fill_lower;
-    rocsolver_fill uploT = rocblas_fill_upper;
-    if (direct == rocsolver_backward_direction)
-        return rocblas_status_not_implemented;
-
     //determine the side, size of workspace
-    //and whether V is trapezoidal 
+    //and whether V is trapezoidal
+    rocsolver_operation transp; 
+    rocsolver_fill uploV;
+    bool trap;
+    rocblas_int order, ldw;
+    bool colwise = (storev == rocsolver_column_wise); 
     bool leftside = (side == rocblas_side_left);
-    bool trap = (n > k);
-    rocsolver_int order = k;
-    rocsolver_int ldw = m;
-    rocsolver_operation transp = rocblas_operation_none;
+    size_t offsetV;
+    
     if (leftside) {
         order = n;
         ldw = k;
-        transp = rocblas_operation_transpose;
         trap = (m > k);
+    } else {
+        order = k;
+        ldw = m;
+        trap = (n > k);
     }
-    rocblas_int strideW = ldw*order;
+    if (colwise) {
+        uploV = rocblas_fill_lower;
+        offsetV = idx2D(k,0,ldv);
+        if (leftside) 
+            transp = rocblas_operation_transpose;
+        else 
+            transp = rocblas_operation_none;
+    } else {
+        uploV = rocblas_fill_upper;
+        offsetV = idx2D(0,k,ldv);
+        if (leftside) 
+            transp = rocblas_operation_none;
+        else 
+            transp = rocblas_operation_transpose;
+    }
 
     //memory in GPU (workspace)
+    rocblas_int strideW = ldw*order;
     T *work;
     hipMalloc(&work, sizeof(T)*strideW*batch_count);
 
@@ -132,8 +148,13 @@ rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver
     rocblas_int blocksy = (ldw - 1)/32 + 1;
     hipLaunchKernelGGL(copymatA1,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,ldw,order,A,shiftA,lda,strideA,work);
     
+    // BACKWARD DIRECTION TO BE IMPLEMENTED...
+    rocsolver_fill uploT = rocblas_fill_upper;
+    if (direct == rocsolver_backward_direction)
+        return rocblas_status_not_implemented;
+    
     //compute:
-    // V1' * A1 
+    // V1' * A1, or
     //   or 
     // A1 * V1
     for (int b=0;b<batch_count;++b) {
@@ -151,13 +172,13 @@ rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver
             Vp = load_ptr_batch<T>(VV,shiftV,b,strideV);
             if (leftside) { 
                 rocblas_gemm(handle,transp,rocblas_operation_none,ldw,order,m-k,oneInt,
-                             (Vp + idx2D(k,0,ldv)),ldv,
+                             (Vp + offsetV),ldv,
                              (Ap + idx2D(k,0,lda)),lda,
                              oneInt,(work + b*strideW),ldw);
             } else {
-                rocblas_gemm(handle,transp,rocblas_operation_none,ldw,order,n-k,oneInt,
+                rocblas_gemm(handle,rocblas_operation_none,transp,ldw,order,n-k,oneInt,
                              (Ap + idx2D(0,k,lda)),lda,
-                             (Vp + idx2D(k,0,ldv)),ldv,
+                             (Vp + offsetV),ldv,
                              oneInt,(work + b*strideW),ldw);
             }
         }
@@ -176,22 +197,24 @@ rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver
     // A2 - V2 * trans(T) * (V1' * A1 + V2' * A2)
     //              or
     // A2 - (A1 * V1 + A2 * V2) * trans(T) * V2'    
-    transp = rocblas_operation_transpose;
-    if (leftside) 
+    if (transp == rocblas_operation_transpose)
         transp = rocblas_operation_none;
+    else
+        transp = rocblas_operation_transpose;
+
     if (trap) {
         for (int b=0;b<batch_count;++b) {
             Ap = load_ptr_batch<T>(AA,shiftA,b,strideA);
             Vp = load_ptr_batch<T>(VV,shiftV,b,strideV);
             if (leftside) { 
                 rocblas_gemm(handle,transp,rocblas_operation_none,m-k,order,ldw,minoneInt,
-                             (Vp + idx2D(k,0,ldv)),ldv,
+                             (Vp + offsetV),ldv,
                              (work + b*strideW),ldw,
                              oneInt,(Ap + idx2D(k,0,lda)),lda);
             } else {
                 rocblas_gemm(handle,rocblas_operation_none,transp,ldw,n-k,order,minoneInt,
                              (work + b*strideW),ldw,
-                             (Vp + idx2D(k,0,ldv)),ldv,
+                             (Vp + offsetV),ldv,
                              oneInt,(Ap + idx2D(0,k,lda)),lda);
             }
         }

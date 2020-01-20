@@ -19,12 +19,16 @@ using namespace std;
 
 typedef std::tuple<vector<int>, vector<int>> bTuple;
 
-//{M,N,lda,s,ldv}
+//{M,N,lda,s,ldv,st}
 //if s = 0, then side = 'L'
 //if s = 1, then side = 'R'
+//if st = 0, then storev = 'C'
+//if st = 1, then storev = 'R'
 const vector<vector<int>> matrix_size_range = {
-    {-1,1,1,0,1}, {0,1,1,0,1}, {1,-1,1,0,1}, {1,0,1,0,1}, {15,15,5,0,15}, {12,12,12,0,5}, 
-    {15,15,15,0,15}, {18,20,20,1,20}, {20,18,20,0,20}, {20,30,20,1,30}, {50,35,50,0,50}  
+    {-1,1,1,0,1,0}, {0,1,1,0,1,0}, {1,-1,1,0,1,0}, {1,0,1,0,1,0}, {15,15,5,0,15,0}, {12,5,12,0,5,0}, {5,12,15,1,5,0},
+    {15,10,15,0,5,1},
+    {15,15,15,0,15,0}, {18,20,20,1,20,0}, {20,18,20,0,20,0}, {20,30,20,1,30,0}, {50,35,50,0,50,0},
+    {40,40,40,0,15,1}, {40,40,40,1,25,1}  
 };
 
 //{K,ldt,d,t}
@@ -38,7 +42,8 @@ const vector<vector<int>> reflector_size_range = {
 };
 
 const vector<vector<int>> large_matrix_size_range = {
-    {192,192,192,0,192}, {640,640,640,1,700}, {640,640,700,0,640}, {840,1024,840,1,1024}, {2547,1980,2547,0,2547}
+    {192,192,192,0,192,0}, {640,640,640,1,700,0}, {640,640,700,0,640,0}, {840,1024,840,1,1024,0}, {2547,1980,2547,0,2547,0},
+    {200,200,220,0,100,1}, {240,300,240,1,100,1}, {600,200,600,1,100,1}
 };
 
 const vector<vector<int>> large_reflector_size_range = {
@@ -65,6 +70,7 @@ Arguments larfb_setup_arguments(bTuple tup) {
 
   arg.direct_option = reflector_size[2] == 1 ? 'B' : 'F';
   arg.transH_option = reflector_size[3] == 1 ? 'T' : 'N';
+  arg.storev = order_size[5] == 1 ? 'R' : 'C';
 
   arg.timing = 0;
 
@@ -90,7 +96,10 @@ TEST_P(app_HHreflec_blk, larfb_float) {
     if (arg.M < 0 || arg.N < 0 || arg.K < 1 || arg.lda < arg.M || arg.ldt < arg.K) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
     } 
-    else if ((arg.side_option == 'L' && arg.ldv < arg.M) || (arg.side_option == 'R' && arg.ldv < arg.N)) {
+    else if (arg.storev == 'C' && ((arg.side_option == 'L' && arg.ldv < arg.M) || (arg.side_option == 'R' && arg.ldv < arg.N))) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+    else if (arg.storev == 'R' && arg.ldv < arg.K) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
     }
   }
@@ -107,7 +116,10 @@ TEST_P(app_HHreflec_blk, larfb_double) {
     if (arg.M < 0 || arg.N < 0 || arg.K < 1 || arg.lda < arg.M || arg.ldt < arg.K) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
     } 
-    else if ((arg.side_option == 'L' && arg.ldv < arg.M) || (arg.side_option == 'R' && arg.ldv < arg.N)) {
+    else if (arg.storev == 'C' && ((arg.side_option == 'L' && arg.ldv < arg.M) || (arg.side_option == 'R' && arg.ldv < arg.N))) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+    else if (arg.storev == 'R' && arg.ldv < arg.K) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
     }
   }

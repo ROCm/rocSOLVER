@@ -53,9 +53,15 @@ set( rocsolver_lapack_source
   lapack/roclapack_geqr2.cpp
   lapack/roclapack_geqr2_batched.cpp
   lapack/roclapack_geqr2_strided_batched.cpp
+  lapack/roclapack_gelq2.cpp
+  lapack/roclapack_gelq2_batched.cpp
+  lapack/roclapack_gelq2_strided_batched.cpp
   lapack/roclapack_geqrf.cpp
   lapack/roclapack_geqrf_batched.cpp
   lapack/roclapack_geqrf_strided_batched.cpp
+  lapack/roclapack_gelqf.cpp
+  lapack/roclapack_gelqf_batched.cpp
+  lapack/roclapack_gelqf_strided_batched.cpp
 )
 
 prepend_path( ".." rocsolver_headers_public relative_rocsolver_headers_public )
