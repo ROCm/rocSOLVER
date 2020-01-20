@@ -19,9 +19,11 @@ using namespace std;
 
 typedef std::tuple<vector<int>, vector<int>> mTuple;
 
-//{N,ldv}
+//{N,ldv,s}
+//if s = 0, then storev = 'C'
+//if s = 1, then storev = 'R'
 const vector<vector<int>> order_size_range = {
-    {-1,1}, {0,1}, {10,5}, {15,15}, {20,20}, {35,50}  
+    {-1,1,0}, {0,1,0}, {10,5,0}, {10,3,1}, {15,15,0}, {20,20,1}, {35,50,0}  
 };
 
 //{K,ldt,d}
@@ -33,7 +35,7 @@ const vector<vector<int>> reflector_size_range = {
 };
 
 const vector<vector<int>> large_order_size_range = {
-    {192,192}, {640,700}, {1024,1024}, {2547,2550}
+    {192,192,0}, {640,75,1}, {1024,1200,0}, {2547,100,1}
 };
 
 const vector<vector<int>> large_reflector_size_range = {
@@ -53,6 +55,7 @@ Arguments larft_setup_arguments(mTuple tup) {
   arg.ldt = reflector_size[1];
 
   arg.direct_option = reflector_size[2] == 1 ? 'B' : 'F';
+  arg.storev = order_size[2] == 1 ? 'R' : 'C';
 
   arg.timing = 0;
 
@@ -76,7 +79,7 @@ TEST_P(HHreflec_blk, larft_float) {
   // message
   if (status != rocblas_status_success) {
 
-    if (arg.N < 0 || arg.K < 1 || arg.ldv < arg.N || arg.ldt < arg.K) {
+    if (arg.N < 0 || arg.K < 1 || (arg.ldv < arg.N && arg.storev == 'C') || (arg.ldv < arg.K && arg.storev == 'R') || arg.ldt < arg.K) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
     } 
   }
@@ -91,7 +94,7 @@ TEST_P(HHreflec_blk, larft_double) {
   // message
   if (status != rocblas_status_success) {
 
-    if (arg.N < 0 || arg.K < 1 || arg.ldv < arg.N || arg.ldt < arg.K) {
+    if (arg.N < 0 || arg.K < 1 || (arg.ldv < arg.N && arg.storev == 'C') || (arg.ldv < arg.K && arg.storev == 'R') || arg.ldt < arg.K) {
       EXPECT_EQ(rocblas_status_invalid_size, status);
     } 
   }

@@ -37,32 +37,16 @@ rocblas_status testing_larfb(Arguments argus)
     char sideC = argus.side_option;    
     char directC = argus.direct_option;
     char transC = argus.transH_option;
+    char storevC = argus.storev;  
     int hot_calls = argus.iters;
     
     rocblas_side side;
     rocsolver_direct direct;
     rocblas_operation trans;
+    rocsolver_storev storev;
 
     std::unique_ptr<rocblas_test::handle_struct> unique_ptr_handle(new rocblas_test::handle_struct);
     rocblas_handle handle = unique_ptr_handle->handle;
-
-    // check invalid size and quick return
-    if (N < 1 || M < 1 || K < 1 || lda < M || ldt < K
-        || (sideC == 'L' && ldv < M) || (sideC == 'R' && ldv < N)) {
-
-        auto dV_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
-        T *dV = (T *)dV_managed.get();
-        auto dF_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
-        T *dF = (T *)dF_managed.get();
-        auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
-        T *dA = (T *)dA_managed.get();
-        if (!dV || !dF || !dA) {
-            PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
-            return rocblas_status_memory_error;
-        }
-        
-        return rocsolver_larfb<T>(handle, side, trans, direct, M, N, K, dV, ldv, dF, ldt, dA, lda);
-    }
 
     rocblas_int sizeF = ldt * K;
     rocblas_int sizeV = ldv * K;
@@ -92,6 +76,36 @@ rocblas_status testing_larfb(Arguments argus)
         throw runtime_error("Unsupported operation option.");
     }
     sizeW = ldw * K;
+    if (storevC == 'C') {
+        storev = rocsolver_column_wise;
+    } else if (storevC == 'R') {
+        storev = rocsolver_row_wise;
+        if (sideC == 'L') 
+            sizeV = ldv * M;
+        else
+            sizeV = ldv * N; 
+    } else {
+        throw runtime_error("Unsupported store option.");
+    }    
+
+    // check invalid size and quick return
+    if (N < 1 || M < 1 || K < 1 || lda < M || ldt < K
+        || (storevC == 'C' && sideC == 'L' && ldv < M) || (storevC == 'C' && sideC == 'R' && ldv < N) || (storevC == 'R' && ldv < K)) {
+
+        auto dV_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
+        T *dV = (T *)dV_managed.get();
+        auto dF_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
+        T *dF = (T *)dF_managed.get();
+        auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
+        T *dA = (T *)dA_managed.get();
+        if (!dV || !dF || !dA) {
+            PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
+            return rocblas_status_memory_error;
+        }
+        
+        return rocsolver_larfb<T>(handle, side, trans, direct, storev, M, N, K, dV, ldv, dF, ldt, dA, lda);
+    }
+
 
     // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory
     vector<T> hV(sizeV);
@@ -113,19 +127,41 @@ rocblas_status testing_larfb(Arguments argus)
 
     //initialize full random inputs with reals from -1 to 1
     if (sideC == 'L') {
-        rocblas_init<T>(hV.data(), M, K, ldv);
-        for (int i=0; i<M; ++i) {
-            for (int j=0; j<K; ++j) {
-                hV[i+j*ldv] = (hV[i+j*ldv] - 5) / 5;
+        if (storevC == 'C') { 
+            rocblas_init<T>(hV.data(), M, K, ldv);
+            for (int i=0; i<M; ++i) {
+                for (int j=0; j<K; ++j) {
+                    hV[i+j*ldv] = (hV[i+j*ldv] - 5) / 5;
+                }
+            }
+        }
+        else
+        {
+            rocblas_init<T>(hV.data(), K, M, ldv);
+            for (int i=0; i<K; ++i) {
+                for (int j=0; j<M; ++j) {
+                    hV[i+j*ldv] = (hV[i+j*ldv] - 5) / 5;
+                }
             }
         } 
     } else {
-        rocblas_init<T>(hV.data(), N, K, ldv);
-        for (int i=0; i<N; ++i) {
-            for (int j=0; j<K; ++j) {
-                hV[i+j*ldv] = (hV[i+j*ldv] - 5) / 5;
-            }
-        } 
+        if (storevC == 'C') {
+            rocblas_init<T>(hV.data(), N, K, ldv);
+            for (int i=0; i<N; ++i) {
+                for (int j=0; j<K; ++j) {
+                    hV[i+j*ldv] = (hV[i+j*ldv] - 5) / 5;
+                }
+            } 
+        }
+        else 
+        {
+            rocblas_init<T>(hV.data(), K, N, ldv);
+            for (int i=0; i<K; ++i) {
+                for (int j=0; j<N; ++j) {
+                    hV[i+j*ldv] = (hV[i+j*ldv] - 5) / 5;
+                }
+            } 
+        }
     }
     rocblas_init<T>(hF.data(), K, K, ldt);
     for (int i=0; i<K; ++i) {
@@ -157,16 +193,16 @@ rocblas_status testing_larfb(Arguments argus)
 
     if (argus.unit_check || argus.norm_check) {
         //GPU lapack
-        CHECK_ROCBLAS_ERROR(rocsolver_larfb<T>(handle, side, trans, direct, M, N, K, dV, ldv, dF, ldt, dA, lda));
-
+        CHECK_ROCBLAS_ERROR(rocsolver_larfb<T>(handle, side, trans, direct, storev, M, N, K, dV, ldv, dF, ldt, dA, lda));
+        
         //copy output from device to cpu
         CHECK_HIP_ERROR(hipMemcpy(hA_r.data(), dA, sizeof(T) * sizeA, hipMemcpyDeviceToHost));
 
         //CPU lapack
         cpu_time_used = get_time_us();
-        cblas_larfb<T>(sideC,transC,directC,'C',M,N,K,hV.data(),ldv,hF.data(),ldt,hA.data(),lda,hW.data(),ldw);
+        cblas_larfb<T>(sideC,transC,directC,storevC,M,N,K,hV.data(),ldv,hF.data(),ldt,hA.data(),lda,hW.data(),ldw);
         cpu_time_used = get_time_us() - cpu_time_used;
-
+        
         // +++++++++ Error Check +++++++++++++
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
@@ -189,20 +225,20 @@ rocblas_status testing_larfb(Arguments argus)
         int cold_calls = 2;
 
         for(int iter = 0; iter < cold_calls; iter++)
-            rocsolver_larfb<T>(handle, side, trans, direct, M, N, K, dV, ldv, dF, ldt, dA, lda);
+            rocsolver_larfb<T>(handle, side, trans, direct, storev, M, N, K, dV, ldv, dF, ldt, dA, lda);
         gpu_time_used = get_time_us();
         for(int iter = 0; iter < hot_calls; iter++)
-            rocsolver_larfb<T>(handle, side, trans, direct, M, N, K, dV, ldv, dF, ldt, dA, lda);
+            rocsolver_larfb<T>(handle, side, trans, direct, storev, M, N, K, dV, ldv, dF, ldt, dA, lda);
         gpu_time_used = (get_time_us() - gpu_time_used) / hot_calls;
 
         // only norm_check return an norm error, unit check won't return anything
-        cout << "side,trans,direct,M,N,K,ldv,ldt,lda,gpu_time(us),cpu_time(us)";
+        cout << "side,trans,direct,storev,M,N,K,ldv,ldt,lda,gpu_time(us),cpu_time(us)";
 
         if (argus.norm_check)
             cout << ",norm_error_host_ptr";
 
         cout << endl;
-        cout << sideC << "," << transC << "," << directC << "," << M << "," << N << "," << K << "," << ldv << "," << ldt << "," << lda << "," << gpu_time_used << "," << cpu_time_used;
+        cout << sideC << "," << transC << "," << directC << "," << storev << "," << M << "," << N << "," << K << "," << ldv << "," << ldt << "," << lda << "," << gpu_time_used << "," << cpu_time_used;
 
         if (argus.norm_check)
             cout << "," << max_err_1;
