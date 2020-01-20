@@ -78,6 +78,11 @@ void dgeqr2_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, in
 void sgeqrf_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
 void dgeqrf_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
 
+void sgelq2_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *info);
+void dgelq2_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *info);
+void sgelqf_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
+void dgelqf_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
+
 void slaswp_(int *n, float *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
 void dlaswp_(int *n, double *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
 void claswp_(int *n, rocblas_float_complex *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
@@ -917,3 +922,36 @@ void cblas_geqr2<double>(rocblas_int m, rocblas_int n, double *A,
   int info;
   dgeqr2_(&m, &n, A, &lda, ipiv, work, &info);
 }
+
+// gelqf
+template <>
+void cblas_gelqf<float>(rocblas_int m, rocblas_int n, float *A,
+                               rocblas_int lda, float *ipiv, float *work) {
+  int info;
+  int lwork = m;
+  sgelqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_gelqf<double>(rocblas_int m, rocblas_int n, double *A,
+                               rocblas_int lda, double *ipiv, double *work) {
+  int info;
+  int lwork = m;
+  dgelqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+// gelq2
+template <>
+void cblas_gelq2<float>(rocblas_int m, rocblas_int n, float *A,
+                               rocblas_int lda, float *ipiv, float *work) {
+  int info;
+  sgelq2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_gelq2<double>(rocblas_int m, rocblas_int n, double *A,
+                               rocblas_int lda, double *ipiv, double *work) {
+  int info;
+  dgelq2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
