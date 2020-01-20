@@ -1054,7 +1054,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqr2_strided_batched(rocsolver_han
 
     Each Householder matrix H(i), for i = 1,2,...,k, is given by
 
-        H(i) = I - ipiv[i-1] * v(i) * v(i)'
+        H(i) = I - ipiv[i-1] * v(i)' * v(i)
     
     where the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
 
@@ -1111,7 +1111,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelq2(rocsolver_handle handle,
 
     Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
 
-        H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
+        H_j(i) = I - ipiv_j[i-1] * v_j(i)' * v_j(i)
 
     where the first i-1 elements of Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
 
@@ -1181,7 +1181,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelq2_batched(rocsolver_handle hand
 
     Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
 
-        H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
+        H_j(i) = I - ipiv_j[i-1] * v_j(i)' * v_j(i)
 
     where the first i-1 elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
 
@@ -1464,7 +1464,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf_strided_batched(rocsolver_han
 
     Each Householder matrix H(i), for i = 1,2,...,k, is given by
 
-        H(i) = I - ipiv[i-1] * v(i) * v(i)'
+        H(i) = I - ipiv[i-1] * v(i)' * v(i)
     
     where the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
 
@@ -1521,7 +1521,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelqf(rocsolver_handle handle,
 
     Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
 
-        H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
+        H_j(i) = I - ipiv_j[i-1] * v_j(i)' * v_j(i)
 
     where the first i-1 elements of Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
 
@@ -1591,7 +1591,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelqf_batched(rocsolver_handle hand
 
     Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
 
-        H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
+        H_j(i) = I - ipiv_j[i-1] * v_j(i)' * v_j(i)
 
     where the first i-1 elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
 

@@ -179,6 +179,36 @@ rocsolver_<type>geqrf_strided_batched()
 .. doxygenfunction:: rocsolver_dgeqrf_strided_batched
 .. doxygenfunction:: rocsolver_sgeqrf_strided_batched
 
+rocsolver_<type>gelq2()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dgelq2
+.. doxygenfunction:: rocsolver_sgelq2
+
+rocsolver_<type>gelq2_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dgelq2_batched
+.. doxygenfunction:: rocsolver_sgelq2_batched
+
+rocsolver_<type>gelq2_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dgelq2_strided_batched
+.. doxygenfunction:: rocsolver_sgelq2_strided_batched
+
+rocsolver_<type>gelqf()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dgelqf
+.. doxygenfunction:: rocsolver_sgelqf
+
+rocsolver_<type>gelqf_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dgelqf_batched
+.. doxygenfunction:: rocsolver_sgelqf_batched
+
+rocsolver_<type>gelqf_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dgelqf_strided_batched
+.. doxygenfunction:: rocsolver_sgelqf_strided_batched
+
 General systems solvers
 --------------------------
 
