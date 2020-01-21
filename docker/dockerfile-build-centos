@@ -20,7 +20,7 @@ RUN yum install -y \
     clang \
     clang-devel \
     gcc-c++ \
-    gcc-gfortran \
+    devtoolset-7-gcc-gfortran \
     gtest-devel \ 
     gtest \
     lapack-devel \
