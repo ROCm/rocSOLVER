@@ -4,13 +4,22 @@
 
 # For debugging, uncomment this
 # set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g -O0" )
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
 # set( Boost_DEBUG ON )
 set( Boost_USE_MULTITHREADED ON )
 set( Boost_DETAILED_FAILURE_MSG ON )
 set( Boost_ADDITIONAL_VERSIONS 1.65.1 1.65 )
 set( Boost_USE_STATIC_LIBS OFF )
+
+if(EXISTS /etc/redhat-release)
+    if(CXX_VERSION_STRING MATCHES "clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread -stdlib=libstdc++ -std=c++14")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread")
+    endif()
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread")
+endif()
 
 find_package( Boost COMPONENTS program_options )
 
@@ -81,7 +90,6 @@ target_include_directories( rocsolver-test
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
 )
 
-
 #set( BLIS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/build/deps/blis/include/blis )
 #set( BLIS_LIBRARY ${CMAKE_SOURCE_DIR}/build/deps/blis/lib/libblis.so )
 
@@ -90,6 +98,9 @@ if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
         # defer OpenMP include as search order must come after clang
         set( XXX_OPENMP_INCLUDE_DIR /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/include )
         set( OPENMP_LIBRARY /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/libgomp.so )
+        if( CXX_VERSION_STRING MATCHES "clang")
+            set( OPENMP_INCLUDE_DIR /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/include )
+        endif()
     else()
     #SLES
         set( OPENMP_INCLUDE_DIR /usr/lib64/gcc/x86_64-suse-linux/7/include/ )
@@ -97,16 +108,16 @@ if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
     endif()
 
     message(STATUS "RocmPath: ${ROCM_PATH}")
-    if(EXISTS "${ROCM_PATH}/hcc/lib/clang/10.0.0/include/immintrin.h")
+    if( EXISTS "${ROCM_PATH}/hcc/lib/clang/10.0.0/include/immintrin.h" AND CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
         set( CLANG_INCLUDE_DIR ${ROCM_PATH}/hcc/lib/clang/10.0.0/include )
-    elseif (EXISTS "${ROCM_PATH}/hcc/lib/clang/9.0.0/include/immintrin.h")
+    elseif( EXISTS "${ROCM_PATH}/hcc/lib/clang/9.0.0/include/immintrin.h" AND CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
         set( CLANG_INCLUDE_DIR ${ROCM_PATH}/hcc/lib/clang/9.0.0/include )
-    elseif (EXISTS "/opt/rocm/hcc/lib/clang/10.0.0/include/immintrin.h")
-        set( CLANG_INCLUDE_DIR /opt/rocm/hcc/lib/clang/10.0.0/include )
-    elseif (EXISTS "/opt/rocm/hcc/lib/clang/9.0.0/include/immintrin.h")
-        set( CLANG_INCLUDE_DIR /opt/rocm/hcc/lib/clang/9.0.0/include )
+    elseif( EXISTS "${ROCM_PATH}/hcc/lib/clang/10.0.0/include/immintrin.h" AND CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
+        set( CLANG_INCLUDE_DIR ${ROCM_PATH}/hcc/lib/clang/10.0.0/include )
+    elseif( EXISTS "${ROCM_PATH}/hcc/lib/clang/9.0.0/include/immintrin.h" AND CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
+        set( CLANG_INCLUDE_DIR ${ROCM_PATH}/hcc/lib/clang/9.0.0/include )
     else()
-        error("cannot find immintrin.h")
+        set( CLANG_INCLUDE_DIR )
     endif()
 
     # External header includes included as system files
@@ -140,7 +151,7 @@ else()
 endif()
 
 target_link_libraries( rocsolver-test PRIVATE roc::rocblas ) #${ROCBLAS_LIBRARY})
-#target_link_libraries( rocsolver-test PRIVATE /opt/rocm/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
+#target_link_libraries( rocsolver-test PRIVATE ${ROCM_PATH}/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
 
 
 get_target_property( HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE )
@@ -158,23 +169,24 @@ else( )
   target_link_libraries( rocsolver-test PRIVATE ${HIPHCC_LOCATION} )
 endif( )
 
+#target_link_libraries( rocsolver-test PRIVATE ${ROCM_PATH}/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   # Remove following when hcc is fixed; hcc emits following spurious warning ROCm v1.6.1
-  # "clang-5.0: warning: argument unused during compilation: '-isystem /opt/rocm/include'"
+  # "clang-5.0: warning: argument unused during compilation: '-isystem ${ROCM_PATH}/include'"
   target_compile_options( rocsolver-test PRIVATE -Wno-unused-command-line-argument -mf16c )
-  target_include_directories( rocsolver-test PRIVATE /opt/rocm/hsa/include)
-elseif( CMAKE_COMPILER_IS_GNUCXX OR CXX_VERSION_STRING MATCHES "clang" )
-  # GCC or hip-clang needs specific flag to turn on f16c intrinsics
+  target_include_directories( rocsolver-test PRIVATE ${ROCM_PATH}/hsa/include)
+elseif( CMAKE_COMPILER_IS_GNUCXX OR CXX_VERSION_STRING MATCHES "clang")
+  # GCC or hip-clang needs specific flags to turn on f16c intrinsics
   target_compile_options( rocsolver-test PRIVATE -mf16c )
 endif( )
 
-if( OS_ID_rhel OR OS_ID_centos)
-    # force clang includes to take precedence over devtoolset-7 which we only want for OpenMP
-    set(CMAKE_CXX_FLAGS "-isystem ${CLANG_INCLUDE_DIR} -isystem ${XXX_OPENMP_INCLUDE_DIR} ${CMAKE_CXX_FLAGS}")
-endif()
-
 if( CXX_VERSION_STRING MATCHES "clang" )
-  target_link_libraries( rocsolver-test PRIVATE -lpthread -lm )
+  target_link_libraries( rocsolver-test PRIVATE -lpthread -lm -stdlib=libstdc++ )
+else( )
+  if(OS_ID_rhel OR OS_ID_centos)
+    set(CMAKE_CXX_FLAGS "-isystem ${CLANG_INCLUDE_DIR} -isystem ${XXX_OPENMP_INCLUDE_DIR} ${CMAKE_CXX_FLAGS}")
+  endif( )
+  set(CMAKE_CXX_FLAGS "-isystem ${ROCM_PATH}/include ${CMAKE_CXX_FLAGS}")
 endif( )
 
 set_target_properties( rocsolver-test PROPERTIES CXX_EXTENSIONS NO )
