@@ -92,8 +92,10 @@ if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
     if( OS_ID_rhel OR OS_ID_centos)
         # defer OpenMP include as search order must come after clang
         set( XXX_OPENMP_INCLUDE_DIR /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/include )
-        set( OPENMP_INCLUDE_DIR /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/include )
         set( OPENMP_LIBRARY /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/libgomp.so )
+        if( CXX_VERSION_STRING MATCHES "clang")
+            set( OPENMP_INCLUDE_DIR /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/include )
+        endif()
     else()
     #SLES
         set( OPENMP_INCLUDE_DIR /usr/lib64/gcc/x86_64-suse-linux/7/include/ )
