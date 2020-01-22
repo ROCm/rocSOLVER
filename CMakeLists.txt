@@ -99,7 +99,12 @@ endif( )
 # This finds the rocm-cmake project, and installs it if not found
 # rocm-cmake contains common cmake code for rocm projects to help setup and install
 set( PROJECT_EXTERN_DIR ${CMAKE_CURRENT_BINARY_DIR}/extern )
-find_package( ROCM CONFIG QUIET PATHS ${ROCM_PATH} /opt/rocm )
+
+if(NOT ROCM_PATH)
+  set(ROCM_PATH /opt/rocm)
+endif()
+
+find_package( ROCM CONFIG QUIET PATHS ${ROCM_PATH} )
 if( NOT ROCM_FOUND )
   set( rocm_cmake_tag "master" CACHE STRING "rocm-cmake tag to download" )
   file( DOWNLOAD https://github.com/RadeonOpenCompute/rocm-cmake/archive/${rocm_cmake_tag}.zip
@@ -158,12 +163,12 @@ set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for librar
 
 # Find HCC/HIP dependencies
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
-  find_package( hcc REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm )
-  find_package( hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm )
+  find_package( hcc REQUIRED CONFIG PATHS ${ROCM_PATH} )
+  find_package( hip REQUIRED CONFIG PATHS ${ROCM_PATH} )
 endif( )
 
 
-find_package( rocblas REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm )
+find_package( rocblas REQUIRED CONFIG PATHS ${ROCM_PATH} )
 include_directories( ${rocblas_INCLUDE_DIR} )
 
 
