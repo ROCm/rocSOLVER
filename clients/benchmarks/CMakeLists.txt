@@ -118,7 +118,7 @@ else()
 endif()
 
 #target_link_libraries( rocsolver-bench PRIVATE /opt/rocm/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
-target_link_libraries( rocsolver-bench PRIVATE roc::rocblas ) #${ROCBLAS_LIBRARY})
+target_link_libraries( rocsolver-bench PRIVATE roc::rocblas stdc++ ) #${ROCBLAS_LIBRARY})
 
 
 get_target_property( HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE )
