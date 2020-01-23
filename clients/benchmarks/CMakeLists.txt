@@ -96,11 +96,12 @@ if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
         $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${HCC_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${GTEST_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${OPENMP_INCLUDE_DIR}> 
         )
 
-    target_link_libraries( rocsolver-bench PRIVATE ${Boost_LIBRARIES} ${OPENMP_LIBRARY} cblas lapack roc::rocsolver )
+    target_link_libraries( rocsolver-bench PRIVATE ${GTEST_LIBRARIES} ${Boost_LIBRARIES} ${OPENMP_LIBRARY} cblas lapack roc::rocsolver )
 
 else()
     # External header includes included as system files
