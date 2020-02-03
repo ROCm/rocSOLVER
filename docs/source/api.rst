@@ -121,31 +121,43 @@ General Matrix Factorizations
 
 rocsolver_<type>getf2()
 ^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetf2
+.. doxygenfunction:: rocsolver_cgetf2
 .. doxygenfunction:: rocsolver_dgetf2
 .. doxygenfunction:: rocsolver_sgetf2
 
 rocsolver_<type>getf2_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetf2_batched
+.. doxygenfunction:: rocsolver_cgetf2_batched
 .. doxygenfunction:: rocsolver_dgetf2_batched
 .. doxygenfunction:: rocsolver_sgetf2_batched
 
 rocsolver_<type>getf2_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetf2_strided_batched
+.. doxygenfunction:: rocsolver_cgetf2_strided_batched
 .. doxygenfunction:: rocsolver_dgetf2_strided_batched
 .. doxygenfunction:: rocsolver_sgetf2_strided_batched
 
 rocsolver_<type>getrf()
 ^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetrf
+.. doxygenfunction:: rocsolver_cgetrf
 .. doxygenfunction:: rocsolver_dgetrf
 .. doxygenfunction:: rocsolver_sgetrf
 
 rocsolver_<type>getrf_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetrf_batched
+.. doxygenfunction:: rocsolver_cgetrf_batched
 .. doxygenfunction:: rocsolver_dgetrf_batched
 .. doxygenfunction:: rocsolver_sgetrf_batched
 
 rocsolver_<type>getrf_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetrf_strided_batched
+.. doxygenfunction:: rocsolver_cgetrf_strided_batched
 .. doxygenfunction:: rocsolver_dgetrf_strided_batched
 .. doxygenfunction:: rocsolver_sgetrf_strided_batched
 
@@ -214,16 +226,22 @@ General systems solvers
 
 rocsolver_<type>getrs()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetrs
+.. doxygenfunction:: rocsolver_cgetrs
 .. doxygenfunction:: rocsolver_dgetrs
 .. doxygenfunction:: rocsolver_sgetrs
 
 rocsolver_<type>getrs_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetrs_batched
+.. doxygenfunction:: rocsolver_cgetrs_batched
 .. doxygenfunction:: rocsolver_dgetrs_batched
 .. doxygenfunction:: rocsolver_sgetrs_batched
 
 rocsolver_<type>getrs_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetrs_strided_batched
+.. doxygenfunction:: rocsolver_cgetrs_strided_batched
 .. doxygenfunction:: rocsolver_dgetrs_strided_batched
 .. doxygenfunction:: rocsolver_sgetrs_strided_batched
 

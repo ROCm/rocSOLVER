@@ -75,7 +75,24 @@ protected:
 TEST_P(LUfact_sb, getf2_strided_batched_float) {
   Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf_strided_batched<float,0>(arg);
+  rocblas_status status = testing_getf2_getrf_strided_batched<float,float,0>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else {
+      cerr << "unknown error...";
+      EXPECT_EQ(1000, status);
+    }
+  }
+}
+
+TEST_P(LUfact_sb, getf2_strided_batched_float_complex) {
+  Arguments arg = setup_arguments(GetParam());
+
+  rocblas_status status = testing_getf2_getrf_strided_batched<rocblas_float_complex,float,0>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -92,7 +109,24 @@ TEST_P(LUfact_sb, getf2_strided_batched_float) {
 TEST_P(LUfact_sb, getf2_strided_batched_double) {
   Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf_strided_batched<double,0>(arg);
+  rocblas_status status = testing_getf2_getrf_strided_batched<double,double,0>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else {
+      cerr << "unknown error...";
+      EXPECT_EQ(1000, status);
+    }
+  }
+}
+
+TEST_P(LUfact_sb, getf2_strided_batched_double_complex) {
+  Arguments arg = setup_arguments(GetParam());
+
+  rocblas_status status = testing_getf2_getrf_strided_batched<rocblas_double_complex,double,0>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -109,7 +143,24 @@ TEST_P(LUfact_sb, getf2_strided_batched_double) {
 TEST_P(LUfact_sb, getrf_strided_batched_float) {
   Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf_strided_batched<float,1>(arg);
+  rocblas_status status = testing_getf2_getrf_strided_batched<float,float,1>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else {
+      cerr << "unknown error...";
+      EXPECT_EQ(1000, status);
+    }
+  }
+}
+
+TEST_P(LUfact_sb, getrf_strided_batched_float_complex) {
+  Arguments arg = setup_arguments(GetParam());
+
+  rocblas_status status = testing_getf2_getrf_strided_batched<rocblas_float_complex,float,1>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -126,7 +177,7 @@ TEST_P(LUfact_sb, getrf_strided_batched_float) {
 TEST_P(LUfact_sb, getrf_strided_batched_double) {
   Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf_strided_batched<double,1>(arg);
+  rocblas_status status = testing_getf2_getrf_strided_batched<double,double,1>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -140,6 +191,22 @@ TEST_P(LUfact_sb, getrf_strided_batched_double) {
   }
 }
 
+TEST_P(LUfact_sb, getrf_strided_batched_double_complex) {
+  Arguments arg = setup_arguments(GetParam());
+
+  rocblas_status status = testing_getf2_getrf_strided_batched<rocblas_double_complex,double,1>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else {
+      cerr << "unknown error...";
+      EXPECT_EQ(1000, status);
+    }
+  }
+}
 
 INSTANTIATE_TEST_CASE_P(daily_lapack, LUfact_sb,
                         Combine(ValuesIn(large_matrix_size_range),

@@ -22,11 +22,14 @@
 #endif
 
 // this is max error PER element after the solution
-#define GETRF_ERROR_EPS_MULTIPLIER 5000
+#define GETRF_ERROR_EPS_MULTIPLIER 6000
+// AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
+// AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
+// A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
 
 using namespace std;
 
-template <typename T> rocblas_status testing_getrs(Arguments argus) {
+template <typename T, typename U> rocblas_status testing_getrs(Arguments argus) {
 
     rocblas_int M = argus.M;
     rocblas_int nhrs = argus.N;
@@ -40,6 +43,8 @@ template <typename T> rocblas_status testing_getrs(Arguments argus) {
         transRoc = rocblas_operation_none;
     } else if (trans == 'T') {
         transRoc = rocblas_operation_transpose;
+    } else if (trans == 'C') {
+        transRoc = rocblas_operation_conjugate_transpose;
     } else {
         throw runtime_error("Unsupported transpose operation.");
     }
@@ -76,8 +81,8 @@ template <typename T> rocblas_status testing_getrs(Arguments argus) {
     vector<T> hBRes(size_B);
 
     double gpu_time_used, cpu_time_used;
-    T error_eps_multiplier = GETRF_ERROR_EPS_MULTIPLIER;
-    T eps = std::numeric_limits<T>::epsilon();
+    double error_eps_multiplier = GETRF_ERROR_EPS_MULTIPLIER;
+    double eps = std::numeric_limits<U>::epsilon();
 
     // allocate memory on device
     auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * size_A), rocblas_test::device_free};
@@ -142,16 +147,15 @@ template <typename T> rocblas_status testing_getrs(Arguments argus) {
         // Error Check
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < nhrs; j++) {
-                diff = fabs(hB[i + j * ldb]);
+                diff = abs(hB[i + j * ldb]);
                 max_val = max_val > diff ? max_val : diff;
-                diff = hB[i + j * ldb];
-                diff = fabs(hBRes[i + j * ldb] - diff);
+                diff = abs(hBRes[i + j * ldb] - hB[i + j * ldb]);
                 max_err_1 = max_err_1 > diff ? max_err_1 : diff;
             }
         }
         max_err_1 = max_err_1 / max_val;
 
-        getrs_err_res_check<T>(max_err_1, M, nhrs, error_eps_multiplier, eps);
+        getrs_err_res_check<U>(max_err_1, M, nhrs, error_eps_multiplier, eps);
     }
 
     if (argus.timing) {
@@ -166,14 +170,14 @@ template <typename T> rocblas_status testing_getrs(Arguments argus) {
         gpu_time_used = get_time_us() - gpu_time_used;
 
         // only norm_check return an norm error, unit check won't return anything
-        cout << "M , nhrs , lda , ldb , us [gpu] , us [cpu]";
+        cout << "trans , M , nhrs , lda , ldb , us [gpu] , us [cpu]";
 
         if (argus.norm_check)
             cout << ", norm_error_host_ptr";
 
         cout << endl;
 
-        cout << M << " , " << nhrs << " , " << lda << " , " << ldb << " , " << gpu_time_used << " , " << cpu_time_used;
+        cout << trans << " , " << M << " , " << nhrs << " , " << lda << " , " << ldb << " , " << gpu_time_used << " , " << cpu_time_used;
 
         if (argus.norm_check)
             cout << " , " << max_err_1;

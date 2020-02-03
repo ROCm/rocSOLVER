@@ -19,7 +19,11 @@
 #include "utility.h"
 
 // this is for the single precision case, which is not very stable
-#define ERROR_EPS_MULTIPLIER 4000
+#define ERROR_EPS_MULTIPLIER 6000
+// AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
+// AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
+// A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
+
 
 using namespace std;
 

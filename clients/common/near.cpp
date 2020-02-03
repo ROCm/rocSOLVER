@@ -26,9 +26,7 @@
 template <>
 void near_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
                         float *hCPU, float *hGPU, float abs_error) {
-#pragma unroll
   for (rocblas_int j = 0; j < N; j++) {
-#pragma unroll
     for (rocblas_int i = 0; i < M; i++) {
 #ifdef GOOGLE_TEST
       //              ASSERT_FLOAT_EQ(hCPU[i+j*lda], hGPU[i+j*lda]);
@@ -41,9 +39,7 @@ void near_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
 template <>
 void near_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
                         double *hCPU, double *hGPU, double abs_error) {
-#pragma unroll
   for (rocblas_int j = 0; j < N; j++) {
-#pragma unroll
     for (rocblas_int i = 0; i < M; i++) {
 #ifdef GOOGLE_TEST
       ASSERT_NEAR(hCPU[i + j * lda], hGPU[i + j * lda], abs_error);

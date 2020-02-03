@@ -87,13 +87,13 @@ rocblas_status rocsolver_larf_template(rocsolver_handle handle, const rocsolver_
         for (int b=0;b<batch_count;++b) {
             xp = load_ptr_batch<T>(xx,shiftx,b,stridex);
             Ap = load_ptr_batch<T>(AA,shiftA,b,stridea);
-            rocblas_ger(handle, m, n, minoneInt, xp, incx, (workvec + b*order), 1, Ap, lda);
+            rocblas_ger<false>(handle, m, n, minoneInt, xp, incx, (workvec + b*order), 1, Ap, lda);
         }
     } else {
         for (int b=0;b<batch_count;++b) {
             xp = load_ptr_batch<T>(xx,shiftx,b,stridex);
             Ap = load_ptr_batch<T>(AA,shiftA,b,stridea);
-            rocblas_ger(handle, m, n, minoneInt, (workvec + b*order), 1, xp, incx, Ap, lda);
+            rocblas_ger<false>(handle, m, n, minoneInt, (workvec + b*order), 1, xp, incx, Ap, lda);
         }
     }
 

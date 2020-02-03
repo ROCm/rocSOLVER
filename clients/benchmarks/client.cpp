@@ -245,39 +245,63 @@ int main(int argc, char *argv[])
   }
   else if (function == "getf2") {
     if (precision == 's')
-      testing_getf2_getrf<float,0>(argus);
+      testing_getf2_getrf<float,float,0>(argus);
     else if (precision == 'd')
-      testing_getf2_getrf<double,0>(argus);
+      testing_getf2_getrf<double,double,0>(argus);
+    if (precision == 'c')
+      testing_getf2_getrf<rocblas_float_complex,float,0>(argus);
+    else if (precision == 'z')
+      testing_getf2_getrf<rocblas_double_complex,double,0>(argus);
   }
   else if (function == "getf2_batched") {
     if (precision == 's')
-      testing_getf2_getrf_batched<float,0>(argus);
+      testing_getf2_getrf_batched<float,float,0>(argus);
     else if (precision == 'd')
-      testing_getf2_getrf_batched<double,0>(argus);
+      testing_getf2_getrf_batched<double,double,0>(argus);
+    if (precision == 'c')
+      testing_getf2_getrf_batched<rocblas_float_complex,float,0>(argus);
+    else if (precision == 'z')
+      testing_getf2_getrf_batched<rocblas_double_complex,double,0>(argus);
   }
   else if (function == "getf2_strided_batched") {
     if (precision == 's')
-      testing_getf2_getrf_strided_batched<float,0>(argus);
+      testing_getf2_getrf_strided_batched<float,float,0>(argus);
     else if (precision == 'd')
-      testing_getf2_getrf_strided_batched<double,0>(argus);
+      testing_getf2_getrf_strided_batched<double,double,0>(argus);
+    if (precision == 'c')
+      testing_getf2_getrf_strided_batched<rocblas_float_complex,float,0>(argus);
+    else if (precision == 'z')
+      testing_getf2_getrf_strided_batched<rocblas_double_complex,double,0>(argus);
   } 
   else if (function == "getrf") {
     if (precision == 's')
-      testing_getf2_getrf<float,1>(argus);
+      testing_getf2_getrf<float,float,1>(argus);
     else if (precision == 'd')
-      testing_getf2_getrf<double,1>(argus);
+      testing_getf2_getrf<double,double,1>(argus);
+    if (precision == 'c')
+      testing_getf2_getrf<rocblas_float_complex,float,1>(argus);
+    else if (precision == 'z')
+      testing_getf2_getrf<rocblas_double_complex,double,1>(argus);
   } 
   else if (function == "getrf_batched") {
     if (precision == 's')
-      testing_getf2_getrf_batched<float,1>(argus);
+      testing_getf2_getrf_batched<float,float,1>(argus);
     else if (precision == 'd')
-      testing_getf2_getrf_batched<double,1>(argus);
+      testing_getf2_getrf_batched<double,double,1>(argus);
+    if (precision == 'c')
+      testing_getf2_getrf_batched<rocblas_float_complex,float,1>(argus);
+    else if (precision == 'z')
+      testing_getf2_getrf_batched<rocblas_double_complex,double,1>(argus);
   } 
   else if (function == "getrf_strided_batched") {
     if (precision == 's')
-      testing_getf2_getrf_strided_batched<float,1>(argus);
+      testing_getf2_getrf_strided_batched<float,float,1>(argus);
     else if (precision == 'd')
-      testing_getf2_getrf_strided_batched<double,1>(argus);
+      testing_getf2_getrf_strided_batched<double,double,1>(argus);
+    if (precision == 'c')
+      testing_getf2_getrf_strided_batched<rocblas_float_complex,float,1>(argus);
+    else if (precision == 'z')
+      testing_getf2_getrf_strided_batched<rocblas_double_complex,double,1>(argus);
   } 
   else if (function == "geqr2") {
     if (precision == 's')
@@ -353,21 +377,33 @@ int main(int argc, char *argv[])
   } 
   else if (function == "getrs") {
     if (precision == 's')
-      testing_getrs<float>(argus);
+      testing_getrs<float,float>(argus);
     else if (precision == 'd')
-      testing_getrs<double>(argus);
+      testing_getrs<double,double>(argus);
+    if (precision == 'c')
+      testing_getrs<rocblas_float_complex,float>(argus);
+    else if (precision == 'z')
+      testing_getrs<rocblas_double_complex,double>(argus);
   } 
   else if (function == "getrs_batched") {
     if (precision == 's')
-      testing_getrs_batched<float>(argus);
+      testing_getrs_batched<float,float>(argus);
     else if (precision == 'd')
-      testing_getrs_batched<double>(argus);
+      testing_getrs_batched<double,double>(argus);
+    if (precision == 'c')
+      testing_getrs_batched<rocblas_float_complex,float>(argus);
+    else if (precision == 'z')
+      testing_getrs_batched<rocblas_double_complex,double>(argus);
   } 
   else if (function == "getrs_strided_batched") {
     if (precision == 's')
-      testing_getrs_strided_batched<float>(argus);
+      testing_getrs_strided_batched<float,float>(argus);
     else if (precision == 'd')
-      testing_getrs_strided_batched<double>(argus);
+      testing_getrs_strided_batched<double,double>(argus);
+    if (precision == 'c')
+      testing_getrs_strided_batched<rocblas_float_complex,float>(argus);
+    else if (precision == 'z')
+      testing_getrs_strided_batched<rocblas_double_complex,double>(argus);
   } 
   else if (function == "larfg") {
     if (precision == 's')

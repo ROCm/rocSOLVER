@@ -28,16 +28,17 @@ const vector<vector<int>> matrix_sizeA_range = {
 // vector of vector, each vector is a {nrhs, trans};
 // if trans = 0 then no transpose
 // if trans = 1 then transpose
+// if trans = 2 then conjugate transpose
 const vector<vector<int>> matrix_sizeB_range = {
-    {-1, 0}, {0, 0}, {10, 0}, {20, 1}, {30, 0},
+    {-1, 0}, {0, 0}, {10, 0}, {20, 1}, {30, 2},
 };
 
 const vector<vector<int>> large_matrix_sizeA_range = {
-    {70, 70, 100}, {192, 192, 192}, {640, 700, 640}, {1000, 1000, 1000}, {1000, 2000, 2000}
+    {70, 70, 100}, {192, 192, 192}, {600, 700, 645}, {1000, 1000, 1000}, {1000, 2000, 2000}
 };
 
 const vector<vector<int>> large_matrix_sizeB_range = {
-    {100, 0}, {150, 0}, {200, 1}, {524, 1}, {1000, 0},
+    {100, 0}, {150, 0}, {200, 1}, {524, 2}, {1000, 2},
 };
 
 
@@ -56,8 +57,10 @@ Arguments setup_getrs_arguments(getrs_tuple tup) {
 
   if (matrix_sizeB[1] == 0)
     arg.transA_option = 'N';
-  else
+  else if(matrix_sizeB[1] == 1)
     arg.transA_option = 'T';
+  else
+    arg.transA_option = 'C';
 
   arg.timing = 0;
 
@@ -75,7 +78,7 @@ protected:
 TEST_P(getrs_gtest, getrs_float) {
   Arguments arg = setup_getrs_arguments(GetParam());
 
-  rocblas_status status = testing_getrs<float>(arg);
+  rocblas_status status = testing_getrs<float,float>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -92,7 +95,7 @@ TEST_P(getrs_gtest, getrs_float) {
 TEST_P(getrs_gtest, getrs_double) {
   Arguments arg = setup_getrs_arguments(GetParam());
 
-  rocblas_status status = testing_getrs<double>(arg);
+  rocblas_status status = testing_getrs<double,double>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -106,6 +109,39 @@ TEST_P(getrs_gtest, getrs_double) {
   }
 }
 
+TEST_P(getrs_gtest, getrs_float_complex) {
+  Arguments arg = setup_getrs_arguments(GetParam());
+
+  rocblas_status status = testing_getrs<rocblas_float_complex,float>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.M < 0 || arg.N < 0) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else if (arg.lda < arg.M || arg.ldb < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
+
+TEST_P(getrs_gtest, getrs_double_complex) {
+  Arguments arg = setup_getrs_arguments(GetParam());
+
+  rocblas_status status = testing_getrs<rocblas_double_complex,double>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.M < 0 || arg.N < 0) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else if (arg.lda < arg.M || arg.ldb < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
 
 // This function mainly test the scope of matrix_size.
 INSTANTIATE_TEST_CASE_P(daily_lapack, getrs_gtest,
