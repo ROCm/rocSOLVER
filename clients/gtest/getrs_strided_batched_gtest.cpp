@@ -39,7 +39,7 @@ const vector<vector<int>> matrix_sizeB_range = {
 };
 
 const vector<vector<int>> large_matrix_sizeA_range = {
-    {70, 70, 100}, {192, 192, 192}, {640, 700, 640}, {1000, 1000, 1000}, {1000, 2000, 2000}
+    {70, 70, 100}, {192, 192, 192}, {600, 700, 645}, {1000, 1000, 1000}, {1000, 2000, 2000}
 };
 
 const vector<vector<int>> large_matrix_sizeB_range = {

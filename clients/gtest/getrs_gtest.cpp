@@ -28,16 +28,17 @@ const vector<vector<int>> matrix_sizeA_range = {
 // vector of vector, each vector is a {nrhs, trans};
 // if trans = 0 then no transpose
 // if trans = 1 then transpose
+// if trans = 2 then conjugate transpose
 const vector<vector<int>> matrix_sizeB_range = {
-    {-1, 0}, {0, 0}, {10, 0}, {20, 1}, {30, 0},
+    {-1, 0}, {0, 0}, {10, 0}, {20, 1}, {30, 2},
 };
 
 const vector<vector<int>> large_matrix_sizeA_range = {
-    {70, 70, 100}, {192, 192, 192}, {640, 700, 640}, {1000, 1000, 1000}, {1000, 2000, 2000}
+    {70, 70, 100}, {192, 192, 192}, {600, 700, 645}, {1000, 1000, 1000}, {1000, 2000, 2000}
 };
 
 const vector<vector<int>> large_matrix_sizeB_range = {
-    {100, 0}, {150, 0}, {200, 1}, {524, 1}, {1000, 0},
+    {100, 0}, {150, 0}, {200, 1}, {524, 2}, {1000, 2},
 };
 
 
@@ -56,8 +57,10 @@ Arguments setup_getrs_arguments(getrs_tuple tup) {
 
   if (matrix_sizeB[1] == 0)
     arg.transA_option = 'N';
-  else
+  else if(matrix_sizeB[1] == 1)
     arg.transA_option = 'T';
+  else
+    arg.transA_option = 'C';
 
   arg.timing = 0;
 

@@ -114,7 +114,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
         if (j < min(m, n) - 1) {
             for (int b=0;b<batch_count;++b) {
                 M = load_ptr_batch<T>(AA,shiftA,b,strideA);
-                rocblas_ger(handle, m - j - 1, n - j - 1, minoneInt,
+                rocblas_ger<false>(handle, m - j - 1, n - j - 1, minoneInt,
                         (M + idx2D(j + 1, j, lda)), oneInt, 
                         (M + idx2D(j, j + 1, lda)), lda,
                         (M + idx2D(j + 1, j + 1, lda)), lda);
