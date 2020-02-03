@@ -22,11 +22,14 @@
 #endif
 
 // this is max error PER element after the LU
-#define ERROR_EPS_MULTIPLIER 5000
+#define ERROR_EPS_MULTIPLIER 6000
+// AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
+// AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
+// A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
 
 using namespace std;
 
-template <typename T, int getrf> 
+template <typename T, typename U, int getrf> 
 rocblas_status testing_getf2_getrf(Arguments argus) {
     rocblas_int M = argus.M;
     rocblas_int N = argus.N;
@@ -93,7 +96,7 @@ rocblas_status testing_getf2_getrf(Arguments argus) {
 
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<T>::epsilon();
+    double eps = std::numeric_limits<U>::epsilon();
     double max_err_1 = 0.0, max_val = 0.0;
     double diff;
     int piverr = 0;
@@ -143,17 +146,16 @@ rocblas_status testing_getf2_getrf(Arguments argus) {
         // hAr contains calculated decomposition, so error is hA - hAr
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                diff = fabs(hA[i + j * lda]);
+                diff = abs(hA[i + j * lda]);
                 max_val = max_val > diff ? max_val : diff;
-                diff = hA[i + j * lda];
-                diff = fabs(hAr[i + j * lda] - diff);
+                diff = abs(hAr[i + j * lda] - hA[i + j * lda]);
                 max_err_1 = max_err_1 > diff ? max_err_1 : diff;
             }
         }
         max_err_1 = max_err_1 / max_val;
 
         if(argus.unit_check && !piverr)
-            getf2_err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
+            getf2_err_res_check<U>(max_err_1, M, N, error_eps_multiplier, eps);
     }
  
 

@@ -471,6 +471,21 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetf2(rocsolver_handle handle,
                                                    rocsolver_int *ipiv,
                                                    rocsolver_int *info);
 
+ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetf2(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   rocblas_float_complex *A,
+                                                   const rocsolver_int lda,
+                                                   rocsolver_int *ipiv,
+                                                   rocsolver_int *info);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetf2(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   rocblas_double_complex *A,
+                                                   const rocsolver_int lda,
+                                                   rocsolver_int *ipiv,
+                                                   rocsolver_int *info);
 
 /*! \brief GETF2_BATCHED computes the LU factorization of a batch of general m-by-n matrices
     using partial pivoting with row interchanges.
@@ -538,6 +553,26 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetf2_batched(rocsolver_handle hand
                                                    const rocsolver_int m,
                                                    const rocsolver_int n, 
                                                    double *const A[],
+                                                   const rocsolver_int lda,
+                                                   rocsolver_int *ipiv,
+                                                   const rocsolver_int strideP,
+                                                   rocsolver_int *info,
+                                                   const rocsolver_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetf2_batched(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   rocblas_float_complex *const A[],
+                                                   const rocsolver_int lda,
+                                                   rocsolver_int *ipiv,
+                                                   const rocsolver_int strideP,
+                                                   rocsolver_int *info,
+                                                   const rocsolver_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetf2_batched(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   rocblas_double_complex *const A[],
                                                    const rocsolver_int lda,
                                                    rocsolver_int *ipiv,
                                                    const rocsolver_int strideP,
@@ -622,6 +657,28 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetf2_strided_batched(rocsolver_han
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
+ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetf2_strided_batched(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   rocblas_float_complex *A,
+                                                   const rocsolver_int lda,
+                                                   const rocsolver_int strideA,
+                                                   rocsolver_int *ipiv,
+                                                   const rocsolver_int strideP,
+                                                   rocsolver_int *info,
+                                                   const rocsolver_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetf2_strided_batched(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   rocblas_double_complex *A,
+                                                   const rocsolver_int lda,
+                                                   const rocsolver_int strideA,
+                                                   rocsolver_int *ipiv,
+                                                   const rocsolver_int strideP,
+                                                   rocsolver_int *info,
+                                                   const rocsolver_int batch_count);
+
 /*! \brief GETRF computes the LU factorization of a general m-by-n matrix A
     using partial pivoting with row interchanges.
 
@@ -677,6 +734,22 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrf(rocsolver_handle handle,
                                                    const rocsolver_int m,
                                                    const rocsolver_int n, 
                                                    double *A,
+                                                   const rocsolver_int lda,
+                                                   rocsolver_int *ipiv,
+                                                   rocsolver_int *info);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetrf(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   rocblas_float_complex *A,
+                                                   const rocsolver_int lda,
+                                                   rocsolver_int *ipiv,
+                                                   rocsolver_int *info);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrf(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   rocblas_double_complex *A,
                                                    const rocsolver_int lda,
                                                    rocsolver_int *ipiv,
                                                    rocsolver_int *info);
@@ -747,6 +820,26 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrf_batched(rocsolver_handle hand
                                                    const rocsolver_int m,
                                                    const rocsolver_int n, 
                                                    double *const A[],
+                                                   const rocsolver_int lda,
+                                                   rocsolver_int *ipiv,
+                                                   const rocsolver_int strideP,
+                                                   rocsolver_int *info,
+                                                   const rocsolver_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetrf_batched(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   rocblas_float_complex *const A[],
+                                                   const rocsolver_int lda,
+                                                   rocsolver_int *ipiv,
+                                                   const rocsolver_int strideP,
+                                                   rocsolver_int *info,
+                                                   const rocsolver_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrf_batched(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   rocblas_double_complex *const A[],
                                                    const rocsolver_int lda,
                                                    rocsolver_int *ipiv,
                                                    const rocsolver_int strideP,
@@ -831,6 +924,27 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrf_strided_batched(rocsolver_han
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
+ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetrf_strided_batched(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   rocblas_float_complex *A,
+                                                   const rocsolver_int lda,
+                                                   const rocsolver_int strideA,
+                                                   rocsolver_int *ipiv,
+                                                   const rocsolver_int strideP,
+                                                   rocsolver_int *info,
+                                                   const rocsolver_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrf_strided_batched(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   rocblas_double_complex *A,
+                                                   const rocsolver_int lda,
+                                                   const rocsolver_int strideA,
+                                                   rocsolver_int *ipiv,
+                                                   const rocsolver_int strideP,
+                                                   rocsolver_int *info,
+                                                   const rocsolver_int batch_count);
 
 /*! \brief GEQR2 computes a QR factorization of a general m-by-n matrix A.
 
@@ -1704,6 +1818,15 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrs(
     const rocsolver_int nrhs, double *A, const rocsolver_int lda,
     const rocsolver_int *ipiv, double *B, const rocsolver_int ldb);
 
+ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetrs(
+    rocsolver_handle handle, const rocsolver_operation trans, const rocsolver_int n,
+    const rocsolver_int nrhs, rocblas_float_complex *A, const rocsolver_int lda,
+    const rocsolver_int *ipiv, rocblas_float_complex *B, const rocsolver_int ldb);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrs(
+    rocsolver_handle handle, const rocsolver_operation trans, const rocsolver_int n,
+    const rocsolver_int nrhs, rocblas_double_complex *A, const rocsolver_int lda,
+    const rocsolver_int *ipiv, rocblas_double_complex *B, const rocsolver_int ldb);
 
 /*! \brief GETRS_BATCHED solves a batch of systems of n linear equations on n variables 
      using the LU factorization computed by GETRF_BATCHED.
@@ -1760,6 +1883,18 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrs_batched(
                  rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
                  const rocblas_int nrhs, double *const A[], const rocblas_int lda,
                  const rocblas_int *ipiv, const rocblas_int strideP, double *const B[], const rocblas_int ldb, const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetrs_batched(
+                 rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+                 const rocblas_int nrhs, rocblas_float_complex *const A[], const rocblas_int lda,
+                 const rocblas_int *ipiv, const rocblas_int strideP, rocblas_float_complex *const B[], 
+                 const rocblas_int ldb, const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrs_batched(
+                 rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+                 const rocblas_int nrhs, rocblas_double_complex *const A[], const rocblas_int lda,
+                 const rocblas_int *ipiv, const rocblas_int strideP, rocblas_double_complex *const B[], 
+                 const rocblas_int ldb, const rocblas_int batch_count);
 
 /*! \brief GETRS_STRIDED_BATCHED solves a batch of systems of n linear equations on n variables 
      using the LU factorization computed by GETRF_STRIDED_BATCHED.
@@ -1825,6 +1960,17 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrs_strided_batched(
                  const rocblas_int nrhs, double *A, const rocblas_int lda, const rocblas_int strideA,
                  const rocblas_int *ipiv, const rocblas_int strideP, double *B, const rocblas_int ldb, const rocblas_int strideB, const rocblas_int batch_count);
 
+ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetrs_strided_batched(
+                 rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+                 const rocblas_int nrhs, rocblas_float_complex *A, const rocblas_int lda, const rocblas_int strideA,
+                 const rocblas_int *ipiv, const rocblas_int strideP, rocblas_float_complex *B, const rocblas_int ldb, 
+                 const rocblas_int strideB, const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrs_strided_batched(
+                 rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+                 const rocblas_int nrhs, rocblas_double_complex *A, const rocblas_int lda, const rocblas_int strideA,
+                 const rocblas_int *ipiv, const rocblas_int strideP, rocblas_double_complex *B, const rocblas_int ldb, 
+                 const rocblas_int strideB, const rocblas_int batch_count);
 
 /*! \brief POTF2 computes the Cholesky factorization of a real symmetric
     positive definite matrix A.

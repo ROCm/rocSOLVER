@@ -191,6 +191,7 @@ void getf2_err_res_check(double max_error, rocblas_int M, rocblas_int N,
 #endif
 }
 
+
 template <>
 void getrf_err_res_check(float max_error, rocblas_int M, rocblas_int N,
                          float forward_tolerance, float eps) {

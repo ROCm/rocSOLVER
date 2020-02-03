@@ -46,4 +46,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_strided_batched(rocblas_handle 
     return rocsolver_getf2_strided_batched_impl<double>(handle, m, n, A, lda, strideA, ipiv, strideP, info, batch_count);
 }
 
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_strided_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_float_complex *A,
+                 const rocblas_int lda, const rocblas_int strideA, rocblas_int* ipiv, const rocblas_int strideP, rocblas_int* info, const rocblas_int batch_count) 
+{
+    return rocsolver_getf2_strided_batched_impl<rocblas_float_complex>(handle, m, n, A, lda, strideA, ipiv, strideP, info, batch_count);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_double_complex *A,
+                 const rocblas_int lda, const rocblas_int strideA, rocblas_int* ipiv, const rocblas_int strideP, rocblas_int* info, const rocblas_int batch_count) 
+{
+    return rocsolver_getf2_strided_batched_impl<rocblas_double_complex>(handle, m, n, A, lda, strideA, ipiv, strideP, info, batch_count);
+}
+
 } //extern C

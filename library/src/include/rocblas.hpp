@@ -62,7 +62,7 @@ rocblas_status rocblas_axpy(rocblas_handle handle, rocblas_int n,
                             const T *alpha, const T *x, rocblas_int incx, T *y,
                             rocblas_int incy);
 
-template <typename T>
+template <bool CONJ, typename T>
 rocblas_status rocblas_ger(rocblas_handle handle, rocblas_int m, rocblas_int n,
                            const T *alpha, const T *x, rocblas_int incx,
                            const T *y, rocblas_int incy, T *A, rocblas_int lda);

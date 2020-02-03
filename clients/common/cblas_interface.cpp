@@ -239,7 +239,7 @@ void cblas_copy<rocblas_double_complex>(rocblas_int n,
 }
 
 // axpy
-template <>
+/*template <>
 void cblas_axpy<rocblas_half>(rocblas_int n, rocblas_half alpha,
                               rocblas_half *x, rocblas_int incx,
                               rocblas_half *y, rocblas_int incy) {
@@ -259,7 +259,7 @@ void cblas_axpy<rocblas_half>(rocblas_int n, rocblas_half alpha,
     x[i * abs_incx] = float_to_half(x_float[i * abs_incx]);
     y[i * abs_incy] = float_to_half(y_float[i * abs_incy]);
   }
-}
+}*/
 
 template <>
 void cblas_axpy<float>(rocblas_int n, float alpha, float *x, rocblas_int incx,
@@ -546,7 +546,7 @@ void cblas_syr<double>(rocblas_fill uplo, rocblas_int n, double alpha,
  * ===========================================================================
  */
 // gemm
-template <>
+/*template <>
 void cblas_gemm<rocblas_half>(rocblas_operation transA,
                               rocblas_operation transB, rocblas_int m,
                               rocblas_int n, rocblas_int k, rocblas_half alpha,
@@ -587,7 +587,7 @@ void cblas_gemm<rocblas_half>(rocblas_operation transA,
   for (int i = 0; i < sizeC; i++) {
     C[i] = float_to_half(C_float[i]);
   }
-}
+}*/
 
 template <>
 void cblas_gemm<float>(rocblas_operation transA, rocblas_operation transB,
@@ -714,6 +714,19 @@ void cblas_getf2(rocblas_int m, rocblas_int n, double *A,
                         rocblas_int lda, rocblas_int *ipiv, rocblas_int *info) {
   dgetf2_(&m, &n, A, &lda, ipiv, info);
 }
+
+template <>
+void cblas_getf2(rocblas_int m, rocblas_int n, rocblas_float_complex *A, rocblas_int lda,
+                        rocblas_int *ipiv, rocblas_int *info) {
+  cgetf2_(&m, &n, A, &lda, ipiv, info);
+}
+
+template <>
+void cblas_getf2(rocblas_int m, rocblas_int n, rocblas_double_complex *A,
+                        rocblas_int lda, rocblas_int *ipiv, rocblas_int *info) {
+  zgetf2_(&m, &n, A, &lda, ipiv, info);
+}
+
 
 // trtri
 template <>

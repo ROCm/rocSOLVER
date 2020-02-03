@@ -69,21 +69,21 @@ using namespace std;
 
 // Helper routine to convert floats into their half equivalent; uses F16C
 // instructions
-inline rocblas_half float_to_half(float val) {
+//inline rocblas_half float_to_half(float val) {
   // return static_cast<rocblas_half>( _mm_cvtsi128_si32( _mm_cvtps_ph(
   // _mm_set_ss( val ), 0 ) )
   // );
   //return _cvtss_sh(val, 0);
-}
+//}
 
 // Helper routine to convert halfs into their floats equivalent; uses F16C
 // instructions
-inline float half_to_float(rocblas_half val) {
+//inline float half_to_float(rocblas_half val) {
   // return
   // static_cast<rocblas_half>(_mm_cvtss_f32(_mm_cvtph_ps(_mm_cvtsi32_si128(val),
   // 0)));
   //return _cvtsh_ss(val);
-}
+//}
 
 /* ============================================================================================
  */
@@ -97,10 +97,10 @@ T random_generator(int max) {
 };
 
 // for rocblas_half, generate float, and convert to rocblas_half
-template <> inline rocblas_half random_generator<rocblas_half>(int max) {
-  return float_to_half(static_cast<float>(
-      (rand() % max + 1))); // generate a integer number between [1, 5]
-};
+//template <> inline rocblas_half random_generator<rocblas_half>(int max) {
+//  return float_to_half(static_cast<float>(
+//      (rand() % max + 1))); // generate a integer number between [1, 5]
+//};
 
 template <> inline rocblas_float_complex random_generator<rocblas_float_complex>(int max) {
     return {float(rand() % max + 1),float(rand() % max + 1)}; 
@@ -117,10 +117,10 @@ template <typename T> T random_generator_negative() {
 };
 
 // for rocblas_half, generate float, and convert to rocblas_half
-template <> inline rocblas_half random_generator_negative<rocblas_half>() {
-  return float_to_half(-static_cast<float>(
-      (rand() % 5 + 1))); // generate a integer number between [1, 5]
-};
+//template <> inline rocblas_half random_generator_negative<rocblas_half>() {
+//  return float_to_half(-static_cast<float>(
+//      (rand() % 5 + 1))); // generate a integer number between [1, 5]
+//};
 
 /* ============================================================================================
  */
@@ -168,15 +168,15 @@ void rocblas_init(vector<T> &A, rocblas_int M, rocblas_int N, rocblas_int lda,
   }
 };
 
-template <>
-inline void rocblas_init(vector<rocblas_half> &A, rocblas_int M, rocblas_int N,
-                         rocblas_int lda, double value) {
-  for (rocblas_int i = 0; i < M; ++i) {
-    for (rocblas_int j = 0; j < N; ++j) {
-      A[i + j * lda] = float_to_half(value);
-    }
-  }
-};
+//template <>
+//inline void rocblas_init(vector<rocblas_half> &A, rocblas_int M, rocblas_int N,
+//                         rocblas_int lda, double value) {
+//  for (rocblas_int i = 0; i < M; ++i) {
+//    for (rocblas_int j = 0; j < N; ++j) {
+//      A[i + j * lda] = float_to_half(value);
+//    }
+//  }
+//};
 
 /*! \brief  symmetric matrix initialization: */
 // for real matrix only

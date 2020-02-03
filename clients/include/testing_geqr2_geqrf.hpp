@@ -21,8 +21,11 @@
 #include <gtest/gtest.h>
 #endif
 
-// this is max error PER element after the LU
-#define ERROR_EPS_MULTIPLIER 5000
+// this is max error PER element
+#define ERROR_EPS_MULTIPLIER 6000
+// AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
+// AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
+// A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
 
 using namespace std;
 
