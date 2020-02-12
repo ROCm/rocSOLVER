@@ -50,6 +50,11 @@ set( rocsolver_lapack_source
   lapack/roclapack_getrs_batched.cpp
   lapack/roclapack_getrs_strided_batched.cpp
   lapack/roclapack_potf2.cpp
+  lapack/roclapack_potf2_batched.cpp
+  lapack/roclapack_potf2_strided_batched.cpp
+  lapack/roclapack_potrf.cpp
+  lapack/roclapack_potrf_batched.cpp
+  lapack/roclapack_potrf_strided_batched.cpp
   lapack/roclapack_geqr2.cpp
   lapack/roclapack_geqr2_batched.cpp
   lapack/roclapack_geqr2_strided_batched.cpp

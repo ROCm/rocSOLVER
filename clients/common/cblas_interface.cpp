@@ -685,21 +685,32 @@ void cblas_trsm<rocblas_double_complex>(
 
 // potf2
 template <>
-rocblas_int cblas_potf2(rocblas_fill uplo, rocblas_int n, float *A,
-                        rocblas_int lda) {
-  rocblas_int info;
+void cblas_potf2(rocblas_fill uplo, rocblas_int n, float *A,
+                        rocblas_int lda, rocblas_int *info) {
   char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
-  spotf2_(&uploC, &n, A, &lda, &info);
-  return info;
+  spotf2_(&uploC, &n, A, &lda, info);
 }
 
 template <>
-rocblas_int cblas_potf2(rocblas_fill uplo, rocblas_int n, double *A,
-                        rocblas_int lda) {
-  rocblas_int info;
+void cblas_potf2(rocblas_fill uplo, rocblas_int n, double *A,
+                        rocblas_int lda, rocblas_int *info) {
   char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
-  dpotf2_(&uploC, &n, A, &lda, &info);
-  return info;
+  dpotf2_(&uploC, &n, A, &lda, info);
+}
+
+// potrf
+template <>
+void cblas_potrf(rocblas_fill uplo, rocblas_int n, float *A,
+                        rocblas_int lda, rocblas_int *info) {
+  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+  spotrf_(&uploC, &n, A, &lda, info);
+}
+
+template <>
+void cblas_potrf(rocblas_fill uplo, rocblas_int n, double *A,
+                        rocblas_int lda, rocblas_int *info) {
+  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+  dpotrf_(&uploC, &n, A, &lda, info);
 }
 
 // getf2
@@ -827,41 +838,6 @@ void cblas_getrf<rocblas_double_complex>(rocblas_int m, rocblas_int n,
                                                 rocblas_int lda,
                                                 rocblas_int *ipiv, rocblas_int *info) {
   zgetrf_(&m, &n, A, &lda, ipiv, info);
-}
-
-// potrf
-template <>
-rocblas_int cblas_potrf<float>(char uplo, rocblas_int m, float *A,
-                               rocblas_int lda) {
-  rocblas_int info;
-  spotrf_(&uplo, &m, A, &lda, &info);
-  return info;
-}
-
-template <>
-rocblas_int cblas_potrf<double>(char uplo, rocblas_int m, double *A,
-                                rocblas_int lda) {
-  rocblas_int info;
-  dpotrf_(&uplo, &m, A, &lda, &info);
-  return info;
-}
-
-template <>
-rocblas_int cblas_potrf<rocblas_float_complex>(char uplo, rocblas_int m,
-                                               rocblas_float_complex *A,
-                                               rocblas_int lda) {
-  rocblas_int info;
-  cpotrf_(&uplo, &m, A, &lda, &info);
-  return info;
-}
-
-template <>
-rocblas_int cblas_potrf<rocblas_double_complex>(char uplo, rocblas_int m,
-                                                rocblas_double_complex *A,
-                                                rocblas_int lda) {
-  rocblas_int info;
-  zpotrf_(&uplo, &m, A, &lda, &info);
-  return info;
 }
 
 // getrs

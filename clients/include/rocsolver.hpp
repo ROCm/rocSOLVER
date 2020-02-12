@@ -117,21 +117,123 @@ inline rocblas_status rocsolver_larfb(rocblas_handle handle, rocsolver_side side
 
 template <typename T>
 inline rocblas_status rocsolver_potf2(rocblas_handle handle, rocblas_fill uplo,
-                                      rocblas_int n, T *A, rocblas_int lda);
+                                      rocblas_int n, T *A, rocblas_int lda, rocblas_int *info);
 
 template <>
 inline rocblas_status rocsolver_potf2(rocblas_handle handle, rocblas_fill uplo,
                                       rocblas_int n, float *A,
-                                      rocblas_int lda) {
-  return rocsolver_spotf2(handle, uplo, n, A, lda);
+                                      rocblas_int lda, rocblas_int *info) {
+  return rocsolver_spotf2(handle, uplo, n, A, lda, info);
 }
 
 template <>
 inline rocblas_status rocsolver_potf2(rocblas_handle handle, rocblas_fill uplo,
                                       rocblas_int n, double *A,
-                                      rocblas_int lda) {
-  return rocsolver_dpotf2(handle, uplo, n, A, lda);
+                                      rocblas_int lda, rocblas_int *info) {
+  return rocsolver_dpotf2(handle, uplo, n, A, lda, info);
 }
+
+//potf2_strided_batched
+
+template <typename T>
+inline rocblas_status rocsolver_potf2_strided_batched(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, T *A, rocblas_int lda, rocblas_int strideA, rocblas_int *info, rocblas_int batch_count);
+
+template <>
+inline rocblas_status rocsolver_potf2_strided_batched(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, float *A,
+                                      rocblas_int lda, rocblas_int strideA, rocblas_int *info, rocblas_int batch_count) {
+  return rocsolver_spotf2_strided_batched(handle, uplo, n, A, lda, strideA, info, batch_count);
+}
+
+template <>
+inline rocblas_status rocsolver_potf2_strided_batched(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, double *A,
+                                      rocblas_int lda, rocblas_int strideA, rocblas_int *info, rocblas_int batch_count) {
+  return rocsolver_dpotf2_strided_batched(handle, uplo, n, A, lda, strideA, info, batch_count);
+}
+
+//potf2_batched
+
+template <typename T>
+inline rocblas_status rocsolver_potf2_batched(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, T *const A[], rocblas_int lda, rocblas_int *info, rocblas_int batch_count);
+
+template <>
+inline rocblas_status rocsolver_potf2_batched(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, float *const A[],
+                                      rocblas_int lda, rocblas_int *info, rocblas_int batch_count) {
+  return rocsolver_spotf2_batched(handle, uplo, n, A, lda, info, batch_count);
+}
+
+template <>
+inline rocblas_status rocsolver_potf2_batched(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, double *const A[],
+                                      rocblas_int lda, rocblas_int *info, rocblas_int batch_count) {
+  return rocsolver_dpotf2_batched(handle, uplo, n, A, lda, info, batch_count);
+}
+
+
+//potrf
+
+template <typename T>
+inline rocblas_status rocsolver_potrf(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, T *A, rocblas_int lda, rocblas_int *info);
+
+template <>
+inline rocblas_status rocsolver_potrf(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, float *A,
+                                      rocblas_int lda, rocblas_int *info) {
+  return rocsolver_spotrf(handle, uplo, n, A, lda, info);
+}
+
+template <>
+inline rocblas_status rocsolver_potrf(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, double *A,
+                                      rocblas_int lda, rocblas_int *info) {
+  return rocsolver_dpotrf(handle, uplo, n, A, lda, info);
+}
+
+//potrf_strided_batched
+
+template <typename T>
+inline rocblas_status rocsolver_potrf_strided_batched(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, T *A, rocblas_int lda, rocblas_int strideA, rocblas_int *info, rocblas_int batch_count);
+
+template <>
+inline rocblas_status rocsolver_potrf_strided_batched(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, float *A,
+                                      rocblas_int lda, rocblas_int strideA, rocblas_int *info, rocblas_int batch_count) {
+  return rocsolver_spotrf_strided_batched(handle, uplo, n, A, lda, strideA, info, batch_count);
+}
+
+template <>
+inline rocblas_status rocsolver_potrf_strided_batched(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, double *A,
+                                      rocblas_int lda, rocblas_int strideA, rocblas_int *info, rocblas_int batch_count) {
+  return rocsolver_dpotrf_strided_batched(handle, uplo, n, A, lda, strideA, info, batch_count);
+}
+
+//potrf_batched
+
+template <typename T>
+inline rocblas_status rocsolver_potrf_batched(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, T *const A[], rocblas_int lda, rocblas_int *info, rocblas_int batch_count);
+
+template <>
+inline rocblas_status rocsolver_potrf_batched(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, float *const A[],
+                                      rocblas_int lda, rocblas_int *info, rocblas_int batch_count) {
+  return rocsolver_spotrf_batched(handle, uplo, n, A, lda, info, batch_count);
+}
+
+template <>
+inline rocblas_status rocsolver_potrf_batched(rocblas_handle handle, rocblas_fill uplo,
+                                      rocblas_int n, double *const A[],
+                                      rocblas_int lda, rocblas_int *info, rocblas_int batch_count) {
+  return rocsolver_dpotrf_batched(handle, uplo, n, A, lda, info, batch_count);
+}
+
 
 //getf2
 

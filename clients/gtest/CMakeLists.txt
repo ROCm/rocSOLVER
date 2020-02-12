@@ -63,7 +63,9 @@ set(roclapack_test_source
     getrs_gtest.cpp
     getrs_batched_gtest.cpp
     getrs_strided_batched_gtest.cpp
-    potf2_gtest.cpp
+    potf2_potrf_gtest.cpp
+    potf2_potrf_batched_gtest.cpp
+    potf2_potrf_strided_batched_gtest.cpp
     )
 
 set(rocsolver_test_source

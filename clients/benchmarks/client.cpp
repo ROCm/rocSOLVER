@@ -18,7 +18,9 @@
 #include "testing_getrs.hpp"
 #include "testing_getrs_batched.hpp"
 #include "testing_getrs_strided_batched.hpp"
-#include "testing_potf2.hpp"
+#include "testing_potf2_potrf.hpp"
+#include "testing_potf2_potrf_batched.hpp"
+#include "testing_potf2_potrf_strided_batched.hpp"
 #include "testing_larfg.hpp"
 #include "testing_larf.hpp"
 #include "testing_larft.hpp"
@@ -229,9 +231,39 @@ int main(int argc, char *argv[])
 
   if (function == "potf2") {
     if (precision == 's')
-      testing_potf2<float>(argus);
+      testing_potf2_potrf<float,0>(argus);
     else if (precision == 'd')
-      testing_potf2<double>(argus);
+      testing_potf2_potrf<double,0>(argus);
+  } 
+  else if (function == "potrf") {
+    if (precision == 's')
+      testing_potf2_potrf<float,1>(argus);
+    else if (precision == 'd')
+      testing_potf2_potrf<double,1>(argus);
+  } 
+  else if (function == "potf2_batched") {
+    if (precision == 's')
+      testing_potf2_potrf_batched<float,0>(argus);
+    else if (precision == 'd')
+      testing_potf2_potrf_batched<double,0>(argus);
+  } 
+  else if (function == "potrf_batched") {
+    if (precision == 's')
+      testing_potf2_potrf_batched<float,1>(argus);
+    else if (precision == 'd')
+      testing_potf2_potrf_batched<double,1>(argus);
+  } 
+  else if (function == "potf2_strided_batched") {
+    if (precision == 's')
+      testing_potf2_potrf_strided_batched<float,0>(argus);
+    else if (precision == 'd')
+      testing_potf2_potrf_strided_batched<double,0>(argus);
+  } 
+  else if (function == "potrf_strided_batched") {
+    if (precision == 's')
+      testing_potf2_potrf_strided_batched<float,1>(argus);
+    else if (precision == 'd')
+      testing_potf2_potrf_strided_batched<double,1>(argus);
   } 
   else if (function == "laswp") {
     if (precision == 's')

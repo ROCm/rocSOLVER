@@ -116,6 +116,32 @@ rocsolver_<type>potf2()
 .. doxygenfunction:: rocsolver_dpotf2
 .. doxygenfunction:: rocsolver_spotf2
 
+rocsolver_<type>potf2_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dpotf2_batched
+.. doxygenfunction:: rocsolver_spotf2_batched
+
+rocsolver_<type>potf2_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dpotf2_strided_batched
+.. doxygenfunction:: rocsolver_spotf2_strided_batched
+
+rocsolver_<type>potrf()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dpotrf
+.. doxygenfunction:: rocsolver_spotrf
+
+rocsolver_<type>potrf_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dpotrf_batched
+.. doxygenfunction:: rocsolver_spotrf_batched
+
+rocsolver_<type>potrf_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dpotrf_strided_batched
+.. doxygenfunction:: rocsolver_spotrf_strided_batched
+
+
 General Matrix Factorizations
 ------------------------------
 

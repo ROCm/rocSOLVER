@@ -80,8 +80,13 @@ void cblas_trsm(rocblas_side side, rocblas_fill uplo, rocblas_operation transA,
                 const T *A, rocblas_int lda, T *B, rocblas_int ldb);
 
 template <typename T>
-rocblas_int cblas_potf2(rocblas_fill uplo, rocblas_int n, T *A,
-                        rocblas_int lda);
+void cblas_potf2(rocblas_fill uplo, rocblas_int n, T *A,
+                        rocblas_int lda, rocblas_int *info);
+
+template <typename T>
+void cblas_potrf(rocblas_fill uplo, rocblas_int n, T *A,
+                        rocblas_int lda, rocblas_int *info);
+
 
 template <typename T>
 void cblas_getf2(rocblas_int m, rocblas_int n, T *A, rocblas_int lda,
