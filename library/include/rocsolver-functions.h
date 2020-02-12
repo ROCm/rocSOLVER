@@ -1990,7 +1990,8 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrs_strided_batched(
     handle    rocsolver_handle.
     @param[in]
     uplo      rocsolver_fill.\n
-              specifies whether the factorization is upper or lower triangular.
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
     n         rocsolver_int. n >= 0.\n
               The matrix dimensions.
@@ -2038,7 +2039,8 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotf2(rocsolver_handle handle,
     handle    rocsolver_handle.
     @param[in]
     uplo      rocsolver_fill.\n
-              specifies whether the factorization is upper or lower triangular.
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
     n         rocsolver_int. n >= 0.\n
               The dimension of matrix A_i.
@@ -2055,7 +2057,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotf2(rocsolver_handle handle,
               The i-th factorization stopped at this point.
     @param[in]
     batch_count rocsolver_int. batch_count >= 0.\n
-                Number of instances (systems) in the batch. 
+                Number of matrices in the batch. 
 
     ********************************************************************/
 
@@ -2092,7 +2094,8 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotf2_batched(rocsolver_handle hand
     handle    rocsolver_handle.
     @param[in]
     uplo      rocsolver_fill.\n
-              specifies whether the factorization is upper or lower triangular.
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
     n         rocsolver_int. n >= 0.\n
               The dimension of matrix A_i.
@@ -2113,7 +2116,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotf2_batched(rocsolver_handle hand
               The i-th factorization stopped at this point.
     @param[in]
     batch_count rocsolver_int. batch_count >= 0.\n
-                Number of instances (systems) in the batch. 
+                Number of matrices in the batch. 
 
     ********************************************************************/
 
@@ -2152,7 +2155,8 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotf2_strided_batched(rocsolver_han
     handle    rocsolver_handle.
     @param[in]
     uplo      rocsolver_fill.\n
-              specifies whether the factorization is upper or lower triangular.
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
     n         rocsolver_int. n >= 0.\n
               The matrix dimensions.
@@ -2200,7 +2204,8 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotrf(rocsolver_handle handle,
     handle    rocsolver_handle.
     @param[in]
     uplo      rocsolver_fill.\n
-              specifies whether the factorization is upper or lower triangular.
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
     n         rocsolver_int. n >= 0.\n
               The dimension of matrix A_i.
@@ -2217,7 +2222,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotrf(rocsolver_handle handle,
               The i-th factorization stopped at this point.
     @param[in]
     batch_count rocsolver_int. batch_count >= 0.\n
-                Number of instances (systems) in the batch. 
+                Number of matrices in the batch. 
 
     ********************************************************************/
 
@@ -2254,7 +2259,8 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotrf_batched(rocsolver_handle hand
     handle    rocsolver_handle.
     @param[in]
     uplo      rocsolver_fill.\n
-              specifies whether the factorization is upper or lower triangular.
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
     n         rocsolver_int. n >= 0.\n
               The dimension of matrix A_i.
@@ -2275,7 +2281,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotrf_batched(rocsolver_handle hand
               The i-th factorization stopped at this point.
     @param[in]
     batch_count rocsolver_int. batch_count >= 0.\n
-                Number of instances (systems) in the batch. 
+                Number of matrices in the batch. 
 
     ********************************************************************/
 
