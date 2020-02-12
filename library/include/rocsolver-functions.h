@@ -1972,6 +1972,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrs_strided_batched(
                  const rocblas_int *ipiv, const rocblas_int strideP, rocblas_double_complex *B, const rocblas_int ldb, 
                  const rocblas_int strideB, const rocblas_int batch_count);
 
+
 /*! \brief POTF2 computes the Cholesky factorization of a real symmetric
     positive definite matrix A.
 
@@ -1989,30 +1990,318 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrs_strided_batched(
     handle    rocsolver_handle.
     @param[in]
     uplo      rocsolver_fill.\n
-              specifies whether the factorization is upper or lower triangular.
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
     n         rocsolver_int. n >= 0.\n
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
-              The matrix A to be factored.
+              On entry, the matrix A to be factored. On exit, the lower or upper triangular factor.
     @param[in]
     lda       rocsolver_int. lda >= n.\n
               specifies the leading dimension of A.
+    @param[out]
+    info      pointer to a rocsolver_int on the GPU.\n
+              If info = 0, succesful factorization of matrix A. 
+              If info = i > 0, the leading minor of order i of A is not positive definite. 
+              The factorization stopped at this point.
 
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_spotf2(rocsolver_handle handle,
-                                                   rocsolver_fill uplo,
-                                                   rocsolver_int n, float *A,
-                                                   rocsolver_int lda);
+                                                   const rocsolver_fill uplo,
+                                                   const rocsolver_int n, float *A,
+                                                   const rocsolver_int lda,
+                                                   rocblas_int* info);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotf2(rocsolver_handle handle,
-                                                   rocsolver_fill uplo,
-                                                   rocsolver_int n, double *A,
-                                                   rocsolver_int lda);
+                                                   const rocsolver_fill uplo,
+                                                   const rocsolver_int n, double *A,
+                                                   const rocsolver_int lda,
+                                                   rocblas_int* info);
 
 
+/*! \brief POTF2_BATCHED computes the Cholesky factorization of a 
+    batch of real symmetric positive definite matrices.
+
+    \details
+    (This is the unblocked version of the algorithm). 
+
+    The factorization of matrix A_i in the batch has the form:
+
+        A_i = U_i' * U_i, or
+        A_i = L_i  * L_i'
+
+    depending on the value of uplo. U_i is an upper triangular matrix and L_i is lower triangular.
+
+    @param[in]
+    handle    rocsolver_handle.
+    @param[in]
+    uplo      rocsolver_fill.\n
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n         rocsolver_int. n >= 0.\n
+              The dimension of matrix A_i.
+    @param[inout]
+    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+              On entry, the matrices A_i to be factored. On exit, the upper or lower triangular factors. 
+    @param[in]
+    lda       rocsolver_int. lda >= n.\n
+              specifies the leading dimension of A_i.
+    @param[out]
+    info      pointer to rocsolver_int. Array of batch_count integers on the GPU.\n
+              If info_i = 0, succesful factorization of matrix A_i. 
+              If info_i = j > 0, the leading minor of order j of A_i is not positive definite. 
+              The i-th factorization stopped at this point.
+    @param[in]
+    batch_count rocsolver_int. batch_count >= 0.\n
+                Number of matrices in the batch. 
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_spotf2_batched(rocsolver_handle handle,
+                                                           const rocsolver_fill uplo,
+                                                           const rocsolver_int n, 
+                                                           float *const A[],
+                                                           const rocsolver_int lda,
+                                                           rocblas_int* info,
+                                                           const rocsolver_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotf2_batched(rocsolver_handle handle,
+                                                           const rocsolver_fill uplo,
+                                                           const rocsolver_int n, 
+                                                           double *const A[],
+                                                           const rocsolver_int lda,
+                                                           rocblas_int* info,
+                                                           const rocsolver_int batch_count);
+
+/*! \brief POTF2_STRIDED_BATCHED computes the Cholesky factorization of a 
+    batch of real symmetric positive definite matrices.
+
+    \details
+    (This is the unblocked version of the algorithm). 
+
+    The factorization of matrix A_i in the batch has the form:
+
+        A_i = U_i' * U_i, or
+        A_i = L_i  * L_i'
+
+    depending on the value of uplo. U_i is an upper triangular matrix and L_i is lower triangular.
+
+    @param[in]
+    handle    rocsolver_handle.
+    @param[in]
+    uplo      rocsolver_fill.\n
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n         rocsolver_int. n >= 0.\n
+              The dimension of matrix A_i.
+    @param[inout]
+    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+              On entry, the matrices A_i to be factored. On exit, the upper or lower triangular factors. 
+    @param[in]
+    lda       rocsolver_int. lda >= n.\n
+              specifies the leading dimension of A_i.
+    @param[in]
+    strideA   rocsolver_int.\n
+              Stride from the start of one matrix A_i and the next one A_(i+1). 
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[out]
+    info      pointer to rocsolver_int. Array of batch_count integers on the GPU.\n
+              If info_i = 0, succesful factorization of matrix A_i. 
+              If info_i = j > 0, the leading minor of order j of A_i is not positive definite. 
+              The i-th factorization stopped at this point.
+    @param[in]
+    batch_count rocsolver_int. batch_count >= 0.\n
+                Number of matrices in the batch. 
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_spotf2_strided_batched(rocsolver_handle handle,
+                                                                   const rocsolver_fill uplo,
+                                                                   const rocsolver_int n, 
+                                                                   float *A,
+                                                                   const rocsolver_int lda,
+                                                                   const rocsolver_int strideA,
+                                                                   rocblas_int* info,
+                                                                   const rocsolver_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotf2_strided_batched(rocsolver_handle handle,
+                                                                   const rocsolver_fill uplo,
+                                                                   const rocsolver_int n, 
+                                                                   double *A,
+                                                                   const rocsolver_int lda,
+                                                                   const rocsolver_int strideA,
+                                                                   rocblas_int* info,
+                                                                   const rocsolver_int batch_count);
+
+/*! \brief POTRF computes the Cholesky factorization of a real symmetric
+    positive definite matrix A.
+
+    \details
+    (This is the blocked version of the algorithm). 
+
+    The factorization has the form:
+
+        A = U' * U, or
+        A = L  * L'
+
+    depending on the value of uplo. U is an upper triangular matrix and L is lower triangular.
+
+    @param[in]
+    handle    rocsolver_handle.
+    @param[in]
+    uplo      rocsolver_fill.\n
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n         rocsolver_int. n >= 0.\n
+              The matrix dimensions.
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the matrix A to be factored. On exit, the lower or upper triangular factor.
+    @param[in]
+    lda       rocsolver_int. lda >= n.\n
+              specifies the leading dimension of A.
+    @param[out]
+    info      pointer to a rocsolver_int on the GPU.\n
+              If info = 0, succesful factorization of matrix A. 
+              If info = i > 0, the leading minor of order i of A is not positive definite. 
+              The factorization stopped at this point.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_spotrf(rocsolver_handle handle,
+                                                   const rocsolver_fill uplo,
+                                                   const rocsolver_int n, float *A,
+                                                   const rocsolver_int lda,
+                                                   rocblas_int* info);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotrf(rocsolver_handle handle,
+                                                   const rocsolver_fill uplo,
+                                                   const rocsolver_int n, double *A,
+                                                   const rocsolver_int lda,
+                                                   rocblas_int* info);
+
+
+/*! \brief POTRF_BATCHED computes the Cholesky factorization of a 
+    batch of real symmetric positive definite matrices.
+
+    \details
+    (This is the blocked version of the algorithm). 
+
+    The factorization of matrix A_i in the batch has the form:
+
+        A_i = U_i' * U_i, or
+        A_i = L_i  * L_i'
+
+    depending on the value of uplo. U_i is an upper triangular matrix and L_i is lower triangular.
+
+    @param[in]
+    handle    rocsolver_handle.
+    @param[in]
+    uplo      rocsolver_fill.\n
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n         rocsolver_int. n >= 0.\n
+              The dimension of matrix A_i.
+    @param[inout]
+    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+              On entry, the matrices A_i to be factored. On exit, the upper or lower triangular factors. 
+    @param[in]
+    lda       rocsolver_int. lda >= n.\n
+              specifies the leading dimension of A_i.
+    @param[out]
+    info      pointer to rocsolver_int. Array of batch_count integers on the GPU.\n
+              If info_i = 0, succesful factorization of matrix A_i. 
+              If info_i = j > 0, the leading minor of order j of A_i is not positive definite. 
+              The i-th factorization stopped at this point.
+    @param[in]
+    batch_count rocsolver_int. batch_count >= 0.\n
+                Number of matrices in the batch. 
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_spotrf_batched(rocsolver_handle handle,
+                                                           const rocsolver_fill uplo,
+                                                           const rocsolver_int n, 
+                                                           float *const A[],
+                                                           const rocsolver_int lda,
+                                                           rocblas_int* info,
+                                                           const rocsolver_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotrf_batched(rocsolver_handle handle,
+                                                           const rocsolver_fill uplo,
+                                                           const rocsolver_int n, 
+                                                           double *const A[],
+                                                           const rocsolver_int lda,
+                                                           rocblas_int* info,
+                                                           const rocsolver_int batch_count);
+
+/*! \brief POTRF_STRIDED_BATCHED computes the Cholesky factorization of a 
+    batch of real symmetric positive definite matrices.
+
+    \details
+    (This is the blocked version of the algorithm). 
+
+    The factorization of matrix A_i in the batch has the form:
+
+        A_i = U_i' * U_i, or
+        A_i = L_i  * L_i'
+
+    depending on the value of uplo. U_i is an upper triangular matrix and L_i is lower triangular.
+
+    @param[in]
+    handle    rocsolver_handle.
+    @param[in]
+    uplo      rocsolver_fill.\n
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n         rocsolver_int. n >= 0.\n
+              The dimension of matrix A_i.
+    @param[inout]
+    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+              On entry, the matrices A_i to be factored. On exit, the upper or lower triangular factors. 
+    @param[in]
+    lda       rocsolver_int. lda >= n.\n
+              specifies the leading dimension of A_i.
+    @param[in]
+    strideA   rocsolver_int.\n
+              Stride from the start of one matrix A_i and the next one A_(i+1). 
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[out]
+    info      pointer to rocsolver_int. Array of batch_count integers on the GPU.\n
+              If info_i = 0, succesful factorization of matrix A_i. 
+              If info_i = j > 0, the leading minor of order j of A_i is not positive definite. 
+              The i-th factorization stopped at this point.
+    @param[in]
+    batch_count rocsolver_int. batch_count >= 0.\n
+                Number of matrices in the batch. 
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_spotrf_strided_batched(rocsolver_handle handle,
+                                                                   const rocsolver_fill uplo,
+                                                                   const rocsolver_int n, 
+                                                                   float *A,
+                                                                   const rocsolver_int lda,
+                                                                   const rocsolver_int strideA,
+                                                                   rocblas_int* info,
+                                                                   const rocsolver_int batch_count);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotrf_strided_batched(rocsolver_handle handle,
+                                                                   const rocsolver_fill uplo,
+                                                                   const rocsolver_int n, 
+                                                                   double *A,
+                                                                   const rocsolver_int lda,
+                                                                   const rocsolver_int strideA,
+                                                                   rocblas_int* info,
+                                                                   const rocsolver_int batch_count);
 
 
 #ifdef __cplusplus

@@ -75,15 +75,15 @@ Arguments setup_getrsSB_arguments(getrsSB_tuple tup) {
   return arg;
 }
 
-class getrsSB_gtest : public ::TestWithParam<getrsSB_tuple> {
+class LUsolver_sb : public ::TestWithParam<getrsSB_tuple> {
 protected:
-  getrsSB_gtest() {}
-  virtual ~getrsSB_gtest() {}
+  LUsolver_sb() {}
+  virtual ~LUsolver_sb() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
 
-TEST_P(getrsSB_gtest, getrs_strided_batched_float) {
+TEST_P(LUsolver_sb, getrs_strided_batched_float) {
   Arguments arg = setup_getrsSB_arguments(GetParam());
 
   rocblas_status status = testing_getrs_strided_batched<float,float>(arg);
@@ -100,7 +100,7 @@ TEST_P(getrsSB_gtest, getrs_strided_batched_float) {
   }
 }
 
-TEST_P(getrsSB_gtest, getrs_strided_batched_double) {
+TEST_P(LUsolver_sb, getrs_strided_batched_double) {
   Arguments arg = setup_getrsSB_arguments(GetParam());
 
   rocblas_status status = testing_getrs_strided_batched<double,double>(arg);
@@ -117,7 +117,7 @@ TEST_P(getrsSB_gtest, getrs_strided_batched_double) {
   }
 }
 
-TEST_P(getrsSB_gtest, getrs_strided_batched_float_complex) {
+TEST_P(LUsolver_sb, getrs_strided_batched_float_complex) {
   Arguments arg = setup_getrsSB_arguments(GetParam());
 
   rocblas_status status = testing_getrs_strided_batched<rocblas_float_complex,float>(arg);
@@ -134,7 +134,7 @@ TEST_P(getrsSB_gtest, getrs_strided_batched_float_complex) {
   }
 }
 
-TEST_P(getrsSB_gtest, getrs_strided_batched_double_complex) {
+TEST_P(LUsolver_sb, getrs_strided_batched_double_complex) {
   Arguments arg = setup_getrsSB_arguments(GetParam());
 
   rocblas_status status = testing_getrs_strided_batched<rocblas_double_complex,double>(arg);
@@ -152,12 +152,12 @@ TEST_P(getrsSB_gtest, getrs_strided_batched_double_complex) {
 }
 
 // This function mainly test the scope of matrix_size.
-INSTANTIATE_TEST_CASE_P(daily_lapack, getrsSB_gtest,
+INSTANTIATE_TEST_CASE_P(daily_lapack, LUsolver_sb,
                         Combine(ValuesIn(large_matrix_sizeA_range),
                                 ValuesIn(large_matrix_sizeB_range)));
 
 // THis function mainly test the scope of uplo_range, the scope of
 // matrix_size_range is small
-INSTANTIATE_TEST_CASE_P(checkin_lapack, getrsSB_gtest,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, LUsolver_sb,
                         Combine(ValuesIn(matrix_sizeA_range),
                                 ValuesIn(matrix_sizeB_range)));

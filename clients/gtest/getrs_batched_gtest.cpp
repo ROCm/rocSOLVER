@@ -72,15 +72,15 @@ Arguments setup_getrsB_arguments(getrsB_tuple tup) {
   return arg;
 }
 
-class getrsB_gtest : public ::TestWithParam<getrsB_tuple> {
+class LUsolver_b : public ::TestWithParam<getrsB_tuple> {
 protected:
-  getrsB_gtest() {}
-  virtual ~getrsB_gtest() {}
+  LUsolver_b() {}
+  virtual ~LUsolver_b() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
 
-TEST_P(getrsB_gtest, getrs_batched_float) {
+TEST_P(LUsolver_b, getrs_batched_float) {
   Arguments arg = setup_getrsB_arguments(GetParam());
 
   rocblas_status status = testing_getrs_batched<float,float>(arg);
@@ -97,7 +97,7 @@ TEST_P(getrsB_gtest, getrs_batched_float) {
   }
 }
 
-TEST_P(getrsB_gtest, getrs_batched_double) {
+TEST_P(LUsolver_b, getrs_batched_double) {
   Arguments arg = setup_getrsB_arguments(GetParam());
 
   rocblas_status status = testing_getrs_batched<double,double>(arg);
@@ -114,7 +114,7 @@ TEST_P(getrsB_gtest, getrs_batched_double) {
   }
 }
 
-TEST_P(getrsB_gtest, getrs_batched_float_complex) {
+TEST_P(LUsolver_b, getrs_batched_float_complex) {
   Arguments arg = setup_getrsB_arguments(GetParam());
 
   rocblas_status status = testing_getrs_batched<rocblas_float_complex,float>(arg);
@@ -131,7 +131,7 @@ TEST_P(getrsB_gtest, getrs_batched_float_complex) {
   }
 }
 
-TEST_P(getrsB_gtest, getrs_batched_double_complex) {
+TEST_P(LUsolver_b, getrs_batched_double_complex) {
   Arguments arg = setup_getrsB_arguments(GetParam());
 
   rocblas_status status = testing_getrs_batched<rocblas_double_complex,double>(arg);
@@ -149,12 +149,12 @@ TEST_P(getrsB_gtest, getrs_batched_double_complex) {
 }
 
 // This function mainly test the scope of matrix_size.
-INSTANTIATE_TEST_CASE_P(daily_lapack, getrsB_gtest,
+INSTANTIATE_TEST_CASE_P(daily_lapack, LUsolver_b,
                         Combine(ValuesIn(large_matrix_sizeA_range),
                                 ValuesIn(large_matrix_sizeB_range)));
 
 // THis function mainly test the scope of uplo_range, the scope of
 // matrix_size_range is small
-INSTANTIATE_TEST_CASE_P(checkin_lapack, getrsB_gtest,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, LUsolver_b,
                         Combine(ValuesIn(matrix_sizeA_range),
                                 ValuesIn(matrix_sizeB_range)));

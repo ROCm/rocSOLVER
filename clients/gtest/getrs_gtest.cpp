@@ -67,15 +67,15 @@ Arguments setup_getrs_arguments(getrs_tuple tup) {
   return arg;
 }
 
-class getrs_gtest : public ::TestWithParam<getrs_tuple> {
+class LUsolver : public ::TestWithParam<getrs_tuple> {
 protected:
-  getrs_gtest() {}
-  virtual ~getrs_gtest() {}
+  LUsolver() {}
+  virtual ~LUsolver() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
 
-TEST_P(getrs_gtest, getrs_float) {
+TEST_P(LUsolver, getrs_float) {
   Arguments arg = setup_getrs_arguments(GetParam());
 
   rocblas_status status = testing_getrs<float,float>(arg);
@@ -92,7 +92,7 @@ TEST_P(getrs_gtest, getrs_float) {
   }
 }
 
-TEST_P(getrs_gtest, getrs_double) {
+TEST_P(LUsolver, getrs_double) {
   Arguments arg = setup_getrs_arguments(GetParam());
 
   rocblas_status status = testing_getrs<double,double>(arg);
@@ -109,7 +109,7 @@ TEST_P(getrs_gtest, getrs_double) {
   }
 }
 
-TEST_P(getrs_gtest, getrs_float_complex) {
+TEST_P(LUsolver, getrs_float_complex) {
   Arguments arg = setup_getrs_arguments(GetParam());
 
   rocblas_status status = testing_getrs<rocblas_float_complex,float>(arg);
@@ -126,7 +126,7 @@ TEST_P(getrs_gtest, getrs_float_complex) {
   }
 }
 
-TEST_P(getrs_gtest, getrs_double_complex) {
+TEST_P(LUsolver, getrs_double_complex) {
   Arguments arg = setup_getrs_arguments(GetParam());
 
   rocblas_status status = testing_getrs<rocblas_double_complex,double>(arg);
@@ -144,12 +144,12 @@ TEST_P(getrs_gtest, getrs_double_complex) {
 }
 
 // This function mainly test the scope of matrix_size.
-INSTANTIATE_TEST_CASE_P(daily_lapack, getrs_gtest,
+INSTANTIATE_TEST_CASE_P(daily_lapack, LUsolver,
                         Combine(ValuesIn(large_matrix_sizeA_range),
                                 ValuesIn(large_matrix_sizeB_range)));
 
 // THis function mainly test the scope of uplo_range, the scope of
 // matrix_size_range is small
-INSTANTIATE_TEST_CASE_P(checkin_lapack, getrs_gtest,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, LUsolver,
                         Combine(ValuesIn(matrix_sizeA_range),
                                 ValuesIn(matrix_sizeB_range)));
