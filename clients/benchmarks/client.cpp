@@ -26,6 +26,7 @@
 #include "testing_larft.hpp"
 #include "testing_larfb.hpp"
 #include "testing_laswp.hpp"
+#include "testing_org2r_orgqr.hpp"
 #include "utility.h"
 
 namespace po = boost::program_options;
@@ -460,6 +461,18 @@ int main(int argc, char *argv[])
       testing_larfb<float>(argus);
     else if (precision == 'd')
       testing_larfb<double>(argus);
+  } 
+  else if (function == "org2r") {
+    if (precision == 's')
+      testing_org2r_orgqr<float,0>(argus);
+    else if (precision == 'd')
+      testing_org2r_orgqr<double,0>(argus);
+  } 
+  else if (function == "orgqr") {
+    if (precision == 's')
+      testing_org2r_orgqr<float,1>(argus);
+    else if (precision == 'd')
+      testing_org2r_orgqr<double,1>(argus);
   } 
   else {
     printf("Invalid value for --function \n");

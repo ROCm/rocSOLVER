@@ -88,6 +88,11 @@ void dlaswp_(int *n, double *A, int *lda, int *k1, int *k2, int *ipiv, int *inc)
 void claswp_(int *n, rocblas_float_complex *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
 void zlaswp_(int *n, rocblas_double_complex *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
 
+void sorg2r_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *info);
+void dorg2r_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *info);
+
+void sorgqr_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
+void dorgqr_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
 
 #ifdef __cplusplus
 }
@@ -172,6 +177,37 @@ void cblas_larfb<double>(char side, char trans, char direct, char storev, rocbla
     dlarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
 }
 
+// orgqr
+template <>
+void cblas_orgqr<float>(rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+                               rocblas_int lda, float *ipiv, float *work) {
+  int info;
+  int lwork = n;
+  sorgqr_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_orgqr<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+                               rocblas_int lda, double *ipiv, double *work) {
+  int info;
+  int lwork = n;
+  dorgqr_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
+}
+
+// org2r
+template <>
+void cblas_org2r<float>(rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+                               rocblas_int lda, float *ipiv, float *work) {
+  int info;
+  sorg2r_(&m, &n, &k, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_org2r<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+                               rocblas_int lda, double *ipiv, double *work) {
+  int info;
+  dorg2r_(&m, &n, &k, A, &lda, ipiv, work, &info);
+}
 
 /*
  * ===========================================================================

@@ -32,10 +32,10 @@ rocblas_status rocsolver_larfb_impl(rocsolver_handle handle, const rocsolver_sid
 
     return rocsolver_larfb_template<T>(handle,side,trans,direct,storev, 
                                       m,n,k,
-                                      V,0,    //shifted 0 entries
+                                      V,0,      //shifted 0 entries
                                       ldv,
                                       stridev,
-                                      F,0,       //shifted 0 entries
+                                      F,0,      //shifted 0 entries
                                       ldf,
                                       stridef,
                                       A,0,      //shifted 0 entries
