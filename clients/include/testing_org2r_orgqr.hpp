@@ -123,7 +123,6 @@ rocblas_status testing_org2r_orgqr(Arguments argus) {
         }
         cpu_time_used = get_time_us() - cpu_time_used;
 
-
         // +++++++++ Error Check +++++++++++++
         // hAr contains calculated matrix, so error is hA - hAr
         for (int i = 0; i < M; i++) {
