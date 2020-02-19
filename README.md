@@ -19,6 +19,8 @@ make
 |**rocsolver_larft**        |     x  |    x   |                |                |
 |**rocsolver_larf**         |     x  |    x   |                |                |
 |**rocsolver_larfb**        |     x  |    x   |                |                |
+|**rocsolver_org2r**        |     x  |    x   |                |                |
+|**rocsolver_orgqr**        |     x  |    x   |                |                |
 
 | Lapack Function                 | single | double | single complex | double complex |
 | ------------------------------- | ------ | ------ | -------------- | -------------- |

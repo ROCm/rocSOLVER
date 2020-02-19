@@ -100,6 +100,18 @@ rocsolver_<type>larfb()
 .. doxygenfunction:: rocsolver_dlarfb
 .. doxygenfunction:: rocsolver_slarfb
 
+Orthonormal matrices
+---------------------------
+
+rocsolver_<type>org2r()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dorg2r
+.. doxygenfunction:: rocsolver_sorg2r
+
+rocsolver_<type>orgqr()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dorgqr
+.. doxygenfunction:: rocsolver_sorgqr
 
 
 

@@ -61,7 +61,7 @@ rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver
                                         const rocsolver_storev storev,
                                         const rocsolver_int m, const rocsolver_int n,
                                         const rocsolver_int k, U V, const rocblas_int shiftV, const rocsolver_int ldv, 
-                                        const rocsolver_int strideV, U F, const rocsolver_int shiftF,
+                                        const rocsolver_int strideV, T *F, const rocsolver_int shiftF,
                                         const rocsolver_int ldf, const rocsolver_int strideF, 
                                         U A, const rocsolver_int shiftA, const rocsolver_int lda, const rocsolver_int strideA,
                                         const rocsolver_int batch_count)
@@ -84,6 +84,7 @@ rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver
     hipMalloc(&oneInt, sizeof(T));
     hipMemcpy(oneInt, &one, sizeof(T), hipMemcpyHostToDevice);
 
+    T* FF = F;
     #ifdef batched
         // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
         //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
@@ -91,11 +92,8 @@ rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver
         hipMemcpy(VV, V, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
         T* AA[batch_count];
         hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
-        T* FF[batch_count];
-        hipMemcpy(FF, F, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
     #else
         T* VV = V;
-        T* FF = F;
         T* AA = A;
     #endif
 

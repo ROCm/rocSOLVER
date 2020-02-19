@@ -47,16 +47,6 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int
     rocblas_int strideW = ldw *ldw;
     hipMalloc(&work, sizeof(T)*strideW*batch_count);
 
-    #ifdef batched
-        T** dF;
-        hipMalloc(&dF,sizeof(T*) * batch_count);
-        rocblas_int blocks = (batch_count - 1)/256 + 1;
-        hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,dF,work,strideW,batch_count);
-        U F = U(dF);
-    #else
-        T* F = work;
-    #endif
-
     while (j < dim - GEQRF_GEQR2_SWITCHSIZE) {
         // Factor diagonal and subdiagonal blocks 
         jb = min(dim - j, GEQRF_GEQR2_BLOCKSIZE);  //number of columns in the block
@@ -76,7 +66,7 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int
             rocsolver_larfb_template<T>(handle,rocblas_side_left,rocblas_operation_transpose,rocsolver_forward_direction,
                                         rocsolver_column_wise,m-j, n-j-jb, jb,
                                         A, shiftA + idx2D(j,j,lda), lda, strideA,
-                                        F, 0, ldw, strideW,
+                                        work, 0, ldw, strideW,
                                         A, shiftA + idx2D(j,j+jb,lda), lda, strideA, batch_count);
 
         }
@@ -88,9 +78,6 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int
         rocsolver_geqr2_template<T>(handle, m-j, n-j, A, shiftA + idx2D(j,j,lda), lda, strideA, (ipiv + j), strideP, batch_count);
         
     hipFree(work);
-    #ifdef batched
-        hipFree(dF);
-    #endif
 
     return rocblas_status_success;
 }
