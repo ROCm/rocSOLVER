@@ -511,6 +511,116 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dorgqr(rocsolver_handle handle,
                                                    const rocsolver_int lda,
                                                    double *ipiv);
 
+/*! \brief ORGL2 generates a m-by-n Matrix Q with orthonormal rows.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The matrix Q is defined as the first m rows of the product of k Householder
+    reflectors of order n
+    
+        Q = H(k) * H(k-1) * ... * H(1)
+
+    Householder matrices H(i) are never stored, they are computed from its corresponding 
+    Householder vector v(i) and scalar ipiv_i as returned by GELQF.
+
+    @param[in]
+    handle      rocsolver_handle.
+    @param[in]
+    m           rocsolver_int. 0 <= m <= n.\n
+                The number of rows of the matrix Q. 
+    @param[in]
+    n           rocsolver_int. n >= 0.\n
+                The number of colums of the matrix Q.
+    @param[in]
+    k           rocsolver_int. 0 <= k <= m.\n
+                The number of Householder reflectors.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
+                as returned in the first k rows of matrix A of GELQF.
+                On exit, the computed matrix Q.
+    @param[in]
+    lda         rocsolver_int. lda >= m.\n
+                Specifies the leading dimension of A. 
+    @param[in]
+    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+                The scalar factors of the Householder matrices H(i).
+
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_sorgl2(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   const rocsolver_int k, 
+                                                   float *A,
+                                                   const rocsolver_int lda,
+                                                   float *ipiv);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dorgl2(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   const rocsolver_int k, 
+                                                   double *A,
+                                                   const rocsolver_int lda,
+                                                   double *ipiv);
+
+
+/*! \brief ORGLQ generates a m-by-n Matrix Q with orthonormal rows.
+
+    \details
+    (This is the blocked version of the algorithm).
+
+    The matrix Q is defined as the first m rows of the product of k Householder
+    reflectors of order n
+    
+        Q = H(k) * H(k-1) * ... * H(1)
+
+    Householder matrices H(i) are never stored, they are computed from its corresponding 
+    Householder vector v(i) and scalar ipiv_i as returned by GELQF.
+
+    @param[in]
+    handle      rocsolver_handle.
+    @param[in]
+    m           rocsolver_int. 0 <= m <= n.\n
+                The number of rows of the matrix Q. 
+    @param[in]
+    n           rocsolver_int. n >= 0.\n
+                The number of colums of the matrix Q.
+    @param[in]
+    k           rocsolver_int. 0 <= k <= m.\n
+                The number of Householder reflectors.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
+                as returned in the first k rows of matrix A of GELQF.
+                On exit, the computed matrix Q.
+    @param[in]
+    lda         rocsolver_int. lda >= m.\n
+                Specifies the leading dimension of A. 
+    @param[in]
+    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+                The scalar factors of the Householder matrices H(i).
+
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_sorglq(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   const rocsolver_int k, 
+                                                   float *A,
+                                                   const rocsolver_int lda,
+                                                   float *ipiv);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dorglq(rocsolver_handle handle,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   const rocsolver_int k, 
+                                                   double *A,
+                                                   const rocsolver_int lda,
+                                                   double *ipiv);
+
+
 
 /*
  * ===========================================================================

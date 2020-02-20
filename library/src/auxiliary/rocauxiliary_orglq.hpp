@@ -6,8 +6,8 @@
  * Copyright 2018 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef ROCLAPACK_ORGQR_HPP
-#define ROCLAPACK_ORGQR_HPP
+#ifndef ROCLAPACK_ORGLQ_HPP
+#define ROCLAPACK_ORGLQ_HPP
 
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
@@ -15,29 +15,30 @@
 #include "helpers.h"
 #include "common_device.hpp"
 #include "ideal_sizes.hpp"
-#include "../auxiliary/rocauxiliary_org2r.hpp"
+#include "../auxiliary/rocauxiliary_orgl2.hpp"
 #include "../auxiliary/rocauxiliary_larfb.hpp"
 #include "../auxiliary/rocauxiliary_larft.hpp"
 
 template <typename T, typename U>
-__global__ void set_zero_col(const rocblas_int n, const rocblas_int kk, U A,
-                         const rocsolver_int shiftA, const rocsolver_int lda, const rocsolver_int strideA)
+__global__ void set_zero_row(const rocblas_int m, const rocblas_int kk, U A,
+                             const rocsolver_int shiftA, const rocsolver_int lda, const rocsolver_int strideA)
 {
     const auto blocksizex = hipBlockDim_x;
     const auto blocksizey = hipBlockDim_y;
     const auto b = hipBlockIdx_z;
-    const auto j = hipBlockIdx_y * blocksizey + hipThreadIdx_y + kk;
-    const auto i = hipBlockIdx_x * blocksizex + hipThreadIdx_x;
+    const auto j = hipBlockIdx_y * blocksizey + hipThreadIdx_y;
+    const auto i = hipBlockIdx_x * blocksizex + hipThreadIdx_x + kk;
 
-    if (i < kk && j < n) {
+    if (i < m && j < kk) {
         T *Ap = load_ptr_batch<T>(A,shiftA,b,strideA);
         
         Ap[i + j*lda] = 0.0;
     }
 }
 
+
 template <typename T, typename U>
-rocblas_status rocsolver_orgqr_template(rocsolver_handle handle, const rocsolver_int m, 
+rocblas_status rocsolver_orglq_template(rocsolver_handle handle, const rocsolver_int m, 
                                    const rocsolver_int n, const rocsolver_int k, U A, const rocblas_int shiftA, 
                                    const rocsolver_int lda, const rocsolver_int strideA, T* ipiv, 
                                    const rocsolver_int strideP, const rocsolver_int batch_count)
@@ -51,7 +52,7 @@ rocblas_status rocsolver_orgqr_template(rocsolver_handle handle, const rocsolver
     
     // if the matrix is small, use the unblocked variant of the algorithm
     if (k <= GEQRF_GEQR2_SWITCHSIZE) 
-        return rocsolver_org2r_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count);
+        return rocsolver_orgl2_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count);
 
     //memory in GPU (workspace)
     T* work;
@@ -69,14 +70,14 @@ rocblas_status rocsolver_orgqr_template(rocsolver_handle handle, const rocsolver
     rocblas_int blocksy, blocksx;
     
     // compute the unblockled part and set to zero the 
-    // corresponding top submatrix
-    if (kk < n) {
-        blocksx = (kk - 1)/32 + 1;
-        blocksy = (n- kk - 1)/32 + 1;
-        hipLaunchKernelGGL(set_zero_col<T>,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,
-                           n,kk,A,shiftA,lda,strideA);
+    // corresponding left submatrix
+    if (kk < m) {
+        blocksx = (m - kk - 1)/32 + 1;
+        blocksy = (kk - 1)/32 + 1;
+        hipLaunchKernelGGL(set_zero_row<T>,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,
+                           m,kk,A,shiftA,lda,strideA);
         
-        rocsolver_org2r_template<T>(handle, m - kk, n - kk, k - kk, 
+        rocsolver_orgl2_template<T>(handle, m - kk, n - kk, k - kk, 
                                     A, shiftA + idx2D(kk, kk, lda), lda, 
                                     strideA, (ipiv + kk), strideP, batch_count);
     }
@@ -86,29 +87,29 @@ rocblas_status rocsolver_orgqr_template(rocsolver_handle handle, const rocsolver
         
         // first update the already computed part
         // applying the current block reflector using larft + larfb
-        if (j + jb < n) {
+        if (j + jb < m) {
             rocsolver_larft_template<T>(handle, rocsolver_forward_direction, 
-                                        rocsolver_column_wise, m-j, jb, 
+                                        rocsolver_row_wise, n-j, jb, 
                                         A, shiftA + idx2D(j,j,lda), lda, strideA, 
                                         (ipiv + j), strideP,
                                         work, ldw, strideW, batch_count);
 
-            rocsolver_larfb_template<T>(handle,rocblas_side_left,rocblas_operation_none,rocsolver_forward_direction,
-                                        rocsolver_column_wise,m-j, n-j-jb, jb,
+            rocsolver_larfb_template<T>(handle,rocblas_side_right,rocblas_operation_transpose,rocsolver_forward_direction,
+                                        rocsolver_row_wise,m-j-jb, n-j, jb,
                                         A, shiftA + idx2D(j,j,lda), lda, strideA,
                                         work, 0, ldw, strideW,
-                                        A, shiftA + idx2D(j,j+jb,lda), lda, strideA, batch_count);
+                                        A, shiftA + idx2D(j+jb,j,lda), lda, strideA, batch_count);
         }
 
         // now compute the current block and set to zero
         // the corresponding top submatrix
         if (j > 0) {
-            blocksx = (j - 1)/32 + 1;
-            blocksy = (jb - 1)/32 + 1;
-            hipLaunchKernelGGL(set_zero_col<T>,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,
+            blocksx = (jb - 1)/32 + 1;
+            blocksy = (j - 1)/32 + 1;
+            hipLaunchKernelGGL(set_zero_row<T>,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,
                                j+jb,j,A,shiftA,lda,strideA);
         }
-        rocsolver_org2r_template<T>(handle, m - j, jb, jb, 
+        rocsolver_orgl2_template<T>(handle, jb, n - j, jb, 
                                     A, shiftA + idx2D(j, j, lda), lda, 
                                     strideA, (ipiv + j), strideP, batch_count);
 

@@ -147,4 +147,10 @@ void cblas_org2r(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int 
 template <typename T>
 void cblas_orgqr(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
 
+template <typename T>
+void cblas_orgl2(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
+
+template <typename T>
+void cblas_orglq(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
+
 #endif /* _CBLAS_INTERFACE_ */

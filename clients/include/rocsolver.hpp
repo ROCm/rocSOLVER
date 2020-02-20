@@ -149,6 +149,43 @@ inline rocblas_status rocsolver_orgqr(rocblas_handle handle, rocblas_int m, rocb
   return rocsolver_dorgqr(handle, m, n, k, A, lda, Ipiv);
 }
 
+//orgl2
+
+template <typename T>
+inline rocblas_status rocsolver_orgl2(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_int k, T *A, 
+                                      rocblas_int lda, T *Ipiv);
+
+template <>
+inline rocblas_status rocsolver_orgl2(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_int k, float *A,  
+                                      rocblas_int lda, float *Ipiv) {
+  return rocsolver_sorgl2(handle, m, n, k, A, lda, Ipiv);
+}
+
+template <>
+inline rocblas_status rocsolver_orgl2(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_int k, double *A,  
+                                      rocblas_int lda, double *Ipiv) {
+  return rocsolver_dorgl2(handle, m, n, k, A, lda, Ipiv);
+}
+
+//orglq
+
+template <typename T>
+inline rocblas_status rocsolver_orglq(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_int k, T *A, 
+                                      rocblas_int lda, T *Ipiv);
+
+template <>
+inline rocblas_status rocsolver_orglq(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_int k, float *A,  
+                                      rocblas_int lda, float *Ipiv) {
+  return rocsolver_sorglq(handle, m, n, k, A, lda, Ipiv);
+}
+
+template <>
+inline rocblas_status rocsolver_orglq(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_int k, double *A,  
+                                      rocblas_int lda, double *Ipiv) {
+  return rocsolver_dorglq(handle, m, n, k, A, lda, Ipiv);
+}
+
+
 //potf2
 
 template <typename T>
