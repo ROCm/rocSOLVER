@@ -1,10 +1,11 @@
-/* ************************************************************************
- * Derived from the BSD2-licensed
- * LAPACK routine (version 3.1) --
- *     Univ. of Tennessee, Univ. of California Berkeley and NAG Ltd..
- *     November 2006
- * Copyright 2018 Advanced Micro Devices, Inc.
- * ************************************************************************ */
+/************************************************************************
+ * Derived from the BSD3-licensed
+ * LAPACK routine (version 3.7.0) --
+ *     Univ. of Tennessee, Univ. of California Berkeley,
+ *     Univ. of Colorado Denver and NAG Ltd..
+ *     December 2016
+ * Copyright 2020 Advanced Micro Devices, Inc.
+ * ***********************************************************************/
 
 #ifndef ROCLAPACK_ORG2R_HPP
 #define ROCLAPACK_ORG2R_HPP
