@@ -6,8 +6,8 @@
  * Copyright 2018 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef ROCLAPACK_ORG2R_HPP
-#define ROCLAPACK_ORG2R_HPP
+#ifndef ROCLAPACK_ORGL2_HPP
+#define ROCLAPACK_ORGL2_HPP
 
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
@@ -17,7 +17,7 @@
 #include "../auxiliary/rocauxiliary_larf.hpp"
 
 template <typename T, typename U>
-__global__ void init_ident_col(const rocblas_int m, const rocblas_int n, const rocblas_int k, U A,
+__global__ void init_ident_row(const rocblas_int m, const rocblas_int n, const rocblas_int k, U A,
                                const rocsolver_int shiftA, const rocsolver_int lda, const rocsolver_int strideA)
 {
     const auto blocksizex = hipBlockDim_x;
@@ -31,15 +31,15 @@ __global__ void init_ident_col(const rocblas_int m, const rocblas_int n, const r
         
         if (i == j) 
             Ap[i + j*lda] = 1.0;
-        else if (j > i) 
+        else if (j < i) 
             Ap[i + j*lda] = 0.0;
-        else if (j >= k)
+        else if (i >= k)
             Ap[i + j*lda] = 0.0;
     }
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_org2r_template(rocsolver_handle handle, const rocsolver_int m, 
+rocblas_status rocsolver_orgl2_template(rocsolver_handle handle, const rocsolver_int m, 
                                    const rocsolver_int n, const rocsolver_int k, U A, const rocblas_int shiftA, 
                                    const rocsolver_int lda, const rocsolver_int strideA, T* ipiv, 
                                    const rocsolver_int strideP, const rocsolver_int batch_count)
@@ -69,19 +69,19 @@ rocblas_status rocsolver_org2r_template(rocsolver_handle handle, const rocsolver
     // Initialize identity matrix (non used columns)
     rocblas_int blocksx = (m - 1)/32 + 1;
     rocblas_int blocksy = (n - 1)/32 + 1;
-    hipLaunchKernelGGL(init_ident_col<T>,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,
+    hipLaunchKernelGGL(init_ident_row<T>,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,
                         m,n,k,A,shiftA,lda,strideA);
 
     for (int j = k-1; j >= 0; --j) {
         // apply H(i) to Q(i:m,i:n) from the left
-        if (j < n - 1) {
-            rocsolver_larf_template(handle,rocblas_side_left,           //side
-                                    m - j,                              //number of rows of matrix to modify
-                                    n - j - 1,                          //number of columns of matrix to modify    
+        if (j < m - 1) {
+            rocsolver_larf_template(handle,rocblas_side_right,          //side
+                                    m - j - 1,                          //number of rows of matrix to modify
+                                    n - j,                              //number of columns of matrix to modify    
                                     A, shiftA + idx2D(j,j,lda),         //householder vector x
-                                    1, strideA,                         //inc of x
+                                    lda, strideA,                       //inc of x
                                     (ipiv + j), strideP,                //householder scalar (alpha)
-                                    A, shiftA + idx2D(j,j+1,lda),       //matrix to work on
+                                    A, shiftA + idx2D(j+1,j,lda),       //matrix to work on
                                     lda, strideA,                       //leading dimension
                                     batch_count);          
         }
@@ -90,12 +90,12 @@ rocblas_status rocsolver_org2r_template(rocsolver_handle handle, const rocsolver
         hipLaunchKernelGGL(setdiag<T>,dim3(batch_count),dim3(1),0,stream,
                             j,A,shiftA,lda,strideA,ipiv,strideP);
         
-        // update i-th column -corresponding to H(i)-
-        if (j < m - 1) {
+        // update i-th row -corresponding to H(i)-
+        if (j < n - 1) {
             for (int b=0;b<batch_count;++b) {
                 M = load_ptr_batch<T>(AA,shiftA,b,strideA);
-                rocblas_scal(handle, (m-j-1), (ipiv + b*strideP + j), 
-                            (M + idx2D(j + 1, j, lda)), 1); 
+                rocblas_scal(handle, (n-j-1), (ipiv + b*strideP + j), 
+                            (M + idx2D(j, j + 1, lda)), lda); 
             }          
         }
     }

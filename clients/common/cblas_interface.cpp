@@ -94,6 +94,13 @@ void dorg2r_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *
 void sorgqr_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
 void dorgqr_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
 
+void sorgl2_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *info);
+void dorgl2_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *info);
+
+void sorglq_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
+void dorglq_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
+
+
 #ifdef __cplusplus
 }
 #endif
@@ -208,6 +215,39 @@ void cblas_org2r<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
   int info;
   dorg2r_(&m, &n, &k, A, &lda, ipiv, work, &info);
 }
+
+// orglq
+template <>
+void cblas_orglq<float>(rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+                               rocblas_int lda, float *ipiv, float *work) {
+  int info;
+  int lwork = m;
+  sorglq_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_orglq<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+                               rocblas_int lda, double *ipiv, double *work) {
+  int info;
+  int lwork = m;
+  dorglq_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
+}
+
+// org2r
+template <>
+void cblas_orgl2<float>(rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+                               rocblas_int lda, float *ipiv, float *work) {
+  int info;
+  sorgl2_(&m, &n, &k, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_orgl2<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+                               rocblas_int lda, double *ipiv, double *work) {
+  int info;
+  dorgl2_(&m, &n, &k, A, &lda, ipiv, work, &info);
+}
+
 
 /*
  * ===========================================================================
