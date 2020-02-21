@@ -40,5 +40,31 @@ __forceinline__ __global__ void get_array(T** out, T* in, rocblas_int stride, ro
         out[b] = in + b*stride;
 }
 
+template <typename T, typename U>
+__forceinline__ __global__ void setdiag(const rocblas_int j, U A, 
+                        const rocblas_int shiftA, const rocblas_int lda, const rocblas_int strideA,
+                        T *ipiv, const rocblas_int strideP)
+{
+    const auto b = hipBlockIdx_x;
+    T *Ap = load_ptr_batch<T>(A,shiftA,b,strideA);
+    T *tau = ipiv + b*strideP;
+
+    T t = -tau[j];
+    tau[j] = t; 
+    Ap[j + j*lda] = 1.0 + t;
+}
+
+template <typename T>
+__forceinline__ __global__ void restau(const rocblas_int k, T *ipiv, const rocblas_int strideP)
+{
+    const auto blocksizex = hipBlockDim_x;
+    const auto b = hipBlockIdx_y;
+    T *tau = ipiv + b*strideP;
+    const auto i = hipBlockIdx_x * blocksizex + hipThreadIdx_x;
+
+    if (i < k)
+        tau[i] = -tau[i];
+}
+
 
 #endif
