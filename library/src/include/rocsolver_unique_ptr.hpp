@@ -1,3 +1,7 @@
+/* ************************************************************************
+ * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * ************************************************************************ */
+
 #ifndef GUARD_ROCBLAS_MANAGE_PTR_HPP
 #define GUARD_ROCBLAS_MANAGE_PTR_HPP
 
