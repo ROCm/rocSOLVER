@@ -1,6 +1,7 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
+
 #ifndef HELPERS_H
 #define HELPERS_H
 

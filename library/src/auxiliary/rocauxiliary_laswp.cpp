@@ -1,3 +1,7 @@
+/* ************************************************************************
+ * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * ************************************************************************ */
+
 #include "rocauxiliary_laswp.hpp"
 
 template <typename T, typename U>
