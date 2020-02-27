@@ -436,7 +436,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarfb(rocsolver_handle handle,
                 Specifies the leading dimension of A. 
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i).
+                The scalar factors of the Householder matrices H(i) as returned by GEQRF.
 
     ****************************************************************************/
 
@@ -490,7 +490,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dorg2r(rocsolver_handle handle,
                 Specifies the leading dimension of A. 
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i).
+                The scalar factors of the Householder matrices H(i) as returned by GEQRF.
 
     ****************************************************************************/
 
@@ -544,7 +544,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dorgqr(rocsolver_handle handle,
                 Specifies the leading dimension of A. 
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i).
+                The scalar factors of the Householder matrices H(i) as returned by GELQF.
 
     ****************************************************************************/
 
@@ -599,7 +599,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dorgl2(rocsolver_handle handle,
                 Specifies the leading dimension of A. 
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i).
+                The scalar factors of the Householder matrices H(i) as returned by GELQF.
 
     ****************************************************************************/
 
@@ -627,18 +627,18 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dorglq(rocsolver_handle handle,
     
         Q = H(1) * H(2) * ... * H(k)
 
-    If m < k, Q is defined as the product of m Householder reflectors of order m
+    If m < k, Q is defined as the product of Householder reflectors of order m
 
-        Q = H(1) * H(2) * ... * H(m)
+        Q = H(1) * H(2) * ... * H(m-1)
 
     On the other hand, if storev is row-wise, then the matrix Q has orthonormal rows. If n > k, Q is defined as the
     first m rows of the product of k Householder reflectors of order n
 
         Q = H(k) * H(k-1) * ... * H(1)
     
-    If n <= k, Q is defined as the product of n Householder reflectors of order n
+    If n <= k, Q is defined as the product of Householder reflectors of order n
 
-        Q = H(n) * H(n-1) * ... * H(1)
+        Q = H(n-1) * H(n-1) * ... * H(1)
 
     The Householder matrices H(i) are never stored, they are computed from its corresponding 
     Householder vector v(i) and scalar ipiv_i as returned by GEBRD.
@@ -670,7 +670,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dorglq(rocsolver_handle handle,
                 Specifies the leading dimension of A. 
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension min(m,k) if column-wise, or min(n,k) if row-wise.\n
-                The scalar factors of the Householder matrices H(i).
+                The scalar factors of the Householder matrices H(i) as returned by GEBRD.
 
     ****************************************************************************/
 

@@ -23,6 +23,7 @@ make
 |**rocsolver_orgqr**        |     x  |    x   |                |                |
 |**rocsolver_orgl2**        |     x  |    x   |                |                |
 |**rocsolver_orglq**        |     x  |    x   |                |                |
+|**rocsolver_orgbr**        |     x  |    x   |                |                |
 
 | Lapack Function                 | single | double | single complex | double complex |
 | ------------------------------- | ------ | ------ | -------------- | -------------- |
