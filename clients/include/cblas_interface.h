@@ -153,4 +153,10 @@ void cblas_orgl2(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int 
 template <typename T>
 void cblas_orglq(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
 
+template <typename T>
+void cblas_orgbr(char storev, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work, rocblas_int size_w);
+
+template <typename T>
+void cblas_gebrd(rocblas_int m, rocblas_int n, T *A, rocblas_int lda, T *D, T *E, T *tauq, T *taup, T *work, rocblas_int size_w);
+
 #endif /* _CBLAS_INTERFACE_ */
