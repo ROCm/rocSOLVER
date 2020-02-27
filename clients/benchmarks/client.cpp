@@ -28,6 +28,7 @@
 #include "testing_laswp.hpp"
 #include "testing_org2r_orgqr.hpp"
 #include "testing_orgl2_orglq.hpp"
+#include "testing_orgbr.hpp"
 #include "utility.h"
 
 namespace po = boost::program_options;
@@ -486,6 +487,12 @@ int main(int argc, char *argv[])
       testing_orgl2_orglq<float,1>(argus);
     else if (precision == 'd')
       testing_orgl2_orglq<double,1>(argus);
+  } 
+  else if (function == "orgbr") {
+    if (precision == 's')
+      testing_orgbr<float>(argus);
+    else if (precision == 'd')
+      testing_orgbr<double>(argus);
   } 
   else {
     printf("Invalid value for --function \n");

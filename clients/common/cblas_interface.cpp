@@ -100,6 +100,13 @@ void dorgl2_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *
 void sorglq_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
 void dorglq_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
 
+void sorgbr_(char *vect, int *m, int *n, int *k, float *A, int *lda, float *Ipiv, float *work, int *size_w, int *info);
+void dorgbr_(char *vect, int *m, int *n, int *k, double *A, int *lda, double *Ipiv, double *work, int *size_w, int *info);
+
+void sgebrd_(int *m, int *n, float *A, int *lda, float *D, float *E, float *tauq, float *taup, float *work, int *size_w, int *info);
+void dgebrd_(int *m, int *n, double *A, int *lda, double *D, double *E, double *tauq, double *taup, double *work, int *size_w, int *info);
+
+
 
 #ifdef __cplusplus
 }
@@ -1020,3 +1027,43 @@ void cblas_gelq2<double>(rocblas_int m, rocblas_int n, double *A,
   dgelq2_(&m, &n, A, &lda, ipiv, work, &info);
 }
 
+
+//orgbr
+template <>
+void cblas_orgbr<float>(char storev, rocblas_int m, rocblas_int n, rocblas_int k, float *A, rocblas_int lda, float *Ipiv, float *work, rocblas_int size_w)
+{
+    int info;
+    char vect;
+    if (storev == 'C')
+        vect = 'Q';
+    else
+        vect = 'P';
+    sorgbr_(&vect, &m, &n, &k, A, &lda, Ipiv, work, &size_w, &info);
+}
+
+template <>
+void cblas_orgbr<double>(char storev,rocblas_int m, rocblas_int n, rocblas_int k, double *A, rocblas_int lda, double *Ipiv, double *work, rocblas_int size_w)
+{
+    int info;
+    char vect;
+    if (storev == 'C')
+        vect = 'Q';
+    else
+        vect = 'P';
+    dorgbr_(&vect, &m, &n, &k, A, &lda, Ipiv, work, &size_w, &info);
+}
+
+//gebrd
+template <>
+void cblas_gebrd<float>(rocblas_int m, rocblas_int n, float *A, rocblas_int lda, float *D, float *E, float *tauq, float *taup, float *work, rocblas_int size_w)
+{
+    int info;
+    sgebrd_(&m, &n, A, &lda, D, E, tauq, taup, work, &size_w, &info);
+}
+
+template <>
+void cblas_gebrd<double>(rocblas_int m, rocblas_int n, double *A, rocblas_int lda, double *D, double *E, double *tauq, double *taup, double *work, rocblas_int size_w)
+{
+    int info;
+    dgebrd_(&m, &n, A, &lda, D, E, tauq, taup, work, &size_w, &info);
+}

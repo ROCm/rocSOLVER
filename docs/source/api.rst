@@ -123,6 +123,11 @@ rocsolver_<type>orglq()
 .. doxygenfunction:: rocsolver_dorglq
 .. doxygenfunction:: rocsolver_sorglq
 
+rocsolver_<type>orgbr()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dorgbr
+.. doxygenfunction:: rocsolver_sorgbr
+
 
 Lapack Functions
 ==================
