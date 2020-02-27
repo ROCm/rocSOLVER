@@ -619,6 +619,78 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dorglq(rocsolver_handle handle,
                                                    const rocsolver_int lda,
                                                    double *ipiv);
 
+/*! \brief ORGBR generates a m-by-n Matrix Q with orthonormal rows or columns.
+
+    \details
+    If storev is column-wise, then the matrix Q has orthonormal columns. If m >= k, Q is defined as the first 
+    n columns of the product of k Householder reflectors of order m
+    
+        Q = H(1) * H(2) * ... * H(k)
+
+    If m < k, Q is defined as the product of m Householder reflectors of order m
+
+        Q = H(1) * H(2) * ... * H(m)
+
+    On the other hand, if storev is row-wise, then the matrix Q has orthonormal rows. If n > k, Q is defined as the
+    first m rows of the product of k Householder reflectors of order n
+
+        Q = H(k) * H(k-1) * ... * H(1)
+    
+    If n <= k, Q is defined as the product of n Householder reflectors of order n
+
+        Q = H(n) * H(n-1) * ... * H(1)
+
+    The Householder matrices H(i) are never stored, they are computed from its corresponding 
+    Householder vector v(i) and scalar ipiv_i as returned by GEBRD.
+
+    @param[in]
+    handle      rocsolver_handle.
+    @param[in]
+    storev      rocsolver_storev.\n
+                Specifies whether to work column-wise or row-wise.
+    @param[in]
+    m           rocsolver_int. m >= 0.\n
+                The number of rows of the matrix Q. 
+                If row-wise, then min(n,k) <= m <= n.
+    @param[in]
+    n           rocsolver_int. n >= 0.\n
+                The number of colums of the matrix Q. 
+                If column-wise, then min(m,k) <= n <= m. 
+    @param[in]
+    k           rocsolver_int. k >= 0.\n
+                The number of columns (if storev is colum-wise) or rows (if row-wise) of the
+                original matrix reduced by GEBRD.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the i-th column (or row) has the Householder vector v(i)
+                as returned by GEBRD.
+                On exit, the computed matrix Q.
+    @param[in]
+    lda         rocsolver_int. lda >= m.\n
+                Specifies the leading dimension of A. 
+    @param[in]
+    ipiv        pointer to type. Array on the GPU of dimension min(m,k) if column-wise, or min(n,k) if row-wise.\n
+                The scalar factors of the Householder matrices H(i).
+
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_sorgbr(rocsolver_handle handle,
+                                                   const rocsolver_storev storev,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   const rocsolver_int k, 
+                                                   float *A,
+                                                   const rocsolver_int lda,
+                                                   float *ipiv);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dorgbr(rocsolver_handle handle,
+                                                   const rocsolver_storev storev,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   const rocsolver_int k, 
+                                                   double *A,
+                                                   const rocsolver_int lda,
+                                                   double *ipiv);
 
 
 /*
