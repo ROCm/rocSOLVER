@@ -158,9 +158,6 @@ endif()
 target_link_libraries( rocsolver-test PRIVATE roc::rocblas ) #${ROCBLAS_LIBRARY})
 #target_link_libraries( rocsolver-test PRIVATE ${ROCM_PATH}/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
 
-
-get_target_property( HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE )
-
 if( CUDA_FOUND )
   target_include_directories( rocsolver-test
     PRIVATE
@@ -171,7 +168,7 @@ if( CUDA_FOUND )
   target_link_libraries( rocsolver-test PRIVATE ${CUDA_LIBRARIES} )
 else( )
   target_compile_definitions( rocsolver-test PRIVATE __HIP_PLATFORM_HCC__ )
-  target_link_libraries( rocsolver-test PRIVATE ${HIPHCC_LOCATION} )
+  target_link_libraries( rocsolver-test PRIVATE hip::device )
 endif( )
 
 #target_link_libraries( rocsolver-test PRIVATE ${ROCM_PATH}/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
