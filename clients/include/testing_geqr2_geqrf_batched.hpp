@@ -131,7 +131,7 @@ rocblas_status testing_geqr2_geqrf_batched(Arguments argus) {
         cpu_time_used = get_time_us();
         if(geqrf) {
             for (int b = 0; b < batch_count; ++b) 
-                cblas_geqrf<T>(M, N, hA[b].data(), lda, (hIpiv.data() + b*stridep), hw.data());
+                cblas_geqrf<T>(M, N, hA[b].data(), lda, (hIpiv.data() + b*stridep), hw.data(), N);
         }
         else {
             for (int b = 0; b < batch_count; ++b) 

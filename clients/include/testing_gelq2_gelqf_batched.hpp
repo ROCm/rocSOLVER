@@ -131,7 +131,7 @@ rocblas_status testing_gelq2_gelqf_batched(Arguments argus) {
         cpu_time_used = get_time_us();
         if(gelqf) {
             for (int b = 0; b < batch_count; ++b) 
-                cblas_gelqf<T>(M, N, hA[b].data(), lda, (hIpiv.data() + b*stridep), hw.data());
+                cblas_gelqf<T>(M, N, hA[b].data(), lda, (hIpiv.data() + b*stridep), hw.data(), M);
         }
         else {
             for (int b = 0; b < batch_count; ++b) 
