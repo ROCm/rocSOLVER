@@ -39,32 +39,32 @@ rocblas_status rocsolver_orm2r_template(rocsolver_handle handle, const rocsolver
     // determine limits and indices
     bool left = (side == rocblas_side_left);
     bool transpose = (trans == rocblas_operation_transpose);
-    int in, step, ncol, nrow, ic, jc;
+    int start, step, ncol, nrow, ic, jc;
     if (left) {
         ncol = n;
         jc = 0;
         if (transpose) {
-            in = -1;
+            start = -1;
             step = 1;
         } else {
-            in = k;
+            start = k;
             step = -1;
         }
     } else {
         nrow = m;
         ic = 0;
         if (transpose) {
-            in = k;
+            start = k;
             step = -1;
         } else {
-            in = -1;
+            start = -1;
             step = 1;
         }
     }
 
     int i;
     for (int j = 1; j <= k; ++j) {
-        i = in + step*j;    // current householder vector
+        i = start + step*j;    // current householder vector
         if (left) {
             nrow = m - i;
             ic = i;
