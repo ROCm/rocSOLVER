@@ -27,6 +27,7 @@
 #include "testing_larfb.hpp"
 #include "testing_laswp.hpp"
 #include "testing_org2r_orgqr.hpp"
+#include "testing_orm2r_ormqr.hpp"
 #include "testing_orgl2_orglq.hpp"
 #include "testing_orgbr.hpp"
 #include "utility.h"
@@ -475,6 +476,18 @@ int main(int argc, char *argv[])
       testing_org2r_orgqr<float,1>(argus);
     else if (precision == 'd')
       testing_org2r_orgqr<double,1>(argus);
+  } 
+  else if (function == "orm2r") {
+    if (precision == 's')
+      testing_orm2r_ormqr<float,0>(argus);
+    else if (precision == 'd')
+      testing_orm2r_ormqr<double,0>(argus);
+  } 
+  else if (function == "ormqr") {
+    if (precision == 's')
+      testing_orm2r_ormqr<float,1>(argus);
+    else if (precision == 'd')
+      testing_orm2r_ormqr<double,1>(argus);
   } 
   else if (function == "orgl2") {
     if (precision == 's')

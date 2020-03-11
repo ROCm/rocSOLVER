@@ -130,13 +130,13 @@ template <typename T>
 void cblas_geqr2(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work);
 
 template <typename T>
-void cblas_geqrf(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work);
+void cblas_geqrf(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work, rocblas_int sizeW);
 
 template <typename T>
 void cblas_gelq2(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work);
 
 template <typename T>
-void cblas_gelqf(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work);
+void cblas_gelqf(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work, rocblas_int sizeW);
 
 template <typename T>
 void cblas_laswp(rocblas_int n, T* A, rocblas_int lda, rocblas_int k1, rocblas_int k2, rocblas_int *ipiv, rocblas_int inc);
@@ -158,5 +158,14 @@ void cblas_orgbr(char storev, rocblas_int m, rocblas_int n, rocblas_int k, T *A,
 
 template <typename T>
 void cblas_gebrd(rocblas_int m, rocblas_int n, T *A, rocblas_int lda, T *D, T *E, T *tauq, T *taup, T *work, rocblas_int size_w);
+
+template <typename T>
+void cblas_orm2r(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
+                 T *C, rocblas_int ldc, T *work);
+
+template <typename T>
+void cblas_ormqr(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
+                 T *C, rocblas_int ldc, T *work, rocblas_int sizeW);
+
 
 #endif /* _CBLAS_INTERFACE_ */

@@ -70,5 +70,27 @@ __forceinline__ __global__ void restau(const rocblas_int k, T *ipiv, const rocbl
         tau[i] = -tau[i];
 }
 
+template <typename T, typename U>
+__forceinline__ __global__ void set_one_diag(T* diag, U A, const rocblas_int shifta, const rocblas_int stridea)
+{
+    int b = hipBlockIdx_x;
+
+    T* d = load_ptr_batch<T>(A,shifta,b,stridea);
+    diag[b] = d[0];
+    d[0] = T(1);
+}
+
+template <typename T, typename U>
+__forceinline__ __global__ void restore_diag(T* diag, U A, const rocblas_int shifta, const rocblas_int stridea)
+{
+    int b = hipBlockIdx_x;
+
+    T* d = load_ptr_batch<T>(A,shifta,b,stridea);
+
+    d[0] = diag[b];
+}
+
+
+
 
 #endif

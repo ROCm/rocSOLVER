@@ -203,6 +203,49 @@ inline rocblas_status rocsolver_orgbr(rocblas_handle handle, rocsolver_storev st
   return rocsolver_dorgbr(handle, storev, m, n, k, A, lda, Ipiv);
 }
 
+//orm2r
+
+template <typename T>
+inline rocblas_status rocsolver_orm2r(rocblas_handle handle, rocblas_side side, rocblas_operation trans, 
+                                      rocblas_int m, rocblas_int n, rocblas_int k, T *A, 
+                                      rocblas_int lda, T *Ipiv, T *C, rocblas_int ldc);
+
+template <>
+inline rocblas_status rocsolver_orm2r(rocblas_handle handle, rocblas_side side, rocblas_operation trans,
+                                      rocblas_int m, rocblas_int n, rocblas_int k, float *A,  
+                                      rocblas_int lda, float *Ipiv, float *C, rocblas_int ldc) {
+  return rocsolver_sorm2r(handle, side, trans, m, n, k, A, lda, Ipiv, C, ldc);
+}
+
+template <>
+inline rocblas_status rocsolver_orm2r(rocblas_handle handle, rocblas_side side, rocblas_operation trans,
+                                      rocblas_int m, rocblas_int n, rocblas_int k, double *A,  
+                                      rocblas_int lda, double *Ipiv, double *C, rocblas_int ldc) {
+  return rocsolver_dorm2r(handle, side, trans, m, n, k, A, lda, Ipiv, C, ldc);
+}
+
+//ormqr
+
+template <typename T>
+inline rocblas_status rocsolver_ormqr(rocblas_handle handle, rocblas_side side, rocblas_operation trans, 
+                                      rocblas_int m, rocblas_int n, rocblas_int k, T *A, 
+                                      rocblas_int lda, T *Ipiv, T *C, rocblas_int ldc);
+
+template <>
+inline rocblas_status rocsolver_ormqr(rocblas_handle handle, rocblas_side side, rocblas_operation trans,
+                                      rocblas_int m, rocblas_int n, rocblas_int k, float *A,  
+                                      rocblas_int lda, float *Ipiv, float *C, rocblas_int ldc) {
+  return rocsolver_sormqr(handle, side, trans, m, n, k, A, lda, Ipiv, C, ldc);
+}
+
+template <>
+inline rocblas_status rocsolver_ormqr(rocblas_handle handle, rocblas_side side, rocblas_operation trans,
+                                      rocblas_int m, rocblas_int n, rocblas_int k, double *A,  
+                                      rocblas_int lda, double *Ipiv, double *C, rocblas_int ldc) {
+  return rocsolver_dormqr(handle, side, trans, m, n, k, A, lda, Ipiv, C, ldc);
+}
+
+
 //potf2
 
 template <typename T>

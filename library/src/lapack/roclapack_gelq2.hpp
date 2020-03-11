@@ -21,26 +21,6 @@
 #include "../auxiliary/rocauxiliary_larf.hpp"
 
 template <typename T, typename U>
-__global__ void set_one_diag(T* diag, U A, const rocblas_int shifta, const rocblas_int stridea)
-{
-    int b = hipBlockIdx_x;
-
-    T* d = load_ptr_batch<T>(A,shifta,b,stridea);
-    diag[b] = d[0];
-    d[0] = T(1);
-}
-
-template <typename T, typename U>
-__global__ void restore_diag(T* diag, U A, const rocblas_int shifta, const rocblas_int stridea)
-{
-    int b = hipBlockIdx_x;
-
-    T* d = load_ptr_batch<T>(A,shifta,b,stridea);
-
-    d[0] = diag[b];
-}
-
-template <typename T, typename U>
 rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                         rocblas_int const strideA, T* ipiv,  

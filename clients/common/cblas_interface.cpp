@@ -90,13 +90,16 @@ void zlaswp_(int *n, rocblas_double_complex *A, int *lda, int *k1, int *k2, int 
 
 void sorg2r_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *info);
 void dorg2r_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *info);
-
 void sorgqr_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
 void dorgqr_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
 
+void sorm2r_(char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *info);
+void dorm2r_(char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *info);
+void sormqr_(char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *sizeW, int *info);
+void dormqr_(char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *sizeW, int *info);
+
 void sorgl2_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *info);
 void dorgl2_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *info);
-
 void sorglq_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
 void dorglq_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
 
@@ -223,6 +226,62 @@ void cblas_org2r<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
   dorg2r_(&m, &n, &k, A, &lda, ipiv, work, &info);
 }
 
+// ormqr
+template <>
+void cblas_ormqr<float>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+                               rocblas_int lda, float *ipiv, float *C, rocblas_int ldc, float *work, rocblas_int lwork) {
+  int info;
+  char sideC = 'R', transC = 'T';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  sormqr_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &lwork, &info);
+}
+
+template <>
+void cblas_ormqr<double>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+                               rocblas_int lda, double *ipiv, double *C, rocblas_int ldc, double *work, rocblas_int lwork) {
+  int info;
+  char sideC = 'R', transC = 'T';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  dormqr_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &lwork, &info);
+}
+
+// orm2r
+template <>
+void cblas_orm2r<float>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+                               rocblas_int lda, float *ipiv, float *C, rocblas_int ldc, float *work) {
+  int info;
+  char sideC = 'R', transC = 'T';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  sorm2r_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &info);
+}
+
+template <>
+void cblas_orm2r<double>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+                               rocblas_int lda, double *ipiv, double *C, rocblas_int ldc, double *work) {
+  int info;
+  char sideC = 'R', transC = 'T';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  dorm2r_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &info);
+}
+
+
+
 // orglq
 template <>
 void cblas_orglq<float>(rocblas_int m, rocblas_int n, rocblas_int k, float *A,
@@ -240,7 +299,7 @@ void cblas_orglq<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
   dorglq_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
 }
 
-// org2r
+// orgl2
 template <>
 void cblas_orgl2<float>(rocblas_int m, rocblas_int n, rocblas_int k, float *A,
                                rocblas_int lda, float *ipiv, float *work) {
@@ -966,17 +1025,15 @@ rocblas_int cblas_getrs<rocblas_double_complex>(
 // geqrf
 template <>
 void cblas_geqrf<float>(rocblas_int m, rocblas_int n, float *A,
-                               rocblas_int lda, float *ipiv, float *work) {
+                        rocblas_int lda, float *ipiv, float *work, rocblas_int lwork) {
   int info;
-  int lwork = n;
   sgeqrf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
 }
 
 template <>
 void cblas_geqrf<double>(rocblas_int m, rocblas_int n, double *A,
-                               rocblas_int lda, double *ipiv, double *work) {
+                         rocblas_int lda, double *ipiv, double *work, rocblas_int lwork) {
   int info;
-  int lwork = n;
   dgeqrf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
 }
 
@@ -998,17 +1055,15 @@ void cblas_geqr2<double>(rocblas_int m, rocblas_int n, double *A,
 // gelqf
 template <>
 void cblas_gelqf<float>(rocblas_int m, rocblas_int n, float *A,
-                               rocblas_int lda, float *ipiv, float *work) {
+                        rocblas_int lda, float *ipiv, float *work, rocblas_int lwork) {
   int info;
-  int lwork = m;
   sgelqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
 }
 
 template <>
 void cblas_gelqf<double>(rocblas_int m, rocblas_int n, double *A,
-                               rocblas_int lda, double *ipiv, double *work) {
+                         rocblas_int lda, double *ipiv, double *work, rocblas_int lwork) {
   int info;
-  int lwork = m;
   dgelqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
 }
 

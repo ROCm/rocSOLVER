@@ -110,7 +110,7 @@ rocblas_status testing_geqr2_geqrf(Arguments argus) {
         //CPU lapack
         cpu_time_used = get_time_us();
         if(geqrf) {
-            cblas_geqrf<T>(M, N, hA.data(), lda, hIpiv.data(), hw.data());
+            cblas_geqrf<T>(M, N, hA.data(), lda, hIpiv.data(), hw.data(), N);
         }
         else {
             cblas_geqr2<T>(M, N, hA.data(), lda, hIpiv.data(), hw.data());

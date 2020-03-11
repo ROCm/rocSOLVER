@@ -86,7 +86,7 @@ rocblas_status testing_orgl2_orglq(Arguments argus) {
         }
     }
     //Compute QR factorization
-    cblas_gelqf<T>(M, N, hA.data(), lda, hIpiv.data(), hW.data()); 
+    cblas_gelqf<T>(M, N, hA.data(), lda, hIpiv.data(), hW.data(), M); 
 
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(T) * size_A, hipMemcpyHostToDevice));

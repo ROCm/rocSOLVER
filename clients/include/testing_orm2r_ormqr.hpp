@@ -28,69 +28,120 @@
 
 using namespace std;
 
-template <typename T, int orgqr> 
-rocblas_status testing_org2r_orgqr(Arguments argus) {
+template <typename T, int ormqr> 
+rocblas_status testing_orm2r_ormqr(Arguments argus) {
     rocblas_int M = argus.M;
     rocblas_int N = argus.N;
     rocblas_int K = argus.K;
     rocblas_int lda = argus.lda;
+    rocblas_int ldc = argus.ldc;
     int hot_calls = argus.iters;
+    char sideC = argus.side_option;
+    char transA = argus.transA_option;
 
     std::unique_ptr<rocblas_test::handle_struct> unique_ptr_handle(new rocblas_test::handle_struct);
     rocblas_handle handle = unique_ptr_handle->handle;
 
+    bool invalid = false;
+    rocblas_side side;
+    rocblas_operation trans;
+    rocblas_int size_W, order;
+
+    if (M < 1 || N < 1 || K < 1 || ldc < M) 
+        invalid = true;
+
+    if (sideC == 'L') {
+        side = rocblas_side_left;
+        order = M;
+        size_W = max(N,K);
+        if (K > M || lda < M)
+            invalid = true;
+    } else if (sideC == 'R') {
+        side = rocblas_side_right;
+        order = N;
+        size_W = max(M,K);
+        if (K > N || lda < N)
+            invalid = true;
+    } else {
+        throw runtime_error("Unsoported side option");
+    }
+
+    if (transA == 'N') {
+        trans = rocblas_operation_none;
+    } else if (transA == 'T') {
+        trans = rocblas_operation_transpose;
+    } else {
+        throw runtime_error("Unsupported operation option.");
+    } 
+
     // check invalid size and quick return
-    if (M < 1 || N < 1 || N > M || K < 1 || K > N || lda < M) {
+    if (invalid) {
         auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
         T *dA = (T *)dA_managed.get();
 
+        auto dC_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
+        T *dC = (T *)dC_managed.get();
+        
         auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
         T *dIpiv = (T *)dIpiv_managed.get();
 
-        if (!dA || !dIpiv) {
+        if (!dA || !dC || !dIpiv) {
             PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
             return rocblas_status_memory_error;
         }
         
-        if(orgqr) {
-            return rocsolver_orgqr<T>(handle, M, N, K, dA, lda, dIpiv);
+        if(ormqr) {
+            return rocsolver_ormqr<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
         }
         else { 
-            return rocsolver_org2r<T>(handle, M, N, K, dA, lda, dIpiv);
+            return rocsolver_orm2r<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
         }
     }
 
-    rocblas_int size_A = lda * N;
+    rocblas_int size_A = lda * K;
+    rocblas_int size_C = ldc * N;
+    rocblas_int size_P = K;
 
     // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory
     vector<T> hA(size_A);
-    vector<T> hAr(size_A);
-    vector<T> hW(N);
-    vector<T> hIpiv(N);
+    vector<T> hC(size_C);
+    vector<T> hCr(size_C);
+    vector<T> hW(size_W);
+    vector<T> hIpiv(size_P);
 
     auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)*size_A), rocblas_test::device_free};
     T *dA = (T *)dA_managed.get();
-    auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)*N), rocblas_test::device_free};
+    auto dC_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)*size_C), rocblas_test::device_free};
+    T *dC = (T *)dC_managed.get();
+    auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)*size_P), rocblas_test::device_free};
     T *dIpiv = (T *)dIpiv_managed.get();
 
-    if ((size_A > 0 && !dA) || !dIpiv) {
+    if (!dA || !dC || !dIpiv) {
         PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
         return rocblas_status_memory_error;
     }
 
     //initialize full random data 
-    rocblas_init<T>(hA.data(), M, N, lda);
-    for (int i = 0; i < M; i++) {
-        for (int j = 0; j < N; j++) {
+    rocblas_init<T>(hA.data(), order, K, lda);
+    for (int i = 0; i < order; i++) {
+        for (int j = 0; j < K; j++) {
             hA[i + j*lda] = (hA[i + j*lda] - 5.0) / 5.0;    //entries in [-1, 1]
         }
     }
+    rocblas_init<T>(hC.data(), M, N, ldc);
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < N; j++) {
+            hC[i + j*ldc] = (hC[i + j*ldc] - 5.0) / 5.0;    //entries in [-1, 1]
+        }
+    }
+    
     //Compute QR factorization
-    cblas_geqrf<T>(M, N, hA.data(), lda, hIpiv.data(), hW.data(), N); 
+    cblas_geqrf<T>(order, K, hA.data(), lda, hIpiv.data(), hW.data(), size_W); 
 
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(T) * size_A, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dIpiv, hIpiv.data(), sizeof(T) * K, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dC, hC.data(), sizeof(T) * size_C, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dIpiv, hIpiv.data(), sizeof(T) * size_P, hipMemcpyHostToDevice));
 
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
@@ -104,39 +155,39 @@ rocblas_status testing_org2r_orgqr(Arguments argus) {
     =================================================================== */  
     if (argus.unit_check || argus.norm_check) {
         //GPU lapack
-        if(orgqr) {
-            CHECK_ROCBLAS_ERROR(rocsolver_orgqr<T>(handle, M, N, K, dA, lda, dIpiv));
+        if(ormqr) {
+            CHECK_ROCBLAS_ERROR(rocsolver_ormqr<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc));
         }
         else {
-            CHECK_ROCBLAS_ERROR(rocsolver_org2r<T>(handle, M, N, K, dA, lda, dIpiv));
+            CHECK_ROCBLAS_ERROR(rocsolver_orm2r<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc));
         }   
         //copy output from device to cpu
-        CHECK_HIP_ERROR(hipMemcpy(hAr.data(), dA, sizeof(T) * size_A, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hCr.data(), dC, sizeof(T) * size_C, hipMemcpyDeviceToHost));
 
         //CPU lapack
         cpu_time_used = get_time_us();
-        if(orgqr) {
-            cblas_orgqr<T>(M, N, K, hA.data(), lda, hIpiv.data(), hW.data());
+        if(ormqr) {
+            cblas_ormqr<T>(side, trans, M, N, K, hA.data(), lda, hIpiv.data(), hC.data(), ldc, hW.data(), size_W);
         }
         else {
-            cblas_org2r<T>(M, N, K, hA.data(), lda, hIpiv.data(), hW.data());
+            cblas_orm2r<T>(side, trans, M, N, K, hA.data(), lda, hIpiv.data(), hC.data(), ldc, hW.data());
         }
         cpu_time_used = get_time_us() - cpu_time_used;
 
         // +++++++++ Error Check +++++++++++++
-        // hAr contains calculated matrix, so error is hA - hAr
+        // hCr contains calculated matrix, so error is hC - hCr
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                diff = abs(hA[i + j * lda]);
+                diff = abs(hC[i + j * ldc]);
                 max_val = max_val > diff ? max_val : diff;
-                diff = abs(hAr[i + j * lda] - hA[i + j * lda]);
+                diff = abs(hCr[i + j * ldc] - hC[i + j * ldc]);
                 max_err_1 = max_err_1 > diff ? max_err_1 : diff;
             }
         }
         max_err_1 = max_err_1 / max_val;
 
         if(argus.unit_check)
-            getf2_err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
+            err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
     }
  
 
@@ -144,31 +195,31 @@ rocblas_status testing_org2r_orgqr(Arguments argus) {
         // GPU rocBLAS
         int cold_calls = 2;
 
-        if(orgqr) {
+        if(ormqr) {
             for(int iter = 0; iter < cold_calls; iter++)
-                rocsolver_orgqr<T>(handle, M, N, K, dA, lda, dIpiv);
+                rocsolver_ormqr<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
             gpu_time_used = get_time_us();
             for(int iter = 0; iter < hot_calls; iter++)
-                rocsolver_orgqr<T>(handle, M, N, K, dA, lda, dIpiv);
+                rocsolver_ormqr<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
             gpu_time_used = (get_time_us() - gpu_time_used) / hot_calls;       
         }
         else {
             for(int iter = 0; iter < cold_calls; iter++)
-                rocsolver_org2r<T>(handle, M, N, K, dA, lda, dIpiv);
+                rocsolver_orm2r<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
             gpu_time_used = get_time_us();
             for(int iter = 0; iter < hot_calls; iter++)
-                rocsolver_org2r<T>(handle, M, N, K, dA, lda, dIpiv);
+                rocsolver_orm2r<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
             gpu_time_used = (get_time_us() - gpu_time_used) / hot_calls;       
         }
 
         // only norm_check return an norm error, unit check won't return anything
-        cout << "M , N , K , lda , gpu_time(us) , cpu_time(us)";
+        cout << "side, trans, M , N , K , lda , ldc , gpu_time(us) , cpu_time(us)";
 
         if (argus.norm_check)
             cout << " , norm_error_host_ptr";
 
         cout << endl;
-        cout << M << " , " << N << " , " << K << " , " << lda << " , " << gpu_time_used << " , "<< cpu_time_used;
+        cout << sideC << " , " << transA << " , " << M << " , " << N << " , " << K << " , " << lda << " , " << ldc << " , " << gpu_time_used << " , "<< cpu_time_used;
 
         if (argus.norm_check)
             cout << " , " << max_err_1;
