@@ -1,58 +1,92 @@
 # rocSOLVER
 
-rocSOLVER is a work-in-progress implementation of a subset of LAPACK functionality on the ROCm platform. It requires rocBLAS as a companion GPU BLAS implementation.
+rocSOLVER is a work-in-progress implementation of a subset of LAPACK functionality on the ROCm platform. 
 
-# Build
-Requires `cmake` and `ROCm` including `hcc` and `rocBLAS` to be installed.
+# Documentation
 
-```bash
-mkdir build && cd build
-CXX=/opt/rocm/bin/hcc cmake ..
-make
-```
-# Implemented functions in LAPACK notation
+For a detailed description of the rocSOLVER library, its implementes routines, the installation process and user guide, see the
+`rocSOLVER documentation <https://rocsolver.readthedocs.io/en/latest>`_.
 
-| Lapack Auxiliary Function | single | double | single complex | double complex |
-| ------------------------- | ------ | ------ | -------------- | -------------- |
-|**rocsolver_laswp**        |     x  |    x   |      x         |   x            |
-|**rocsolver_larfg**        |     x  |    x   |                |                |
-|**rocsolver_larft**        |     x  |    x   |                |                |
-|**rocsolver_larf**         |     x  |    x   |                |                |
-|**rocsolver_larfb**        |     x  |    x   |                |                |
-|**rocsolver_org2r**        |     x  |    x   |                |                |
-|**rocsolver_orgqr**        |     x  |    x   |                |                |
-|**rocsolver_orgl2**        |     x  |    x   |                |                |
-|**rocsolver_orglq**        |     x  |    x   |                |                |
-|**rocsolver_orgbr**        |     x  |    x   |                |                |
-|**rocsolver_orm2r**        |     x  |    x   |                |                |
-|**rocsolver_ormqr**        |     x  |    x   |                |                |
+# Quick start
 
-| Lapack Function                 | single | double | single complex | double complex |
-| ------------------------------- | ------ | ------ | -------------- | -------------- |
-|**rocsolver_potf2**              |     x  |    x   |                |                |
-|rocsolver_potf2_batched          |     x  |    x   |                |                |
-|rocsolver_potf2_strided_batched  |     x  |    x   |                |                |
-|**rocsolver_potrf**              |     x  |    x   |                |                |
-|rocsolver_potrf_batched          |     x  |    x   |                |                |
-|rocsolver_potrf_strided_batched  |     x  |    x   |                |                |
-|**rocsolver_getf2**              |     x  |    x   |   x            |  x             |
-|rocsolver_getf2_batched          |     x  |    x   |   x            |  x             |
-|rocsolver_getf2_strided_batched  |     x  |    x   |   x            |  x             |
-|**rocsolver_getrf**              |     x  |    x   |   x            |  x             |
-|rocsolver_getrf_batched          |     x  |    x   |   x            |  x             |
-|rocsolver_getrf_strided_batched  |     x  |    x   |   x            |  x             |
-|**rocsolver_geqr2**              |     x  |    x   |                |                |
-|rocsolver_geqr2_batched          |     x  |    x   |                |                |
-|rocsolver_geqr2_strided_batched  |     x  |    x   |                |                |
-|**rocsolver_geqrf**              |     x  |    x   |                |                |
-|rocsolver_geqrf_batched          |     x  |    x   |                |                |
-|rocsolver_geqrf_strided_batched  |     x  |    x   |                |                |
-|**rocsolver_gelq2**              |     x  |    x   |                |                |
-|rocsolver_gelq2_batched          |     x  |    x   |                |                |
-|rocsolver_gelq2_strided_batched  |     x  |    x   |                |                |
-|**rocsolver_gelqf**              |     x  |    x   |                |                |
-|rocsolver_gelqf_batched          |     x  |    x   |                |                |
-|rocsolver_gelqf_strided_batched  |     x  |    x   |                |                |
-|**rocsolver_getrs**              |     x  |    x   |   x            |  x             |
-|rocsolver_getrs_batched          |     x  |    x   |   x            |  x             |
-|rocsolver_getrs_strided_batched  |     x  |    x   |   x            |  x             |
+To download rocSOLVER source code, clone this repository with the command
+
+.. code-block:: bash
+    git clone https://github.com/ROCmSoftwarePlatform/rocSOLVER.git
+
+rocSOLVER requires rocBLAS as a companion GPU BLAS implementation. For more information about rocBLAS and how to
+install it, see the `rocBLAS documentation <https://rocblas.readthedocs.io/en/latest>`_.
+
+After a standard installation of rocBLAS, the following commands will build and install rocSOLVER at the standard location
+/opt/rocm/rocsolver    
+
+.. code-block:: bash
+    cd rocsolver 
+    ./install.sh -i
+
+Once installed, rocSOLVER can be used just like any other library with a C API. 
+The header file will need to be included in the user code, and both the rocBLAS and rocSOLVER shared libraries 
+will become link-time and run-time dependencies for the user applciation.
+
+# Using rocSOLVER example
+
+The following code snippet uses rocSOLVER to compute the QR factorization of a general m-by-n real matrix in double precsision. 
+For a description of function rocsolver_dgeqrf see the API documentation `here <https://rocsolver.readthedocs.io/en/latest/api.html#rocsolver-type-geqrf>`_.
+
+.. code-block:: C
+    ///////////////////////////
+    // example.c source code //
+    ///////////////////////////
+
+    #include <iostream>
+    #include <stdlib.h>
+    #include <vector>
+    #include <rocsolver.h>      // this includes the rocsolver header
+
+    using namespace std;
+
+    int main() {
+        rocblas_int M;
+        rocblas_int N;
+        rocblas_int lda;
+
+        // initialize M, N and lda with desired values
+        // here===>>
+
+        rocsolver_handle handle;
+        rocsolver_create_handle(&handle); // this creates the rocsolver handle
+
+        rocblas_int size_A = lda * N;     // this is the size of the array that will hold the matrix
+        rocblas_int size_piv = min(M, N); // this is size of array that will have the Householder scalars   
+
+        vector<double> hA(size_A);        // creates array for matrix in CPU
+        vector<double> hIpiv(size_piv);   // creates array for householder scalars in CPU
+
+        double *dA, *dIpiv;
+        hipMalloc(&dA,sizeof(double)*size_A);       // allocates memory for matrix in GPU
+        hipMalloc(&dIpiv,sizeof(double)*size_piv);  // allocates memory for scalars in GPU
+  
+        // initialize matrix A (array hA) with input data
+        // here===>>
+
+        hipMemcpy(dA,hA.data(),sizeof(double)*size_A,hipMemcpyHostToDevice); // copy data to GPU
+        rocsolver_dgeqrf(handle, M, N, dA, lda, dIpiv);                      // compute the QR factorization on the GPU   
+        hipMemcpy(hA.data(),dA,sizeof(double)*size_A,hipMemcpyDeviceToHost); // copy the results back to CPU
+        hipMemcpy(hIpiv.data(),dIpiv,sizeof(double)*size_piv,hipMemcpyDeviceToHost);
+
+        // do something with the results in hA and hIpiv
+        // here===>>
+
+        hipFree(dA);                        // de-allocate GPU memory 
+        hipFree(dIpiv);
+        rocsolver_destroy_handle(handle);   // destroy handle
+  
+        return 0;
+    }
+
+Compile command may vary depending on the system and session environment. Here is a example of a common case
+
+.. code-block:: bash
+    >> hipcc -I/opt/rocm/include -L/opt/rocm/lib -lrocsolver -lrocblas example.c -o example.exe            
+
+

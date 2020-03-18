@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright 2016 Advanced Micro Devices, Inc.
+# Copyright 2019-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # For debugging, uncomment this
@@ -94,6 +94,7 @@ target_compile_definitions( rocsolver-test PRIVATE BUILD_WITH_TENSILE=0 GOOGLE_T
 target_include_directories( rocsolver-test
   PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../library/include>
 )
 
 #set( BLIS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/build/deps/blis/include/blis )
@@ -157,7 +158,6 @@ else()
 endif()
 
 target_link_libraries( rocsolver-test PRIVATE roc::rocblas ) #${ROCBLAS_LIBRARY})
-#target_link_libraries( rocsolver-test PRIVATE ${ROCM_PATH}/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
 
 if( CUDA_FOUND )
   target_include_directories( rocsolver-test
@@ -172,7 +172,6 @@ else( )
   target_link_libraries( rocsolver-test PRIVATE hip::device )
 endif( )
 
-#target_link_libraries( rocsolver-test PRIVATE ${ROCM_PATH}/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   # Remove following when hcc is fixed; hcc emits following spurious warning ROCm v1.6.1
   # "clang-5.0: warning: argument unused during compilation: '-isystem ${ROCM_PATH}/include'"

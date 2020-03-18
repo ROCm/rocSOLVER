@@ -53,16 +53,17 @@ add_executable( rocsolver-bench client.cpp ${rocsolver_benchmark_common} )
 target_compile_features( rocsolver-bench PRIVATE cxx_static_assert cxx_nullptr cxx_auto_type )
 
 
-if( BUILD_WITH_TENSILE )
-    target_compile_definitions( rocsolver-bench PRIVATE BUILD_WITH_TENSILE=1 )
-else()
-    target_compile_definitions( rocsolver-bench PRIVATE BUILD_WITH_TENSILE=0 )
-endif()
+#if( BUILD_WITH_TENSILE )
+#    target_compile_definitions( rocsolver-bench PRIVATE BUILD_WITH_TENSILE=1 )
+#else()
+#    target_compile_definitions( rocsolver-bench PRIVATE BUILD_WITH_TENSILE=0 )
+#endif()
 
 # Internal header includes
 target_include_directories( rocsolver-bench
   PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../library/include>
 )
 
 #set( BLIS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/build/deps/blis/include/blis )
@@ -119,7 +120,6 @@ else()
     target_link_libraries( rocsolver-bench PRIVATE ${Boost_LIBRARIES} cblas lapack roc::rocsolver )
 endif()
 
-#target_link_libraries( rocsolver-bench PRIVATE ${ROCM_PATH}/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
 target_link_libraries( rocsolver-bench PRIVATE roc::rocblas ) #${ROCBLAS_LIBRARY})
 
 if( CUDA_FOUND )
@@ -135,7 +135,6 @@ else( )
   target_link_libraries( rocsolver-bench PRIVATE hip::device )
 endif( )
 
-#target_link_libraries( rocsolver-bench PRIVATE ${ROCM_PATH}/rocblas/lib/librocblas.so ) #${ROCBLAS_LIBRARY})
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   # Remove following when hcc is fixed; hcc emits following spurious warning ROCm v1.6.1
   # "clang-5.0: warning: argument unused during compilation: '-isystem ${ROCM_PATH}/include'"
