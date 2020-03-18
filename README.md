@@ -12,6 +12,7 @@ For a detailed description of the rocSOLVER library, its implementes routines, t
 To download rocSOLVER source code, clone this repository with the command
 
 .. code-block:: bash
+
     git clone https://github.com/ROCmSoftwarePlatform/rocSOLVER.git
 
 rocSOLVER requires rocBLAS as a companion GPU BLAS implementation. For more information about rocBLAS and how to
@@ -21,6 +22,7 @@ After a standard installation of rocBLAS, the following commands will build and 
 /opt/rocm/rocsolver    
 
 .. code-block:: bash
+
     cd rocsolver 
     ./install.sh -i
 
@@ -34,6 +36,7 @@ The following code snippet uses rocSOLVER to compute the QR factorization of a g
 For a description of function rocsolver_dgeqrf see the API documentation `here <https://rocsolver.readthedocs.io/en/latest/api.html#rocsolver-type-geqrf>`_.
 
 .. code-block:: C
+
     ///////////////////////////
     // example.c source code //
     ///////////////////////////
@@ -87,6 +90,7 @@ For a description of function rocsolver_dgeqrf see the API documentation `here <
 Compile command may vary depending on the system and session environment. Here is a example of a common case
 
 .. code-block:: bash
+
     >> hipcc -I/opt/rocm/include -L/opt/rocm/lib -lrocsolver -lrocblas example.c -o example.exe            
 
 
