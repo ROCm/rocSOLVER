@@ -1,10 +1,11 @@
 # rocSOLVER
 
-rocSOLVER is a work-in-progress implementation of a subset of [LAPACK](http://www.netlib.org/lapack/explore-html/index.html) functionality on the [ROCm platform](https://github.com/ROCmSoftwarePlatform). 
+rocSOLVER is a work-in-progress implementation of a subset of [LAPACK](http://www.netlib.org/lapack/explore-html/index.html) 
+functionality on the [ROCm platform](https://rocm.github.io). 
 
 # Documentation
 
-For a detailed description of the rocSOLVER library, its implementes routines, the installation process and user guide, see the
+For a detailed description of the rocSOLVER library, its implemented routines, the installation process and user guide, see the
 [rocSOLVER documentation](https://rocsolver.readthedocs.io/en/latest).
 
 # Quick start
@@ -47,9 +48,9 @@ For a description of function rocsolver_dgeqrf see the API documentation [here](
 using namespace std;
 
 int main() {
-    rocblas_int M;
-    rocblas_int N;
-    rocblas_int lda;
+    rocsolver_int M;
+    rocsolver_int N;
+    rocsolver_int lda;
 
     // initialize M, N and lda with desired values
     // here===>>
@@ -57,8 +58,8 @@ int main() {
     rocsolver_handle handle;
     rocsolver_create_handle(&handle); // this creates the rocsolver handle
 
-    rocblas_int size_A = lda * N;     // this is the size of the array that will hold the matrix
-    rocblas_int size_piv = min(M, N); // this is size of array that will have the Householder scalars   
+    rocsolver_int size_A = lda * N;     // this is the size of the array that will hold the matrix
+    rocsolver_int size_piv = min(M, N); // this is size of array that will have the Householder scalars   
 
     vector<double> hA(size_A);        // creates array for matrix in CPU
     vector<double> hIpiv(size_piv);   // creates array for householder scalars in CPU
@@ -85,7 +86,7 @@ int main() {
     return 0;
 }
 ```
-Compile command may vary depending on the system and session environment. Here is a example of a common case
+Compile command may vary depending on the system and session environment. Here is an example of a common use case
 
 ```bash
 >> hipcc -I/opt/rocm/include -L/opt/rocm/lib -lrocsolver -lrocblas example.c -o example.exe            
