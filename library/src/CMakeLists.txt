@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright 2016-2019 Advanced Micro Devices, Inc.
+# Copyright 2019-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # ########################################################################
@@ -86,6 +86,7 @@ add_library( rocsolver
 )
 
 add_library( roc::rocsolver ALIAS rocsolver )
+#target_link_libraries( rocsolver PRIVATE roc::rocblas ) #${ROCBLAS_LIBRARY})
 
 # Remove this check when we no longer build with older rocm stack(ie < 1.8.2)
 if(CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
@@ -109,9 +110,9 @@ target_include_directories( rocsolver
   PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
           $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-          $<BUILD_INTERFACE:${Tensile_INC}>
           $<INSTALL_INTERFACE:include>
           )
+
 set_target_properties( rocsolver PROPERTIES CXX_EXTENSIONS NO )
 set_target_properties( rocsolver PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
 rocm_set_soversion(rocsolver ${rocsolver_SOVERSION})
@@ -140,7 +141,7 @@ rocm_install_targets(
 #         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
 
 rocm_export_targets(
-  TARGETS rocsolver-targets
+  TARGETS roc::rocsolver
   PREFIX rocsolver
   DEPENDS PACKAGE hip
   NAMESPACE roc::

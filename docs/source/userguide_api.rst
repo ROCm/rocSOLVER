@@ -1,15 +1,13 @@
-.. toctree::
-   :maxdepth: 4 
-   :caption: Contents:
 
 *************
 rocSOLVER API
 *************
 
-This section provides details of the rocSOLVER library API as in release 
-`ROCm 2.10 <https://github.com/ROCmSoftwarePlatform/rocSOLVER/tree/master-rocm-2.10>`_.
+.. toctree::
+   :maxdepth: 4 
+   :caption: Contents:
 
-
+This section provides details of the rocSOLVER library API as in last ROCm release. 
 
 Types
 =====
@@ -238,15 +236,21 @@ rocsolver_<type>geqr2_strided_batched()
 .. doxygenfunction:: rocsolver_dgeqr2_strided_batched
 .. doxygenfunction:: rocsolver_sgeqr2_strided_batched
 
+.. _qr_label:
+
 rocsolver_<type>geqrf()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqrf
 .. doxygenfunction:: rocsolver_sgeqrf
 
+.. _qr_batched_label:
+
 rocsolver_<type>geqrf_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqrf_batched
 .. doxygenfunction:: rocsolver_sgeqrf_batched
+
+.. _qr_strided_label:
 
 rocsolver_<type>geqrf_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -9,12 +9,6 @@ cmake_minimum_required( VERSION 3.5 )
 
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake )
 
-# Consider removing this in the future
-# It can be annoying for visual studio developers to build a project that tries to install into 'program files'
-if( WIN32 AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT )
-  set( CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/package" CACHE PATH "Install path prefix, prepended onto install directories" FORCE )
-endif( )
-
 # This has to be initialized before the project() command appears
 # Set the default of CMAKE_BUILD_TYPE to be release, unless user specifies with -D.  MSVC_IDE does not use CMAKE_BUILD_TYPE
 if( NOT DEFINED CMAKE_CONFIGURATION_TYPES AND NOT DEFINED CMAKE_BUILD_TYPE )
@@ -22,7 +16,7 @@ if( NOT DEFINED CMAKE_CONFIGURATION_TYPES AND NOT DEFINED CMAKE_BUILD_TYPE )
 endif()
 
 # The superbuild does not build anything itself; all compiling is done in external projects
-project( rocblas-dependencies NONE )
+project( rocsolver-dependencies NONE )
 
 option( BUILD_BOOST "Download and build boost library" ON )
 option( BUILD_GTEST "Download and build googletest library" ON )
@@ -46,21 +40,21 @@ include( get-cli-arguments )
 if( BUILD_GTEST )
   include( external-gtest )
 
-  list( APPEND rocblas_dependencies googletest )
+  list( APPEND rocsolver_dependencies googletest )
   set( gtest_custom_target COMMAND cd ${GTEST_BINARY_ROOT}$<SEMICOLON> ${CMAKE_COMMAND} --build . --target install )
 endif( )
 
 if( BUILD_LAPACK )
   include( external-lapack )
 
-  list( APPEND rocblas_dependencies lapack )
+  list( APPEND rocsolver_dependencies lapack )
   set( lapack_custom_target COMMAND cd ${LAPACK_BINARY_ROOT}$<SEMICOLON> ${CMAKE_COMMAND} --build . --target install )
 endif( )
 
 if( BUILD_BOOST )
   include( external-boost )
 
-  list( APPEND rocblas_dependencies boost )
+  list( APPEND rocsolver_dependencies boost )
   set( boost_custom_target COMMAND cd ${BOOST_BINARY_ROOT}$<SEMICOLON> ${Boost.Command} install )
 endif( )
 
@@ -74,5 +68,5 @@ add_custom_target( install
   ${boost_custom_target}
   ${gtest_custom_target}
   ${lapack_custom_target}
-  DEPENDS ${rocblas_dependencies}
+  DEPENDS ${rocsolver_dependencies}
 )
