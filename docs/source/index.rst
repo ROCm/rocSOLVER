@@ -7,6 +7,6 @@ Welcome to rocSOLVER's documentation!
    :maxdepth: 4 
    :caption: Contents:
 
-   library 
-   api
+   userguidedocu
+   designdocu
 

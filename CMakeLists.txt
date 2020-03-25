@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright 2016 Advanced Micro Devices, Inc.
+# Copyright 2019-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # The ROCm platform requires Ubuntu 16.04 or Fedora 24, which has cmake 3.5
@@ -100,9 +100,11 @@ endif( )
 # rocm-cmake contains common cmake code for rocm projects to help setup and install
 set( PROJECT_EXTERN_DIR ${CMAKE_CURRENT_BINARY_DIR}/extern )
 
-if(NOT ROCM_PATH)
-  set(ROCM_PATH /opt/rocm)
-endif()
+# by default, rocm software stack is expected at /opt/rocm
+# set environment variable ROCM_PATH to change location
+if( NOT ROCM_PATH )
+  set( ROCM_PATH /opt/rocm )
+endif( )
 
 find_package( ROCM CONFIG QUIET PATHS ${ROCM_PATH} )
 if( NOT ROCM_FOUND )
@@ -141,7 +143,8 @@ get_os_id(OS_ID)
 message (STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-set ( VERSION_STRING "2.7.0" )
+# keeping versioning according to ROCm release
+set ( VERSION_STRING "3.4.0" )
 rocm_setup_version( VERSION ${VERSION_STRING} )
 
 # Append our library helper cmake path and the cmake path for hip (for convenience)
@@ -156,7 +159,11 @@ option( BUILD_VERBOSE "Output additional build information" OFF )
 # BUILD_SHARED_LIBS is a cmake built-in; we make it an explicit option such that it shows in cmake-gui
 option( BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON )
 
+# by default, clients are not built
 include( clients/cmake/build-options.cmake )
+message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
+message(STATUS "benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
+
 
 # force library install path to lib (CentOS 7 defaults to lib64)
 set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for libraries" FORCE)
@@ -178,6 +185,6 @@ set( AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific m
 add_subdirectory( library )
 
 # Build clients of the library
-if( BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS )
+if( BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS )
   add_subdirectory( clients )
 endif( )

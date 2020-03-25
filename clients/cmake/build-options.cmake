@@ -10,9 +10,9 @@
 # parameters, which would already define them.
 
 if( NOT BUILD_CLIENTS_TESTS )
-  option( BUILD_CLIENTS_TESTS "Build rocSOLVER unit tests" ON )
+  option( BUILD_CLIENTS_TESTS "Build rocSOLVER unit tests" OFF )
 endif( )
 
 if( NOT BUILD_CLIENTS_BENCHMARKS )
-  option( BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmarks" ON )
+  option( BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmarks" OFF )
 endif( )

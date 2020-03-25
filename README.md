@@ -1,58 +1,97 @@
 # rocSOLVER
 
-rocSOLVER is a work-in-progress implementation of a subset of LAPACK functionality on the ROCm platform. It requires rocBLAS as a companion GPU BLAS implementation.
+rocSOLVER is a work-in-progress implementation of a subset of [LAPACK](http://www.netlib.org/lapack/explore-html/index.html) 
+functionality on the [ROCm platform](https://rocm.github.io). 
 
-# Build
-Requires `cmake` and `ROCm` including `hcc` and `rocBLAS` to be installed.
+# Documentation
+
+For a detailed description of the rocSOLVER library, its implemented routines, the installation process and user guide, see the
+[rocSOLVER documentation](https://rocsolver.readthedocs.io/en/latest).
+
+# Quick start
+
+To download rocSOLVER source code, clone this repository with the command
 
 ```bash
-mkdir build && cd build
-CXX=/opt/rocm/bin/hcc cmake ..
-make
+git clone https://github.com/ROCmSoftwarePlatform/rocSOLVER.git
 ```
-# Implemented functions in LAPACK notation
+rocSOLVER requires rocBLAS as a companion GPU BLAS implementation. For more information about rocBLAS and how to
+install it, see the [rocBLAS documentation](https://rocblas.readthedocs.io/en/latest).
 
-| Lapack Auxiliary Function | single | double | single complex | double complex |
-| ------------------------- | ------ | ------ | -------------- | -------------- |
-|**rocsolver_laswp**        |     x  |    x   |      x         |   x            |
-|**rocsolver_larfg**        |     x  |    x   |                |                |
-|**rocsolver_larft**        |     x  |    x   |                |                |
-|**rocsolver_larf**         |     x  |    x   |                |                |
-|**rocsolver_larfb**        |     x  |    x   |                |                |
-|**rocsolver_org2r**        |     x  |    x   |                |                |
-|**rocsolver_orgqr**        |     x  |    x   |                |                |
-|**rocsolver_orgl2**        |     x  |    x   |                |                |
-|**rocsolver_orglq**        |     x  |    x   |                |                |
-|**rocsolver_orgbr**        |     x  |    x   |                |                |
-|**rocsolver_orm2r**        |     x  |    x   |                |                |
-|**rocsolver_ormqr**        |     x  |    x   |                |                |
+After a standard installation of rocBLAS, the following commands will build and install rocSOLVER at the standard location
+/opt/rocm/rocsolver    
 
-| Lapack Function                 | single | double | single complex | double complex |
-| ------------------------------- | ------ | ------ | -------------- | -------------- |
-|**rocsolver_potf2**              |     x  |    x   |                |                |
-|rocsolver_potf2_batched          |     x  |    x   |                |                |
-|rocsolver_potf2_strided_batched  |     x  |    x   |                |                |
-|**rocsolver_potrf**              |     x  |    x   |                |                |
-|rocsolver_potrf_batched          |     x  |    x   |                |                |
-|rocsolver_potrf_strided_batched  |     x  |    x   |                |                |
-|**rocsolver_getf2**              |     x  |    x   |   x            |  x             |
-|rocsolver_getf2_batched          |     x  |    x   |   x            |  x             |
-|rocsolver_getf2_strided_batched  |     x  |    x   |   x            |  x             |
-|**rocsolver_getrf**              |     x  |    x   |   x            |  x             |
-|rocsolver_getrf_batched          |     x  |    x   |   x            |  x             |
-|rocsolver_getrf_strided_batched  |     x  |    x   |   x            |  x             |
-|**rocsolver_geqr2**              |     x  |    x   |                |                |
-|rocsolver_geqr2_batched          |     x  |    x   |                |                |
-|rocsolver_geqr2_strided_batched  |     x  |    x   |                |                |
-|**rocsolver_geqrf**              |     x  |    x   |                |                |
-|rocsolver_geqrf_batched          |     x  |    x   |                |                |
-|rocsolver_geqrf_strided_batched  |     x  |    x   |                |                |
-|**rocsolver_gelq2**              |     x  |    x   |                |                |
-|rocsolver_gelq2_batched          |     x  |    x   |                |                |
-|rocsolver_gelq2_strided_batched  |     x  |    x   |                |                |
-|**rocsolver_gelqf**              |     x  |    x   |                |                |
-|rocsolver_gelqf_batched          |     x  |    x   |                |                |
-|rocsolver_gelqf_strided_batched  |     x  |    x   |                |                |
-|**rocsolver_getrs**              |     x  |    x   |   x            |  x             |
-|rocsolver_getrs_batched          |     x  |    x   |   x            |  x             |
-|rocsolver_getrs_strided_batched  |     x  |    x   |   x            |  x             |
+```bash
+cd rocsolver 
+./install.sh -i
+````
+
+Once installed, rocSOLVER can be used just like any other library with a C API. 
+The header file will need to be included in the user code, and both the rocBLAS and rocSOLVER shared libraries 
+will become link-time and run-time dependencies for the user applciation.
+
+# Using rocSOLVER example
+
+The following code snippet uses rocSOLVER to compute the QR factorization of a general m-by-n real matrix in double precsision. 
+For a description of function rocsolver_dgeqrf see the API documentation [here](https://rocsolver.readthedocs.io/en/latest/api.html#rocsolver-type-geqrf).
+
+```C
+///////////////////////////
+// example.c source code //
+///////////////////////////
+
+#include <iostream>
+#include <stdlib.h>
+#include <vector>
+#include <rocsolver.h>      // this includes all the rocsolver C interfaces and type declarations
+
+using namespace std;
+
+int main() {
+    rocsolver_int M;
+    rocsolver_int N;
+    rocsolver_int lda;
+
+    // initialize M, N and lda with desired values
+    // here===>>
+
+    rocsolver_handle handle;
+    rocsolver_create_handle(&handle); // this creates the rocsolver handle
+
+    size_t size_A = size_t(lda) * N;     // this is the size of the array that will hold the matrix
+    size_t size_piv = size_t(min(M, N)); // this is size of array that will have the Householder scalars   
+
+    vector<double> hA(size_A);        // creates array for matrix in CPU
+    vector<double> hIpiv(size_piv);   // creates array for householder scalars in CPU
+
+    double *dA, *dIpiv;
+    hipMalloc(&dA,sizeof(double)*size_A);       // allocates memory for matrix in GPU
+    hipMalloc(&dIpiv,sizeof(double)*size_piv);  // allocates memory for scalars in GPU
+  
+    // initialize matrix A (array hA) with input data
+    // here===>>
+    // ( matrices must be stored in column major format, i.e. entry (i,j)
+    //  should be accessed by hA[i + j*lda] )
+
+
+    hipMemcpy(dA,hA.data(),sizeof(double)*size_A,hipMemcpyHostToDevice); // copy data to GPU
+    rocsolver_dgeqrf(handle, M, N, dA, lda, dIpiv);                      // compute the QR factorization on the GPU   
+    hipMemcpy(hA.data(),dA,sizeof(double)*size_A,hipMemcpyDeviceToHost); // copy the results back to CPU
+    hipMemcpy(hIpiv.data(),dIpiv,sizeof(double)*size_piv,hipMemcpyDeviceToHost);
+
+    // do something with the results in hA and hIpiv
+    // here===>>
+
+    hipFree(dA);                        // de-allocate GPU memory 
+    hipFree(dIpiv);
+    rocsolver_destroy_handle(handle);   // destroy handle
+  
+    return 0;
+}
+```
+Compile command may vary depending on the system and session environment. Here is an example of a common use case
+
+```bash
+>> hipcc -I/opt/rocm/include -L/opt/rocm/lib -lrocsolver -lrocblas example.c -o example.exe            
+```
+

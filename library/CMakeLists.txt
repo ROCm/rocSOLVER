@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright 2016-2019 Advanced Micro Devices, Inc.
+# Copyright 2019-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # The following helper functions wrap common cmake functions.  They are
@@ -130,7 +130,7 @@ endif()
 set( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE.md" )
 
 if( NOT CPACK_PACKAGING_INSTALL_PREFIX )
-  set( CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" )
+  set( CPACK_PACKAGING_INSTALL_PREFIX "${ROCM_PATH}" )
 endif( )
 
 set( CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "\${CPACK_PACKAGING_INSTALL_PREFIX}" "\${CPACK_PACKAGING_INSTALL_PREFIX}/include" "\${CPACK_PACKAGING_INSTALL_PREFIX}/lib" )
@@ -149,5 +149,5 @@ rocm_create_package(
     DESCRIPTION "Radeon Open Compute SOLVER library"
     MAINTAINER "RocSOLVER maintainer <rocsolver-maintainer@amd.com>"
     LDCONFIG
-    LDCONFIG_DIR ${ROCBLAS_CONFIG_DIR}
+    LDCONFIG_DIR ${ROCSOLVER_CONFIG_DIR}
 )
