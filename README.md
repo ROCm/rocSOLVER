@@ -43,7 +43,7 @@ For a description of function rocsolver_dgeqrf see the API documentation [here](
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
-#include <rocsolver.h>      // this includes the rocsolver header
+#include <rocsolver.h>      // this includes all the rocsolver C interfaces and type declarations
 
 using namespace std;
 
@@ -58,8 +58,8 @@ int main() {
     rocsolver_handle handle;
     rocsolver_create_handle(&handle); // this creates the rocsolver handle
 
-    rocsolver_int size_A = lda * N;     // this is the size of the array that will hold the matrix
-    rocsolver_int size_piv = min(M, N); // this is size of array that will have the Householder scalars   
+    size_t size_A = size_t(lda) * N;     // this is the size of the array that will hold the matrix
+    size_t size_piv = size_t(min(M, N)); // this is size of array that will have the Householder scalars   
 
     vector<double> hA(size_A);        // creates array for matrix in CPU
     vector<double> hIpiv(size_piv);   // creates array for householder scalars in CPU
@@ -70,6 +70,9 @@ int main() {
   
     // initialize matrix A (array hA) with input data
     // here===>>
+    // ( matrices must be stored in column major format, i.e. entry (i,j)
+    //  should be accessed by hA[i + j*lda] )
+
 
     hipMemcpy(dA,hA.data(),sizeof(double)*size_A,hipMemcpyHostToDevice); // copy data to GPU
     rocsolver_dgeqrf(handle, M, N, dA, lda, dIpiv);                      // compute the QR factorization on the GPU   

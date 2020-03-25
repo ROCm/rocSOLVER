@@ -26,14 +26,14 @@ For a full description of the used rocSOLVER routine, see the API documentation 
     #include <iostream>
     #include <stdlib.h>
     #include <vector>
-    #include <rocsolver.h>      // this includes the rocsolver header
+    #include <rocsolver.h>      // this includes all the rocsolver C interfaces and type declarations
 
     using namespace std;
 
     int main() {
-        rocblas_int M;
-        rocblas_int N;
-        rocblas_int lda;
+        rocsolver_int M;
+        rocsolver_int N;
+        rocsolver_int lda;
 
         // initialize M, N and lda with desired values
         // here===>>
@@ -41,8 +41,8 @@ For a full description of the used rocSOLVER routine, see the API documentation 
         rocsolver_handle handle;
         rocsolver_create_handle(&handle); // this creates the rocsolver handle
 
-        rocblas_int size_A = lda * N;     // this is the size of the array that will hold the matrix
-        rocblas_int size_piv = min(M, N); // this is size of array that will have the Householder scalars   
+        size_t size_A = size_t(lda) * N;     // this is the size of the array that will hold the matrix
+        size_t size_piv = size_t(min(M, N)); // this is size of array that will have the Householder scalars   
 
         vector<double> hA(size_A);        // creates array for matrix in CPU
         vector<double> hIpiv(size_piv);   // creates array for householder scalars in CPU
@@ -53,7 +53,7 @@ For a full description of the used rocSOLVER routine, see the API documentation 
   
         // initialize matrix A (array hA) with input data
         // here===>>
-        // ( matrices are supposed to be stored in column major format, i.e. entry (i,j) 
+        // ( matrices must be stored in column major format, i.e. entry (i,j) 
         //  should be accessed by hA[i + j*lda] )
 
         hipMemcpy(dA,hA.data(),sizeof(double)*size_A,hipMemcpyHostToDevice); // copy data to GPU
@@ -90,7 +90,7 @@ Strided_batched version
 ---------------------------
 
 The following code snippet uses rocSOLVER to compute the QR factorization of a series of general m-by-n real matrices in double precsision. 
-The matrices are supposed to be stored in contiguous memory locations on the GPU, and are accessed by a pointer to the first matrix and a 
+The matrices must be stored in contiguous memory locations on the GPU, and are accessed by a pointer to the first matrix and a 
 stride value that gives the separation between one matrix and the next one. 
 For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`qr_strided_label`. 
 
@@ -103,15 +103,15 @@ For a full description of the used rocSOLVER routine, see the API documentation 
     #include <iostream>
     #include <stdlib.h>
     #include <vector>
-    #include <rocsolver.h>      // this includes the rocsolver header
+    #include <rocsolver.h>      //  this includes all the rocsolver C interfaces and type declarations
 
     using namespace std;
 
     int main() {
-        rocblas_int M;
-        rocblas_int N;
-        rocblas_int lda;
-        rocblas_int batch_count;  // number of matrices to factorize in the batch
+        rocsolver_int M;
+        rocsolver_int N;
+        rocsolver_int lda;
+        rocsolver_int batch_count;  // number of matrices to factorize in the batch
 
         // initialize batch_count, M, N and lda with desired values
         // here===>>
@@ -119,10 +119,10 @@ For a full description of the used rocSOLVER routine, see the API documentation 
         rocsolver_handle handle;
         rocsolver_create_handle(&handle); // this creates the rocsolver handle
 
-        rocblas_int strideA = lda*N;                // separation between two matrices in memory
-        rocblas_int size_A = strideA * batch_count; // size of the array that holds the matrices
-        rocblas_int strideP = min(M,N);             // separation between two sets of Householder scalars
-        rocblas_int size_piv = strideP*batch_count; // size of the array that will have the Householder scalars
+        rocblas_int strideA = lda*N;                   // separation between two matrices in memory
+        size_t size_A = size_t(strideA)*batch_count;   // size of the array that holds the matrices
+        rocblas_int strideP = min(M,N);                // separation between two sets of Householder scalars
+        size_t size_piv = size_t(strideP)*batch_count; // size of the array that will have the Householder scalars
         
         vector<double> hA(size_A);        // creates array for matrices in CPU
         vector<double> hIpiv(size_piv);   // creates array for householder scalars in CPU
@@ -133,7 +133,7 @@ For a full description of the used rocSOLVER routine, see the API documentation 
   
         // initialize all matrices (array hA) with input data
         // here===>>
-        // ( matrices are supposed to be stored in column major format, i.e. entry (i,j)
+        // ( matrices must be stored in column major format, i.e. entry (i,j)
         //   of the k-th matrix in the batch should be accessed by hA[i + j*lda + k*strideA] )
 
         hipMemcpy(dA,hA.data(),sizeof(double)*size_A,hipMemcpyHostToDevice);          // copy data to GPU
@@ -170,15 +170,15 @@ For a full description of the used rocSOLVER routine, see the API documentation 
     #include <iostream>
     #include <stdlib.h>
     #include <vector>
-    #include <rocsolver.h>      // this includes the rocsolver header
+    #include <rocsolver.h>      //  this includes all the rocsolver C interfaces and type declarations
 
     using namespace std;
 
     int main() {
-        rocblas_int M;
-        rocblas_int N;
-        rocblas_int lda;
-        rocblas_int batch_count;  // number of matrices to factorize in the batch
+        rocsolver_int M;
+        rocsolver_int N;
+        rocsolver_int lda;
+        rocsolver_int batch_count;  // number of matrices to factorize in the batch
 
         // initialize batch_count, M, N and lda with desired values
         // here===>>
@@ -186,9 +186,9 @@ For a full description of the used rocSOLVER routine, see the API documentation 
         rocsolver_handle handle;
         rocsolver_create_handle(&handle); // this creates the rocsolver handle
 
-        rocblas_int size_A = lda*N;                 // size of the array that holds one matrix
-        rocblas_int strideP = min(M,N);             // separation between two sets of Householder scalars
-        rocblas_int size_piv = strideP*batch_count; // size of the array that will have the Householder scalars
+        size_t size_A = size_t(lda)*N;                 // size of the array that holds one matrix
+        rocblas_int strideP = min(M,N);                // separation between two sets of Householder scalars
+        size_t size_piv = size_t(strideP)*batch_count; // size of the array that will have the Householder scalars
         
         vector<double> hIpiv(size_piv);         // creates array for householder scalars in CPU
         vector<double> hA[batch_count];         // creates array on the CPU of pointers to the CPU
@@ -206,7 +206,7 @@ For a full description of the used rocSOLVER routine, see the API documentation 
   
         // initialize all matrices (arrays hA[k]) with input data
         // here===>>
-        // ( matrices are supposed to be stored in column major format, i.e. entry (i,j)
+        // ( matrices must be stored in column major format, i.e. entry (i,j)
         //   of the k-th matrix in the batch should be accessed by hA[k][i + j*lda] )
 
         for(int b=0; b < batch_count; ++b)

@@ -19,7 +19,7 @@ rocBLAS, see `here <https://rocblas.readthedocs.io/en/master/install.html>`_.
 
 (At this point where both libraries, rocBLAS and rocSOLVER, are still under active development, 
 it is hard to define minimal compatibility versions. So, for now,  a good rule of thumb is to 
-always accompany rocSOLVER with a rocBLAS version of the same sort. For example, if you want to 
+always accompany rocSOLVER with a rocBLAS version of the same source. For example, if you want to 
 install rocSOLVER from ROCm 3.3 release, then be sure that ROCm 3.3 rocBLAS is also installed; if you
 are building the rocSOLVER branch tip, then you will need to build and install rocBLAS
 branch tip as well.)
@@ -39,7 +39,7 @@ following commands:
 Building & installing from source
 =====================================
 
-The rocSOLVER source code is available `here <https://github.com/jzuniga-amd/rocSOLVER.git>`_.
+The rocSOLVER source code is available `here <https://github.com/ROCmSoftwarePlatform/rocSOLVER.git>`_.
 Download/clone the desired branch using the command:
 
 .. code-block:: bash
