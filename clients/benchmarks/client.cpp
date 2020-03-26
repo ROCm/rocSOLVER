@@ -29,6 +29,7 @@
 #include "testing_org2r_orgqr.hpp"
 #include "testing_orm2r_ormqr.hpp"
 #include "testing_orgl2_orglq.hpp"
+#include "testing_orml2_ormlq.hpp"
 #include "testing_orgbr.hpp"
 #include "utility.h"
 
@@ -488,6 +489,18 @@ int main(int argc, char *argv[])
       testing_orm2r_ormqr<float,1>(argus);
     else if (precision == 'd')
       testing_orm2r_ormqr<double,1>(argus);
+  } 
+  else if (function == "orml2") {
+    if (precision == 's')
+      testing_orml2_ormlq<float,0>(argus);
+    else if (precision == 'd')
+      testing_orml2_ormlq<double,0>(argus);
+  } 
+  else if (function == "ormlq") {
+    if (precision == 's')
+      testing_orml2_ormlq<float,1>(argus);
+    else if (precision == 'd')
+      testing_orml2_ormlq<double,1>(argus);
   } 
   else if (function == "orgl2") {
     if (precision == 's')

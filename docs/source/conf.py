@@ -34,7 +34,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'rocSOLVER'
-copyright = u'2019, Advanced Mirco Devices'
+copyright = u'2020, Advanced Mirco Devices'
 author = u'Advanced Mirco Devices'
 
 # The version info for the project you're documenting, acts as replacement for

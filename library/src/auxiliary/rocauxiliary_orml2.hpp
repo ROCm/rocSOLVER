@@ -7,8 +7,8 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORM2R_HPP
-#define ROCLAPACK_ORM2R_HPP
+#ifndef ROCLAPACK_ORML2_HPP
+#define ROCLAPACK_ORML2_HPP
 
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
@@ -18,7 +18,7 @@
 #include "../auxiliary/rocauxiliary_larf.hpp"
 
 template <typename T, typename U>
-rocblas_status rocsolver_orm2r_template(rocsolver_handle handle, const rocsolver_side side, const rocsolver_operation trans, 
+rocblas_status rocsolver_orml2_template(rocsolver_handle handle, const rocsolver_side side, const rocsolver_operation trans, 
                                    const rocsolver_int m, const rocsolver_int n, 
                                    const rocsolver_int k, U A, const rocsolver_int shiftA, const rocsolver_int lda, 
                                    const rocsolver_int strideA, T* ipiv, 
@@ -43,7 +43,7 @@ rocblas_status rocsolver_orm2r_template(rocsolver_handle handle, const rocsolver
     if (left) {
         ncol = n;
         jc = 0;
-        if (transpose) {
+        if (!transpose) {
             start = -1;
             step = 1;
         } else {
@@ -53,7 +53,7 @@ rocblas_status rocsolver_orm2r_template(rocsolver_handle handle, const rocsolver
     } else {
         nrow = m;
         ic = 0;
-        if (transpose) {
+        if (!transpose) {
             start = k;
             step = -1;
         } else {
@@ -81,7 +81,7 @@ rocblas_status rocsolver_orm2r_template(rocsolver_handle handle, const rocsolver
                                 nrow,                               //number of rows of matrix to modify
                                 ncol,                               //number of columns of matrix to modify    
                                 A, shiftA + idx2D(i,i,lda),         //householder vector x
-                                1, strideA,                         //inc of x
+                                lda, strideA,                       //inc of x
                                 (ipiv + i), strideP,                //householder scalar (alpha)
                                 C, shiftC + idx2D(ic,jc,ldc),       //matrix to work on
                                 ldc, strideC,                       //leading dimension
@@ -91,7 +91,7 @@ rocblas_status rocsolver_orm2r_template(rocsolver_handle handle, const rocsolver
         hipLaunchKernelGGL(restore_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(i,i,lda),strideA);
     }
 
-    hipFree(diag);    
+    hipFree(diag);
  
     return rocblas_status_success;
 }

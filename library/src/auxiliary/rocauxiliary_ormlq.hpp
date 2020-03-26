@@ -7,20 +7,20 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORMQR_HPP
-#define ROCLAPACK_ORMQR_HPP
+#ifndef ROCLAPACK_ORMLQ_HPP
+#define ROCLAPACK_ORMLQ_HPP
 
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "helpers.h"
 #include "common_device.hpp"
-#include "../auxiliary/rocauxiliary_orm2r.hpp"
+#include "../auxiliary/rocauxiliary_orml2.hpp"
 #include "../auxiliary/rocauxiliary_larfb.hpp"
 #include "../auxiliary/rocauxiliary_larft.hpp"
 
 template <typename T, typename U>
-rocblas_status rocsolver_ormqr_template(rocsolver_handle handle, const rocsolver_side side, const rocsolver_operation trans, 
+rocblas_status rocsolver_ormlq_template(rocsolver_handle handle, const rocsolver_side side, const rocsolver_operation trans, 
                                    const rocsolver_int m, const rocsolver_int n, 
                                    const rocsolver_int k, U A, const rocsolver_int shiftA, const rocsolver_int lda, 
                                    const rocsolver_int strideA, T* ipiv, 
@@ -33,14 +33,14 @@ rocblas_status rocsolver_ormqr_template(rocsolver_handle handle, const rocsolver
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-
+    
     // if the matrix is small, use the unblocked variant of the algorithm
-    if (k <= ORMQR_ORM2R_BLOCKSIZE) 
-        return rocsolver_orm2r_template<T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C, shiftC, ldc, strideC, batch_count);
+    if (k <= ORMLQ_ORML2_BLOCKSIZE) 
+        return rocsolver_orml2_template<T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C, shiftC, ldc, strideC, batch_count);
 
     //memory in GPU (workspace)
     T* work;
-    rocblas_int ldw = ORMQR_ORM2R_BLOCKSIZE;
+    rocblas_int ldw = ORMLQ_ORML2_BLOCKSIZE;
     rocblas_int strideW = ldw *ldw;
     hipMalloc(&work, sizeof(T)*strideW*batch_count);    
 
@@ -52,7 +52,7 @@ rocblas_status rocsolver_ormqr_template(rocsolver_handle handle, const rocsolver
         ncol = n;
         order = m;
         jc = 0;
-        if (transpose) {
+        if (!transpose) {
             start = 0;
             step = 1;
         } else {
@@ -63,7 +63,7 @@ rocblas_status rocsolver_ormqr_template(rocsolver_handle handle, const rocsolver
         nrow = m;
         order = n;
         ic = 0;
-        if (transpose) {
+        if (!transpose) {
             start = (k-1)/ldw * ldw;
             step = -1;
         } else {
@@ -71,6 +71,12 @@ rocblas_status rocsolver_ormqr_template(rocsolver_handle handle, const rocsolver
             step = 1;
         }
     }
+
+    rocblas_operation transB;
+    if (transpose)
+        transB = rocblas_operation_none;
+    else
+        transB = rocblas_operation_transpose;
 
     int i;
     for (int j = 0; j < k; j += ldw) {
@@ -84,7 +90,7 @@ rocblas_status rocsolver_ormqr_template(rocsolver_handle handle, const rocsolver
         }
 
         // generate triangular factor of current block reflector
-        rocsolver_larft_template(handle,rocsolver_forward_direction,rocsolver_column_wise,
+        rocsolver_larft_template(handle,rocsolver_forward_direction,rocsolver_row_wise,
                                  order-i,min(ldw,k-i),
                                  A, shiftA + idx2D(i,i,lda),lda, strideA,
                                  ipiv + i, strideP,
@@ -92,8 +98,8 @@ rocblas_status rocsolver_ormqr_template(rocsolver_handle handle, const rocsolver
                                  batch_count);
 
         // apply current block reflector
-        rocsolver_larfb_template(handle,side,trans,
-                                 rocsolver_forward_direction,rocsolver_column_wise,
+        rocsolver_larfb_template(handle,side,transB,
+                                 rocsolver_forward_direction,rocsolver_row_wise,
                                  nrow,ncol,min(ldw,k-i),
                                  A, shiftA + idx2D(i,i,lda),lda, strideA,
                                  work,0,ldw,strideW,

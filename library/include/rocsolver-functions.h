@@ -854,6 +854,171 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dormqr(rocsolver_handle handle,
                                                    double *C,
                                                    const rocsolver_int ldc);
 
+/*! \brief ORML2 applies a matrix Q with orthonormal rows to a general m-by-n matrix C.
+
+    \details
+    (This is the unblocked version of the algorithm).
+    
+    The matrix Q is applied in one of the following forms, depending on 
+    the values of side and trans:
+
+        Q  * C  (No transpose from the left)
+        Q' * C  (Transpose from the left)
+        C * Q   (No transpose from the right), and
+        C * Q'  (Transpose from the right)
+
+    Q is an orthogonal matrix defined as the product of k Householder reflectors as
+
+        Q = H(k) * H(k-1) * ... * H(1)
+
+    or order m if applying from the left, or n if applying from the right. Q is never stored, it is 
+    calculated from the Householder vectors and scalars returned by the LQ factorization GELQF.
+
+    @param[in]
+    handle              rocsolver_handle.
+    @param[in]
+    side                rocsolver_side.\n
+                        Specifies from which side to apply Q.
+    @param[in]
+    trans               rocsolver_operation.\n
+                        Specifies whether the matrix Q or its transpose is to be applied.
+    @param[in]
+    m                   rocsolver_int. m >= 0.\n
+                        Number of rows of matrix C.
+    @param[in]
+    n                   rocsolver_int. n >= 0.\n
+                        Number of columns of matrix C.
+    @param[in]          
+    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+                        The number of Householder reflectors that form Q.
+    @param[in]          
+    A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
+                        The i-th row has the Householder vector v(i) associated with H(i) as returned by GELQF
+                        in the first k rows of its argument A.
+    @param[in]
+    lda                 rocsolver_int. lda >= k. \n
+                        Leading dimension of A.
+    @param[in]
+    ipiv                pointer to type. Array on the GPU of dimension at least k.\n
+                        The scalar factors of the Householder matrices H(i) as returned by GELQF.
+    @param[inout]
+    C                   pointer to type. Array on the GPU of size ldc*n.\n
+                        On input, the matrix C. On output it is overwritten with
+                        Q*C, C*Q, Q'*C, or C*Q'.  
+    @param[in]
+    lda                 rocsolver_int. ldc >= m.\n
+                        Leading dimension of C. 
+     
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_sorml2(rocsolver_handle handle,
+                                                   const rocsolver_side side,
+                                                   const rocsolver_operation trans,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   const rocsolver_int k, 
+                                                   float *A,
+                                                   const rocsolver_int lda,
+                                                   float *ipiv,
+                                                   float *C,
+                                                   const rocsolver_int ldc);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dorml2(rocsolver_handle handle,
+                                                   const rocsolver_side side,
+                                                   const rocsolver_operation trans,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   const rocsolver_int k, 
+                                                   double *A,
+                                                   const rocsolver_int lda,
+                                                   double *ipiv,
+                                                   double *C,
+                                                   const rocsolver_int ldc);
+
+/*! \brief ORMLQ applies a matrix Q with orthonormal rows to a general m-by-n matrix C.
+
+    \details
+    (This is the blocked version of the algorithm).
+    
+    The matrix Q is applied in one of the following forms, depending on 
+    the values of side and trans:
+
+        Q  * C  (No transpose from the left)
+        Q' * C  (Transpose from the left)
+        C * Q   (No transpose from the right), and
+        C * Q'  (Transpose from the right)
+
+    Q is an orthogonal matrix defined as the product of k Householder reflectors as
+
+        Q = H(k) * H(k-1) * ... * H(1)
+
+    or order m if applying from the left, or n if applying from the right. Q is never stored, it is 
+    calculated from the Householder vectors and scalars returned by the LQ factorization GELQF.
+
+    @param[in]
+    handle              rocsolver_handle.
+    @param[in]
+    side                rocsolver_side.\n
+                        Specifies from which side to apply Q.
+    @param[in]
+    trans               rocsolver_operation.\n
+                        Specifies whether the matrix Q or its transpose is to be applied.
+    @param[in]
+    m                   rocsolver_int. m >= 0.\n
+                        Number of rows of matrix C.
+    @param[in]
+    n                   rocsolver_int. n >= 0.\n
+                        Number of columns of matrix C.
+    @param[in]          
+    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+                        The number of Householder reflectors that form Q.
+    @param[in]          
+    A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
+                        The i-th row has the Householder vector v(i) associated with H(i) as returned by GELQF
+                        in the first k rows of its argument A.
+    @param[in]
+    lda                 rocsolver_int. lda >= k. \n
+                        Leading dimension of A.
+    @param[in]
+    ipiv                pointer to type. Array on the GPU of dimension at least k.\n
+                        The scalar factors of the Householder matrices H(i) as returned by GELQF.
+    @param[inout]
+    C                   pointer to type. Array on the GPU of size ldc*n.\n
+                        On input, the matrix C. On output it is overwritten with
+                        Q*C, C*Q, Q'*C, or C*Q'.  
+    @param[in]
+    lda                 rocsolver_int. ldc >= m.\n
+                        Leading dimension of C. 
+     
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_sormlq(rocsolver_handle handle,
+                                                   const rocsolver_side side,
+                                                   const rocsolver_operation trans,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   const rocsolver_int k, 
+                                                   float *A,
+                                                   const rocsolver_int lda,
+                                                   float *ipiv,
+                                                   float *C,
+                                                   const rocsolver_int ldc);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dormlq(rocsolver_handle handle,
+                                                   const rocsolver_side side,
+                                                   const rocsolver_operation trans,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   const rocsolver_int k, 
+                                                   double *A,
+                                                   const rocsolver_int lda,
+                                                   double *ipiv,
+                                                   double *C,
+                                                   const rocsolver_int ldc);
+
+
+
+
 
 /*
  * ===========================================================================
