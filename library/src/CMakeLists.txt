@@ -39,6 +39,8 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_orgbr.cpp
   auxiliary/rocauxiliary_orm2r.cpp
   auxiliary/rocauxiliary_ormqr.cpp
+  auxiliary/rocauxiliary_orml2.cpp
+  auxiliary/rocauxiliary_ormlq.cpp
 )
 
 set( rocsolver_common_source

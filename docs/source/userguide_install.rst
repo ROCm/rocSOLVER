@@ -204,7 +204,7 @@ how to install each dependency at their corresponding documentation sources:
 * `Python <https://www.python.org/>`_ (version >2.7 is required. Python is installed by default in some systems like Ubuntu).
 * `Boost <https://www.boost.org/>`_ 
 * `LAPACK <https://github.com/Reference-LAPACK/lapack-release>`_ (which internally depends on a Fortran compiler), and
-* `GoogleTest <https://github.com/google/googletest>`
+* `GoogleTest <https://github.com/google/googletest>`_
 
 Once all dependencies are installed (including ROCm and rocBLAS), rocSOLVER can be manually built using a combination of CMake and Make commands. 
 Using CMake options could provide more flexibility to tailor the building and installation process. Here we just provide a list of examples

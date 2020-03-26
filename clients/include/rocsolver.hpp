@@ -245,6 +245,48 @@ inline rocblas_status rocsolver_ormqr(rocblas_handle handle, rocblas_side side, 
   return rocsolver_dormqr(handle, side, trans, m, n, k, A, lda, Ipiv, C, ldc);
 }
 
+//orml2
+
+template <typename T>
+inline rocblas_status rocsolver_orml2(rocblas_handle handle, rocblas_side side, rocblas_operation trans, 
+                                      rocblas_int m, rocblas_int n, rocblas_int k, T *A, 
+                                      rocblas_int lda, T *Ipiv, T *C, rocblas_int ldc);
+
+template <>
+inline rocblas_status rocsolver_orml2(rocblas_handle handle, rocblas_side side, rocblas_operation trans,
+                                      rocblas_int m, rocblas_int n, rocblas_int k, float *A,  
+                                      rocblas_int lda, float *Ipiv, float *C, rocblas_int ldc) {
+  return rocsolver_sorml2(handle, side, trans, m, n, k, A, lda, Ipiv, C, ldc);
+}
+
+template <>
+inline rocblas_status rocsolver_orml2(rocblas_handle handle, rocblas_side side, rocblas_operation trans,
+                                      rocblas_int m, rocblas_int n, rocblas_int k, double *A,  
+                                      rocblas_int lda, double *Ipiv, double *C, rocblas_int ldc) {
+  return rocsolver_dorml2(handle, side, trans, m, n, k, A, lda, Ipiv, C, ldc);
+}
+
+//ormlq
+
+template <typename T>
+inline rocblas_status rocsolver_ormlq(rocblas_handle handle, rocblas_side side, rocblas_operation trans, 
+                                      rocblas_int m, rocblas_int n, rocblas_int k, T *A, 
+                                      rocblas_int lda, T *Ipiv, T *C, rocblas_int ldc);
+
+template <>
+inline rocblas_status rocsolver_ormlq(rocblas_handle handle, rocblas_side side, rocblas_operation trans,
+                                      rocblas_int m, rocblas_int n, rocblas_int k, float *A,  
+                                      rocblas_int lda, float *Ipiv, float *C, rocblas_int ldc) {
+  return rocsolver_sormlq(handle, side, trans, m, n, k, A, lda, Ipiv, C, ldc);
+}
+
+template <>
+inline rocblas_status rocsolver_ormlq(rocblas_handle handle, rocblas_side side, rocblas_operation trans,
+                                      rocblas_int m, rocblas_int n, rocblas_int k, double *A,  
+                                      rocblas_int lda, double *Ipiv, double *C, rocblas_int ldc) {
+  return rocsolver_dormlq(handle, side, trans, m, n, k, A, lda, Ipiv, C, ldc);
+}
+
 
 //potf2
 

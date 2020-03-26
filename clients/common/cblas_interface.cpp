@@ -98,6 +98,11 @@ void dorm2r_(char *side, char *trans, int *m, int *n, int *k, double *A, int *ld
 void sormqr_(char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *sizeW, int *info);
 void dormqr_(char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *sizeW, int *info);
 
+void sorml2_(char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *info);
+void dorml2_(char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *info);
+void sormlq_(char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *sizeW, int *info);
+void dormlq_(char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *sizeW, int *info);
+
 void sorgl2_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *info);
 void dorgl2_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *info);
 void sorglq_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
@@ -278,6 +283,60 @@ void cblas_orm2r<double>(rocblas_side side, rocblas_operation trans, rocblas_int
     transC = 'N';
 
   dorm2r_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &info);
+}
+
+// ormlq
+template <>
+void cblas_ormlq<float>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+                               rocblas_int lda, float *ipiv, float *C, rocblas_int ldc, float *work, rocblas_int lwork) {
+  int info;
+  char sideC = 'R', transC = 'T';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  sormlq_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &lwork, &info);
+}
+
+template <>
+void cblas_ormlq<double>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+                               rocblas_int lda, double *ipiv, double *C, rocblas_int ldc, double *work, rocblas_int lwork) {
+  int info;
+  char sideC = 'R', transC = 'T';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  dormlq_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &lwork, &info);
+}
+
+// orml2
+template <>
+void cblas_orml2<float>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+                               rocblas_int lda, float *ipiv, float *C, rocblas_int ldc, float *work) {
+  int info;
+  char sideC = 'R', transC = 'T';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  sorml2_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &info);
+}
+
+template <>
+void cblas_orml2<double>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+                               rocblas_int lda, double *ipiv, double *C, rocblas_int ldc, double *work) {
+  int info;
+  char sideC = 'R', transC = 'T';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  dorml2_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &info);
 }
 
 

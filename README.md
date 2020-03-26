@@ -33,7 +33,7 @@ will become link-time and run-time dependencies for the user applciation.
 # Using rocSOLVER example
 
 The following code snippet uses rocSOLVER to compute the QR factorization of a general m-by-n real matrix in double precsision. 
-For a description of function rocsolver_dgeqrf see the API documentation [here](https://rocsolver.readthedocs.io/en/latest/api.html#rocsolver-type-geqrf).
+For a description of function rocsolver_dgeqrf see the API documentation [here](https://rocsolver.readthedocs.io/en/latest/userguide_api.html#rocsolver-type-geqrf).
 
 ```C
 ///////////////////////////
