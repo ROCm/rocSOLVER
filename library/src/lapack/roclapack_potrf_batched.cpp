@@ -20,7 +20,7 @@ rocblas_status rocsolver_potrf_batched_impl(rocblas_handle handle, const rocblas
     if (n < 0 || lda < n || batch_count < 0)
         return rocblas_status_invalid_size;
 
-    rocblas_int strideA = 0;
+    rocblas_stride strideA = 0;
 
     return rocsolver_potrf_template<T>(handle,uplo,n,
                                     A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)

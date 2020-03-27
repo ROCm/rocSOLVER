@@ -19,14 +19,14 @@
 
 
 template <typename T, typename U>
-__global__ void copymatA1(const rocsolver_int ldw, const rocsolver_int order, U A, const rocsolver_int shiftA, const rocsolver_int lda, const rocsolver_int strideA, T* work) 
+__global__ void copymatA1(const rocblas_int ldw, const rocblas_int order, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, T* work) 
 {
     const auto blocksizex = hipBlockDim_x;
     const auto blocksizey = hipBlockDim_y;
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_x * blocksizex + hipThreadIdx_x;
     const auto i = hipBlockIdx_y * blocksizey + hipThreadIdx_y;
-    rocsolver_int strideW = ldw*order;
+    rocblas_stride strideW = ldw*order;
 
     if (i < ldw && j < order) {
         T *Ap, *Wp;
@@ -38,14 +38,14 @@ __global__ void copymatA1(const rocsolver_int ldw, const rocsolver_int order, U 
 }
 
 template <typename T, typename U>
-__global__ void addmatA1(const rocsolver_int ldw, const rocsolver_int order, U A, const rocsolver_int shiftA, const rocsolver_int lda, const rocsolver_int strideA, T* work) 
+__global__ void addmatA1(const rocblas_int ldw, const rocblas_int order, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, T* work) 
 {
     const auto blocksizex = hipBlockDim_x;
     const auto blocksizey = hipBlockDim_y;
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_x * blocksizex + hipThreadIdx_x;
     const auto i = hipBlockIdx_y * blocksizey + hipThreadIdx_y;
-    rocsolver_int strideW = ldw*order;
+    rocblas_stride strideW = ldw*order;
 
     if (i < ldw && j < order) {
         T *Ap, *Wp;
@@ -57,15 +57,15 @@ __global__ void addmatA1(const rocsolver_int ldw, const rocsolver_int order, U A
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver_side side, 
-                                        const rocsolver_operation trans, const rocsolver_direct direct, 
+rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_side side, 
+                                        const rocblas_operation trans, const rocsolver_direct direct, 
                                         const rocsolver_storev storev,
-                                        const rocsolver_int m, const rocsolver_int n,
-                                        const rocsolver_int k, U V, const rocblas_int shiftV, const rocsolver_int ldv, 
-                                        const rocsolver_int strideV, T *F, const rocsolver_int shiftF,
-                                        const rocsolver_int ldf, const rocsolver_int strideF, 
-                                        U A, const rocsolver_int shiftA, const rocsolver_int lda, const rocsolver_int strideA,
-                                        const rocsolver_int batch_count)
+                                        const rocblas_int m, const rocblas_int n,
+                                        const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, 
+                                        const rocblas_stride strideV, T *F, const rocblas_int shiftF,
+                                        const rocblas_int ldf, const rocblas_stride strideF, 
+                                        U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
+                                        const rocblas_int batch_count)
 {
     // quick return
     if (!m || !n || !batch_count)
@@ -100,8 +100,8 @@ rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver
 
     //determine the side, size of workspace
     //and whether V is trapezoidal
-    rocsolver_operation transp; 
-    rocsolver_fill uploV;
+    rocblas_operation transp; 
+    rocblas_fill uploV;
     bool trap;
     rocblas_int order, ldw;
     bool colwise = (storev == rocsolver_column_wise); 
@@ -134,7 +134,7 @@ rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver
     }
 
     //memory in GPU (workspace)
-    rocblas_int strideW = ldw*order;
+    rocblas_stride strideW = ldw*order;
     T *work;
     hipMalloc(&work, sizeof(T)*strideW*batch_count);
 
@@ -148,7 +148,7 @@ rocblas_status rocsolver_larfb_template(rocsolver_handle handle, const rocsolver
     hipLaunchKernelGGL(copymatA1,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,ldw,order,A,shiftA,lda,strideA,work);
     
     // BACKWARD DIRECTION TO BE IMPLEMENTED...
-    rocsolver_fill uploT = rocblas_fill_upper;
+    rocblas_fill uploT = rocblas_fill_upper;
     if (direct == rocsolver_backward_direction)
         return rocblas_status_not_implemented;
     

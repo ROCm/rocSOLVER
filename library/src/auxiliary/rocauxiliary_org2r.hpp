@@ -19,7 +19,7 @@
 
 template <typename T, typename U>
 __global__ void init_ident_col(const rocblas_int m, const rocblas_int n, const rocblas_int k, U A,
-                               const rocsolver_int shiftA, const rocsolver_int lda, const rocsolver_int strideA)
+                               const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA)
 {
     const auto blocksizex = hipBlockDim_x;
     const auto blocksizey = hipBlockDim_y;
@@ -40,10 +40,10 @@ __global__ void init_ident_col(const rocblas_int m, const rocblas_int n, const r
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_org2r_template(rocsolver_handle handle, const rocsolver_int m, 
-                                   const rocsolver_int n, const rocsolver_int k, U A, const rocblas_int shiftA, 
-                                   const rocsolver_int lda, const rocsolver_int strideA, T* ipiv, 
-                                   const rocsolver_int strideP, const rocsolver_int batch_count)
+rocblas_status rocsolver_org2r_template(rocblas_handle handle, const rocblas_int m, 
+                                   const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
+                                   const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
+                                   const rocblas_stride strideP, const rocblas_int batch_count)
 {
     // quick return
     if (!n || !m || !batch_count)
@@ -73,7 +73,7 @@ rocblas_status rocsolver_org2r_template(rocsolver_handle handle, const rocsolver
     hipLaunchKernelGGL(init_ident_col<T>,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,
                         m,n,k,A,shiftA,lda,strideA);
 
-    for (int j = k-1; j >= 0; --j) {
+    for (rocblas_int j = k-1; j >= 0; --j) {
         // apply H(i) to Q(i:m,i:n) from the left
         if (j < n - 1) {
             rocsolver_larf_template(handle,rocblas_side_left,           //side

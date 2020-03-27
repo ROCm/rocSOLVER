@@ -5,12 +5,12 @@
 #include "rocauxiliary_larfb.hpp"
 
 template <typename T>
-rocblas_status rocsolver_larfb_impl(rocsolver_handle handle, const rocsolver_side side, 
-                                    const rocsolver_operation trans, const rocsolver_direct direct, 
+rocblas_status rocsolver_larfb_impl(rocblas_handle handle, const rocblas_side side, 
+                                    const rocblas_operation trans, const rocsolver_direct direct, 
                                     const rocsolver_storev storev,
-                                    const rocsolver_int m, const rocsolver_int n, 
-                                    const rocsolver_int k, T* V, const rocsolver_int ldv, T* F, const rocsolver_int ldf,
-                                    T* A, const rocsolver_int lda)
+                                    const rocblas_int m, const rocblas_int n, 
+                                    const rocblas_int k, T* V, const rocblas_int ldv, T* F, const rocblas_int ldf,
+                                    T* A, const rocblas_int lda)
 {
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -29,9 +29,9 @@ rocblas_status rocsolver_larfb_impl(rocsolver_handle handle, const rocsolver_sid
     if (!V || !A || !F)
         return rocblas_status_invalid_pointer;
 
-    rocblas_int stridev = 0;
-    rocblas_int stridea = 0;
-    rocblas_int stridef = 0;
+    rocblas_stride stridev = 0;
+    rocblas_stride stridea = 0;
+    rocblas_stride stridef = 0;
     rocblas_int batch_count=1;
 
     return rocsolver_larfb_template<T>(handle,side,trans,direct,storev, 
@@ -57,38 +57,38 @@ rocblas_status rocsolver_larfb_impl(rocsolver_handle handle, const rocsolver_sid
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocsolver_status rocsolver_slarfb(rocsolver_handle handle,
-                                                 const rocsolver_side side,
-                                                 const rocsolver_operation trans,
+ROCSOLVER_EXPORT rocblas_status rocsolver_slarfb(rocblas_handle handle,
+                                                 const rocblas_side side,
+                                                 const rocblas_operation trans,
                                                  const rocsolver_direct direct,
                                                  const rocsolver_storev storev,
-                                                 const rocsolver_int m,
-                                                 const rocsolver_int n,
-                                                 const rocsolver_int k,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
                                                  float *V,
-                                                 const rocsolver_int ldv,
+                                                 const rocblas_int ldv,
                                                  float *T,
-                                                 const rocsolver_int ldt,
+                                                 const rocblas_int ldt,
                                                  float *A,
-                                                 const rocsolver_int lda)
+                                                 const rocblas_int lda)
 {
     return rocsolver_larfb_impl<float>(handle, side, trans, direct, storev, m, n, k, V, ldv, T, ldt, A, lda);
 }
 
-ROCSOLVER_EXPORT rocsolver_status rocsolver_dlarfb(rocsolver_handle handle,
-                                                 const rocsolver_side side,
-                                                 const rocsolver_operation trans,
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfb(rocblas_handle handle,
+                                                 const rocblas_side side,
+                                                 const rocblas_operation trans,
                                                  const rocsolver_direct direct,
                                                  const rocsolver_storev storev,
-                                                 const rocsolver_int m,
-                                                 const rocsolver_int n,
-                                                 const rocsolver_int k,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
                                                  double *V,
-                                                 const rocsolver_int ldv,
+                                                 const rocblas_int ldv,
                                                  double *T,
-                                                 const rocsolver_int ldt,
+                                                 const rocblas_int ldt,
                                                  double *A,
-                                                 const rocsolver_int lda)
+                                                 const rocblas_int lda)
 {
     return rocsolver_larfb_impl<double>(handle, side, trans, direct, storev, m, n, k, V, ldv, T, ldt, A, lda);
 }

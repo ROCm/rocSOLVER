@@ -20,12 +20,12 @@
 #include "../auxiliary/rocauxiliary_larft.hpp"
 
 template <typename T, typename U>
-rocblas_status rocsolver_ormlq_template(rocsolver_handle handle, const rocsolver_side side, const rocsolver_operation trans, 
-                                   const rocsolver_int m, const rocsolver_int n, 
-                                   const rocsolver_int k, U A, const rocsolver_int shiftA, const rocsolver_int lda, 
-                                   const rocsolver_int strideA, T* ipiv, 
-                                   const rocsolver_int strideP, U C, const rocsolver_int shiftC, const rocsolver_int ldc,
-                                   const rocsolver_int strideC, const rocsolver_int batch_count)
+rocblas_status rocsolver_ormlq_template(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans, 
+                                   const rocblas_int m, const rocblas_int n, 
+                                   const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda, 
+                                   const rocblas_stride strideA, T* ipiv, 
+                                   const rocblas_stride strideP, U C, const rocblas_int shiftC, const rocblas_int ldc,
+                                   const rocblas_stride strideC, const rocblas_int batch_count)
 {
     // quick return
     if (!n || !m || !k || !batch_count)
@@ -41,13 +41,13 @@ rocblas_status rocsolver_ormlq_template(rocsolver_handle handle, const rocsolver
     //memory in GPU (workspace)
     T* work;
     rocblas_int ldw = ORMLQ_ORML2_BLOCKSIZE;
-    rocblas_int strideW = ldw *ldw;
+    rocblas_stride strideW = ldw *ldw;
     hipMalloc(&work, sizeof(T)*strideW*batch_count);    
 
     // determine limits and indices
     bool left = (side == rocblas_side_left);
     bool transpose = (trans == rocblas_operation_transpose);
-    int start, step, ncol, nrow, ic, jc, order;
+    rocblas_int start, step, ncol, nrow, ic, jc, order;
     if (left) {
         ncol = n;
         order = m;
@@ -78,8 +78,8 @@ rocblas_status rocsolver_ormlq_template(rocsolver_handle handle, const rocsolver
     else
         transB = rocblas_operation_transpose;
 
-    int i;
-    for (int j = 0; j < k; j += ldw) {
+    rocblas_int i;
+    for (rocblas_int j = 0; j < k; j += ldw) {
         i = start + step*j;    // current householder block
         if (left) {
             nrow = m - i;

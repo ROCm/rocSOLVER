@@ -17,7 +17,7 @@
 #include "common_device.hpp"
 
 template <typename T, typename U>
-__global__ void set_taubeta(T *tau, const rocblas_int strideP, T *norms, U alpha, const rocblas_int shifta, const rocblas_int stride)
+__global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms, U alpha, const rocblas_int shifta, const rocblas_stride stride)
 {
     int b = hipBlockIdx_x;
 
@@ -43,8 +43,8 @@ __global__ void set_taubeta(T *tau, const rocblas_int strideP, T *norms, U alpha
 
 template <typename T, typename U>
 rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int n, U alpha, const rocblas_int shifta, 
-                                        U x, const rocblas_int shiftx, const rocblas_int incx, const rocblas_int stridex,
-                                        T *tau, const rocblas_int strideP, const rocblas_int batch_count)
+                                        U x, const rocblas_int shiftx, const rocblas_int incx, const rocblas_stride stridex,
+                                        T *tau, const rocblas_stride strideP, const rocblas_int batch_count)
 {
     // quick return
     if (n == 0 || !batch_count)

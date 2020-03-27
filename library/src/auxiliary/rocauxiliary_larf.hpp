@@ -18,10 +18,10 @@
 #include <vector>
 
 template <typename T, typename U>
-rocblas_status rocsolver_larf_template(rocsolver_handle handle, const rocsolver_side side, const rocsolver_int m,
-                                        const rocsolver_int n, U x, const rocblas_int shiftx, const rocsolver_int incx, 
-                                        const rocblas_int stridex, const T* alpha, const rocblas_int stridep, U A, const rocblas_int shiftA, 
-                                        const rocsolver_int lda, const rocblas_int stridea, const rocblas_int batch_count)
+rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side side, const rocblas_int m,
+                                        const rocblas_int n, U x, const rocblas_int shiftx, const rocblas_int incx, 
+                                        const rocblas_stride stridex, const T* alpha, const rocblas_stride stridep, U A, const rocblas_int shiftA, 
+                                        const rocblas_int lda, const rocblas_stride stridea, const rocblas_int batch_count)
 {
     // quick return
     if (n == 0 || m == 0 || !batch_count)

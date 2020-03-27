@@ -22,7 +22,7 @@
 
 template <typename T, typename U>
 __global__ void set_zero_col(const rocblas_int n, const rocblas_int kk, U A,
-                         const rocsolver_int shiftA, const rocsolver_int lda, const rocsolver_int strideA)
+                         const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA)
 {
     const auto blocksizex = hipBlockDim_x;
     const auto blocksizey = hipBlockDim_y;
@@ -38,10 +38,10 @@ __global__ void set_zero_col(const rocblas_int n, const rocblas_int kk, U A,
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_orgqr_template(rocsolver_handle handle, const rocsolver_int m, 
-                                   const rocsolver_int n, const rocsolver_int k, U A, const rocblas_int shiftA, 
-                                   const rocsolver_int lda, const rocsolver_int strideA, T* ipiv, 
-                                   const rocsolver_int strideP, const rocsolver_int batch_count)
+rocblas_status rocsolver_orgqr_template(rocblas_handle handle, const rocblas_int m, 
+                                   const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
+                                   const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
+                                   const rocblas_stride strideP, const rocblas_int batch_count)
 {
     // quick return
     if (!n || !m || !batch_count)
@@ -57,7 +57,7 @@ rocblas_status rocsolver_orgqr_template(rocsolver_handle handle, const rocsolver
     //memory in GPU (workspace)
     T* work;
     rocblas_int ldw = GEQRF_GEQR2_BLOCKSIZE;
-    rocblas_int strideW = ldw *ldw;
+    rocblas_stride strideW = ldw *ldw;
     hipMalloc(&work, sizeof(T)*strideW*batch_count);
 
     // start of first blocked block

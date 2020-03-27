@@ -17,9 +17,9 @@
 #include "common_device.hpp"
 
 template <typename T, typename U>
-__global__ void set_triangular(const rocsolver_int k, U V, const rocsolver_int shiftV, const rocsolver_int ldv, const rocsolver_int strideV, 
-                         T* tau, const rocsolver_int strideT, 
-                         T* F, const rocsolver_int ldf, const rocsolver_int strideF, const rocsolver_storev storev)
+__global__ void set_triangular(const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, const rocblas_stride strideV, 
+                         T* tau, const rocblas_stride strideT, 
+                         T* F, const rocblas_int ldf, const rocblas_stride strideF, const rocsolver_storev storev)
 {
     const auto blocksize = hipBlockDim_x;
     const auto b = hipBlockIdx_z;
@@ -46,7 +46,7 @@ __global__ void set_triangular(const rocsolver_int k, U V, const rocsolver_int s
 }
 
 template <typename T>
-__global__ void set_tau(const rocsolver_int k, T* tau, const rocsolver_int strideT)
+__global__ void set_tau(const rocblas_int k, T* tau, const rocblas_stride strideT)
 {
     const auto blocksize = hipBlockDim_x;
     const auto b = hipBlockIdx_x;
@@ -61,11 +61,11 @@ __global__ void set_tau(const rocsolver_int k, T* tau, const rocsolver_int strid
          
 
 template <typename T, typename U>
-rocblas_status rocsolver_larft_template(rocsolver_handle handle, const rocsolver_direct direct, 
-                                   const rocsolver_storev storev, const rocsolver_int n,
-                                   const rocsolver_int k, U V, const rocblas_int shiftV, const rocsolver_int ldv, 
-                                   const rocsolver_int strideV, T* tau, const rocsolver_int strideT, T* F, 
-                                   const rocsolver_int ldf, const rocsolver_int strideF, const rocsolver_int batch_count)
+rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocsolver_direct direct, 
+                                   const rocsolver_storev storev, const rocblas_int n,
+                                   const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, 
+                                   const rocblas_stride strideV, T* tau, const rocblas_stride strideT, T* F, 
+                                   const rocblas_int ldf, const rocblas_stride strideF, const rocblas_int batch_count)
 {
     // quick return
     if (!n || !batch_count)
@@ -117,7 +117,7 @@ rocblas_status rocsolver_larft_template(rocsolver_handle handle, const rocsolver
     rocblas_operation trans;  
 
     
-    for (int i = 1; i < k; ++i) { 
+    for (rocblas_int i = 1; i < k; ++i) { 
         //compute the matrix vector product, using the householder vectors
         for (int b=0;b<batch_count;++b) {
             tp = tau + b*strideT;

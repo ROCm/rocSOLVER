@@ -18,8 +18,8 @@
 template <typename T, typename U>
 rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_operation trans,
                          const rocblas_int n, const rocblas_int nrhs, U A, const rocblas_int shiftA,
-                         const rocblas_int lda, const rocblas_int strideA, const rocblas_int *ipiv, const rocblas_int strideP, U B,
-                         const rocblas_int shiftB, const rocblas_int ldb, const rocblas_int strideB, const rocblas_int batch_count) 
+                         const rocblas_int lda, const rocblas_stride strideA, const rocblas_int *ipiv, const rocblas_stride strideP, U B,
+                         const rocblas_int shiftB, const rocblas_int ldb, const rocblas_stride strideB, const rocblas_int batch_count) 
 {
     // quick return
     if (n == 0 || nrhs == 0 || batch_count == 0) {

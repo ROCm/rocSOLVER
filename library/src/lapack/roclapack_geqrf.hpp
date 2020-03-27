@@ -20,13 +20,12 @@
 #include "roclapack_geqr2.hpp"
 #include "../auxiliary/rocauxiliary_larft.hpp"
 #include "../auxiliary/rocauxiliary_larfb.hpp"
-#include <vector>
 
 template <typename T, typename U>
 rocblas_status rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
-                                        rocblas_int const strideA, T* ipiv,  
-                                        const rocblas_int strideP, const rocblas_int batch_count)
+                                        const rocblas_stride strideA, T* ipiv,  
+                                        const rocblas_stride strideP, const rocblas_int batch_count)
 {
     // quick return
     if (m == 0 || n == 0 || batch_count == 0) 
@@ -45,7 +44,7 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int
     //memory in GPU (workspace)
     T* work;
     rocblas_int ldw = GEQRF_GEQR2_BLOCKSIZE;
-    rocblas_int strideW = ldw *ldw;
+    rocblas_stride strideW = ldw *ldw;
     hipMalloc(&work, sizeof(T)*strideW*batch_count);
 
     while (j < dim - GEQRF_GEQR2_SWITCHSIZE) {

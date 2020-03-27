@@ -21,7 +21,7 @@
 #include "../auxiliary/rocauxiliary_laswp.hpp"
 
 inline __global__ void getrf_check_singularity(const rocblas_int n, const rocblas_int j, rocblas_int *ipivA, const rocblas_int shiftP,
-                                const rocblas_int strideP, const rocblas_int *iinfo, rocblas_int *info) {
+                                const rocblas_stride strideP, const rocblas_int *iinfo, rocblas_int *info) {
     int id = hipBlockIdx_y;
 
     rocblas_int *ipiv = ipivA + id*strideP + shiftP;
@@ -38,8 +38,8 @@ inline __global__ void getrf_check_singularity(const rocblas_int n, const rocbla
 
 template <typename T, typename U>
 rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int m,
-                                        const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_int strideA,
-                                        rocblas_int *ipiv, const rocblas_int shiftP, const rocblas_int strideP, rocblas_int *info, const rocblas_int batch_count) {
+                                        const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
+                                        rocblas_int *ipiv, const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int *info, const rocblas_int batch_count) {
     // quick return
     if (m == 0 || n == 0 || batch_count == 0) 
         return rocblas_status_success;
@@ -47,15 +47,22 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the algorithm
     if (m < GETRF_GETF2_SWITCHSIZE || n < GETRF_GETF2_SWITCHSIZE) 
         return rocsolver_getf2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count);
-  
+
     #ifdef batched
         // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
         //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
         T* AA[batch_count];
         hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
+        T const *const *Ax = A;     // casting to pointer-to-constant for calling rocblas_gemm
+        const bool BATCHED = true;
+        const bool STRIDED = false;
     #else
         T* AA = A;
+        T const *Ax = A;            // casting to pointer-to-constant for calling rocblas_gemm
+        const bool BATCHED = false;
+        const bool STRIDED = true;
     #endif
+    
 
     //constants to use when calling rocablas functions
     T one = 1;                    //constant 1 in host
@@ -91,7 +98,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
     //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
     //      BE MADE TO THE CORRESPONDING TEMPLATE_FUNCTIONS ****
 
-    for (int j = 0; j < dim; j += GETRF_GETF2_SWITCHSIZE) {
+    for (rocblas_int j = 0; j < dim; j += GETRF_GETF2_SWITCHSIZE) {
         // Factor diagonal and subdiagonal blocks 
         jb = min(dim - j, GETRF_GETF2_SWITCHSIZE);  //number of columns in the block
         hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,iinfo,batch_count,0);
@@ -122,14 +129,20 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
 
             // update trailing submatrix
             if (j + jb < m) {
-                for (int b=0;b<batch_count;++b) {
-                    M = load_ptr_batch<T>(AA,shiftA,b,strideA);
-                    rocblas_gemm(handle, rocblas_operation_none, rocblas_operation_none,
-                                 (m - j - jb), (n - j - jb), jb, minoneInt,
-                                 (M + idx2D(j + jb, j, lda)), lda, (M + idx2D(j, j + jb, lda)),
-                                 lda, oneInt,
-                                 (M + idx2D(j + jb, j + jb, lda)), lda);
-                }
+//                for (int b=0;b<batch_count;++b) {
+//                   M = load_ptr_batch<T>(AA,shiftA,b,strideA);
+//                    rocblas_gemm(handle, rocblas_operation_none, rocblas_operation_none,
+//                                 (m - j - jb), (n - j - jb), jb, minoneInt,
+//                                 (M + idx2D(j + jb, j, lda)), lda, (M + idx2D(j, j + jb, lda)),
+//                                 lda, oneInt,
+//                                 (M + idx2D(j + jb, j + jb, lda)), lda);
+//                }
+                rocblas_gemm_template<BATCHED,STRIDED,T>(handle, rocblas_operation_none, rocblas_operation_none,
+                                                         m - j - jb, n - j - jb, jb, minoneInt,
+                                                         Ax, shiftA+idx2D(j + jb, j, lda), lda, strideA,
+                                                         Ax, shiftA+idx2D(j, j + jb, lda), lda, strideA, oneInt,
+                                                         A, shiftA+idx2D(j + jb, j + jb, lda), lda, strideA, batch_count);
+
             }
         } 
     }

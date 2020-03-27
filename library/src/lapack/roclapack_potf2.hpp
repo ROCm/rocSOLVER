@@ -44,7 +44,7 @@ template <typename T, typename U>
 rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         const rocblas_fill uplo, const rocblas_int n, U A,
                                         const rocblas_int shiftA,
-                                        const rocblas_int lda, const rocblas_int strideA,
+                                        const rocblas_int lda, const rocblas_stride strideA,
                                         rocblas_int *info, const rocblas_int batch_count) 
 {
     // quick return
