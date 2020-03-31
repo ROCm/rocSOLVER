@@ -274,7 +274,7 @@ fi
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,package,install,clients,dependencies,hip_clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static --options hipcds -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,package,install,clients,dependencies,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static --options hipcds -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
