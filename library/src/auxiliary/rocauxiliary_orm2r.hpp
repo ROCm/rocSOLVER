@@ -13,7 +13,6 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "helpers.h"
 #include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_larf.hpp"
 
@@ -32,6 +31,7 @@ rocblas_status rocsolver_orm2r_template(rocblas_handle handle, const rocblas_sid
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
+    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
     // memory in GPU (workspace)
     T *diag;
     hipMalloc(&diag,sizeof(T)*batch_count);

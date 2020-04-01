@@ -22,14 +22,14 @@ rocblas_status rocsolver_orgqr_impl(rocblas_handle handle, const rocblas_int m, 
     rocblas_stride strideP = 0;
     rocblas_int batch_count=1;
 
-    return rocsolver_orgqr_template<T>(handle,
-                                      m,n,k,
-                                      A,0,    //shifted 0 entries
-                                      lda,
-                                      strideA,
-                                      ipiv,
-                                      strideP,
-                                      batch_count);
+    return rocsolver_orgqr_template<false,false,T>(handle,
+                                                  m,n,k,
+                                                  A,0,    //shifted 0 entries
+                                                  lda,
+                                                  strideA,
+                                                  ipiv,
+                                                  strideP,
+                                                  batch_count);
 }
 
 

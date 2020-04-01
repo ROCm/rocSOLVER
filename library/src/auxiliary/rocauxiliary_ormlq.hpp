@@ -13,13 +13,12 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "helpers.h"
 #include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_orml2.hpp"
 #include "../auxiliary/rocauxiliary_larfb.hpp"
 #include "../auxiliary/rocauxiliary_larft.hpp"
 
-template <typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_ormlq_template(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans, 
                                    const rocblas_int m, const rocblas_int n, 
                                    const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda, 
@@ -38,6 +37,7 @@ rocblas_status rocsolver_ormlq_template(rocblas_handle handle, const rocblas_sid
     if (k <= ORMLQ_ORML2_BLOCKSIZE) 
         return rocsolver_orml2_template<T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C, shiftC, ldc, strideC, batch_count);
 
+    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
     //memory in GPU (workspace)
     T* work;
     rocblas_int ldw = ORMLQ_ORML2_BLOCKSIZE;
@@ -90,7 +90,7 @@ rocblas_status rocsolver_ormlq_template(rocblas_handle handle, const rocblas_sid
         }
 
         // generate triangular factor of current block reflector
-        rocsolver_larft_template(handle,rocsolver_forward_direction,rocsolver_row_wise,
+        rocsolver_larft_template<T>(handle,rocsolver_forward_direction,rocsolver_row_wise,
                                  order-i,min(ldw,k-i),
                                  A, shiftA + idx2D(i,i,lda),lda, strideA,
                                  ipiv + i, strideP,
@@ -98,7 +98,7 @@ rocblas_status rocsolver_ormlq_template(rocblas_handle handle, const rocblas_sid
                                  batch_count);
 
         // apply current block reflector
-        rocsolver_larfb_template(handle,side,transB,
+        rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,side,transB,
                                  rocsolver_forward_direction,rocsolver_row_wise,
                                  nrow,ncol,min(ldw,k-i),
                                  A, shiftA + idx2D(i,i,lda),lda, strideA,

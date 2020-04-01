@@ -20,12 +20,12 @@ rocblas_status rocsolver_gelqf_strided_batched_impl(rocblas_handle handle, const
         return rocblas_status_invalid_size;
 
 
-    return rocsolver_gelqf_template<T>(handle,m,n,
-                                    A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
-                                    lda,strideA,
-                                    ipiv,
-                                    stridep,
-                                    batch_count);
+    return rocsolver_gelqf_template<false,true,T>(handle,m,n,
+                                                    A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
+                                                    lda,strideA,
+                                                    ipiv,
+                                                    stridep,
+                                                    batch_count);
 }
 
 

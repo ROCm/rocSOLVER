@@ -18,12 +18,12 @@ rocblas_status rocsolver_getrf_strided_batched_impl(rocblas_handle handle, const
     if (!A || !ipiv || !info)
         return rocblas_status_invalid_pointer;
 
-    return rocsolver_getrf_template<T>(handle,m,n,
-                                        A,0,    //The matrix is shifted 0 entries (will work on the entire matrix)
-                                        lda,strideA,
-                                        ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)
-                                        strideP,
-                                        info,batch_count);
+    return rocsolver_getrf_template<false,true,T>(handle,m,n,
+                                                    A,0,    //The matrix is shifted 0 entries (will work on the entire matrix)
+                                                    lda,strideA,
+                                                    ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)
+                                                    strideP,
+                                                    info,batch_count);
 }
 
 

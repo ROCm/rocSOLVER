@@ -13,8 +13,6 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "definitions.h"
-#include "helpers.h"
 #include "common_device.hpp"
 #include "ideal_sizes.hpp"
 #include "roclapack_potf2.hpp"
@@ -42,9 +40,9 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     if (n < POTRF_POTF2_SWITCHSIZE) 
         return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info, batch_count);
 
+    // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
+    //      TRSM_BATCH FUNCTIONALITY IS ENABLED. ****
     #ifdef batched
-        // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-        //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
         T* AA[batch_count];
         hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
     #else
@@ -60,6 +58,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     hipMalloc(&d_minone, sizeof(T));
     hipMemcpy(d_minone, &h_minone, sizeof(T), hipMemcpyHostToDevice);
 
+    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
     //info in device (device memory workspace to avoid synchronization with CPU)
     rocblas_int *iinfo; 
     hipMalloc(&iinfo, sizeof(rocblas_int)*batch_count);
@@ -75,9 +74,8 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     //info=0 (starting with a positive definite matrix)
     hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count,0);
 
-    // **** BATCH IS EXECUTED IN A FOR-LOOP UNTIL BATCH-BLAS
-    //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
-    //      BE MADE TO THE CORRESPONDING TEMPLATE_FUNCTIONS ****
+    // **** TRSM_BATCH IS EXECUTED IN A FOR-LOOP UNTIL 
+    //      FUNCITONALITY IS ENABLED. ****
 
     if (uplo == rocblas_fill_upper) { // Compute the Cholesky factorization A = U'*U.
         for (rocblas_int j = 0; j < n; j += POTRF_POTF2_SWITCHSIZE) {
@@ -98,15 +96,9 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                              (M + idx2D(j, j, lda)), lda, (M + idx2D(j, j + jb, lda)), lda);
                 }
 
-                // *** GEMM MUST BE REPLACED BY SYRK ONCE IT IS AVAILABLE IN ROCBLAS ****                
-                for (int b=0;b<batch_count;++b) {
-                    M = load_ptr_batch<T>(AA,shiftA,b,strideA);
-                    rocblas_gemm(handle, rocblas_operation_transpose, rocblas_operation_none,
-                                 (n - j - jb), (n - j - jb), jb, d_minone,
-                                 (M + idx2D(j, j + jb, lda)), lda, (M + idx2D(j, j + jb, lda)),
-                                 lda, d_one,
-                                 (M + idx2D(j + jb, j + jb, lda)), lda);
-                }
+                rocblas_syrk<T>(handle, uplo, rocblas_operation_transpose, n-j-jb, jb, d_minone,
+                                A, shiftA + idx2D(j,j+jb,lda), lda, strideA, d_one,
+                                A, shiftA + idx2D(j+jb,j+jb,lda), lda, strideA, batch_count);
             }
         }
 
@@ -129,15 +121,9 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                              (M + idx2D(j, j, lda)), lda, (M + idx2D(j + jb, j, lda)), lda);
                 }
 
-                // *** GEMM MUST BE REPLACED BY SYRK ONCE IT IS AVAILABLE IN ROCBLAS ****                
-                for (int b=0;b<batch_count;++b) {
-                    M = load_ptr_batch<T>(AA,shiftA,b,strideA);
-                    rocblas_gemm(handle, rocblas_operation_none, rocblas_operation_transpose,
-                                 (n - j - jb), (n - j - jb), jb, d_minone,
-                                 (M + idx2D(j + jb, j, lda)), lda, (M + idx2D(j + jb, j, lda)),
-                                 lda, d_one,
-                                 (M + idx2D(j + jb, j + jb, lda)), lda);
-                }
+                rocblas_syrk<T>(handle, uplo, rocblas_operation_none, n-j-jb, jb, d_minone,
+                                A, shiftA + idx2D(j+jb,j,lda), lda, strideA, d_one,
+                                A, shiftA + idx2D(j+jb,j+jb,lda), lda, strideA, batch_count);
             }
         }
     }

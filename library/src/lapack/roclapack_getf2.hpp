@@ -13,12 +13,9 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "definitions.h"
-#include "helpers.h"
 #include "ideal_sizes.hpp"
 #include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_laswp.hpp"
-#include "rocblas-exported-proto.hpp"
 
 template <typename T, typename U>
 inline __global__ void getf2_check_singularity(U AA, const rocblas_int shiftA, const rocblas_stride strideA,
@@ -52,16 +49,14 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
     // quick return
     if (m == 0 || n == 0 || batch_count == 0) 
         return rocblas_status_success;
-    
+        
+    // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
+    //      IAMAX_BATCH FUNCTIONALITY IS ENABLED. ****
     #ifdef batched
-        // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-        //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
         T* AA[batch_count];
         hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
-        T const *const *Ax = A;     // casting to pointer-to-constant for calling rocblas_ger
     #else
         T* AA = A;
-        T const *Ax = A;            // casting to pointer-to-constant for calling rocblas_ger
     #endif
 
     //constants to use when calling rocablas functions
@@ -71,6 +66,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
     hipMalloc(&minoneInt, sizeof(T));
     hipMemcpy(minoneInt, &minone, sizeof(T), hipMemcpyHostToDevice);
 
+    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
     //pivoting info in device (to avoid continuous synchronization with CPU)
     T *pivotGPU; 
     hipMalloc(&pivotGPU, sizeof(T)*batch_count);
@@ -88,9 +84,9 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
     //info=0 (starting with a nonsingular matrix)
     hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count,0);
     
-    // **** BATCH IS EXECUTED IN A FOR-LOOP UNTIL BATCH-BLAS
-    //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
-    //      BE MADE TO THE CORRESPONDING TEMPLATE_FUNCTIONS ****
+
+    // **** IAMAX_BATCH IS EXECUTED IN A FOR-LOOP UNTIL 
+    //      FUNCITONALITY IS ENABLED. ****
 
     for (rocblas_int j = 0; j < dim; ++j) {
         // find pivot. Use Fortran 1-based indexing for the ipiv array as iamax does that as well!
@@ -108,15 +104,15 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
         rocsolver_laswp_template<T>(handle, n, A, shiftA, lda, strideA, j+1, j+1, ipiv, shiftP, strideP, 1, batch_count);
 
         // Compute elements J+1:M of J'th column
-        rocblas_scal_template<256,T>(handle, m-j-1, pivotGPU, 1, A, shiftA+idx2D(j+1, j, lda), 1, strideA, batch_count);
+        rocblas_scal<T>(handle, m-j-1, pivotGPU, 1, A, shiftA+idx2D(j+1, j, lda), 1, strideA, batch_count);
 
         // update trailing submatrix
         if (j < min(m, n) - 1) {
-            rocblas_ger_template<false,T>(handle, m-j-1, n-j-1, minoneInt, 0,
-                                          Ax, shiftA+idx2D(j+1, j, lda), 1, strideA, 
-                                          Ax, shiftA+idx2D(j, j+1, lda), lda, strideA, 
-                                          A, shiftA+idx2D(j+1, j+1, lda), lda, strideA,
-                                          batch_count); 
+            rocblas_ger<false,T>(handle, m-j-1, n-j-1, minoneInt, 0,
+                                 A, shiftA+idx2D(j+1, j, lda), 1, strideA, 
+                                 A, shiftA+idx2D(j, j+1, lda), lda, strideA, 
+                                 A, shiftA+idx2D(j+1, j+1, lda), lda, strideA,
+                                 batch_count); 
         }
     }
 

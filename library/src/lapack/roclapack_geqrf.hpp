@@ -13,15 +13,13 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "definitions.h"
-#include "helpers.h"
 #include "ideal_sizes.hpp"
 #include "common_device.hpp"
 #include "roclapack_geqr2.hpp"
 #include "../auxiliary/rocauxiliary_larft.hpp"
 #include "../auxiliary/rocauxiliary_larfb.hpp"
 
-template <typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                         const rocblas_stride strideA, T* ipiv,  
@@ -41,6 +39,7 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int
     rocblas_int dim = min(m, n);    //total number of pivots
     rocblas_int jb, j = 0;
 
+    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
     //memory in GPU (workspace)
     T* work;
     rocblas_int ldw = GEQRF_GEQR2_BLOCKSIZE;
@@ -63,7 +62,7 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int
                                         work, ldw, strideW, batch_count);
 
             //apply the block reflector
-            rocsolver_larfb_template<T>(handle,rocblas_side_left,rocblas_operation_transpose,rocsolver_forward_direction,
+            rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,rocblas_side_left,rocblas_operation_transpose,rocsolver_forward_direction,
                                         rocsolver_column_wise,m-j, n-j-jb, jb,
                                         A, shiftA + idx2D(j,j,lda), lda, strideA,
                                         work, 0, ldw, strideW,

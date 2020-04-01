@@ -13,10 +13,7 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "definitions.h"
-#include "helpers.h"
 #include "common_device.hpp"
-#include "ideal_sizes.hpp"
 
 template <typename T, typename U> 
 __global__ void sqrtDiagOnward(U A, const rocblas_int shiftA, const rocblas_int strideA, const size_t loc, 
@@ -50,16 +47,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     // quick return
     if (n == 0 || batch_count == 0) 
         return rocblas_status_success;
-
-    #ifdef batched
-        // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-        //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
-        T* AA[batch_count];
-        hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
-    #else
-        T* AA = A;
-    #endif
-
+    
     //constants for rocblas functions calls
     T h_one = 1;
     T h_minone = -1;
@@ -69,6 +57,11 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     hipMalloc(&d_minone, sizeof(T));
     hipMemcpy(d_minone, &h_minone, sizeof(T), hipMemcpyHostToDevice);
 
+    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
+    // workspace on GPU (for reduction in rocblas_dot)
+    size_t sizeW = sizeof(T) * ((n-1)/ROCBLAS_DOT_NB + 2) * batch_count;
+    T* work;
+    hipMalloc(&work, sizeW);
     //diagonal info in device (device memory workspace to avoid synchronization with CPU)
     T *pivotGPU; 
     hipMalloc(&pivotGPU, sizeof(T)*batch_count);
@@ -83,61 +76,43 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     //info=0 (starting with a positive definite matrix)
     hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count,0);
 
-    // **** BATCH IS EXECUTED IN A FOR-LOOP UNTIL BATCH-BLAS
-    //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
-    //      BE MADE TO THE CORRESPONDING TEMPLATE_FUNCTIONS ****
-
     if (uplo == rocblas_fill_upper) { // Compute the Cholesky factorization A = U'*U.
         for (rocblas_int j = 0; j < n; ++j) {
             // Compute U(J,J) and test for non-positive-definiteness.
-            for (int b=0;b<batch_count;++b) {
-                M = load_ptr_batch<T>(AA,shiftA,b,strideA);
-                rocblas_dot<T>(handle, j, (M + idx2D(0, j, lda)), 1,
-                                (M + idx2D(0, j, lda)), 1, (pivotGPU + b));
-            }
+            rocblas_dot<false,T>(handle, j, A, shiftA + idx2D(0, j, lda), 1, strideA,
+                                 A, shiftA + idx2D(0, j, lda), 1, strideA, batch_count, pivotGPU, work);
+
             hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, 
                                A, shiftA, strideA, idx2D(j, j, lda), j, pivotGPU, info);
 
             // Compute elements J+1:N of row J
             if (j < n - 1) {
-                for (int b=0;b<batch_count;++b) {
-                    M = load_ptr_batch<T>(AA,shiftA,b,strideA);
-                    rocblas_gemv<T>(handle, rocblas_operation_transpose, j, n - j - 1,
-                                    d_minone, (M + idx2D(0, j + 1, lda)), lda, 
-                                    (M + idx2D(0, j, lda)), 1, d_one, (M + idx2D(j, j + 1, lda)), lda);
-                }    
-                for (int b=0;b<batch_count;++b) {
-                    M = load_ptr_batch<T>(AA,shiftA,b,strideA);
-                    rocblas_scal<T>(handle, n - j - 1, (pivotGPU + b),
-                                    (M + idx2D(j, j + 1, lda)), lda);
-                }
+                rocblas_gemv<T>(handle, rocblas_operation_transpose, j, n-j-1, d_minone, 0,
+                                A, shiftA + idx2D(0, j+1, lda), lda, strideA,
+                                A, shiftA + idx2D(0, j, lda), 1, strideA, d_one, 0,
+                                A, shiftA + idx2D(j, j+1, lda), lda, strideA, batch_count);
+                                    
+                rocblas_scal<T>(handle, n-j-1, pivotGPU, 1, A, shiftA + idx2D(j, j+1, lda), lda, strideA, batch_count);
             }
         }
 
     } else { // Compute the Cholesky factorization A = L'*L.
         for (rocblas_int j = 0; j < n; ++j) {
             // Compute L(J,J) and test for non-positive-definiteness.
-            for (int b=0;b<batch_count;++b) {
-                M = load_ptr_batch<T>(AA,shiftA,b,strideA);
-                rocblas_dot<T>(handle, j, (M + idx2D(j, 0, lda)), lda,
-                                (M + idx2D(j, 0, lda)), lda, (pivotGPU + b));
-            }
+            rocblas_dot<false,T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda, strideA,
+                                 A, shiftA + idx2D(j, 0, lda), lda, strideA, batch_count, pivotGPU, work);
+
             hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, 
                                A, shiftA, strideA, idx2D(j, j, lda), j, pivotGPU, info);
 
             // Compute elements J+1:N of row J
             if (j < n - 1) {
-                for (int b=0;b<batch_count;++b) {
-                    M = load_ptr_batch<T>(AA,shiftA,b,strideA);
-                    rocblas_gemv<T>(handle, rocblas_operation_none, n - j - 1, j,
-                                    d_minone, (M + idx2D(j + 1, 0, lda)), lda, 
-                                    (M + idx2D(j, 0, lda)), lda, d_one, (M + idx2D(j + 1, j, lda)), 1);
-                }
-                for (int b=0;b<batch_count;++b) {
-                    M = load_ptr_batch<T>(AA,shiftA,b,strideA);
-                    rocblas_scal<T>(handle, n - j - 1, (pivotGPU + b),
-                                    (M + idx2D(j + 1, j, lda)), 1);
-                }
+                rocblas_gemv<T>(handle, rocblas_operation_none, n-j-1, j, d_minone, 0,
+                                A, shiftA + idx2D(j+1, 0, lda), lda, strideA,
+                                A, shiftA + idx2D(j, 0, lda), lda, strideA, d_one, 0,
+                                A, shiftA + idx2D(j+1, j, lda), 1, strideA, batch_count);
+
+                rocblas_scal<T>(handle, n-j-1, pivotGPU, 1, A, shiftA + idx2D(j+1, j, lda), 1, strideA, batch_count);
             }
         }
     }
@@ -145,6 +120,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     hipFree(pivotGPU);
     hipFree(d_minone);
     hipFree(d_one);
+    hipFree(work);
 
     return rocblas_status_success;
 }

@@ -13,10 +13,7 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "helpers.h"
 #include "common_device.hpp"
-#include <vector>
-
 
 template <typename T, typename U>
 __global__ void copymatA1(const rocblas_int ldw, const rocblas_int order, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, T* work) 
@@ -56,7 +53,7 @@ __global__ void addmatA1(const rocblas_int ldw, const rocblas_int order, U A, co
     }
 }
 
-template <typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_side side, 
                                         const rocblas_operation trans, const rocsolver_direct direct, 
                                         const rocsolver_storev storev,
@@ -73,7 +70,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-    T *Vp, *Ap, *Fp;
+    T *Vp, *Fp;
 
     //constants to use when calling rocablas functions
     T minone = -1;                //constant -1 in host
@@ -85,17 +82,13 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     hipMalloc(&oneInt, sizeof(T));
     hipMemcpy(oneInt, &one, sizeof(T), hipMemcpyHostToDevice);
 
-    T* FF = F;
+    // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
+    //      TRMM_BATCH FUNCTIONALITY IS ENABLED. ****
     #ifdef batched
-        // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-        //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
         T* VV[batch_count];
         hipMemcpy(VV, V, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
-        T* AA[batch_count];
-        hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
     #else
         T* VV = V;
-        T* AA = A;
     #endif
 
     //determine the side, size of workspace
@@ -133,14 +126,15 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
             transp = rocblas_operation_transpose;
     }
 
+    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
     //memory in GPU (workspace)
     rocblas_stride strideW = ldw*order;
     T *work;
     hipMalloc(&work, sizeof(T)*strideW*batch_count);
 
-    // **** BATCH IS EXECUTED IN A FOR-LOOP UNTIL BATCH-BLAS
-    //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
-    //      BE MADE TO THE CORRESPONDING TEMPLATE_FUNCTIONS ****
+
+    // **** TRMM_BATCH IS EXECUTED IN A FOR-LOOP UNTIL 
+    //      FUNCITONALITY IS ENABLED ****
 
     //copy A1 to work
     rocblas_int blocksx = (order - 1)/32 + 1;
@@ -166,20 +160,18 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     //        or 
     // A1 * V1 + A2 * V2
     if (trap) { 
-        for (int b=0;b<batch_count;++b) {
-            Ap = load_ptr_batch<T>(AA,shiftA,b,strideA);
-            Vp = load_ptr_batch<T>(VV,shiftV,b,strideV);
-            if (leftside) { 
-                rocblas_gemm(handle,transp,rocblas_operation_none,ldw,order,m-k,oneInt,
-                             (Vp + offsetV),ldv,
-                             (Ap + idx2D(k,0,lda)),lda,
-                             oneInt,(work + b*strideW),ldw);
-            } else {
-                rocblas_gemm(handle,rocblas_operation_none,transp,ldw,order,n-k,oneInt,
-                             (Ap + idx2D(0,k,lda)),lda,
-                             (Vp + offsetV),ldv,
-                             oneInt,(work + b*strideW),ldw);
-            }
+        if (leftside) { 
+            rocblas_gemm<BATCHED,STRIDED,T>(handle, transp, rocblas_operation_none,
+                                            ldw, order, m-k, oneInt,
+                                            V, shiftV+offsetV, ldv, strideV,
+                                            A, shiftA+idx2D(k,0,lda), lda, strideA, oneInt,
+                                            work, 0, ldw, strideW, batch_count);   
+        } else {
+            rocblas_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, transp,
+                                            ldw, order, n-k, oneInt,
+                                            A, shiftA+idx2D(0,k,lda), lda, strideA, 
+                                            V, shiftV+offsetV, ldv, strideV, oneInt,
+                                            work, 0, ldw, strideW, batch_count);   
         }
     }
 
@@ -188,7 +180,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     //              or
     // (A1 * V1 + A2 * V2) * trans(T)    
     for (int b=0;b<batch_count;++b) {
-        Fp = load_ptr_batch<T>(FF,shiftF,b,strideF);
+        Fp = load_ptr_batch<T>(F,shiftF,b,strideF);
         rocblas_trmm(handle,side,uploT,trans,rocblas_diagonal_non_unit,ldw,order,oneInt,Fp,ldf,(work + b*strideW),ldw);
     }
 
@@ -202,20 +194,18 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
         transp = rocblas_operation_transpose;
 
     if (trap) {
-        for (int b=0;b<batch_count;++b) {
-            Ap = load_ptr_batch<T>(AA,shiftA,b,strideA);
-            Vp = load_ptr_batch<T>(VV,shiftV,b,strideV);
-            if (leftside) { 
-                rocblas_gemm(handle,transp,rocblas_operation_none,m-k,order,ldw,minoneInt,
-                             (Vp + offsetV),ldv,
-                             (work + b*strideW),ldw,
-                             oneInt,(Ap + idx2D(k,0,lda)),lda);
-            } else {
-                rocblas_gemm(handle,rocblas_operation_none,transp,ldw,n-k,order,minoneInt,
-                             (work + b*strideW),ldw,
-                             (Vp + offsetV),ldv,
-                             oneInt,(Ap + idx2D(0,k,lda)),lda);
-            }
+        if (leftside) { 
+            rocblas_gemm<BATCHED,STRIDED,T>(handle, transp, rocblas_operation_none, 
+                                            m-k, order, ldw, minoneInt,
+                                            V, shiftV+offsetV, ldv, strideV, 
+                                            work, 0, ldw, strideW, oneInt,   
+                                            A, shiftA+idx2D(k,0,lda), lda, strideA, batch_count); 
+        } else {
+            rocblas_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, transp,
+                                            ldw, n-k, order, minoneInt,
+                                            work, 0, ldw, strideW,    
+                                            V, shiftV+offsetV, ldv, strideV, oneInt,
+                                            A, shiftA+idx2D(0,k,lda), lda, strideA, batch_count); 
         }
     }
         

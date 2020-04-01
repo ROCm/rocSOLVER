@@ -26,9 +26,9 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_ope
       return rocblas_status_success;
     }
 
+    // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
+    //      TRSM_BATCH FUNCTIONALITY IS ENABLED. ****
     #ifdef batched
-        // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-        //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
         T* AA[batch_count];
         T* BB[batch_count];
         hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
@@ -47,6 +47,9 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_ope
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
     T *Ap, *Bp;
+
+    // **** TRSM_BATCH IS EXECUTED IN A FOR-LOOP UNTIL
+    //      FUNCITONALITY IS ENABLED. ****
 
     if (trans == rocblas_operation_none) {
 

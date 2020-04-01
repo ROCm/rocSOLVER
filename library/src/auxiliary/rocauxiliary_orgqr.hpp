@@ -13,7 +13,6 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "helpers.h"
 #include "common_device.hpp"
 #include "ideal_sizes.hpp"
 #include "../auxiliary/rocauxiliary_org2r.hpp"
@@ -37,7 +36,7 @@ __global__ void set_zero_col(const rocblas_int n, const rocblas_int kk, U A,
     }
 }
 
-template <typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_orgqr_template(rocblas_handle handle, const rocblas_int m, 
                                    const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
                                    const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
@@ -54,6 +53,7 @@ rocblas_status rocsolver_orgqr_template(rocblas_handle handle, const rocblas_int
     if (k <= GEQRF_GEQR2_SWITCHSIZE) 
         return rocsolver_org2r_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count);
 
+    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
     //memory in GPU (workspace)
     T* work;
     rocblas_int ldw = GEQRF_GEQR2_BLOCKSIZE;
@@ -94,7 +94,7 @@ rocblas_status rocsolver_orgqr_template(rocblas_handle handle, const rocblas_int
                                         (ipiv + j), strideP,
                                         work, ldw, strideW, batch_count);
 
-            rocsolver_larfb_template<T>(handle,rocblas_side_left,rocblas_operation_none,rocsolver_forward_direction,
+            rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,rocblas_side_left,rocblas_operation_none,rocsolver_forward_direction,
                                         rocsolver_column_wise,m-j, n-j-jb, jb,
                                         A, shiftA + idx2D(j,j,lda), lda, strideA,
                                         work, 0, ldw, strideW,

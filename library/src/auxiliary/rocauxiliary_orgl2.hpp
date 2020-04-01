@@ -52,21 +52,6 @@ rocblas_status rocsolver_orgl2_template(rocblas_handle handle, const rocblas_int
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
     
-    #ifdef batched
-        // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-        //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
-        T* AA[batch_count];
-        hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
-    #else
-        T* AA = A;
-    #endif
-
-    // **** BATCH IS EXECUTED IN A FOR-LOOP UNTIL BATCH-BLAS
-    //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
-    //      BE MADE TO THE CORRESPONDING TEMPLATE_FUNCTIONS ****
-    
-    T* M;
-
     // Initialize identity matrix (non used columns)
     rocblas_int blocksx = (m - 1)/32 + 1;
     rocblas_int blocksy = (n - 1)/32 + 1;
@@ -92,13 +77,8 @@ rocblas_status rocsolver_orgl2_template(rocblas_handle handle, const rocblas_int
                             j,A,shiftA,lda,strideA,ipiv,strideP);
         
         // update i-th row -corresponding to H(i)-
-        if (j < n - 1) {
-            for (int b=0;b<batch_count;++b) {
-                M = load_ptr_batch<T>(AA,shiftA,b,strideA);
-                rocblas_scal(handle, (n-j-1), (ipiv + b*strideP + j), 
-                            (M + idx2D(j, j + 1, lda)), lda); 
-            }          
-        }
+        if (j < n - 1) 
+            rocblas_scal<T>(handle, n-j-1, ipiv + j, strideP, A, shiftA + idx2D(j,j+1,lda), lda, strideA, batch_count);          
     }
     
     // restore values of tau

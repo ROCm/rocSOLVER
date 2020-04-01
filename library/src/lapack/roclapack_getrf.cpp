@@ -22,12 +22,12 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle, const rocblas_int m,
     rocblas_stride strideP = 0;
     rocblas_int batch_count = 1;
 
-    return rocsolver_getrf_template<T>(handle,m,n,
-                                        A,0,    //The matrix is shifted 0 entries (will work on the entire matrix)
-                                        lda,strideA,
-                                        ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)
-                                        strideP,
-                                        info,batch_count);
+    return rocsolver_getrf_template<false,false,T>(handle,m,n,
+                                                    A,0,    //The matrix is shifted 0 entries (will work on the entire matrix)
+                                                    lda,strideA,
+                                                    ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)
+                                                    strideP,
+                                                    info,batch_count);
 }
 
 
