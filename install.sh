@@ -31,6 +31,8 @@ Options:
   --rocblas_dir <blasdir>     Specify path to the companion rocBLAS-library root directory. 
                               Use only absolute paths.
                               (Default is /opt/rocm/rocblas)
+   
+  -g | --debug                Set -DCMAKE_BUILD_TYPE=Debug (default is =Release)
 
   -p | --package              Pass this flag to generate library package after build.
 
@@ -261,6 +263,7 @@ lib_dir=rocsolver-install
 install_dir=/opt/rocm
 rocblas_dir=/opt/rocm/rocblas
 build_dir=./build
+build_type=Release
 
 rocm_path=/opt/rocm
 if ! [ -z ${ROCM_PATH+x} ]; then
@@ -274,7 +277,7 @@ fi
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,package,install,clients,dependencies,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static --options hipcds -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static --options hipcdgs -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -305,6 +308,9 @@ while true; do
         shift ;;
     -c|--clients)
         build_clients=true
+        shift ;;
+    -g|--debug)
+        build_type=Debug
         shift ;;
     -s|--static)
         static_lib=true
@@ -382,7 +388,13 @@ cmake_client_options=""
 main=`pwd`
 mkdir -p ${build_dir} && cd ${build_dir}
 
-cmake_common_options="${cmake_common_options} -DROCM_PATH=${rocm_path} -Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${lib_dir} -DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir}" 
+if [[ "${build_type}" == Debug ]]; then
+  mkdir -p debug && cd debug
+else
+  mkdir -p release && cd release
+fi
+
+cmake_common_options="${cmake_common_options} -DROCM_PATH=${rocm_path} -Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${lib_dir} -DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir} -DCMAKE_BUILD_TYPE=${build_type}" 
 
 if [[ "${static_lib}" == true ]]; then
   cmake_common_options="${cmake_common_options} -DBUILD_SHARED_LIBS=OFF"
