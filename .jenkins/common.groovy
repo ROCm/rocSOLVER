@@ -24,11 +24,9 @@ def runCompileCommand(platform, project, jobName)
 def runTestCommand (platform, project, gfilter)
 {
     String sudo = auxiliary.sudo(platform.jenkinsLabel)
-    def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop')
     def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}/build/release/clients/staging
-                    ${getRocBLAS}
                     ${sudo} LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}
                 """
 
@@ -39,8 +37,7 @@ def runTestCommand (platform, project, gfilter)
 def runPackageCommand(platform, project,jobName='release')
 {
         String buildType = jobName.contains('Debug') ? 'debug' : 'release'
-        def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop')
-        def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build/${buildType}",false,getRocBLAS)
+        def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build/${buildType}")
         platform.runCommand(this, packageHelper[0])
         platform.archiveArtifacts(this, packageHelper[1])
 }
