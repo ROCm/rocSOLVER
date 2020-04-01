@@ -8,7 +8,7 @@ def runCompileCommand(platform, project, jobName)
     String compiler = jobName.contains('hipclang') ? 'hipcc' : 'hcc'
     String hipClang = jobName.contains('hipclang') ? '--hip-clang' : ''
     String sles = platform.jenkinsLabel.contains('sles') ? '/usr/bin/sudo --preserve-env' : ''
-    String debug = jobName.contains('Debug') ? '-g' : ''   
+    String debug = project.buildName.contains('Debug') ? '-g' : ''   
 
  
     def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop')
@@ -36,9 +36,9 @@ def runTestCommand (platform, project, gfilter)
     junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
 }
 
-def runPackageCommand(platform, project,jobName='release')
+def runPackageCommand(platform, project)
 {
-        String buildType = jobName.contains('Debug') ? 'debug' : 'release'
+        String buildType = project.buildName.contains('Debug') ? 'debug' : 'release'
         def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build/${buildType}")
         platform.runCommand(this, packageHelper[0])
         platform.archiveArtifacts(this, packageHelper[1])
