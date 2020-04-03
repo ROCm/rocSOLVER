@@ -146,6 +146,12 @@ rocsolver_<type>ormlq()
 .. doxygenfunction:: rocsolver_dormlq
 .. doxygenfunction:: rocsolver_sormlq
 
+rocsolver_<type>ormbr()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dormbr
+.. doxygenfunction:: rocsolver_sormbr
+
+
 
 Lapack Functions
 ==================
