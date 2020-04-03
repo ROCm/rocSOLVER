@@ -7,8 +7,8 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORMLQ_HPP
-#define ROCLAPACK_ORMLQ_HPP
+//#ifndef ROCLAPACK_ORMLQ_HPP
+//#define ROCLAPACK_ORMLQ_HPP
 
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
@@ -112,4 +112,4 @@ rocblas_status rocsolver_ormlq_template(rocsolver_handle handle, const rocsolver
     return rocblas_status_success;
 }
 
-#endif
+//#endif
