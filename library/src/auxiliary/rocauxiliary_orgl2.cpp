@@ -5,8 +5,8 @@
 #include "rocauxiliary_orgl2.hpp"
 
 template <typename T>
-rocblas_status rocsolver_orgl2_impl(rocsolver_handle handle, const rocsolver_int m, const rocsolver_int n, 
-                                   const rocsolver_int k, T* A, const rocsolver_int lda, T* ipiv)
+rocblas_status rocsolver_orgl2_impl(rocblas_handle handle, const rocblas_int m, const rocblas_int n, 
+                                   const rocblas_int k, T* A, const rocblas_int lda, T* ipiv)
 {
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -18,8 +18,8 @@ rocblas_status rocsolver_orgl2_impl(rocsolver_handle handle, const rocsolver_int
     if (!A || !ipiv)
         return rocblas_status_invalid_pointer;
 
-    rocblas_int strideA = 0;
-    rocblas_int strideP = 0;
+    rocblas_stride strideA = 0;
+    rocblas_stride strideP = 0;
     rocblas_int batch_count=1;
 
     return rocsolver_orgl2_template<T>(handle,
@@ -41,23 +41,23 @@ rocblas_status rocsolver_orgl2_impl(rocsolver_handle handle, const rocsolver_int
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocsolver_status rocsolver_sorgl2(rocsolver_handle handle,
-                                                 const rocsolver_int m,
-                                                 const rocsolver_int n,
-                                                 const rocsolver_int k,
+ROCSOLVER_EXPORT rocblas_status rocsolver_sorgl2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
                                                  float *A,
-                                                 const rocsolver_int lda,
+                                                 const rocblas_int lda,
                                                  float *ipiv)
 {
     return rocsolver_orgl2_impl<float>(handle, m, n, k, A, lda, ipiv);
 }
 
-ROCSOLVER_EXPORT rocsolver_status rocsolver_dorgl2(rocsolver_handle handle,
-                                                 const rocsolver_int m,
-                                                 const rocsolver_int n,
-                                                 const rocsolver_int k,
+ROCSOLVER_EXPORT rocblas_status rocsolver_dorgl2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
                                                  double *A,
-                                                 const rocsolver_int lda,
+                                                 const rocblas_int lda,
                                                  double *ipiv)
 {
     return rocsolver_orgl2_impl<double>(handle, m, n, k, A, lda, ipiv);

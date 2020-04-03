@@ -13,20 +13,17 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "definitions.h"
-#include "helpers.h"
 #include "ideal_sizes.hpp"
 #include "common_device.hpp"
 #include "roclapack_gelq2.hpp"
 #include "../auxiliary/rocauxiliary_larft.hpp"
 #include "../auxiliary/rocauxiliary_larfb.hpp"
-#include <vector>
 
-template <typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_gelqf_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
-                                        rocblas_int const strideA, T* ipiv,  
-                                        const rocblas_int strideP, const rocblas_int batch_count)
+                                        const rocblas_stride strideA, T* ipiv,  
+                                        const rocblas_stride strideP, const rocblas_int batch_count)
 {
     // quick return
     if (m == 0 || n == 0 || batch_count == 0) 
@@ -42,10 +39,11 @@ rocblas_status rocsolver_gelqf_template(rocblas_handle handle, const rocblas_int
     rocblas_int dim = min(m, n);    //total number of pivots
     rocblas_int jb, j = 0;
 
+    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
     //memory in GPU (workspace)
     T* work;
     rocblas_int ldw = GEQRF_GEQR2_BLOCKSIZE;
-    rocblas_int strideW = ldw *ldw;
+    rocblas_stride strideW = rocblas_stride(ldw) * ldw;
     hipMalloc(&work, sizeof(T)*strideW*batch_count);
 
     while (j < dim - GEQRF_GEQR2_SWITCHSIZE) {
@@ -64,7 +62,7 @@ rocblas_status rocsolver_gelqf_template(rocblas_handle handle, const rocblas_int
                                         work, ldw, strideW, batch_count);
 
             //apply the block reflector
-            rocsolver_larfb_template<T>(handle,rocblas_side_right,rocblas_operation_none,
+            rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,rocblas_side_right,rocblas_operation_none,
                                         rocsolver_forward_direction,rocsolver_row_wise,
                                         m-j-jb, n-j, jb,
                                         A, shiftA + idx2D(j,j,lda), lda, strideA,

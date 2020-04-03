@@ -1240,7 +1240,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetf2(rocsolver_handle handle,
               matrix A_i was interchanged with row ipiv_i[j].
               Matrix P_i of the factorization can be derived from ipiv_i.
     @param[in]
-    strideP   rocsolver_int.\n
+    strideP   rocsolver_stride.\n
               Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
               There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
@@ -1259,7 +1259,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_sgetf2_batched(rocsolver_handle hand
                                                    float *const A[],
                                                    const rocsolver_int lda,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1269,7 +1269,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetf2_batched(rocsolver_handle hand
                                                    double *const A[],
                                                    const rocsolver_int lda,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1279,7 +1279,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetf2_batched(rocsolver_handle hand
                                                    rocblas_float_complex *const A[],
                                                    const rocsolver_int lda,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1289,7 +1289,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetf2_batched(rocsolver_handle hand
                                                    rocblas_double_complex *const A[],
                                                    const rocsolver_int lda,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1324,7 +1324,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetf2_batched(rocsolver_handle hand
     lda       rocsolver_int. lda >= m.\n
               Specifies the leading dimension of matrices A_i.
     @param[in]
-    strideA   rocsolver_int.\n
+    strideA   rocsolver_stride.\n
               Stride from the start of one matrix A_i and the next one A_(i+1).
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
@@ -1336,7 +1336,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetf2_batched(rocsolver_handle hand
               matrix A_i was interchanged with row ipiv_i[j].
               Matrix P_i of the factorization can be derived from ipiv_i.
     @param[in]
-    strideP   rocsolver_int.\n
+    strideP   rocsolver_stride.\n
               Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
               There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
@@ -1354,9 +1354,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_sgetf2_strided_batched(rocsolver_han
                                                    const rocsolver_int n, 
                                                    float *A,
                                                    const rocsolver_int lda,
-                                                   const rocsolver_int strideA,
+                                                   const rocsolver_stride strideA,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1365,9 +1365,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetf2_strided_batched(rocsolver_han
                                                    const rocsolver_int n, 
                                                    double *A,
                                                    const rocsolver_int lda,
-                                                   const rocsolver_int strideA,
+                                                   const rocsolver_stride strideA,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1376,9 +1376,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetf2_strided_batched(rocsolver_han
                                                    const rocsolver_int n, 
                                                    rocblas_float_complex *A,
                                                    const rocsolver_int lda,
-                                                   const rocsolver_int strideA,
+                                                   const rocsolver_stride strideA,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1387,9 +1387,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetf2_strided_batched(rocsolver_han
                                                    const rocsolver_int n, 
                                                    rocblas_double_complex *A,
                                                    const rocsolver_int lda,
-                                                   const rocsolver_int strideA,
+                                                   const rocsolver_stride strideA,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1507,7 +1507,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrf(rocsolver_handle handle,
               matrix A_i was interchanged with row ipiv_i(j).
               Matrix P_i of the factorization can be derived from ipiv_i.
     @param[in]
-    strideP   rocsolver_int.\n
+    strideP   rocsolver_stride.\n
               Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
               There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
@@ -1526,7 +1526,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_sgetrf_batched(rocsolver_handle hand
                                                    float *const A[],
                                                    const rocsolver_int lda,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1536,7 +1536,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrf_batched(rocsolver_handle hand
                                                    double *const A[],
                                                    const rocsolver_int lda,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1546,7 +1546,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetrf_batched(rocsolver_handle hand
                                                    rocblas_float_complex *const A[],
                                                    const rocsolver_int lda,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1556,7 +1556,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrf_batched(rocsolver_handle hand
                                                    rocblas_double_complex *const A[],
                                                    const rocsolver_int lda,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1591,7 +1591,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrf_batched(rocsolver_handle hand
     lda       rocsolver_int. lda >= m.\n
               Specifies the leading dimension of matrices A_i.
     @param[in]
-    strideA   rocsolver_int.\n
+    strideA   rocsolver_stride.\n
               Stride from the start of one matrix A_i and the next one A_(i+1).
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
@@ -1603,7 +1603,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrf_batched(rocsolver_handle hand
               matrix A_i was interchanged with row ipiv_i(j).
               Matrix P_i of the factorization can be derived from ipiv_i.
     @param[in]
-    strideP   rocsolver_int.\n
+    strideP   rocsolver_stride.\n
               Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
               There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
@@ -1621,9 +1621,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_sgetrf_strided_batched(rocsolver_han
                                                    const rocsolver_int n, 
                                                    float *A,
                                                    const rocsolver_int lda,
-                                                   const rocsolver_int strideA,
+                                                   const rocsolver_stride strideA,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1632,9 +1632,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrf_strided_batched(rocsolver_han
                                                    const rocsolver_int n, 
                                                    double *A,
                                                    const rocsolver_int lda,
-                                                   const rocsolver_int strideA,
+                                                   const rocsolver_stride strideA,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1643,9 +1643,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetrf_strided_batched(rocsolver_han
                                                    const rocsolver_int n, 
                                                    rocblas_float_complex *A,
                                                    const rocsolver_int lda,
-                                                   const rocsolver_int strideA,
+                                                   const rocsolver_stride strideA,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1654,9 +1654,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrf_strided_batched(rocsolver_han
                                                    const rocsolver_int n, 
                                                    rocblas_double_complex *A,
                                                    const rocsolver_int lda,
-                                                   const rocsolver_int strideA,
+                                                   const rocsolver_stride strideA,
                                                    rocsolver_int *ipiv,
-                                                   const rocsolver_int strideP,
+                                                   const rocsolver_stride strideP,
                                                    rocsolver_int *info,
                                                    const rocsolver_int batch_count);
 
@@ -1761,7 +1761,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqr2(rocsolver_handle handle,
               Contains the vectors ipiv_j of scalar factors of the 
               Householder matrices H_j(i).
     @param[in]
-    strideP   rocsolver_int.\n
+    strideP   rocsolver_stride.\n
               Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
               There is no restriction for the value
               of strideP. Normal use is strideP >= min(m,n).
@@ -1777,7 +1777,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_sgeqr2_batched(rocsolver_handle hand
                                                          float *const A[],
                                                          const rocsolver_int lda, 
                                                          float *ipiv, 
-                                                         const rocsolver_int strideP, 
+                                                         const rocsolver_stride strideP, 
                                                          const rocsolver_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqr2_batched(rocsolver_handle handle, 
@@ -1786,7 +1786,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqr2_batched(rocsolver_handle hand
                                                          double *const A[],
                                                          const rocsolver_int lda, 
                                                          double *ipiv, 
-                                                         const rocsolver_int strideP, 
+                                                         const rocsolver_stride strideP, 
                                                          const rocsolver_int batch_count);
 
 /*! \brief GEQR2_STRIDED_BATCHED computes the QR factorization of a batch of general m-by-n matrices.
@@ -1828,7 +1828,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqr2_batched(rocsolver_handle hand
     lda       rocsolver_int. lda >= m.\n
               Specifies the leading dimension of matrices A_j. 
     @param[in]
-    strideA   rocsolver_int.\n   
+    strideA   rocsolver_stride.\n   
               Stride from the start of one matrix A_j and the next one A_(j+1). 
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
@@ -1836,7 +1836,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqr2_batched(rocsolver_handle hand
               Contains the vectors ipiv_j of scalar factors of the 
               Householder matrices H_j(i).
     @param[in]
-    strideP   rocsolver_int.\n
+    strideP   rocsolver_stride.\n
               Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
               There is no restriction for the value
               of strideP. Normal use is strideP >= min(m,n).
@@ -1851,9 +1851,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_sgeqr2_strided_batched(rocsolver_han
                                                                  const rocsolver_int n, 
                                                                  float *A,
                                                                  const rocsolver_int lda, 
-                                                                 const rocsolver_int strideA, 
+                                                                 const rocsolver_stride strideA, 
                                                                  float *ipiv, 
-                                                                 const rocsolver_int strideP, 
+                                                                 const rocsolver_stride strideP, 
                                                                  const rocsolver_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqr2_strided_batched(rocsolver_handle handle, 
@@ -1861,9 +1861,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqr2_strided_batched(rocsolver_han
                                                                  const rocsolver_int n, 
                                                                  double *A,
                                                                  const rocsolver_int lda, 
-                                                                 const rocsolver_int strideA, 
+                                                                 const rocsolver_stride strideA, 
                                                                  double *ipiv, 
-                                                                 const rocsolver_int strideP, 
+                                                                 const rocsolver_stride strideP, 
                                                                  const rocsolver_int batch_count);
 
 /*! \brief GELQ2 computes a LQ factorization of a general m-by-n matrix A.
@@ -1965,7 +1965,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelq2(rocsolver_handle handle,
               Contains the vectors ipiv_j of scalar factors of the 
               Householder matrices H_j(i).
     @param[in]
-    strideP   rocsolver_int.\n
+    strideP   rocsolver_stride.\n
               Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
               There is no restriction for the value
               of strideP. Normal use is strideP >= min(m,n).
@@ -1981,7 +1981,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_sgelq2_batched(rocsolver_handle hand
                                                          float *const A[],
                                                          const rocsolver_int lda, 
                                                          float *ipiv, 
-                                                         const rocsolver_int strideP, 
+                                                         const rocsolver_stride strideP, 
                                                          const rocsolver_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelq2_batched(rocsolver_handle handle, 
@@ -1990,7 +1990,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelq2_batched(rocsolver_handle hand
                                                          double *const A[],
                                                          const rocsolver_int lda, 
                                                          double *ipiv, 
-                                                         const rocsolver_int strideP, 
+                                                         const rocsolver_stride strideP, 
                                                          const rocsolver_int batch_count);
 
 /*! \brief GELQ2_STRIDED_BATCHED computes the LQ factorization of a batch of general m-by-n matrices.
@@ -2031,7 +2031,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelq2_batched(rocsolver_handle hand
     lda       rocsolver_int. lda >= m.\n
               Specifies the leading dimension of matrices A_j. 
     @param[in]
-    strideA   rocsolver_int.\n   
+    strideA   rocsolver_stride.\n   
               Stride from the start of one matrix A_j and the next one A_(j+1). 
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
@@ -2039,7 +2039,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelq2_batched(rocsolver_handle hand
               Contains the vectors ipiv_j of scalar factors of the 
               Householder matrices H_j(i).
     @param[in]
-    strideP   rocsolver_int.\n
+    strideP   rocsolver_stride.\n
               Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
               There is no restriction for the value
               of strideP. Normal use is strideP >= min(m,n).
@@ -2054,9 +2054,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_sgelq2_strided_batched(rocsolver_han
                                                                  const rocsolver_int n, 
                                                                  float *A,
                                                                  const rocsolver_int lda, 
-                                                                 const rocsolver_int strideA, 
+                                                                 const rocsolver_stride strideA, 
                                                                  float *ipiv, 
-                                                                 const rocsolver_int strideP, 
+                                                                 const rocsolver_stride strideP, 
                                                                  const rocsolver_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelq2_strided_batched(rocsolver_handle handle, 
@@ -2064,9 +2064,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelq2_strided_batched(rocsolver_han
                                                                  const rocsolver_int n, 
                                                                  double *A,
                                                                  const rocsolver_int lda, 
-                                                                 const rocsolver_int strideA, 
+                                                                 const rocsolver_stride strideA, 
                                                                  double *ipiv, 
-                                                                 const rocsolver_int strideP, 
+                                                                 const rocsolver_stride strideP, 
                                                                  const rocsolver_int batch_count);
 
 
@@ -2171,7 +2171,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf(rocsolver_handle handle,
               Contains the vectors ipiv_j of scalar factors of the 
               Householder matrices H_j(i).
     @param[in]
-    strideP   rocsolver_int.\n
+    strideP   rocsolver_stride.\n
               Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
               There is no restriction for the value
               of strideP. Normal use is strideP >= min(m,n).
@@ -2187,7 +2187,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_sgeqrf_batched(rocsolver_handle hand
                                                          float *const A[],
                                                          const rocsolver_int lda, 
                                                          float *ipiv, 
-                                                         const rocsolver_int strideP, 
+                                                         const rocsolver_stride strideP, 
                                                          const rocsolver_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf_batched(rocsolver_handle handle, 
@@ -2196,7 +2196,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf_batched(rocsolver_handle hand
                                                          double *const A[],
                                                          const rocsolver_int lda, 
                                                          double *ipiv, 
-                                                         const rocsolver_int strideP, 
+                                                         const rocsolver_stride strideP, 
                                                          const rocsolver_int batch_count);
 
 /*! \brief GEQRF_STRIDED_BATCHED computes the QR factorization of a batch of general m-by-n matrices.
@@ -2238,7 +2238,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf_batched(rocsolver_handle hand
     lda       rocsolver_int. lda >= m.\n
               Specifies the leading dimension of matrices A_j. 
     @param[in]
-    strideA   rocsolver_int.\n   
+    strideA   rocsolver_stride.\n   
               Stride from the start of one matrix A_j and the next one A_(j+1). 
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
@@ -2246,7 +2246,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf_batched(rocsolver_handle hand
               Contains the vectors ipiv_j of scalar factors of the 
               Householder matrices H_j(i).
     @param[in]
-    strideP   rocsolver_int.\n
+    strideP   rocsolver_stride.\n
               Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
               There is no restriction for the value
               of strideP. Normal use is strideP >= min(m,n).
@@ -2261,9 +2261,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_sgeqrf_strided_batched(rocsolver_han
                                                                  const rocsolver_int n, 
                                                                  float *A,
                                                                  const rocsolver_int lda, 
-                                                                 const rocsolver_int strideA, 
+                                                                 const rocsolver_stride strideA, 
                                                                  float *ipiv, 
-                                                                 const rocsolver_int strideP, 
+                                                                 const rocsolver_stride strideP, 
                                                                  const rocsolver_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf_strided_batched(rocsolver_handle handle, 
@@ -2271,9 +2271,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgeqrf_strided_batched(rocsolver_han
                                                                  const rocsolver_int n, 
                                                                  double *A,
                                                                  const rocsolver_int lda, 
-                                                                 const rocsolver_int strideA, 
+                                                                 const rocsolver_stride strideA, 
                                                                  double *ipiv, 
-                                                                 const rocsolver_int strideP, 
+                                                                 const rocsolver_stride strideP, 
                                                                  const rocsolver_int batch_count);
 
 /*! \brief GELQF computes a LQ factorization of a general m-by-n matrix A.
@@ -2375,7 +2375,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelqf(rocsolver_handle handle,
               Contains the vectors ipiv_j of scalar factors of the 
               Householder matrices H_j(i).
     @param[in]
-    strideP   rocsolver_int.\n
+    strideP   rocsolver_stride.\n
               Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
               There is no restriction for the value
               of strideP. Normal use is strideP >= min(m,n).
@@ -2391,7 +2391,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_sgelqf_batched(rocsolver_handle hand
                                                          float *const A[],
                                                          const rocsolver_int lda, 
                                                          float *ipiv, 
-                                                         const rocsolver_int strideP, 
+                                                         const rocsolver_stride strideP, 
                                                          const rocsolver_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelqf_batched(rocsolver_handle handle, 
@@ -2400,7 +2400,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelqf_batched(rocsolver_handle hand
                                                          double *const A[],
                                                          const rocsolver_int lda, 
                                                          double *ipiv, 
-                                                         const rocsolver_int strideP, 
+                                                         const rocsolver_stride strideP, 
                                                          const rocsolver_int batch_count);
 
 /*! \brief GELQF_STRIDED_BATCHED computes the LQ factorization of a batch of general m-by-n matrices.
@@ -2441,7 +2441,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelqf_batched(rocsolver_handle hand
     lda       rocsolver_int. lda >= m.\n
               Specifies the leading dimension of matrices A_j. 
     @param[in]
-    strideA   rocsolver_int.\n   
+    strideA   rocsolver_stride.\n   
               Stride from the start of one matrix A_j and the next one A_(j+1). 
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
@@ -2449,7 +2449,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelqf_batched(rocsolver_handle hand
               Contains the vectors ipiv_j of scalar factors of the 
               Householder matrices H_j(i).
     @param[in]
-    strideP   rocsolver_int.\n
+    strideP   rocsolver_stride.\n
               Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
               There is no restriction for the value
               of strideP. Normal use is strideP >= min(m,n).
@@ -2464,9 +2464,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_sgelqf_strided_batched(rocsolver_han
                                                                  const rocsolver_int n, 
                                                                  float *A,
                                                                  const rocsolver_int lda, 
-                                                                 const rocsolver_int strideA, 
+                                                                 const rocsolver_stride strideA, 
                                                                  float *ipiv, 
-                                                                 const rocsolver_int strideP, 
+                                                                 const rocsolver_stride strideP, 
                                                                  const rocsolver_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelqf_strided_batched(rocsolver_handle handle, 
@@ -2474,9 +2474,9 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dgelqf_strided_batched(rocsolver_han
                                                                  const rocsolver_int n, 
                                                                  double *A,
                                                                  const rocsolver_int lda, 
-                                                                 const rocsolver_int strideA, 
+                                                                 const rocsolver_stride strideA, 
                                                                  double *ipiv, 
-                                                                 const rocsolver_int strideP, 
+                                                                 const rocsolver_stride strideP, 
                                                                  const rocsolver_int batch_count);
 
 
@@ -2576,7 +2576,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrs(
     ipiv        pointer to rocsolver_int. Array on the GPU (the size depends on the value of strideP).\n
                 Contains the vectors ipiv_j of pivot indices returned by GETRF_BATCHED.
     @param[in]
-    strideP     rocsolver_int.\n
+    strideP     rocsolver_stride.\n
                 Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[in,out]
@@ -2595,23 +2595,23 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrs(
 ROCSOLVER_EXPORT rocsolver_status rocsolver_sgetrs_batched(
                  rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
                  const rocblas_int nrhs, float *const A[], const rocblas_int lda,
-                 const rocblas_int *ipiv, const rocblas_int strideP, float *const B[], const rocblas_int ldb, const rocblas_int batch_count);
+                 const rocblas_int *ipiv, const rocblas_stride strideP, float *const B[], const rocblas_int ldb, const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrs_batched(
                  rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
                  const rocblas_int nrhs, double *const A[], const rocblas_int lda,
-                 const rocblas_int *ipiv, const rocblas_int strideP, double *const B[], const rocblas_int ldb, const rocblas_int batch_count);
+                 const rocblas_int *ipiv, const rocblas_stride strideP, double *const B[], const rocblas_int ldb, const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetrs_batched(
                  rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
                  const rocblas_int nrhs, rocblas_float_complex *const A[], const rocblas_int lda,
-                 const rocblas_int *ipiv, const rocblas_int strideP, rocblas_float_complex *const B[], 
+                 const rocblas_int *ipiv, const rocblas_stride strideP, rocblas_float_complex *const B[], 
                  const rocblas_int ldb, const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrs_batched(
                  rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
                  const rocblas_int nrhs, rocblas_double_complex *const A[], const rocblas_int lda,
-                 const rocblas_int *ipiv, const rocblas_int strideP, rocblas_double_complex *const B[], 
+                 const rocblas_int *ipiv, const rocblas_stride strideP, rocblas_double_complex *const B[], 
                  const rocblas_int ldb, const rocblas_int batch_count);
 
 /*! \brief GETRS_STRIDED_BATCHED solves a batch of systems of n linear equations on n variables 
@@ -2645,14 +2645,14 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrs_batched(
     lda         rocsolver_int. lda >= n.\n
                 The leading dimension of matrices A_j.
     @param[in]
-    strideA     rocsolver_int.\n
+    strideA     rocsolver_stride.\n
                 Stride from the start of one matrix A_j and the next one A_(j+1). 
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[in]
     ipiv        pointer to rocsolver_int. Array on the GPU (the size depends on the value of strideP).\n
                 Contains the vectors ipiv_j of pivot indices returned by GETRF_STRIDED_BATCHED.
     @param[in]
-    strideP     rocsolver_int.\n
+    strideP     rocsolver_stride.\n
                 Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[in,out]
@@ -2663,7 +2663,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrs_batched(
     ldb         rocsolver_int. ldb >= n.\n
                 The leading dimension of matrices B_j.
     @param[in]
-    strideB     rocsolver_int.\n
+    strideB     rocsolver_stride.\n
                 Stride from the start of one matrix B_j and the next one B_(j+1). 
                 There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs.
     @param[in]
@@ -2674,25 +2674,25 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrs_batched(
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_sgetrs_strided_batched(
                  rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
-                 const rocblas_int nrhs, float *A, const rocblas_int lda, const rocblas_int strideA,
-                 const rocblas_int *ipiv, const rocblas_int strideP, float *B, const rocblas_int ldb, const rocblas_int strideB, const rocblas_int batch_count);
+                 const rocblas_int nrhs, float *A, const rocblas_int lda, const rocblas_stride strideA,
+                 const rocblas_int *ipiv, const rocblas_stride strideP, float *B, const rocblas_int ldb, const rocblas_stride strideB, const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_dgetrs_strided_batched(
                  rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
-                 const rocblas_int nrhs, double *A, const rocblas_int lda, const rocblas_int strideA,
-                 const rocblas_int *ipiv, const rocblas_int strideP, double *B, const rocblas_int ldb, const rocblas_int strideB, const rocblas_int batch_count);
+                 const rocblas_int nrhs, double *A, const rocblas_int lda, const rocblas_stride strideA,
+                 const rocblas_int *ipiv, const rocblas_stride strideP, double *B, const rocblas_int ldb, const rocblas_stride strideB, const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_cgetrs_strided_batched(
                  rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
-                 const rocblas_int nrhs, rocblas_float_complex *A, const rocblas_int lda, const rocblas_int strideA,
-                 const rocblas_int *ipiv, const rocblas_int strideP, rocblas_float_complex *B, const rocblas_int ldb, 
-                 const rocblas_int strideB, const rocblas_int batch_count);
+                 const rocblas_int nrhs, rocblas_float_complex *A, const rocblas_int lda, const rocblas_stride strideA,
+                 const rocblas_int *ipiv, const rocblas_stride strideP, rocblas_float_complex *B, const rocblas_int ldb, 
+                 const rocblas_stride strideB, const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocsolver_status rocsolver_zgetrs_strided_batched(
                  rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
-                 const rocblas_int nrhs, rocblas_double_complex *A, const rocblas_int lda, const rocblas_int strideA,
-                 const rocblas_int *ipiv, const rocblas_int strideP, rocblas_double_complex *B, const rocblas_int ldb, 
-                 const rocblas_int strideB, const rocblas_int batch_count);
+                 const rocblas_int nrhs, rocblas_double_complex *A, const rocblas_int lda, const rocblas_stride strideA,
+                 const rocblas_int *ipiv, const rocblas_stride strideP, rocblas_double_complex *B, const rocblas_int ldb, 
+                 const rocblas_stride strideB, const rocblas_int batch_count);
 
 
 /*! \brief POTF2 computes the Cholesky factorization of a real symmetric
@@ -2828,7 +2828,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotf2_batched(rocsolver_handle hand
     lda       rocsolver_int. lda >= n.\n
               specifies the leading dimension of A_i.
     @param[in]
-    strideA   rocsolver_int.\n
+    strideA   rocsolver_stride.\n
               Stride from the start of one matrix A_i and the next one A_(i+1). 
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
@@ -2847,7 +2847,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_spotf2_strided_batched(rocsolver_han
                                                                    const rocsolver_int n, 
                                                                    float *A,
                                                                    const rocsolver_int lda,
-                                                                   const rocsolver_int strideA,
+                                                                   const rocsolver_stride strideA,
                                                                    rocblas_int* info,
                                                                    const rocsolver_int batch_count);
 
@@ -2856,7 +2856,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotf2_strided_batched(rocsolver_han
                                                                    const rocsolver_int n, 
                                                                    double *A,
                                                                    const rocsolver_int lda,
-                                                                   const rocsolver_int strideA,
+                                                                   const rocsolver_stride strideA,
                                                                    rocblas_int* info,
                                                                    const rocsolver_int batch_count);
 
@@ -2993,7 +2993,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotrf_batched(rocsolver_handle hand
     lda       rocsolver_int. lda >= n.\n
               specifies the leading dimension of A_i.
     @param[in]
-    strideA   rocsolver_int.\n
+    strideA   rocsolver_stride.\n
               Stride from the start of one matrix A_i and the next one A_(i+1). 
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
@@ -3012,7 +3012,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_spotrf_strided_batched(rocsolver_han
                                                                    const rocsolver_int n, 
                                                                    float *A,
                                                                    const rocsolver_int lda,
-                                                                   const rocsolver_int strideA,
+                                                                   const rocsolver_stride strideA,
                                                                    rocblas_int* info,
                                                                    const rocsolver_int batch_count);
 
@@ -3021,7 +3021,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dpotrf_strided_batched(rocsolver_han
                                                                    const rocsolver_int n, 
                                                                    double *A,
                                                                    const rocsolver_int lda,
-                                                                   const rocsolver_int strideA,
+                                                                   const rocsolver_stride strideA,
                                                                    rocblas_int* info,
                                                                    const rocsolver_int batch_count);
 

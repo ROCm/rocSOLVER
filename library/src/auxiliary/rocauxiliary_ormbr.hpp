@@ -13,18 +13,17 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "helpers.h"
 #include "common_device.hpp"
 #include "rocauxiliary_ormlq.hpp"
 #include "rocauxiliary_ormqr.hpp"
 
-template <typename T, typename U>
-rocblas_status rocsolver_ormbr_template(rocsolver_handle handle, const rocsolver_storev storev, const rocsolver_side side, const rocsolver_operation trans, 
-                                   const rocsolver_int m, const rocsolver_int n, 
-                                   const rocsolver_int k, U A, const rocsolver_int shiftA, const rocsolver_int lda, 
-                                   const rocsolver_int strideA, T* ipiv, 
-                                   const rocsolver_int strideP, U C, const rocsolver_int shiftC, const rocsolver_int ldc,
-                                   const rocsolver_int strideC, const rocsolver_int batch_count)
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+rocblas_status rocsolver_ormbr_template(rocblas_handle handle, const rocsolver_storev storev, const rocblas_side side, const rocblas_operation trans, 
+                                   const rocblas_int m, const rocblas_int n, 
+                                   const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda, 
+                                   const rocblas_stride strideA, T* ipiv, 
+                                   const rocblas_stride strideP, U C, const rocblas_int shiftC, const rocblas_int ldc,
+                                   const rocblas_stride strideC, const rocblas_int batch_count)
 {
     // quick return
     if (!n || !m || !k || !batch_count)
@@ -51,11 +50,11 @@ rocblas_status rocsolver_ormbr_template(rocsolver_handle handle, const rocsolver
     // gebrd to a general matrix C
     if (storev == rocsolver_column_wise) {
         if (nq >= k) {
-            rocsolver_ormqr_template<T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, 
+            rocsolver_ormqr_template<BATCHED,STRIDED,T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, 
                                         C, shiftC, ldc, strideC, batch_count);
         } else {
             // shift the householder vectors provided by gebrd as they come below the first subdiagonal
-            rocsolver_ormqr_template<T>(handle, side, trans, rows, cols, nq-1, 
+            rocsolver_ormqr_template<BATCHED,STRIDED,T>(handle, side, trans, rows, cols, nq-1, 
                                         A, shiftA + idx2D(1,0,lda), lda, strideA, ipiv, strideP, 
                                         C, shiftC + idx2D(rowC,colC,ldc), ldc, strideC, batch_count);
         }
@@ -70,11 +69,11 @@ rocblas_status rocsolver_ormbr_template(rocsolver_handle handle, const rocsolver
         else
             transP = rocblas_operation_none;
         if (nq > k) {
-            rocsolver_ormlq_template<T>(handle, side, transP, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, 
+            rocsolver_ormlq_template<BATCHED,STRIDED,T>(handle, side, transP, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, 
                                         C, shiftC, ldc, strideC, batch_count);
         } else {
             // shift the householder vectors provided by gebrd as they come above the first superdiagonal
-            rocsolver_ormlq_template<T>(handle, side, transP, rows, cols, nq-1, 
+            rocsolver_ormlq_template<BATCHED,STRIDED,T>(handle, side, transP, rows, cols, nq-1, 
                                         A, shiftA + idx2D(0,1,lda), lda, strideA, ipiv, strideP, 
                                         C, shiftC + idx2D(rowC,colC,ldc), ldc, strideC, batch_count);
         }

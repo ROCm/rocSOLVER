@@ -31,8 +31,8 @@ __device__ void swap(const rocblas_int n, T *a, const rocblas_int lda,
 
 template <typename T, typename U>
 __global__ void laswp_kernel(const rocblas_int n, U AA, const rocblas_int shiftA,
-                            const rocblas_int lda, const rocblas_int stride, const rocblas_int i, const rocblas_int k1,
-                            const rocblas_int *ipivA, const rocblas_int shiftP, const rocblas_int strideP, const rocblas_int incx) {
+                            const rocblas_int lda, const rocblas_stride stride, const rocblas_int i, const rocblas_int k1,
+                            const rocblas_int *ipivA, const rocblas_int shiftP, const rocblas_stride strideP, const rocblas_int incx) {
 
     int id = hipBlockIdx_y;
 
@@ -50,8 +50,8 @@ __global__ void laswp_kernel(const rocblas_int n, U AA, const rocblas_int shiftA
 
 template <typename T, typename U>
 rocblas_status rocsolver_laswp_template(rocblas_handle handle, const rocblas_int n, U A, const rocblas_int shiftA,
-                              const rocblas_int lda, const rocblas_int strideA, const rocblas_int k1, const rocblas_int k2,
-                              const rocblas_int *ipiv, const rocblas_int shiftP, const rocblas_int strideP, rocblas_int incx, 
+                              const rocblas_int lda, const rocblas_stride strideA, const rocblas_int k1, const rocblas_int k2,
+                              const rocblas_int *ipiv, const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int incx, 
                               const rocblas_int batch_count) {
     // quick return
     if (n == 0 || !batch_count) 

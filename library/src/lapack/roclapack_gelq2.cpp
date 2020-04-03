@@ -19,8 +19,8 @@ rocblas_status rocsolver_gelq2_impl(rocblas_handle handle, const rocblas_int m,
     if (m < 0 || n < 0 || lda < m)
         return rocblas_status_invalid_size;
 
-    rocblas_int strideA = 0;
-    rocblas_int stridep = 0;
+    rocblas_stride strideA = 0;
+    rocblas_stride stridep = 0;
     rocblas_int batch_count = 1;
 
     return rocsolver_gelq2_template<T>(handle,m,n,

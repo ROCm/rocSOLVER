@@ -13,9 +13,6 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "definitions.h"
-#include "helpers.h"
-#include "ideal_sizes.hpp"
 #include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_larfg.hpp"
 #include "../auxiliary/rocauxiliary_larf.hpp"
@@ -23,8 +20,8 @@
 template <typename T, typename U>
 rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
-                                        rocblas_int const strideA, T* ipiv,  
-                                        const rocblas_int strideP, const rocblas_int batch_count)
+                                        const rocblas_stride strideA, T* ipiv,  
+                                        const rocblas_stride strideP, const rocblas_int batch_count)
 {
     // quick return
     if (m == 0 || n == 0 || batch_count == 0) 
@@ -33,6 +30,7 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
+    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
     //memory in GPU (workspace)
     T *diag;
     hipMalloc(&diag,sizeof(T)*batch_count);

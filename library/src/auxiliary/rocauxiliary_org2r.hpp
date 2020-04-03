@@ -13,13 +13,12 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "helpers.h"
 #include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_larf.hpp"
 
 template <typename T, typename U>
 __global__ void init_ident_col(const rocblas_int m, const rocblas_int n, const rocblas_int k, U A,
-                               const rocsolver_int shiftA, const rocsolver_int lda, const rocsolver_int strideA)
+                               const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA)
 {
     const auto blocksizex = hipBlockDim_x;
     const auto blocksizey = hipBlockDim_y;
@@ -40,10 +39,10 @@ __global__ void init_ident_col(const rocblas_int m, const rocblas_int n, const r
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_org2r_template(rocsolver_handle handle, const rocsolver_int m, 
-                                   const rocsolver_int n, const rocsolver_int k, U A, const rocblas_int shiftA, 
-                                   const rocsolver_int lda, const rocsolver_int strideA, T* ipiv, 
-                                   const rocsolver_int strideP, const rocsolver_int batch_count)
+rocblas_status rocsolver_org2r_template(rocblas_handle handle, const rocblas_int m, 
+                                   const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
+                                   const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
+                                   const rocblas_stride strideP, const rocblas_int batch_count)
 {
     // quick return
     if (!n || !m || !batch_count)
@@ -52,28 +51,13 @@ rocblas_status rocsolver_org2r_template(rocsolver_handle handle, const rocsolver
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
     
-    #ifdef batched
-        // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-        //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
-        T* AA[batch_count];
-        hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
-    #else
-        T* AA = A;
-    #endif
-
-    // **** BATCH IS EXECUTED IN A FOR-LOOP UNTIL BATCH-BLAS
-    //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
-    //      BE MADE TO THE CORRESPONDING TEMPLATE_FUNCTIONS ****
-    
-    T* M;
-
     // Initialize identity matrix (non used columns)
     rocblas_int blocksx = (m - 1)/32 + 1;
     rocblas_int blocksy = (n - 1)/32 + 1;
     hipLaunchKernelGGL(init_ident_col<T>,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,
                         m,n,k,A,shiftA,lda,strideA);
 
-    for (int j = k-1; j >= 0; --j) {
+    for (rocblas_int j = k-1; j >= 0; --j) {
         // apply H(i) to Q(i:m,i:n) from the left
         if (j < n - 1) {
             rocsolver_larf_template(handle,rocblas_side_left,           //side
@@ -92,13 +76,8 @@ rocblas_status rocsolver_org2r_template(rocsolver_handle handle, const rocsolver
                             j,A,shiftA,lda,strideA,ipiv,strideP);
         
         // update i-th column -corresponding to H(i)-
-        if (j < m - 1) {
-            for (int b=0;b<batch_count;++b) {
-                M = load_ptr_batch<T>(AA,shiftA,b,strideA);
-                rocblas_scal(handle, (m-j-1), (ipiv + b*strideP + j), 
-                            (M + idx2D(j + 1, j, lda)), 1); 
-            }          
-        }
+        if (j < m - 1) 
+            rocblasCall_scal<T>(handle, m-j-1, ipiv + j, strideP, A, shiftA + idx2D(j+1,j,lda), 1, strideA, batch_count);          
     }
     
     // restore values of tau
