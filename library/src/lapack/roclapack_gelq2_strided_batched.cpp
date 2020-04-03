@@ -6,8 +6,8 @@
 
 template <typename T, typename U>
 rocblas_status rocsolver_gelq2_strided_batched_impl(rocblas_handle handle, const rocblas_int m,
-                                        const rocblas_int n, U A, const rocblas_int lda, const rocblas_int strideA,
-                                        T* ipiv, const rocblas_int stridep, const rocblas_int batch_count) 
+                                        const rocblas_int n, U A, const rocblas_int lda, const rocblas_stride strideA,
+                                        T* ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
 { 
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -38,13 +38,13 @@ rocblas_status rocsolver_gelq2_strided_batched_impl(rocblas_handle handle, const
 extern "C" {
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgelq2_strided_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
-                 const rocblas_int lda, const rocblas_int strideA, float *ipiv, const rocblas_int stridep, const rocblas_int batch_count) 
+                 const rocblas_int lda, const rocblas_stride strideA, float *ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
 {
     return rocsolver_gelq2_strided_batched_impl<float>(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgelq2_strided_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
-                 const rocblas_int lda, const rocblas_int strideA, double *ipiv, const rocblas_int stridep, const rocblas_int batch_count) 
+                 const rocblas_int lda, const rocblas_stride strideA, double *ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
 {
     return rocsolver_gelq2_strided_batched_impl<double>(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
 }

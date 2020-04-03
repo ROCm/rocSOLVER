@@ -13,11 +13,10 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "ideal_sizes.hpp"
 #include "common_device.hpp"
 
 template <typename T, typename U>
-__global__ void set_taubeta(T *tau, const rocblas_int strideP, T *norms, U alpha, const rocblas_int shifta, const rocblas_int stride)
+__global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms, U alpha, const rocblas_int shifta, const rocblas_stride stride)
 {
     int b = hipBlockIdx_x;
 
@@ -43,8 +42,8 @@ __global__ void set_taubeta(T *tau, const rocblas_int strideP, T *norms, U alpha
 
 template <typename T, typename U>
 rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int n, U alpha, const rocblas_int shifta, 
-                                        U x, const rocblas_int shiftx, const rocblas_int incx, const rocblas_int stridex,
-                                        T *tau, const rocblas_int strideP, const rocblas_int batch_count)
+                                        U x, const rocblas_int shiftx, const rocblas_int incx, const rocblas_stride stridex,
+                                        T *tau, const rocblas_stride strideP, const rocblas_int batch_count)
 {
     // quick return
     if (n == 0 || !batch_count)
@@ -60,24 +59,23 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int
         return rocblas_status_success;    
     } 
 
-    T *xp;
-
+    // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
+    //      NRM2_BATCH FUNCTIONALITY IS ENABLED. ****
     #ifdef batched
-        // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-        //      BATCH-BLAS FUNCTIONALITY IS ENABLED. ****
         T* xx[batch_count];
         hipMemcpy(xx, x, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
     #else
         T* xx = x;
     #endif
+    T *xp;
 
+    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
     //memory in GPU (workspace)
     T *norms;
     hipMalloc(&norms, sizeof(T)*batch_count);    
 
-    // **** BATCH IS EXECUTED IN A FOR-LOOP UNTIL BATCH-BLAS
-    //      FUNCITONALITY IS ENABLED. ALSO ROCBLAS CALLS SHOULD
-    //      BE MADE TO THE CORRESPONDING TEMPLATE_FUNCTIONS ****
+    // **** NRM2_BATCH IS EXECUTED IN A FOR-LOOP UNTIL 
+    //      FUNCITONALITY IS ENABLED ****
     
     //compute norm of x
     for (int b=0;b<batch_count;++b) {
@@ -91,10 +89,7 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int
     hipLaunchKernelGGL(set_taubeta<T>,dim3(batch_count),dim3(1),0,stream,tau,strideP,norms,alpha,shifta,stridex);
      
     //compute vector v=x*norms
-    for (int b=0;b<batch_count;++b) {
-        xp = load_ptr_batch<T>(xx,shiftx,b,stridex);
-        rocblas_scal(handle, n - 1, (norms + b), xp, incx);
-    }
+    rocblasCall_scal<T>(handle, n-1, norms, 1, x, shiftx, incx, stridex, batch_count);
 
     hipFree(norms);
 

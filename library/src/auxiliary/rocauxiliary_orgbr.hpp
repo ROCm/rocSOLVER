@@ -23,8 +23,8 @@
 #define BS 32 //blocksize for kernels
 
 template <typename T, typename U>
-__global__ void copyshift_col(const bool copy, const rocblas_int dim, U A, const rocsolver_int shiftA, const rocsolver_int lda, const rocsolver_int strideA, 
-                         T *W, const rocsolver_int shiftW, const rocsolver_int ldw, const rocsolver_int strideW)
+__global__ void copyshift_col(const bool copy, const rocblas_int dim, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, 
+                         T *W, const rocblas_int shiftW, const rocblas_int ldw, const rocblas_stride strideW)
 {
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -55,8 +55,8 @@ __global__ void copyshift_col(const bool copy, const rocblas_int dim, U A, const
 }
 
 template <typename T, typename U>
-__global__ void copyshift_row(const bool copy, const rocblas_int dim, U A, const rocsolver_int shiftA, const rocsolver_int lda, const rocsolver_int strideA, 
-                         T *W, const rocsolver_int shiftW, const rocsolver_int ldw, const rocsolver_int strideW)
+__global__ void copyshift_row(const bool copy, const rocblas_int dim, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, 
+                         T *W, const rocblas_int shiftW, const rocblas_int ldw, const rocblas_stride strideW)
 {
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -86,11 +86,11 @@ __global__ void copyshift_row(const bool copy, const rocblas_int dim, U A, const
     }
 }
 
-template <typename T, typename U>
-rocblas_status rocsolver_orgbr_template(rocsolver_handle handle, const rocsolver_storev storev, const rocsolver_int m, 
-                                   const rocsolver_int n, const rocsolver_int k, U A, const rocblas_int shiftA, 
-                                   const rocsolver_int lda, const rocsolver_int strideA, T* ipiv, 
-                                   const rocsolver_int strideP, const rocsolver_int batch_count)
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+rocblas_status rocsolver_orgbr_template(rocblas_handle handle, const rocsolver_storev storev, const rocblas_int m, 
+                                   const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
+                                   const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
+                                   const rocblas_stride strideP, const rocblas_int batch_count)
 {
     // quick return
     if (!n || !m || !batch_count)
@@ -103,13 +103,14 @@ rocblas_status rocsolver_orgbr_template(rocsolver_handle handle, const rocsolver
     // of a m-by-k matrix A (given by gebrd)
     if (storev == rocsolver_column_wise) {
         if (m >= k) {
-            rocsolver_orgqr_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count);    
+            rocsolver_orgqr_template<BATCHED,STRIDED,T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count);    
         } else {
             // shift the householder vectors provided by gebrd as they come below the first subdiagonal
             // workspace
+            // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
             T *W;
-            rocblas_int strideW = (m - 1)*m/2;  //number of elements to copy
-            rocblas_int sizeW = strideW*batch_count;
+            rocblas_stride strideW = rocblas_stride(m - 1)*m/2;  //number of elements to copy
+            size_t sizeW = size_t(strideW)*batch_count;
             rocblas_int ldw = m - 1;
             hipMalloc(&W, sizeof(T)*sizeW);
             rocblas_int blocks = (m - 2)/BS + 1;
@@ -123,7 +124,7 @@ rocblas_status rocsolver_orgbr_template(rocsolver_handle handle, const rocsolver
                                 false,m-1,A,shiftA,lda,strideA,W,0,ldw,strideW);           
             
             // result
-            rocsolver_orgqr_template<T>(handle, m-1, m-1, m-1, A, shiftA + idx2D(1,1,lda), lda, strideA, ipiv, strideP, batch_count);    
+            rocsolver_orgqr_template<BATCHED,STRIDED,T>(handle, m-1, m-1, m-1, A, shiftA + idx2D(1,1,lda), lda, strideA, ipiv, strideP, batch_count);    
         
             hipFree(W);
         }   
@@ -133,13 +134,14 @@ rocblas_status rocsolver_orgbr_template(rocsolver_handle handle, const rocsolver
     // of a k-by-n matrix A (given by gebrd)
     else {
         if (n > k) {
-            rocsolver_orglq_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count);
+            rocsolver_orglq_template<BATCHED,STRIDED,T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count);
         } else {
             // shift the householder vectors provided by gebrd as they come above the first superdiagonal
             // workspace
+            // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
             T *W;
-            rocblas_int strideW = (n - 1)*n/2;  //number of elements to copy
-            rocblas_int sizeW = strideW*batch_count;
+            rocblas_stride strideW = rocblas_stride(n - 1)*n/2;  //number of elements to copy
+            size_t sizeW = size_t(strideW)*batch_count;
             rocblas_int ldw = n - 1;
             hipMalloc(&W, sizeof(T)*sizeW);
             rocblas_int blocks = (n - 2)/BS + 1;
@@ -153,7 +155,7 @@ rocblas_status rocsolver_orgbr_template(rocsolver_handle handle, const rocsolver
                                 false,n-1,A,shiftA,lda,strideA,W,0,ldw,strideW);           
 
             // result
-            rocsolver_orglq_template<T>(handle, n-1, n-1, n-1, A, shiftA + idx2D(1,1,lda), lda, strideA, ipiv, strideP, batch_count);
+            rocsolver_orglq_template<BATCHED,STRIDED,T>(handle, n-1, n-1, n-1, A, shiftA + idx2D(1,1,lda), lda, strideA, ipiv, strideP, batch_count);
                 
             hipFree(W);
         }

@@ -13,7 +13,6 @@
 #include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "helpers.h"
 #include "common_device.hpp"
 #include "ideal_sizes.hpp"
 #include "../auxiliary/rocauxiliary_org2r.hpp"
@@ -22,7 +21,7 @@
 
 template <typename T, typename U>
 __global__ void set_zero_col(const rocblas_int n, const rocblas_int kk, U A,
-                         const rocsolver_int shiftA, const rocsolver_int lda, const rocsolver_int strideA)
+                         const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA)
 {
     const auto blocksizex = hipBlockDim_x;
     const auto blocksizey = hipBlockDim_y;
@@ -37,11 +36,11 @@ __global__ void set_zero_col(const rocblas_int n, const rocblas_int kk, U A,
     }
 }
 
-template <typename T, typename U>
-rocblas_status rocsolver_orgqr_template(rocsolver_handle handle, const rocsolver_int m, 
-                                   const rocsolver_int n, const rocsolver_int k, U A, const rocblas_int shiftA, 
-                                   const rocsolver_int lda, const rocsolver_int strideA, T* ipiv, 
-                                   const rocsolver_int strideP, const rocsolver_int batch_count)
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+rocblas_status rocsolver_orgqr_template(rocblas_handle handle, const rocblas_int m, 
+                                   const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
+                                   const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
+                                   const rocblas_stride strideP, const rocblas_int batch_count)
 {
     // quick return
     if (!n || !m || !batch_count)
@@ -54,10 +53,11 @@ rocblas_status rocsolver_orgqr_template(rocsolver_handle handle, const rocsolver
     if (k <= GEQRF_GEQR2_SWITCHSIZE) 
         return rocsolver_org2r_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count);
 
+    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
     //memory in GPU (workspace)
     T* work;
     rocblas_int ldw = GEQRF_GEQR2_BLOCKSIZE;
-    rocblas_int strideW = ldw *ldw;
+    rocblas_stride strideW = rocblas_stride(ldw) *ldw;
     hipMalloc(&work, sizeof(T)*strideW*batch_count);
 
     // start of first blocked block
@@ -94,7 +94,7 @@ rocblas_status rocsolver_orgqr_template(rocsolver_handle handle, const rocsolver
                                         (ipiv + j), strideP,
                                         work, ldw, strideW, batch_count);
 
-            rocsolver_larfb_template<T>(handle,rocblas_side_left,rocblas_operation_none,rocsolver_forward_direction,
+            rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,rocblas_side_left,rocblas_operation_none,rocsolver_forward_direction,
                                         rocsolver_column_wise,m-j, n-j-jb, jb,
                                         A, shiftA + idx2D(j,j,lda), lda, strideA,
                                         work, 0, ldw, strideW,

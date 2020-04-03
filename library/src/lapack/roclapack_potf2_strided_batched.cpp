@@ -6,7 +6,7 @@
 
 template <typename T, typename U>
 rocblas_status rocsolver_potf2_strided_batched_impl(rocblas_handle handle, const rocblas_fill uplo,    
-                                            const rocblas_int n, U A, const rocblas_int lda, const rocblas_int strideA, 
+                                            const rocblas_int n, U A, const rocblas_int lda, const rocblas_stride strideA, 
                                             rocblas_int* info, const rocblas_int batch_count) 
 { 
     if(!handle)
@@ -36,13 +36,13 @@ rocblas_status rocsolver_potf2_strided_batched_impl(rocblas_handle handle, const
 
 extern "C" ROCSOLVER_EXPORT rocblas_status
 rocsolver_spotf2_strided_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
-                 float *A, const rocblas_int lda, const rocblas_int strideA, rocblas_int* info, const rocblas_int batch_count) {
+                 float *A, const rocblas_int lda, const rocblas_stride strideA, rocblas_int* info, const rocblas_int batch_count) {
   return rocsolver_potf2_strided_batched_impl<float>(handle, uplo, n, A, lda, strideA, info, batch_count);
 }
 
 extern "C" ROCSOLVER_EXPORT rocblas_status
 rocsolver_dpotf2_strided_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
-                 double *A, const rocblas_int lda, const rocblas_int strideA, rocblas_int* info, const rocblas_int batch_count) {
+                 double *A, const rocblas_int lda, const rocblas_stride strideA, rocblas_int* info, const rocblas_int batch_count) {
   return rocsolver_potf2_strided_batched_impl<double>(handle, uplo, n, A, lda, strideA, info, batch_count);
 }
 

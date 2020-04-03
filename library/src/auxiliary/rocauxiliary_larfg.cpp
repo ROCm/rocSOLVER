@@ -16,8 +16,8 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n, 
     if (!x || !alpha || !tau)
         return rocblas_status_invalid_pointer;
 
-    rocblas_int stridex = 0;
-    rocblas_int strideP = 0;
+    rocblas_stride stridex = 0;
+    rocblas_stride strideP = 0;
     rocblas_int batch_count=1;
 
     return rocsolver_larfg_template<T>(handle,n,
@@ -39,13 +39,13 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n, 
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_slarfg(rocsolver_handle handle, const rocsolver_int n, float *alpha,
+ROCSOLVER_EXPORT rocblas_status rocsolver_slarfg(rocblas_handle handle, const rocblas_int n, float *alpha,
                  float *x, const rocblas_int incx, float *tau)
 {
     return rocsolver_larfg_impl<float>(handle, n, alpha, x, incx, tau);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfg(rocsolver_handle handle, const rocsolver_int n, double *alpha,
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfg(rocblas_handle handle, const rocblas_int n, double *alpha,
                  double *x, const rocblas_int incx, double *tau)
 {
     return rocsolver_larfg_impl<double>(handle, n, alpha, x, incx, tau);

@@ -19,8 +19,8 @@ rocblas_status rocsolver_getf2_impl(rocblas_handle handle, const rocblas_int m,
     if (m < 0 || n < 0 || lda < m || lda < 1)
         return rocblas_status_invalid_size;
 
-    rocblas_int strideA = 0;
-    rocblas_int strideP = 0;
+    rocblas_stride strideA = 0;
+    rocblas_stride strideP = 0;
     rocblas_int batch_count = 1;
 
     return rocsolver_getf2_template<T>(handle,m,n,

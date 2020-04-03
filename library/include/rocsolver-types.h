@@ -16,6 +16,8 @@
  ******************************************************************/
 typedef rocblas_int rocsolver_int;
 
+typedef rocblas_stride rocsolver_stride;
+
 typedef rocblas_float_complex rocsolver_float_complex;
 typedef rocblas_double_complex rocsolver_double_complex;
 typedef rocblas_half rocsolver_half;

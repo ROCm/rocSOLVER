@@ -32,17 +32,17 @@ rocblas_status rocsolver_ormbr_impl(rocsolver_handle handle, const rocsolver_sto
     rocblas_int strideC = 0;
     rocblas_int batch_count=1;
 
-    return rocsolver_ormbr_template<T>(handle,storev,side,trans,
-                                      m,n,k,
-                                      A,0,    //shifted 0 entries
-                                      lda,
-                                      strideA,
-                                      ipiv,
-                                      strideP,
-                                      C,0,  
-                                      ldc,
-                                      strideC,
-                                      batch_count);
+    return rocsolver_ormbr_template<false,false,T>(handle,storev,side,trans,
+                                                  m,n,k,
+                                                  A,0,    //shifted 0 entries
+                                                  lda,
+                                                  strideA,
+                                                  ipiv,
+                                                  strideP,
+                                                  C,0,  
+                                                  ldc,
+                                                  strideC,
+                                                  batch_count);
 }
 
 

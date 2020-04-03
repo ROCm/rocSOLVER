@@ -18,7 +18,7 @@ rocblas_status rocsolver_potf2_impl(rocblas_handle handle, const rocblas_fill up
     if (n < 0 || lda < n)
         return rocblas_status_invalid_size;
 
-    rocblas_int strideA = 0;
+    rocblas_stride strideA = 0;
     rocblas_int batch_count = 1;
 
     return rocsolver_potf2_template<T>(handle,uplo,n,
