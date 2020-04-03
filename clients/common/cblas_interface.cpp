@@ -110,6 +110,8 @@ void dorglq_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *
 
 void sorgbr_(char *vect, int *m, int *n, int *k, float *A, int *lda, float *Ipiv, float *work, int *size_w, int *info);
 void dorgbr_(char *vect, int *m, int *n, int *k, double *A, int *lda, double *Ipiv, double *work, int *size_w, int *info);
+void sormbr_(char *vect, char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *sizeW, int *info);
+void dormbr_(char *vect, char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *sizeW, int *info);
 
 void sgebrd_(int *m, int *n, float *A, int *lda, float *D, float *E, float *tauq, float *taup, float *work, int *size_w, int *info);
 void dgebrd_(int *m, int *n, double *A, int *lda, double *D, double *E, double *tauq, double *taup, double *work, int *size_w, int *info);
@@ -372,6 +374,45 @@ void cblas_orgl2<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
   int info;
   dorgl2_(&m, &n, &k, A, &lda, ipiv, work, &info);
 }
+
+// ormbr
+template <>
+void cblas_ormbr<float>(char storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+                               rocblas_int lda, float *ipiv, float *C, rocblas_int ldc, float *work, rocblas_int lwork) {
+  int info;
+  char sideC = 'R', transC = 'T';
+  char vect;
+  if (storev == 'C')
+    vect = 'Q';
+  else
+    vect = 'P';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  sormbr_(&vect, &sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &lwork, &info);
+}
+
+template <>
+void cblas_ormbr<double>(char storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+                               rocblas_int lda, double *ipiv, double *C, rocblas_int ldc, double *work, rocblas_int lwork) {
+  int info;
+  char sideC = 'R', transC = 'T';
+  char vect;
+  if (storev == 'C')
+    vect = 'Q';
+  else
+    vect = 'P';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  dormbr_(&vect, &sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &lwork, &info);
+}
+
+
 
 
 /*

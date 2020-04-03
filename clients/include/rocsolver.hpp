@@ -185,6 +185,27 @@ inline rocblas_status rocsolver_orglq(rocblas_handle handle, rocblas_int m, rocb
   return rocsolver_dorglq(handle, m, n, k, A, lda, Ipiv);
 }
 
+//ormbr
+
+template <typename T>
+inline rocblas_status rocsolver_ormbr(rocblas_handle handle, rocsolver_storev storev, rocsolver_side side, rocsolver_operation trans, 
+                                      rocblas_int m, rocblas_int n, rocblas_int k, T *A,
+                                      rocblas_int lda, T *Ipiv, T *C, rocblas_int ldc);
+ 
+template <>
+inline rocblas_status rocsolver_ormbr(rocblas_handle handle, rocsolver_storev storev, rocsolver_side side, rocsolver_operation trans, 
+                                      rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+                                      rocblas_int lda, float *Ipiv, float *C, rocblas_int ldc) {
+    return rocsolver_sormbr(handle, storev, side, trans, m ,n ,k, A, lda, Ipiv, C, ldc);
+}
+
+template <>
+inline rocblas_status rocsolver_ormbr(rocblas_handle handle, rocsolver_storev storev, rocsolver_side side, rocsolver_operation trans, 
+                                      rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+                                      rocblas_int lda, double *Ipiv, double *C, rocblas_int ldc) {
+    return rocsolver_dormbr(handle, storev, side, trans, m ,n ,k, A, lda, Ipiv, C, ldc);
+}
+
 //orgbr
 
 template <typename T>

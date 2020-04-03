@@ -59,6 +59,7 @@ set(roclapack_test_source
     orml2_ormlq_gtest.cpp
     orgl2_orglq_gtest.cpp
     orgbr_gtest.cpp
+    ormbr_gtest.cpp
     geqr2_geqrf_gtest.cpp
     geqr2_geqrf_batched_gtest.cpp
     geqr2_geqrf_strided_batched_gtest.cpp

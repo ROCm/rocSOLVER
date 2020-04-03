@@ -31,6 +31,7 @@
 #include "testing_orgl2_orglq.hpp"
 #include "testing_orml2_ormlq.hpp"
 #include "testing_orgbr.hpp"
+#include "testing_ormbr.hpp"
 #include "utility.h"
 
 namespace po = boost::program_options;
@@ -519,6 +520,12 @@ int main(int argc, char *argv[])
       testing_orgbr<float>(argus);
     else if (precision == 'd')
       testing_orgbr<double>(argus);
+  } 
+  else if (function == "ormbr") {
+    if (precision == 's')
+      testing_ormbr<float>(argus);
+    else if (precision == 'd')
+      testing_ormbr<double>(argus);
   } 
   else {
     printf("Invalid value for --function \n");

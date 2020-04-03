@@ -641,7 +641,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dorglq(rocsolver_handle handle,
         Q = H(n-1) * H(n-2) * ... * H(1)
 
     The Householder matrices H(i) are never stored, they are computed from its corresponding 
-    Householder vector v(i) and scalar ipiv_i as returned by GEBRD.
+    Householder vectors v(i) and scalars ipiv_i as returned by GEBRD in its arguments A and tauq or taup.
 
     @param[in]
     handle      rocsolver_handle.
@@ -1017,6 +1017,105 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_dormlq(rocsolver_handle handle,
                                                    const rocsolver_int ldc);
 
 
+/*! \brief ORMBR applies a matrix Q with orthonormal rows or columns to a general m-by-n matrix C.
+
+    \details
+    If storev is column-wise, then the matrix Q has orthonormal columns. 
+    If storev is row-wise, then the matrix Q has orthonormal rows.  
+    The matrix Q is applied in one of the following forms, depending on
+    the values of side and trans:
+
+        Q  * C  (No transpose from the left)
+        Q' * C  (Transpose from the left)
+        C * Q   (No transpose from the right), and
+        C * Q'  (Transpose from the right)
+
+    The order nq of orthogonal matrix Q is nq = m if applying from the left, or nq = n if applying from the right.
+
+    When storev is column-wise, if nq >= k, then Q is defined as the product of k Householder reflectors of order nq
+    
+        Q = H(1) * H(2) * ... * H(k),
+
+    and if nq < k, then Q is defined as the product 
+
+        Q = H(1) * H(2) * ... * H(nq-1).
+
+    When storev is row-wise, if nq > k, then Q is defined as the product of k Householder reflectors of order nq
+
+        Q = H(1) * H(2) * ... * H(k),
+    
+    and if n <= k, Q is defined as the product 
+
+        Q = H(1) * H(2) * ... * H(nq-1)
+
+    The Householder matrices H(i) are never stored, they are computed from its corresponding 
+    Householder vectors v(i) and scalars ipiv_i as returned by GEBRD in its arguments A and tauq or taup.
+
+    @param[in]
+    handle              rocsolver_handle.
+    @param[in]
+    storev              rocsolver_storev.\n
+                        Specifies whether to work column-wise or row-wise.
+    @param[in]
+    side                rocsolver_side.\n
+                        Specifies from which side to apply Q.
+    @param[in]
+    trans               rocsolver_operation.\n
+                        Specifies whether the matrix Q or its transpose is to be applied.
+    @param[in]
+    m                   rocsolver_int. m >= 0.\n
+                        Number of rows of matrix C.
+    @param[in]
+    n                   rocsolver_int. n >= 0.\n
+                        Number of columns of matrix C.
+    @param[in]          
+    k                   rocsovler_int. k >= 0.\n
+                        The number of columns (if storev is colum-wise) or rows (if row-wise) of the
+                        original matrix reduced by GEBRD.
+    @param[in]          
+    A                   pointer to type. Array on the GPU of size lda*min(nq,k) if column-wise, or lda*nq if row-wise.\n
+                        The i-th column (or row) has the Householder vector v(i) associated with H(i) as returned by GEBRD.
+    @param[in]
+    lda                 rocsolver_int. lda >= nq if column-wise, or lda >= min(nq,k) if row-wise. \n
+                        Leading dimension of A.
+    @param[in]
+    ipiv                pointer to type. Array on the GPU of dimension at least min(nq,k).\n
+                        The scalar factors of the Householder matrices H(i) as returned by GEBRD.
+    @param[inout]
+    C                   pointer to type. Array on the GPU of size ldc*n.\n
+                        On input, the matrix C. On output it is overwritten with
+                        Q*C, C*Q, Q'*C, or C*Q'.  
+    @param[in]
+    lda                 rocsolver_int. ldc >= m.\n
+                        Leading dimension of C. 
+
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_sormbr(rocsolver_handle handle,
+                                                   const rocsolver_storev storev,
+                                                   const rocsolver_side side,
+                                                   const rocsolver_operation trans,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   const rocsolver_int k, 
+                                                   float *A,
+                                                   const rocsolver_int lda,
+                                                   float *ipiv,
+                                                   float *C,
+                                                   const rocsolver_int ldc);
+
+ROCSOLVER_EXPORT rocsolver_status rocsolver_dormbr(rocsolver_handle handle,
+                                                   const rocsolver_storev storev,
+                                                   const rocsolver_side side,
+                                                   const rocsolver_operation trans,
+                                                   const rocsolver_int m,
+                                                   const rocsolver_int n, 
+                                                   const rocsolver_int k, 
+                                                   double *A,
+                                                   const rocsolver_int lda,
+                                                   double *ipiv,
+                                                   double *C,
+                                                   const rocsolver_int ldc);
 
 
 
