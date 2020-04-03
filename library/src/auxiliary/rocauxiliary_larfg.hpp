@@ -89,7 +89,7 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int
     hipLaunchKernelGGL(set_taubeta<T>,dim3(batch_count),dim3(1),0,stream,tau,strideP,norms,alpha,shifta,stridex);
      
     //compute vector v=x*norms
-    rocblas_scal<T>(handle, n-1, norms, 1, x, shiftx, incx, stridex, batch_count);
+    rocblasCall_scal<T>(handle, n-1, norms, 1, x, shiftx, incx, stridex, batch_count);
 
     hipFree(norms);
 

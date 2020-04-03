@@ -23,7 +23,7 @@ __global__ void copymatA1(const rocblas_int ldw, const rocblas_int order, U A, c
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_x * blocksizex + hipThreadIdx_x;
     const auto i = hipBlockIdx_y * blocksizey + hipThreadIdx_y;
-    rocblas_stride strideW = ldw*order;
+    rocblas_stride strideW = rocblas_stride(ldw)*order;
 
     if (i < ldw && j < order) {
         T *Ap, *Wp;
@@ -42,7 +42,7 @@ __global__ void addmatA1(const rocblas_int ldw, const rocblas_int order, U A, co
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_x * blocksizex + hipThreadIdx_x;
     const auto i = hipBlockIdx_y * blocksizey + hipThreadIdx_y;
-    rocblas_stride strideW = ldw*order;
+    rocblas_stride strideW = rocblas_stride(ldw)*order;
 
     if (i < ldw && j < order) {
         T *Ap, *Wp;
@@ -128,7 +128,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
 
     // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
     //memory in GPU (workspace)
-    rocblas_stride strideW = ldw*order;
+    rocblas_stride strideW = rocblas_stride(ldw)*order;
     T *work;
     hipMalloc(&work, sizeof(T)*strideW*batch_count);
 
@@ -161,13 +161,13 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     // A1 * V1 + A2 * V2
     if (trap) { 
         if (leftside) { 
-            rocblas_gemm<BATCHED,STRIDED,T>(handle, transp, rocblas_operation_none,
+            rocblasCall_gemm<BATCHED,STRIDED,T>(handle, transp, rocblas_operation_none,
                                             ldw, order, m-k, oneInt,
                                             V, shiftV+offsetV, ldv, strideV,
                                             A, shiftA+idx2D(k,0,lda), lda, strideA, oneInt,
                                             work, 0, ldw, strideW, batch_count);   
         } else {
-            rocblas_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, transp,
+            rocblasCall_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, transp,
                                             ldw, order, n-k, oneInt,
                                             A, shiftA+idx2D(0,k,lda), lda, strideA, 
                                             V, shiftV+offsetV, ldv, strideV, oneInt,
@@ -195,13 +195,13 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
 
     if (trap) {
         if (leftside) { 
-            rocblas_gemm<BATCHED,STRIDED,T>(handle, transp, rocblas_operation_none, 
+            rocblasCall_gemm<BATCHED,STRIDED,T>(handle, transp, rocblas_operation_none, 
                                             m-k, order, ldw, minoneInt,
                                             V, shiftV+offsetV, ldv, strideV, 
                                             work, 0, ldw, strideW, oneInt,   
                                             A, shiftA+idx2D(k,0,lda), lda, strideA, batch_count); 
         } else {
-            rocblas_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, transp,
+            rocblasCall_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, transp,
                                             ldw, n-k, order, minoneInt,
                                             work, 0, ldw, strideW,    
                                             V, shiftV+offsetV, ldv, strideV, oneInt,

@@ -96,7 +96,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                              (M + idx2D(j, j, lda)), lda, (M + idx2D(j, j + jb, lda)), lda);
                 }
 
-                rocblas_syrk<T>(handle, uplo, rocblas_operation_transpose, n-j-jb, jb, d_minone,
+                rocblasCall_syrk<T>(handle, uplo, rocblas_operation_transpose, n-j-jb, jb, d_minone,
                                 A, shiftA + idx2D(j,j+jb,lda), lda, strideA, d_one,
                                 A, shiftA + idx2D(j+jb,j+jb,lda), lda, strideA, batch_count);
             }
@@ -121,7 +121,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                              (M + idx2D(j, j, lda)), lda, (M + idx2D(j + jb, j, lda)), lda);
                 }
 
-                rocblas_syrk<T>(handle, uplo, rocblas_operation_none, n-j-jb, jb, d_minone,
+                rocblasCall_syrk<T>(handle, uplo, rocblas_operation_none, n-j-jb, jb, d_minone,
                                 A, shiftA + idx2D(j+jb,j,lda), lda, strideA, d_one,
                                 A, shiftA + idx2D(j+jb,j+jb,lda), lda, strideA, batch_count);
             }

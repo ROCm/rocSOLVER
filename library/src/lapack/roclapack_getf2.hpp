@@ -104,11 +104,11 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
         rocsolver_laswp_template<T>(handle, n, A, shiftA, lda, strideA, j+1, j+1, ipiv, shiftP, strideP, 1, batch_count);
 
         // Compute elements J+1:M of J'th column
-        rocblas_scal<T>(handle, m-j-1, pivotGPU, 1, A, shiftA+idx2D(j+1, j, lda), 1, strideA, batch_count);
+        rocblasCall_scal<T>(handle, m-j-1, pivotGPU, 1, A, shiftA+idx2D(j+1, j, lda), 1, strideA, batch_count);
 
         // update trailing submatrix
         if (j < min(m, n) - 1) {
-            rocblas_ger<false,T>(handle, m-j-1, n-j-1, minoneInt, 0,
+            rocblasCall_ger<false,T>(handle, m-j-1, n-j-1, minoneInt, 0,
                                  A, shiftA+idx2D(j+1, j, lda), 1, strideA, 
                                  A, shiftA+idx2D(j, j+1, lda), lda, strideA, 
                                  A, shiftA+idx2D(j+1, j+1, lda), lda, strideA,

@@ -43,7 +43,7 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int
     //memory in GPU (workspace)
     T* work;
     rocblas_int ldw = GEQRF_GEQR2_BLOCKSIZE;
-    rocblas_stride strideW = ldw *ldw;
+    rocblas_stride strideW = rocblas_stride(ldw) *ldw;
     hipMalloc(&work, sizeof(T)*strideW*batch_count);
 
     while (j < dim - GEQRF_GEQR2_SWITCHSIZE) {

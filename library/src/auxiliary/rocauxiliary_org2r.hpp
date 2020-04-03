@@ -77,7 +77,7 @@ rocblas_status rocsolver_org2r_template(rocblas_handle handle, const rocblas_int
         
         // update i-th column -corresponding to H(i)-
         if (j < m - 1) 
-            rocblas_scal<T>(handle, m-j-1, ipiv + j, strideP, A, shiftA + idx2D(j+1,j,lda), 1, strideA, batch_count);          
+            rocblasCall_scal<T>(handle, m-j-1, ipiv + j, strideP, A, shiftA + idx2D(j+1,j,lda), 1, strideA, batch_count);          
     }
     
     // restore values of tau

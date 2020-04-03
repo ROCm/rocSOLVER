@@ -58,16 +58,16 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side
     //      ZERO ENTRIES ****
  
     //compute the matrix vector product  (W=tau*A'*X or W=tau*A*X)
-    rocblas_gemv<T>(handle, trans, m, n, alpha, stridep, A, shiftA, lda, stridea, 
+    rocblasCall_gemv<T>(handle, trans, m, n, alpha, stridep, A, shiftA, lda, stridea, 
                     x, shiftx, incx, stridex, cast2constType<T>(zeroInt), 0, 
                     work, 0, 1, order, batch_count);
 
     //compute the rank-1 update  (A - V*W'  or A - W*V')
     if (leftside) {
-        rocblas_ger<false,T>(handle, m, n, minoneInt, 0, x, shiftx, incx, stridex,
+        rocblasCall_ger<false,T>(handle, m, n, minoneInt, 0, x, shiftx, incx, stridex,
                              work, 0, 1, order, A, shiftA, lda, stridea, batch_count);
     } else {
-        rocblas_ger<false,T>(handle, m, n, minoneInt, 0, work, 0 ,1, order, 
+        rocblasCall_ger<false,T>(handle, m, n, minoneInt, 0, work, 0 ,1, order, 
                              x, shiftx, incx, stridex, A, shiftA, lda, stridea, batch_count);
     }
 

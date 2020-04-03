@@ -79,7 +79,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     if (uplo == rocblas_fill_upper) { // Compute the Cholesky factorization A = U'*U.
         for (rocblas_int j = 0; j < n; ++j) {
             // Compute U(J,J) and test for non-positive-definiteness.
-            rocblas_dot<false,T>(handle, j, A, shiftA + idx2D(0, j, lda), 1, strideA,
+            rocblasCall_dot<false,T>(handle, j, A, shiftA + idx2D(0, j, lda), 1, strideA,
                                  A, shiftA + idx2D(0, j, lda), 1, strideA, batch_count, pivotGPU, work);
 
             hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, 
@@ -87,19 +87,19 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
 
             // Compute elements J+1:N of row J
             if (j < n - 1) {
-                rocblas_gemv<T>(handle, rocblas_operation_transpose, j, n-j-1, d_minone, 0,
+                rocblasCall_gemv<T>(handle, rocblas_operation_transpose, j, n-j-1, d_minone, 0,
                                 A, shiftA + idx2D(0, j+1, lda), lda, strideA,
                                 A, shiftA + idx2D(0, j, lda), 1, strideA, d_one, 0,
                                 A, shiftA + idx2D(j, j+1, lda), lda, strideA, batch_count);
                                     
-                rocblas_scal<T>(handle, n-j-1, pivotGPU, 1, A, shiftA + idx2D(j, j+1, lda), lda, strideA, batch_count);
+                rocblasCall_scal<T>(handle, n-j-1, pivotGPU, 1, A, shiftA + idx2D(j, j+1, lda), lda, strideA, batch_count);
             }
         }
 
     } else { // Compute the Cholesky factorization A = L'*L.
         for (rocblas_int j = 0; j < n; ++j) {
             // Compute L(J,J) and test for non-positive-definiteness.
-            rocblas_dot<false,T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda, strideA,
+            rocblasCall_dot<false,T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda, strideA,
                                  A, shiftA + idx2D(j, 0, lda), lda, strideA, batch_count, pivotGPU, work);
 
             hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, 
@@ -107,12 +107,12 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
 
             // Compute elements J+1:N of row J
             if (j < n - 1) {
-                rocblas_gemv<T>(handle, rocblas_operation_none, n-j-1, j, d_minone, 0,
+                rocblasCall_gemv<T>(handle, rocblas_operation_none, n-j-1, j, d_minone, 0,
                                 A, shiftA + idx2D(j+1, 0, lda), lda, strideA,
                                 A, shiftA + idx2D(j, 0, lda), lda, strideA, d_one, 0,
                                 A, shiftA + idx2D(j+1, j, lda), 1, strideA, batch_count);
 
-                rocblas_scal<T>(handle, n-j-1, pivotGPU, 1, A, shiftA + idx2D(j+1, j, lda), 1, strideA, batch_count);
+                rocblasCall_scal<T>(handle, n-j-1, pivotGPU, 1, A, shiftA + idx2D(j+1, j, lda), 1, strideA, batch_count);
             }
         }
     }

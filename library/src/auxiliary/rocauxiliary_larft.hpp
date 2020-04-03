@@ -116,13 +116,13 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocsolver_d
         //compute the matrix vector product, using the householder vectors
         if (storev == rocsolver_column_wise) {
             trans = rocblas_operation_transpose;
-            rocblas_gemv<T>(handle, trans, n-1-i, i, tau + i, strideT, 
+            rocblasCall_gemv<T>(handle, trans, n-1-i, i, tau + i, strideT, 
                             V, shiftV + idx2D(i+1,0,ldv), ldv, strideV,
                             V, shiftV + idx2D(i+1,i,ldv), 1, strideV, oneInt, 0,
                             F, idx2D(0,i,ldf), 1, strideF, batch_count);
         } else {
             trans = rocblas_operation_none;
-            rocblas_gemv<T>(handle, trans, i, n-1-i, tau + i, strideT, 
+            rocblasCall_gemv<T>(handle, trans, i, n-1-i, tau + i, strideT, 
                             V, shiftV + idx2D(0,i+1,ldv), ldv, strideV,
                             V, shiftV + idx2D(i,i+1,ldv), ldv, strideV, oneInt, 0,
                             F, idx2D(0,i,ldf), 1, strideF, batch_count);
@@ -130,7 +130,7 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocsolver_d
 
         //multiply by the previous triangular factor
         trans = rocblas_operation_none; 
-        rocblas_trmv<T>(handle, uplo, trans, diag, i, F, 0, ldf, strideF, 
+        rocblasCall_trmv<T>(handle, uplo, trans, diag, i, F, 0, ldf, strideF, 
                         F, idx2D(0,i,ldf), 1, strideF,
                         work, stridew, batch_count);
     }

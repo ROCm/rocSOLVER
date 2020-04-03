@@ -120,7 +120,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
 
             // update trailing submatrix
             if (j + jb < m) {
-                rocblas_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, rocblas_operation_none,
+                rocblasCall_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, rocblas_operation_none,
                                                 m - j - jb, n - j - jb, jb, minoneInt,
                                                 A, shiftA+idx2D(j + jb, j, lda), lda, strideA,
                                                 A, shiftA+idx2D(j, j + jb, lda), lda, strideA, oneInt,

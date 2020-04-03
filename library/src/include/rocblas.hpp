@@ -13,7 +13,7 @@
 
 // scal
 template <typename T, typename U, typename V>
-rocblas_status rocblas_scal(rocblas_handle handle, 
+rocblas_status rocblasCall_scal(rocblas_handle handle, 
                             rocblas_int    n, 
                             U              alpha,
                             rocblas_stride stridea,
@@ -28,7 +28,7 @@ rocblas_status rocblas_scal(rocblas_handle handle,
 
 // dot
 template <bool CONJ, typename T, typename U>
-rocblas_status rocblas_dot(rocblas_handle handle,
+rocblas_status rocblasCall_dot(rocblas_handle handle,
                            rocblas_int    n,
                            U              x,
                            rocblas_int    offsetx,
@@ -49,7 +49,7 @@ rocblas_status rocblas_dot(rocblas_handle handle,
 
 // ger
 template <bool CONJ, typename T, typename U, typename V>
-rocblas_status rocblas_ger(rocblas_handle handle, 
+rocblas_status rocblasCall_ger(rocblas_handle handle, 
                            rocblas_int    m, 
                            rocblas_int    n,
                            U              alpha, 
@@ -74,7 +74,7 @@ rocblas_status rocblas_ger(rocblas_handle handle,
 
 // ger overload
 template <bool CONJ, typename T, typename U>
-rocblas_status rocblas_ger(rocblas_handle handle, 
+rocblas_status rocblasCall_ger(rocblas_handle handle, 
                            rocblas_int    m, 
                            rocblas_int    n,
                            U              alpha, 
@@ -112,7 +112,7 @@ rocblas_status rocblas_ger(rocblas_handle handle,
 
 // ger overload
 template <bool CONJ, typename T, typename U>
-rocblas_status rocblas_ger(rocblas_handle handle, 
+rocblas_status rocblasCall_ger(rocblas_handle handle, 
                            rocblas_int    m, 
                            rocblas_int    n,
                            U              alpha, 
@@ -150,7 +150,7 @@ rocblas_status rocblas_ger(rocblas_handle handle,
 
 // gemv
 template<typename T, typename U, typename V>
-rocblas_status rocblas_gemv(rocblas_handle    handle,
+rocblas_status rocblasCall_gemv(rocblas_handle    handle,
                             rocblas_operation transA,
                             rocblas_int       m,
                             rocblas_int       n,
@@ -181,7 +181,7 @@ rocblas_status rocblas_gemv(rocblas_handle    handle,
 
 // gemv overload
 template<typename T, typename U>
-rocblas_status rocblas_gemv(rocblas_handle    handle,
+rocblas_status rocblasCall_gemv(rocblas_handle    handle,
                             rocblas_operation transA,
                             rocblas_int       m,
                             rocblas_int       n,
@@ -223,7 +223,7 @@ rocblas_status rocblas_gemv(rocblas_handle    handle,
 
 // trmv
 template<typename T, typename U>
-rocblas_status rocblas_trmv(rocblas_handle    handle,
+rocblas_status rocblasCall_trmv(rocblas_handle    handle,
                             rocblas_fill      uplo,
                             rocblas_operation transa,
                             rocblas_diagonal  diag,
@@ -246,7 +246,7 @@ rocblas_status rocblas_trmv(rocblas_handle    handle,
 
 // gemm
 template <bool BATCHED, bool STRIDED, typename T, typename U, typename V>
-rocblas_status rocblas_gemm(rocblas_handle    handle,
+rocblas_status rocblasCall_gemm(rocblas_handle    handle,
                             rocblas_operation trans_a,
                             rocblas_operation trans_b,
                             rocblas_int       m,
@@ -276,7 +276,7 @@ rocblas_status rocblas_gemm(rocblas_handle    handle,
 
 //gemm overload
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status rocblas_gemm(rocblas_handle    handle,
+rocblas_status rocblasCall_gemm(rocblas_handle    handle,
                             rocblas_operation trans_a,
                             rocblas_operation trans_b,
                             rocblas_int       m,
@@ -318,7 +318,7 @@ rocblas_status rocblas_gemm(rocblas_handle    handle,
 
 //gemm overload
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status rocblas_gemm(rocblas_handle    handle,
+rocblas_status rocblasCall_gemm(rocblas_handle    handle,
                             rocblas_operation trans_a,
                             rocblas_operation trans_b,
                             rocblas_int       m,
@@ -361,7 +361,7 @@ rocblas_status rocblas_gemm(rocblas_handle    handle,
 
 //gemm overload
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status rocblas_gemm(rocblas_handle    handle,
+rocblas_status rocblasCall_gemm(rocblas_handle    handle,
                             rocblas_operation trans_a,
                             rocblas_operation trans_b,
                             rocblas_int       m,
@@ -404,7 +404,7 @@ rocblas_status rocblas_gemm(rocblas_handle    handle,
 
 // syrk
 template <typename T, typename U, typename V>
-rocblas_status rocblas_syrk(rocblas_handle    handle,
+rocblas_status rocblasCall_syrk(rocblas_handle    handle,
                             rocblas_fill      uplo,
                             rocblas_operation transA,
                             rocblas_int       n,
@@ -534,49 +534,6 @@ rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side, rocblas_fi
 {
     return rocblas_dtrmm(handle,side,uplo,trans,diag,m,n,alpha,A,lda,B,ldb);
 }
-
-/*// gemm
-template <typename T>
-rocblas_status rocblas_gemm(rocblas_handle handle, rocblas_operation transA,
-             rocblas_operation transB, rocblas_int m, rocblas_int n,
-             rocblas_int k, const T *alpha, const T *A, rocblas_int lda,
-             const T *B, rocblas_int ldb, const T *beta, T *C, rocblas_int ldc);
-template <>
-rocblas_status rocblas_gemm(rocblas_handle handle, rocblas_operation transA,
-                            rocblas_operation transB, rocblas_int m,
-                            rocblas_int n, rocblas_int k, const float *alpha,
-                            const float *A, rocblas_int lda, const float *B,
-                            rocblas_int ldb, const float *beta, float *C,
-                            rocblas_int ldc) {
-  return rocblas_sgemm(handle, transA, transB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
-}
-template <>
-rocblas_status rocblas_gemm(rocblas_handle handle, rocblas_operation transA,
-                            rocblas_operation transB, rocblas_int m,
-                            rocblas_int n, rocblas_int k, const double *alpha,
-                            const double *A, rocblas_int lda, const double *B,
-                            rocblas_int ldb, const double *beta, double *C,
-                            rocblas_int ldc) {
-  return rocblas_dgemm(handle, transA, transB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
-}
-template <>
-rocblas_status rocblas_gemm(rocblas_handle handle, rocblas_operation transA,
-                            rocblas_operation transB, rocblas_int m,
-                            rocblas_int n, rocblas_int k, const rocblas_float_complex *alpha,
-                            const rocblas_float_complex *A, rocblas_int lda, const rocblas_float_complex *B,
-                            rocblas_int ldb, const rocblas_float_complex *beta, rocblas_float_complex *C,
-                            rocblas_int ldc) {
-  return rocblas_cgemm(handle, transA, transB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
-}
-template <>
-rocblas_status rocblas_gemm(rocblas_handle handle, rocblas_operation transA,
-                            rocblas_operation transB, rocblas_int m,
-                            rocblas_int n, rocblas_int k, const rocblas_double_complex *alpha,
-                            const rocblas_double_complex *A, rocblas_int lda, const rocblas_double_complex *B,
-                            rocblas_int ldb, const rocblas_double_complex *beta, rocblas_double_complex *C,
-                            rocblas_int ldc) {
-  return rocblas_zgemm(handle, transA, transB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
-}*/
 
 
 

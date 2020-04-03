@@ -41,7 +41,7 @@ rocblas_status rocsolver_ormqr_template(rocblas_handle handle, const rocblas_sid
     //memory in GPU (workspace)
     T* work;
     rocblas_int ldw = ORMQR_ORM2R_BLOCKSIZE;
-    rocblas_stride strideW = ldw *ldw;
+    rocblas_stride strideW = rocblas_stride(ldw) *ldw;
     hipMalloc(&work, sizeof(T)*strideW*batch_count);    
 
     // determine limits and indices

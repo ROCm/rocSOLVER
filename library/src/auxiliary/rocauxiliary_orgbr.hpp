@@ -109,7 +109,7 @@ rocblas_status rocsolver_orgbr_template(rocblas_handle handle, const rocsolver_s
             // workspace
             // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
             T *W;
-            rocblas_stride strideW = (m - 1)*m/2;  //number of elements to copy
+            rocblas_stride strideW = rocblas_stride(m - 1)*m/2;  //number of elements to copy
             size_t sizeW = size_t(strideW)*batch_count;
             rocblas_int ldw = m - 1;
             hipMalloc(&W, sizeof(T)*sizeW);
@@ -140,7 +140,7 @@ rocblas_status rocsolver_orgbr_template(rocblas_handle handle, const rocsolver_s
             // workspace
             // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
             T *W;
-            rocblas_stride strideW = (n - 1)*n/2;  //number of elements to copy
+            rocblas_stride strideW = rocblas_stride(n - 1)*n/2;  //number of elements to copy
             size_t sizeW = size_t(strideW)*batch_count;
             rocblas_int ldw = n - 1;
             hipMalloc(&W, sizeof(T)*sizeW);
