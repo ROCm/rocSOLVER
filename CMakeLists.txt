@@ -144,7 +144,7 @@ message (STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
 # keeping versioning according to ROCm release
-set ( VERSION_STRING "3.4.0" )
+set ( VERSION_STRING "3.5.0" )
 rocm_setup_version( VERSION ${VERSION_STRING} )
 
 # Append our library helper cmake path and the cmake path for hip (for convenience)

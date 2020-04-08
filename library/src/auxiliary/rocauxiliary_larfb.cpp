@@ -6,8 +6,8 @@
 
 template <typename T>
 rocblas_status rocsolver_larfb_impl(rocblas_handle handle, const rocblas_side side, 
-                                    const rocblas_operation trans, const rocsolver_direct direct, 
-                                    const rocsolver_storev storev,
+                                    const rocblas_operation trans, const rocblas_direct direct, 
+                                    const rocblas_storev storev,
                                     const rocblas_int m, const rocblas_int n, 
                                     const rocblas_int k, T* V, const rocblas_int ldv, T* F, const rocblas_int ldf,
                                     T* A, const rocblas_int lda)
@@ -19,7 +19,7 @@ rocblas_status rocsolver_larfb_impl(rocblas_handle handle, const rocblas_side si
 
     if (m < 0 || n < 0 || k < 1 || lda < m || ldf < k)
         return rocblas_status_invalid_size;
-    if (storev == rocsolver_row_wise) {
+    if (storev == rocblas_row_wise) {
         if (ldv < k)
             return rocblas_status_invalid_size;
     } else {    
@@ -60,8 +60,8 @@ extern "C" {
 ROCSOLVER_EXPORT rocblas_status rocsolver_slarfb(rocblas_handle handle,
                                                  const rocblas_side side,
                                                  const rocblas_operation trans,
-                                                 const rocsolver_direct direct,
-                                                 const rocsolver_storev storev,
+                                                 const rocblas_direct direct,
+                                                 const rocblas_storev storev,
                                                  const rocblas_int m,
                                                  const rocblas_int n,
                                                  const rocblas_int k,
@@ -78,8 +78,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_slarfb(rocblas_handle handle,
 ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfb(rocblas_handle handle,
                                                  const rocblas_side side,
                                                  const rocblas_operation trans,
-                                                 const rocsolver_direct direct,
-                                                 const rocsolver_storev storev,
+                                                 const rocblas_direct direct,
+                                                 const rocblas_storev storev,
                                                  const rocblas_int m,
                                                  const rocblas_int n,
                                                  const rocblas_int k,

@@ -88,14 +88,14 @@ rocblas_status rocsolver_orgqr_template(rocblas_handle handle, const rocblas_int
         // first update the already computed part
         // applying the current block reflector using larft + larfb
         if (j + jb < n) {
-            rocsolver_larft_template<T>(handle, rocsolver_forward_direction, 
-                                        rocsolver_column_wise, m-j, jb, 
+            rocsolver_larft_template<T>(handle, rocblas_forward_direction, 
+                                        rocblas_column_wise, m-j, jb, 
                                         A, shiftA + idx2D(j,j,lda), lda, strideA, 
                                         (ipiv + j), strideP,
                                         work, ldw, strideW, batch_count);
 
-            rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,rocblas_side_left,rocblas_operation_none,rocsolver_forward_direction,
-                                        rocsolver_column_wise,m-j, n-j-jb, jb,
+            rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,rocblas_side_left,rocblas_operation_none,rocblas_forward_direction,
+                                        rocblas_column_wise,m-j, n-j-jb, jb,
                                         A, shiftA + idx2D(j,j,lda), lda, strideA,
                                         work, 0, ldw, strideW,
                                         A, shiftA + idx2D(j,j+jb,lda), lda, strideA, batch_count);

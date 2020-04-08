@@ -5,9 +5,9 @@
 #include "rocauxiliary_ormbr.hpp"
 
 template <typename T>
-rocblas_status rocsolver_ormbr_impl(rocsolver_handle handle, const rocsolver_storev storev, const rocsolver_side side, const rocsolver_operation trans, 
-                                   const rocsolver_int m, const rocsolver_int n, 
-                                   const rocsolver_int k, T* A, const rocsolver_int lda, T* ipiv, T *C, const rocsolver_int ldc)
+rocblas_status rocsolver_ormbr_impl(rocblas_handle handle, const rocblas_storev storev, const rocblas_side side, const rocblas_operation trans, 
+                                   const rocblas_int m, const rocblas_int n, 
+                                   const rocblas_int k, T* A, const rocblas_int lda, T* ipiv, T *C, const rocblas_int ldc)
 {
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -19,9 +19,9 @@ rocblas_status rocsolver_ormbr_impl(rocsolver_handle handle, const rocsolver_sto
     
     rocblas_int nq = side == rocblas_side_left ? m : n;
 
-    if (storev == rocsolver_column_wise && lda < nq)
+    if (storev == rocblas_column_wise && lda < nq)
         return rocblas_status_invalid_size;
-    if (storev == rocsolver_row_wise && lda < min(nq,k))
+    if (storev == rocblas_row_wise && lda < min(nq,k))
         return rocblas_status_invalid_size;
 
     if (!A || !ipiv || !C)
@@ -54,34 +54,34 @@ rocblas_status rocsolver_ormbr_impl(rocsolver_handle handle, const rocsolver_sto
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocsolver_status rocsolver_sormbr(rocsolver_handle handle,
-                                                 const rocsolver_storev storev,
-                                                 const rocsolver_side side,
-                                                 const rocsolver_operation trans,
-                                                 const rocsolver_int m,
-                                                 const rocsolver_int n,
-                                                 const rocsolver_int k,
+ROCSOLVER_EXPORT rocblas_status rocsolver_sormbr(rocblas_handle handle,
+                                                 const rocblas_storev storev,
+                                                 const rocblas_side side,
+                                                 const rocblas_operation trans,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
                                                  float *A,
-                                                 const rocsolver_int lda,
+                                                 const rocblas_int lda,
                                                  float *ipiv,
                                                  float *C,
-                                                 const rocsolver_int ldc)
+                                                 const rocblas_int ldc)
 {
     return rocsolver_ormbr_impl<float>(handle, storev, side, trans, m, n, k, A, lda, ipiv, C, ldc);
 }
 
-ROCSOLVER_EXPORT rocsolver_status rocsolver_dormbr(rocsolver_handle handle,
-                                                 const rocsolver_storev storev,
-                                                 const rocsolver_side side,
-                                                 const rocsolver_operation trans,
-                                                 const rocsolver_int m,
-                                                 const rocsolver_int n,
-                                                 const rocsolver_int k,
+ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
+                                                 const rocblas_storev storev,
+                                                 const rocblas_side side,
+                                                 const rocblas_operation trans,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
                                                  double *A,
-                                                 const rocsolver_int lda,
+                                                 const rocblas_int lda,
                                                  double *ipiv,
                                                  double *C,
-                                                 const rocsolver_int ldc)
+                                                 const rocblas_int ldc)
 {
     return rocsolver_ormbr_impl<double>(handle, storev, side, trans, m, n, k, A, lda, ipiv, C, ldc);
 }

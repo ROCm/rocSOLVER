@@ -18,7 +18,7 @@
 #include "rocauxiliary_ormqr.hpp"
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status rocsolver_ormbr_template(rocblas_handle handle, const rocsolver_storev storev, const rocblas_side side, const rocblas_operation trans, 
+rocblas_status rocsolver_ormbr_template(rocblas_handle handle, const rocblas_storev storev, const rocblas_side side, const rocblas_operation trans, 
                                    const rocblas_int m, const rocblas_int n, 
                                    const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                    const rocblas_stride strideA, T* ipiv, 
@@ -48,7 +48,7 @@ rocblas_status rocsolver_ormbr_template(rocblas_handle handle, const rocsolver_s
     
     // if column-wise, apply the orthogonal matrix Q generated in the bi-diagonalization
     // gebrd to a general matrix C
-    if (storev == rocsolver_column_wise) {
+    if (storev == rocblas_column_wise) {
         if (nq >= k) {
             rocsolver_ormqr_template<BATCHED,STRIDED,T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, 
                                         C, shiftC, ldc, strideC, batch_count);

@@ -87,7 +87,7 @@ __global__ void copyshift_row(const bool copy, const rocblas_int dim, U A, const
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status rocsolver_orgbr_template(rocblas_handle handle, const rocsolver_storev storev, const rocblas_int m, 
+rocblas_status rocsolver_orgbr_template(rocblas_handle handle, const rocblas_storev storev, const rocblas_int m, 
                                    const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
                                    const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
                                    const rocblas_stride strideP, const rocblas_int batch_count)
@@ -101,7 +101,7 @@ rocblas_status rocsolver_orgbr_template(rocblas_handle handle, const rocsolver_s
 
     // if column-wise, compute orthonormal columns of matrix Q in the bi-diagonalization 
     // of a m-by-k matrix A (given by gebrd)
-    if (storev == rocsolver_column_wise) {
+    if (storev == rocblas_column_wise) {
         if (m >= k) {
             rocsolver_orgqr_template<BATCHED,STRIDED,T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count);    
         } else {

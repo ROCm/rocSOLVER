@@ -55,15 +55,15 @@ rocblas_status rocsolver_gelqf_template(rocblas_handle handle, const rocblas_int
         if (j + jb < m) {
             
             //compute block reflector
-            rocsolver_larft_template<T>(handle, rocsolver_forward_direction, 
-                                        rocsolver_row_wise, n-j, jb, 
+            rocsolver_larft_template<T>(handle, rocblas_forward_direction, 
+                                        rocblas_row_wise, n-j, jb, 
                                         A, shiftA + idx2D(j,j,lda), lda, strideA, 
                                         (ipiv + j), strideP,
                                         work, ldw, strideW, batch_count);
 
             //apply the block reflector
             rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,rocblas_side_right,rocblas_operation_none,
-                                        rocsolver_forward_direction,rocsolver_row_wise,
+                                        rocblas_forward_direction,rocblas_row_wise,
                                         m-j-jb, n-j, jb,
                                         A, shiftA + idx2D(j,j,lda), lda, strideA,
                                         work, 0, ldw, strideW,

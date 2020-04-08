@@ -5,8 +5,8 @@
 #include "rocauxiliary_larft.hpp"
 
 template <typename T>
-rocblas_status rocsolver_larft_impl(rocblas_handle handle, const rocsolver_direct direct, 
-                                   const rocsolver_storev storev, const rocblas_int n, 
+rocblas_status rocsolver_larft_impl(rocblas_handle handle, const rocblas_direct direct, 
+                                   const rocblas_storev storev, const rocblas_int n, 
                                    const rocblas_int k, T* V, const rocblas_int ldv, T* tau,
                                    T* F, const rocblas_int ldf)
 {
@@ -17,9 +17,9 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle, const rocsolver_direc
 
     if (n < 0 || k < 1 || ldf < k)
         return rocblas_status_invalid_size;
-    if (ldv < n && storev == rocsolver_column_wise)
+    if (ldv < n && storev == rocblas_column_wise)
         return rocblas_status_invalid_size;
-    if (ldv < k && storev == rocsolver_row_wise)
+    if (ldv < k && storev == rocblas_row_wise)
         return rocblas_status_invalid_size;
     if (!V || !tau || !F)
         return rocblas_status_invalid_pointer;
@@ -52,8 +52,8 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle, const rocsolver_direc
 extern "C" {
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_slarft(rocblas_handle handle,
-                                                 const rocsolver_direct direct,
-                                                 const rocsolver_storev storev,
+                                                 const rocblas_direct direct,
+                                                 const rocblas_storev storev,
                                                  const rocblas_int n,
                                                  const rocblas_int k,
                                                  float *V,
@@ -66,8 +66,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_slarft(rocblas_handle handle,
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dlarft(rocblas_handle handle,
-                                                 const rocsolver_direct direct,
-                                                 const rocsolver_storev storev,
+                                                 const rocblas_direct direct,
+                                                 const rocblas_storev storev,
                                                  const rocblas_int n,
                                                  const rocblas_int k,
                                                  double *V,

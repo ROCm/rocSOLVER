@@ -84,7 +84,7 @@ rocblas_status rocsolver_ormqr_template(rocblas_handle handle, const rocblas_sid
         }
 
         // generate triangular factor of current block reflector
-        rocsolver_larft_template<T>(handle,rocsolver_forward_direction,rocsolver_column_wise,
+        rocsolver_larft_template<T>(handle,rocblas_forward_direction,rocblas_column_wise,
                                  order-i,min(ldw,k-i),
                                  A, shiftA + idx2D(i,i,lda),lda, strideA,
                                  ipiv + i, strideP,
@@ -93,7 +93,7 @@ rocblas_status rocsolver_ormqr_template(rocblas_handle handle, const rocblas_sid
 
         // apply current block reflector
         rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,side,trans,
-                                 rocsolver_forward_direction,rocsolver_column_wise,
+                                 rocblas_forward_direction,rocblas_column_wise,
                                  nrow,ncol,min(ldw,k-i),
                                  A, shiftA + idx2D(i,i,lda),lda, strideA,
                                  work,0,ldw,strideW,

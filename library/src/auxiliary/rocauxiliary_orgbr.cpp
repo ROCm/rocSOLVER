@@ -5,7 +5,7 @@
 #include "rocauxiliary_orgbr.hpp"
 
 template <typename T>
-rocblas_status rocsolver_orgbr_impl(rocblas_handle handle, const rocsolver_storev storev, 
+rocblas_status rocsolver_orgbr_impl(rocblas_handle handle, const rocblas_storev storev, 
                                    const rocblas_int m, const rocblas_int n, 
                                    const rocblas_int k, T* A, const rocblas_int lda, T* ipiv)
 {
@@ -19,9 +19,9 @@ rocblas_status rocsolver_orgbr_impl(rocblas_handle handle, const rocsolver_store
     if (!A || !ipiv)
         return rocblas_status_invalid_pointer;
 
-    if (storev == rocsolver_column_wise && (n > m || n < min(m,k)))
+    if (storev == rocblas_column_wise && (n > m || n < min(m,k)))
         return rocblas_status_invalid_size;
-    if (storev == rocsolver_row_wise && (m > n || m < min(n,k)))
+    if (storev == rocblas_row_wise && (m > n || m < min(n,k)))
         return rocblas_status_invalid_size;
 
     rocblas_stride strideA = 0;
@@ -48,7 +48,7 @@ rocblas_status rocsolver_orgbr_impl(rocblas_handle handle, const rocsolver_store
 extern "C" {
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sorgbr(rocblas_handle handle,
-                                                 const rocsolver_storev storev,
+                                                 const rocblas_storev storev,
                                                  const rocblas_int m,
                                                  const rocblas_int n,
                                                  const rocblas_int k,
@@ -60,7 +60,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sorgbr(rocblas_handle handle,
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dorgbr(rocblas_handle handle,
-                                                 const rocsolver_storev storev,
+                                                 const rocblas_storev storev,
                                                  const rocblas_int m,
                                                  const rocblas_int n,
                                                  const rocblas_int k,

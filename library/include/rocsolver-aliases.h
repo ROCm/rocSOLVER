@@ -2,23 +2,40 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef _ROCSOLVER_AUXILIARY_H_
-#define _ROCSOLVER_AUXILIARY_H_
+//rocsolver types and auxiliaries as aliases to rocblas types and auxiliaries
+// DEPECRATED: ALIASES ARE NOT MAINTAINED ANYMORE. ONLY KEPT FOR BACKWARD
+// COMPATIBILITY. EVERYTHING IS SWITCHED TO ROCBLAS NAMES.
+// ***************************************************************************/
 
-#include "rocsolver-types.h"
-#include <hip/hip_runtime_api.h>
+#ifndef _ALIASES_H_
+#define _ALIASES_H_
+
 #include <rocblas.h>
+#include "rocsolver-extra-types.h"
 
-/*! \file
-    \brief rocsolver-auxiliary.h provides auxilary functions in rocsolver
- ****************************************************************************/
+//rocblas original types
+typedef rocblas_int rocsolver_int;
+typedef rocblas_stride rocsolver_stride;
+typedef rocblas_float_complex rocsolver_float_complex;
+typedef rocblas_double_complex rocsolver_double_complex;
+typedef rocblas_half rocsolver_half;
+typedef rocblas_handle rocsolver_handle;
+typedef rocblas_operation rocsolver_operation;
+typedef rocblas_fill rocsolver_fill;
+typedef rocblas_diagonal rocsolver_diagonal;
+typedef rocblas_side rocsolver_side;
+typedef rocblas_status rocsolver_status;
+typedef rocblas_layer_mode rocsolver_layer_mode;
 
+//extras types only used in rocsolver
+typedef rocblas_direct rocsolver_direction;
+typedef rocblas_storev rocsolver_storev;
+
+//auxiliaries
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*! \brief Create rocSOLVER handle
- *******************************************************************************/
 ROCSOLVER_EXPORT __inline rocsolver_status
 rocsolver_create_handle(rocsolver_handle *handle) {
 
@@ -30,52 +47,38 @@ rocsolver_create_handle(rocsolver_handle *handle) {
   return rocblas_set_pointer_mode(*handle, rocblas_pointer_mode_device);
 }
 
-/*! \brief Destroy rocSOLVER handle
- *******************************************************************************/
 ROCSOLVER_EXPORT __inline rocsolver_status
 rocsolver_destroy_handle(rocsolver_handle handle) {
   return rocblas_destroy_handle(handle);
 }
 
-/*! \brief Add stream to handle
- *******************************************************************************/
 ROCSOLVER_EXPORT __inline rocsolver_status
 rocsolver_add_stream(rocsolver_handle handle, hipStream_t stream) {
   return rocblas_add_stream(handle, stream);
 }
 
-/*! \brief Remove any streams from handle, and add one
- *******************************************************************************/
 ROCSOLVER_EXPORT __inline rocsolver_status
 rocsolver_set_stream(rocsolver_handle handle, hipStream_t stream) {
   return rocblas_set_stream(handle, stream);
 }
 
-/*! \brief Get stream [0] from handle
- *******************************************************************************/
 ROCSOLVER_EXPORT __inline rocsolver_status
 rocsolver_get_stream(rocsolver_handle handle, hipStream_t *stream) {
   return rocblas_get_stream(handle, stream);
 }
 
-/*! \brief Copy vector from host to device
- *******************************************************************************/
 ROCSOLVER_EXPORT __inline rocsolver_status
 rocsolver_set_vector(rocsolver_int n, rocsolver_int elem_size, const void *x,
                      rocsolver_int incx, void *y, rocsolver_int incy) {
   return rocblas_set_vector(n, elem_size, x, incx, y, incy);
 }
 
-/*! \brief Copy vector from device to host
- *******************************************************************************/
 ROCSOLVER_EXPORT __inline rocsolver_status
 rocsolver_get_vector(rocsolver_int n, rocsolver_int elem_size, const void *x,
                      rocsolver_int incx, void *y, rocsolver_int incy) {
   return rocblas_get_vector(n, elem_size, x, incx, y, incy);
 }
 
-/*! \brief Copy matrix from host to device
- *******************************************************************************/
 ROCSOLVER_EXPORT __inline rocsolver_status
 rocsolver_set_matrix(rocsolver_int rows, rocsolver_int cols,
                      rocsolver_int elem_size, const void *a, rocsolver_int lda,
@@ -83,8 +86,6 @@ rocsolver_set_matrix(rocsolver_int rows, rocsolver_int cols,
   return rocblas_set_matrix(rows, cols, elem_size, a, lda, b, ldb);
 }
 
-/*! \brief Copy matrix from device to host
- *******************************************************************************/
 ROCSOLVER_EXPORT __inline rocsolver_status
 rocsolver_get_matrix(rocsolver_int rows, rocsolver_int cols,
                      rocsolver_int elem_size, const void *a, rocsolver_int lda,
@@ -96,4 +97,4 @@ rocsolver_get_matrix(rocsolver_int rows, rocsolver_int cols,
 }
 #endif
 
-#endif /* _ROCSOLVER_AUXILIARY_H_ */
+#endif

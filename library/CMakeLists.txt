@@ -94,10 +94,11 @@ configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/include/rocsolver-version.h.in" "${
 
 set( rocsolver_headers_public
   include/rocsolver.h
-  include/rocsolver-types.h
-  include/rocsolver-auxiliary.h
+  include/rocsolver-extra-types.h
+  include/rocsolver-aliases.h
   include/rocsolver-functions.h
   ${PROJECT_BINARY_DIR}/include/rocsolver-version.h
+  ${PROJECT_BINARY_DIR}/include/rocsolver-export.h
 )
 
 source_group( "Header Files\\Public" FILES ${rocsolver_headers_public} )

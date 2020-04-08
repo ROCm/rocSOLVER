@@ -9,16 +9,11 @@
 #ifndef _ROCSOLVER_H_
 #define _ROCSOLVER_H_
 
-/* system headers */
-#include <stdbool.h>
-
-#include "rocsolver-export.h"
-
 /* library headers */
-#include "rocsolver-auxiliary.h"
 #include "rocsolver-export.h"
-#include "rocsolver-functions.h"
-#include "rocsolver-types.h"
 #include "rocsolver-version.h"
+#include "rocsolver-aliases.h"
+#include "rocsolver-extra-types.h"
+#include "rocsolver-functions.h"
 
 #endif // _ROCSOLVER_H_

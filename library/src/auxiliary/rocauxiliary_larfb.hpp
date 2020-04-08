@@ -55,8 +55,8 @@ __global__ void addmatA1(const rocblas_int ldw, const rocblas_int order, U A, co
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_side side, 
-                                        const rocblas_operation trans, const rocsolver_direct direct, 
-                                        const rocsolver_storev storev,
+                                        const rocblas_operation trans, const rocblas_direct direct, 
+                                        const rocblas_storev storev,
                                         const rocblas_int m, const rocblas_int n,
                                         const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, 
                                         const rocblas_stride strideV, T *F, const rocblas_int shiftF,
@@ -97,7 +97,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     rocblas_fill uploV;
     bool trap;
     rocblas_int order, ldw;
-    bool colwise = (storev == rocsolver_column_wise); 
+    bool colwise = (storev == rocblas_column_wise); 
     bool leftside = (side == rocblas_side_left);
     size_t offsetV;
     
@@ -143,7 +143,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     
     // BACKWARD DIRECTION TO BE IMPLEMENTED...
     rocblas_fill uploT = rocblas_fill_upper;
-    if (direct == rocsolver_backward_direction)
+    if (direct == rocblas_backward_direction)
         return rocblas_status_not_implemented;
     
     //compute:
