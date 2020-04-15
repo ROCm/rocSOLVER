@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright 2016 Advanced Micro Devices, Inc.
+# Copyright 2016-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 # Helper cmake script to automate building dependencies for rocblas
 # This script can be invoked manually by the user with 'cmake -P'
@@ -16,7 +16,7 @@ if( NOT DEFINED CMAKE_CONFIGURATION_TYPES AND NOT DEFINED CMAKE_BUILD_TYPE )
 endif()
 
 # The superbuild does not build anything itself; all compiling is done in external projects
-project( rocsolver-dependencies NONE )
+project( rocblas-dependencies NONE )
 
 option( BUILD_BOOST "Download and build boost library" ON )
 option( BUILD_GTEST "Download and build googletest library" ON )
@@ -40,21 +40,21 @@ include( get-cli-arguments )
 if( BUILD_GTEST )
   include( external-gtest )
 
-  list( APPEND rocsolver_dependencies googletest )
+  list( APPEND rocblas_dependencies googletest )
   set( gtest_custom_target COMMAND cd ${GTEST_BINARY_ROOT}$<SEMICOLON> ${CMAKE_COMMAND} --build . --target install )
 endif( )
 
 if( BUILD_LAPACK )
   include( external-lapack )
 
-  list( APPEND rocsolver_dependencies lapack )
+  list( APPEND rocblas_dependencies lapack )
   set( lapack_custom_target COMMAND cd ${LAPACK_BINARY_ROOT}$<SEMICOLON> ${CMAKE_COMMAND} --build . --target install )
 endif( )
 
 if( BUILD_BOOST )
   include( external-boost )
 
-  list( APPEND rocsolver_dependencies boost )
+  list( APPEND rocblas_dependencies boost )
   set( boost_custom_target COMMAND cd ${BOOST_BINARY_ROOT}$<SEMICOLON> ${Boost.Command} install )
 endif( )
 
@@ -68,5 +68,5 @@ add_custom_target( install
   ${boost_custom_target}
   ${gtest_custom_target}
   ${lapack_custom_target}
-  DEPENDS ${rocsolver_dependencies}
+  DEPENDS ${rocblas_dependencies}
 )
