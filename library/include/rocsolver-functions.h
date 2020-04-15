@@ -18,6 +18,21 @@ extern "C" {
 
 /*
  * ===========================================================================
+ *      Build information (library version)
+ * ===========================================================================
+ */
+
+
+/*! \brief   loads char* buf with the rocsolver library version. size_t len
+     is the maximum length of char* buf.
+
+ ******************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char* buf, size_t len);
+
+
+/*
+ * ===========================================================================
  *      Auxiliary functions
  * ===========================================================================
  */

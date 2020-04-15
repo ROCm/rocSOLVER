@@ -30,7 +30,7 @@ __global__ void set_zero_row(const rocblas_int m, const rocblas_int kk, U A,
     const auto i = hipBlockIdx_x * blocksizex + hipThreadIdx_x + kk;
 
     if (i < m && j < kk) {
-        T *Ap = load_ptr_batch<T>(A,shiftA,b,strideA);
+        T *Ap = load_ptr_batch<T>(A,b,shiftA,strideA);
         
         Ap[i + j*lda] = 0.0;
     }

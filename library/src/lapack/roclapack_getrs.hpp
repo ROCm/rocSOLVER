@@ -10,7 +10,7 @@
 #ifndef ROCLAPACK_GETRS_HPP
 #define ROCLAPACK_GETRS_HPP
 
-#include <rocblas.hpp>
+#include "rocblas.hpp"
 #include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_laswp.hpp"
 
@@ -57,8 +57,8 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_ope
         rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0, strideP, 1, batch_count);
 
         for (int b = 0; b < batch_count; ++b) {
-            Ap = load_ptr_batch<T>(AA,shiftA,b,strideA);
-            Bp = load_ptr_batch<T>(BB,shiftB,b,strideB);
+            Ap = load_ptr_batch<T>(AA,b,shiftA,strideA);
+            Bp = load_ptr_batch<T>(BB,b,shiftB,strideB);
             
             // solve L*X = B, overwriting B with X
             rocblas_trsm<T>(handle, rocblas_side_left, rocblas_fill_lower,
@@ -74,8 +74,8 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_ope
     } else {
 
         for (int b = 0; b < batch_count; ++b) {
-            Ap = load_ptr_batch<T>(AA,shiftA,b,strideA);
-            Bp = load_ptr_batch<T>(BB,shiftB,b,strideB);
+            Ap = load_ptr_batch<T>(AA,b,shiftA,strideA);
+            Bp = load_ptr_batch<T>(BB,b,shiftB,strideB);
             
             // solve U**T *X = B or U**H *X = B, overwriting B with X
             rocblas_trsm<T>(handle, rocblas_side_left, rocblas_fill_upper, trans,

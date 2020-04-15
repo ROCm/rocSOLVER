@@ -21,7 +21,7 @@ __global__ void sqrtDiagOnward(U A, const rocblas_int shiftA, const rocblas_int 
 {
     int id = hipBlockIdx_x;
 
-    T* M = load_ptr_batch<T>(A,shiftA,id,strideA);
+    T* M = load_ptr_batch<T>(A,id,shiftA,strideA);
     T t = M[loc] - res[id];
 
     // error for non-positive definiteness

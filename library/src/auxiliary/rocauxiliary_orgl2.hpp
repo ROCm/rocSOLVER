@@ -28,7 +28,7 @@ __global__ void init_ident_row(const rocblas_int m, const rocblas_int n, const r
     const auto i = hipBlockIdx_x * blocksizex + hipThreadIdx_x;
 
     if (i < m && j < n) {
-        T *Ap = load_ptr_batch<T>(A,shiftA,b,strideA);
+        T *Ap = load_ptr_batch<T>(A,b,shiftA,strideA);
         
         if (i == j) 
             Ap[i + j*lda] = 1.0;

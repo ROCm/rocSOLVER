@@ -28,7 +28,7 @@ __global__ void set_triangular(const rocblas_int k, U V, const rocblas_int shift
     if (i < k && j < k) {
         T *Vp, *tp, *Fp;
         tp = tau + b*strideT;
-        Vp = load_ptr_batch<T>(V,shiftV,b,strideV);
+        Vp = load_ptr_batch<T>(V,b,shiftV,strideV);
         Fp = F + b*strideF;
 
         if (j < i) {

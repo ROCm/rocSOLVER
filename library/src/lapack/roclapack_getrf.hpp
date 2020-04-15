@@ -112,7 +112,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
 
             // compute block row of U
             for (int b=0;b<batch_count;++b) {
-                M = load_ptr_batch<T>(AA,shiftA,b,strideA);
+                M = load_ptr_batch<T>(AA,b,shiftA,strideA);
                 rocblas_trsm(handle, rocblas_side_left, rocblas_fill_lower, rocblas_operation_none,
                              rocblas_diagonal_unit, jb, (n - j - jb), oneInt,
                              (M + idx2D(j, j, lda)), lda, (M + idx2D(j, j + jb, lda)), lda);

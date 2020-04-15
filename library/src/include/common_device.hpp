@@ -6,6 +6,11 @@
 #define COMMON_DEVICE_H
 
 #include <hip/hip_runtime.h>
+#include "utility.h"
+
+// **********************************************************
+// GPU kernels that are used by many rocsolver functions
+// **********************************************************
 
 template<typename T, typename U>
 __forceinline__ __global__ void reset_info(T *info, const rocblas_int n, U val) {
@@ -26,16 +31,6 @@ __forceinline__ __global__ void reset_batch_info(T *info, const rocblas_stride s
 }
 
 template<typename T>
-__forceinline__ __device__ __host__ T* load_ptr_batch(T* p, rocblas_int shift, rocblas_int batch, rocblas_stride stride) {
-    return p + batch * stride + shift;
-}
-
-template<typename T>
-__forceinline__ __device__ __host__ T* load_ptr_batch(T *const p[], rocblas_int shift, rocblas_int batch, rocblas_stride stride) {
-    return p[batch] + shift;
-}
-
-template<typename T>
 __forceinline__ __global__ void get_array(T** out, T* in, rocblas_stride stride, rocblas_int batch) 
 {
     int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -50,7 +45,7 @@ __forceinline__ __global__ void setdiag(const rocblas_int j, U A,
                         T *ipiv, const rocblas_stride strideP)
 {
     const auto b = hipBlockIdx_x;
-    T *Ap = load_ptr_batch<T>(A,shiftA,b,strideA);
+    T *Ap = load_ptr_batch<T>(A,b,shiftA,strideA);
     T *tau = ipiv + b*strideP;
 
     T t = -tau[j];
@@ -75,7 +70,7 @@ __forceinline__ __global__ void set_one_diag(T* diag, U A, const rocblas_int shi
 {
     int b = hipBlockIdx_x;
 
-    T* d = load_ptr_batch<T>(A,shifta,b,stridea);
+    T* d = load_ptr_batch<T>(A,b,shifta,stridea);
     diag[b] = d[0];
     d[0] = T(1);
 }
@@ -85,7 +80,7 @@ __forceinline__ __global__ void restore_diag(T* diag, U A, const rocblas_int shi
 {
     int b = hipBlockIdx_x;
 
-    T* d = load_ptr_batch<T>(A,shifta,b,stridea);
+    T* d = load_ptr_batch<T>(A,b,shifta,stridea);
 
     d[0] = diag[b];
 }

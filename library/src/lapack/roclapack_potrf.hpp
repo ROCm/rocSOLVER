@@ -90,7 +90,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             if (j + jb < n) {
                 // update trailing submatrix
                 for (int b=0;b<batch_count;++b) {
-                    M = load_ptr_batch<T>(AA,shiftA,b,strideA);
+                    M = load_ptr_batch<T>(AA,b,shiftA,strideA);
                     rocblas_trsm(handle, rocblas_side_left, uplo, rocblas_operation_transpose,
                              rocblas_diagonal_non_unit, jb, (n - j - jb), d_one,
                              (M + idx2D(j, j, lda)), lda, (M + idx2D(j, j + jb, lda)), lda);
@@ -115,7 +115,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             if (j + jb < n) {
                 // update trailing submatrix
                 for (int b=0;b<batch_count;++b) {
-                    M = load_ptr_batch<T>(AA,shiftA,b,strideA);
+                    M = load_ptr_batch<T>(AA,b,shiftA,strideA);
                     rocblas_trsm(handle, rocblas_side_right, uplo, rocblas_operation_transpose,
                              rocblas_diagonal_non_unit, (n - j - jb), jb, d_one,
                              (M + idx2D(j, j, lda)), lda, (M + idx2D(j + jb, j, lda)), lda);

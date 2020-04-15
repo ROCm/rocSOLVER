@@ -33,8 +33,8 @@ __global__ void copyshift_col(const bool copy, const rocblas_int dim, U A, const
     if (i < dim && j < dim && j <= i) {
         rocblas_int offset = j*(j+1)/2; //to acommodate in smaller array W
 
-        T *Ap = load_ptr_batch<T>(A,shiftA,b,strideA);    
-        T *Wp = load_ptr_batch<T>(W,shiftW,b,strideW);
+        T *Ap = load_ptr_batch<T>(A,b,shiftA,strideA);    
+        T *Wp = load_ptr_batch<T>(W,b,shiftW,strideW);
         
         if (copy) {
             //copy columns
@@ -65,8 +65,8 @@ __global__ void copyshift_row(const bool copy, const rocblas_int dim, U A, const
     if (i < dim && j < dim && i <= j) {
         rocblas_int offset = j*ldw - j*(j+1)/2; //to acommodate in smaller array W
 
-        T *Ap = load_ptr_batch<T>(A,shiftA,b,strideA);    
-        T *Wp = load_ptr_batch<T>(W,shiftW,b,strideW);
+        T *Ap = load_ptr_batch<T>(A,b,shiftA,strideA);    
+        T *Wp = load_ptr_batch<T>(W,b,shiftW,strideW);
         
         if (copy) {
             //copy rows

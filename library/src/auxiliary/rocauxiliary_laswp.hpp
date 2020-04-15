@@ -42,7 +42,7 @@ __global__ void laswp_kernel(const rocblas_int n, U AA, const rocblas_int shiftA
 
     //will exchange rows i and exch if they are not the same
     if (exch != i) {
-        T* A = load_ptr_batch(AA,shiftA,id,stride);
+        T* A = load_ptr_batch(AA,id,shiftA,stride);
         swap(n,A,lda,i-1,exch-1);  //row indices are base-1 from the API
     }
 }

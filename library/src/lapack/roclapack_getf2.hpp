@@ -14,6 +14,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "ideal_sizes.hpp"
+#include "utility.h"
 #include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_laswp.hpp"
 
@@ -26,7 +27,7 @@ inline __global__ void getf2_check_singularity(U AA, const rocblas_int shiftA, c
 {
     int id = hipBlockIdx_x;
 
-    T* A = load_ptr_batch<T>(AA,shiftA,id,strideA);
+    T* A = load_ptr_batch<T>(AA,id,shiftA,strideA);
     rocblas_int *ipiv = ipivA + id*strideP + shiftP;
 
     ipiv[j] += j;           //update the pivot index
@@ -91,7 +92,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
     for (rocblas_int j = 0; j < dim; ++j) {
         // find pivot. Use Fortran 1-based indexing for the ipiv array as iamax does that as well!
         for (int b=0;b<batch_count;++b) {
-            M = load_ptr_batch<T>(AA,shiftA,b,strideA);
+            M = load_ptr_batch<T>(AA,b,shiftA,strideA);
             rocblas_iamax(handle, m - j, (M + idx2D(j, j, lda)), 1, 
                         (ipiv + shiftP + b*strideP + j));
         }

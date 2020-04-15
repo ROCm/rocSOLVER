@@ -28,7 +28,7 @@ __global__ void copymatA1(const rocblas_int ldw, const rocblas_int order, U A, c
     if (i < ldw && j < order) {
         T *Ap, *Wp;
         Wp = work + b*strideW;
-        Ap = load_ptr_batch<T>(A,shiftA,b,strideA);
+        Ap = load_ptr_batch<T>(A,b,shiftA,strideA);
 
         Wp[i + j*ldw] = Ap[i + j*lda];
     }
@@ -47,7 +47,7 @@ __global__ void addmatA1(const rocblas_int ldw, const rocblas_int order, U A, co
     if (i < ldw && j < order) {
         T *Ap, *Wp;
         Wp = work + b*strideW;
-        Ap = load_ptr_batch<T>(A,shiftA,b,strideA);
+        Ap = load_ptr_batch<T>(A,b,shiftA,strideA);
 
         Ap[i + j*lda] -= Wp[i + j*ldw];    
     }
@@ -151,7 +151,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     //   or 
     // A1 * V1
     for (int b=0;b<batch_count;++b) {
-        Vp = load_ptr_batch<T>(VV,shiftV,b,strideV);
+        Vp = load_ptr_batch<T>(VV,b,shiftV,strideV);
         rocblas_trmm(handle,side,uploV,transp,rocblas_diagonal_unit,ldw,order,oneInt,Vp,ldv,(work + b*strideW),ldw);
     }
 
@@ -180,7 +180,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     //              or
     // (A1 * V1 + A2 * V2) * trans(T)    
     for (int b=0;b<batch_count;++b) {
-        Fp = load_ptr_batch<T>(F,shiftF,b,strideF);
+        Fp = load_ptr_batch<T>(F,b,shiftF,strideF);
         rocblas_trmm(handle,side,uploT,trans,rocblas_diagonal_non_unit,ldw,order,oneInt,Fp,ldf,(work + b*strideW),ldw);
     }
 
@@ -214,7 +214,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     //              or
     // (A1 * V1 + A2 * V2) * trans(T) * V1'    
     for (int b=0;b<batch_count;++b) {
-        Vp = load_ptr_batch<T>(VV,shiftV,b,strideV);
+        Vp = load_ptr_batch<T>(VV,b,shiftV,strideV);
         rocblas_trmm(handle,side,uploV,transp,rocblas_diagonal_unit,ldw,order,oneInt,Vp,ldv,(work + b*strideW),ldw);
     }
     

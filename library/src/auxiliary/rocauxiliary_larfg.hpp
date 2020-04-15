@@ -20,7 +20,7 @@ __global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms, U al
 {
     int b = hipBlockIdx_x;
 
-    T* a = load_ptr_batch<T>(alpha,shifta,b,stride);
+    T* a = load_ptr_batch<T>(alpha,b,shifta,stride);
     T* t = tau + b*strideP;
 
     if(norms[b] > 0) {
@@ -79,7 +79,7 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int
     
     //compute norm of x
     for (int b=0;b<batch_count;++b) {
-        xp = load_ptr_batch<T>(xx,shiftx,b,stridex);
+        xp = load_ptr_batch<T>(xx,b,shiftx,stridex);
         rocblas_nrm2(handle, n - 1, xp, incx, (norms + b));
     }
 

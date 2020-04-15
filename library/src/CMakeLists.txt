@@ -74,12 +74,17 @@ set( rocsolver_lapack_source
   lapack/roclapack_gelqf_strided_batched.cpp
 )
 
+set( info_source
+  buildinfo.cpp
+)  
+
 prepend_path( ".." rocsolver_headers_public relative_rocsolver_headers_public )
 
 add_library( rocsolver
   ${rocsolver_lapack_source}
   ${relative_rocsolver_headers_public}
   ${rocsolver_auxiliary_source}
+  ${info_source}
 )
 
 add_library( roc::rocsolver ALIAS rocsolver )
