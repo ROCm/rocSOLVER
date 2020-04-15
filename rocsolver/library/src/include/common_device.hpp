@@ -6,7 +6,7 @@
 #define COMMON_DEVICE_H
 
 #include <hip/hip_runtime.h>
-#include "utility.h"
+#include "../../../../rocblascommon/library/src/include/utility.h"
 
 // **********************************************************
 // GPU kernels that are used by many rocsolver functions

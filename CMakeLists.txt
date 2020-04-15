@@ -138,6 +138,10 @@ include( ROCMInstallTargets )
 include( ROCMPackageConfigHelpers )
 include( ROCMInstallSymlinks )
 
+# Append our library helper cmake path and the cmake path for hip (for convenience)
+# Users may override HIP path by specifying their own in CMAKE_MODULE_PATH
+list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/rocblascommon/cmake )
+
 include (rocblascommon/cmake/os-detection.cmake)
 get_os_id(OS_ID)
 message (STATUS "OS detected is ${OS_ID}")
@@ -146,10 +150,6 @@ message (STATUS "OS detected is ${OS_ID}")
 # keeping versioning according to ROCm release
 set ( VERSION_STRING "3.5.0" )
 rocm_setup_version( VERSION ${VERSION_STRING} )
-
-# Append our library helper cmake path and the cmake path for hip (for convenience)
-# Users may override HIP path by specifying their own in CMAKE_MODULE_PATH
-list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 
 # NOTE:  workaround until hcc & hip cmake modules fixes symlink logic in their config files; remove when fixed
 list( APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hcc ${ROCM_PATH}/hip /opt/rocm/hcc /opt/rocm/hip )
@@ -160,7 +160,7 @@ option( BUILD_VERBOSE "Output additional build information" OFF )
 option( BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON )
 
 # by default, clients are not built
-include( clients/cmake/build-options.cmake )
+include( rocsolver/clients/cmake/build-options.cmake )
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
 
@@ -182,9 +182,9 @@ include_directories( ${rocblas_INCLUDE_DIR} )
 # CMake list of machine targets
 set( AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific machine types for library to target" )
 
-add_subdirectory( library )
+add_subdirectory( rocsolver/library )
 
 # Build clients of the library
 if( BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS )
-  add_subdirectory( clients )
+  add_subdirectory( rocsolver/clients )
 endif( )

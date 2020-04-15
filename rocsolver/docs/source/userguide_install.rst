@@ -44,13 +44,13 @@ Download/clone the desired branch using the command:
 
 .. code-block:: bash
 
-    git clone -b <desired_branch_name> https://github.com/jzuniga-amd/rocSOLVER.git
-    cd rocsolver
+    git clone -b <desired_branch_name> https://github.com/ROCmSoftwarePlatform/rocSOLVER.git
+    cd rocSOLVER
 
 To build from source, some external dependencies such as CMake and Python are required. Additionally, if the library clients 
-are to be built (by default they are not), then LAPACK, Boost and GoogleTest will be also required. The library clients, rocsolver-test and rocsolver-bench, 
+are to be built (by default they are not), then LAPACK, Boost and GoogleTest will be also required. (The library clients: rocsolver-test and rocsolver-bench, 
 provide the infrastructure for testing and benchmarking rocSOLVER. For more details on the library clients see the Design 
-Documentation here: :ref:`clients_label`.
+Documentation here: :ref:`clients_label`).
 
 Using the install.sh script
 -------------------------------
@@ -69,29 +69,39 @@ Next, some common use cases are listed:
     
     ./install.sh             
 
-This command build rocSOLVER and put the generated
+This command build rocSOLVER and put the generated library
 files (headers and ``librocsolver.so``)     
 in the output directory:                    
-``rocsolver/build/rocsolver-install``.     
+``rocSOLVER/build/release/rocsolver-install``.     
 Other output files from the configuration   
 and building process can also be found      
-at ``rocsolver/build``.  
+at ``rocSOLVER/build`` and ``rocSOLVER/build/release`` directories.  
 It is assummed that all the library external
 dependencies have been installed.           
 It also assumes that rocBLAS library is     
 located at: ``/opt/rocm/rocblas``.          
 
 .. code-block:: bash
+    
+    ./install.sh -g
+
+Use the -g flag to build in debug mode. In this case the generated library files will be located at
+``rocSOLVER/build/debug/rocsolver-install``.
+Other output files from the configuration
+and building process can also be found
+at ``rocSOLVER/build`` and ``rocSOLVER/build/debug`` directories
+
+.. code-block:: bash
 
     ./install.sh --lib_dir /home/user/rocsolverlib --build_dir buildoutput
 
-Use --lib_dir and --build_dir flags to      
+Use ``--lib_dir`` and ``--build_dir`` to      
 change output directories.                  
 In this case, for example, the installer    
 will put the headers and library files at   
 ``/home/user/rocsolverlib``, while the outputs    
 of the configure and building process will  
-be at ``rocsolver/buildoutput``.            
+be at ``rocSOLVER/buildoutput`` and ``rocSOLVER/buildoutput/release``.            
 The selected output directories must be     
 local, otherwise the user may require sudo  
 privileges.                                 
@@ -103,7 +113,7 @@ below.
 
     ./install.sh --rocblas_dir /alternative/rocblas/location
 
-Use --rocblas_dir flag to change where the  
+Use ``--rocblas_dir`` to change where the  
 rocBLAS library will be looked for.        
 In this case, for example, the installer  
 will look for the rocBLAS library at     
@@ -145,7 +155,7 @@ additionally build the library clients
 ``rocsolver-bench`` and                     
 ``rocsolver-test``.                         
 The binaries will be located at             
-``rocsolver/build/clients/staging``.        
+``rocSOLVER/build/release/rocsolver/clients/staging``.        
 It is assumed that all the client external  
 dependencies have been installed.           
 
@@ -187,7 +197,7 @@ not be installed.
 
     ./install.sh -i --install_dir /package/install/path 
 
-When generating a package, use --install_dir to change the directory where 
+When generating a package, use ``--install_dir`` to change the directory where 
 it will be installed.                       
 In this case, for example, rocSOLVER        
 package will be installed at                
@@ -212,56 +222,64 @@ of common use cases (see the CMake documentation for more information on CMake o
 
 .. code-block:: bash
 
-    mkdir -p build && cd build
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install ..
+    mkdir -p build/release && cd build/release
+    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install ../..
     make install
 
 This is equivalent to ``./install.sh``.
 
 .. code-block:: bash
 
-    mkdir -p buildoutput && cd buildoutput
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=/home/user/rocsolverlib ..
+    mkdir -p buildoutput/release && cd buildoutput/release
+    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=/home/user/rocsolverlib ../..
     make install
 
 This is equivalent to ``./install.sh --lib_dir /home/user/rocsolverlib --build_dir buildoutput``.
 
 .. code-block:: bash
 
-    mkdir -p build && cd build
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -Drocblas_DIR=/alternative/rocblas/location ..
+    mkdir -p build/release && cd build/release
+    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -Drocblas_DIR=/alternative/rocblas/location ../..
     make install
 
 This is equivalent to ``./install.sh --rocblas_dir /alternative/rocblas/location``.
 
 .. code-block:: bash
 
-    mkdir -p build && cd build
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_SHARED_LIBS=OFF ..
+    mkdir -p build/debug && cd build/debug
+    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCMAKE_BUILD_TYPE=Debug ../..
+    make install
+
+This is equivalent to ``./install.sh -g``.
+
+.. code-block:: bash
+
+    mkdir -p build/release && cd build/release
+    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_SHARED_LIBS=OFF ../..
     make install
 
 This is equivalent to ``./install.sh -s``.
 
 .. code-block:: bash
 
-    mkdir -p build && cd build
-    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install ..
+    mkdir -p build/release && cd build/release
+    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install ../..
     make install
 
 This is equivalent to ``./install.sh -h``.
 
 .. code-block:: bash
 
-    mkdir -p build && cd build
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON ..
+    mkdir -p build/release && cd build/release
+    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON ../..
     make install
 
 This is equivalent to ``./install.sh -c``.
 
 .. code-block:: bash
 
-    mkdir -p build && cd build
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/opt/rocm ..
+    mkdir -p build/release && cd build/release
+    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/opt/rocm ../..
     make install
     make package
 
@@ -269,11 +287,11 @@ This is equivalent to ``./install.sh -p``.
 
 .. code-block:: bash
 
-    mkdir -p build && cd build
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/package/install/path ..
+    mkdir -p build/release && cd build/release
+    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/package/install/path ../..
     make install
     make package
     sudo dpkg -i rocsolver-*.deb
 
-On an Ubuntu system, for example, this is equivalent to ``./install.sh -i --install_dir /package/install/path``. 
+On an Ubuntu system, for example, this would be equivalent to ``./install.sh -i --install_dir /package/install/path``. 
 

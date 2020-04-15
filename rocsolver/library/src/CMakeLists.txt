@@ -79,12 +79,14 @@ set( info_source
 )  
 
 prepend_path( ".." rocsolver_headers_public relative_rocsolver_headers_public )
+prepend_path( ".." rocblas_headers_internal relative_rocblas_headers_internal )
 
 add_library( rocsolver
-  ${rocsolver_lapack_source}
+  ${relative_rocblas_headers_internal}
   ${relative_rocsolver_headers_public}
-  ${rocsolver_auxiliary_source}
   ${info_source}
+  ${rocsolver_auxiliary_source}
+  ${rocsolver_lapack_source}
 )
 
 add_library( roc::rocsolver ALIAS rocsolver )
@@ -109,7 +111,7 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
 endif( )
 
 target_include_directories( rocsolver
-  PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
+  PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/rocsolver/library/include>
           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
           $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
           $<INSTALL_INTERFACE:include>
@@ -136,7 +138,7 @@ endif( )
 rocm_install_targets(
   TARGETS ${package_targets}
   INCLUDE
-    ${CMAKE_SOURCE_DIR}/library/include
+    ${CMAKE_SOURCE_DIR}/rocsolver/library/include
     ${CMAKE_BINARY_DIR}/include
   PREFIX rocsolver
 )

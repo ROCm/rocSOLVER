@@ -14,7 +14,6 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "ideal_sizes.hpp"
-#include "utility.h"
 #include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_laswp.hpp"
 

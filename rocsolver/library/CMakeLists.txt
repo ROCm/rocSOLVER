@@ -54,7 +54,7 @@ endfunction( )
 # This is incremented when the ABI to the library changes
 set( rocsolver_SOVERSION 0.1 )
 
-list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
+list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/rocblascommon/cmake )
 
 # This option only works for make/nmake and the ninja generators, but no reason it shouldn't be on all the time
 # This tells cmake to create a compile_commands.json file that can be used with clang tooling or vim
@@ -101,6 +101,11 @@ set( rocsolver_headers_public
   ${PROJECT_BINARY_DIR}/include/rocsolver-export.h
 )
 
+set( rocblas_headers_internal
+  ../../rocblascommon/library/src/include/definitions.h
+  ../../rocblascommon/library/src/include/utility.h
+)
+
 source_group( "Header Files\\Public" FILES ${rocsolver_headers_public} )
 
 include( GNUInstallDirs )
@@ -128,7 +133,7 @@ if( NOT CXX_VERSION_STRING MATCHES "clang" )
     set( CPACK_RPM_PACKAGE_REQUIRES "rocm-dev >= 2.5.27" )
 endif()
 
-set( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE.md" )
+set( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../../LICENSE.md" )
 
 if( NOT CPACK_PACKAGING_INSTALL_PREFIX )
   set( CPACK_PACKAGING_INSTALL_PREFIX "${ROCM_PATH}" )
@@ -143,7 +148,7 @@ else( )
     set( package_name rocsolver-alt )
 endif( )
 
-set( ROCBLAS_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file" )
+set( ROCSOLVER_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file" )
 
 rocm_create_package(
     NAME ${package_name}
