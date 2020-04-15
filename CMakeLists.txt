@@ -138,7 +138,7 @@ include( ROCMInstallTargets )
 include( ROCMPackageConfigHelpers )
 include( ROCMInstallSymlinks )
 
-include (cmake/os-detection.cmake)
+include (rocblascommon/cmake/os-detection.cmake)
 get_os_id(OS_ID)
 message (STATUS "OS detected is ${OS_ID}")
 
