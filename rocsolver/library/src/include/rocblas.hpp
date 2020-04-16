@@ -1,7 +1,7 @@
 /* ************************************************************************
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
-
+#pragma once
 #ifndef _ROCBLAS_HPP_
 #define _ROCBLAS_HPP_
 
@@ -430,12 +430,14 @@ rocblas_status rocblasCall_syrk(rocblas_handle    handle,
 /////////////////////////////////////////////////////////////////////////////////////////
 // THESE SHOULD BE SUBTITUTED BY THEIR CORRESPONDING 
 // ROCBLAS TEMPLATE FUNCTIONS ONCE THEY ARE EXPORTED
+// ROCBLAS.CPP CAN BE ELIMINATED THEN
+
  
 // nrm2
 template <typename T1, typename T2>
 rocblas_status rocblas_nrm2(rocblas_handle handle, rocblas_int n, const T1 *x,
                             rocblas_int incx, T2 *result);
-template <>
+/*template <>
 rocblas_status rocblas_nrm2(rocblas_handle handle, rocblas_int n,
                             const float* x, const rocblas_int incx, float* result) {
   return rocblas_snrm2(handle, n, x, incx, result);
@@ -444,13 +446,13 @@ template <>
 rocblas_status rocblas_nrm2(rocblas_handle handle, rocblas_int n,
                             const double* x, const rocblas_int incx, double* result) {
   return rocblas_dnrm2(handle, n, x, incx, result);
-}
+}*/
 
 // iamax
 template <typename T>
 rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n, const T *x,
                              rocblas_int incx, rocblas_int *result);
-template <>
+/*template <>
 rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n,
                              const float *x, rocblas_int incx,
                              rocblas_int *result) {
@@ -473,7 +475,7 @@ rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n,
                              const rocblas_double_complex *x, rocblas_int incx,
                              rocblas_int *result) {
   return rocblas_izamax(handle, n, x, incx, result);
-}
+}*/
 
 // trsm
 template <typename T>
@@ -482,7 +484,7 @@ rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
                             rocblas_diagonal diag, rocblas_int m, rocblas_int n,
                             const T *alpha, T *A, rocblas_int lda, T *B,
                             rocblas_int ldb);
-template <>
+/*template <>
 rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
                             rocblas_fill uplo, rocblas_operation transA,
                             rocblas_diagonal diag, rocblas_int m, rocblas_int n,
@@ -513,14 +515,14 @@ rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
                             const rocblas_double_complex *alpha, rocblas_double_complex *A, rocblas_int lda,
                             rocblas_double_complex *B, rocblas_int ldb) {
     return rocblas_ztrsm(handle, side, uplo, transA, diag, m, n, alpha, A, lda, B, ldb);
-}
+}*/
 
 // trmm
 template <typename T>
 rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side, rocblas_fill uplo,
                             rocblas_operation trans, rocblas_diagonal diag, rocblas_int m, rocblas_int n,
                             T *alpha, T *A, rocblas_int lda, T* B, rocblas_int ldb);
-template <>
+/*template <>
 rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side, rocblas_fill uplo,
                             rocblas_operation trans, rocblas_diagonal diag, rocblas_int m, rocblas_int n,
                             float *alpha, float *A, rocblas_int lda, float* B, rocblas_int ldb)
@@ -533,7 +535,7 @@ rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side, rocblas_fi
                             double *alpha, double *A, rocblas_int lda, double* B, rocblas_int ldb)
 {
     return rocblas_dtrmm(handle,side,uplo,trans,diag,m,n,alpha,A,lda,B,ldb);
-}
+}*/
 
 
 

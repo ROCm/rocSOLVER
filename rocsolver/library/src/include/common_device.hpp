@@ -12,8 +12,9 @@
 // GPU kernels that are used by many rocsolver functions
 // **********************************************************
 
+
 template<typename T, typename U>
-__forceinline__ __global__ void reset_info(T *info, const rocblas_int n, U val) {
+__global__ void reset_info(T *info, const rocblas_int n, U val) {
     int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
     if (idx < n)
@@ -21,7 +22,7 @@ __forceinline__ __global__ void reset_info(T *info, const rocblas_int n, U val) 
 }
 
 template<typename T, typename U>
-__forceinline__ __global__ void reset_batch_info(T *info, const rocblas_stride stride, const rocblas_int n, U val) {
+__global__ void reset_batch_info(T *info, const rocblas_stride stride, const rocblas_int n, U val) {
     int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     int b = hipBlockIdx_y;
 
@@ -31,7 +32,7 @@ __forceinline__ __global__ void reset_batch_info(T *info, const rocblas_stride s
 }
 
 template<typename T>
-__forceinline__ __global__ void get_array(T** out, T* in, rocblas_stride stride, rocblas_int batch) 
+__global__ void get_array(T** out, T* in, rocblas_stride stride, rocblas_int batch) 
 {
     int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     
@@ -40,7 +41,7 @@ __forceinline__ __global__ void get_array(T** out, T* in, rocblas_stride stride,
 }
 
 template <typename T, typename U>
-__forceinline__ __global__ void setdiag(const rocblas_int j, U A, 
+__global__ void setdiag(const rocblas_int j, U A, 
                         const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
                         T *ipiv, const rocblas_stride strideP)
 {
@@ -54,7 +55,7 @@ __forceinline__ __global__ void setdiag(const rocblas_int j, U A,
 }
 
 template <typename T>
-__forceinline__ __global__ void restau(const rocblas_int k, T *ipiv, const rocblas_stride strideP)
+__global__ void restau(const rocblas_int k, T *ipiv, const rocblas_stride strideP)
 {
     const auto blocksizex = hipBlockDim_x;
     const auto b = hipBlockIdx_y;
@@ -66,7 +67,7 @@ __forceinline__ __global__ void restau(const rocblas_int k, T *ipiv, const rocbl
 }
 
 template <typename T, typename U>
-__forceinline__ __global__ void set_one_diag(T* diag, U A, const rocblas_int shifta, const rocblas_stride stridea)
+__global__ void set_one_diag(T* diag, U A, const rocblas_int shifta, const rocblas_stride stridea)
 {
     int b = hipBlockIdx_x;
 
@@ -76,7 +77,7 @@ __forceinline__ __global__ void set_one_diag(T* diag, U A, const rocblas_int shi
 }
 
 template <typename T, typename U>
-__forceinline__ __global__ void restore_diag(T* diag, U A, const rocblas_int shifta, const rocblas_stride stridea)
+__global__ void restore_diag(T* diag, U A, const rocblas_int shifta, const rocblas_stride stridea)
 {
     int b = hipBlockIdx_x;
 

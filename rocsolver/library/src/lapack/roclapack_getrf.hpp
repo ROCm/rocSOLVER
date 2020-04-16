@@ -18,7 +18,8 @@
 #include "roclapack_getf2.hpp"
 #include "../auxiliary/rocauxiliary_laswp.hpp"
 
-inline __global__ void getrf_check_singularity(const rocblas_int n, const rocblas_int j, rocblas_int *ipivA, const rocblas_int shiftP,
+template<typename U>
+__global__ void getrf_check_singularity(const rocblas_int n, const rocblas_int j, rocblas_int *ipivA, const rocblas_int shiftP,
                                 const rocblas_stride strideP, const rocblas_int *iinfo, rocblas_int *info) {
     int id = hipBlockIdx_y;
 
@@ -32,7 +33,6 @@ inline __global__ void getrf_check_singularity(const rocblas_int n, const rocbla
     if (tid < n)
         ipiv[tid] += j;
 }
-
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int m,
@@ -99,7 +99,8 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
         sizePivot = min(m - j, jb);     //number of pivots in the block
         blocksPivot = (sizePivot - 1) / GETF2_BLOCKSIZE + 1; 
         gridPivot = dim3(blocksPivot, batch_count, 1);
-        hipLaunchKernelGGL(getrf_check_singularity, gridPivot, threads, 0, stream, sizePivot, j, ipiv, shiftP + j, strideP, iinfo, info);
+        hipLaunchKernelGGL(getrf_check_singularity<U>,gridPivot,threads,0,stream,
+			   sizePivot,j,ipiv,shiftP + j,strideP,iinfo,info);
 
         // apply interchanges to columns 1 : j-1
         rocsolver_laswp_template<T>(handle, j, A, shiftA, lda, strideA, j + 1, j + jb, ipiv, shiftP, strideP, 1, batch_count);

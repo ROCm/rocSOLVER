@@ -18,7 +18,7 @@
 #include "../auxiliary/rocauxiliary_laswp.hpp"
 
 template <typename T, typename U>
-inline __global__ void getf2_check_singularity(U AA, const rocblas_int shiftA, const rocblas_stride strideA,
+__global__ void getf2_check_singularity(U AA, const rocblas_int shiftA, const rocblas_stride strideA,
                                         rocblas_int* ipivA, const rocblas_int shiftP,
                                         const rocblas_stride strideP, const rocblas_int j,
                                         const rocblas_int lda,

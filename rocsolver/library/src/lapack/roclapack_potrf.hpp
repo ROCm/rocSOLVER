@@ -17,7 +17,8 @@
 #include "ideal_sizes.hpp"
 #include "roclapack_potf2.hpp"
 
-inline __global__ void chk_positive(rocblas_int *iinfo, rocblas_int *info, int j) 
+template<typename U>
+__global__ void chk_positive(rocblas_int *iinfo, rocblas_int *info, int j) 
 {
     int id = hipBlockIdx_x;
 
@@ -85,7 +86,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, iinfo, batch_count);
             
             // test for non-positive-definiteness.
-            hipLaunchKernelGGL(chk_positive,gridReset,threads,0,stream,iinfo,info,j);
+            hipLaunchKernelGGL(chk_positive<U>,gridReset,threads,0,stream,iinfo,info,j);
             
             if (j + jb < n) {
                 // update trailing submatrix
@@ -110,7 +111,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, iinfo, batch_count);
             
             // test for non-positive-definiteness.
-            hipLaunchKernelGGL(chk_positive,gridReset,threads,0,stream,iinfo,info,j);
+            hipLaunchKernelGGL(chk_positive<U>,gridReset,threads,0,stream,iinfo,info,j);
             
             if (j + jb < n) {
                 // update trailing submatrix
