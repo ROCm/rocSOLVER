@@ -60,6 +60,6 @@ ARG ROCSOLVER_SRC_ROOT=/usr/local/src/rocSOLVER
 RUN mkdir -p ${ROCSOLVER_SRC_ROOT} && cd ${ROCSOLVER_SRC_ROOT} && \
     git clone -b develop --depth=1 https://github.com/ROCmSoftwarePlatform/rocSOLVER . && \
     mkdir -p build/deps && cd build/deps && \
-    cmake3 -DBUILD_BOOST=OFF ${ROCSOLVER_SRC_ROOT}/deps && \
+    cmake3 -DBUILD_BOOST=OFF ${ROCSOLVER_SRC_ROOT}/rocblascommon/deps && \
     make -j $(nproc) install && \
     rm -rf ${ROCSOLVER_SRC_ROOT}
