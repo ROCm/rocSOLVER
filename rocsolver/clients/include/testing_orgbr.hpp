@@ -33,7 +33,7 @@ rocblas_status testing_orgbr(Arguments argus) {
     rocblas_int M = argus.M;
     rocblas_int N = argus.N;
     rocblas_int K = argus.K;
-    rocsolver_storev storev;
+    rocblas_storev storev;
     char storevC = argus.storev;
     rocblas_int lda = argus.lda;
     int hot_calls = argus.iters;
@@ -51,13 +51,13 @@ rocblas_status testing_orgbr(Arguments argus) {
     if (storevC == 'C') {
         column = true;
         size_A = lda*max(K,N);
-        storev = rocsolver_column_wise;
+        storev = rocblas_column_wise;
         size_P = min(M,K);;
         if (N > M || N < size_P)
             invalid = true;
     } else if (storevC == 'R') {
         size_A = lda*N;
-        storev = rocsolver_row_wise;
+        storev = rocblas_row_wise;
         size_P = min(N,K);
         if (M > N || M < size_P)
             invalid = true;

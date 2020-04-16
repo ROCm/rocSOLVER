@@ -48,7 +48,7 @@ rocblas_status testing_ormbr(Arguments argus) {
     rocblas_int size_A; 
     rocblas_int size_W = max(max(M,N),K);
     rocblas_int nq;
-    rocsolver_storev storev;
+    rocblas_storev storev;
     rocblas_side side;
     rocblas_operation trans;
 
@@ -78,12 +78,12 @@ rocblas_status testing_ormbr(Arguments argus) {
     if (storevC == 'C') {
         column = true;
         size_A = lda*size_P;
-        storev = rocsolver_column_wise;
+        storev = rocblas_column_wise;
         if (lda < nq)
             invalid = true;
     } else if (storevC == 'R') {
         size_A = lda*nq;
-        storev = rocsolver_row_wise;
+        storev = rocblas_row_wise;
         if (lda < min(nq,K))
             invalid = true;
     } else {

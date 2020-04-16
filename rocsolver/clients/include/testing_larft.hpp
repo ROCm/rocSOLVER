@@ -38,8 +38,8 @@ rocblas_status testing_larft(Arguments argus)
     char directchar = argus.direct_option;  
     char storevchar = argus.storev;  
     int hot_calls = argus.iters;
-    rocsolver_direct direct;
-    rocsolver_storev storev;
+    rocblas_direct direct;
+    rocblas_storev storev;
 
     std::unique_ptr<rocblas_test::handle_struct> unique_ptr_handle(new rocblas_test::handle_struct);
     rocblas_handle handle = unique_ptr_handle->handle;
@@ -47,17 +47,17 @@ rocblas_status testing_larft(Arguments argus)
     rocblas_int sizeF = ldt * K;
     rocblas_int sizeV;
     if (directchar == 'F') {
-        direct = rocsolver_forward_direction;
+        direct = rocblas_forward_direction;
     } else if (directchar == 'B') {
-        direct = rocsolver_backward_direction;
+        direct = rocblas_backward_direction;
     } else {
         throw runtime_error("Unsupported direct option.");
     }
     if (storevchar == 'C') {
-        storev = rocsolver_column_wise;
+        storev = rocblas_column_wise;
         sizeV = ldv * K;    
     } else if (storevchar == 'R') {
-        storev = rocsolver_row_wise;
+        storev = rocblas_row_wise;
         sizeV = ldv * N;    
     } else {
         throw runtime_error("Unsupported storev option.");
