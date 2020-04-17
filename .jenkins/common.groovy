@@ -11,7 +11,7 @@ def runCompileCommand(platform, project, jobName)
     String debug = project.buildName.contains('Debug') ? '-g' : ''   
 
  
-    def getRocBLAS = auxiliary.getLibrary('rocBLAS',platform.jenkinsLabel,'develop')
+    def getRocBLAS = auxiliary.getLibrary('rocBLAS-internal',platform.jenkinsLabel,'develop')
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}
