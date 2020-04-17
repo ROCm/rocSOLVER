@@ -155,7 +155,7 @@ additionally build the library clients
 ``rocsolver-bench`` and                     
 ``rocsolver-test``.                         
 The binaries will be located at             
-``rocSOLVER/build/release/rocsolver/clients/staging``.        
+``rocSOLVER/build/release/clients/staging``.        
 It is assumed that all the client external  
 dependencies have been installed.           
 
