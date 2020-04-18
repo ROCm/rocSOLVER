@@ -21,8 +21,9 @@ Options:
                               (Default is ./build)
 
   --lib_dir <libdir>          Specify path to the directory where the library generated files 
-                              will be located. Relative paths are relative to builddir. 
-                              (Default is builddir/rocsolver-install)
+                              will be located. Relative paths are relative to builddir/release 
+                              or builddir/debug, depending on the build type. 
+                              (Default is builddir/release/rocsolver-install)
 
   --install_dir <installdir>  Specify path to the directory where the library package 
                               (when generated) will be installed. Use only absolute paths. 
@@ -32,7 +33,8 @@ Options:
                               Use only absolute paths.
                               (Default is /opt/rocm/rocblas)
    
-  -g | --debug                Set -DCMAKE_BUILD_TYPE=Debug (default is =Release)
+  -g | --debug                Pass this flag to build in Debug mode (equivalent to set CMAKE_BUILD_TYPE=Debug).
+                              (Default build type is Release)
 
   -p | --package              Pass this flag to generate library package after build.
 
@@ -356,6 +358,8 @@ case "${ID}" in
   ;;
 esac
 
+main=`pwd`
+
 # #################################################
 # dependencies
 # #################################################
@@ -367,7 +371,7 @@ if [[ "${install_dependencies}" == true ]]; then
     pushd .
     printf "\033[32mBuilding \033[33mgoogletest & lapack\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
     mkdir -p ${build_dir}/deps && cd ${build_dir}/deps
-    ${cmake_executable} -lpthread -DBUILD_BOOST=OFF ../../deps
+    ${cmake_executable} -lpthread -DBUILD_BOOST=OFF ${main}/rocblascommon/deps
     make -j$(nproc)
     elevate_if_not_root make install
     popd
@@ -385,7 +389,6 @@ pushd .
 cmake_common_options=""
 cmake_client_options=""
 
-main=`pwd`
 mkdir -p ${build_dir} && cd ${build_dir}
 
 if [[ "${build_type}" == Debug ]]; then

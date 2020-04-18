@@ -36,8 +36,8 @@ tags
 .vscode
 
 # build-in-source directory
-build*
-docBin
+build/
+docBin/
 
 # emacs temporary/backup files
 .\#*
