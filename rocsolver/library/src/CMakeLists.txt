@@ -91,7 +91,6 @@ add_library( rocsolver
 )
 
 add_library( roc::rocsolver ALIAS rocsolver )
-#target_link_libraries( rocsolver PRIVATE roc::rocblas ) #${ROCBLAS_LIBRARY})
 
 # Remove this check when we no longer build with older rocm stack(ie < 1.8.2)
 if(CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
