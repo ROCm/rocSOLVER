@@ -162,6 +162,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfg(rocblas_handle handle,
                                                  const rocblas_int incx, 
                                                  double *tau);
 
+ROCSOLVER_EXPORT rocblas_status rocsolver_clarfg(rocblas_handle handle, 
+                                                 const rocblas_int n, 
+                                                 rocblas_float_complex *alpha,
+                                                 rocblas_float_complex *x, 
+                                                 const rocblas_int incx, 
+                                                 rocblas_float_complex *tau);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle, 
+                                                 const rocblas_int n, 
+                                                 rocblas_double_complex *alpha,
+                                                 rocblas_double_complex *x, 
+                                                 const rocblas_int incx, 
+                                                 rocblas_double_complex *tau);
+
 
 /*! \brief LARFT Generates the triangular factor T of a block reflector H of order n.
 

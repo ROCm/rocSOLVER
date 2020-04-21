@@ -48,7 +48,7 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle, const rocblas_int
                                  A, shiftA + idx2D(min(j+1,m-1),j,lda), //vector x to work on
                                  1, strideA,                            //inc of x    
                                  (ipiv + j), strideP,                   //tau
-                                 batch_count, diag);
+                                 batch_count, diag, work);
 
         // insert one in A(j,j) tobuild/apply the householder matrix 
         hipLaunchKernelGGL(set_one_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(j,j,lda),strideA);

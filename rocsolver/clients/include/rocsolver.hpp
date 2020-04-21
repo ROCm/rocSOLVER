@@ -51,6 +51,18 @@ inline rocblas_status rocsolver_larfg(rocblas_handle handle, rocblas_int n, doub
   return rocsolver_dlarfg(handle, n, alpha, x, incx, tau);
 }
 
+template <>
+inline rocblas_status rocsolver_larfg(rocblas_handle handle, rocblas_int n, rocblas_float_complex *alpha, rocblas_float_complex *x, 
+                                      rocblas_int incx, rocblas_float_complex *tau) {
+  return rocsolver_clarfg(handle, n, alpha, x, incx, tau);
+}
+
+template <>
+inline rocblas_status rocsolver_larfg(rocblas_handle handle, rocblas_int n, rocblas_double_complex *alpha, rocblas_double_complex *x, 
+                                      rocblas_int incx, rocblas_double_complex *tau) {
+  return rocsolver_zlarfg(handle, n, alpha, x, incx, tau);
+}
+
 //larf
 
 template <typename T>

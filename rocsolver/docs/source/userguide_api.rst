@@ -82,6 +82,8 @@ rocsolver_<type>larfg()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dlarfg
 .. doxygenfunction:: rocsolver_slarfg
+.. doxygenfunction:: rocsolver_clarfg
+.. doxygenfunction:: rocsolver_zlarfg
 
 rocsolver_<type>larft()
 ^^^^^^^^^^^^^^^^^^^^^^^^

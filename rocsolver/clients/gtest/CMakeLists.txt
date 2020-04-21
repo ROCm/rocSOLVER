@@ -46,26 +46,26 @@ set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
 
 set(roclapack_test_source
-    laswp_gtest.cpp
+    # laswp_gtest.cpp
     larfg_gtest.cpp
     larf_gtest.cpp
     larft_gtest.cpp
     larfb_gtest.cpp
-    org2r_orgqr_gtest.cpp
-    orgl2_orglq_gtest.cpp
-    orgbr_gtest.cpp
-    orm2r_ormqr_gtest.cpp
-    orml2_ormlq_gtest.cpp
-    ormbr_gtest.cpp
-    getf2_getrf_gtest.cpp
-    getf2_getrf_batched_gtest.cpp
-    getf2_getrf_strided_batched_gtest.cpp
-    potf2_potrf_gtest.cpp
-    potf2_potrf_batched_gtest.cpp
-    potf2_potrf_strided_batched_gtest.cpp
-    getrs_gtest.cpp
-    getrs_batched_gtest.cpp
-    getrs_strided_batched_gtest.cpp
+    # org2r_orgqr_gtest.cpp
+    # orgl2_orglq_gtest.cpp
+    # orgbr_gtest.cpp
+    # orm2r_ormqr_gtest.cpp
+    # orml2_ormlq_gtest.cpp
+    # ormbr_gtest.cpp
+    # getf2_getrf_gtest.cpp
+    # getf2_getrf_batched_gtest.cpp
+    # getf2_getrf_strided_batched_gtest.cpp
+    # potf2_potrf_gtest.cpp
+    # potf2_potrf_batched_gtest.cpp
+    # potf2_potrf_strided_batched_gtest.cpp
+    # getrs_gtest.cpp
+    # getrs_batched_gtest.cpp
+    # getrs_strided_batched_gtest.cpp
     geqr2_geqrf_gtest.cpp
     geqr2_geqrf_batched_gtest.cpp
     geqr2_geqrf_strided_batched_gtest.cpp
