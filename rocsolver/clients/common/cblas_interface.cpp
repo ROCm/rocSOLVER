@@ -68,6 +68,8 @@ void zlarfg_(int *n, rocblas_double_complex *alpha, rocblas_double_complex *x, i
 
 void slarf_(char *side, int *m, int *n, float *x, int *incx, float *alpha, float *A, int *lda, float *work);
 void dlarf_(char *side, int *m, int *n, double *x, int *incx, double *alpha, double *A, int *lda, double *work);
+void clarf_(char *side, int *m, int *n, rocblas_float_complex *x, int *incx, rocblas_float_complex *alpha, rocblas_float_complex *A, int *lda, rocblas_float_complex *work);
+void zlarf_(char *side, int *m, int *n, rocblas_double_complex *x, int *incx, rocblas_double_complex *alpha, rocblas_double_complex *A, int *lda, rocblas_double_complex *work);
 
 void slarft_(char *direct, char *storev, int *n, int *k, float *V, int *ldv, float *tau, float *T, int *ldt);
 void dlarft_(char *direct, char *storev, int *n, int *k, double *V, int *ldv, double *tau, double *T, int *ldt);
@@ -185,6 +187,16 @@ void cblas_larf<float>(char side, rocblas_int m, rocblas_int n, float *x, rocbla
 template <>
 void cblas_larf<double>(char side, rocblas_int m, rocblas_int n, double *x, rocblas_int incx, double *alpha, double *A, rocblas_int lda, double *work) {
     dlarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
+}
+
+template <>
+void cblas_larf<rocblas_float_complex>(char side, rocblas_int m, rocblas_int n, rocblas_float_complex *x, rocblas_int incx, rocblas_float_complex *alpha, rocblas_float_complex *A, rocblas_int lda, rocblas_float_complex *work) {
+    clarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
+}
+
+template <>
+void cblas_larf<rocblas_double_complex>(char side, rocblas_int m, rocblas_int n, rocblas_double_complex *x, rocblas_int incx, rocblas_double_complex *alpha, rocblas_double_complex *A, rocblas_int lda, rocblas_double_complex *work) {
+    zlarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
 }
 
 //larft

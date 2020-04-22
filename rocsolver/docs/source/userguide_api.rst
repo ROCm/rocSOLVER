@@ -94,6 +94,8 @@ rocsolver_<type>larf()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dlarf
 .. doxygenfunction:: rocsolver_slarf
+.. doxygenfunction:: rocsolver_clarf
+.. doxygenfunction:: rocsolver_zlarf
 
 rocsolver_<type>larfb()
 ^^^^^^^^^^^^^^^^^^^^^^^^
