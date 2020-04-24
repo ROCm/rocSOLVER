@@ -28,7 +28,7 @@
 
 using namespace std;
 
-template <typename T> 
+template <typename T, typename U> 
 rocblas_status testing_larft(Arguments argus) 
 {
     rocblas_int K = argus.K;
@@ -125,7 +125,7 @@ rocblas_status testing_larft(Arguments argus)
 
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<T>::epsilon();
+    double eps = std::numeric_limits<U>::epsilon();
     double max_err_1 = 0.0, max_val = 0.0;
     double diff;
 
@@ -149,10 +149,9 @@ rocblas_status testing_larft(Arguments argus)
         for (int i = 0; i < K; i++) {
             for (int j = 0; j < K; j++) {
                 if ((j >= i && directchar == 'F') || (j <= i && directchar == 'B')) {
-                    diff = fabs(hF[i + j * ldt]);
+                    diff = abs(hF[i + j * ldt]);
                     max_val = max_val > diff ? max_val : diff;
-                    diff = hF[i + j * ldt];
-                    diff = fabs(hF_r[i + j * ldt] - diff);
+                    diff = abs(hF_r[i + j * ldt] - hF[i + j * ldt]);
                     max_err_1 = max_err_1 > diff ? max_err_1 : diff;
                 }
             }
@@ -161,7 +160,7 @@ rocblas_status testing_larft(Arguments argus)
         max_err_1 = max_err_1 / max_val;
         
         if(argus.unit_check)
-            getf2_err_res_check<T>(max_err_1, K, K, error_eps_multiplier, eps);
+            getf2_err_res_check<U>(max_err_1, K, K, error_eps_multiplier, eps);
     }
 
     if (argus.timing) {

@@ -14,7 +14,7 @@
 #include "rocsolver.h"
 #include "common_device.hpp"
 
-template <typename T, typename U>
+template <typename T, typename U, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
 __global__ void set_triangular(const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, const rocblas_stride strideV, 
                          T* tau, const rocblas_stride strideT, 
                          T* F, const rocblas_int ldf, const rocblas_stride strideF, const rocblas_storev storev)
@@ -43,12 +43,41 @@ __global__ void set_triangular(const rocblas_int k, U V, const rocblas_int shift
     }
 }
 
+template <typename T, typename U, std::enable_if_t<!std::is_floating_point<T>::value, int> = 0>
+__global__ void set_triangular(const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, const rocblas_stride strideV, 
+                         T* tau, const rocblas_stride strideT, 
+                         T* F, const rocblas_int ldf, const rocblas_stride strideF, const rocblas_storev storev)
+{
+    const auto blocksize = hipBlockDim_x;
+    const auto b = hipBlockIdx_z;
+    const auto i = hipBlockIdx_x * blocksize + hipThreadIdx_x;
+    const auto j = hipBlockIdx_y * blocksize + hipThreadIdx_y;
+
+    if (i < k && j < k) {
+        T *Vp, *tp, *Fp;
+        tp = tau + b*strideT;
+        Vp = load_ptr_batch<T>(V,b,shiftV,strideV);
+        Fp = F + b*strideF;
+
+        if (j < i) {
+            if (storev == rocblas_column_wise)
+                Fp[j + i*ldf] = -tp[i] * conj(Vp[i + j*ldv]);
+            else
+                Fp[j + i*ldf] = -tp[i] * Vp[j + i*ldv];
+        } else if (j == i) {
+            Fp[j + i*ldf] = tp[i];
+        } else {
+            Fp[j + i*ldf] = 0;
+        }
+    }
+}
+
+
 template <typename T>
 __global__ void set_tau(const rocblas_int k, T* tau, const rocblas_stride strideT)
 {
-    const auto blocksize = hipBlockDim_x;
-    const auto b = hipBlockIdx_x;
-    const auto i = hipBlockIdx_y * blocksize + hipThreadIdx_x;
+    const auto b = hipBlockIdx_y;
+    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
    
     if (i < k) {
         T *tp;
@@ -83,7 +112,7 @@ void rocsolver_larft_getMemorySize(const rocblas_int k, const rocblas_int batch_
 }
 
 
-template <typename T, typename U>
+template <typename T, typename U, bool COMPLEX = !std::is_floating_point<T>::value>
 rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_direct direct, 
                                    const rocblas_storev storev, const rocblas_int n,
                                    const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, 
@@ -117,30 +146,42 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_dir
 
     //Fix diagonal of T, make zero the not used triangular part, 
     //setup tau (changing signs) and account for the non-stored 1's on the householder vectors
-    rocblas_int blocks = (k - 1)/32 + 1;
-    hipLaunchKernelGGL(set_triangular,dim3(blocks,blocks,batch_count),dim3(32,32),0,stream,
+    rocblas_int blocks1 = (k - 1)/32 + 1;
+    rocblas_int blocks2 = (n - 1)/32 + 1;
+    hipLaunchKernelGGL(set_triangular,dim3(blocks1,blocks1,batch_count),dim3(32,32),0,stream,
                         k,V,shiftV,ldv,strideV,tau,strideT,F,ldf,strideF,storev);
-    hipLaunchKernelGGL(set_tau,dim3(batch_count,blocks),dim3(32,1),0,stream,k,tau,strideT);
+    hipLaunchKernelGGL(set_tau,dim3(blocks1,batch_count),dim3(32,1),0,stream,k,tau,strideT);
 
     // **** FOR NOW, IT DOES NOT LOOK FOR TRAILING ZEROS 
     //      AS THIS WOULD REQUIRE SYNCHRONIZATION WITH GPU.
     //      IT WILL WORK ON THE ENTIRE MATRIX/VECTOR REGARDLESS OF
     //      ZERO ENTRIES ****
  
-    for (rocblas_int i = 1; i < k; ++i) { 
+    for (rocblas_int i = 1; i < k; ++i)
+    { 
         //compute the matrix vector product, using the householder vectors
         if (storev == rocblas_column_wise) {
-            trans = rocblas_operation_transpose;
+            trans = rocblas_operation_conjugate_transpose;
             rocblasCall_gemv<T>(handle, trans, n-1-i, i, tau + i, strideT, 
                             V, shiftV + idx2D(i+1,0,ldv), ldv, strideV,
                             V, shiftV + idx2D(i+1,i,ldv), 1, strideV, scalars+2, 0,
                             F, idx2D(0,i,ldf), 1, strideF, batch_count, workArr);
-        } else {
+        }
+        else
+        {
+            if (COMPLEX)
+                hipLaunchKernelGGL(conj_in_place<T>, dim3(1,blocks2,batch_count), dim3(1,32,1), 0, stream,
+                                   1, n-i-1, V, shiftV + idx2D(i,i+1,ldv), ldv, strideV);
+
             trans = rocblas_operation_none;
             rocblasCall_gemv<T>(handle, trans, i, n-1-i, tau + i, strideT, 
                             V, shiftV + idx2D(0,i+1,ldv), ldv, strideV,
                             V, shiftV + idx2D(i,i+1,ldv), ldv, strideV, scalars+2, 0,
                             F, idx2D(0,i,ldf), 1, strideF, batch_count, workArr);
+            
+            if (COMPLEX)
+                hipLaunchKernelGGL(conj_in_place<T>, dim3(1,blocks2,batch_count), dim3(1,32,1), 0, stream,
+                                   1, n-i-1, V, shiftV + idx2D(i,i+1,ldv), ldv, strideV);
         }
 
         //multiply by the previous triangular factor
@@ -151,7 +192,7 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_dir
     }
 
     //restore tau
-    hipLaunchKernelGGL(set_tau,dim3(batch_count,blocks),dim3(32,1),0,stream,k,tau,strideT);
+    hipLaunchKernelGGL(set_tau,dim3(blocks1,batch_count),dim3(32,1),0,stream,k,tau,strideT);
 
     rocblas_set_pointer_mode(handle,old_mode);  
     return rocblas_status_success;

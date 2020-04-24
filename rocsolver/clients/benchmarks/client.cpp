@@ -465,9 +465,13 @@ int main(int argc, char *argv[])
   } 
   else if (function == "larft") {
     if (precision == 's')
-      testing_larft<float>(argus);
+      testing_larft<float,float>(argus);
     else if (precision == 'd')
-      testing_larft<double>(argus);
+      testing_larft<double,double>(argus);
+    if (precision == 'c')
+      testing_larft<rocblas_float_complex,float>(argus);
+    else if (precision == 'z')
+      testing_larft<rocblas_double_complex,double>(argus);
   } 
   else if (function == "larfb") {
     if (precision == 's')

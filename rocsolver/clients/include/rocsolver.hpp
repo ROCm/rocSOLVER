@@ -114,6 +114,20 @@ inline rocblas_status rocsolver_larft(rocblas_handle handle, rocblas_direct dire
   return rocsolver_dlarft(handle, direct, storev, n, k, V, ldv, tau, F, ldt);
 }
 
+template <>
+inline rocblas_status rocsolver_larft(rocblas_handle handle, rocblas_direct direct, 
+                                      rocblas_storev storev, rocblas_int n, rocblas_int k, rocblas_float_complex *V, 
+                                      rocblas_int ldv, rocblas_float_complex *tau, rocblas_float_complex *F, rocblas_int ldt) {
+  return rocsolver_clarft(handle, direct, storev, n, k, V, ldv, tau, F, ldt);
+}
+
+template <>
+inline rocblas_status rocsolver_larft(rocblas_handle handle, rocblas_direct direct, 
+                                      rocblas_storev storev, rocblas_int n, rocblas_int k, rocblas_double_complex *V, 
+                                      rocblas_int ldv, rocblas_double_complex *tau, rocblas_double_complex *F, rocblas_int ldt) {
+  return rocsolver_zlarft(handle, direct, storev, n, k, V, ldv, tau, F, ldt);
+}
+
 //larfb
 
 template <typename T>
