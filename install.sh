@@ -462,7 +462,7 @@ if [[ "${build_package}" == true ]]; then
         elevate_if_not_root dnf install rocsolver-*.rpm
         ;;
       sles|opensuse-leap)
-        elevate_if_not_root zypper --no-gpg-checks -y install rocsolver-*.rpm
+        elevate_if_not_root zypper --no-gpg-checks install -y rocsolver-*.rpm
         ;;
     esac
   fi
