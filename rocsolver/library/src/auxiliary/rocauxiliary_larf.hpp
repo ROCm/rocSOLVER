@@ -10,16 +10,49 @@
 #ifndef ROCLAPACK_LARF_HPP
 #define ROCLAPACK_LARF_HPP
 
-#include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
+#include <vector>
+
+template <typename T, bool BATCHED>
+void rocsolver_larf_getMemorySize(const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+                                  size_t *size_1, size_t *size_2, size_t *size_3)
+{
+    // size of scalars (constants)
+    *size_1 = sizeof(T)*2;        
+
+    // size of workspace
+    if (side == rocblas_side_left)
+        *size_2 = n;
+    else
+        *size_2 = m;
+    *size_2 *= sizeof(T)*batch_count;
+
+    // size of array of pointers to workspace
+    if (BATCHED)
+        *size_3 = sizeof(T*)*batch_count;
+    else
+        *size_3 = 0;
+}
+
+template <typename T>
+void rocsolver_larf_getMemorySize(const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+                                  size_t *size)
+{
+    // size of workspace
+    if (side == rocblas_side_left)
+        *size = n;
+    else
+        *size = m;
+    *size *= sizeof(T)*batch_count;
+}
 
 template <typename T, typename U>
 rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side side, const rocblas_int m,
                                         const rocblas_int n, U x, const rocblas_int shiftx, const rocblas_int incx, 
                                         const rocblas_stride stridex, const T* alpha, const rocblas_stride stridep, U A, const rocblas_int shiftA, 
-                                        const rocblas_int lda, const rocblas_stride stridea, const rocblas_int batch_count)
+                                        const rocblas_int lda, const rocblas_stride stridea, const rocblas_int batch_count, T* scalars, T* work, T** workArr)
 {
     // quick return
     if (n == 0 || m == 0 || !batch_count)
@@ -28,15 +61,16 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
+    // everything must be executed with scalars on the device
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle,&old_mode);
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);  
+
     //constants to use when calling rocablas functions
-    T minone = -1;                //constant -1 in host
-    T* minoneInt;                 //constant -1 in device
-    hipMalloc(&minoneInt, sizeof(T));
-    hipMemcpy(minoneInt, &minone, sizeof(T), hipMemcpyHostToDevice);
-    T zero = 0;                 //constant 0 in host
-    T* zeroInt;                 //constant 0 in device
-    hipMalloc(&zeroInt, sizeof(T));
-    hipMemcpy(zeroInt, &zero, sizeof(T), hipMemcpyHostToDevice);
+    std::vector<T> sca(2);
+    sca[0] = -1;               
+    sca[1] = 0;                
+    RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca.data(), sizeof(T)*2, hipMemcpyHostToDevice));
     
     //determine side and order of H
     bool leftside = (side == rocblas_side_left);
@@ -47,11 +81,6 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side
         order = n;
     }
     
-    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
-    //memory in GPU (workspace)
-    T *work;
-    hipMalloc(&work, sizeof(T)*order*batch_count);
-
     // **** FOR NOW, IT DOES NOT DETERMINE "NON-ZERO" DIMENSIONS
     //      OF A AND X, AS THIS WOULD REQUIRE SYNCHRONIZATION WITH GPU.
     //      IT WILL WORK ON THE ENTIRE MATRIX/VECTOR REGARDLESS OF
@@ -59,22 +88,19 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side
  
     //compute the matrix vector product  (W=tau*A'*X or W=tau*A*X)
     rocblasCall_gemv<T>(handle, trans, m, n, alpha, stridep, A, shiftA, lda, stridea, 
-                    x, shiftx, incx, stridex, cast2constType<T>(zeroInt), 0, 
-                    work, 0, 1, order, batch_count);
+                        x, shiftx, incx, stridex, cast2constType<T>(scalars+1), 0, 
+                        work, 0, 1, order, batch_count, workArr);
 
     //compute the rank-1 update  (A - V*W'  or A - W*V')
     if (leftside) {
-        rocblasCall_ger<false,T>(handle, m, n, minoneInt, 0, x, shiftx, incx, stridex,
-                             work, 0, 1, order, A, shiftA, lda, stridea, batch_count);
+        rocblasCall_ger<false,T>(handle, m, n, scalars, 0, x, shiftx, incx, stridex,
+                             work, 0, 1, order, A, shiftA, lda, stridea, batch_count, workArr);
     } else {
-        rocblasCall_ger<false,T>(handle, m, n, minoneInt, 0, work, 0 ,1, order, 
-                             x, shiftx, incx, stridex, A, shiftA, lda, stridea, batch_count);
+        rocblasCall_ger<false,T>(handle, m, n, scalars, 0, work, 0 ,1, order, 
+                             x, shiftx, incx, stridex, A, shiftA, lda, stridea, batch_count, workArr);
     }
 
-    hipFree(minoneInt);
-    hipFree(zeroInt);
-    hipFree(work);
-
+    rocblas_set_pointer_mode(handle,old_mode);  
     return rocblas_status_success;
 }
 

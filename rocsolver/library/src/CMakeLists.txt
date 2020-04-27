@@ -45,47 +45,45 @@ set( rocsolver_auxiliary_source
 )
 
 set( rocsolver_lapack_source
-  lapack/roclapack_getf2.cpp
-  lapack/roclapack_getf2_batched.cpp
-  lapack/roclapack_getf2_strided_batched.cpp
-  lapack/roclapack_getrf.cpp
-  lapack/roclapack_getrf_batched.cpp
-  lapack/roclapack_getrf_strided_batched.cpp
-  lapack/roclapack_getrs.cpp
-  lapack/roclapack_getrs_batched.cpp
-  lapack/roclapack_getrs_strided_batched.cpp
-  lapack/roclapack_potf2.cpp
-  lapack/roclapack_potf2_batched.cpp
-  lapack/roclapack_potf2_strided_batched.cpp
-  lapack/roclapack_potrf.cpp
-  lapack/roclapack_potrf_batched.cpp
-  lapack/roclapack_potrf_strided_batched.cpp
-  lapack/roclapack_geqr2.cpp
-  lapack/roclapack_geqr2_batched.cpp
-  lapack/roclapack_geqr2_strided_batched.cpp
-  lapack/roclapack_gelq2.cpp
-  lapack/roclapack_gelq2_batched.cpp
-  lapack/roclapack_gelq2_strided_batched.cpp
-  lapack/roclapack_geqrf.cpp
-  lapack/roclapack_geqrf_batched.cpp
-  lapack/roclapack_geqrf_strided_batched.cpp
-  lapack/roclapack_gelqf.cpp
-  lapack/roclapack_gelqf_batched.cpp
-  lapack/roclapack_gelqf_strided_batched.cpp
+#  lapack/roclapack_getf2.cpp
+#  lapack/roclapack_getf2_batched.cpp
+#  lapack/roclapack_getf2_strided_batched.cpp
+#  lapack/roclapack_getrf.cpp
+#  lapack/roclapack_getrf_batched.cpp
+#  lapack/roclapack_getrf_strided_batched.cpp
+#  lapack/roclapack_getrs.cpp
+#  lapack/roclapack_getrs_batched.cpp
+#  lapack/roclapack_getrs_strided_batched.cpp
+#  lapack/roclapack_potf2.cpp
+#  lapack/roclapack_potf2_batched.cpp
+#  lapack/roclapack_potf2_strided_batched.cpp
+#  lapack/roclapack_potrf.cpp
+#  lapack/roclapack_potrf_batched.cpp
+#  lapack/roclapack_potrf_strided_batched.cpp
+#  lapack/roclapack_geqr2.cpp
+#  lapack/roclapack_geqr2_batched.cpp
+#  lapack/roclapack_geqr2_strided_batched.cpp
+#  lapack/roclapack_gelq2.cpp
+#  lapack/roclapack_gelq2_batched.cpp
+#  lapack/roclapack_gelq2_strided_batched.cpp
+#  lapack/roclapack_geqrf.cpp
+#  lapack/roclapack_geqrf_batched.cpp
+#  lapack/roclapack_geqrf_strided_batched.cpp
+#  lapack/roclapack_gelqf.cpp
+#  lapack/roclapack_gelqf_batched.cpp
+#  lapack/roclapack_gelqf_strided_batched.cpp
 )
 
-set( info_source
+set( auxiliaries
   buildinfo.cpp
   rocblas.cpp
 )  
 
 prepend_path( ".." rocsolver_headers_public relative_rocsolver_headers_public )
-prepend_path( ".." rocblas_headers_internal relative_rocblas_headers_internal )
 
 add_library( rocsolver
-  ${relative_rocblas_headers_internal}
   ${relative_rocsolver_headers_public}
-  ${info_source}
+  ${auxiliaries}
   ${rocsolver_auxiliary_source}
   ${rocsolver_lapack_source}
 )

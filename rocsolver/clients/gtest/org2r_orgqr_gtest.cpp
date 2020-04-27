@@ -26,7 +26,7 @@ const vector<vector<int>> m_size_range = {
 
 // each is a {N, K}
 const vector<vector<int>> n_size_range = {
-    {-1, 1}, {0, 1}, {1, -1}, {1, 0}, {10, 20}, {20, 20}, {130, 130}
+    {-1, 1}, {0, 1}, {1, -1}, {10, 0}, {10, 20}, {20, 20}, {130, 130}
 };
 
 const vector<vector<int>> large_m_size_range = {

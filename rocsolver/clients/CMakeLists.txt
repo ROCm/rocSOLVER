@@ -44,9 +44,9 @@ find_package( hip REQUIRED CONFIG PATHS ${ROCM_PATH} )
 # The presense of hip is not sufficient to determine if we want a rocm or cuda backend
 find_package( CUDA QUIET )
 
-if( BUILD_CLIENTS_BENCHMARKS )
-  add_subdirectory( benchmarks )
-endif( )
+#if( BUILD_CLIENTS_BENCHMARKS )
+#  add_subdirectory( benchmarks )
+#endif( )
 
 if( BUILD_CLIENTS_TESTS )
   add_subdirectory( gtest )

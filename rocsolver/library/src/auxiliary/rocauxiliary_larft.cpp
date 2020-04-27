@@ -15,6 +15,7 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle, const rocblas_direct 
 
     //logging is missing ???
 
+    // argument checking
     if (n < 0 || k < 1 || ldf < k)
         return rocblas_status_invalid_size;
     if (ldv < n && storev == rocblas_column_wise)
@@ -29,7 +30,23 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle, const rocblas_direct 
     rocblas_stride stridef = 0;
     rocblas_int batch_count=1;
 
-    return rocsolver_larft_template<T>(handle,direct,storev,
+    // memory managment
+    size_t size_1;  //size of constants
+    size_t size_2;  //size of workspace
+    size_t size_3;  //size of array of pointers to workspace
+    rocsolver_larft_getMemorySize<T,false>(k,batch_count,&size_1,&size_2,&size_3);
+
+    // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
+    void *scalars, *work, *workArr;
+    hipMalloc(&scalars,size_1);
+    hipMalloc(&work,size_2);
+    hipMalloc(&workArr,size_3);
+    if (!scalars || (size_2 && !work) || (size_3 && !workArr))
+        return rocblas_status_memory_error;
+
+    // execution
+    rocblas_status status = 
+           rocsolver_larft_template<T>(handle,direct,storev,
                                       n,k,
                                       V,0,    //shifted 0 entries
                                       ldv,
@@ -39,7 +56,15 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle, const rocblas_direct 
                                       F,
                                       ldf,
                                       stridef, 
-                                      batch_count);
+                                      batch_count,
+                                      (T*)scalars,
+                                      (T*)work,
+                                      (T**)workArr);
+
+    hipFree(scalars);
+    hipFree(work);
+    hipFree(workArr);
+    return status;
 }
 
 

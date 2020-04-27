@@ -66,7 +66,8 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
                            rocblas_int    offsetA,
                            rocblas_int    lda,
                            rocblas_stride strideA,
-                           rocblas_int    batch_count)
+                           rocblas_int    batch_count,
+                           T**            work)
 {
     return rocblas_ger_template<CONJ,T>(handle,m,n,alpha,stridea,cast2constType<T>(x),offsetx,incx,stridex,
                                         cast2constType<T>(y),offsety,incy,stridey,A,offsetA,lda,strideA,batch_count);
@@ -91,23 +92,17 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
                            rocblas_int    offsetA,
                            rocblas_int    lda,
                            rocblas_stride strideA,
-                           rocblas_int    batch_count)
+                           rocblas_int    batch_count,
+                           T**            work)
 {
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    T **work;
-    hipMalloc(&work, sizeof(T*) * batch_count);
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,y,stridey,batch_count);
  
-    rocblas_status status;
-
-    status = rocblas_ger_template<CONJ,T>(handle,m,n,alpha,stridea,cast2constType<T>(x),offsetx,incx,stridex,
+    return rocblas_ger_template<CONJ,T>(handle,m,n,alpha,stridea,cast2constType<T>(x),offsetx,incx,stridex,
                                           cast2constType<T>(work),offsety,incy,stridey,A,offsetA,lda,strideA,batch_count);
-    
-    hipFree(work);
-    return status;
 }
 
 // ger overload
@@ -129,23 +124,17 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
                            rocblas_int    offsetA,
                            rocblas_int    lda,
                            rocblas_stride strideA,
-                           rocblas_int    batch_count)
+                           rocblas_int    batch_count,
+                           T**            work)
 {
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    T **work;
-    hipMalloc(&work, sizeof(T*) * batch_count);
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,x,stridex,batch_count);
  
-    rocblas_status status;
-
-    status = rocblas_ger_template<CONJ,T>(handle,m,n,alpha,stridea,cast2constType<T>(work),offsetx,incx,stridex,
+    return rocblas_ger_template<CONJ,T>(handle,m,n,alpha,stridea,cast2constType<T>(work),offsetx,incx,stridex,
                                           cast2constType<T>(y),offsety,incy,stridey,A,offsetA,lda,strideA,batch_count);
-    
-    hipFree(work);
-    return status;
 }
 
 // gemv
@@ -170,7 +159,8 @@ rocblas_status rocblasCall_gemv(rocblas_handle    handle,
                             rocblas_int       offsety,
                             rocblas_int       incy,
                             rocblas_stride    stridey,
-                            rocblas_int       batch_count)
+                            rocblas_int       batch_count,
+                            T**               work)
 {
     return rocblas_gemv_template<T>(handle,transA,m,n,alpha,stride_alpha,
                                     cast2constType<T>(A),offseta,lda,strideA,
@@ -201,24 +191,19 @@ rocblas_status rocblasCall_gemv(rocblas_handle    handle,
                             rocblas_int       offsety,
                             rocblas_int       incy,
                             rocblas_stride    stridey,
-                            rocblas_int       batch_count)
+                            rocblas_int       batch_count,
+                            T**               work)
 {
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    T **work;
-    hipMalloc(&work, sizeof(T*) * batch_count);
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,y,stridey,batch_count);
  
-    rocblas_status status;
-    status = rocblas_gemv_template<T>(handle,transA,m,n,alpha,stride_alpha,
+    return rocblas_gemv_template<T>(handle,transA,m,n,alpha,stride_alpha,
                                       cast2constType<T>(A),offseta,lda,strideA,
                                       cast2constType<T>(x),offsetx,incx,stridex,beta,stride_beta,
                                       cast2constPointer<T>(work),offsety,incy,stridey,batch_count);
-
-    hipFree(work);
-    return status;
 }
 
 // trmv
@@ -266,7 +251,8 @@ rocblas_status rocblasCall_gemm(rocblas_handle    handle,
                             rocblas_int       offset_c,
                             rocblas_int       ld_c,
                             rocblas_stride    stride_c,
-                            rocblas_int       batch_count)
+                            rocblas_int       batch_count,
+                            T**               work)
 {
     return rocblas_gemm_template<BATCHED,STRIDED,T>(handle,trans_a,trans_b,m,n,k,alpha,
                                                     cast2constType<T>(A),offset_a,ld_a,stride_a,
@@ -296,24 +282,19 @@ rocblas_status rocblasCall_gemm(rocblas_handle    handle,
                             rocblas_int       offset_c,
                             rocblas_int       ld_c,
                             rocblas_stride    stride_c,
-                            rocblas_int       batch_count)
+                            rocblas_int       batch_count,
+                            T**               work)
 {
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    T **work;
-    hipMalloc(&work, sizeof(T*) * batch_count);
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,A,stride_a,batch_count);
  
-    rocblas_status status;
-    status = rocblas_gemm_template<BATCHED,STRIDED,T>(handle,trans_a,trans_b,m,n,k,alpha,
+    return rocblas_gemm_template<BATCHED,STRIDED,T>(handle,trans_a,trans_b,m,n,k,alpha,
                                                       cast2constType<T>(work),offset_a,ld_a,stride_a,
                                                       cast2constType<T>(B),offset_b,ld_b,stride_b,beta,
                                                       C,offset_c,ld_c,stride_c,batch_count);
-
-    hipFree(work);
-    return status;
 }
 
 //gemm overload
@@ -338,25 +319,19 @@ rocblas_status rocblasCall_gemm(rocblas_handle    handle,
                             rocblas_int       offset_c,
                             rocblas_int       ld_c,
                             rocblas_stride    stride_c,
-                            rocblas_int       batch_count)
+                            rocblas_int       batch_count,
+                            T**               work)
 {
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    T **work;
-    hipMalloc(&work, sizeof(T*) * batch_count);
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,B,stride_b,batch_count);
  
-    rocblas_status status;
-    status = rocblas_gemm_template<BATCHED,STRIDED,T>(handle,trans_a,trans_b,m,n,k,alpha,
+    return rocblas_gemm_template<BATCHED,STRIDED,T>(handle,trans_a,trans_b,m,n,k,alpha,
                                                       cast2constType<T>(A),offset_a,ld_a,stride_a,
                                                       cast2constType<T>(work),offset_b,ld_b,stride_b,beta,
                                                       C,offset_c,ld_c,stride_c,batch_count);
-
-    hipFree(work);
-    return status;
-
 }
 
 //gemm overload
@@ -381,25 +356,19 @@ rocblas_status rocblasCall_gemm(rocblas_handle    handle,
                             rocblas_int       offset_c,
                             rocblas_int       ld_c,
                             rocblas_stride    stride_c,
-                            rocblas_int       batch_count)
+                            rocblas_int       batch_count,
+                            T**               work)
 {
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    T **work;
-    hipMalloc(&work, sizeof(T*) * batch_count);
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,C,stride_c,batch_count);
  
-    rocblas_status status;
-    status = rocblas_gemm_template<BATCHED,STRIDED,T>(handle,trans_a,trans_b,m,n,k,alpha,
+    return rocblas_gemm_template<BATCHED,STRIDED,T>(handle,trans_a,trans_b,m,n,k,alpha,
                                                       cast2constType<T>(A),offset_a,ld_a,stride_a,
                                                       cast2constType<T>(B),offset_b,ld_b,stride_b,beta,
                                                       work,offset_c,ld_c,stride_c,batch_count);
-
-    hipFree(work);
-    return status;
-
 }
 
 // syrk
