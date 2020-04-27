@@ -101,7 +101,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     rocblas_get_stream(handle, &stream);
     T *Vp, *Fp;
 
-    // everything must be executed with scalars on the device
+    // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);
     rocblas_set_pointer_mode(handle,rocblas_pointer_mode_host);

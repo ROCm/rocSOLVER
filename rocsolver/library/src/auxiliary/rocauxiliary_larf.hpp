@@ -13,14 +13,13 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
-#include <vector>
 
 template <typename T, bool BATCHED>
 void rocsolver_larf_getMemorySize(const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
                                   size_t *size_1, size_t *size_2, size_t *size_3)
 {
     // size of scalars (constants)
-    *size_1 = sizeof(T)*2;        
+    *size_1 = sizeof(T)*3;        
 
     // size of workspace
     if (side == rocblas_side_left)
@@ -66,12 +65,6 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side
     rocblas_get_pointer_mode(handle,&old_mode);
     rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);  
 
-    //constants to use when calling rocablas functions
-    std::vector<T> sca(2);
-    sca[0] = -1;               
-    sca[1] = 0;                
-    RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca.data(), sizeof(T)*2, hipMemcpyHostToDevice));
-    
     //determine side and order of H
     bool leftside = (side == rocblas_side_left);
     rocblas_int order = m;

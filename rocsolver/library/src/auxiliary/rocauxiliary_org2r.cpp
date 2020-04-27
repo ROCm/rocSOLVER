@@ -37,6 +37,14 @@ rocblas_status rocsolver_org2r_impl(rocblas_handle handle, const rocblas_int m, 
     if (!scalars || (size_2 && !work) || (size_3 && !workArr))
         return rocblas_status_memory_error;
 
+    // scalars constants for rocblas functions calls
+    // (to standarize and enable re-use, size_1 always equals 3)
+    std::vector<T> sca(size_1);
+    sca[0] = -1;
+    sca[1] = 0;
+    sca[2] = 1;
+    RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca.data(), sizeof(T)*size_1, hipMemcpyHostToDevice));
+
     // execution
     rocblas_status status =    
           rocsolver_org2r_template<T>(handle,

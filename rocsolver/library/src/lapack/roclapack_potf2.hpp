@@ -10,7 +10,6 @@
 #ifndef ROCLAPACK_POTF2_HPP
 #define ROCLAPACK_POTF2_HPP
 
-#include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
@@ -37,41 +36,44 @@ __global__ void sqrtDiagOnward(U A, const rocblas_int shiftA, const rocblas_int 
     }
 }
 
+template <typename T>
+void rocsolver_potf2_getMemorySize(const rocblas_int n, const rocblas_int batch_count,
+                                  size_t *size_1, size_t *size_2, size_t *size_3)
+{
+    // size of scalars (constants)
+    *size_1 = sizeof(T)*3;
+
+    // size of workspace
+    *size_2 = sizeof(T) * ((n-1)/ROCBLAS_DOT_NB + 2) * batch_count;
+
+    // size of array of pivots
+    *size_3 = sizeof(T)*batch_count;
+}
+
+
 template <typename T, typename U>
 rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         const rocblas_fill uplo, const rocblas_int n, U A,
                                         const rocblas_int shiftA,
                                         const rocblas_int lda, const rocblas_stride strideA,
-                                        rocblas_int *info, const rocblas_int batch_count) 
+                                        rocblas_int *info, const rocblas_int batch_count,
+                                        T*scalars, T* work, T* pivotGPU) 
 {
     // quick return
     if (n == 0 || batch_count == 0) 
         return rocblas_status_success;
     
-    //constants for rocblas functions calls
-    T h_one = 1;
-    T h_minone = -1;
-    T *d_one, *d_minone;
-    hipMalloc(&d_one, sizeof(T));
-    hipMemcpy(d_one, &h_one, sizeof(T), hipMemcpyHostToDevice);
-    hipMalloc(&d_minone, sizeof(T));
-    hipMemcpy(d_minone, &h_minone, sizeof(T), hipMemcpyHostToDevice);
-
-    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
-    // workspace on GPU (for reduction in rocblas_dot)
-    size_t sizeW = sizeof(T) * ((n-1)/ROCBLAS_DOT_NB + 2) * batch_count;
-    T* work;
-    hipMalloc(&work, sizeW);
-    //diagonal info in device (device memory workspace to avoid synchronization with CPU)
-    T *pivotGPU; 
-    hipMalloc(&pivotGPU, sizeof(T)*batch_count);
-
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
+
+    // everything must be executed with scalars on the device
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle,&old_mode);
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);
+
     rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(BLOCKSIZE, 1, 1);
-    T* M;
 
     //info=0 (starting with a positive definite matrix)
     hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count,0);
@@ -87,10 +89,10 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
 
             // Compute elements J+1:N of row J
             if (j < n - 1) {
-                rocblasCall_gemv<T>(handle, rocblas_operation_transpose, j, n-j-1, d_minone, 0,
+                rocblasCall_gemv<T>(handle, rocblas_operation_transpose, j, n-j-1, scalars, 0,
                                 A, shiftA + idx2D(0, j+1, lda), lda, strideA,
-                                A, shiftA + idx2D(0, j, lda), 1, strideA, d_one, 0,
-                                A, shiftA + idx2D(j, j+1, lda), lda, strideA, batch_count);
+                                A, shiftA + idx2D(0, j, lda), 1, strideA, scalars+2, 0,
+                                A, shiftA + idx2D(j, j+1, lda), lda, strideA, batch_count, nullptr);
                                     
                 rocblasCall_scal<T>(handle, n-j-1, pivotGPU, 1, A, shiftA + idx2D(j, j+1, lda), lda, strideA, batch_count);
             }
@@ -107,21 +109,17 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
 
             // Compute elements J+1:N of row J
             if (j < n - 1) {
-                rocblasCall_gemv<T>(handle, rocblas_operation_none, n-j-1, j, d_minone, 0,
+                rocblasCall_gemv<T>(handle, rocblas_operation_none, n-j-1, j, scalars, 0,
                                 A, shiftA + idx2D(j+1, 0, lda), lda, strideA,
-                                A, shiftA + idx2D(j, 0, lda), lda, strideA, d_one, 0,
-                                A, shiftA + idx2D(j+1, j, lda), 1, strideA, batch_count);
+                                A, shiftA + idx2D(j, 0, lda), lda, strideA, scalars+2, 0,
+                                A, shiftA + idx2D(j+1, j, lda), 1, strideA, batch_count, nullptr);
 
                 rocblasCall_scal<T>(handle, n-j-1, pivotGPU, 1, A, shiftA + idx2D(j+1, j, lda), 1, strideA, batch_count);
             }
         }
     }
 
-    hipFree(pivotGPU);
-    hipFree(d_minone);
-    hipFree(d_one);
-    hipFree(work);
-
+    rocblas_set_pointer_mode(handle,old_mode);
     return rocblas_status_success;
 }
 

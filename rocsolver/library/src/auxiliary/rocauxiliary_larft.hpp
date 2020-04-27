@@ -62,7 +62,7 @@ void rocsolver_larft_getMemorySize(const rocblas_int k, const rocblas_int batch_
                                   size_t *size_1, size_t *size_2, size_t *size_3)
 {
     // size of scalars (constants)
-    *size_1 = sizeof(T);
+    *size_1 = sizeof(T)*3;
 
     // size of workspace
     *size_2 = sizeof(T)*k*batch_count;
@@ -103,10 +103,6 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_dir
     rocblas_get_pointer_mode(handle,&old_mode);
     rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);  
 
-    //constants to use when calling rocablas functions
-    T one = 1;                
-    RETURN_IF_HIP_ERROR(hipMemcpy(scalars, &one, sizeof(T), hipMemcpyHostToDevice));
-
     rocblas_stride stridew = rocblas_stride(k);
     rocblas_diagonal diag = rocblas_diagonal_non_unit;
     rocblas_fill uplo;
@@ -137,13 +133,13 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_dir
             trans = rocblas_operation_transpose;
             rocblasCall_gemv<T>(handle, trans, n-1-i, i, tau + i, strideT, 
                             V, shiftV + idx2D(i+1,0,ldv), ldv, strideV,
-                            V, shiftV + idx2D(i+1,i,ldv), 1, strideV, scalars, 0,
+                            V, shiftV + idx2D(i+1,i,ldv), 1, strideV, scalars+2, 0,
                             F, idx2D(0,i,ldf), 1, strideF, batch_count, workArr);
         } else {
             trans = rocblas_operation_none;
             rocblasCall_gemv<T>(handle, trans, i, n-1-i, tau + i, strideT, 
                             V, shiftV + idx2D(0,i+1,ldv), ldv, strideV,
-                            V, shiftV + idx2D(i,i+1,ldv), ldv, strideV, scalars, 0,
+                            V, shiftV + idx2D(i,i+1,ldv), ldv, strideV, scalars+2, 0,
                             F, idx2D(0,i,ldf), 1, strideF, batch_count, workArr);
         }
 

@@ -38,6 +38,14 @@ rocblas_status rocsolver_orglq_impl(rocblas_handle handle, const rocblas_int m, 
     hipMalloc(&trfact,size_4);
     if (!scalars || (size_2 && !work) || (size_3 && !workArr) || (size_4 && !trfact))
         return rocblas_status_memory_error;
+
+    // scalars constants for rocblas functions calls
+    // (to standarize and enable re-use, size_1 always equals 3)
+    std::vector<T> sca(size_1);
+    sca[0] = -1;
+    sca[1] = 0;
+    sca[2] = 1;
+    RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca.data(), sizeof(T)*size_1, hipMemcpyHostToDevice));
     
     // execution
     rocblas_status status = 
