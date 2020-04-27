@@ -51,6 +51,8 @@ Options:
 
   -s | --static               Pass this flag to build rocsolver as a static library.
 
+  -r | --relocatable          Pass this to add RUNPATH(based on ROCM_RPATH) and remove ldconf entry.
+
 EOF
 }
 
@@ -266,6 +268,7 @@ install_dir=/opt/rocm
 rocblas_dir=/opt/rocm/rocblas
 build_dir=./build
 build_type=Release
+build_relocatable=false
 
 rocm_path=/opt/rocm
 if ! [ -z ${ROCM_PATH+x} ]; then
@@ -279,7 +282,7 @@ fi
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static --options hipcdgs -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static:,relocatable --options hipcdgsr -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -332,6 +335,9 @@ while true; do
     --rocblas_dir)
         rocblas_dir=${2}
         shift 2 ;;
+    -r|--relocatable)
+        build_relocatable=true
+        shift ;;
     --) shift ; break ;;
     *)  
         echo "Unexpected command line parameter received; aborting";
@@ -411,6 +417,15 @@ if [[ "${build_clients}" == true ]]; then
   cmake_client_options="${cmake_client_options} -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON"
 fi
 
+rocm_rpath=""
+if [[ "${build_relocatable}" == true ]]; then
+    rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath,/opt/rocm/lib:/opt/rocm/lib64"
+    if ! [ -z ${ROCM_RPATH+x} ]; then
+        rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath,${ROCM_RPATH}"
+    fi
+    cmake_common_options="${cmake_common_options} -DROCM_DISABLE_LDCONFIG=ON"
+fi
+
 compiler="hcc"
 if [[ "${build_hip_clang}" == true ]]; then
   compiler="hipcc"
@@ -422,7 +437,7 @@ case "${ID}" in
     ;;
 esac
 
-CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} ${main}
+CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" ${main}
 
 make -j$(nproc) install
 check_exit_code "$?"
