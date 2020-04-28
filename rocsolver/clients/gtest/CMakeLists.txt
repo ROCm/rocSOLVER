@@ -13,7 +13,7 @@ set( Boost_USE_STATIC_LIBS OFF )
 
 if(EXISTS /etc/redhat-release)
     if(CXX_VERSION_STRING MATCHES "clang")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread -stdlib=libstdc++ -std=c++14")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -stdlib=libstdc++ -std=c++14")
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread")
     endif()
@@ -104,11 +104,12 @@ target_include_directories( rocsolver-test
 
 if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
     if( OS_ID_rhel OR OS_ID_centos)
-        # defer OpenMP include as search order must come after clang
-        set( XXX_OPENMP_INCLUDE_DIR /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/include )
-        set( OPENMP_LIBRARY /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/libgomp.so )
         if( CXX_VERSION_STRING MATCHES "clang")
             set( XXX_OPENMP_INCLUDE_DIR /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/include )
+        else()
+            # defer OpenMP include as search order must come after clang
+            set( XXX_OPENMP_INCLUDE_DIR /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/include )
+            set( OPENMP_LIBRARY /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/libgomp.so )
         endif()
     else()
     #SLES
@@ -185,7 +186,7 @@ endif( )
 if( CXX_VERSION_STRING MATCHES "clang" )
   target_link_libraries( rocsolver-test PRIVATE -lpthread -lstdc++ -lgcc_s -lm -rtlib=compiler-rt )
   if(OS_ID_rhel OR OS_ID_centos)
-    set(CMAKE_CXX_FLAGS "-isystem ${CLANG_INCLUDE_DIR} -isystem ${XXX_OPENMP_INCLUDE_DIR} ${CMAKE_CXX_FLAGS}")
+    #set(CMAKE_CXX_FLAGS "-isystem ${CLANG_INCLUDE_DIR} -isystem ${XXX_OPENMP_INCLUDE_DIR} ${CMAKE_CXX_FLAGS}")
   endif( )
 else( )
   if(OS_ID_rhel OR OS_ID_centos)
