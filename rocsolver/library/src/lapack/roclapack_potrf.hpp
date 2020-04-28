@@ -10,7 +10,6 @@
 #ifndef ROCLAPACK_POTRF_HPP
 #define ROCLAPACK_POTRF_HPP
 
-#include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
@@ -26,20 +25,42 @@ __global__ void chk_positive(rocblas_int *iinfo, rocblas_int *info, int j)
             info[id] = iinfo[id] + j;   
 }
 
+template <typename T>
+void rocsolver_potrf_getMemorySize(const rocblas_int n, const rocblas_int batch_count,
+                                  size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
+{
+    if (n < POTRF_POTF2_SWITCHSIZE) {
+        rocsolver_potf2_getMemorySize<T>(n,batch_count,size_1,size_2,size_3);
+        *size_4 = 0;
+    } else {
+        rocsolver_potf2_getMemorySize<T>(POTRF_POTF2_SWITCHSIZE,batch_count,size_1,size_2,size_3);
+        *size_4 = sizeof(rocblas_int)*batch_count;
+    }   
+}
+
 template <typename T, typename U>
 rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                         const rocblas_fill uplo, const rocblas_int n, U A,
                                         const rocblas_int shiftA,
                                         const rocblas_int lda, const rocblas_stride strideA,
-                                        rocblas_int *info, const rocblas_int batch_count) 
+                                        rocblas_int *info, const rocblas_int batch_count,
+                                        T*scalars, T* work, T* pivotGPU, rocblas_int *iinfo)
 {
     // quick return
     if (n == 0 || batch_count == 0) 
         return rocblas_status_success;
 
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+    
+    // everything must be executed with scalars on the host
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle,&old_mode);
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_host);
+
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the algorithm
     if (n < POTRF_POTF2_SWITCHSIZE) 
-        return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info, batch_count);
+        return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info, batch_count, scalars, work, pivotGPU);
 
     // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
     //      TRSM_BATCH FUNCTIONALITY IS ENABLED. ****
@@ -51,21 +72,9 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     #endif
 
     //constants for rocblas functions calls
-    T h_one = 1;
-    T h_minone = -1;
-    T *d_one, *d_minone;
-    hipMalloc(&d_one, sizeof(T));
-    hipMemcpy(d_one, &h_one, sizeof(T), hipMemcpyHostToDevice);
-    hipMalloc(&d_minone, sizeof(T));
-    hipMemcpy(d_minone, &h_minone, sizeof(T), hipMemcpyHostToDevice);
+    T one = 1;
+    T minone = -1;
 
-    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
-    //info in device (device memory workspace to avoid synchronization with CPU)
-    rocblas_int *iinfo; 
-    hipMalloc(&iinfo, sizeof(rocblas_int)*batch_count);
-
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
     rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(BLOCKSIZE, 1, 1);
@@ -83,7 +92,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             // Factor diagonal and subdiagonal blocks 
             jb = min(n - j, POTRF_POTF2_SWITCHSIZE);  //number of columns in the block
             hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,iinfo,batch_count,0);
-            rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, iinfo, batch_count);
+            rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, iinfo, batch_count, scalars, work, pivotGPU);
             
             // test for non-positive-definiteness.
             hipLaunchKernelGGL(chk_positive<U>,gridReset,threads,0,stream,iinfo,info,j);
@@ -93,12 +102,12 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                 for (int b=0;b<batch_count;++b) {
                     M = load_ptr_batch<T>(AA,b,shiftA,strideA);
                     rocblas_trsm(handle, rocblas_side_left, uplo, rocblas_operation_transpose,
-                             rocblas_diagonal_non_unit, jb, (n - j - jb), d_one,
+                             rocblas_diagonal_non_unit, jb, (n - j - jb), &one,
                              (M + idx2D(j, j, lda)), lda, (M + idx2D(j, j + jb, lda)), lda);
                 }
 
-                rocblasCall_syrk<T>(handle, uplo, rocblas_operation_transpose, n-j-jb, jb, d_minone,
-                                A, shiftA + idx2D(j,j+jb,lda), lda, strideA, d_one,
+                rocblasCall_syrk<T>(handle, uplo, rocblas_operation_transpose, n-j-jb, jb, &minone,
+                                A, shiftA + idx2D(j,j+jb,lda), lda, strideA, &one,
                                 A, shiftA + idx2D(j+jb,j+jb,lda), lda, strideA, batch_count);
             }
         }
@@ -108,7 +117,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             // Factor diagonal and subdiagonal blocks 
             jb = min(n - j, POTRF_POTF2_SWITCHSIZE);  //number of columns in the block
             hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,iinfo,batch_count,0);
-            rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, iinfo, batch_count);
+            rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, iinfo, batch_count, scalars, work, pivotGPU);
             
             // test for non-positive-definiteness.
             hipLaunchKernelGGL(chk_positive<U>,gridReset,threads,0,stream,iinfo,info,j);
@@ -118,21 +127,18 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                 for (int b=0;b<batch_count;++b) {
                     M = load_ptr_batch<T>(AA,b,shiftA,strideA);
                     rocblas_trsm(handle, rocblas_side_right, uplo, rocblas_operation_transpose,
-                             rocblas_diagonal_non_unit, (n - j - jb), jb, d_one,
+                             rocblas_diagonal_non_unit, (n - j - jb), jb, &one,
                              (M + idx2D(j, j, lda)), lda, (M + idx2D(j + jb, j, lda)), lda);
                 }
 
-                rocblasCall_syrk<T>(handle, uplo, rocblas_operation_none, n-j-jb, jb, d_minone,
-                                A, shiftA + idx2D(j+jb,j,lda), lda, strideA, d_one,
+                rocblasCall_syrk<T>(handle, uplo, rocblas_operation_none, n-j-jb, jb, &minone,
+                                A, shiftA + idx2D(j+jb,j,lda), lda, strideA, &one,
                                 A, shiftA + idx2D(j+jb,j+jb,lda), lda, strideA, batch_count);
             }
         }
     }
 
-    hipFree(iinfo);
-    hipFree(d_minone);
-    hipFree(d_one);
-
+    rocblas_set_pointer_mode(handle,old_mode);
     return rocblas_status_success;
 }
 

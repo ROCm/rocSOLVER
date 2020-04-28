@@ -10,11 +10,21 @@
 #ifndef ROCLAPACK_ORM2R_HPP
 #define ROCLAPACK_ORM2R_HPP
 
-#include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_larf.hpp"
+
+template <typename T, bool BATCHED>
+void rocsolver_orm2r_getMemorySize(const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+                                  size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
+{
+    // memory requirements to call larf
+    rocsolver_larf_getMemorySize<T,BATCHED>(side,m,n,batch_count,size_1,size_2,size_3);
+
+    // size of temporary array for diagonal elemements
+    *size_4 = sizeof(T)*batch_count;
+}
 
 template <typename T, typename U>
 rocblas_status rocsolver_orm2r_template(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans, 
@@ -22,7 +32,8 @@ rocblas_status rocsolver_orm2r_template(rocblas_handle handle, const rocblas_sid
                                    const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                    const rocblas_stride strideA, T* ipiv, 
                                    const rocblas_stride strideP, U C, const rocblas_int shiftC, const rocblas_int ldc,
-                                   const rocblas_stride strideC, const rocblas_int batch_count)
+                                   const rocblas_stride strideC, const rocblas_int batch_count,
+                                   T* scalars, T* work, T** workArr, T* diag)
 {
     // quick return
     if (!n || !m || !k || !batch_count)
@@ -30,11 +41,6 @@ rocblas_status rocsolver_orm2r_template(rocblas_handle handle, const rocblas_sid
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-
-    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
-    // memory in GPU (workspace)
-    T *diag;
-    hipMalloc(&diag,sizeof(T)*batch_count);
 
     // determine limits and indices
     bool left = (side == rocblas_side_left);
@@ -85,14 +91,13 @@ rocblas_status rocsolver_orm2r_template(rocblas_handle handle, const rocblas_sid
                                 (ipiv + i), strideP,                //householder scalar (alpha)
                                 C, shiftC + idx2D(ic,jc,ldc),       //matrix to work on
                                 ldc, strideC,                       //leading dimension
-                                batch_count);
+                                batch_count,
+                                scalars, work, workArr);
 
         // restore original value of A(i,i)
         hipLaunchKernelGGL(restore_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(i,i,lda),strideA);
     }
 
-    hipFree(diag);    
- 
     return rocblas_status_success;
 }
 

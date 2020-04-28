@@ -21,12 +21,15 @@ typedef std::tuple<vector<int>, vector<int>> wpTuple;
 
 //{n,lda}
 const vector<vector<int>> range1 = {
-    {-1,1}, {0,1}, {1,0}, {10,100}, {20,100}, {30,100}
+    {-1,1}, {1,0},                  //error 
+    {0,1},                          //quick return
+    {10,100}, {20,100}, {30,100}    
 };
 
 //{k1,k2,inc}
 const vector<vector<int>> range2 = {
-    {0,1,1}, {1,0,1}, {1,2,0}, {2,1,1}, {1,2,1}, {3,5,2}, {5,10,-1}, {3,12,-2}
+    {0,1,1}, {1,0,1}, {1,2,0}, {2,1,1},     //error 
+    {1,2,1}, {3,5,2}, {5,10,-1}, {3,12,-2}
 };
 
 const vector<vector<int>> large_range1 = {

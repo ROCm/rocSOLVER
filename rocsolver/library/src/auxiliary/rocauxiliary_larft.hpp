@@ -10,7 +10,6 @@
 #ifndef ROCLAPACK_LARFT_HPP
 #define ROCLAPACK_LARFT_HPP
 
-#include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
@@ -58,13 +57,39 @@ __global__ void set_tau(const rocblas_int k, T* tau, const rocblas_stride stride
     }
 }
          
+template <typename T, bool BATCHED>
+void rocsolver_larft_getMemorySize(const rocblas_int k, const rocblas_int batch_count,
+                                  size_t *size_1, size_t *size_2, size_t *size_3)
+{
+    // size of scalars (constants)
+    *size_1 = sizeof(T)*3;
+
+    // size of workspace
+    *size_2 = sizeof(T)*k*batch_count;
+
+    // size of array of pointers to workspace
+    if (BATCHED)
+        *size_3 = sizeof(T*)*batch_count;
+    else
+        *size_3 = 0;
+}
+
+template <typename T>
+void rocsolver_larft_getMemorySize(const rocblas_int k, const rocblas_int batch_count,
+                                  size_t *size)
+{
+    // size of workspace
+    *size *= sizeof(T)*k*batch_count;
+}
+
 
 template <typename T, typename U>
 rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_direct direct, 
                                    const rocblas_storev storev, const rocblas_int n,
                                    const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, 
                                    const rocblas_stride strideV, T* tau, const rocblas_stride strideT, T* F, 
-                                   const rocblas_int ldf, const rocblas_stride strideF, const rocblas_int batch_count)
+                                   const rocblas_int ldf, const rocblas_stride strideF, const rocblas_int batch_count,
+                                   T* scalars, T* work, T** workArr)
 {
     // quick return
     if (!n || !batch_count)
@@ -73,22 +98,12 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_dir
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    //constants to use when calling rocablas functions
-    T one = 1;                //constant 1 in host
-    T zero = 0;               //constant 0 in host
-    T* oneInt;                //constant 1 in device
-    T* zeroInt;               //constant 0 in device
-    hipMalloc(&oneInt, sizeof(T));
-    hipMemcpy(oneInt, &one, sizeof(T), hipMemcpyHostToDevice);
-    hipMalloc(&zeroInt, sizeof(T));
-    hipMemcpy(zeroInt, &zero, sizeof(T), hipMemcpyHostToDevice);
+    // everything must be executed with scalars on the device
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle,&old_mode);
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);  
 
-    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
-    //memory in GPU (workspace)
-    T *work;
-    rocblas_stride stridew = k;
-    hipMalloc(&work, sizeof(T)*stridew*batch_count);
-
+    rocblas_stride stridew = rocblas_stride(k);
     rocblas_diagonal diag = rocblas_diagonal_non_unit;
     rocblas_fill uplo;
     rocblas_operation trans;
@@ -100,7 +115,7 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_dir
 
     uplo = rocblas_fill_upper;
 
-    //Fix diagonal of T, make zero the non used triangular part, 
+    //Fix diagonal of T, make zero the not used triangular part, 
     //setup tau (changing signs) and account for the non-stored 1's on the householder vectors
     rocblas_int blocks = (k - 1)/32 + 1;
     hipLaunchKernelGGL(set_triangular,dim3(blocks,blocks,batch_count),dim3(32,32),0,stream,
@@ -118,14 +133,14 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_dir
             trans = rocblas_operation_transpose;
             rocblasCall_gemv<T>(handle, trans, n-1-i, i, tau + i, strideT, 
                             V, shiftV + idx2D(i+1,0,ldv), ldv, strideV,
-                            V, shiftV + idx2D(i+1,i,ldv), 1, strideV, oneInt, 0,
-                            F, idx2D(0,i,ldf), 1, strideF, batch_count);
+                            V, shiftV + idx2D(i+1,i,ldv), 1, strideV, scalars+2, 0,
+                            F, idx2D(0,i,ldf), 1, strideF, batch_count, workArr);
         } else {
             trans = rocblas_operation_none;
             rocblasCall_gemv<T>(handle, trans, i, n-1-i, tau + i, strideT, 
                             V, shiftV + idx2D(0,i+1,ldv), ldv, strideV,
-                            V, shiftV + idx2D(i,i+1,ldv), ldv, strideV, oneInt, 0,
-                            F, idx2D(0,i,ldf), 1, strideF, batch_count);
+                            V, shiftV + idx2D(i,i+1,ldv), ldv, strideV, scalars+2, 0,
+                            F, idx2D(0,i,ldf), 1, strideF, batch_count, workArr);
         }
 
         //multiply by the previous triangular factor
@@ -138,10 +153,7 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_dir
     //restore tau
     hipLaunchKernelGGL(set_tau,dim3(batch_count,blocks),dim3(32,1),0,stream,k,tau,strideT);
 
-    hipFree(oneInt);
-    hipFree(zeroInt);
-    hipFree(work);   
- 
+    rocblas_set_pointer_mode(handle,old_mode);  
     return rocblas_status_success;
 }
 

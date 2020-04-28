@@ -26,6 +26,14 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_ope
       return rocblas_status_success;
     }
 
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+    
+    // everything must be executed with scalars on the host
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle,&old_mode);
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_host);
+
     // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
     //      TRSM_BATCH FUNCTIONALITY IS ENABLED. ****
     #ifdef batched
@@ -40,12 +48,7 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_ope
 
     //constants to use when calling rocablas functions
     T one = 1;            //constant 1 in host
-    T* oneInt;            //constant 1 in device
-    hipMalloc(&oneInt, sizeof(T));
-    hipMemcpy(oneInt, &one, sizeof(T), hipMemcpyHostToDevice);
 
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
     T *Ap, *Bp;
 
     // **** TRSM_BATCH IS EXECUTED IN A FOR-LOOP UNTIL
@@ -63,12 +66,12 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_ope
             // solve L*X = B, overwriting B with X
             rocblas_trsm<T>(handle, rocblas_side_left, rocblas_fill_lower,
                     trans, rocblas_diagonal_unit, n, nrhs,
-                    oneInt, Ap, lda, Bp, ldb);
+                    &one, Ap, lda, Bp, ldb);
 
             // solve U*X = B, overwriting B with X
             rocblas_trsm<T>(handle, rocblas_side_left, rocblas_fill_upper,
                     trans, rocblas_diagonal_non_unit, n, nrhs,
-                    oneInt, Ap, lda, Bp, ldb);
+                    &one, Ap, lda, Bp, ldb);
         }
     
     } else {
@@ -80,11 +83,11 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_ope
             // solve U**T *X = B or U**H *X = B, overwriting B with X
             rocblas_trsm<T>(handle, rocblas_side_left, rocblas_fill_upper, trans,
                     rocblas_diagonal_non_unit, n, nrhs,
-                    oneInt, Ap, lda, Bp, ldb);
+                    &one, Ap, lda, Bp, ldb);
 
             // solve L**T *X = B, or L**H *X = B overwriting B with X
             rocblas_trsm<T>(handle, rocblas_side_left, rocblas_fill_lower, trans,
-                    rocblas_diagonal_unit, n, nrhs, oneInt,
+                    rocblas_diagonal_unit, n, nrhs, &one,
                     Ap, lda, Bp, ldb);
         }
 
@@ -92,8 +95,7 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_ope
         rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0, strideP, -1, batch_count);
     }
 
-    hipFree(oneInt);
-
+    rocblas_set_pointer_mode(handle,old_mode);
     return rocblas_status_success;
 }
 

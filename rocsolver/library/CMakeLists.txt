@@ -101,11 +101,6 @@ set( rocsolver_headers_public
   ${PROJECT_BINARY_DIR}/include/rocsolver-export.h
 )
 
-set( rocblas_headers_internal
-  ../../rocblascommon/library/src/include/definitions.h
-  ../../rocblascommon/library/src/include/utility.h
-)
-
 source_group( "Header Files\\Public" FILES ${rocsolver_headers_public} )
 
 include( GNUInstallDirs )

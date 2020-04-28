@@ -5,12 +5,14 @@
 #include "rocauxiliary_larfg.hpp"
 
 template <typename T>
-rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n, T *alpha, T *x, const rocblas_int incx, T *tau) {
+rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n, T *alpha, T *x, const rocblas_int incx, T *tau) 
+{
     if(!handle)
         return rocblas_status_invalid_handle;
 
     //logging is missing ???
 
+    // argument checking
     if (n < 0 || incx < 1)
         return rocblas_status_invalid_size;
     if (!x || !alpha || !tau)
@@ -20,14 +22,30 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n, 
     rocblas_stride strideP = 0;
     rocblas_int batch_count=1;
 
-    return rocsolver_larfg_template<T>(handle,n,
-                                        alpha,0,    //The pivot is the first pointed element
-                                        x,0,        //the vector is shifted 0 entries,
-                                        incx,
-                                        stridex,
-                                        tau,
-                                        strideP, 
-                                        batch_count);
+    // memory managment
+    size_t size;  //size to store the norms  
+    rocsolver_larfg_getMemorySize<T>(batch_count,&size);
+
+    // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
+    void* norms;
+    hipMalloc(&norms,size);    
+    if (!norms) 
+        return rocblas_status_memory_error;
+
+    // execution
+    rocblas_status status =
+          rocsolver_larfg_template<T>(handle,n,
+                                      alpha,0,    //The pivot is the first pointed element
+                                      x,0,        //the vector is shifted 0 entries,
+                                      incx,
+                                      stridex,
+                                      tau,
+                                      strideP, 
+                                      batch_count,
+                                      (T*)norms);
+
+    hipFree(norms);
+    return status;
 }
 
 
@@ -42,6 +60,7 @@ extern "C" {
 ROCSOLVER_EXPORT rocblas_status rocsolver_slarfg(rocblas_handle handle, const rocblas_int n, float *alpha,
                  float *x, const rocblas_int incx, float *tau)
 {
+    bool t = rocblas_is_managing_device_memory(handle);
     return rocsolver_larfg_impl<float>(handle, n, alpha, x, incx, tau);
 }
 

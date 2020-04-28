@@ -7,10 +7,9 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-//#ifndef ROCLAPACK_ORMLQ_HPP
-//#define ROCLAPACK_ORMLQ_HPP
+#ifndef ROCLAPACK_ORMLQ_HPP
+#define ROCLAPACK_ORMLQ_HPP
 
-#include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
@@ -18,13 +17,35 @@
 #include "../auxiliary/rocauxiliary_larfb.hpp"
 #include "../auxiliary/rocauxiliary_larft.hpp"
 
+template <typename T, bool BATCHED>
+void rocsolver_ormlq_getMemorySize(const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
+                                  size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
+{
+    size_t s1, s2;
+    rocsolver_orml2_getMemorySize<T,BATCHED>(side,m,n,batch_count,size_1,size_2,size_3,size_4);
+
+    if (k > ORMLQ_ORML2_BLOCKSIZE) {
+        // size of workspace
+        // maximum of what is needed by larft and larfb
+        rocblas_int jb = ORMLQ_ORML2_BLOCKSIZE;
+        rocsolver_larft_getMemorySize<T>(min(jb,k), batch_count, &s1);
+        rocsolver_larfb_getMemorySize<T>(side, m, n, min(jb,k), batch_count, &s2);
+
+        *size_2 = max(s1,s2);
+
+        // size of temporary array for triangular factor
+        *size_4 = sizeof(T)*jb*jb*batch_count;
+    }
+}
+
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_ormlq_template(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans, 
                                    const rocblas_int m, const rocblas_int n, 
                                    const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                    const rocblas_stride strideA, T* ipiv, 
                                    const rocblas_stride strideP, U C, const rocblas_int shiftC, const rocblas_int ldc,
-                                   const rocblas_stride strideC, const rocblas_int batch_count)
+                                   const rocblas_stride strideC, const rocblas_int batch_count,
+                                   T* scalars, T* work, T** workArr, T* trfact)
 {
     // quick return
     if (!n || !m || !k || !batch_count)
@@ -35,14 +56,11 @@ rocblas_status rocsolver_ormlq_template(rocblas_handle handle, const rocblas_sid
     
     // if the matrix is small, use the unblocked variant of the algorithm
     if (k <= ORMLQ_ORML2_BLOCKSIZE) 
-        return rocsolver_orml2_template<T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C, shiftC, ldc, strideC, batch_count);
+        return rocsolver_orml2_template<T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C, shiftC, ldc, strideC, batch_count,
+                                           scalars, work, workArr, trfact);
 
-    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
-    //memory in GPU (workspace)
-    T* work;
     rocblas_int ldw = ORMLQ_ORML2_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) *ldw;
-    hipMalloc(&work, sizeof(T)*strideW*batch_count);    
 
     // determine limits and indices
     bool left = (side == rocblas_side_left);
@@ -94,22 +112,20 @@ rocblas_status rocsolver_ormlq_template(rocblas_handle handle, const rocblas_sid
                                  order-i,min(ldw,k-i),
                                  A, shiftA + idx2D(i,i,lda),lda, strideA,
                                  ipiv + i, strideP,
-                                 work,ldw,strideW,
-                                 batch_count);
+                                 trfact,ldw,strideW,
+                                 batch_count, scalars, work, workArr);
 
         // apply current block reflector
         rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,side,transB,
                                  rocblas_forward_direction,rocblas_row_wise,
                                  nrow,ncol,min(ldw,k-i),
                                  A, shiftA + idx2D(i,i,lda),lda, strideA,
-                                 work,0,ldw,strideW,
+                                 trfact,0,ldw,strideW,
                                  C, shiftC + idx2D(ic,jc,ldc),ldc,strideC,
-                                 batch_count);
+                                 batch_count, work, workArr);
     }
 
-    hipFree(work);
- 
     return rocblas_status_success;
 }
 
-//#endif
+#endif
