@@ -103,6 +103,8 @@ rocsolver_<type>larfb()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dlarfb
 .. doxygenfunction:: rocsolver_slarfb
+.. doxygenfunction:: rocsolver_clarfb
+.. doxygenfunction:: rocsolver_zlarfb
 
 Orthonormal matrices
 ---------------------------

@@ -151,6 +151,22 @@ inline rocblas_status rocsolver_larfb(rocblas_handle handle, rocblas_side side, 
   return rocsolver_dlarfb(handle, side, trans, direct, storev, m, n, k, V, ldv, F, ldt, A, lda);
 }
 
+template <>
+inline rocblas_status rocsolver_larfb(rocblas_handle handle, rocblas_side side, rocblas_operation trans, rocblas_direct direct, 
+                                      rocblas_storev storev, rocblas_int m, rocblas_int n, rocblas_int k, rocblas_float_complex *V, 
+                                      rocblas_int ldv, rocblas_float_complex *F, rocblas_int ldt, rocblas_float_complex *A, rocblas_int lda)
+{
+  return rocsolver_clarfb(handle, side, trans, direct, storev, m, n, k, V, ldv, F, ldt, A, lda);
+}
+
+template <>
+inline rocblas_status rocsolver_larfb(rocblas_handle handle, rocblas_side side, rocblas_operation trans, rocblas_direct direct, 
+                                      rocblas_storev storev, rocblas_int m, rocblas_int n, rocblas_int k, rocblas_double_complex *V, 
+                                      rocblas_int ldv, rocblas_double_complex *F, rocblas_int ldt, rocblas_double_complex *A, rocblas_int lda)
+{
+  return rocsolver_zlarfb(handle, side, trans, direct, storev, m, n, k, V, ldv, F, ldt, A, lda);
+}
+
 //org2r
 
 template <typename T>

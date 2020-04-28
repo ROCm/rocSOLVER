@@ -465,6 +465,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfb(rocblas_handle handle,
                                                  double *A,
                                                  const rocblas_int lda); 
 
+ROCSOLVER_EXPORT rocblas_status rocsolver_clarfb(rocblas_handle handle,
+                                                 const rocblas_side side,
+                                                 const rocblas_operation trans,
+                                                 const rocblas_direct direct,
+                                                 const rocblas_storev storev, 
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, 
+                                                 const rocblas_int k,
+                                                 rocblas_float_complex *V,
+                                                 const rocblas_int ldv,
+                                                 rocblas_float_complex *T, 
+                                                 const rocblas_int ldt,
+                                                 rocblas_float_complex *A,
+                                                 const rocblas_int lda); 
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
+                                                 const rocblas_side side,
+                                                 const rocblas_operation trans,
+                                                 const rocblas_direct direct, 
+                                                 const rocblas_storev storev, 
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, 
+                                                 const rocblas_int k,
+                                                 rocblas_double_complex *V,
+                                                 const rocblas_int ldv,
+                                                 rocblas_double_complex *T, 
+                                                 const rocblas_int ldt,
+                                                 rocblas_double_complex *A,
+                                                 const rocblas_int lda); 
+
 /*! \brief ORG2R generates a m-by-n Matrix Q with orthonormal columns.
 
     \details

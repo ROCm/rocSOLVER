@@ -78,6 +78,8 @@ void zlarft_(char *direct, char *storev, int *n, int *k, rocblas_double_complex 
 
 void slarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, float *V, int *ldv, float *T, int *ldt, float *A, int *lda, float *W, int *ldw);
 void dlarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, double *V, int *ldv, double *T, int *ldt, double *A, int *lda, double *W, int *ldw);
+void clarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, rocblas_float_complex *V, int *ldv, rocblas_float_complex *T, int *ldt, rocblas_float_complex *A, int *lda, rocblas_float_complex *W, int *ldw);
+void zlarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, rocblas_double_complex *V, int *ldv, rocblas_double_complex *T, int *ldt, rocblas_double_complex *A, int *lda, rocblas_double_complex *W, int *ldw);
 
 void sgeqr2_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *info);
 void dgeqr2_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *info);
@@ -235,6 +237,20 @@ template <>
 void cblas_larfb<double>(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
                          double *V, rocblas_int ldv, double *T, rocblas_int ldt, double *A, rocblas_int lda, double *W, rocblas_int ldw) {
     dlarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
+}
+
+template <>
+void cblas_larfb<rocblas_float_complex>(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
+                        rocblas_float_complex *V, rocblas_int ldv, rocblas_float_complex *T, rocblas_int ldt, rocblas_float_complex *A, rocblas_int lda,
+                        rocblas_float_complex *W, rocblas_int ldw) {
+    clarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
+}
+
+template <>
+void cblas_larfb<rocblas_double_complex>(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
+                         rocblas_double_complex *V, rocblas_int ldv, rocblas_double_complex *T, rocblas_int ldt, rocblas_double_complex *A, rocblas_int lda,
+                         rocblas_double_complex *W, rocblas_int ldw) {
+    zlarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
 }
 
 // orgqr

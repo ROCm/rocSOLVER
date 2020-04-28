@@ -475,9 +475,13 @@ int main(int argc, char *argv[])
   } 
   else if (function == "larfb") {
     if (precision == 's')
-      testing_larfb<float>(argus);
+      testing_larfb<float,float>(argus);
     else if (precision == 'd')
-      testing_larfb<double>(argus);
+      testing_larfb<double,double>(argus);
+    if (precision == 'c')
+      testing_larfb<rocblas_float_complex,float>(argus);
+    else if (precision == 'z')
+      testing_larfb<rocblas_double_complex,double>(argus);
   } 
   else if (function == "org2r") {
     if (precision == 's')
