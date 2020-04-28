@@ -15,7 +15,7 @@ endif()
 project( rocsolver-clients LANGUAGES CXX )
 
 if(OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread -stdlib=libstdc++")
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread")
 endif()
@@ -23,6 +23,13 @@ endif()
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+
+
+if( CXX_VERSION_STRING MATCHES "clang" )
+  SET(ENV{HIP_COMPILE_CXX_AS_HIP} 0)
+  find_package(OpenMP REQUIRED)
+  SET(ENV{HIP_COMPILE_CXX_AS_HIP} 1)
+endif( )
 
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 
