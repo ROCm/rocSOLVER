@@ -360,7 +360,8 @@ cmake_executable=cmake
 
 case "${ID}" in
   centos|rhel)
-  cmake_executable=cmake3
+  # was cmake3 so delete this case after confirming cmake will recent enough
+  cmake_executable=cmake
   ;;
 esac
 
