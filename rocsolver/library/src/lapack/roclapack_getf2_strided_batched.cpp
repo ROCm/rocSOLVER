@@ -15,18 +15,46 @@ rocblas_status rocsolver_getf2_strided_batched_impl(rocblas_handle handle, const
     
     //logging is missing ???    
     
+    // argument checking
     if (!A || !ipiv || !info)
         return rocblas_status_invalid_pointer;
     if (m < 0 || n < 0 || lda < m || batch_count < 0)
         return rocblas_status_invalid_size;
         
+    // memory managment
+    size_t size_1;  //size of constants
+    size_t size_2;  //pivots
+    rocsolver_getf2_getMemorySize<T>(batch_count,&size_1,&size_2);
 
-    return rocsolver_getf2_template<T>(handle,m,n,
+    // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
+    void *scalars, *pivotGPU;
+    hipMalloc(&scalars,size_1);
+    hipMalloc(&pivotGPU,size_2);
+    if (!scalars || (size_2 && !pivotGPU))
+        return rocblas_status_memory_error;
+
+    // scalars constants for rocblas functions calls
+    // (to standarize and enable re-use, size_1 always equals 3)
+    std::vector<T> sca(size_1);
+    sca[0] = -1;
+    sca[1] = 0;
+    sca[2] = 1;
+    RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca.data(), sizeof(T)*size_1, hipMemcpyHostToDevice));
+
+    // execution
+    rocblas_status status = 
+           rocsolver_getf2_template<T>(handle,m,n,
                                     A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
                                     lda,strideA,
                                     ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)
                                     strideP,
-                                    info,batch_count);
+                                    info,batch_count,
+                                    (T*)scalars,
+                                    (T*)pivotGPU);
+
+    hipFree(scalars);
+    hipFree(pivotGPU);
+    return status;
 }
 
 

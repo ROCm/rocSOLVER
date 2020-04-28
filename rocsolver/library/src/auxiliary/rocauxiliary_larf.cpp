@@ -12,8 +12,9 @@ rocblas_status rocsolver_larf_impl(rocblas_handle handle, const rocblas_side sid
     if(!handle)
         return rocblas_status_invalid_handle;
 
-    //logging is missing ???
+    // logging is missing ???
 
+    // argument checking
     if (n < 0 || m < 0 || lda < m || !incx)
         return rocblas_status_invalid_size;
     if (!x || !A || !alpha)
@@ -23,8 +24,32 @@ rocblas_status rocsolver_larf_impl(rocblas_handle handle, const rocblas_side sid
     rocblas_stride stridea = 0;
     rocblas_stride stridep = 0;
     rocblas_int batch_count=1;
+    
+    // memory managment
+    size_t size_1;  //size of constants
+    size_t size_2;  //size of workspace
+    size_t size_3;  //size of array of pointers to workspace
+    rocsolver_larf_getMemorySize<T,false>(side,m,n,batch_count,&size_1,&size_2,&size_3);
 
-    return rocsolver_larf_template<T>(handle,side, 
+    // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE    
+    void *scalars, *work, *workArr;
+    hipMalloc(&scalars,size_1);
+    hipMalloc(&work,size_2);
+    hipMalloc(&workArr,size_3);
+    if (!scalars || (size_2 && !work) || (size_3 && !workArr))
+        return rocblas_status_memory_error;
+
+    // scalars constants for rocblas functions calls
+    // (to standarize and enable re-use, size_1 always equals 3)
+    std::vector<T> sca(size_1);
+    sca[0] = -1;
+    sca[1] = 0;
+    sca[2] = 1;
+    RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca.data(), sizeof(T)*size_1, hipMemcpyHostToDevice));
+
+    // execution
+    rocblas_status status =
+           rocsolver_larf_template<T>(handle,side, 
                                       m,n,
                                       x,0,    //vector shifted 0 entries
                                       incx,
@@ -34,7 +59,15 @@ rocblas_status rocsolver_larf_impl(rocblas_handle handle, const rocblas_side sid
                                       A,0,       //matrix shifted 0 entries
                                       lda,
                                       stridea, 
-                                      batch_count);
+                                      batch_count,
+                                      (T*)scalars,
+                                      (T*)work,
+                                      (T**)workArr);
+
+    hipFree(scalars);
+    hipFree(work);
+    hipFree(workArr);
+    return status;
 }
 
 

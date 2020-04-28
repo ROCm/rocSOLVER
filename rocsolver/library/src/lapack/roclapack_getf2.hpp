@@ -10,7 +10,6 @@
 #ifndef ROCLAPACK_GETF2_H
 #define ROCLAPACK_GETF2_H
 
-#include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "ideal_sizes.hpp"
@@ -39,17 +38,37 @@ __global__ void getf2_check_singularity(U AA, const rocblas_int shiftA, const ro
         invpivot[id] = 1.0 / A[j * lda + ipiv[j] - 1];
 }
 
+template <typename T>
+void rocsolver_getf2_getMemorySize(const rocblas_int batch_count,
+                                  size_t *size_1, size_t *size_2)
+{
+    // for scalars
+    *size_1 = sizeof(T)*3;
+
+    // for pivots
+    *size_2 = sizeof(T)*batch_count;
+}
+
 
 template <typename T, typename U>
 rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                         const rocblas_stride strideA, rocblas_int *ipiv, const rocblas_int shiftP, 
-                                        const rocblas_stride strideP, rocblas_int* info, const rocblas_int batch_count)
+                                        const rocblas_stride strideP, rocblas_int* info, const rocblas_int batch_count,
+                                        T* scalars, T* pivotGPU)
 {
     // quick return
     if (m == 0 || n == 0 || batch_count == 0) 
         return rocblas_status_success;
         
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    // everything must be executed with scalars on the device
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle,&old_mode);
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);    
+
     // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
     //      IAMAX_BATCH FUNCTIONALITY IS ENABLED. ****
     #ifdef batched
@@ -59,23 +78,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
         T* AA = A;
     #endif
 
-    //constants to use when calling rocablas functions
-    rocblas_int oneInt = 1;       //constant 1 in host
-    T minone = -1;                //constant -1 in host
-    T* minoneInt;                 //constant -1 in device
-    hipMalloc(&minoneInt, sizeof(T));
-    hipMemcpy(minoneInt, &minone, sizeof(T), hipMemcpyHostToDevice);
-
-    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
-    //pivoting info in device (to avoid continuous synchronization with CPU)
-    T *pivotGPU; 
-    hipMalloc(&pivotGPU, sizeof(T)*batch_count);
-
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
-    rocblas_int blocksPivot = (n - 1) / GETF2_BLOCKSIZE + 1;
     rocblas_int blocksReset = (batch_count - 1) / GETF2_BLOCKSIZE + 1;
-    dim3 gridPivot(blocksPivot, batch_count, 1);
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(GETF2_BLOCKSIZE, 1, 1);
     rocblas_int dim = min(m, n);    //total number of pivots
@@ -108,17 +111,15 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
 
         // update trailing submatrix
         if (j < min(m, n) - 1) {
-            rocblasCall_ger<false,T>(handle, m-j-1, n-j-1, minoneInt, 0,
+            rocblasCall_ger<false,T>(handle, m-j-1, n-j-1, scalars, 0,
                                  A, shiftA+idx2D(j+1, j, lda), 1, strideA, 
                                  A, shiftA+idx2D(j, j+1, lda), lda, strideA, 
                                  A, shiftA+idx2D(j+1, j+1, lda), lda, strideA,
-                                 batch_count); 
+                                 batch_count,nullptr); 
         }
     }
 
-    hipFree(pivotGPU);
-    hipFree(minoneInt);
-
+    rocblas_set_pointer_mode(handle,old_mode);    
     return rocblas_status_success;
 }
 

@@ -10,18 +10,26 @@
 #ifndef ROCLAPACK_GELQ2_H
 #define ROCLAPACK_GELQ2_H
 
-#include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_larfg.hpp"
 #include "../auxiliary/rocauxiliary_larf.hpp"
 
+template <typename T, bool BATCHED>
+void rocsolver_gelq2_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+                                  size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
+{
+    rocsolver_larf_getMemorySize<T,BATCHED>(rocblas_side_right,m,n,batch_count,size_1,size_2,size_3);
+    *size_4 = sizeof(T)*batch_count;
+}
+
 template <typename T, typename U>
 rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                         const rocblas_stride strideA, T* ipiv,  
-                                        const rocblas_stride strideP, const rocblas_int batch_count)
+                                        const rocblas_stride strideP, const rocblas_int batch_count,
+                                        T* scalars, T* work, T** workArr, T* diag)
 {
     // quick return
     if (m == 0 || n == 0 || batch_count == 0) 
@@ -30,11 +38,6 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    // (TODO) THIS SHOULD BE DONE WITH THE HANDLE MEMORY ALLOCATOR
-    //memory in GPU (workspace)
-    T *diag;
-    hipMalloc(&diag,sizeof(T)*batch_count);
-   
     rocblas_int dim = min(m, n);    //total number of pivots    
 
     for (rocblas_int j = 0; j < dim; ++j) {
@@ -45,7 +48,7 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int
                                  A, shiftA + idx2D(j,min(j+1,n-1),lda), //vector x to work on
                                  lda, strideA,                          //inc of x    
                                  (ipiv + j), strideP,                   //tau
-                                 batch_count);
+                                 batch_count, diag);
 
         // insert one in A(j,j) tobuild/apply the householder matrix 
         hipLaunchKernelGGL(set_one_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(j,j,lda),strideA);
@@ -60,14 +63,12 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int
                                     (ipiv + j), strideP,                //householder scalar (alpha)
                                     A, shiftA + idx2D(j+1,j,lda),       //matrix to work on
                                     lda, strideA,                       //leading dimension
-                                    batch_count);
+                                    batch_count, scalars, work, workArr);
         }
 
         // restore original value of A(j,j)
         hipLaunchKernelGGL(restore_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(j,j,lda),strideA);
     }
-
-    hipFree(diag);
 
     return rocblas_status_success;
 }

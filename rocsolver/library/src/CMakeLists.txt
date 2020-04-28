@@ -74,18 +74,16 @@ set( rocsolver_lapack_source
   lapack/roclapack_gelqf_strided_batched.cpp
 )
 
-set( info_source
+set( auxiliaries
   buildinfo.cpp
   rocblas.cpp
 )  
 
 prepend_path( ".." rocsolver_headers_public relative_rocsolver_headers_public )
-prepend_path( ".." rocblas_headers_internal relative_rocblas_headers_internal )
 
 add_library( rocsolver
-  ${relative_rocblas_headers_internal}
   ${relative_rocsolver_headers_public}
-  ${info_source}
+  ${auxiliaries}
   ${rocsolver_auxiliary_source}
   ${rocsolver_lapack_source}
 )

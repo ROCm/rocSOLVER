@@ -10,10 +10,8 @@
 #ifndef ROCLAPACK_ORGL2_HPP
 #define ROCLAPACK_ORGL2_HPP
 
-#include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "helpers.h"
 #include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_larf.hpp"
 
@@ -39,11 +37,28 @@ __global__ void init_ident_row(const rocblas_int m, const rocblas_int n, const r
     }
 }
 
+template <typename T, bool BATCHED>
+void rocsolver_orgl2_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+                                  size_t *size_1, size_t *size_2, size_t *size_3)
+{
+    // memory requirements to call larf
+    rocsolver_larf_getMemorySize<T,BATCHED>(rocblas_side_right,m,n,batch_count,size_1,size_2,size_3);
+}
+
+template <typename T>
+void rocsolver_orgl2_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+                                  size_t *size)
+{
+    // memory requirements to call larf
+    rocsolver_larf_getMemorySize<T>(rocblas_side_right,m,n,batch_count,size);
+}
+
+
 template <typename T, typename U>
 rocblas_status rocsolver_orgl2_template(rocblas_handle handle, const rocblas_int m, 
                                    const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
                                    const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
-                                   const rocblas_stride strideP, const rocblas_int batch_count)
+                                   const rocblas_stride strideP, const rocblas_int batch_count, T* scalars, T* work, T** workArr)
 {
     // quick return
     if (!n || !m || !batch_count)
@@ -51,7 +66,12 @@ rocblas_status rocsolver_orgl2_template(rocblas_handle handle, const rocblas_int
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-    
+   
+    // everything must be executed with scalars on the device
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle,&old_mode);
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);    
+ 
     // Initialize identity matrix (non used columns)
     rocblas_int blocksx = (m - 1)/32 + 1;
     rocblas_int blocksy = (n - 1)/32 + 1;
@@ -61,15 +81,16 @@ rocblas_status rocsolver_orgl2_template(rocblas_handle handle, const rocblas_int
     for (rocblas_int j = k-1; j >= 0; --j) {
         // apply H(i) to Q(i:m,i:n) from the left
         if (j < m - 1) {
-            rocsolver_larf_template(handle,rocblas_side_right,          //side
-                                    m - j - 1,                          //number of rows of matrix to modify
-                                    n - j,                              //number of columns of matrix to modify    
-                                    A, shiftA + idx2D(j,j,lda),         //householder vector x
-                                    lda, strideA,                       //inc of x
-                                    (ipiv + j), strideP,                //householder scalar (alpha)
-                                    A, shiftA + idx2D(j+1,j,lda),       //matrix to work on
-                                    lda, strideA,                       //leading dimension
-                                    batch_count);          
+            rocsolver_larf_template<T>(handle,rocblas_side_right,          //side
+                                       m - j - 1,                          //number of rows of matrix to modify
+                                       n - j,                              //number of columns of matrix to modify    
+                                       A, shiftA + idx2D(j,j,lda),         //householder vector x
+                                       lda, strideA,                       //inc of x
+                                       (ipiv + j), strideP,                //householder scalar (alpha)
+                                       A, shiftA + idx2D(j+1,j,lda),       //matrix to work on
+                                       lda, strideA,                       //leading dimension
+                                       batch_count,
+                                       scalars, work, workArr);          
         }
 
         // set the diagonal element and negative tau
@@ -86,6 +107,7 @@ rocblas_status rocsolver_orgl2_template(rocblas_handle handle, const rocblas_int
     hipLaunchKernelGGL(restau<T>,dim3(blocksx,batch_count),dim3(128),0,stream,
                             k,ipiv,strideP);
  
+    rocblas_set_pointer_mode(handle,old_mode);
     return rocblas_status_success;
 }
 

@@ -10,10 +10,8 @@
 #ifndef ROCLAPACK_LASWP_HPP
 #define ROCLAPACK_LASWP_HPP
 
-#include <hip/hip_runtime.h>
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "ideal_sizes.hpp"
 #include "common_device.hpp"
 
 template <typename T>

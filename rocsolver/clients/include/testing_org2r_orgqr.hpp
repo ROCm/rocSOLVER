@@ -21,7 +21,7 @@
 #include <gtest/gtest.h>
 #endif
 
-#define ERROR_EPS_MULTIPLIER 4000
+#define ERROR_EPS_MULTIPLIER 8000
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
@@ -39,12 +39,17 @@ rocblas_status testing_org2r_orgqr(Arguments argus) {
     std::unique_ptr<rocblas_test::handle_struct> unique_ptr_handle(new rocblas_test::handle_struct);
     rocblas_handle handle = unique_ptr_handle->handle;
 
+    rocblas_int size_A = lda * N;
+
     // check invalid size and quick return
     if (M < 1 || N < 1 || N > M || K < 1 || K > N || lda < M) {
-        auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
+        size_t t;
+        t = size_A > 0 ? size_A : 1;
+        auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)*t), rocblas_test::device_free};
         T *dA = (T *)dA_managed.get();
 
-        auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
+        t = N > 0 ? N : 1;
+        auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)*t), rocblas_test::device_free};
         T *dIpiv = (T *)dIpiv_managed.get();
 
         if (!dA || !dIpiv) {
@@ -59,8 +64,6 @@ rocblas_status testing_org2r_orgqr(Arguments argus) {
             return rocsolver_org2r<T>(handle, M, N, K, dA, lda, dIpiv);
         }
     }
-
-    rocblas_int size_A = lda * N;
 
     // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory
     vector<T> hA(size_A);
