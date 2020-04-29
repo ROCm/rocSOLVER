@@ -1811,6 +1811,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqr2(rocblas_handle handle,
                                                  const rocblas_int lda, 
                                                  double *ipiv);
 
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqr2(rocblas_handle handle, 
+                                                 const rocblas_int m, 
+                                                 const rocblas_int n, 
+                                                 rocblas_float_complex *A,
+                                                 const rocblas_int lda, 
+                                                 rocblas_float_complex *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2(rocblas_handle handle, 
+                                                 const rocblas_int m, 
+                                                 const rocblas_int n, 
+                                                 rocblas_double_complex *A,
+                                                 const rocblas_int lda, 
+                                                 rocblas_double_complex *ipiv);
+
 /*! \brief GEQR2_BATCHED computes the QR factorization of a batch of general m-by-n matrices.
 
     \details
@@ -1879,6 +1893,24 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqr2_batched(rocblas_handle handle,
                                                          double *const A[],
                                                          const rocblas_int lda, 
                                                          double *ipiv, 
+                                                         const rocblas_stride strideP, 
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqr2_batched(rocblas_handle handle, 
+                                                         const rocblas_int m, 
+                                                         const rocblas_int n, 
+                                                         rocblas_float_complex *const A[],
+                                                         const rocblas_int lda, 
+                                                         rocblas_float_complex *ipiv, 
+                                                         const rocblas_stride strideP, 
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_batched(rocblas_handle handle, 
+                                                         const rocblas_int m, 
+                                                         const rocblas_int n, 
+                                                         rocblas_double_complex *const A[],
+                                                         const rocblas_int lda, 
+                                                         rocblas_double_complex *ipiv, 
                                                          const rocblas_stride strideP, 
                                                          const rocblas_int batch_count);
 
@@ -1956,6 +1988,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqr2_strided_batched(rocblas_handle 
                                                                  const rocblas_int lda, 
                                                                  const rocblas_stride strideA, 
                                                                  double *ipiv, 
+                                                                 const rocblas_stride strideP, 
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqr2_strided_batched(rocblas_handle handle, 
+                                                                 const rocblas_int m, 
+                                                                 const rocblas_int n, 
+                                                                 rocblas_float_complex *A,
+                                                                 const rocblas_int lda, 
+                                                                 const rocblas_stride strideA, 
+                                                                 rocblas_float_complex *ipiv, 
+                                                                 const rocblas_stride strideP, 
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched(rocblas_handle handle, 
+                                                                 const rocblas_int m, 
+                                                                 const rocblas_int n, 
+                                                                 rocblas_double_complex *A,
+                                                                 const rocblas_int lda, 
+                                                                 const rocblas_stride strideA, 
+                                                                 rocblas_double_complex *ipiv, 
                                                                  const rocblas_stride strideP, 
                                                                  const rocblas_int batch_count);
 
@@ -2221,6 +2273,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf(rocblas_handle handle,
                                                  const rocblas_int lda, 
                                                  double *ipiv);
 
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf(rocblas_handle handle, 
+                                                 const rocblas_int m, 
+                                                 const rocblas_int n, 
+                                                 rocblas_float_complex *A,
+                                                 const rocblas_int lda, 
+                                                 rocblas_float_complex *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle, 
+                                                 const rocblas_int m, 
+                                                 const rocblas_int n, 
+                                                 rocblas_double_complex *A,
+                                                 const rocblas_int lda, 
+                                                 rocblas_double_complex *ipiv);
+
 /*! \brief GEQRF_BATCHED computes the QR factorization of a batch of general m-by-n matrices.
 
     \details
@@ -2289,6 +2355,24 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf_batched(rocblas_handle handle,
                                                          double *const A[],
                                                          const rocblas_int lda, 
                                                          double *ipiv, 
+                                                         const rocblas_stride strideP, 
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf_batched(rocblas_handle handle, 
+                                                         const rocblas_int m, 
+                                                         const rocblas_int n, 
+                                                         rocblas_float_complex *const A[],
+                                                         const rocblas_int lda, 
+                                                         rocblas_float_complex *ipiv, 
+                                                         const rocblas_stride strideP, 
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched(rocblas_handle handle, 
+                                                         const rocblas_int m, 
+                                                         const rocblas_int n, 
+                                                         rocblas_double_complex *const A[],
+                                                         const rocblas_int lda, 
+                                                         rocblas_double_complex *ipiv, 
                                                          const rocblas_stride strideP, 
                                                          const rocblas_int batch_count);
 
@@ -2366,6 +2450,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf_strided_batched(rocblas_handle 
                                                                  const rocblas_int lda, 
                                                                  const rocblas_stride strideA, 
                                                                  double *ipiv, 
+                                                                 const rocblas_stride strideP, 
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf_strided_batched(rocblas_handle handle, 
+                                                                 const rocblas_int m, 
+                                                                 const rocblas_int n, 
+                                                                 rocblas_float_complex *A,
+                                                                 const rocblas_int lda, 
+                                                                 const rocblas_stride strideA, 
+                                                                 rocblas_float_complex *ipiv, 
+                                                                 const rocblas_stride strideP, 
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(rocblas_handle handle, 
+                                                                 const rocblas_int m, 
+                                                                 const rocblas_int n, 
+                                                                 rocblas_double_complex *A,
+                                                                 const rocblas_int lda, 
+                                                                 const rocblas_stride strideA, 
+                                                                 rocblas_double_complex *ipiv, 
                                                                  const rocblas_stride strideP, 
                                                                  const rocblas_int batch_count);
 

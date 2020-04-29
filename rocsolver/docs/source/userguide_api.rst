@@ -249,16 +249,22 @@ rocsolver_<type>geqr2()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqr2
 .. doxygenfunction:: rocsolver_sgeqr2
+.. doxygenfunction:: rocsolver_cgeqr2
+.. doxygenfunction:: rocsolver_zgeqr2
 
 rocsolver_<type>geqr2_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqr2_batched
 .. doxygenfunction:: rocsolver_sgeqr2_batched
+.. doxygenfunction:: rocsolver_cgeqr2_batched
+.. doxygenfunction:: rocsolver_zgeqr2_batched
 
 rocsolver_<type>geqr2_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqr2_strided_batched
 .. doxygenfunction:: rocsolver_sgeqr2_strided_batched
+.. doxygenfunction:: rocsolver_cgeqr2_strided_batched
+.. doxygenfunction:: rocsolver_zgeqr2_strided_batched
 
 .. _qr_label:
 
@@ -266,6 +272,8 @@ rocsolver_<type>geqrf()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqrf
 .. doxygenfunction:: rocsolver_sgeqrf
+.. doxygenfunction:: rocsolver_cgeqrf
+.. doxygenfunction:: rocsolver_zgeqrf
 
 .. _qr_batched_label:
 
@@ -273,6 +281,8 @@ rocsolver_<type>geqrf_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqrf_batched
 .. doxygenfunction:: rocsolver_sgeqrf_batched
+.. doxygenfunction:: rocsolver_cgeqrf_batched
+.. doxygenfunction:: rocsolver_zgeqrf_batched
 
 .. _qr_strided_label:
 
@@ -280,6 +290,8 @@ rocsolver_<type>geqrf_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqrf_strided_batched
 .. doxygenfunction:: rocsolver_sgeqrf_strided_batched
+.. doxygenfunction:: rocsolver_cgeqrf_strided_batched
+.. doxygenfunction:: rocsolver_zgeqrf_strided_batched
 
 rocsolver_<type>gelq2()
 ^^^^^^^^^^^^^^^^^^^^^^^^
