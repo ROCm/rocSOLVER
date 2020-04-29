@@ -24,7 +24,7 @@ void rocsolver_gelq2_getMemorySize(const rocblas_int m, const rocblas_int n, con
     *size_4 = sizeof(T)*batch_count;
 }
 
-template <typename T, typename U>
+template <typename T, typename U, bool COMPLEX = !std::is_floating_point<T>::value>
 rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                         const rocblas_stride strideA, T* ipiv,  
@@ -39,8 +39,13 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int
     rocblas_get_stream(handle, &stream);
 
     rocblas_int dim = min(m, n);    //total number of pivots    
+    rocblas_int blocks = (n - 1)/1024 + 1;
 
     for (rocblas_int j = 0; j < dim; ++j) {
+        // conjugate the jth row of A
+        if (COMPLEX)
+            hipLaunchKernelGGL(conj_in_place<T>,dim3(1,blocks,batch_count),dim3(1,1024,1),0,stream,1,n-j,A,shiftA+idx2D(j,j,lda),lda,strideA);
+
         // generate Householder reflector to work on row j
         rocsolver_larfg_template(handle,
                                  n - j,                                 //order of reflector
@@ -68,6 +73,10 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int
 
         // restore original value of A(j,j)
         hipLaunchKernelGGL(restore_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(j,j,lda),strideA);
+
+        // restore the jth row of A
+        if (COMPLEX)
+            hipLaunchKernelGGL(conj_in_place<T>,dim3(1,blocks,batch_count),dim3(1,1024,1),0,stream,1,n-j,A,shiftA+idx2D(j,j,lda),lda,strideA);
     }
 
     return rocblas_status_success;

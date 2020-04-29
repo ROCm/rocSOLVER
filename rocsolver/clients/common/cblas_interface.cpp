@@ -92,8 +92,12 @@ void zgeqrf_(int *m, int *n, rocblas_double_complex *A, int *lda, rocblas_double
 
 void sgelq2_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *info);
 void dgelq2_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *info);
+void cgelq2_(int *m, int *n, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *info);
+void zgelq2_(int *m, int *n, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *info);
 void sgelqf_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
 void dgelqf_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
+void cgelqf_(int *m, int *n, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *lwork, int *info);
+void zgelqf_(int *m, int *n, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *lwork, int *info);
 
 void slaswp_(int *n, float *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
 void dlaswp_(int *n, double *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
@@ -1251,6 +1255,20 @@ void cblas_gelqf<double>(rocblas_int m, rocblas_int n, double *A,
   dgelqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
 }
 
+template <>
+void cblas_gelqf<rocblas_float_complex>(rocblas_int m, rocblas_int n, rocblas_float_complex *A,
+                        rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, rocblas_int lwork) {
+  int info;
+  cgelqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_gelqf<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_double_complex *A,
+                         rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, rocblas_int lwork) {
+  int info;
+  zgelqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
 // gelq2
 template <>
 void cblas_gelq2<float>(rocblas_int m, rocblas_int n, float *A,
@@ -1264,6 +1282,20 @@ void cblas_gelq2<double>(rocblas_int m, rocblas_int n, double *A,
                                rocblas_int lda, double *ipiv, double *work) {
   int info;
   dgelq2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_gelq2<rocblas_float_complex>(rocblas_int m, rocblas_int n, rocblas_float_complex *A,
+                               rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work) {
+  int info;
+  cgelq2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_gelq2<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_double_complex *A,
+                               rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work) {
+  int info;
+  zgelq2_(&m, &n, A, &lda, ipiv, work, &info);
 }
 
 

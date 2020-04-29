@@ -297,31 +297,43 @@ rocsolver_<type>gelq2()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgelq2
 .. doxygenfunction:: rocsolver_sgelq2
+.. doxygenfunction:: rocsolver_cgelq2
+.. doxygenfunction:: rocsolver_zgelq2
 
 rocsolver_<type>gelq2_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgelq2_batched
 .. doxygenfunction:: rocsolver_sgelq2_batched
+.. doxygenfunction:: rocsolver_cgelq2_batched
+.. doxygenfunction:: rocsolver_zgelq2_batched
 
 rocsolver_<type>gelq2_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgelq2_strided_batched
 .. doxygenfunction:: rocsolver_sgelq2_strided_batched
+.. doxygenfunction:: rocsolver_cgelq2_strided_batched
+.. doxygenfunction:: rocsolver_zgelq2_strided_batched
 
 rocsolver_<type>gelqf()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgelqf
 .. doxygenfunction:: rocsolver_sgelqf
+.. doxygenfunction:: rocsolver_cgelqf
+.. doxygenfunction:: rocsolver_zgelqf
 
 rocsolver_<type>gelqf_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgelqf_batched
 .. doxygenfunction:: rocsolver_sgelqf_batched
+.. doxygenfunction:: rocsolver_cgelqf_batched
+.. doxygenfunction:: rocsolver_zgelqf_batched
 
 rocsolver_<type>gelqf_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgelqf_strided_batched
 .. doxygenfunction:: rocsolver_sgelqf_strided_batched
+.. doxygenfunction:: rocsolver_cgelqf_strided_batched
+.. doxygenfunction:: rocsolver_zgelqf_strided_batched
 
 General systems solvers
 --------------------------
