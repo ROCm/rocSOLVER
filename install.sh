@@ -202,7 +202,7 @@ install_packages( )
     centos|rhel)
       install_yum_packages "${library_dependencies_centos[@]}"
       wget https://cmake.org/files/v3.5/cmake-3.5.2.tar.gz
-      tar -xvf cmake-3.5.2.tar.gz
+      tar -xf cmake-3.5.2.tar.gz
       cd cmake-3.5.2
       ./bootstrap --prefix=/usr --system-curl --parallel=16 && \
       make -j
