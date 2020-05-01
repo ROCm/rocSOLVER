@@ -12,7 +12,6 @@ RUN cd cmake-3.5.2 && \
     ./bootstrap --prefix=/usr --system-curl --parallel=16 && \
     make -j16 && \
     make install && \
-    make uninstall && \
     cd .. && \
     rm -rf cmake-3.5.2 cmake-3.5.2.tar.gz
 
@@ -25,7 +24,6 @@ RUN sudo yum autoremove -y cmake cmake3 && \
     devtoolset-7 \
     ca-certificates \
     git \
-    cmake3 \
     make \
     gcc-c++ \
     clang \
@@ -72,6 +70,6 @@ ARG ROCBLAS_SRC_ROOT=/usr/local/src/rocBLAS
 RUN mkdir -p ${ROCBLAS_SRC_ROOT} && cd ${ROCBLAS_SRC_ROOT} && \
     git clone -b develop --depth=1 https://github.com/ROCmSoftwarePlatform/rocBLAS . && \
     mkdir -p build/deps && cd build/deps && \
-    cmake3 -DBUILD_BOOST=OFF ${ROCBLAS_SRC_ROOT}/deps && \
+    cmake -DBUILD_BOOST=OFF ${ROCBLAS_SRC_ROOT}/deps && \
     make -j $(nproc) install && \
     rm -rf ${ROCBLAS_SRC_ROOT}

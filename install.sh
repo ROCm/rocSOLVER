@@ -165,7 +165,7 @@ install_packages( )
                                       "python2.7" "python3" "python-yaml" "python3-yaml" "python3*-distutils"
                                       "llvm-6.0-dev" "zlib1g-dev" "wget")
   local library_dependencies_centos=( "epel-release"
-                                      "make" "cmake3" "rpm-build"
+                                      "make" "rpm-build"
                                       "python34" "PyYAML" "python3*-PyYAML" "python3*-distutils-extra"
                                       "gcc-c++" "llvm7.0-devel" "llvm7.0-static"
                                       "zlib-devel" "wget" )
@@ -201,6 +201,14 @@ install_packages( )
 
     centos|rhel)
       install_yum_packages "${library_dependencies_centos[@]}"
+      wget https://cmake.org/files/v3.5/cmake-3.5.2.tar.gz
+      tar -xvf cmake-3.5.2.tar.gz
+      cd cmake-3.5.2
+      ./bootstrap --prefix=/usr --system-curl --parallel=16 && \
+      make -j
+      make install
+      cd ..
+      rm -rf cmake-3.5.2 cmake-3.5.2.tar.gz
 
       if [[ "${build_clients}" == true ]]; then
         install_yum_packages "${client_dependencies_centos[@]}"
@@ -360,7 +368,7 @@ cmake_executable=cmake
 
 case "${ID}" in
   centos|rhel)
-  cmake_executable=cmake3
+  cmake_executable=cmake
   ;;
 esac
 
