@@ -20,8 +20,10 @@ template <typename T, bool BATCHED>
 void rocsolver_gelq2_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
                                   size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
 {
-    rocsolver_larf_getMemorySize<T,BATCHED>(rocblas_side_right,m,n,batch_count,size_1,size_2,size_3);
-    *size_4 = sizeof(T)*batch_count;
+    size_t s1, s2;
+    rocsolver_larf_getMemorySize<T,BATCHED>(rocblas_side_right,m,n,batch_count,size_1,&s1,size_3);
+    rocsolver_larfg_getMemorySize<T>(n,batch_count,size_4,&s2);
+    *size_2 = max(s1, s2);
 }
 
 template <typename T, typename U, bool COMPLEX = !std::is_floating_point<T>::value>

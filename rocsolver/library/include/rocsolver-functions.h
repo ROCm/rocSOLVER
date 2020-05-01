@@ -368,9 +368,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(rocblas_handle handle,
     the values of side and trans:
 
         H  * A  (No transpose from the left)
-        H' * A  (Transpose from the left)
+        H' * A  (Transpose or conjugate transpose from the left)
         A * H   (No transpose from the right), and
-        A * H'  (Transpose from the right)
+        A * H'  (Transpose or conjugate transpose from the right)
 
     The block reflector H is defined as the product of k Householder matrices as
 
@@ -381,11 +381,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(rocblas_handle handle,
 
         H = I - V * T * V'
 
-    where the i-th column of matrix V contains the Householder vector associated to H(i), if storev is column-wise; or
+    where the i-th column of matrix V contains the Householder vector associated with H(i), if storev is column-wise; or
 
         H = I - V' * T * V
 
-    where the i-th row of matrix V contains the Householder vector associated to H(i), if storev is row-wise. 
+    where the i-th row of matrix V contains the Householder vector associated with H(i), if storev is row-wise. 
     T is the associated triangular factor as computed by LARFT.
 
     @param[in]
@@ -395,7 +395,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(rocblas_handle handle,
                         Specifies from which side to apply H.
     @param[in]
     trans               rocblas_operation.\n
-                        Specifies whether the block reflector or its transpose is to be applied.
+                        Specifies whether the block reflector or its transpose/conjugate transpose is to be applied.
     @param[in]
     direct              rocblas_direct.\n
                         Specifies the direction in which the Householder matrices were to be applied to generate H.

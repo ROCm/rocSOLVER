@@ -104,6 +104,7 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int
     dim3 threads(1, 1, 1); 
     if (n == 1 && !COMPLEX) {
         hipLaunchKernelGGL(reset_batch_info,gridReset,threads,0,stream,tau,strideP,1,0);
+        rocblas_set_pointer_mode(handle,old_mode);
         return rocblas_status_success;    
     }
     

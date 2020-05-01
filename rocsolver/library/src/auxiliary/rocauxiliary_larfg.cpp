@@ -49,6 +49,7 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n, 
                                       (T*)work);
 
     hipFree(norms);
+    hipFree(work);
     return status;
 }
 
@@ -64,7 +65,6 @@ extern "C" {
 ROCSOLVER_EXPORT rocblas_status rocsolver_slarfg(rocblas_handle handle, const rocblas_int n, float *alpha,
                  float *x, const rocblas_int incx, float *tau)
 {
-    bool t = rocblas_is_managing_device_memory(handle);
     return rocsolver_larfg_impl<float>(handle, n, alpha, x, incx, tau);
 }
 
