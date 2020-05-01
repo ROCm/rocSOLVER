@@ -33,7 +33,7 @@ using namespace std;
 //      I.E. WHEN STRIDEA >= LDA*N AND STRIDEP >= MIN(M,N) ****
 
 
-template <typename T, int gelqf> 
+template <typename T, typename U, int gelqf> 
 rocblas_status testing_gelq2_gelqf_strided_batched(Arguments argus) {
     rocblas_int M = argus.M;
     rocblas_int N = argus.N;
@@ -98,7 +98,7 @@ rocblas_status testing_gelq2_gelqf_strided_batched(Arguments argus) {
 
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<T>::epsilon();
+    double eps = std::numeric_limits<U>::epsilon();
     double max_err_1 = 0.0, max_val = 0.0;
     double diff, err;
 
@@ -135,19 +135,17 @@ rocblas_status testing_gelq2_gelqf_strided_batched(Arguments argus) {
             max_val = 0.0;
             // check if the pivoting returned is identical
             for (int j = 0; j < min(M,N); j++) {
-                diff = fabs((hIpiv.data() + b*stridep)[j]);
+                diff = abs((hIpiv.data() + b*stridep)[j]);
                 max_val = max_val > diff ? max_val : diff;
-                diff = (hIpiv.data() + b*stridep)[j];
-                diff = fabs((hIpivr.data() + b*stridep)[j] - diff);
+                diff = abs((hIpivr.data() + b*stridep)[j] - (hIpiv.data() + b*stridep)[j]);
                 err = err > diff ? err : diff;
             }
             // hAr contains calculated decomposition, so error is hA - hAr
             for (int i = 0; i < M; i++) {
                 for (int j = 0; j < N; j++) {
-                    diff = fabs((hA.data() + b*strideA)[i + j * lda]);
+                    diff = abs((hA.data() + b*strideA)[i + j * lda]);
                     max_val = max_val > diff ? max_val : diff;
-                    diff = (hA.data() + b*strideA)[i + j * lda];
-                    diff = fabs((hAr.data() + b*strideA)[i + j * lda] - diff);
+                    diff = abs((hAr.data() + b*strideA)[i + j * lda] - (hA.data() + b*strideA)[i + j * lda]);
                     err = err > diff ? err : diff;
                 }
             }
@@ -156,7 +154,7 @@ rocblas_status testing_gelq2_gelqf_strided_batched(Arguments argus) {
         }
 
         if(argus.unit_check)
-            getf2_err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
+            getf2_err_res_check<U>(max_err_1, M, N, error_eps_multiplier, eps);
     }
 
     if (argus.timing) {

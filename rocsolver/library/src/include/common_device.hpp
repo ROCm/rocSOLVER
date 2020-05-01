@@ -87,6 +87,26 @@ __global__ void restore_diag(T* diag, U A, const rocblas_int shifta, const rocbl
 }
 
 
+template <typename T, typename U, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+__global__ void conj_in_place(const rocblas_int m, const rocblas_int n, U A,
+                              const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea)
+{
+    // do nothing
+}
+
+template <typename T, typename U, std::enable_if_t<!std::is_floating_point<T>::value, int> = 0>
+__global__ void conj_in_place(const rocblas_int m, const rocblas_int n, U A,
+                              const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea)
+{
+    int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    int j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    int b = hipBlockIdx_z;
+
+    T* Ap = load_ptr_batch<T>(A,b,shifta,stridea);
+
+    if (i < m && j < n)
+        Ap[i + j*lda] = conj(Ap[i + j*lda]);
+}
 
 
 #endif

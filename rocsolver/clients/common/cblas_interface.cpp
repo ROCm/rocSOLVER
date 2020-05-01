@@ -63,25 +63,41 @@ void zgetrs_(char *trans, int *n, int *nrhs, rocblas_double_complex *A,
 
 void slarfg_(int *n, float *alpha, float *x, int *incx, float *tau);
 void dlarfg_(int *n, double *alpha, double *x, int *incx, double *tau);
+void clarfg_(int *n, rocblas_float_complex *alpha, rocblas_float_complex *x, int *incx, rocblas_float_complex *tau);
+void zlarfg_(int *n, rocblas_double_complex *alpha, rocblas_double_complex *x, int *incx, rocblas_double_complex *tau);
 
 void slarf_(char *side, int *m, int *n, float *x, int *incx, float *alpha, float *A, int *lda, float *work);
 void dlarf_(char *side, int *m, int *n, double *x, int *incx, double *alpha, double *A, int *lda, double *work);
+void clarf_(char *side, int *m, int *n, rocblas_float_complex *x, int *incx, rocblas_float_complex *alpha, rocblas_float_complex *A, int *lda, rocblas_float_complex *work);
+void zlarf_(char *side, int *m, int *n, rocblas_double_complex *x, int *incx, rocblas_double_complex *alpha, rocblas_double_complex *A, int *lda, rocblas_double_complex *work);
 
 void slarft_(char *direct, char *storev, int *n, int *k, float *V, int *ldv, float *tau, float *T, int *ldt);
 void dlarft_(char *direct, char *storev, int *n, int *k, double *V, int *ldv, double *tau, double *T, int *ldt);
+void clarft_(char *direct, char *storev, int *n, int *k, rocblas_float_complex *V, int *ldv, rocblas_float_complex *tau, rocblas_float_complex *T, int *ldt);
+void zlarft_(char *direct, char *storev, int *n, int *k, rocblas_double_complex *V, int *ldv, rocblas_double_complex *tau, rocblas_double_complex *T, int *ldt);
 
 void slarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, float *V, int *ldv, float *T, int *ldt, float *A, int *lda, float *W, int *ldw);
 void dlarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, double *V, int *ldv, double *T, int *ldt, double *A, int *lda, double *W, int *ldw);
+void clarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, rocblas_float_complex *V, int *ldv, rocblas_float_complex *T, int *ldt, rocblas_float_complex *A, int *lda, rocblas_float_complex *W, int *ldw);
+void zlarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, rocblas_double_complex *V, int *ldv, rocblas_double_complex *T, int *ldt, rocblas_double_complex *A, int *lda, rocblas_double_complex *W, int *ldw);
 
 void sgeqr2_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *info);
 void dgeqr2_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *info);
+void cgeqr2_(int *m, int *n, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *info);
+void zgeqr2_(int *m, int *n, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *info);
 void sgeqrf_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
 void dgeqrf_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
+void cgeqrf_(int *m, int *n, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *lwork, int *info);
+void zgeqrf_(int *m, int *n, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *lwork, int *info);
 
 void sgelq2_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *info);
 void dgelq2_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *info);
+void cgelq2_(int *m, int *n, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *info);
+void zgelq2_(int *m, int *n, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *info);
 void sgelqf_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
 void dgelqf_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
+void cgelqf_(int *m, int *n, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *lwork, int *info);
+void zgelqf_(int *m, int *n, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *lwork, int *info);
 
 void slaswp_(int *n, float *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
 void dlaswp_(int *n, double *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
@@ -163,6 +179,16 @@ void cblas_larfg<double>(rocblas_int n, double *alpha, double *x, rocblas_int in
     dlarfg_(&n, alpha, x, &incx, tau);
 }
 
+template <>
+void cblas_larfg<rocblas_float_complex>(rocblas_int n, rocblas_float_complex *alpha, rocblas_float_complex *x, rocblas_int incx, rocblas_float_complex *tau) {
+    clarfg_(&n, alpha, x, &incx, tau);
+}
+
+template <>
+void cblas_larfg<rocblas_double_complex>(rocblas_int n, rocblas_double_complex *alpha, rocblas_double_complex *x, rocblas_int incx, rocblas_double_complex *tau) {
+    zlarfg_(&n, alpha, x, &incx, tau);
+}
+
 //larf
 
 template <>
@@ -173,6 +199,16 @@ void cblas_larf<float>(char side, rocblas_int m, rocblas_int n, float *x, rocbla
 template <>
 void cblas_larf<double>(char side, rocblas_int m, rocblas_int n, double *x, rocblas_int incx, double *alpha, double *A, rocblas_int lda, double *work) {
     dlarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
+}
+
+template <>
+void cblas_larf<rocblas_float_complex>(char side, rocblas_int m, rocblas_int n, rocblas_float_complex *x, rocblas_int incx, rocblas_float_complex *alpha, rocblas_float_complex *A, rocblas_int lda, rocblas_float_complex *work) {
+    clarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
+}
+
+template <>
+void cblas_larf<rocblas_double_complex>(char side, rocblas_int m, rocblas_int n, rocblas_double_complex *x, rocblas_int incx, rocblas_double_complex *alpha, rocblas_double_complex *A, rocblas_int lda, rocblas_double_complex *work) {
+    zlarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
 }
 
 //larft
@@ -187,6 +223,16 @@ void cblas_larft<double>(char direct, char storev, rocblas_int n, rocblas_int k,
     dlarft_(&direct, &storev, &n, &k, V, &ldv, tau, T, &ldt);
 }
 
+template <>
+void cblas_larft<rocblas_float_complex>(char direct, char storev, rocblas_int n, rocblas_int k, rocblas_float_complex *V, rocblas_int ldv, rocblas_float_complex *tau, rocblas_float_complex *T, rocblas_int ldt) {
+    clarft_(&direct, &storev, &n, &k, V, &ldv, tau, T, &ldt);
+}
+
+template <>
+void cblas_larft<rocblas_double_complex>(char direct, char storev, rocblas_int n, rocblas_int k, rocblas_double_complex *V, rocblas_int ldv, rocblas_double_complex *tau, rocblas_double_complex *T, rocblas_int ldt) {
+    zlarft_(&direct, &storev, &n, &k, V, &ldv, tau, T, &ldt);
+}
+
 //larfb
 
 template <>
@@ -199,6 +245,20 @@ template <>
 void cblas_larfb<double>(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
                          double *V, rocblas_int ldv, double *T, rocblas_int ldt, double *A, rocblas_int lda, double *W, rocblas_int ldw) {
     dlarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
+}
+
+template <>
+void cblas_larfb<rocblas_float_complex>(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
+                        rocblas_float_complex *V, rocblas_int ldv, rocblas_float_complex *T, rocblas_int ldt, rocblas_float_complex *A, rocblas_int lda,
+                        rocblas_float_complex *W, rocblas_int ldw) {
+    clarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
+}
+
+template <>
+void cblas_larfb<rocblas_double_complex>(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
+                         rocblas_double_complex *V, rocblas_int ldv, rocblas_double_complex *T, rocblas_int ldt, rocblas_double_complex *A, rocblas_int lda,
+                         rocblas_double_complex *W, rocblas_int ldw) {
+    zlarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
 }
 
 // orgqr
@@ -1137,6 +1197,20 @@ void cblas_geqrf<double>(rocblas_int m, rocblas_int n, double *A,
   dgeqrf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
 }
 
+template <>
+void cblas_geqrf<rocblas_float_complex>(rocblas_int m, rocblas_int n, rocblas_float_complex *A,
+                         rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, rocblas_int lwork) {
+  int info;
+  cgeqrf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_geqrf<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_double_complex *A,
+                         rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, rocblas_int lwork) {
+  int info;
+  zgeqrf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
 // geqr2
 template <>
 void cblas_geqr2<float>(rocblas_int m, rocblas_int n, float *A,
@@ -1150,6 +1224,20 @@ void cblas_geqr2<double>(rocblas_int m, rocblas_int n, double *A,
                                rocblas_int lda, double *ipiv, double *work) {
   int info;
   dgeqr2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_geqr2<rocblas_float_complex>(rocblas_int m, rocblas_int n, rocblas_float_complex *A,
+                               rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work) {
+  int info;
+  cgeqr2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_geqr2<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_double_complex *A,
+                               rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work) {
+  int info;
+  zgeqr2_(&m, &n, A, &lda, ipiv, work, &info);
 }
 
 // gelqf
@@ -1167,6 +1255,20 @@ void cblas_gelqf<double>(rocblas_int m, rocblas_int n, double *A,
   dgelqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
 }
 
+template <>
+void cblas_gelqf<rocblas_float_complex>(rocblas_int m, rocblas_int n, rocblas_float_complex *A,
+                        rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, rocblas_int lwork) {
+  int info;
+  cgelqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_gelqf<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_double_complex *A,
+                         rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, rocblas_int lwork) {
+  int info;
+  zgelqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
 // gelq2
 template <>
 void cblas_gelq2<float>(rocblas_int m, rocblas_int n, float *A,
@@ -1180,6 +1282,20 @@ void cblas_gelq2<double>(rocblas_int m, rocblas_int n, double *A,
                                rocblas_int lda, double *ipiv, double *work) {
   int info;
   dgelq2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_gelq2<rocblas_float_complex>(rocblas_int m, rocblas_int n, rocblas_float_complex *A,
+                               rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work) {
+  int info;
+  cgelq2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_gelq2<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_double_complex *A,
+                               rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work) {
+  int info;
+  zgelq2_(&m, &n, A, &lda, ipiv, work, &info);
 }
 
 

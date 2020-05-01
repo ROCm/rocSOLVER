@@ -89,4 +89,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgelq2(rocblas_handle handle, const ro
     return rocsolver_gelq2_impl<double>(handle, m, n, A, lda, ipiv);
 }
 
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgelq2(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_float_complex *A,
+                 const rocblas_int lda, rocblas_float_complex *ipiv) 
+{
+    return rocsolver_gelq2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_double_complex *A,
+                 const rocblas_int lda, rocblas_double_complex *ipiv) 
+{
+    return rocsolver_gelq2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv);
+}
+
 } //extern C

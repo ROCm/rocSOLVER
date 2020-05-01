@@ -76,7 +76,7 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int
                                         trfact, ldw, strideW, batch_count, scalars, work, workArr);
 
             //apply the block reflector
-            rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,rocblas_side_left,rocblas_operation_transpose,rocblas_forward_direction,
+            rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,rocblas_side_left,rocblas_operation_conjugate_transpose,rocblas_forward_direction,
                                         rocblas_column_wise,m-j, n-j-jb, jb,
                                         A, shiftA + idx2D(j,j,lda), lda, strideA,
                                         trfact, 0, ldw, strideW,

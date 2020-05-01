@@ -65,7 +65,7 @@ protected:
 TEST_P(QRfact, geqr2_float) {
     Arguments arg = setup_arguments_qr(GetParam());
 
-    rocblas_status status = testing_geqr2_geqrf<float,0>(arg);
+    rocblas_status status = testing_geqr2_geqrf<float,float,0>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -81,7 +81,39 @@ TEST_P(QRfact, geqr2_float) {
 TEST_P(QRfact, geqr2_double) {
     Arguments arg = setup_arguments_qr(GetParam());
 
-    rocblas_status status = testing_geqr2_geqrf<double,0>(arg);
+    rocblas_status status = testing_geqr2_geqrf<double,double,0>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(QRfact, geqr2_float_complex) {
+    Arguments arg = setup_arguments_qr(GetParam());
+
+    rocblas_status status = testing_geqr2_geqrf<rocblas_float_complex,float,0>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(QRfact, geqr2_double_complex) {
+    Arguments arg = setup_arguments_qr(GetParam());
+
+    rocblas_status status = testing_geqr2_geqrf<rocblas_double_complex,double,0>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -97,7 +129,7 @@ TEST_P(QRfact, geqr2_double) {
 TEST_P(QRfact, geqrf_float) {
     Arguments arg = setup_arguments_qr(GetParam());
 
-    rocblas_status status = testing_geqr2_geqrf<float,1>(arg);
+    rocblas_status status = testing_geqr2_geqrf<float,float,1>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -113,7 +145,39 @@ TEST_P(QRfact, geqrf_float) {
 TEST_P(QRfact, geqrf_double) {
     Arguments arg = setup_arguments_qr(GetParam());
 
-    rocblas_status status = testing_geqr2_geqrf<double,1>(arg);
+    rocblas_status status = testing_geqr2_geqrf<double,double,1>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(QRfact, geqrf_float_complex) {
+    Arguments arg = setup_arguments_qr(GetParam());
+
+    rocblas_status status = testing_geqr2_geqrf<rocblas_float_complex,float,1>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(QRfact, geqrf_double_complex) {
+    Arguments arg = setup_arguments_qr(GetParam());
+
+    rocblas_status status = testing_geqr2_geqrf<rocblas_double_complex,double,1>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message

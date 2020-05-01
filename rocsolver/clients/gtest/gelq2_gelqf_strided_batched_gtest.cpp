@@ -75,7 +75,7 @@ protected:
 TEST_P(LQfact_sb, gelq2_strided_batched_float) {
   Arguments arg = setup_arguments_sblq(GetParam());
 
-  rocblas_status status = testing_gelq2_gelqf_strided_batched<float,0>(arg);
+  rocblas_status status = testing_gelq2_gelqf_strided_batched<float,float,0>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -92,7 +92,41 @@ TEST_P(LQfact_sb, gelq2_strided_batched_float) {
 TEST_P(LQfact_sb, gelq2_strided_batched_double) {
   Arguments arg = setup_arguments_sblq(GetParam());
 
-  rocblas_status status = testing_gelq2_gelqf_strided_batched<double,0>(arg);
+  rocblas_status status = testing_gelq2_gelqf_strided_batched<double,double,0>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else {
+      cerr << "unknown error...";
+      EXPECT_EQ(1000, status);
+    }
+  }
+}
+
+TEST_P(LQfact_sb, gelq2_strided_batched_float_complex) {
+  Arguments arg = setup_arguments_sblq(GetParam());
+
+  rocblas_status status = testing_gelq2_gelqf_strided_batched<rocblas_float_complex,float,0>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else {
+      cerr << "unknown error...";
+      EXPECT_EQ(1000, status);
+    }
+  }
+}
+
+TEST_P(LQfact_sb, gelq2_strided_batched_double_complex) {
+  Arguments arg = setup_arguments_sblq(GetParam());
+
+  rocblas_status status = testing_gelq2_gelqf_strided_batched<rocblas_double_complex,double,0>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -109,7 +143,7 @@ TEST_P(LQfact_sb, gelq2_strided_batched_double) {
 TEST_P(LQfact_sb, gelqf_strided_batched_float) {
   Arguments arg = setup_arguments_sblq(GetParam());
 
-  rocblas_status status = testing_gelq2_gelqf_strided_batched<float,1>(arg);
+  rocblas_status status = testing_gelq2_gelqf_strided_batched<float,float,1>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -126,7 +160,41 @@ TEST_P(LQfact_sb, gelqf_strided_batched_float) {
 TEST_P(LQfact_sb, gelqf_strided_batched_double) {
   Arguments arg = setup_arguments_sblq(GetParam());
 
-  rocblas_status status = testing_gelq2_gelqf_strided_batched<double,1>(arg);
+  rocblas_status status = testing_gelq2_gelqf_strided_batched<double,double,1>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else {
+      cerr << "unknown error...";
+      EXPECT_EQ(1000, status);
+    }
+  }
+}
+
+TEST_P(LQfact_sb, gelqf_strided_batched_float_complex) {
+  Arguments arg = setup_arguments_sblq(GetParam());
+
+  rocblas_status status = testing_gelq2_gelqf_strided_batched<rocblas_float_complex,float,1>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+    if (arg.M < 0 || arg.N < 0 || arg.lda < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else {
+      cerr << "unknown error...";
+      EXPECT_EQ(1000, status);
+    }
+  }
+}
+
+TEST_P(LQfact_sb, gelqf_strided_batched_double_complex) {
+  Arguments arg = setup_arguments_sblq(GetParam());
+
+  rocblas_status status = testing_gelq2_gelqf_strided_batched<rocblas_double_complex,double,1>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
