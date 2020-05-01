@@ -378,7 +378,7 @@ if [[ "${install_dependencies}" == true ]]; then
     printf "\033[32mBuilding \033[33mgoogletest & lapack\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
     mkdir -p ${build_dir}/deps && cd ${build_dir}/deps
     ${cmake_executable} -lpthread -DBUILD_BOOST=OFF ${main}/rocblascommon/deps
-    make 
+    make -j$(nproc)
     elevate_if_not_root make install
     popd
   fi
@@ -439,7 +439,7 @@ esac
 
 CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" ${main}
 
-make install
+make -j$(nproc) install
 check_exit_code "$?"
 
 # #################################################
