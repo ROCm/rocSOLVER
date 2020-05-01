@@ -6,17 +6,8 @@ LABEL maintainer="rocsolver.maintainer@amd.com"
 
 ARG user_uid
 
-RUN wget https://cmake.org/files/v3.5/cmake-3.5.2.tar.gz
-RUN tar -xvf cmake-3.5.2.tar.gz
-RUN cd cmake-3.5.2 && \
-    ./bootstrap --prefix=/usr --system-curl --parallel=16 && \
-    make -j16 && \
-    make install && \
-    cd .. && \
-    rm -rf cmake-3.5.2 cmake-3.5.2.tar.gz
-
 # Install dependent packages
-RUN sudo yum autoremove -y cmake cmake3 && \
+RUN yum autoremove -y cmake cmake3 && \
     yum install -y --nogpgcheck\
     sudo \
     rock-dkms \
@@ -51,6 +42,15 @@ RUN sudo yum autoremove -y cmake cmake3 && \
     unzip
 
 RUN yum remove -y rocblas *gtest*
+
+RUN wget https://cmake.org/files/v3.5/cmake-3.5.2.tar.gz
+RUN tar -xvf cmake-3.5.2.tar.gz
+RUN cd cmake-3.5.2 && \
+    ./bootstrap --prefix=/usr --system-curl --parallel=16 && \
+    make -j16 && \
+    make install && \
+    cd .. && \
+    rm -rf cmake-3.5.2 cmake-3.5.2.tar.gz
 
 RUN echo '#!/bin/bash' | tee /etc/profile.d/devtoolset7.sh && echo \
     'source scl_source enable devtoolset-7' >>/etc/profile.d/devtoolset7.sh
