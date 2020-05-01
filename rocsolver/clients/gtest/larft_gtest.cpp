@@ -35,7 +35,7 @@ const vector<vector<int>> reflector_size_range = {
 };
 
 const vector<vector<int>> large_order_size_range = {
-    {192,192,0}, {640,75,1}, {1024,1200,0}, {2547,100,1}
+    {192,192,0}, {640,75,1}, {1024,1200,0}, {2048,100,1}
 };
 
 const vector<vector<int>> large_reflector_size_range = {
@@ -73,7 +73,7 @@ protected:
 TEST_P(HHreflec_blk, larft_float) {
   Arguments arg = larft_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larft<float>(arg);
+  rocblas_status status = testing_larft<float,float>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -88,7 +88,37 @@ TEST_P(HHreflec_blk, larft_float) {
 TEST_P(HHreflec_blk, larft_double) {
   Arguments arg = larft_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larft<double>(arg);
+  rocblas_status status = testing_larft<double,double>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.N < 0 || arg.K < 1 || (arg.ldv < arg.N && arg.storev == 'C') || (arg.ldv < arg.K && arg.storev == 'R') || arg.ldt < arg.K) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } 
+  }
+}
+
+TEST_P(HHreflec_blk, larft_float_complex) {
+  Arguments arg = larft_setup_arguments(GetParam());
+
+  rocblas_status status = testing_larft<rocblas_float_complex,float>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.N < 0 || arg.K < 1 || (arg.ldv < arg.N && arg.storev == 'C') || (arg.ldv < arg.K && arg.storev == 'R') || arg.ldt < arg.K) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } 
+  }
+}
+
+TEST_P(HHreflec_blk, larft_double_complex) {
+  Arguments arg = larft_setup_arguments(GetParam());
+
+  rocblas_status status = testing_larft<rocblas_double_complex,double>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message

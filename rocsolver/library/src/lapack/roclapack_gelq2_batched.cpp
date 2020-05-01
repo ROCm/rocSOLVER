@@ -88,5 +88,17 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgelq2_batched(rocblas_handle handle, 
     return rocsolver_gelq2_batched_impl<double>(handle, m, n, A, lda, ipiv, stridep, batch_count);
 }
 
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgelq2_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_float_complex *const A[],
+                 const rocblas_int lda, rocblas_float_complex *ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
+{
+    return rocsolver_gelq2_batched_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, stridep, batch_count);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_double_complex *const A[],
+                 const rocblas_int lda, rocblas_double_complex *ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
+{
+    return rocsolver_gelq2_batched_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, stridep, batch_count);
+}
+
 } //extern C
 #undef batched

@@ -65,7 +65,7 @@ protected:
 TEST_P(LQfact, gelq2_float) {
     Arguments arg = setup_arguments_lq(GetParam());
 
-    rocblas_status status = testing_gelq2_gelqf<float,0>(arg);
+    rocblas_status status = testing_gelq2_gelqf<float,float,0>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -81,7 +81,39 @@ TEST_P(LQfact, gelq2_float) {
 TEST_P(LQfact, gelq2_double) {
     Arguments arg = setup_arguments_lq(GetParam());
 
-    rocblas_status status = testing_gelq2_gelqf<double,0>(arg);
+    rocblas_status status = testing_gelq2_gelqf<double,double,0>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(LQfact, gelq2_float_complex) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    rocblas_status status = testing_gelq2_gelqf<rocblas_float_complex,float,0>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(LQfact, gelq2_double_complex) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    rocblas_status status = testing_gelq2_gelqf<rocblas_double_complex,double,0>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -97,7 +129,7 @@ TEST_P(LQfact, gelq2_double) {
 TEST_P(LQfact, gelqf_float) {
     Arguments arg = setup_arguments_lq(GetParam());
 
-    rocblas_status status = testing_gelq2_gelqf<float,1>(arg);
+    rocblas_status status = testing_gelq2_gelqf<float,float,1>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -113,7 +145,39 @@ TEST_P(LQfact, gelqf_float) {
 TEST_P(LQfact, gelqf_double) {
     Arguments arg = setup_arguments_lq(GetParam());
 
-    rocblas_status status = testing_gelq2_gelqf<double,1>(arg);
+    rocblas_status status = testing_gelq2_gelqf<double,double,1>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(LQfact, gelqf_float_complex) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    rocblas_status status = testing_gelq2_gelqf<rocblas_float_complex,float,1>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(LQfact, gelqf_double_complex) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    rocblas_status status = testing_gelq2_gelqf<rocblas_double_complex,double,1>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message

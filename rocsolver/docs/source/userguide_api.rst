@@ -82,21 +82,29 @@ rocsolver_<type>larfg()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dlarfg
 .. doxygenfunction:: rocsolver_slarfg
+.. doxygenfunction:: rocsolver_clarfg
+.. doxygenfunction:: rocsolver_zlarfg
 
 rocsolver_<type>larft()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dlarft
 .. doxygenfunction:: rocsolver_slarft
+.. doxygenfunction:: rocsolver_clarft
+.. doxygenfunction:: rocsolver_zlarft
 
 rocsolver_<type>larf()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dlarf
 .. doxygenfunction:: rocsolver_slarf
+.. doxygenfunction:: rocsolver_clarf
+.. doxygenfunction:: rocsolver_zlarf
 
 rocsolver_<type>larfb()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dlarfb
 .. doxygenfunction:: rocsolver_slarfb
+.. doxygenfunction:: rocsolver_clarfb
+.. doxygenfunction:: rocsolver_zlarfb
 
 Orthonormal matrices
 ---------------------------
@@ -241,16 +249,22 @@ rocsolver_<type>geqr2()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqr2
 .. doxygenfunction:: rocsolver_sgeqr2
+.. doxygenfunction:: rocsolver_cgeqr2
+.. doxygenfunction:: rocsolver_zgeqr2
 
 rocsolver_<type>geqr2_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqr2_batched
 .. doxygenfunction:: rocsolver_sgeqr2_batched
+.. doxygenfunction:: rocsolver_cgeqr2_batched
+.. doxygenfunction:: rocsolver_zgeqr2_batched
 
 rocsolver_<type>geqr2_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqr2_strided_batched
 .. doxygenfunction:: rocsolver_sgeqr2_strided_batched
+.. doxygenfunction:: rocsolver_cgeqr2_strided_batched
+.. doxygenfunction:: rocsolver_zgeqr2_strided_batched
 
 .. _qr_label:
 
@@ -258,6 +272,8 @@ rocsolver_<type>geqrf()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqrf
 .. doxygenfunction:: rocsolver_sgeqrf
+.. doxygenfunction:: rocsolver_cgeqrf
+.. doxygenfunction:: rocsolver_zgeqrf
 
 .. _qr_batched_label:
 
@@ -265,6 +281,8 @@ rocsolver_<type>geqrf_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqrf_batched
 .. doxygenfunction:: rocsolver_sgeqrf_batched
+.. doxygenfunction:: rocsolver_cgeqrf_batched
+.. doxygenfunction:: rocsolver_zgeqrf_batched
 
 .. _qr_strided_label:
 
@@ -272,36 +290,50 @@ rocsolver_<type>geqrf_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgeqrf_strided_batched
 .. doxygenfunction:: rocsolver_sgeqrf_strided_batched
+.. doxygenfunction:: rocsolver_cgeqrf_strided_batched
+.. doxygenfunction:: rocsolver_zgeqrf_strided_batched
 
 rocsolver_<type>gelq2()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgelq2
 .. doxygenfunction:: rocsolver_sgelq2
+.. doxygenfunction:: rocsolver_cgelq2
+.. doxygenfunction:: rocsolver_zgelq2
 
 rocsolver_<type>gelq2_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgelq2_batched
 .. doxygenfunction:: rocsolver_sgelq2_batched
+.. doxygenfunction:: rocsolver_cgelq2_batched
+.. doxygenfunction:: rocsolver_zgelq2_batched
 
 rocsolver_<type>gelq2_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgelq2_strided_batched
 .. doxygenfunction:: rocsolver_sgelq2_strided_batched
+.. doxygenfunction:: rocsolver_cgelq2_strided_batched
+.. doxygenfunction:: rocsolver_zgelq2_strided_batched
 
 rocsolver_<type>gelqf()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgelqf
 .. doxygenfunction:: rocsolver_sgelqf
+.. doxygenfunction:: rocsolver_cgelqf
+.. doxygenfunction:: rocsolver_zgelqf
 
 rocsolver_<type>gelqf_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgelqf_batched
 .. doxygenfunction:: rocsolver_sgelqf_batched
+.. doxygenfunction:: rocsolver_cgelqf_batched
+.. doxygenfunction:: rocsolver_zgelqf_batched
 
 rocsolver_<type>gelqf_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dgelqf_strided_batched
 .. doxygenfunction:: rocsolver_sgelqf_strided_batched
+.. doxygenfunction:: rocsolver_cgelqf_strided_batched
+.. doxygenfunction:: rocsolver_zgelqf_strided_batched
 
 General systems solvers
 --------------------------

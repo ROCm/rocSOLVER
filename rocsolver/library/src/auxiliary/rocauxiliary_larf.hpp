@@ -47,7 +47,7 @@ void rocsolver_larf_getMemorySize(const rocblas_side side, const rocblas_int m, 
     *size *= sizeof(T)*batch_count;
 }
 
-template <typename T, typename U>
+template <typename T, typename U, bool COMPLEX = !std::is_floating_point<T>::value>
 rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side side, const rocblas_int m,
                                         const rocblas_int n, U x, const rocblas_int shiftx, const rocblas_int incx, 
                                         const rocblas_stride stridex, const T* alpha, const rocblas_stride stridep, U A, const rocblas_int shiftA, 
@@ -70,7 +70,8 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side
     rocblas_int order = m;
     rocblas_operation trans = rocblas_operation_none;
     if (leftside) {
-        trans = rocblas_operation_transpose;
+        trans = COMPLEX ? rocblas_operation_conjugate_transpose :
+                       rocblas_operation_transpose;
         order = n;
     }
     
@@ -79,18 +80,18 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side
     //      IT WILL WORK ON THE ENTIRE MATRIX/VECTOR REGARDLESS OF
     //      ZERO ENTRIES ****
  
-    //compute the matrix vector product  (W=tau*A'*X or W=tau*A*X)
-    rocblasCall_gemv<T>(handle, trans, m, n, alpha, stridep, A, shiftA, lda, stridea, 
+    //compute the matrix vector product  (W=-A'*X or W=-A*X)
+    rocblasCall_gemv<T>(handle, trans, m, n, cast2constType<T>(scalars), 0, A, shiftA, lda, stridea, 
                         x, shiftx, incx, stridex, cast2constType<T>(scalars+1), 0, 
                         work, 0, 1, order, batch_count, workArr);
 
-    //compute the rank-1 update  (A - V*W'  or A - W*V')
+    //compute the rank-1 update  (A + tau*V*W'  or A + tau*W*V')
     if (leftside) {
-        rocblasCall_ger<false,T>(handle, m, n, scalars, 0, x, shiftx, incx, stridex,
-                             work, 0, 1, order, A, shiftA, lda, stridea, batch_count, workArr);
+        rocblasCall_ger<COMPLEX,T>(handle, m, n, alpha, stridep, x, shiftx, incx, stridex,
+                                   work, 0, 1, order, A, shiftA, lda, stridea, batch_count, workArr);
     } else {
-        rocblasCall_ger<false,T>(handle, m, n, scalars, 0, work, 0 ,1, order, 
-                             x, shiftx, incx, stridex, A, shiftA, lda, stridea, batch_count, workArr);
+        rocblasCall_ger<COMPLEX,T>(handle, m, n, alpha, stridep, work, 0, 1, order, 
+                                   x, shiftx, incx, stridex, A, shiftA, lda, stridea, batch_count, workArr);
     }
 
     rocblas_set_pointer_mode(handle,old_mode);  

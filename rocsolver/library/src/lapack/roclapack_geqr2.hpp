@@ -20,11 +20,13 @@ template <typename T, bool BATCHED>
 void rocsolver_geqr2_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
                                   size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
 {
-    rocsolver_larf_getMemorySize<T,BATCHED>(rocblas_side_left,m,n,batch_count,size_1,size_2,size_3);
-    *size_4 = sizeof(T)*batch_count;
+    size_t s1, s2;
+    rocsolver_larf_getMemorySize<T,BATCHED>(rocblas_side_left,m,n,batch_count,size_1,&s1,size_3);
+    rocsolver_larfg_getMemorySize<T>(n,batch_count,size_4,&s2);
+    *size_2 = max(s1, s2);
 }
 
-template <typename T, typename U>
+template <typename T, typename U, bool COMPLEX = !std::is_floating_point<T>::value>
 rocblas_status rocsolver_geqr2_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                         const rocblas_stride strideA, T* ipiv,  
@@ -48,10 +50,14 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle, const rocblas_int
                                  A, shiftA + idx2D(min(j+1,m-1),j,lda), //vector x to work on
                                  1, strideA,                            //inc of x    
                                  (ipiv + j), strideP,                   //tau
-                                 batch_count, diag);
+                                 batch_count, diag, work);
 
         // insert one in A(j,j) tobuild/apply the householder matrix 
         hipLaunchKernelGGL(set_one_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(j,j,lda),strideA);
+        
+        // conjugate tau
+        if (COMPLEX)
+            hipLaunchKernelGGL(conj_in_place<T>,dim3(1,1,batch_count),dim3(1,1,1),0,stream,1,1,ipiv,j,1,strideP);
 
         // Apply Householder reflector to the rest of matrix from the left 
         if (j < n - 1) {
@@ -68,6 +74,10 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle, const rocblas_int
 
         // restore original value of A(j,j)
         hipLaunchKernelGGL(restore_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(j,j,lda),strideA);
+        
+        // restore tau
+        if (COMPLEX)
+            hipLaunchKernelGGL(conj_in_place<T>,dim3(1,1,batch_count),dim3(1,1,1),0,stream,1,1,ipiv,j,1,strideP);
     }
 
     return rocblas_status_success;

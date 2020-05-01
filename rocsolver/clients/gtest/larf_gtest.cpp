@@ -68,7 +68,7 @@ protected:
 TEST_P(app_HHreflec, larf_float) {
   Arguments arg = larf_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larf<float>(arg);
+  rocblas_status status = testing_larf<float,float>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -85,7 +85,41 @@ TEST_P(app_HHreflec, larf_float) {
 TEST_P(app_HHreflec, larf_double) {
   Arguments arg = larf_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larf<double>(arg);
+  rocblas_status status = testing_larf<double,double>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.N < 0 || arg.M < 0 || arg.lda < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else if (arg.incx == 0) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
+
+TEST_P(app_HHreflec, larf_float_complex) {
+  Arguments arg = larf_setup_arguments(GetParam());
+
+  rocblas_status status = testing_larf<rocblas_float_complex,float>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.N < 0 || arg.M < 0 || arg.lda < arg.M) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else if (arg.incx == 0) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
+
+TEST_P(app_HHreflec, larf_double_complex) {
+  Arguments arg = larf_setup_arguments(GetParam());
+
+  rocblas_status status = testing_larf<rocblas_double_complex,double>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message

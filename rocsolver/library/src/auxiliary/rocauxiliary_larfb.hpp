@@ -121,12 +121,14 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
 
     //determine the side, size of workspace
     //and whether V is trapezoidal
-    rocblas_operation transp; 
-    rocblas_fill uploV;
     bool trap;
-    rocblas_int order, ldw;
     bool colwise = (storev == rocblas_column_wise); 
     bool leftside = (side == rocblas_side_left);
+    rocblas_operation transt = (leftside && trans == rocblas_operation_transpose ?
+                                rocblas_operation_conjugate_transpose : trans);
+    rocblas_operation transp; 
+    rocblas_fill uploV;
+    rocblas_int order, ldw;
     size_t offsetV;
     
     if (leftside) {
@@ -142,7 +144,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
         uploV = rocblas_fill_lower;
         offsetV = idx2D(k,0,ldv);
         if (leftside) 
-            transp = rocblas_operation_transpose;
+            transp = rocblas_operation_conjugate_transpose;
         else 
             transp = rocblas_operation_none;
     } else {
@@ -151,7 +153,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
         if (leftside) 
             transp = rocblas_operation_none;
         else 
-            transp = rocblas_operation_transpose;
+            transp = rocblas_operation_conjugate_transpose;
     }
     rocblas_stride strideW = rocblas_stride(ldw)*order;
 
@@ -203,17 +205,17 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     // (A1 * V1 + A2 * V2) * trans(T)    
     for (int b=0;b<batch_count;++b) {
         Fp = load_ptr_batch<T>(F,b,shiftF,strideF);
-        rocblas_trmm(handle,side,uploT,trans,rocblas_diagonal_non_unit,ldw,order,&one,Fp,ldf,(work + b*strideW),ldw);
+        rocblas_trmm(handle,side,uploT,transt,rocblas_diagonal_non_unit,ldw,order,&one,Fp,ldf,(work + b*strideW),ldw);
     }
 
     // compute:
     // A2 - V2 * trans(T) * (V1' * A1 + V2' * A2)
     //              or
     // A2 - (A1 * V1 + A2 * V2) * trans(T) * V2'    
-    if (transp == rocblas_operation_transpose)
-        transp = rocblas_operation_none;
+    if (transp == rocblas_operation_none)
+        transp = rocblas_operation_conjugate_transpose;
     else
-        transp = rocblas_operation_transpose;
+        transp = rocblas_operation_none;
 
     if (trap) {
         if (leftside) { 

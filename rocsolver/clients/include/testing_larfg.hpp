@@ -29,7 +29,7 @@
 
 using namespace std;
 
-template <typename T> 
+template <typename T, typename U> 
 rocblas_status testing_larfg(Arguments argus) {
     rocblas_int N = argus.N;
     rocblas_int incx = argus.incx;
@@ -91,7 +91,7 @@ rocblas_status testing_larfg(Arguments argus) {
 
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<T>::epsilon();
+    double eps = std::numeric_limits<U>::epsilon();
     double max_err_1 = 0.0, max_val = 0.0;
     double diff;
     int piverr = 0;
@@ -116,27 +116,24 @@ rocblas_status testing_larfg(Arguments argus) {
         // +++++++++ Error Check +++++++++++++
         //check v
         for (int i = 0; i < N-1; i++) {
-            diff = fabs(hx[i * incx]);
+            diff = abs(hx[i * incx]);
             max_val = max_val > diff ? max_val : diff;
-            diff = hx[i * incx];
-            diff = fabs(hx_r[i * incx] - diff);
+            diff = abs(hx_r[i * incx] - hx[i * incx]);
             max_err_1 = max_err_1 > diff ? max_err_1 : diff;
         }
         //check beta
-        max_val = max_val > fabs(halpha) ? max_val : fabs(halpha);
-        diff = halpha;
-        diff = fabs(halpha_r - diff);
+        max_val = max_val > abs(halpha) ? max_val : abs(halpha);
+        diff = abs(halpha_r - halpha);
         max_err_1 = max_err_1 > diff ? max_err_1 : diff;
         //check tau
-        max_val = max_val > fabs(htau) ? max_val : fabs(htau);
-        diff = htau;
-        diff = fabs(htau_r - diff);
+        max_val = max_val > abs(htau) ? max_val : abs(htau);
+        diff = abs(htau_r - htau);
         max_err_1 = max_err_1 > diff ? max_err_1 : diff;
 
         max_err_1 = max_err_1 / max_val;
         
         if(argus.unit_check)
-            getf2_err_res_check<T>(max_err_1, 1, N, error_eps_multiplier, eps);
+            getf2_err_res_check<U>(max_err_1, 1, N, error_eps_multiplier, eps);
     }
  
 

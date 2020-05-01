@@ -29,7 +29,7 @@
 
 using namespace std;
 
-template <typename T, int gelqf> 
+template <typename T, typename U, int gelqf> 
 rocblas_status testing_gelq2_gelqf(Arguments argus) {
     rocblas_int M = argus.M;
     rocblas_int N = argus.N;
@@ -88,7 +88,7 @@ rocblas_status testing_gelq2_gelqf(Arguments argus) {
 
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<T>::epsilon();
+    double eps = std::numeric_limits<U>::epsilon();
     double max_err_1 = 0.0, max_val = 0.0;
     double diff;
 
@@ -120,26 +120,24 @@ rocblas_status testing_gelq2_gelqf(Arguments argus) {
         // +++++++++ Error Check +++++++++++++
         // check if the pivoting returned is identical
         for (int j = 0; j < size_piv; j++) {
-            diff = fabs(hIpiv[j]);
+            diff = abs(hIpiv[j]);
             max_val = max_val > diff ? max_val : diff;
-            diff = hIpiv[j];
-            diff = fabs(hIpivr[j] - diff);
+            diff = abs(hIpivr[j] - hIpiv[j]);
             max_err_1 = max_err_1 > diff ? max_err_1 : diff;
         }
         // hAr contains calculated decomposition, so error is hA - hAr
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                diff = fabs(hA[i + j * lda]);
+                diff = abs(hA[i + j * lda]);
                 max_val = max_val > diff ? max_val : diff;
-                diff = hA[i + j * lda];
-                diff = fabs(hAr[i + j * lda] - diff);
+                diff = abs(hAr[i + j * lda] - hA[i + j * lda]);
                 max_err_1 = max_err_1 > diff ? max_err_1 : diff;
             }
         }
         max_err_1 = max_err_1 / max_val;
 
         if(argus.unit_check)
-            getf2_err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
+            getf2_err_res_check<U>(max_err_1, M, N, error_eps_multiplier, eps);
     }
  
     if (argus.timing) {

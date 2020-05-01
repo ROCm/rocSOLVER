@@ -59,7 +59,7 @@ protected:
 TEST_P(HHreflec, larfg_float) {
   Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_larfg<float>(arg);
+  rocblas_status status = testing_larfg<float,float>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -76,7 +76,41 @@ TEST_P(HHreflec, larfg_float) {
 TEST_P(HHreflec, larfg_double) {
   Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_larfg<double>(arg);
+  rocblas_status status = testing_larfg<double,double>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.N < 0) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else if (arg.incx < 1) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
+
+TEST_P(HHreflec, larfg_float_complex) {
+  Arguments arg = setup_arguments(GetParam());
+
+  rocblas_status status = testing_larfg<rocblas_float_complex,float>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.N < 0) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else if (arg.incx < 1) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
+
+TEST_P(HHreflec, larfg_double_complex) {
+  Arguments arg = setup_arguments(GetParam());
+
+  rocblas_status status = testing_larfg<rocblas_double_complex,double>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message

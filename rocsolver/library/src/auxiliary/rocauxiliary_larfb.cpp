@@ -115,6 +115,42 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfb(rocblas_handle handle,
     return rocsolver_larfb_impl<double>(handle, side, trans, direct, storev, m, n, k, V, ldv, T, ldt, A, lda);
 }
 
+ROCSOLVER_EXPORT rocblas_status rocsolver_clarfb(rocblas_handle handle,
+                                                 const rocblas_side side,
+                                                 const rocblas_operation trans,
+                                                 const rocblas_direct direct,
+                                                 const rocblas_storev storev,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
+                                                 rocblas_float_complex *V,
+                                                 const rocblas_int ldv,
+                                                 rocblas_float_complex *T,
+                                                 const rocblas_int ldt,
+                                                 rocblas_float_complex *A,
+                                                 const rocblas_int lda)
+{
+    return rocsolver_larfb_impl<rocblas_float_complex>(handle, side, trans, direct, storev, m, n, k, V, ldv, T, ldt, A, lda);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
+                                                 const rocblas_side side,
+                                                 const rocblas_operation trans,
+                                                 const rocblas_direct direct,
+                                                 const rocblas_storev storev,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
+                                                 rocblas_double_complex *V,
+                                                 const rocblas_int ldv,
+                                                 rocblas_double_complex *T,
+                                                 const rocblas_int ldt,
+                                                 rocblas_double_complex *A,
+                                                 const rocblas_int lda)
+{
+    return rocsolver_larfb_impl<rocblas_double_complex>(handle, side, trans, direct, storev, m, n, k, V, ldv, T, ldt, A, lda);
+}
+
 
 } //extern C
 

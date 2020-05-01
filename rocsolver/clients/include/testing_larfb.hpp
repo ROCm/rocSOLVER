@@ -28,7 +28,7 @@
 
 using namespace std;
 
-template <typename T> 
+template <typename T, typename U> 
 rocblas_status testing_larfb(Arguments argus) 
 {
     rocblas_int M = argus.M;
@@ -75,6 +75,8 @@ rocblas_status testing_larfb(Arguments argus)
         trans = rocblas_operation_none;
     } else if (transC == 'T') {
         trans = rocblas_operation_transpose;
+    } else if (transC == 'C') {
+        trans = rocblas_operation_conjugate_transpose;
     } else {
         throw runtime_error("Unsupported operation option.");
     }
@@ -186,7 +188,7 @@ rocblas_status testing_larfb(Arguments argus)
 
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<T>::epsilon();
+    double eps = std::numeric_limits<U>::epsilon();
     double max_err_1 = 0.0, max_val = 0.0;
     double diff;
 
@@ -209,10 +211,9 @@ rocblas_status testing_larfb(Arguments argus)
         // +++++++++ Error Check +++++++++++++
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < N; j++) {
-                diff = fabs(hA[i + j * lda]);
+                diff = abs(hA[i + j * lda]);
                 max_val = max_val > diff ? max_val : diff;
-                diff = hA[i + j * lda];
-                diff = fabs(hA_r[i + j * lda] - diff);
+                diff = abs(hA_r[i + j * lda] - hA[i + j * lda]);
                 max_err_1 = max_err_1 > diff ? max_err_1 : diff;
             }
         }
@@ -220,7 +221,7 @@ rocblas_status testing_larfb(Arguments argus)
         max_err_1 = max_err_1 / max_val;
 
         if(argus.unit_check)
-            getf2_err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
+            getf2_err_res_check<U>(max_err_1, M, N, error_eps_multiplier, eps);
     }
 
     if (argus.timing) {

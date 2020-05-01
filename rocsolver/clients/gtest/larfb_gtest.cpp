@@ -36,9 +36,11 @@ const vector<vector<int>> matrix_size_range = {
 //if d = 1, then direct = 'B'
 //if t = 0, then trans = 'N'
 //if t = 1, then trans = 'T'
+//if t = 2, then trans = 'C'
 const vector<vector<int>> reflector_size_range = {
     {0,1,0,0}, {5,1,0,0}, 
-    {5,5,0,1}, {10,10,0,0}, {12,70,0,1}, {15,15,0,0}
+    {5,5,0,1}, {10,10,0,1},
+    {12,70,0,2}, {15,15,0,2}
 };
 
 const vector<vector<int>> large_matrix_size_range = {
@@ -47,7 +49,7 @@ const vector<vector<int>> large_matrix_size_range = {
 };
 
 const vector<vector<int>> large_reflector_size_range = {
-    {35,35,0,1}, {50,70,0,0}, {85,85,0,1}, {100,150,0,0}
+    {35,35,0,1}, {50,70,0,0}, {85,85,0,1}, {100,150,0,0}, {100,150,0,2}
 };
 
 
@@ -69,7 +71,7 @@ Arguments larfb_setup_arguments(bTuple tup) {
   arg.ldt = reflector_size[1];
 
   arg.direct_option = reflector_size[2] == 1 ? 'B' : 'F';
-  arg.transH_option = reflector_size[3] == 1 ? 'T' : 'N';
+  arg.transH_option = reflector_size[3] == 0 ? 'N' : (reflector_size[3] == 1 ? 'T' : 'C');
   arg.storev = order_size[5] == 1 ? 'R' : 'C';
 
   arg.timing = 0;
@@ -88,7 +90,7 @@ protected:
 TEST_P(app_HHreflec_blk, larfb_float) {
   Arguments arg = larfb_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larfb<float>(arg);
+  rocblas_status status = testing_larfb<float,float>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -108,7 +110,47 @@ TEST_P(app_HHreflec_blk, larfb_float) {
 TEST_P(app_HHreflec_blk, larfb_double) {
   Arguments arg = larfb_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larfb<double>(arg);
+  rocblas_status status = testing_larfb<double,double>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+    if (arg.M < 0 || arg.N < 0 || arg.K < 1 || arg.lda < arg.M || arg.ldt < arg.K) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } 
+    else if (arg.storev == 'C' && ((arg.side_option == 'L' && arg.ldv < arg.M) || (arg.side_option == 'R' && arg.ldv < arg.N))) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+    else if (arg.storev == 'R' && arg.ldv < arg.K) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
+
+TEST_P(app_HHreflec_blk, larfb_float_complex) {
+  Arguments arg = larfb_setup_arguments(GetParam());
+
+  rocblas_status status = testing_larfb<rocblas_float_complex,float>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+    if (arg.M < 0 || arg.N < 0 || arg.K < 1 || arg.lda < arg.M || arg.ldt < arg.K) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } 
+    else if (arg.storev == 'C' && ((arg.side_option == 'L' && arg.ldv < arg.M) || (arg.side_option == 'R' && arg.ldv < arg.N))) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+    else if (arg.storev == 'R' && arg.ldv < arg.K) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
+
+TEST_P(app_HHreflec_blk, larfb_double_complex) {
+  Arguments arg = larfb_setup_arguments(GetParam());
+
+  rocblas_status status = testing_larfb<rocblas_double_complex,double>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
