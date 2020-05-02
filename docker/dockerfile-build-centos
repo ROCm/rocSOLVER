@@ -44,10 +44,10 @@ RUN yum autoremove -y cmake cmake3 && \
 RUN yum remove -y rocblas *gtest*
 
 RUN wget https://cmake.org/files/v3.5/cmake-3.5.2.tar.gz
-RUN tar -xvf cmake-3.5.2.tar.gz
+RUN tar -xf cmake-3.5.2.tar.gz
 RUN cd cmake-3.5.2 && \
     ./bootstrap --prefix=/usr --system-curl --parallel=16 && \
-    make -j16 && \
+    make -j && \
     make install && \
     cd .. && \
     rm -rf cmake-3.5.2 cmake-3.5.2.tar.gz
