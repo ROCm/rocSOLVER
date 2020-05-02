@@ -225,8 +225,8 @@ rocblas_status rocblasCall_trmv(rocblas_handle    handle,
                             rocblas_stride    stridew,
                             rocblas_int       batch_count)
 {
-    return trmv_template<ROCBLAS_TRMV_NB>(handle,uplo,transa,diag,m,cast2constType<T>(a),offseta,lda,stridea,
-                                          x,offsetx,incx,stridex,w,stridew,batch_count);
+    return rocblas_trmv_template<ROCBLAS_TRMV_NB>(handle,uplo,transa,diag,m,cast2constType<T>(a),offseta,lda,stridea,
+                                                  x,offsetx,incx,stridex,w,stridew,batch_count);
 }
 
 // gemm
