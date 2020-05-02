@@ -379,7 +379,9 @@ if [[ "${install_dependencies}" == true ]]; then
     mkdir -p ${build_dir}/deps && cd ${build_dir}/deps
     ${cmake_executable} -lpthread -DBUILD_BOOST=OFF ${main}/rocblascommon/deps
     make 
+    check_exit_code "$?"
     elevate_if_not_root make install
+    check_exit_code "$?"
     popd
   fi
 fi
@@ -438,6 +440,7 @@ case "${ID}" in
 esac
 
 CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" ${main}
+check_exit_code "$?"
 
 make install
 check_exit_code "$?"
