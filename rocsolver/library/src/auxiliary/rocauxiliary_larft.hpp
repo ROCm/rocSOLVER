@@ -13,6 +13,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
+#include "../auxiliary/rocauxiliary_lacgv.hpp"
 
 template <typename T, typename U, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
 __global__ void set_triangular(const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, const rocblas_stride strideV, 
@@ -170,8 +171,7 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_dir
         else
         {
             if (COMPLEX)
-                hipLaunchKernelGGL(conj_in_place<T>, dim3(1,blocks2,batch_count), dim3(1,32,1), 0, stream,
-                                   1, n-i-1, V, shiftV + idx2D(i,i+1,ldv), ldv, strideV);
+                rocsolver_lacgv_template<T>(handle, n-i-1, V, shiftV + idx2D(i,i+1,ldv), ldv, strideV, batch_count);
 
             trans = rocblas_operation_none;
             rocblasCall_gemv<T>(handle, trans, i, n-1-i, tau + i, strideT, 
@@ -180,8 +180,7 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_dir
                             F, idx2D(0,i,ldf), 1, strideF, batch_count, workArr);
             
             if (COMPLEX)
-                hipLaunchKernelGGL(conj_in_place<T>, dim3(1,blocks2,batch_count), dim3(1,32,1), 0, stream,
-                                   1, n-i-1, V, shiftV + idx2D(i,i+1,ldv), ldv, strideV);
+                rocsolver_lacgv_template<T>(handle, n-i-1, V, shiftV + idx2D(i,i+1,ldv), ldv, strideV, batch_count);
         }
 
         //multiply by the previous triangular factor

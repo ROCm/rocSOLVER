@@ -40,8 +40,8 @@ rocblas_status testing_potf2_potrf_batched(Arguments argus) {
 
     // check invalid size and quick return
     if (N < 1 || lda < N || batch_count < 1) {
-        T **dA;
-        hipMalloc(&dA,sizeof(T*));
+        auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T*)), rocblas_test::device_free};
+        T **dA = (T **)dA_managed.get();
 
         auto dinfo_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(int)), rocblas_test::device_free};
         rocblas_int *dinfo = (rocblas_int *)dinfo_managed.get();

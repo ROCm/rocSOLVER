@@ -13,6 +13,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
+#include "../auxiliary/rocauxiliary_lacgv.hpp"
 #include "../auxiliary/rocauxiliary_larfg.hpp"
 #include "../auxiliary/rocauxiliary_larf.hpp"
 
@@ -57,7 +58,7 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle, const rocblas_int
         
         // conjugate tau
         if (COMPLEX)
-            hipLaunchKernelGGL(conj_in_place<T>,dim3(1,1,batch_count),dim3(1,1,1),0,stream,1,1,ipiv,j,1,strideP);
+            rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);
 
         // Apply Householder reflector to the rest of matrix from the left 
         if (j < n - 1) {
@@ -77,7 +78,7 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle, const rocblas_int
         
         // restore tau
         if (COMPLEX)
-            hipLaunchKernelGGL(conj_in_place<T>,dim3(1,1,batch_count),dim3(1,1,1),0,stream,1,1,ipiv,j,1,strideP);
+            rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);
     }
 
     return rocblas_status_success;

@@ -13,6 +13,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
+#include "../auxiliary/rocauxiliary_lacgv.hpp"
 #include "../auxiliary/rocauxiliary_larfg.hpp"
 #include "../auxiliary/rocauxiliary_larf.hpp"
 
@@ -46,7 +47,7 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int
     for (rocblas_int j = 0; j < dim; ++j) {
         // conjugate the jth row of A
         if (COMPLEX)
-            hipLaunchKernelGGL(conj_in_place<T>,dim3(1,blocks,batch_count),dim3(1,1024,1),0,stream,1,n-j,A,shiftA+idx2D(j,j,lda),lda,strideA);
+            rocsolver_lacgv_template<T>(handle, n-j, A, shiftA + idx2D(j,j,lda), lda, strideA, batch_count);
 
         // generate Householder reflector to work on row j
         rocsolver_larfg_template(handle,
@@ -78,7 +79,7 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int
 
         // restore the jth row of A
         if (COMPLEX)
-            hipLaunchKernelGGL(conj_in_place<T>,dim3(1,blocks,batch_count),dim3(1,1024,1),0,stream,1,n-j,A,shiftA+idx2D(j,j,lda),lda,strideA);
+            rocsolver_lacgv_template<T>(handle, n-j, A, shiftA + idx2D(j,j,lda), lda, strideA, batch_count);
     }
 
     return rocblas_status_success;
