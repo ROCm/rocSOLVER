@@ -6,6 +6,16 @@
 #define _ROCBLAS_HPP_
 
 #include <rocblas.h>
+
+template <typename T>
+struct rocblas_index_value_t
+{
+  //! @brief Important: index must come first, so that index_value_t* can be cast to rocblas_int*  
+  rocblas_int index;
+  //! @brief The value.
+  T value;
+};
+
 #include "rocblas-exported-proto.hpp"
 #include "helpers.h"
 #include "ideal_sizes.hpp"
