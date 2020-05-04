@@ -15,11 +15,9 @@ rocblas_status rocsolver_getrs_impl(rocblas_handle handle, const rocblas_operati
     //logging is missing ???    
     
     // argument checking
-    if (n < 0 || nrhs < 0 || lda < n || ldb < n) 
-        return rocblas_status_invalid_size;
-
-    if (!A || !ipiv || !B)
-        return rocblas_status_invalid_pointer;
+    rocblas_status st = rocsolver_getrs_argCheck(trans,n,nrhs,lda,ldb,A,B,ipiv);
+    if (st != rocblas_status_continue)
+        return st;
 
     rocblas_stride strideA = 0;
     rocblas_stride strideB = 0;
@@ -30,6 +28,7 @@ rocblas_status rocsolver_getrs_impl(rocblas_handle handle, const rocblas_operati
     // this function does not requiere memory work space
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
 
+    // execution
     return rocsolver_getrs_template<T>(handle,trans,n,nrhs,
                                         A,0,
                                         lda,strideA,

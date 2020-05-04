@@ -12,7 +12,6 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "common_device.hpp"
 
 template <typename T, typename U>
 __global__ void copymatA1(const rocblas_int ldw, const rocblas_int order, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, T* work) 
@@ -81,6 +80,41 @@ void rocsolver_larfb_getMemorySize(const rocblas_side side, const rocblas_int m,
         *size = m;
     *size *= sizeof(T)*k*batch_count;
 }
+
+template <typename T, typename U>
+rocblas_status rocsolver_larfb_argCheck(const rocblas_side side, const rocblas_operation trans, const rocblas_direct direct, const rocblas_storev storev,
+                                        const rocblas_int m, const rocblas_int n, const rocblas_int k,
+                                        const rocblas_int ldv, const rocblas_int ldf, const rocblas_int lda, T V, T A, U F)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    if (side != rocblas_side_left && side != rocblas_side_right)
+        return rocblas_status_invalid_value;
+    if (trans != rocblas_operation_none && trans != rocblas_operation_transpose && trans != rocblas_operation_conjugate_transpose)
+        return rocblas_status_invalid_value;
+    if (direct != rocblas_backward_direction && direct != rocblas_forward_direction)
+        return rocblas_status_invalid_value;
+    if (storev != rocblas_column_wise && storev != rocblas_row_wise)
+        return rocblas_status_invalid_value;
+    bool row = (storev == rocblas_row_wise);
+    bool left = (side == rocblas_side_left);
+    
+    // 2. invalid size
+    if (m < 0 || n < 0 || k < 1 || lda < m || ldf < k)
+        return rocblas_status_invalid_size;
+    if (row && ldv < k)
+        return rocblas_status_invalid_size;
+    if ((!row && left && ldv < m) || (!row && !left && ldv < n))
+        return rocblas_status_invalid_size;
+
+    // 3. invalid pointers
+    if ((left && m && !V) || (!left && n && !V) || (m*n && !A) || !F)
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
+}
+
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_side side, 

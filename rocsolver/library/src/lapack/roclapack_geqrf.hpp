@@ -12,8 +12,6 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "ideal_sizes.hpp"
-#include "common_device.hpp"
 #include "roclapack_geqr2.hpp"
 #include "../auxiliary/rocauxiliary_larft.hpp"
 #include "../auxiliary/rocauxiliary_larfb.hpp"

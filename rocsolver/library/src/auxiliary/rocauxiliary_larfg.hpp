@@ -12,7 +12,6 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "common_device.hpp"
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 __global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms, U alpha, const rocblas_int shifta, const rocblas_stride stride)
@@ -79,6 +78,25 @@ void rocsolver_larfg_getMemorySize(const rocblas_int n, const rocblas_int batch_
     // size of workspace
     *size_2 = (n-2)/ROCBLAS_DOT_NB + 2;
     *size_2 *= sizeof(T)*batch_count;
+}
+
+template <typename T, typename U>
+rocblas_status rocsolver_larfg_argCheck(const rocblas_int n, const rocblas_int incx, T alpha, T x, U tau)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    // N/A
+    
+    // 2. invalid size
+    if (n < 0 || incx < 1)
+        return rocblas_status_invalid_size;
+
+    // 3. invalid pointers
+    if ((n > 1 && !x) || (n && !alpha) || (n && !tau))
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
 }
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>

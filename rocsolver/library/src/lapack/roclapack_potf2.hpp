@@ -12,7 +12,6 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_lacgv.hpp"
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0> 
@@ -74,6 +73,25 @@ void rocsolver_potf2_getMemorySize(const rocblas_int n, const rocblas_int batch_
     *size_3 = sizeof(T)*batch_count;
 }
 
+template <typename T>
+rocblas_status rocsolver_potf2_potrf_argCheck(const rocblas_int n, const rocblas_int lda,
+                                              T A, rocblas_int *info, const rocblas_int batch_count = 1)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    // N/A
+
+    // 2. invalid size
+    if (n < 0 || lda < n || batch_count < 0)
+        return rocblas_status_invalid_size;
+
+    // 3. invalid pointers
+    if ((n && !A) || (batch_count && !info))
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
+}
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_potf2_template(rocblas_handle handle,
@@ -83,24 +101,28 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         rocblas_int *info, const rocblas_int batch_count,
                                         T*scalars, T* work, T* pivotGPU) 
 {
-    // quick return
-    if (n == 0 || batch_count == 0) 
+    // quick return if zero instances in batch
+    if (batch_count == 0)
         return rocblas_status_success;
-    
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-
-    // everything must be executed with scalars on the device
-    rocblas_pointer_mode old_mode;
-    rocblas_get_pointer_mode(handle,&old_mode);
-    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);
-
+    
     rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(BLOCKSIZE, 1, 1);
 
     //info=0 (starting with a positive definite matrix)
     hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count,0);
+        
+    // quick return if no dimensions
+    if (n == 0) 
+        return rocblas_status_success;
+    
+    // everything must be executed with scalars on the device
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle,&old_mode);
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);
 
     if (uplo == rocblas_fill_upper) { // Compute the Cholesky factorization A = U'*U.
         for (rocblas_int j = 0; j < n; ++j) {

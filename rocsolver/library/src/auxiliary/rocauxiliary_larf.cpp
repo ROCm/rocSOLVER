@@ -15,11 +15,10 @@ rocblas_status rocsolver_larf_impl(rocblas_handle handle, const rocblas_side sid
     // logging is missing ???
 
     // argument checking
-    if (n < 0 || m < 0 || lda < m || !incx)
-        return rocblas_status_invalid_size;
-    if (!x || !A || !alpha)
-        return rocblas_status_invalid_pointer;
-
+    rocblas_status st = rocsolver_larf_argCheck(side,m,n,lda,incx,x,A,alpha);
+    if (st != rocblas_status_continue)
+        return st;  
+    
     rocblas_stride stridex = 0;
     rocblas_stride stridea = 0;
     rocblas_stride stridep = 0;

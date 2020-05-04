@@ -41,6 +41,23 @@ rocblas_status testing_larf(Arguments argus) {
     std::unique_ptr<rocblas_test::handle_struct> unique_ptr_handle(new rocblas_test::handle_struct);
     rocblas_handle handle = unique_ptr_handle->handle;
 
+    rocblas_int sizex = 1;
+    rocblas_int order, sizew;
+    if (sideC == 'L') {
+        order = M;
+        sizew = N;
+        side = rocblas_side_left;    
+        sizex += (M - 1) * abs(incx);
+    } else if (sideC == 'R') {
+        order = N;
+        sizew = M;
+        side = rocblas_side_right;
+        sizex += (N - 1) * abs(incx);
+    } else {
+        throw runtime_error("Unsupported side option.");
+    }
+    rocblas_int sizeA = lda * N;    
+
     // check invalid size and quick return
     if (N < 1 || M < 1 || lda < M || !incx) {
         auto dx_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
@@ -59,23 +76,6 @@ rocblas_status testing_larf(Arguments argus) {
         
         return rocsolver_larf<T>(handle, side, M, N, dx, incx, dalpha, dA, lda);
     }
-
-    rocblas_int sizex = 1;
-    rocblas_int order, sizew;
-    if (sideC == 'L') {
-        order = M;
-        sizew = N;
-        side = rocblas_side_left;    
-        sizex += (M - 1) * abs(incx);
-    } else if (sideC == 'R') {
-        order = N;
-        sizew = M;
-        side = rocblas_side_right;
-        sizex += (N - 1) * abs(incx);
-    } else {
-        throw runtime_error("Unsupported side option.");
-    }
-    rocblas_int sizeA = lda * N;    
 
     // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory
     vector<T> hx(sizex);

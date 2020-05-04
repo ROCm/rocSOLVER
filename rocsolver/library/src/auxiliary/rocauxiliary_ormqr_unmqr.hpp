@@ -12,10 +12,9 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "common_device.hpp"
-#include "../auxiliary/rocauxiliary_orm2r_unm2r.hpp"
-#include "../auxiliary/rocauxiliary_larfb.hpp"
-#include "../auxiliary/rocauxiliary_larft.hpp"
+#include "rocauxiliary_orm2r_unm2r.hpp"
+#include "rocauxiliary_larfb.hpp"
+#include "rocauxiliary_larft.hpp"
 
 template <typename T, bool BATCHED>
 void rocsolver_ormqr_unmqr_getMemorySize(const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,

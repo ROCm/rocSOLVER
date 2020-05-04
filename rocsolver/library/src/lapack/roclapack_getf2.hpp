@@ -12,8 +12,6 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "ideal_sizes.hpp"
-#include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_laswp.hpp"
 
 template <typename T, typename U>
@@ -49,6 +47,25 @@ void rocsolver_getf2_getMemorySize(const rocblas_int batch_count,
     *size_2 = sizeof(T)*batch_count;
 }
 
+template <typename T>
+rocblas_status rocsolver_getf2_getrf_argCheck(const rocblas_int m, const rocblas_int n, const rocblas_int lda, 
+                                              T A, rocblas_int *ipiv, rocblas_int *info, const rocblas_int batch_count = 1)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    // N/A
+    
+    // 2. invalid size
+    if (m < 0 || n < 0 || lda < m || batch_count < 0)
+        return rocblas_status_invalid_size;
+
+    // 3. invalid pointers
+    if ((m*n && !A) || (m*n && !ipiv) || (batch_count && !info))
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
+}
 
 template <typename T, typename U>
 rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int m,
@@ -57,13 +74,26 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
                                         const rocblas_stride strideP, rocblas_int* info, const rocblas_int batch_count,
                                         T* scalars, T* pivotGPU)
 {
-    // quick return
-    if (m == 0 || n == 0 || batch_count == 0) 
+    // quick return if zero instances in batch
+    if (batch_count == 0)
         return rocblas_status_success;
-        
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
+    
+    rocblas_int blocksReset = (batch_count - 1) / GETF2_BLOCKSIZE + 1;
+    dim3 gridReset(blocksReset, 1, 1);
+    dim3 threads(GETF2_BLOCKSIZE, 1, 1);
+    rocblas_int dim = min(m, n);    //total number of pivots
+    T* M;
+    
+    // info=0 (starting with a nonsingular matrix)
+    hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count,0);
 
+    // quick return if no dimensions
+    if (m == 0 || n == 0) 
+        return rocblas_status_success;
+        
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);
@@ -77,16 +107,6 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
     #else
         T* AA = A;
     #endif
-
-    rocblas_int blocksReset = (batch_count - 1) / GETF2_BLOCKSIZE + 1;
-    dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(GETF2_BLOCKSIZE, 1, 1);
-    rocblas_int dim = min(m, n);    //total number of pivots
-    T* M;
-
-    //info=0 (starting with a nonsingular matrix)
-    hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count,0);
-    
 
     // **** IAMAX_BATCH IS EXECUTED IN A FOR-LOOP UNTIL 
     //      FUNCITONALITY IS ENABLED. ****

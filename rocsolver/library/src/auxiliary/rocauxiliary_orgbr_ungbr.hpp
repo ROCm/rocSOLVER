@@ -12,11 +12,9 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "common_device.hpp"
-#include "../auxiliary/rocauxiliary_orgqr_ungqr.hpp"
-#include "../auxiliary/rocauxiliary_orglq_unglq.hpp"
+#include "rocauxiliary_orgqr_ungqr.hpp"
+#include "rocauxiliary_orglq_unglq.hpp"
 
-#define BS 32 //blocksize for kernels
 
 template <typename T, typename U>
 __global__ void copyshift_col(const bool copy, const rocblas_int dim, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, 
@@ -105,6 +103,32 @@ void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev, const rocb
             *size_2 = max(s1,s2);
         }
     }
+}
+
+template <typename T, typename U>
+rocblas_status rocsolver_orgbr_argCheck(const rocblas_storev storev, const rocblas_int m, const rocblas_int n, const rocblas_int k, 
+                                        const rocblas_int lda, T A, U ipiv)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    if (storev != rocblas_column_wise && storev != rocblas_row_wise)
+        return rocblas_status_invalid_value;
+    bool row = (storev == rocblas_row_wise);
+    
+    // 2. invalid size
+    if (m < 0 || n < 0 || k < 0 || lda < m)
+        return rocblas_status_invalid_size;
+    if (!row && (n > m || n < min(m,k)))
+        return rocblas_status_invalid_size;
+    if (row && (m > n || m < min(n,k)))
+        return rocblas_status_invalid_size;
+
+    // 3. invalid pointers
+    if ((m*n && !A) || (row && min(n,k) > 0 && !ipiv) || (!row && min(m,k) > 0 && !ipiv))
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>

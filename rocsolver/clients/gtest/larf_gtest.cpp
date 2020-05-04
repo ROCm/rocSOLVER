@@ -21,14 +21,17 @@ typedef std::tuple<vector<int>, vector<int>> mtuple;
 
 //{M,N,lda}
 const vector<vector<int>> matrix_size_range = {
-    {-1,10,1}, {10,0,10}, {10,10,5}, {12,20,12}, {20,15,20}, {35,35,50}  
+    {0,10,1}, {10,0,10},
+    {-1,10,1}, {10,-1,10}, {10,10,5}, 
+    {12,20,12}, {20,15,20}, {35,35,50}  
 };
 
 //{incx,s}
 //if s = 0, then side = 'L'
 //if s = 1, then side = 'R'
 const vector<vector<int>> incx_range = {
-    {-10,0}, {-5,1}, {-1,0}, {0,0}, {1,1}, {5,0}, {10,1}
+    {0,0},
+    {-10,0}, {-5,1}, {-1,0}, {1,1}, {5,0}, {10,1}
 };
 
 //{M,N,lda}

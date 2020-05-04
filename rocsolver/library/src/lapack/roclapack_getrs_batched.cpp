@@ -15,15 +15,19 @@ rocblas_status rocsolver_getrs_batched_impl(rocblas_handle handle, const rocblas
 
     //logging is missing ???    
 
-    if (n < 0 || nrhs < 0 || lda < n || ldb < n || batch_count < 0) 
-        return rocblas_status_invalid_size;
-
-    if (!A || !ipiv || !B)
-        return rocblas_status_invalid_pointer;
+    // argument checking
+    rocblas_status st = rocsolver_getrs_argCheck(trans,n,nrhs,lda,ldb,A,B,ipiv,batch_count);
+    if (st != rocblas_status_continue)
+        return st;
 
     rocblas_stride strideA = 0;
     rocblas_stride strideB = 0;
 
+    // memory managment
+    // this function does not requiere memory work space
+    // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
+
+    // execution
     return rocsolver_getrs_template<T>(handle,trans,n,nrhs,
                                         A,0,
                                         lda,strideA,
