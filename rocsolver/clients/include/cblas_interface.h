@@ -139,6 +139,9 @@ template <typename T>
 void cblas_gelqf(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work, rocblas_int sizeW);
 
 template <typename T>
+void cblas_lacgv(rocblas_int n, T* x, rocblas_int incx);
+
+template <typename T>
 void cblas_laswp(rocblas_int n, T* A, rocblas_int lda, rocblas_int k1, rocblas_int k2, rocblas_int *ipiv, rocblas_int inc);
 
 template <typename T>

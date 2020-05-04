@@ -25,6 +25,7 @@
 #include "testing_larf.hpp"
 #include "testing_larft.hpp"
 #include "testing_larfb.hpp"
+#include "testing_lacgv.hpp"
 #include "testing_laswp.hpp"
 #include "testing_org2r_orgqr.hpp"
 #include "testing_orm2r_ormqr.hpp"
@@ -271,6 +272,12 @@ int main(int argc, char *argv[])
     else if (precision == 'd')
       testing_potf2_potrf_strided_batched<double,1>(argus);
   } 
+  else if (function == "lacgv") {
+    if (precision == 'c')
+      testing_lacgv<rocblas_float_complex>(argus);
+    else if (precision == 'z')
+      testing_lacgv<rocblas_double_complex>(argus);
+  }
   else if (function == "laswp") {
     if (precision == 's')
       testing_laswp<float>(argus);

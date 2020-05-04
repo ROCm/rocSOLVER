@@ -26,6 +26,7 @@ The following table summarizes the LAPACK functionality implemented in rocSOLVER
 =============================== ====== ====== ============== ==============
 Lapack Auxiliary Function       single double single complex double complex
 =============================== ====== ====== ============== ==============
+**rocsolver_lacgv**                              x              x
 **rocsolver_laswp**             x      x         x              x
 **rocsolver_larfg**             x      x         x              x
 **rocsolver_larft**             x      x         x              x

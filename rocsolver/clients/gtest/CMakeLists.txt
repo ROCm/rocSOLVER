@@ -46,6 +46,7 @@ set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
 
 set(roclapack_test_source
+    lacgv_gtest.cpp
     laswp_gtest.cpp
     larfg_gtest.cpp
     larf_gtest.cpp

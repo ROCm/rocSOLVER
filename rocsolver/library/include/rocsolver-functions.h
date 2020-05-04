@@ -37,6 +37,35 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char* buf, size_t l
  * ===========================================================================
  */
 
+/*! \brief LACGV conjugates the complex vector x.
+
+    \details
+    It conjugates the n entries of a complex vector x with increment incx.
+
+    @param[in]
+    handle          rocblas_handle
+    @param[in]
+    n               rocblas_int. n >= 0.\n
+                    The number of entries of the vector x.
+    @param[inout]      
+    x               pointer to type. Array on the GPU of size at least n.\n
+                    On input it is the vector x, 
+                    on output it is overwritten with vector conjg(x).
+    @param[in]
+    incx            rocblas_int. incx > 0.\n
+                    The increment between consecutive elements of x. 
+    *************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_clacgv(rocblas_handle handle,
+                                                   const rocblas_int n,
+                                                   rocblas_float_complex *x,
+                                                   const rocblas_int incx);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlacgv(rocblas_handle handle,
+                                                   const rocblas_int n,
+                                                   rocblas_double_complex *x,
+                                                   const rocblas_int incx);
+
 /*! \brief LASWP performs a series of row interchanges on the matrix A.
 
     \details

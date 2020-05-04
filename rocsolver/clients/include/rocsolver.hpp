@@ -3,6 +3,21 @@
 
 #include "rocsolver.h"
 
+//lacgv
+
+template <typename T>
+inline rocblas_status rocsolver_lacgv(rocblas_handle handle, rocblas_int n, T *x, rocblas_int incx);
+
+template <>
+inline rocblas_status rocsolver_lacgv(rocblas_handle handle, rocblas_int n, rocblas_float_complex *x, rocblas_int incx) {
+  return rocsolver_clacgv(handle,n,x,incx);
+}
+
+template <>
+inline rocblas_status rocsolver_lacgv(rocblas_handle handle, rocblas_int n, rocblas_double_complex *x, rocblas_int incx) {
+  return rocsolver_zlacgv(handle,n,x,incx);
+}
+
 //laswp
 
 template <typename T>
