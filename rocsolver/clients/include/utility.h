@@ -184,7 +184,9 @@ template <typename T>
 void rocblas_init_symmetric(vector<T> &A, rocblas_int N, rocblas_int lda) {
   for (rocblas_int i = 0; i < N; ++i) {
     for (rocblas_int j = 0; j <= i; ++j) {
-      A[j + i * lda] = A[i + j * lda] = random_generator<T>();
+      auto r = random_generator<T>();
+      A[j + i * lda] = r;
+      A[i + j * lda] = r;
     }
   }
 };
@@ -196,9 +198,11 @@ template <typename T>
 void rocblas_init_hermitian(vector<T> &A, rocblas_int N, rocblas_int lda) {
   for (rocblas_int i = 0; i < N; ++i) {
     for (rocblas_int j = 0; j <= i; ++j) {
-      A[j + i * lda] = A[i + j * lda] = random_generator<T>();
+      auto r = random_generator<T>();
+      A[j + i * lda] = r;
+      A[i + j * lda] = r;
       if (i == j)
-        A[j + i * lda].y = 0.0;
+        A[j + i * lda].imag(0);
     }
   }
 };
