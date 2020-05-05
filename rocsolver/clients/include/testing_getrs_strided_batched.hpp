@@ -21,6 +21,9 @@
 #include <gtest/gtest.h>
 #endif
 
+#include "rocsolver_test.hpp"
+
+
 // this is max error PER element after the solution
 #define GETRF_ERROR_EPS_MULTIPLIER 3000
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 

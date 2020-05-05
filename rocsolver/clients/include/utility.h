@@ -3,8 +3,8 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef _TESTING_UTILITY_H_
-#define _TESTING_UTILITY_H_
+#ifndef _T_UTILITY_H_
+#define _T_UTILITY_H_
 
 #include <immintrin.h>
 #include <iostream>
@@ -16,21 +16,22 @@
 
 #include "rocblas.h"
 
-using namespace std;
+//using namespace std;
 
 /*!\file
  * \brief provide data initialization, timing, rocblas type <-> lapack char
  * conversion utilities.
  */
 
-#define CHECK_HIP_ERROR(error)                                                 \
+/*#define CHECK_HIP_ERROR(error)                                                 \
   if (error != hipSuccess) {                                                   \
     fprintf(stderr, "error: '%s'(%d) at %s:%d\n", hipGetErrorString(error),    \
             error, __FILE__, __LINE__);                                        \
     exit(EXIT_FAILURE);                                                        \
   }
+*/
 
-#define CHECK_ROCBLAS_ERROR(error)                                             \
+/*#define CHECK_ROCBLAS_ERROR(error)                                             \
   if (error != rocblas_status_success) {                                       \
     fprintf(stderr, "rocBLAS error: ");                                        \
     if (error == rocblas_status_invalid_handle) {                              \
@@ -51,8 +52,9 @@ using namespace std;
     fprintf(stderr, "\n");                                                     \
     return error;                                                              \
   }
+*/
 
-#define BLAS_1_RESULT_PRINT                                                    \
+/*#define BLAS_1_RESULT_PRINT                                                    \
   if (argus.timing) {                                                          \
     cout << "N, rocblas (us), ";                                               \
     if (argus.norm_check) {                                                    \
@@ -66,7 +68,7 @@ using namespace std;
     }                                                                          \
     cout << endl;                                                              \
   }
-
+*/
 // Helper routine to convert floats into their half equivalent; uses F16C
 // instructions
 //inline rocblas_half float_to_half(float val) {
@@ -210,7 +212,7 @@ void rocblas_init_hermitian(vector<T> &A, rocblas_int N, rocblas_int lda) {
 /*! \brief  matrix/vector initialization: */
 // for vector x (M=1, N=lengthX, lda=incx);
 // initializing vector with a constant value passed as a parameter
-template <typename T>
+/*template <typename T>
 void rocblas_print_vector(vector<T> &A, rocblas_int M, rocblas_int N,
                           rocblas_int lda) {
   if (typeid(T) == typeid(float))
@@ -229,14 +231,14 @@ void rocblas_print_vector(vector<T> &A, rocblas_int M, rocblas_int N,
     }
   }
   std::cout << std::endl;
-};
+};*/
 
 /* ============================================================================================
  */
 /*! \brief  turn float -> 's', double -> 'd', rocblas_float_complex -> 'c',
  * rocblas_double_complex
  * -> 'z' */
-template <typename T> char type2char();
+//template <typename T> char type2char();
 
 /* ============================================================================================
  */
@@ -260,7 +262,7 @@ template <typename T> bool check_transpose(rocblas_operation trans) {
  */
 /*! \brief  Debugging purpose, print out CPU and GPU result matrix, not valid in
  * complex number  */
-template <typename T>
+/*template <typename T>
 void print_matrix(vector<T> CPU_result, vector<T> GPU_result, rocblas_int m,
                   rocblas_int n, rocblas_int lda) {
   for (int i = 0; i < m; i++)
@@ -268,19 +270,19 @@ void print_matrix(vector<T> CPU_result, vector<T> GPU_result, rocblas_int m,
       printf("matrix  col %d, row %d, CPU result=%f, GPU result=%f\n", i, j,
              CPU_result[j + i * lda], GPU_result[j + i * lda]);
     }
-}
+}*/
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
 
 /* ============================================================================================
  */
 /*  device query and print out their ID and name */
-rocblas_int query_device_property();
+//rocblas_int query_device_property();
 
 /*  set current device to device_id */
-void set_device(rocblas_int device_id);
+//void set_device(rocblas_int device_id);
 
 /* ============================================================================================
  */
@@ -289,39 +291,39 @@ void set_device(rocblas_int device_id);
 
 /*! \brief  CPU Timer(in microsecond): synchronize with the default device and
  * return wall time */
-double get_time_us(void);
+//double get_time_us(void);
 
 /*! \brief  CPU Timer(in microsecond): synchronize with given queue/stream and
  * return wall time */
-double get_time_us_sync(hipStream_t stream);
+//double get_time_us_sync(hipStream_t stream);
 
 /* ============================================================================================
  */
 /*  Convert rocblas constants to lapack char. */
 
-char rocblas2char_operation(rocblas_operation value);
+//char rocblas2char_operation(rocblas_operation value);
 
-char rocblas2char_fill(rocblas_fill value);
+//char rocblas2char_fill(rocblas_fill value);
 
-char rocblas2char_diagonal(rocblas_diagonal value);
+//char rocblas2char_diagonal(rocblas_diagonal value);
 
-char rocblas2char_side(rocblas_side value);
+//char rocblas2char_side(rocblas_side value);
 
 /* ============================================================================================
  */
 /*  Convert lapack char constants to rocblas type. */
 
-rocblas_operation char2rocblas_operation(char value);
+//rocblas_operation char2rocblas_operation(char value);
 
-rocblas_fill char2rocblas_fill(char value);
+//rocblas_fill char2rocblas_fill(char value);
 
-rocblas_diagonal char2rocblas_diagonal(char value);
+//rocblas_diagonal char2rocblas_diagonal(char value);
 
-rocblas_side char2rocblas_side(char value);
+//rocblas_side char2rocblas_side(char value);
 
-#ifdef __cplusplus
-}
-#endif
+//#ifdef __cplusplus
+//}
+//#endif
 
 /* ============================================================================================
  */
@@ -331,7 +333,7 @@ rocblas_side char2rocblas_side(char value);
 // has to compile with option "-std=c++11", and this rocblas library uses c++11
 // everywhere c++11 allows intilization of member of a struct
 
-class Arguments {
+/*class Arguments {
 public:
   rocblas_int M = 128;
   rocblas_int N = 128;
@@ -432,9 +434,9 @@ public:
 
     return *this;
   }
-};
+};*/
 
-template <typename T>
+/*template <typename T>
 void printMatrix(const string name, T *A, rocblas_int m, rocblas_int n,
                  rocblas_int lda) {
   cout << "---------- " << name << " ----------" << endl;
@@ -444,6 +446,6 @@ void printMatrix(const string name, T *A, rocblas_int m, rocblas_int n,
     }
     printf("\n");
   }
-}
+}*/
 
 #endif

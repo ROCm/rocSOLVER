@@ -46,33 +46,33 @@ set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
 
 set(roclapack_test_source
-    lacgv_gtest.cpp
+#    lacgv_gtest.cpp
     laswp_gtest.cpp
-    larfg_gtest.cpp
-    larf_gtest.cpp
-    larft_gtest.cpp
-    larfb_gtest.cpp
-    orgxr_ungxr_gtest.cpp
-    orglx_unglx_gtest.cpp
-    orgbr_ungbr_gtest.cpp
-    ormxr_unmxr_gtest.cpp
-    ormlx_unmlx_gtest.cpp
-    ormbr_unmbr_gtest.cpp
-    getf2_getrf_gtest.cpp
-    getf2_getrf_batched_gtest.cpp
-    getf2_getrf_strided_batched_gtest.cpp
-    potf2_potrf_gtest.cpp
-    potf2_potrf_batched_gtest.cpp
-    potf2_potrf_strided_batched_gtest.cpp
+#    larfg_gtest.cpp
+#    larf_gtest.cpp
+#    larft_gtest.cpp
+#    larfb_gtest.cpp
+#    orgxr_ungxr_gtest.cpp
+#    orglx_unglx_gtest.cpp
+#    orgbr_ungbr_gtest.cpp
+#    ormxr_unmxr_gtest.cpp
+#    ormlx_unmlx_gtest.cpp
+#    ormbr_unmbr_gtest.cpp
+#    getf2_getrf_gtest.cpp
+#    getf2_getrf_batched_gtest.cpp
+#    getf2_getrf_strided_batched_gtest.cpp
+#    potf2_potrf_gtest.cpp
+#    potf2_potrf_batched_gtest.cpp
+#    potf2_potrf_strided_batched_gtest.cpp
     getrs_gtest.cpp
-    getrs_batched_gtest.cpp
-    getrs_strided_batched_gtest.cpp
-    geqr2_geqrf_gtest.cpp
-    geqr2_geqrf_batched_gtest.cpp
-    geqr2_geqrf_strided_batched_gtest.cpp
-    gelq2_gelqf_gtest.cpp
-    gelq2_gelqf_batched_gtest.cpp
-    gelq2_gelqf_strided_batched_gtest.cpp
+#    getrs_batched_gtest.cpp
+#    getrs_strided_batched_gtest.cpp
+#    geqr2_geqrf_gtest.cpp
+#    geqr2_geqrf_batched_gtest.cpp
+#    geqr2_geqrf_strided_batched_gtest.cpp
+#    gelq2_gelqf_gtest.cpp
+#    gelq2_gelqf_batched_gtest.cpp
+#    gelq2_gelqf_strided_batched_gtest.cpp
     )
 
 set(rocsolver_test_source
@@ -80,12 +80,13 @@ set(rocsolver_test_source
 )
 
 set( rocsolver_benchmark_common
-      ../common/utility.cpp
+#      ../common/utility.cpp
+      ../../../rocblascommon/clients/common/utility.cpp
       ../common/cblas_interface.cpp
-      ../common/norm.cpp
+#      ../common/norm.cpp
       ../common/unit.cpp
-      ../common/near.cpp
-      ../common/arg_check.cpp
+#      ../common/near.cpp
+#      ../common/arg_check.cpp
     )
 
 add_executable( rocsolver-test ${roclapack_test_source} ${rocsolver_test_source} ${rocsolver_benchmark_common} )

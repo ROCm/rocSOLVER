@@ -21,7 +21,11 @@
 #include <gtest/gtest.h>
 #endif
 
+#include "rocsolver_test.hpp"
+
 #define ERROR_EPS_MULTIPLIER 3000
+
+
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
@@ -187,18 +191,7 @@ rocblas_status testing_larfb(Arguments argus)
         }
         cblas_larft<T>(directC, storevC, N, K, hV.data(), ldv, htau.data(), hF.data(), ldt);
     }
-//    rocblas_init<T>(hF.data(), K, K, ldt);
-//    for (int i=0; i<K; ++i) {
-//        for (int j=0; j<K; ++j) {
-//            hF[i+j*ldt] = (hF[i+j*ldt] - 5) / 5;
-//        }
-//    } 
     rocblas_init<T>(hA.data(), M, N, lda);
-//    for (int i=0; i<M; ++i) {
-//        for (int j=0; j<N; ++j) {
-//            hA[i+j*lda] = (hA[i+j*lda] - 5) / 5;
-//        }
-//    } 
     
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dV, hV.data(), sizeof(T) * sizeV, hipMemcpyHostToDevice));

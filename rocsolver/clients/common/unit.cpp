@@ -7,7 +7,7 @@
 #include "rocblas.h"
 #include <iostream>
 
-#define PRINT_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                             \
+/*#define PRINT_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                             \
   {                                                                            \
     hipError_t TMP_STATUS_FOR_CHECK = INPUT_STATUS_FOR_CHECK;                  \
     if (TMP_STATUS_FOR_CHECK != hipSuccess) {                                  \
@@ -15,7 +15,7 @@
               __FILE__, __LINE__);                                             \
     }                                                                          \
   }
-
+*/
 /* ========================================Gtest Unit Check
  * ==================================================== */
 

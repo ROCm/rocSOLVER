@@ -5,7 +5,7 @@
 #include "cblas_interface.h"
 #include "cblas.h"
 #include "rocblas.h"
-#include "utility.h"
+//#include "utility.h"
 #include <memory>
 #include <typeinfo>
 

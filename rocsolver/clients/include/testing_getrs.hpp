@@ -2,24 +2,29 @@
  * Copyright 2018 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include <cmath> // std::abs
-#include <fstream>
-#include <iostream>
-#include <limits> // std::numeric_limits<T>::epsilon();
-#include <stdlib.h>
-#include <string>
-#include <vector>
+//#include <cmath> // std::abs
+//#include <fstream>
+//#include <iostream>
+//#include <limits> // std::numeric_limits<T>::epsilon();
+//#include <stdlib.h>
+//#include <string>
+//#include <vector>
 
-#include "arg_check.h"
-#include "cblas_interface.h"
-#include "norm.h"
+//#include "arg_check.h"
+//#include "cblas_interface.h"
+//#include "norm.h"
 #include "rocblas_test_unique_ptr.hpp"
-#include "rocsolver.hpp"
+//#include "rocsolver.hpp"
 #include "unit.h"
-#include "utility.h"
-#ifdef GOOGLE_TEST
-#include <gtest/gtest.h>
-#endif
+//#include "utility.h"
+//#ifdef GOOGLE_TEST
+//#include <gtest/gtest.h>
+//#endif
+#include "rocsolver_arguments.hpp"
+#include "rocsolver.hpp"
+#include "cblas_interface.h"
+#include "clientcommon.hpp"
+
 
 // this is max error PER element after the solution
 #define GETRF_ERROR_EPS_MULTIPLIER 3000
@@ -27,10 +32,51 @@
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
 
-using namespace std;
+//using namespace std;
 
-template <typename T, typename U> rocblas_status testing_getrs(Arguments argus) {
+template <typename T>
+void testing_getrs_bad_arg()
+{
+    rocblas_local_handle handle;
+    rocblas_int m = 1;
+    rocblas_int nrhs = 1;
+    rocblas_int lda = 1;
+    rocblas_int ldb = 1;
+    rocblas_operation tras = rocblas_operation_none;
 
+    device_vector<T> dA(1);
+    device_vector<T> dB(1);
+    device_vector<rocblas_int> dIpiv(1);
+    CHECK_DEVICE_ALLOCATION(dA.memcheck());
+    CHECK_DEVICE_ALLOCATION(dB.memcheck());
+    CHECK_DEVICE_ALLOCATION(dIpiv.memcheck());
+
+    // handle
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs<T>(nullptr, trans, m, nhrs, dA, lda, dIpiv, dB, ldb),
+                          rocblas_status_invalid_handle);
+
+    // values
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs<T>(handle, rocblas_operation(-1), m, nhrs, dA, lda, dIpiv, dB, ldb),
+                          rocblas_status_invalid_value);
+
+    // pointers
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs<T>(handle, trans, M, nhrs, nullptr, lda, dIpiv, dB, ldb),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs<T>(handle, trans, M, nhrs, dA, lda, nullptr, dB, ldb),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs<T>(handle, trans, M, nhrs, dA, lda, dIpiv, nullptr, ldb),
+                          rocblas_status_invalid_pointer);
+
+    // quick return with invalid pointers
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs<T>(handle, trans, M, nhrs, dA, lda, dIpiv, dB, ldb),
+                          rocblas_status_success);
+}
+
+
+
+template <typename T, typename U> 
+rocblas_status testing_getrs(Arguments argus) 
+{
     rocblas_int M = argus.M;
     rocblas_int nhrs = argus.N;
     rocblas_int lda = argus.lda;
@@ -71,7 +117,7 @@ template <typename T, typename U> rocblas_status testing_getrs(Arguments argus) 
             return rocblas_status_memory_error;
         }
 
-        return rocsolver_getrs<T>(handle, transRoc, M, nhrs, dA, lda, dIpiv, dB, ldb);
+        return rocsolver_getrs<T>(handle, trans, M, nhrs, dA, lda, dIpiv, dB, ldb);
     }
 
     // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory

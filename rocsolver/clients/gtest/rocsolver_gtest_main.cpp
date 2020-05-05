@@ -2,7 +2,7 @@
  * Copyright 2016 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "utility.h"
+#include "clientcommon.hpp"
 #include <gtest/gtest.h>
 #include <stdexcept>
 
@@ -19,8 +19,8 @@ int main(int argc, char **argv) {
   int device_count = query_device_property();
 
   if (device_count <= device_id) {
-    printf("Error: invalid device ID. There may not be such device ID. Will "
-           "exit \n");
+    //printf("Error: invalid device ID. There may not be such device ID. Will exit \n");
+    rocblas_cout << "Error: invalid device ID. There may not be such device ID. Will exit \n";
     return -1;
   } else {
     set_device(device_id);

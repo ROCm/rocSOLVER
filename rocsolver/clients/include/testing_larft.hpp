@@ -21,7 +21,11 @@
 #include <gtest/gtest.h>
 #endif
 
+#include "rocsolver_test.hpp"
+
 #define ERROR_EPS_MULTIPLIER 3000
+
+
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
@@ -124,9 +128,6 @@ rocblas_status testing_larft(Arguments argus)
         }
         cblas_gelqf<T>(K, N, hV.data(), ldv, htau.data(), hW.data(), K);
     }     
-//    rocblas_init<T>(htau.data(), 1, K, 1); 
-//    for (int j=0;j<K;++j) 
-//        htau[j] = (htau[j]-5)/5.0; 
 
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dV, hV.data(), sizeof(T) * sizeV, hipMemcpyHostToDevice));
