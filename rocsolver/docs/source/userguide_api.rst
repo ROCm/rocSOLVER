@@ -167,6 +167,19 @@ rocsolver_<type>ormbr()
 .. doxygenfunction:: rocsolver_dormbr
 .. doxygenfunction:: rocsolver_sormbr
 
+Unitary matrices
+---------------------------
+
+rocsolver_<type>ung2r()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zung2r
+.. doxygenfunction:: rocsolver_cung2r
+
+rocsolver_<type>ungqr()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zungqr
+.. doxygenfunction:: rocsolver_cungqr
+
 
 
 Lapack Functions

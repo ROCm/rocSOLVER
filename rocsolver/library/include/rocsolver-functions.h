@@ -578,6 +578,60 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2r(rocblas_handle handle,
                                                    const rocblas_int lda,
                                                    double *ipiv);
 
+/*! \brief UNG2R generates a m-by-n complex Matrix Q with orthonormal columns.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The matrix Q is defined as the first n columns of the product of k Householder
+    reflectors of order m
+    
+        Q = H(1) * H(2) * ... * H(k)
+
+    Householder matrices H(i) are never stored, they are computed from its corresponding 
+    Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix Q. 
+    @param[in]
+    n           rocblas_int. 0 <= n <= m.\n
+                The number of colums of the matrix Q.
+    @param[in]
+    k           rocblas_int. 0 <= k <= n.\n
+                The number of Householder reflectors.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
+                as returned in the first k columns of matrix A of GEQRF.
+                On exit, the computed matrix Q.
+    @param[in]
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A. 
+    @param[in]
+    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+                The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cung2r(rocblas_handle handle,
+                                                   const rocblas_int m,
+                                                   const rocblas_int n, 
+                                                   const rocblas_int k, 
+                                                   rocblas_float_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_float_complex *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zung2r(rocblas_handle handle,
+                                                   const rocblas_int m,
+                                                   const rocblas_int n, 
+                                                   const rocblas_int k, 
+                                                   rocblas_double_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_double_complex *ipiv);
+
 /*! \brief ORGQR generates a m-by-n Matrix Q with orthonormal columns.
 
     \details
@@ -631,6 +685,60 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgqr(rocblas_handle handle,
                                                    double *A,
                                                    const rocblas_int lda,
                                                    double *ipiv);
+
+/*! \brief UNGQR generates a m-by-n complex Matrix Q with orthonormal columns.
+
+    \details
+    (This is the blocked version of the algorithm).
+
+    The matrix Q is defined as the first n columns of the product of k Householder
+    reflectors of order m
+    
+        Q = H(1) * H(2) * ... * H(k)
+
+    Householder matrices H(i) are never stored, they are computed from its corresponding 
+    Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix Q. 
+    @param[in]
+    n           rocblas_int. 0 <= n <= m.\n
+                The number of colums of the matrix Q.
+    @param[in]
+    k           rocblas_int. 0 <= k <= n.\n
+                The number of Householder reflectors.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
+                as returned in the first k columns of matrix A of GEQRF.
+                On exit, the computed matrix Q.
+    @param[in]
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A. 
+    @param[in]
+    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+                The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cungqr(rocblas_handle handle,
+                                                   const rocblas_int m,
+                                                   const rocblas_int n, 
+                                                   const rocblas_int k, 
+                                                   rocblas_float_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_float_complex *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zungqr(rocblas_handle handle,
+                                                   const rocblas_int m,
+                                                   const rocblas_int n, 
+                                                   const rocblas_int k, 
+                                                   rocblas_double_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_double_complex *ipiv);
 
 /*! \brief ORGL2 generates a m-by-n Matrix Q with orthonormal rows.
 

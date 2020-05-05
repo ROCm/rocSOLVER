@@ -3,7 +3,7 @@
  *
  * ************************************************************************ */
 
-#include "testing_org2r_orgqr.hpp"
+#include "testing_orgqr_ungqr.hpp"
 #include "utility.h"
 #include <gtest/gtest.h>
 #include <math.h>
@@ -66,7 +66,7 @@ protected:
 TEST_P(OrthoColGen, org2r_float) {
     Arguments arg = setup_arguments_org(GetParam());
 
-    rocblas_status status = testing_org2r_orgqr<float,0>(arg);
+    rocblas_status status = testing_orgqr_ungqr<float,float,0>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -82,7 +82,39 @@ TEST_P(OrthoColGen, org2r_float) {
 TEST_P(OrthoColGen, org2r_double) {
     Arguments arg = setup_arguments_org(GetParam());
 
-    rocblas_status status = testing_org2r_orgqr<double,0>(arg);
+    rocblas_status status = testing_orgqr_ungqr<double,double,0>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.N > arg.M || arg.K > arg.N) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(OrthoColGen, ung2r_float_complex) {
+    Arguments arg = setup_arguments_org(GetParam());
+
+    rocblas_status status = testing_orgqr_ungqr<rocblas_float_complex,float,0>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.N > arg.M || arg.K > arg.N) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(OrthoColGen, ung2r_double_complex) {
+    Arguments arg = setup_arguments_org(GetParam());
+
+    rocblas_status status = testing_orgqr_ungqr<rocblas_double_complex,double,0>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -98,7 +130,7 @@ TEST_P(OrthoColGen, org2r_double) {
 TEST_P(OrthoColGen, orgqr_float) {
     Arguments arg = setup_arguments_org(GetParam());
 
-    rocblas_status status = testing_org2r_orgqr<float,1>(arg);
+    rocblas_status status = testing_orgqr_ungqr<float,float,1>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -114,7 +146,39 @@ TEST_P(OrthoColGen, orgqr_float) {
 TEST_P(OrthoColGen, orgqr_double) {
     Arguments arg = setup_arguments_org(GetParam());
 
-    rocblas_status status = testing_org2r_orgqr<double,1>(arg);
+    rocblas_status status = testing_orgqr_ungqr<double,double,1>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.N > arg.M || arg.K > arg.N) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(OrthoColGen, ungqr_float_complex) {
+    Arguments arg = setup_arguments_org(GetParam());
+
+    rocblas_status status = testing_orgqr_ungqr<rocblas_float_complex,float,1>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.N > arg.M || arg.K > arg.N) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(OrthoColGen, ungqr_double_complex) {
+    Arguments arg = setup_arguments_org(GetParam());
+
+    rocblas_status status = testing_orgqr_ungqr<rocblas_double_complex,double,1>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message

@@ -109,8 +109,12 @@ void zlaswp_(int *n, rocblas_double_complex *A, int *lda, int *k1, int *k2, int 
 
 void sorg2r_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *info);
 void dorg2r_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *info);
+void cung2r_(int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *info);
+void zung2r_(int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *info);
 void sorgqr_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
 void dorgqr_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
+void cungqr_(int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *lwork, int *info);
+void zungqr_(int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *lwork, int *info);
 
 void sorm2r_(char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *info);
 void dorm2r_(char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *info);
@@ -277,9 +281,9 @@ void cblas_larfb<rocblas_double_complex>(char side, char trans, char direct, cha
     zlarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
 }
 
-// orgqr
+// orgqr & ungqr
 template <>
-void cblas_orgqr<float>(rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+void cblas_orgqr_ungqr<float>(rocblas_int m, rocblas_int n, rocblas_int k, float *A,
                                rocblas_int lda, float *ipiv, float *work) {
   int info;
   int lwork = n;
@@ -287,26 +291,56 @@ void cblas_orgqr<float>(rocblas_int m, rocblas_int n, rocblas_int k, float *A,
 }
 
 template <>
-void cblas_orgqr<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+void cblas_orgqr_ungqr<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
                                rocblas_int lda, double *ipiv, double *work) {
   int info;
   int lwork = n;
   dorgqr_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
 }
 
-// org2r
 template <>
-void cblas_org2r<float>(rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+void cblas_orgqr_ungqr<rocblas_float_complex>(rocblas_int m, rocblas_int n, rocblas_int k, rocblas_float_complex *A,
+                               rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work) {
+  int info;
+  int lwork = n;
+  cungqr_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_orgqr_ungqr<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_int k, rocblas_double_complex *A,
+                               rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work) {
+  int info;
+  int lwork = n;
+  zungqr_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
+}
+
+// org2r & ung2r
+template <>
+void cblas_org2r_ung2r<float>(rocblas_int m, rocblas_int n, rocblas_int k, float *A,
                                rocblas_int lda, float *ipiv, float *work) {
   int info;
   sorg2r_(&m, &n, &k, A, &lda, ipiv, work, &info);
 }
 
 template <>
-void cblas_org2r<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+void cblas_org2r_ung2r<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
                                rocblas_int lda, double *ipiv, double *work) {
   int info;
   dorg2r_(&m, &n, &k, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_org2r_ung2r<rocblas_float_complex>(rocblas_int m, rocblas_int n, rocblas_int k, rocblas_float_complex *A,
+                               rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work) {
+  int info;
+  cung2r_(&m, &n, &k, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_org2r_ung2r<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_int k, rocblas_double_complex *A,
+                               rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work) {
+  int info;
+  zung2r_(&m, &n, &k, A, &lda, ipiv, work, &info);
 }
 
 // ormqr

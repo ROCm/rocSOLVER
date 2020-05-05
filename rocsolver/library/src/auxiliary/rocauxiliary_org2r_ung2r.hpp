@@ -7,8 +7,8 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORG2R_HPP
-#define ROCLAPACK_ORG2R_HPP
+#ifndef ROCLAPACK_ORG2R_UNG2R_HPP
+#define ROCLAPACK_ORG2R_UNG2R_HPP
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
@@ -38,7 +38,7 @@ __global__ void init_ident_col(const rocblas_int m, const rocblas_int n, const r
 }
 
 template <typename T, bool BATCHED>
-void rocsolver_org2r_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+void rocsolver_org2r_ung2r_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
                                   size_t *size_1, size_t *size_2, size_t *size_3)
 {
     // memory requirements to call larf
@@ -46,7 +46,7 @@ void rocsolver_org2r_getMemorySize(const rocblas_int m, const rocblas_int n, con
 }
 
 template <typename T>
-void rocsolver_org2r_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+void rocsolver_org2r_ung2r_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
                                   size_t *size)
 {
     // memory requirements to call larf
@@ -54,7 +54,7 @@ void rocsolver_org2r_getMemorySize(const rocblas_int m, const rocblas_int n, con
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_org2r_template(rocblas_handle handle, const rocblas_int m, 
+rocblas_status rocsolver_org2r_ung2r_template(rocblas_handle handle, const rocblas_int m, 
                                    const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
                                    const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
                                    const rocblas_stride strideP, const rocblas_int batch_count, T* scalars, T* work, T** workArr)

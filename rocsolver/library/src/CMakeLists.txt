@@ -33,8 +33,8 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_larf.cpp
   auxiliary/rocauxiliary_larft.cpp
   auxiliary/rocauxiliary_larfb.cpp
-  auxiliary/rocauxiliary_org2r.cpp
-  auxiliary/rocauxiliary_orgqr.cpp
+  auxiliary/rocauxiliary_org2r_ung2r.cpp
+  auxiliary/rocauxiliary_orgqr_ungqr.cpp
   auxiliary/rocauxiliary_orgl2.cpp
   auxiliary/rocauxiliary_orglq.cpp
   auxiliary/rocauxiliary_orgbr.cpp

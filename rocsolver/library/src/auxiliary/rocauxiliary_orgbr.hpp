@@ -13,7 +13,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
-#include "../auxiliary/rocauxiliary_orgqr.hpp"
+#include "../auxiliary/rocauxiliary_orgqr_ungqr.hpp"
 #include "../auxiliary/rocauxiliary_orglq.hpp"
 
 #define BS 32 //blocksize for kernels
@@ -88,11 +88,11 @@ void rocsolver_orgbr_getMemorySize(const rocblas_storev storev, const rocblas_in
 {
     if (storev == rocblas_column_wise) {
         if (m >= k) {
-            rocsolver_orgqr_getMemorySize<T,BATCHED>(m,n,k,batch_count,size_1,size_2,size_3,size_4);
+            rocsolver_orgqr_ungqr_getMemorySize<T,BATCHED>(m,n,k,batch_count,size_1,size_2,size_3,size_4);
         } else {
             size_t s1 = sizeof(T)*batch_count*(m-1)*m/2;
             size_t s2;
-            rocsolver_orgqr_getMemorySize<T,BATCHED>(m-1,m-1,m-1,batch_count,size_1,&s2,size_3,size_4);
+            rocsolver_orgqr_ungqr_getMemorySize<T,BATCHED>(m-1,m-1,m-1,batch_count,size_1,&s2,size_3,size_4);
             *size_2 = max(s1,s2);
         }
     } else {
@@ -125,8 +125,8 @@ rocblas_status rocsolver_orgbr_template(rocblas_handle handle, const rocblas_sto
     // of a m-by-k matrix A (given by gebrd)
     if (storev == rocblas_column_wise) {
         if (m >= k) {
-            rocsolver_orgqr_template<BATCHED,STRIDED,T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count,
-                                                        scalars, work, workArr, trfact);    
+            rocsolver_orgqr_ungqr_template<BATCHED,STRIDED,T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count,
+                                                              scalars, work, workArr, trfact);    
         } else {
             // shift the householder vectors provided by gebrd as they come below the first subdiagonal
             rocblas_stride strideW = rocblas_stride(m - 1)*m/2;  //number of elements to copy
@@ -142,8 +142,8 @@ rocblas_status rocsolver_orgbr_template(rocblas_handle handle, const rocblas_sto
                                 false,m-1,A,shiftA,lda,strideA,work,0,ldw,strideW);           
             
             // result
-            rocsolver_orgqr_template<BATCHED,STRIDED,T>(handle, m-1, m-1, m-1, A, shiftA + idx2D(1,1,lda), lda, strideA, ipiv, strideP, batch_count,
-                                                        scalars, work, workArr, trfact);    
+            rocsolver_orgqr_ungqr_template<BATCHED,STRIDED,T>(handle, m-1, m-1, m-1, A, shiftA + idx2D(1,1,lda), lda, strideA, ipiv, strideP, batch_count,
+                                                              scalars, work, workArr, trfact);    
         }   
     }
     
