@@ -57,8 +57,8 @@ void near_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
 #pragma unroll
     for (rocblas_int i = 0; i < M; i++) {
 #ifdef GOOGLE_TEST
-      ASSERT_NEAR(hCPU[i + j * lda].x, hGPU[i + j * lda].x, abs_error);
-      ASSERT_NEAR(hCPU[i + j * lda].y, hGPU[i + j * lda].y, abs_error);
+      ASSERT_NEAR(hCPU[i + j * lda].real(), hGPU[i + j * lda].real(), abs_error);
+      ASSERT_NEAR(hCPU[i + j * lda].imag(), hGPU[i + j * lda].imag(), abs_error);
 #endif
     }
   }
@@ -73,8 +73,8 @@ void near_check_general(rocblas_int M, rocblas_int N, rocblas_int lda,
 #pragma unroll
     for (rocblas_int i = 0; i < M; i++) {
 #ifdef GOOGLE_TEST
-      ASSERT_NEAR(hCPU[i + j * lda].x, hGPU[i + j * lda].x, abs_error);
-      ASSERT_NEAR(hCPU[i + j * lda].y, hGPU[i + j * lda].y, abs_error);
+      ASSERT_NEAR(hCPU[i + j * lda].real(), hGPU[i + j * lda].real(), abs_error);
+      ASSERT_NEAR(hCPU[i + j * lda].imag(), hGPU[i + j * lda].imag(), abs_error);
 #endif
     }
   }

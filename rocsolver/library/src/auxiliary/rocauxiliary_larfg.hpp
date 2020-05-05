@@ -14,7 +14,7 @@
 #include "rocsolver.h"
 #include "common_device.hpp"
 
-template <typename T, typename U, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 __global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms, U alpha, const rocblas_int shifta, const rocblas_stride stride)
 {
     int b = hipBlockIdx_x;
@@ -38,7 +38,7 @@ __global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms, U al
     }
 }
 
-template <typename T, typename U, std::enable_if_t<!std::is_floating_point<T>::value, int> = 0>
+template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
 __global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms, U alpha, const rocblas_int shifta, const rocblas_stride stride)
 {
     int b = hipBlockIdx_x;
@@ -46,16 +46,15 @@ __global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms, U al
     T* a = load_ptr_batch<T>(alpha,b,shifta,stride);
     T* t = tau + b*strideP;
 
-    auto m = a[0].y*a[0].y;
+    auto m = a[0].imag() * a[0].imag();
 
-    if(norms[b].x > 0 || m > 0) {
-        T n;
-        m += a[0].x*a[0].x;
-        n.x = sqrt(norms[b].x + m);
+    if(norms[b].real() > 0 || m > 0) {
+        m += a[0].real()*a[0].real();
+        auto nr = sqrt(norms[b].real() + m);
 
         //n = -sgn(alpha) * norm(x)
-        n = m > 0 ?
-            -copysign(n.x, a[0].x != 0 ? a[0].x : a[0].y) :
+        auto n = m > 0 ?
+	  -copysign(nr, a[0].real() != 0 ? a[0].real() : a[0].imag()) :
             0;
 
         //scaling factor:
