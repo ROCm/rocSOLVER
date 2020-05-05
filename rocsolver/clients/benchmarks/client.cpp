@@ -29,7 +29,7 @@
 #include "testing_laswp.hpp"
 #include "testing_orgqr_ungqr.hpp"
 #include "testing_orm2r_ormqr.hpp"
-#include "testing_orgl2_orglq.hpp"
+#include "testing_orglq_unglq.hpp"
 #include "testing_orml2_ormlq.hpp"
 #include "testing_orgbr.hpp"
 #include "testing_ormbr.hpp"
@@ -588,15 +588,27 @@ int main(int argc, char *argv[])
   } 
   else if (function == "orgl2") {
     if (precision == 's')
-      testing_orgl2_orglq<float,0>(argus);
+      testing_orglq_unglq<float,float,0>(argus);
     else if (precision == 'd')
-      testing_orgl2_orglq<double,0>(argus);
+      testing_orglq_unglq<double,double,0>(argus);
+  } 
+  else if (function == "ungl2") {
+    if (precision == 'c')
+      testing_orglq_unglq<rocblas_float_complex,float,0>(argus);
+    else if (precision == 'z')
+      testing_orglq_unglq<rocblas_double_complex,double,0>(argus);
   } 
   else if (function == "orglq") {
     if (precision == 's')
-      testing_orgl2_orglq<float,1>(argus);
+      testing_orglq_unglq<float,float,1>(argus);
     else if (precision == 'd')
-      testing_orgl2_orglq<double,1>(argus);
+      testing_orglq_unglq<double,double,1>(argus);
+  } 
+  else if (function == "unglq") {
+    if (precision == 'c')
+      testing_orglq_unglq<rocblas_float_complex,float,1>(argus);
+    else if (precision == 'z')
+      testing_orglq_unglq<rocblas_double_complex,double,1>(argus);
   } 
   else if (function == "orgbr") {
     if (precision == 's')

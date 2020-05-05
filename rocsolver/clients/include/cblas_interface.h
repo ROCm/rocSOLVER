@@ -151,10 +151,10 @@ template <typename T>
 void cblas_orgqr_ungqr(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
 
 template <typename T>
-void cblas_orgl2(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
+void cblas_orgl2_ungl2(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
 
 template <typename T>
-void cblas_orglq(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
+void cblas_orglq_unglq(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
 
 template <typename T>
 void cblas_orgbr(char storev, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work, rocblas_int size_w);

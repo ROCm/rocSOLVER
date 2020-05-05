@@ -7,14 +7,14 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORGLQ_HPP
-#define ROCLAPACK_ORGLQ_HPP
+#ifndef ROCLAPACK_ORGLQ_UNGLQ_HPP
+#define ROCLAPACK_ORGLQ_UNGLQ_HPP
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
 #include "ideal_sizes.hpp"
-#include "../auxiliary/rocauxiliary_orgl2.hpp"
+#include "../auxiliary/rocauxiliary_orgl2_ungl2.hpp"
 #include "../auxiliary/rocauxiliary_larfb.hpp"
 #include "../auxiliary/rocauxiliary_larft.hpp"
 
@@ -36,11 +36,11 @@ __global__ void set_zero_row(const rocblas_int m, const rocblas_int kk, U A,
 }
 
 template <typename T, bool BATCHED>
-void rocsolver_orglq_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
-                                  size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
+void rocsolver_orglq_unglq_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
+                                         size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
 {
     size_t s1, s2, s3;
-    rocsolver_orgl2_getMemorySize<T,BATCHED>(m,n,batch_count,size_1,size_2,size_3);
+    rocsolver_orgl2_ungl2_getMemorySize<T,BATCHED>(m,n,batch_count,size_1,size_2,size_3);
 
     if (k <= GEQRF_GEQR2_SWITCHSIZE) {
         *size_4 = 0;
@@ -50,7 +50,7 @@ void rocsolver_orglq_getMemorySize(const rocblas_int m, const rocblas_int n, con
         rocblas_int jb = GEQRF_GEQR2_BLOCKSIZE;
         rocblas_int j = ((k - GEQRF_GEQR2_SWITCHSIZE - 1) / jb) * jb;
         rocblas_int kk = min(k, j + jb);
-        rocsolver_orgl2_getMemorySize<T>(max(m-kk,jb),n,batch_count,&s1);
+        rocsolver_orgl2_ungl2_getMemorySize<T>(max(m-kk,jb),n,batch_count,&s1);
         rocsolver_larft_getMemorySize<T>(jb, batch_count, &s2);
         rocsolver_larfb_getMemorySize<T>(rocblas_side_left, m-jb, n, jb, batch_count, &s3);
 
@@ -62,7 +62,7 @@ void rocsolver_orglq_getMemorySize(const rocblas_int m, const rocblas_int n, con
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status rocsolver_orglq_template(rocblas_handle handle, const rocblas_int m, 
+rocblas_status rocsolver_orglq_unglq_template(rocblas_handle handle, const rocblas_int m, 
                                    const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
                                    const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
                                    const rocblas_stride strideP, const rocblas_int batch_count,
@@ -77,7 +77,7 @@ rocblas_status rocsolver_orglq_template(rocblas_handle handle, const rocblas_int
     
     // if the matrix is small, use the unblocked variant of the algorithm
     if (k <= GEQRF_GEQR2_SWITCHSIZE) 
-        return rocsolver_orgl2_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count, scalars, work, workArr);
+        return rocsolver_orgl2_ungl2_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count, scalars, work, workArr);
 
     rocblas_int ldw = GEQRF_GEQR2_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) *ldw;
@@ -99,9 +99,9 @@ rocblas_status rocsolver_orglq_template(rocblas_handle handle, const rocblas_int
         hipLaunchKernelGGL(set_zero_row<T>,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,
                            m,kk,A,shiftA,lda,strideA);
         
-        rocsolver_orgl2_template<T>(handle, m - kk, n - kk, k - kk, 
-                                    A, shiftA + idx2D(kk, kk, lda), lda, 
-                                    strideA, (ipiv + kk), strideP, batch_count, scalars, work, workArr);
+        rocsolver_orgl2_ungl2_template<T>(handle, m - kk, n - kk, k - kk, 
+                                          A, shiftA + idx2D(kk, kk, lda), lda, 
+                                          strideA, (ipiv + kk), strideP, batch_count, scalars, work, workArr);
     }
 
     // compute the blocked part
@@ -116,7 +116,7 @@ rocblas_status rocsolver_orglq_template(rocblas_handle handle, const rocblas_int
                                         (ipiv + j), strideP,
                                         trfact, ldw, strideW, batch_count, scalars, work, workArr);
 
-            rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,rocblas_side_right,rocblas_operation_transpose,rocblas_forward_direction,
+            rocsolver_larfb_template<BATCHED,STRIDED,T>(handle,rocblas_side_right,rocblas_operation_conjugate_transpose,rocblas_forward_direction,
                                         rocblas_row_wise,m-j-jb, n-j, jb,
                                         A, shiftA + idx2D(j,j,lda), lda, strideA,
                                         trfact, 0, ldw, strideW,
@@ -131,9 +131,9 @@ rocblas_status rocsolver_orglq_template(rocblas_handle handle, const rocblas_int
             hipLaunchKernelGGL(set_zero_row<T>,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,
                                j+jb,j,A,shiftA,lda,strideA);
         }
-        rocsolver_orgl2_template<T>(handle, jb, n - j, jb, 
-                                    A, shiftA + idx2D(j, j, lda), lda, 
-                                    strideA, (ipiv + j), strideP, batch_count, scalars, work, workArr);
+        rocsolver_orgl2_ungl2_template<T>(handle, jb, n - j, jb, 
+                                          A, shiftA + idx2D(j, j, lda), lda, 
+                                          strideA, (ipiv + j), strideP, batch_count, scalars, work, workArr);
 
         j -= jb;
     }

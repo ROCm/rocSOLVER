@@ -28,8 +28,8 @@
 
 using namespace std;
 
-template <typename T, int orglq> 
-rocblas_status testing_orgl2_orglq(Arguments argus) {
+template <typename T, typename U, int glq> 
+rocblas_status testing_orglq_unglq(Arguments argus) {
     rocblas_int M = argus.M;
     rocblas_int N = argus.N;
     rocblas_int K = argus.K;
@@ -52,11 +52,11 @@ rocblas_status testing_orgl2_orglq(Arguments argus) {
             return rocblas_status_memory_error;
         }
         
-        if(orglq) {
-            return rocsolver_orglq<T>(handle, M, N, K, dA, lda, dIpiv);
+        if(glq) {
+            return rocsolver_orglq_unglq<T>(handle, M, N, K, dA, lda, dIpiv);
         }
         else { 
-            return rocsolver_orgl2<T>(handle, M, N, K, dA, lda, dIpiv);
+            return rocsolver_orgl2_ungl2<T>(handle, M, N, K, dA, lda, dIpiv);
         }
     }
 
@@ -98,7 +98,7 @@ rocblas_status testing_orgl2_orglq(Arguments argus) {
 
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<T>::epsilon();
+    double eps = std::numeric_limits<U>::epsilon();
     double max_err_1 = 0.0, max_val = 0.0;
     double diff;
     int piverr = 0;
@@ -108,22 +108,22 @@ rocblas_status testing_orgl2_orglq(Arguments argus) {
     =================================================================== */  
     if (argus.unit_check || argus.norm_check) {
         //GPU lapack
-        if(orglq) {
-            CHECK_ROCBLAS_ERROR(rocsolver_orglq<T>(handle, M, N, K, dA, lda, dIpiv));
+        if(glq) {
+            CHECK_ROCBLAS_ERROR(rocsolver_orglq_unglq<T>(handle, M, N, K, dA, lda, dIpiv));
         }
         else {
-            CHECK_ROCBLAS_ERROR(rocsolver_orgl2<T>(handle, M, N, K, dA, lda, dIpiv));
+            CHECK_ROCBLAS_ERROR(rocsolver_orgl2_ungl2<T>(handle, M, N, K, dA, lda, dIpiv));
         }   
         //copy output from device to cpu
         CHECK_HIP_ERROR(hipMemcpy(hAr.data(), dA, sizeof(T) * size_A, hipMemcpyDeviceToHost));
 
         //CPU lapack
         cpu_time_used = get_time_us();
-        if(orglq) {
-            cblas_orglq<T>(M, N, K, hA.data(), lda, hIpiv.data(), hW.data());
+        if(glq) {
+            cblas_orglq_unglq<T>(M, N, K, hA.data(), lda, hIpiv.data(), hW.data());
         }
         else {
-            cblas_orgl2<T>(M, N, K, hA.data(), lda, hIpiv.data(), hW.data());
+            cblas_orgl2_ungl2<T>(M, N, K, hA.data(), lda, hIpiv.data(), hW.data());
         }
         cpu_time_used = get_time_us() - cpu_time_used;
 
@@ -140,7 +140,7 @@ rocblas_status testing_orgl2_orglq(Arguments argus) {
         max_err_1 = max_err_1 / max_val;
 
         if(argus.unit_check)
-            getf2_err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
+            getf2_err_res_check<U>(max_err_1, M, N, error_eps_multiplier, eps);
     }
  
 
@@ -148,20 +148,20 @@ rocblas_status testing_orgl2_orglq(Arguments argus) {
         // GPU rocBLAS
         int cold_calls = 2;
 
-        if(orglq) {
+        if(glq) {
             for(int iter = 0; iter < cold_calls; iter++)
-                rocsolver_orglq<T>(handle, M, N, K, dA, lda, dIpiv);
+                rocsolver_orglq_unglq<T>(handle, M, N, K, dA, lda, dIpiv);
             gpu_time_used = get_time_us();
             for(int iter = 0; iter < hot_calls; iter++)
-                rocsolver_orglq<T>(handle, M, N, K, dA, lda, dIpiv);
+                rocsolver_orglq_unglq<T>(handle, M, N, K, dA, lda, dIpiv);
             gpu_time_used = (get_time_us() - gpu_time_used) / hot_calls;       
         }
         else {
             for(int iter = 0; iter < cold_calls; iter++)
-                rocsolver_orgl2<T>(handle, M, N, K, dA, lda, dIpiv);
+                rocsolver_orgl2_ungl2<T>(handle, M, N, K, dA, lda, dIpiv);
             gpu_time_used = get_time_us();
             for(int iter = 0; iter < hot_calls; iter++)
-                rocsolver_orgl2<T>(handle, M, N, K, dA, lda, dIpiv);
+                rocsolver_orgl2_ungl2<T>(handle, M, N, K, dA, lda, dIpiv);
             gpu_time_used = (get_time_us() - gpu_time_used) / hot_calls;       
         }
 

@@ -7,12 +7,13 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORGL2_HPP
-#define ROCLAPACK_ORGL2_HPP
+#ifndef ROCLAPACK_ORGL2_UNGL2_HPP
+#define ROCLAPACK_ORGL2_UNGL2_HPP
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
+#include "../auxiliary/rocauxiliary_lacgv.hpp"
 #include "../auxiliary/rocauxiliary_larf.hpp"
 
 template <typename T, typename U>
@@ -38,7 +39,7 @@ __global__ void init_ident_row(const rocblas_int m, const rocblas_int n, const r
 }
 
 template <typename T, bool BATCHED>
-void rocsolver_orgl2_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+void rocsolver_orgl2_ungl2_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
                                   size_t *size_1, size_t *size_2, size_t *size_3)
 {
     // memory requirements to call larf
@@ -46,7 +47,7 @@ void rocsolver_orgl2_getMemorySize(const rocblas_int m, const rocblas_int n, con
 }
 
 template <typename T>
-void rocsolver_orgl2_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+void rocsolver_orgl2_ungl2_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
                                   size_t *size)
 {
     // memory requirements to call larf
@@ -54,8 +55,8 @@ void rocsolver_orgl2_getMemorySize(const rocblas_int m, const rocblas_int n, con
 }
 
 
-template <typename T, typename U>
-rocblas_status rocsolver_orgl2_template(rocblas_handle handle, const rocblas_int m, 
+template <typename T, typename U, bool COMPLEX = is_complex<T>>
+rocblas_status rocsolver_orgl2_ungl2_template(rocblas_handle handle, const rocblas_int m, 
                                    const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
                                    const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
                                    const rocblas_stride strideP, const rocblas_int batch_count, T* scalars, T* work, T** workArr)
@@ -79,8 +80,15 @@ rocblas_status rocsolver_orgl2_template(rocblas_handle handle, const rocblas_int
                         m,n,k,A,shiftA,lda,strideA);
 
     for (rocblas_int j = k-1; j >= 0; --j) {
+        if (COMPLEX)
+        {
+            rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);
+            rocsolver_lacgv_template<T>(handle, n-j-1, A, shiftA + idx2D(j,j+1,lda), lda, strideA, batch_count);
+        }
+
         // apply H(i) to Q(i:m,i:n) from the left
         if (j < m - 1) {
+
             rocsolver_larf_template<T>(handle,rocblas_side_right,          //side
                                        m - j - 1,                          //number of rows of matrix to modify
                                        n - j,                              //number of columns of matrix to modify    
@@ -96,10 +104,16 @@ rocblas_status rocsolver_orgl2_template(rocblas_handle handle, const rocblas_int
         // set the diagonal element and negative tau
         hipLaunchKernelGGL(setdiag<T>,dim3(batch_count),dim3(1),0,stream,
                             j,A,shiftA,lda,strideA,ipiv,strideP);
+
+        if (COMPLEX)
+            rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);
         
         // update i-th row -corresponding to H(i)-
-        if (j < n - 1) 
-            rocblasCall_scal<T>(handle, n-j-1, ipiv + j, strideP, A, shiftA + idx2D(j,j+1,lda), lda, strideA, batch_count);          
+        if (j < n - 1)
+            rocblasCall_scal<T>(handle, n-j-1, ipiv + j, strideP, A, shiftA + idx2D(j,j+1,lda), lda, strideA, batch_count); 
+
+        if (COMPLEX)
+            rocsolver_lacgv_template<T>(handle, n-j-1, A, shiftA + idx2D(j,j+1,lda), lda, strideA, batch_count);
     }
     
     // restore values of tau
