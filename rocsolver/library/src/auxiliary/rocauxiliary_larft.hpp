@@ -15,7 +15,7 @@
 #include "common_device.hpp"
 #include "../auxiliary/rocauxiliary_lacgv.hpp"
 
-template <typename T, typename U, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 __global__ void set_triangular(const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, const rocblas_stride strideV, 
                          T* tau, const rocblas_stride strideT, 
                          T* F, const rocblas_int ldf, const rocblas_stride strideF, const rocblas_storev storev)
@@ -44,7 +44,7 @@ __global__ void set_triangular(const rocblas_int k, U V, const rocblas_int shift
     }
 }
 
-template <typename T, typename U, std::enable_if_t<!std::is_floating_point<T>::value, int> = 0>
+template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
 __global__ void set_triangular(const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, const rocblas_stride strideV, 
                          T* tau, const rocblas_stride strideT, 
                          T* F, const rocblas_int ldf, const rocblas_stride strideF, const rocblas_storev storev)
@@ -113,7 +113,7 @@ void rocsolver_larft_getMemorySize(const rocblas_int k, const rocblas_int batch_
 }
 
 
-template <typename T, typename U, bool COMPLEX = !std::is_floating_point<T>::value>
+template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_direct direct, 
                                    const rocblas_storev storev, const rocblas_int n,
                                    const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, 

@@ -27,7 +27,7 @@ void rocsolver_geqr2_getMemorySize(const rocblas_int m, const rocblas_int n, con
     *size_2 = max(s1, s2);
 }
 
-template <typename T, typename U, bool COMPLEX = !std::is_floating_point<T>::value>
+template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_geqr2_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                         const rocblas_stride strideA, T* ipiv,  

@@ -87,14 +87,14 @@ __global__ void restore_diag(T* diag, U A, const rocblas_int shifta, const rocbl
 }
 
 
-template <typename T, typename U, std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 __global__ void conj_in_place(const rocblas_int m, const rocblas_int n, U A,
                               const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea)
 {
     // do nothing
 }
 
-template <typename T, typename U, std::enable_if_t<!std::is_floating_point<T>::value, int> = 0>
+template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
 __global__ void conj_in_place(const rocblas_int m, const rocblas_int n, U A,
                               const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea)
 {
