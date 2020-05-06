@@ -163,11 +163,11 @@ template <typename T>
 void cblas_gebrd(rocblas_int m, rocblas_int n, T *A, rocblas_int lda, T *D, T *E, T *tauq, T *taup, T *work, rocblas_int size_w);
 
 template <typename T>
-void cblas_orm2r(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
+void cblas_orm2r_unm2r(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
                  T *C, rocblas_int ldc, T *work);
 
 template <typename T>
-void cblas_ormqr(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
+void cblas_ormqr_unmqr(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
                  T *C, rocblas_int ldc, T *work, rocblas_int sizeW);
 
 template <typename T>

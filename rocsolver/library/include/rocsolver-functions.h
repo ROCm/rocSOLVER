@@ -1112,6 +1112,87 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(rocblas_handle handle,
                                                    double *C,
                                                    const rocblas_int ldc);
 
+/*! \brief UNM2R applies a complex matrix Q with orthonormal columns to a general m-by-n matrix C.
+
+    \details
+    (This is the unblocked version of the algorithm).
+    
+    The matrix Q is applied in one of the following forms, depending on 
+    the values of side and trans:
+
+        Q  * C  (No transpose from the left)
+        Q' * C  (Conjugate transpose from the left)
+        C * Q   (No transpose from the right), and
+        C * Q'  (Conjugate transpose from the right)
+
+    Q is a unitary matrix defined as the product of k Householder reflectors as
+
+        Q = H(1) * H(2) * ... * H(k)
+
+    or order m if applying from the left, or n if applying from the right. Q is never stored, it is 
+    calculated from the Householder vectors and scalars returned by the QR factorization GEQRF.
+
+    @param[in]
+    handle              rocblas_handle.
+    @param[in]
+    side                rocblas_side.\n
+                        Specifies from which side to apply Q.
+    @param[in]
+    trans               rocblas_operation.\n
+                        Specifies whether the matrix Q or its conjugate transpose is to be applied.
+    @param[in]
+    m                   rocblas_int. m >= 0.\n
+                        Number of rows of matrix C.
+    @param[in]
+    n                   rocblas_int. n >= 0.\n
+                        Number of columns of matrix C.
+    @param[in]          
+    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+                        The number of Householder reflectors that form Q.
+    @param[in]          
+    A                   pointer to type. Array on the GPU of size lda*k.\n
+                        The i-th column has the Householder vector v(i) associated with H(i) as returned by GEQRF
+                        in the first k columns of its argument A.
+    @param[in]
+    lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
+                        Leading dimension of A.
+    @param[in]
+    ipiv                pointer to type. Array on the GPU of dimension at least k.\n
+                        The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+    @param[inout]
+    C                   pointer to type. Array on the GPU of size ldc*n.\n
+                        On input, the matrix C. On output it is overwritten with
+                        Q*C, C*Q, Q'*C, or C*Q'.  
+    @param[in]
+    lda                 rocblas_int. ldc >= m.\n
+                        Leading dimension of C. 
+     
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cunm2r(rocblas_handle handle,
+                                                   const rocblas_side side,
+                                                   const rocblas_operation trans,
+                                                   const rocblas_int m,
+                                                   const rocblas_int n, 
+                                                   const rocblas_int k, 
+                                                   rocblas_float_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_float_complex *ipiv,
+                                                   rocblas_float_complex *C,
+                                                   const rocblas_int ldc);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(rocblas_handle handle,
+                                                   const rocblas_side side,
+                                                   const rocblas_operation trans,
+                                                   const rocblas_int m,
+                                                   const rocblas_int n, 
+                                                   const rocblas_int k, 
+                                                   rocblas_double_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_double_complex *ipiv,
+                                                   rocblas_double_complex *C,
+                                                   const rocblas_int ldc);
+
 /*! \brief ORMQR applies a matrix Q with orthonormal columns to a general m-by-n matrix C.
 
     \details
@@ -1191,6 +1272,87 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(rocblas_handle handle,
                                                    const rocblas_int lda,
                                                    double *ipiv,
                                                    double *C,
+                                                   const rocblas_int ldc);
+
+/*! \brief UNMQR applies a complex matrix Q with orthonormal columns to a general m-by-n matrix C.
+
+    \details
+    (This is the blocked version of the algorithm).
+    
+    The matrix Q is applied in one of the following forms, depending on 
+    the values of side and trans:
+
+        Q  * C  (No transpose from the left)
+        Q' * C  (Conjugate transpose from the left)
+        C * Q   (No transpose from the right), and
+        C * Q'  (Conjugate transpose from the right)
+
+    Q is a unitary matrix defined as the product of k Householder reflectors as
+
+        Q = H(1) * H(2) * ... * H(k)
+
+    or order m if applying from the left, or n if applying from the right. Q is never stored, it is 
+    calculated from the Householder vectors and scalars returned by the QR factorization GEQRF.
+
+    @param[in]
+    handle              rocblas_handle.
+    @param[in]
+    side                rocblas_side.\n
+                        Specifies from which side to apply Q.
+    @param[in]
+    trans               rocblas_operation.\n
+                        Specifies whether the matrix Q or its conjugate transpose is to be applied.
+    @param[in]
+    m                   rocblas_int. m >= 0.\n
+                        Number of rows of matrix C.
+    @param[in]
+    n                   rocblas_int. n >= 0.\n
+                        Number of columns of matrix C.
+    @param[in]          
+    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+                        The number of Householder reflectors that form Q.
+    @param[in]          
+    A                   pointer to type. Array on the GPU of size lda*k.\n
+                        The i-th column has the Householder vector v(i) associated with H(i) as returned by GEQRF
+                        in the first k columns of its argument A.
+    @param[in]
+    lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
+                        Leading dimension of A.
+    @param[in]
+    ipiv                pointer to type. Array on the GPU of dimension at least k.\n
+                        The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+    @param[inout]
+    C                   pointer to type. Array on the GPU of size ldc*n.\n
+                        On input, the matrix C. On output it is overwritten with
+                        Q*C, C*Q, Q'*C, or C*Q'.  
+    @param[in]
+    lda                 rocblas_int. ldc >= m.\n
+                        Leading dimension of C. 
+     
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cunmqr(rocblas_handle handle,
+                                                   const rocblas_side side,
+                                                   const rocblas_operation trans,
+                                                   const rocblas_int m,
+                                                   const rocblas_int n, 
+                                                   const rocblas_int k, 
+                                                   rocblas_float_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_float_complex *ipiv,
+                                                   rocblas_float_complex *C,
+                                                   const rocblas_int ldc);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(rocblas_handle handle,
+                                                   const rocblas_side side,
+                                                   const rocblas_operation trans,
+                                                   const rocblas_int m,
+                                                   const rocblas_int n, 
+                                                   const rocblas_int k, 
+                                                   rocblas_double_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_double_complex *ipiv,
+                                                   rocblas_double_complex *C,
                                                    const rocblas_int ldc);
 
 /*! \brief ORML2 applies a matrix Q with orthonormal rows to a general m-by-n matrix C.

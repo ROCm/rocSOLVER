@@ -7,16 +7,17 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORM2R_HPP
-#define ROCLAPACK_ORM2R_HPP
+#ifndef ROCLAPACK_ORM2R_UNM2R_HPP
+#define ROCLAPACK_ORM2R_UNM2R_HPP
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
+#include "../auxiliary/rocauxiliary_lacgv.hpp"
 #include "../auxiliary/rocauxiliary_larf.hpp"
 
 template <typename T, bool BATCHED>
-void rocsolver_orm2r_getMemorySize(const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+void rocsolver_orm2r_unm2r_getMemorySize(const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
                                   size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
 {
     // memory requirements to call larf
@@ -26,8 +27,8 @@ void rocsolver_orm2r_getMemorySize(const rocblas_side side, const rocblas_int m,
     *size_4 = sizeof(T)*batch_count;
 }
 
-template <typename T, typename U>
-rocblas_status rocsolver_orm2r_template(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans, 
+template <typename T, typename U, bool COMPLEX = is_complex<T>>
+rocblas_status rocsolver_orm2r_unm2r_template(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans, 
                                    const rocblas_int m, const rocblas_int n, 
                                    const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                    const rocblas_stride strideA, T* ipiv, 
@@ -44,7 +45,7 @@ rocblas_status rocsolver_orm2r_template(rocblas_handle handle, const rocblas_sid
 
     // determine limits and indices
     bool left = (side == rocblas_side_left);
-    bool transpose = (trans == rocblas_operation_transpose);
+    bool transpose = (trans != rocblas_operation_none);
     rocblas_int start, step, ncol, nrow, ic, jc;
     if (left) {
         ncol = n;
@@ -67,6 +68,10 @@ rocblas_status rocsolver_orm2r_template(rocblas_handle handle, const rocblas_sid
             step = 1;
         }
     }
+
+    // conjugate tau
+    if (COMPLEX && transpose)
+        rocsolver_lacgv_template<T>(handle, k, ipiv, 0, 1, strideP, batch_count);
 
     rocblas_int i;
     for (rocblas_int j = 1; j <= k; ++j) {
@@ -97,6 +102,10 @@ rocblas_status rocsolver_orm2r_template(rocblas_handle handle, const rocblas_sid
         // restore original value of A(i,i)
         hipLaunchKernelGGL(restore_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(i,i,lda),strideA);
     }
+
+    // restore tau
+    if (COMPLEX && transpose)
+        rocsolver_lacgv_template<T>(handle, k, ipiv, 0, 1, strideP, batch_count);
 
     return rocblas_status_success;
 }

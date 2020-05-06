@@ -7,22 +7,22 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORMQR_HPP
-#define ROCLAPACK_ORMQR_HPP
+#ifndef ROCLAPACK_ORMQR_UNMQR_HPP
+#define ROCLAPACK_ORMQR_UNMQR_HPP
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
-#include "../auxiliary/rocauxiliary_orm2r.hpp"
+#include "../auxiliary/rocauxiliary_orm2r_unm2r.hpp"
 #include "../auxiliary/rocauxiliary_larfb.hpp"
 #include "../auxiliary/rocauxiliary_larft.hpp"
 
 template <typename T, bool BATCHED>
-void rocsolver_ormqr_getMemorySize(const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
-                                  size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
+void rocsolver_ormqr_unmqr_getMemorySize(const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
+                                         size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
 {
     size_t s1, s2;
-    rocsolver_orm2r_getMemorySize<T,BATCHED>(side,m,n,batch_count,size_1,size_2,size_3,size_4);
+    rocsolver_orm2r_unm2r_getMemorySize<T,BATCHED>(side,m,n,batch_count,size_1,size_2,size_3,size_4);
 
     if (k > ORMQR_ORM2R_BLOCKSIZE) {
         // size of workspace
@@ -39,7 +39,7 @@ void rocsolver_ormqr_getMemorySize(const rocblas_side side, const rocblas_int m,
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status rocsolver_ormqr_template(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans, 
+rocblas_status rocsolver_ormqr_unmqr_template(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans, 
                                    const rocblas_int m, const rocblas_int n, 
                                    const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                    const rocblas_stride strideA, T* ipiv, 
@@ -56,15 +56,15 @@ rocblas_status rocsolver_ormqr_template(rocblas_handle handle, const rocblas_sid
 
     // if the matrix is small, use the unblocked variant of the algorithm
     if (k <= ORMQR_ORM2R_BLOCKSIZE) 
-        return rocsolver_orm2r_template<T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C, shiftC, ldc, strideC, batch_count,
-                                           scalars, work, workArr, trfact);
+        return rocsolver_orm2r_unm2r_template<T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C, shiftC, ldc, strideC, batch_count,
+                                                 scalars, work, workArr, trfact);
 
     rocblas_int ldw = ORMQR_ORM2R_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) *ldw;
 
     // determine limits and indices
     bool left = (side == rocblas_side_left);
-    bool transpose = (trans == rocblas_operation_transpose);
+    bool transpose = (trans != rocblas_operation_none);
     rocblas_int start, step, ncol, nrow, ic, jc, order;
     if (left) {
         ncol = n;

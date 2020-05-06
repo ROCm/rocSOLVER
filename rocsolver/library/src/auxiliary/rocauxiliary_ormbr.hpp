@@ -13,8 +13,8 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
+#include "../auxiliary/rocauxiliary_ormqr_unmqr.hpp"
 #include "../auxiliary/rocauxiliary_ormlq.hpp"
-#include "../auxiliary/rocauxiliary_ormqr.hpp"
 
 template <typename T, bool BATCHED>
 void rocsolver_ormbr_getMemorySize(const rocblas_storev storev, const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
@@ -22,7 +22,7 @@ void rocsolver_ormbr_getMemorySize(const rocblas_storev storev, const rocblas_si
 {
     rocblas_int nq = side == rocblas_side_left ? m : n;
     if (storev == rocblas_column_wise)
-        rocsolver_ormqr_getMemorySize<T,BATCHED>(side,m,n,min(nq,k),batch_count,size_1,size_2,size_3,size_4);
+        rocsolver_ormqr_unmqr_getMemorySize<T,BATCHED>(side,m,n,min(nq,k),batch_count,size_1,size_2,size_3,size_4);
     else
         rocsolver_ormlq_getMemorySize<T,BATCHED>(side,m,n,min(nq,k),batch_count,size_1,size_2,size_3,size_4);
 }
@@ -61,11 +61,11 @@ rocblas_status rocsolver_ormbr_template(rocblas_handle handle, const rocblas_sto
     // gebrd to a general matrix C
     if (storev == rocblas_column_wise) {
         if (nq >= k) {
-            rocsolver_ormqr_template<BATCHED,STRIDED,T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, 
+            rocsolver_ormqr_unmqr_template<BATCHED,STRIDED,T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, 
                                         C, shiftC, ldc, strideC, batch_count, scalars, work, workArr, trfact);
         } else {
             // shift the householder vectors provided by gebrd as they come below the first subdiagonal
-            rocsolver_ormqr_template<BATCHED,STRIDED,T>(handle, side, trans, rows, cols, nq-1, 
+            rocsolver_ormqr_unmqr_template<BATCHED,STRIDED,T>(handle, side, trans, rows, cols, nq-1, 
                                         A, shiftA + idx2D(1,0,lda), lda, strideA, ipiv, strideP, 
                                         C, shiftC + idx2D(rowC,colC,ldc), ldc, strideC, batch_count, scalars, work, workArr, trfact);
         }

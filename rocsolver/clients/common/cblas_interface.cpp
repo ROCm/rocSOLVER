@@ -118,8 +118,12 @@ void zungqr_(int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocbla
 
 void sorm2r_(char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *info);
 void dorm2r_(char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *info);
+void cunm2r_(char *side, char *trans, int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *C, int *ldc, rocblas_float_complex *work, int *info);
+void zunm2r_(char *side, char *trans, int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *C, int *ldc, rocblas_double_complex *work, int *info);
 void sormqr_(char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *sizeW, int *info);
 void dormqr_(char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *sizeW, int *info);
+void cunmqr_(char *side, char *trans, int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *C, int *ldc, rocblas_float_complex *work, int *sizeW, int *info);
+void zunmqr_(char *side, char *trans, int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *C, int *ldc, rocblas_double_complex *work, int *sizeW, int *info);
 
 void sorml2_(char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *info);
 void dorml2_(char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *info);
@@ -347,9 +351,9 @@ void cblas_org2r_ung2r<rocblas_double_complex>(rocblas_int m, rocblas_int n, roc
   zung2r_(&m, &n, &k, A, &lda, ipiv, work, &info);
 }
 
-// ormqr
+// ormqr & unmqr
 template <>
-void cblas_ormqr<float>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+void cblas_ormqr_unmqr<float>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, float *A,
                                rocblas_int lda, float *ipiv, float *C, rocblas_int ldc, float *work, rocblas_int lwork) {
   int info;
   char sideC = 'R', transC = 'T';
@@ -362,7 +366,7 @@ void cblas_ormqr<float>(rocblas_side side, rocblas_operation trans, rocblas_int 
 }
 
 template <>
-void cblas_ormqr<double>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+void cblas_ormqr_unmqr<double>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, double *A,
                                rocblas_int lda, double *ipiv, double *C, rocblas_int ldc, double *work, rocblas_int lwork) {
   int info;
   char sideC = 'R', transC = 'T';
@@ -374,9 +378,35 @@ void cblas_ormqr<double>(rocblas_side side, rocblas_operation trans, rocblas_int
   dormqr_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &lwork, &info);
 }
 
-// orm2r
 template <>
-void cblas_orm2r<float>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+void cblas_ormqr_unmqr<rocblas_float_complex>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, rocblas_float_complex *A,
+                               rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *C, rocblas_int ldc, rocblas_float_complex *work, rocblas_int lwork) {
+  int info;
+  char sideC = 'R', transC = 'C';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  cunmqr_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &lwork, &info);
+}
+
+template <>
+void cblas_ormqr_unmqr<rocblas_double_complex>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, rocblas_double_complex *A,
+                               rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *C, rocblas_int ldc, rocblas_double_complex *work, rocblas_int lwork) {
+  int info;
+  char sideC = 'R', transC = 'C';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  zunmqr_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &lwork, &info);
+}
+
+// orm2r & unm2r
+template <>
+void cblas_orm2r_unm2r<float>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, float *A,
                                rocblas_int lda, float *ipiv, float *C, rocblas_int ldc, float *work) {
   int info;
   char sideC = 'R', transC = 'T';
@@ -389,7 +419,7 @@ void cblas_orm2r<float>(rocblas_side side, rocblas_operation trans, rocblas_int 
 }
 
 template <>
-void cblas_orm2r<double>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+void cblas_orm2r_unm2r<double>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, double *A,
                                rocblas_int lda, double *ipiv, double *C, rocblas_int ldc, double *work) {
   int info;
   char sideC = 'R', transC = 'T';
@@ -399,6 +429,32 @@ void cblas_orm2r<double>(rocblas_side side, rocblas_operation trans, rocblas_int
     transC = 'N';
 
   dorm2r_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &info);
+}
+
+template <>
+void cblas_orm2r_unm2r<rocblas_float_complex>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, rocblas_float_complex *A,
+                               rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *C, rocblas_int ldc, rocblas_float_complex *work) {
+  int info;
+  char sideC = 'R', transC = 'C';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  cunm2r_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &info);
+}
+
+template <>
+void cblas_orm2r_unm2r<rocblas_double_complex>(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, rocblas_double_complex *A,
+                               rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *C, rocblas_int ldc, rocblas_double_complex *work) {
+  int info;
+  char sideC = 'R', transC = 'C';
+  if (side == rocblas_side_left)
+    sideC = 'L';
+  if (trans == rocblas_operation_none)
+    transC = 'N';
+
+  zunm2r_(&sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &info);
 }
 
 // ormlq

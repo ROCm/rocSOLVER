@@ -28,7 +28,7 @@
 #include "testing_lacgv.hpp"
 #include "testing_laswp.hpp"
 #include "testing_orgqr_ungqr.hpp"
-#include "testing_orm2r_ormqr.hpp"
+#include "testing_ormqr_unmqr.hpp"
 #include "testing_orglq_unglq.hpp"
 #include "testing_orml2_ormlq.hpp"
 #include "testing_orgbr.hpp"
@@ -564,15 +564,27 @@ int main(int argc, char *argv[])
   } 
   else if (function == "orm2r") {
     if (precision == 's')
-      testing_orm2r_ormqr<float,0>(argus);
+      testing_ormqr_unmqr<float,float,0>(argus);
     else if (precision == 'd')
-      testing_orm2r_ormqr<double,0>(argus);
+      testing_ormqr_unmqr<double,double,0>(argus);
+  } 
+  else if (function == "unm2r") {
+    if (precision == 'c')
+      testing_ormqr_unmqr<rocblas_float_complex,float,0>(argus);
+    else if (precision == 'z')
+      testing_ormqr_unmqr<rocblas_double_complex,double,0>(argus);
   } 
   else if (function == "ormqr") {
     if (precision == 's')
-      testing_orm2r_ormqr<float,1>(argus);
+      testing_ormqr_unmqr<float,float,1>(argus);
     else if (precision == 'd')
-      testing_orm2r_ormqr<double,1>(argus);
+      testing_ormqr_unmqr<double,double,1>(argus);
+  } 
+  else if (function == "unmqr") {
+    if (precision == 'c')
+      testing_ormqr_unmqr<rocblas_float_complex,float,1>(argus);
+    else if (precision == 'z')
+      testing_ormqr_unmqr<rocblas_double_complex,double,1>(argus);
   } 
   else if (function == "orml2") {
     if (precision == 's')
