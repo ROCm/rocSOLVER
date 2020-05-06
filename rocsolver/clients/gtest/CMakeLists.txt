@@ -55,8 +55,8 @@ set(roclapack_test_source
     # orgqr_ungqr_gtest.cpp
     # orglq_unglq_gtest.cpp
     # orgbr_gtest.cpp
-    ormqr_unmqr_gtest.cpp
-    # orml2_ormlq_gtest.cpp
+    # ormqr_unmqr_gtest.cpp
+    ormlq_unmlq_gtest.cpp
     # ormbr_gtest.cpp
     # getf2_getrf_gtest.cpp
     # getf2_getrf_batched_gtest.cpp

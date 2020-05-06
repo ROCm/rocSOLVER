@@ -3,7 +3,7 @@
  *
  * ************************************************************************ */
 
-#include "testing_orml2_ormlq.hpp"
+#include "testing_ormlq_unmlq.hpp"
 #include "utility.h"
 #include <gtest/gtest.h>
 #include <math.h>
@@ -77,7 +77,7 @@ protected:
 TEST_P(OrthoRowApp, orml2_float) {
     Arguments arg = setup_arguments_ormlq(GetParam());
 
-    rocblas_status status = testing_orml2_ormlq<float,0>(arg);
+    rocblas_status status = testing_ormlq_unmlq<float,float,0>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -95,7 +95,43 @@ TEST_P(OrthoRowApp, orml2_float) {
 TEST_P(OrthoRowApp, orml2_double) {
     Arguments arg = setup_arguments_ormlq(GetParam());
 
-    rocblas_status status = testing_orml2_ormlq<double,0>(arg);
+    rocblas_status status = testing_ormlq_unmlq<double,double,0>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.ldc < arg.M || arg.lda < arg.K) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.side_option == 'L' && arg.K > arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.side_option == 'R' && arg.K > arg.N) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(OrthoRowApp, unml2_float_complex) {
+    Arguments arg = setup_arguments_ormlq(GetParam());
+
+    rocblas_status status = testing_ormlq_unmlq<rocblas_float_complex,float,0>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.ldc < arg.M || arg.lda < arg.K) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.side_option == 'L' && arg.K > arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.side_option == 'R' && arg.K > arg.N) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(OrthoRowApp, unml2_double_complex) {
+    Arguments arg = setup_arguments_ormlq(GetParam());
+
+    rocblas_status status = testing_ormlq_unmlq<rocblas_double_complex,double,0>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -113,7 +149,7 @@ TEST_P(OrthoRowApp, orml2_double) {
 TEST_P(OrthoRowApp, ormlq_float) {
     Arguments arg = setup_arguments_ormlq(GetParam());
 
-    rocblas_status status = testing_orml2_ormlq<float,1>(arg);
+    rocblas_status status = testing_ormlq_unmlq<float,float,1>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -131,7 +167,43 @@ TEST_P(OrthoRowApp, ormlq_float) {
 TEST_P(OrthoRowApp, ormlq_double) {
     Arguments arg = setup_arguments_ormlq(GetParam());
 
-    rocblas_status status = testing_orml2_ormlq<double,1>(arg);
+    rocblas_status status = testing_ormlq_unmlq<double,double,1>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.ldc < arg.M || arg.lda < arg.K) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.side_option == 'L' && arg.K > arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.side_option == 'R' && arg.K > arg.N) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(OrthoRowApp, unmlq_float_complex) {
+    Arguments arg = setup_arguments_ormlq(GetParam());
+
+    rocblas_status status = testing_ormlq_unmlq<rocblas_float_complex,float,1>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.ldc < arg.M || arg.lda < arg.K) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.side_option == 'L' && arg.K > arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.side_option == 'R' && arg.K > arg.N) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(OrthoRowApp, unmlq_double_complex) {
+    Arguments arg = setup_arguments_ormlq(GetParam());
+
+    rocblas_status status = testing_ormlq_unmlq<rocblas_double_complex,double,1>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message

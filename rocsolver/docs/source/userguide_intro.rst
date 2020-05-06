@@ -48,6 +48,8 @@ Lapack Auxiliary Function       single double single complex double complex
 **rocsolver_unglq**                              x              x     
 **rocsolver_unm2r**                              x              x      
 **rocsolver_unmqr**                              x              x     
+**rocsolver_unml2**                              x              x      
+**rocsolver_unmlq**                              x              x     
 =============================== ====== ====== ============== ==============
 
 =============================== ====== ====== ============== ==============

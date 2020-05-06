@@ -28,8 +28,8 @@
 
 using namespace std;
 
-template <typename T, int ormlq> 
-rocblas_status testing_orml2_ormlq(Arguments argus) {
+template <typename T, typename U, int mlq> 
+rocblas_status testing_ormlq_unmlq(Arguments argus) {
     rocblas_int M = argus.M;
     rocblas_int N = argus.N;
     rocblas_int K = argus.K;
@@ -71,7 +71,12 @@ rocblas_status testing_orml2_ormlq(Arguments argus) {
     if (transA == 'N') {
         trans = rocblas_operation_none;
     } else if (transA == 'T') {
-        trans = rocblas_operation_transpose;
+        if (!is_complex<T>)
+            trans = rocblas_operation_transpose;
+        else {
+            trans = rocblas_operation_conjugate_transpose;
+            transA = 'C';
+        }
     } else {
         throw runtime_error("Unsupported operation option.");
     } 
@@ -92,11 +97,11 @@ rocblas_status testing_orml2_ormlq(Arguments argus) {
             return rocblas_status_memory_error;
         }
         
-        if(ormlq) {
-            return rocsolver_ormlq<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
+        if(mlq) {
+            return rocsolver_ormlq_unmlq<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
         }
         else { 
-            return rocsolver_orml2<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
+            return rocsolver_orml2_unml2<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
         }
     }
 
@@ -144,7 +149,7 @@ rocblas_status testing_orml2_ormlq(Arguments argus) {
 
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<T>::epsilon();
+    double eps = std::numeric_limits<U>::epsilon();
     double max_err_1 = 0.0, max_val = 0.0;
     double diff;
     int piverr = 0;
@@ -154,22 +159,22 @@ rocblas_status testing_orml2_ormlq(Arguments argus) {
     =================================================================== */  
     if (argus.unit_check || argus.norm_check) {
         //GPU lapack
-        if(ormlq) {
-            CHECK_ROCBLAS_ERROR(rocsolver_ormlq<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc));
+        if(mlq) {
+            CHECK_ROCBLAS_ERROR(rocsolver_ormlq_unmlq<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc));
         }
         else {
-            CHECK_ROCBLAS_ERROR(rocsolver_orml2<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc));
+            CHECK_ROCBLAS_ERROR(rocsolver_orml2_unml2<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc));
         }   
         //copy output from device to cpu
         CHECK_HIP_ERROR(hipMemcpy(hCr.data(), dC, sizeof(T) * size_C, hipMemcpyDeviceToHost));
 
         //CPU lapack
         cpu_time_used = get_time_us();
-        if(ormlq) {
-            cblas_ormlq<T>(side, trans, M, N, K, hA.data(), lda, hIpiv.data(), hC.data(), ldc, hW.data(), size_W);
+        if(mlq) {
+            cblas_ormlq_unmlq<T>(side, trans, M, N, K, hA.data(), lda, hIpiv.data(), hC.data(), ldc, hW.data(), size_W);
         }
         else {
-            cblas_orml2<T>(side, trans, M, N, K, hA.data(), lda, hIpiv.data(), hC.data(), ldc, hW.data());
+            cblas_orml2_unml2<T>(side, trans, M, N, K, hA.data(), lda, hIpiv.data(), hC.data(), ldc, hW.data());
         }
         cpu_time_used = get_time_us() - cpu_time_used;
 
@@ -186,7 +191,7 @@ rocblas_status testing_orml2_ormlq(Arguments argus) {
         max_err_1 = max_err_1 / max_val;
 
         if(argus.unit_check)
-            err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
+            err_res_check<U>(max_err_1, M, N, error_eps_multiplier, eps);
     }
  
 
@@ -194,20 +199,20 @@ rocblas_status testing_orml2_ormlq(Arguments argus) {
         // GPU rocBLAS
         int cold_calls = 2;
 
-        if(ormlq) {
+        if(mlq) {
             for(int iter = 0; iter < cold_calls; iter++)
-                rocsolver_ormlq<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
+                rocsolver_ormlq_unmlq<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
             gpu_time_used = get_time_us();
             for(int iter = 0; iter < hot_calls; iter++)
-                rocsolver_ormlq<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
+                rocsolver_ormlq_unmlq<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
             gpu_time_used = (get_time_us() - gpu_time_used) / hot_calls;       
         }
         else {
             for(int iter = 0; iter < cold_calls; iter++)
-                rocsolver_orml2<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
+                rocsolver_orml2_unml2<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
             gpu_time_used = get_time_us();
             for(int iter = 0; iter < hot_calls; iter++)
-                rocsolver_orml2<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
+                rocsolver_orml2_unml2<T>(handle, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
             gpu_time_used = (get_time_us() - gpu_time_used) / hot_calls;       
         }
 

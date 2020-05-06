@@ -40,8 +40,8 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_orgbr.cpp
   auxiliary/rocauxiliary_orm2r_unm2r.cpp
   auxiliary/rocauxiliary_ormqr_unmqr.cpp
-  auxiliary/rocauxiliary_orml2.cpp
-  auxiliary/rocauxiliary_ormlq.cpp
+  auxiliary/rocauxiliary_orml2_unml2.cpp
+  auxiliary/rocauxiliary_ormlq_unmlq.cpp
   auxiliary/rocauxiliary_ormbr.cpp
 )
 

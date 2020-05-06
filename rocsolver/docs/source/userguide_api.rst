@@ -200,6 +200,16 @@ rocsolver_<type>unmqr()
 .. doxygenfunction:: rocsolver_zunmqr
 .. doxygenfunction:: rocsolver_cunmqr
 
+rocsolver_<type>unml2()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zunml2
+.. doxygenfunction:: rocsolver_cunml2
+
+rocsolver_<type>unmlq()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zunmlq
+.. doxygenfunction:: rocsolver_cunmlq
+
 
 
 Lapack Functions
