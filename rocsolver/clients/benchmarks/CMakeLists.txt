@@ -41,12 +41,13 @@ if( NOT cblas_FOUND )
 endif( )
 
 set( rocsolver_benchmark_common
-      ../common/utility.cpp
+#      ../common/utility.cpp
+      ../../../rocblascommon/clients/common/utility.cpp
       ../common/cblas_interface.cpp
-      ../common/norm.cpp
+#      ../common/norm.cpp
       ../common/unit.cpp
-      ../common/near.cpp
-      ../common/arg_check.cpp
+#      ../common/near.cpp
+#      ../common/arg_check.cpp
     )
 
 add_executable( rocsolver-bench client.cpp ${rocsolver_benchmark_common} )

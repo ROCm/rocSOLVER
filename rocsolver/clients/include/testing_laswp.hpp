@@ -2,23 +2,8 @@
  * Copyright 2018 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-//#include <cmath> // std::abs
-//#include <fstream>
-//#include <iostream>
-//#include <limits> // std::numeric_limits<T>::epsilon();
-//#include <stdlib.h>
-//#include <string>
-//#include <vector>
-
-//#include "arg_check.h"
-//#include "norm.h"
-#include "rocblas_test_unique_ptr.hpp"
 #include "unit.h"
-//#include "utility.h"
-//#ifdef GOOGLE_TEST
-//#include <gtest/gtest.h>
-//#endif
-
+#include "rocsolver_test.hpp"
 #include "rocsolver_arguments.hpp"
 #include "rocsolver.hpp"
 #include "cblas_interface.h"
@@ -29,7 +14,6 @@
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
 
-//using namespace std;
 
 template <typename T>
 void testing_laswp_bad_arg()
@@ -40,15 +24,6 @@ void testing_laswp_bad_arg()
     rocblas_int k1 = 1;
     rocblas_int k2 = 2;
     rocblas_int inc = 1;
-
-/*    auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
-    T *dA = (T *)dA_managed.get();
-    auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(int)), rocblas_test::device_free};
-    rocblas_int *dIpiv = (rocblas_int *)dIpiv_managed.get();
-    if (!dA || !dIpiv) {
-        PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }*/
 
     device_vector<T,0> dA(1);
     device_vector<rocblas_int,0> dIpiv(1);
@@ -90,12 +65,8 @@ void testing_laswp(Arguments argus)
         EXPECT_ROCBLAS_STATUS(rocsolver_laswp<T>(handle,n,nullptr,lda,k1,k2,nullptr,inc),
                               rocblas_status_invalid_size);
 
-        if (argus.timing) { //in benchmark
-            rocblas_cout << "Invalid size arguments..." << std::endl;
-            rocblas_cout << "No performance data to collect." << std::endl;
-            if (argus.norm_check)
-                rocblas_cout << "No computations to verify." << std::endl;
-        }
+        if (argus.timing)  
+            ROCSOLVER_BENCH_INFORM(1);
 
         return;
     }             
@@ -107,36 +78,17 @@ void testing_laswp(Arguments argus)
     host_vector<T> hA(size_A);
     host_vector<T> hAr(size_A);
     host_vector<rocblas_int> hIpiv(size_P); 
-//    std::vector<T> hA(size_A);
-//    std::vector<T> hAr(size_A);
-//    std::vector<int> hIpiv(size_P);
     device_vector<T,0> dA(size_A);
     device_vector<rocblas_int,0> dIpiv(size_P);
-
-    CHECK_DEVICE_ALLOCATION(dIpiv.memcheck());
-    if (size_A > 0) 
-        CHECK_DEVICE_ALLOCATION(dA.memcheck());
-    
-//    auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * size_A), rocblas_test::device_free};
-//    T *dA = (T *)dA_managed.get();
-//    auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(int) * size_P), rocblas_test::device_free};
-//    rocblas_int *dIpiv = (rocblas_int *)dIpiv_managed.get();
-
-//    if ((n && !dA) || !dIpiv) {
-//        PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
-//        return;
-//    }
+    if (size_P) CHECK_DEVICE_ALLOCATION(dIpiv.memcheck());
+    if (size_A) CHECK_DEVICE_ALLOCATION(dA.memcheck());
     
     /***** 5. check quick return *****/
     if (n == 0) {
         CHECK_ROCBLAS_ERROR(rocsolver_laswp<T>(handle,n,dA,lda,k1,k2,dIpiv,inc));
 
-        if (argus.timing) { //in benchmark
-            rocblas_cout << "Quick return..." << std::endl;
-            rocblas_cout << "No performance data to collect." << std::endl;
-            if (argus.norm_check)
-                rocblas_cout << "No computations to verify." << std::endl;
-        }
+        if (argus.timing)  
+            ROCSOLVER_BENCH_INFORM(0);
         
         return;
     }
@@ -151,8 +103,6 @@ void testing_laswp(Arguments argus)
     rocblas_init<int>(hIpiv.data(), size_P, 1, 1, lda);
  
     // copy data from CPU to device
-//    CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(T) * size_A, hipMemcpyHostToDevice));
-//    CHECK_HIP_ERROR(hipMemcpy(dIpiv, hIpiv.data(), sizeof(int) * size_P, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(dA.transfer_from(hA));
     CHECK_HIP_ERROR(dIpiv.transfer_from(hIpiv));
 
@@ -168,10 +118,9 @@ void testing_laswp(Arguments argus)
         CHECK_HIP_ERROR(hipMemcpy(hAr, dA, sizeof(T)*size_A, hipMemcpyDeviceToHost));
 
         //CPU lapack
-//        cblas_laswp<T>(n,hA.data(),lda,k1,k2,hIpiv.data(),inc);
         cblas_laswp<T>(n,hA,lda,k1,k2,hIpiv,inc);
 
-        //++++++++++++ error check ++++++++++++++++
+        // error check 
         if (argus.unit_check) {
             unit_check_general(lda,n,lda,hA.data(),hAr.data());  
         } else {

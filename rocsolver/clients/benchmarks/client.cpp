@@ -34,6 +34,7 @@
 #include "testing_orgbr_ungbr.hpp"
 #include "testing_ormbr_unmbr.hpp"
 #include "utility.h"
+#include "rocsolver_arguments.hpp"
 
 namespace po = boost::program_options;
 
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
   char precision;
 
   rocblas_int device_id;
-  vector<rocblas_int> range = {-1, -1, -1};
+//  vector<rocblas_int> range = {-1, -1, -1};
 
   po::options_description desc("rocsolver client command line options");
   desc.add_options()("help,h", "produces this help message")
@@ -236,6 +237,7 @@ int main(int argc, char *argv[])
   //argus.step = range[1];
   //argus.end = range[2];
 
+
   if (function == "potf2") {
     if (precision == 's')
       testing_potf2_potrf<float,float,0>(argus);
@@ -247,6 +249,15 @@ int main(int argc, char *argv[])
       testing_potf2_potrf<rocblas_double_complex,double,0>(argus);
   } 
   else if (function == "potf2_batched") {
+=======
+//    if (precision == 's')
+//      testing_potf2_potrf<float,0>(argus);
+//    else if (precision == 'd')
+//      testing_potf2_potrf<double,0>(argus);
+  }
+/* 
+  else if (function == "potrf") {
+>>>>>>> re-use rocblas-clients' device_ and host_ vectors
     if (precision == 's')
       testing_potf2_potrf_batched<float,float,0>(argus);
     else if (precision == 'd')
@@ -290,6 +301,7 @@ int main(int argc, char *argv[])
     if (precision == 's')
       testing_potf2_potrf_strided_batched<float,float,1>(argus);
     else if (precision == 'd')
+<<<<<<< HEAD
       testing_potf2_potrf_strided_batched<double,double,1>(argus);
     else if (precision == 'c')
       testing_potf2_potrf_strided_batched<rocblas_float_complex,float,1>(argus);
@@ -302,6 +314,11 @@ int main(int argc, char *argv[])
     else if (precision == 'z')
       testing_lacgv<rocblas_double_complex>(argus);
   }
+=======
+      testing_potf2_potrf_strided_batched<double,1>(argus);
+  }
+*/ 
+>>>>>>> re-use rocblas-clients' device_ and host_ vectors
   else if (function == "laswp") {
     if (precision == 's')
       testing_laswp<float>(argus);
@@ -312,6 +329,7 @@ int main(int argc, char *argv[])
     else if (precision == 'z')
       testing_laswp<rocblas_double_complex>(argus);
   }
+/*
   else if (function == "getf2") {
     if (precision == 's')
       testing_getf2_getrf<float,float,0>(argus);
@@ -674,6 +692,7 @@ int main(int argc, char *argv[])
     if (precision == 's')
       testing_ormbr_unmbr<float,float>(argus);
     else if (precision == 'd')
+<<<<<<< HEAD
       testing_ormbr_unmbr<double,double>(argus);
   } 
   else if (function == "unmbr") {
@@ -682,6 +701,11 @@ int main(int argc, char *argv[])
     else if (precision == 'z')
       testing_ormbr_unmbr<rocblas_double_complex,double>(argus);
   } 
+=======
+      testing_ormbr<double>(argus);
+  }
+*/ 
+>>>>>>> re-use rocblas-clients' device_ and host_ vectors
   else {
     printf("Invalid value for --function \n");
     return -1;

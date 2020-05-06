@@ -4,11 +4,6 @@
  * ************************************************************************ */
 
 #include "testing_laswp.hpp"
-//#include "utility.h"
-//#include <gtest/gtest.h>
-//#include <math.h>
-//#include <stdexcept>
-//#include <vector>
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

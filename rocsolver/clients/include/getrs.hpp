@@ -11,54 +11,13 @@
 
 
 // this is max error PER element after the solution
-#define GETRF_ERROR_EPS_MULTIPLIER 3000
+#define GETRF_ERROR_EPS_MULTIPLIER 10000
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
 
-template <bool STRIDED, typename T, typename U>
-void GETRS_CHECK_BAD_ARG(const rocblas_handle handle, 
-                         const rocblas_operation trans, 
-                         const rocblas_int m, 
-                         const rocblas_int nrhs, 
-                         T dA, 
-                         const rocblas_int lda, 
-                         const rocblas_stride stA,
-                         U dIpiv, 
-                         const rocblas_stride stP,
-                         T dB, 
-                         const rocblas_int ldb,
-                         const rocblas_stride stB,
-                         const rocblas_int bc)
-{
-    // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_getrs<STRIDED>(nullptr,trans,m,nrhs,dA,lda,stA,dIpiv,stP,dB,ldb,stB,bc), 
-                          rocblas_status_invalid_handle);
-    
-    // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_getrs<STRIDED>(handle,rocblas_operation(-1),m,nrhs,dA,lda,stA,dIpiv,stP,dB,ldb,stB,bc), 
-                          rocblas_status_invalid_value);
 
-    // pointers
-    T dAnull = nullptr;
-    T dBnull = nullptr;
-    U dIpivnull = nullptr;
-    EXPECT_ROCBLAS_STATUS(rocsolver_getrs<STRIDED>(handle,trans,m,nrhs,dAnull,lda,stA,dIpiv,stP,dB,ldb,stB,bc),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_getrs<STRIDED>(handle,trans,m,nrhs,dA,lda,stA,dIpivnull,stP,dB,ldb,stB,bc), 
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_getrs<STRIDED>(handle,trans,m,nrhs,dA,lda,stA,dIpiv,stP,dBnull,ldb,stB,bc),
-                          rocblas_status_invalid_pointer);
-
-    // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_getrs<STRIDED>(handle,trans,0,nrhs,dAnull,lda,stA,dIpivnull,stP,dBnull,ldb,stB,bc), 
-                          rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(rocsolver_getrs<STRIDED>(handle,trans,m,0,dA,lda,stA,dIpiv,stP,dBnull,ldb,stB,bc),
-                          rocblas_status_success);
-}
-
-
-template <bool BATCHED, bool STRIDED, typename T>
+template <typename T>
 void testing_getrs_bad_arg()
 {
     rocblas_local_handle handle;
@@ -66,41 +25,16 @@ void testing_getrs_bad_arg()
     rocblas_int nrhs = 1;
     rocblas_int lda = 1;
     rocblas_int ldb = 1;
-    rocblas_stride stA = 1;
-    rocblas_stride stP = 1;
-    rocblas_stride stB = 1;
-    rocblas_int bc = 1;
     rocblas_operation trans = rocblas_operation_none;
 
-
-/*    device_vector<T> dA(1,1);
-    device_vector<T> dB(1,1);
-    device_vector<rocblas_int,0> dIpiv(1,1);
+    device_vector<T,0> dA(1);
+    device_vector<T,0> dB(1);
+    device_vector<rocblas_int,0> dIpiv(1);
     CHECK_DEVICE_ALLOCATION(dA.memcheck());
     CHECK_DEVICE_ALLOCATION(dB.memcheck());
     CHECK_DEVICE_ALLOCATION(dIpiv.memcheck());
-*/
-    if (BATCHED) {
-        device_batch_vector<T> dA(1,1,1);
-        device_batch_vector<T> dB(1,1,1);
-        device_strided_batch_vector<rocblas_int> dIpiv(1,1,1,1);
-        CHECK_DEVICE_ALLOCATION(dA.memcheck());
-        CHECK_DEVICE_ALLOCATION(dB.memcheck());
-        CHECK_DEVICE_ALLOCATION(dIpiv.memcheck());
 
-        GETRS_CHECK_BAD_ARG<STRIDED>(handle,trans,m,nrhs,(T *const *)dA,lda,1,(rocblas_int*)dIpiv,1,(T *const *)dB,ldb,1,1);
-
-    } else {
-        device_strided_batch_vector<T> dA(1,1,1,1);
-        device_strided_batch_vector<T> dB(1,1,1,1);
-        device_strided_batch_vector<rocblas_int> dIpiv(1,1,1,1);
-        CHECK_DEVICE_ALLOCATION(dA.memcheck());
-        CHECK_DEVICE_ALLOCATION(dB.memcheck());
-        CHECK_DEVICE_ALLOCATION(dIpiv.memcheck());
-
-        GETRS_CHECK_BAD_ARG<STRIDED>(handle,trans,m,nrhs,(T*)dA,lda,1,(rocblas_int*)dIpiv,1,(T*)dB,ldb,1,1);
-    }
-/*    // handle
+    // handle
     EXPECT_ROCBLAS_STATUS(rocsolver_getrs<T>(nullptr, trans, m, nrhs, dA, lda, dIpiv, dB, ldb),
                           rocblas_status_invalid_handle);
 
@@ -120,7 +54,7 @@ void testing_getrs_bad_arg()
     EXPECT_ROCBLAS_STATUS(rocsolver_getrs<T>(handle, trans, 0, nrhs, nullptr, lda, nullptr, nullptr, ldb),
                           rocblas_status_success);
     EXPECT_ROCBLAS_STATUS(rocsolver_getrs<T>(handle, trans, m, 0, dA, lda, dIpiv, nullptr, ldb),
-                          rocblas_status_success);*/
+                          rocblas_status_success);
 }
 
 
@@ -142,8 +76,8 @@ void testing_getrs(Arguments argus)
     /***** 3. check invalid sizes *****/
     bool invalid_size = (m < 0 || nrhs < 0 || lda < m || ldb < m);
     if (invalid_size) {
-//        EXPECT_ROCBLAS_STATUS(rocsolver_getrs<T>(handle, trans, m, nrhs, nullptr, lda, nullptr, nullptr, ldb),
-//                              rocblas_status_invalid_size);
+        EXPECT_ROCBLAS_STATUS(rocsolver_getrs<T>(handle, trans, m, nrhs, nullptr, lda, nullptr, nullptr, ldb),
+                              rocblas_status_invalid_size);
 
         if (argus.timing) 
              ROCSOLVER_BENCH_INFORM(1);
@@ -158,8 +92,8 @@ void testing_getrs(Arguments argus)
 
     host_vector<T> hA(size_A);
     host_vector<T> hB(size_B);
+    host_vector<int> hIpiv(size_P);
     host_vector<T> hBRes(size_B);
-    host_vector<rocblas_int> hIpiv(size_P);
     device_vector<T,0> dA(size_A);
     device_vector<T,0> dB(size_B);
     device_vector<rocblas_int,0> dIpiv(size_P);
@@ -169,7 +103,7 @@ void testing_getrs(Arguments argus)
     
     /***** 5. check quick return *****/
     if (m == 0 || nrhs == 0) {
-//        CHECK_ROCBLAS_ERROR(rocsolver_getrs<T>(handle, trans, m, nrhs, dA, lda, dIpiv, dB, ldb));
+        CHECK_ROCBLAS_ERROR(rocsolver_getrs<T>(handle, trans, m, nrhs, dA, lda, dIpiv, dB, ldb));
 
         if (argus.timing)
             ROCSOLVER_BENCH_INFORM(0);
@@ -182,13 +116,15 @@ void testing_getrs(Arguments argus)
     rocblas_init<T>(hB.data(), m, nrhs, ldb);
 
     // put it into [0, 1]
-    for (int i = 0; i < M; i++) {
-        for (int j = 0; j < M; j++) {
-            if (i == j)
-                hA[i+j*lda] += 400;
-            else    
-                hA[i + j * lda] -= 4;
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < m; j++) {
+          hA[i + j * lda] = (hA[i + j * lda] - 1.0) / 10.0;
         }
+    }
+
+    // now make it diagonally dominant
+    for (int i = 0; i < m; i++) {
+        hA[i + i * lda] *= 420.0;
     }
 
     // do the LU decomposition of matrix A w/ the reference LAPACK routine
@@ -212,7 +148,7 @@ void testing_getrs(Arguments argus)
 
     if (argus.unit_check || argus.norm_check) {
         // GPU lapack
-//         CHECK_ROCBLAS_ERROR(rocsolver_getrs<T>(handle, trans, m, nrhs, dA, lda, dIpiv, dB, ldb));
+        CHECK_ROCBLAS_ERROR(rocsolver_getrs<T>(handle, trans, m, nrhs, dA, lda, dIpiv, dB, ldb));
         // (TODO) to fix: transfer_from(device) only works with padded vectors!
         //CHECK_HIP_ERROR(hAr.transfer_from(dA));
         CHECK_HIP_ERROR(hipMemcpy(hBRes.data(), dB, sizeof(T) * size_B, hipMemcpyDeviceToHost));
@@ -246,10 +182,10 @@ void testing_getrs(Arguments argus)
         int hot_calls = argus.iters;
 
         for(int iter = 0; iter < cold_calls; iter++)
-//            CHECK_ROCBLAS_ERROR(rocsolver_getrs<T>(handle, trans, m, nrhs, dA, lda, dIpiv, dB, ldb));
+            CHECK_ROCBLAS_ERROR(rocsolver_getrs<T>(handle, trans, m, nrhs, dA, lda, dIpiv, dB, ldb));
         gpu_time_used = get_time_us(); // in microseconds
         for(int iter = 0; iter < hot_calls; iter++)
-//             rocsolver_getrs<T>(handle, trans, m, nrhs, dA, lda, dIpiv, dB, ldb);
+            rocsolver_getrs<T>(handle, trans, m, nrhs, dA, lda, dIpiv, dB, ldb);
         gpu_time_used = get_time_us() - gpu_time_used;
 
         // only norm_check return an norm error, unit check won't return anything

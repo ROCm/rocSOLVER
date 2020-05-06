@@ -923,7 +923,7 @@ inline rocblas_status rocsolver_getrf_strided_batched(rocblas_handle handle, roc
                                       rocblas_int *ipiv, rocblas_int stridep, rocblas_int *info, rocblas_int batch_count) {
   return rocsolver_zgetrf_strided_batched(handle, m, n, A, lda, strideA, ipiv, stridep, info, batch_count);
 }
-
+/*
 //getrs
 
 template <typename T>
@@ -1043,6 +1043,225 @@ rocsolver_getrs_strided_batched(rocblas_handle handle, rocblas_operation trans, 
                 rocblas_int *ipiv, rocblas_int strideP, rocblas_double_complex *B, rocblas_int ldb, rocblas_int strideB, rocblas_int batch_count) {
     return rocsolver_zgetrs_strided_batched(handle,trans,n,nrhs,A,lda,strideA,ipiv,strideP,B,ldb,strideB,batch_count);
 }
+*/
+
+// getrs
+
+template <bool STRIDED, typename T>
+inline rocblas_status
+rocsolver_getrs(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, T A, rocblas_int lda, rocblas_stride stA,
+                rocblas_int *ipiv, rocblas_stride stP, T B, rocblas_int ldb, rocblas_stride stB, rocblas_int bc);
+
+template <>
+inline rocblas_status
+rocsolver_getrs<false>(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                        rocblas_int nrhs, float *A, rocblas_int lda, rocblas_stride stA,
+                        rocblas_int *ipiv, rocblas_stride stP, float *B, rocblas_int ldb, rocblas_stride stB, rocblas_int bc)
+{
+  return rocsolver_sgetrs(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs<false>(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                        rocblas_int nrhs, double *A, rocblas_int lda, rocblas_stride stA,
+                        rocblas_int *ipiv, rocblas_stride stP, double *B, rocblas_int ldb, rocblas_stride stB, rocblas_int bc)
+{
+  return rocsolver_dgetrs(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs<false>(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                        rocblas_int nrhs, rocblas_float_complex *A, rocblas_int lda, rocblas_stride stA,
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_float_complex *B, rocblas_int ldb, rocblas_stride stB, rocblas_int bc)
+{
+  return rocsolver_cgetrs(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs<false>(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                        rocblas_int nrhs, rocblas_double_complex *A, rocblas_int lda, rocblas_stride stA,
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_double_complex *B, rocblas_int ldb, rocblas_stride stB, rocblas_int bc)
+{
+  return rocsolver_zgetrs(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
+// getrs_strided_batched
+
+template <>
+inline rocblas_status
+rocsolver_getrs<true>(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                        rocblas_int nrhs, float *A, rocblas_int lda, rocblas_stride stA,
+                        rocblas_int *ipiv, rocblas_stride stP, float *B, rocblas_int ldb, rocblas_stride stB, rocblas_int bc)
+{
+  return rocsolver_sgetrs_strided_batched(handle, trans, n, nrhs, A, lda, stA, ipiv, stP, B, ldb, stB, bc);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs<true>(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                        rocblas_int nrhs, double *A, rocblas_int lda, rocblas_stride stA,
+                        rocblas_int *ipiv, rocblas_stride stP, double *B, rocblas_int ldb, rocblas_stride stB, rocblas_int bc)
+{
+  return rocsolver_dgetrs_strided_batched(handle, trans, n, nrhs, A, lda, stA, ipiv, stP, B, ldb, stB, bc);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs<true>(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                        rocblas_int nrhs, rocblas_float_complex *A, rocblas_int lda, rocblas_stride stA,
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_float_complex *B, rocblas_int ldb, rocblas_stride stB, rocblas_int bc)
+{
+  return rocsolver_cgetrs_strided_batched(handle, trans, n, nrhs, A, lda, stA, ipiv, stP, B, ldb, stB, bc);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs<true>(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                        rocblas_int nrhs, rocblas_double_complex *A, rocblas_int lda, rocblas_stride stA,
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_double_complex *B, rocblas_int ldb, rocblas_stride stB, rocblas_int bc)
+{
+  return rocsolver_zgetrs_strided_batched(handle, trans, n, nrhs, A, lda, stA, ipiv, stP, B, ldb, stB, bc);
+}
+
+
+// getrs_batched
+
+//template <bool STRIDED, typename T>
+//inline rocblas_status
+//rocsolver_getrs(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+//                rocblas_int nrhs, T *const A[], rocblas_int lda,
+//                rocblas_int *ipiv, rocblas_int stP, T *const B[], rocblas_int ldb, rocblas_int bc);
+
+template <>
+inline rocblas_status
+rocsolver_getrs<false>(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                        rocblas_int nrhs, float *const *A, rocblas_int lda, rocblas_stride stA,
+                        rocblas_int *ipiv, rocblas_stride stP, float *const *B, rocblas_int ldb, rocblas_stride stB, rocblas_int bc)
+{
+  return rocsolver_sgetrs_batched(handle, trans, n, nrhs, A, lda, ipiv, stP, B, ldb, bc);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs<false>(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                        rocblas_int nrhs, double *const A[], rocblas_int lda, rocblas_stride stA,
+                        rocblas_int *ipiv, rocblas_stride stP, double *const B[], rocblas_int ldb, rocblas_stride stB, rocblas_int bc)
+{
+  return rocsolver_dgetrs_batched(handle, trans, n, nrhs, A, lda, ipiv, stP, B, ldb, bc);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs<false>(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                        rocblas_int nrhs, rocblas_float_complex *const A[], rocblas_int lda, rocblas_stride stA,
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_float_complex *const B[], rocblas_int ldb, rocblas_stride stB, rocblas_int bc)
+{
+  return rocsolver_cgetrs_batched(handle, trans, n, nrhs, A, lda, ipiv, stP, B, ldb, bc);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs<false>(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                        rocblas_int nrhs, rocblas_double_complex *const A[], rocblas_int lda, rocblas_stride stA,
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_double_complex *const B[], rocblas_int ldb, rocblas_stride stB, rocblas_int bc)
+{
+  return rocsolver_zgetrs_batched(handle, trans, n, nrhs, A, lda, ipiv, stP, B, ldb, bc);
+}
+
+
+
+
+
+
+/*//getrs_batched
+
+template <typename T>
+inline rocblas_status
+rocsolver_getrs_batched(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, T *const A[], rocblas_int lda,
+                rocblas_int *ipiv, rocblas_int strideP, T *const B[], rocblas_int ldb, rocblas_int batch_count);
+
+template <>
+inline rocblas_status
+rocsolver_getrs_batched(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, float *const A[], rocblas_int lda,
+                rocblas_int *ipiv, rocblas_int strideP, float *const B[], rocblas_int ldb, rocblas_int batch_count) {
+    return rocsolver_sgetrs_batched(handle,trans,n,nrhs,A,lda,ipiv,strideP,B,ldb,batch_count);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs_batched(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, double *const A[], rocblas_int lda,
+                rocblas_int *ipiv, rocblas_int strideP, double *const B[], rocblas_int ldb, rocblas_int batch_count) {
+    return rocsolver_dgetrs_batched(handle,trans,n,nrhs,A,lda,ipiv,strideP,B,ldb,batch_count);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs_batched(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, rocblas_float_complex *const A[], rocblas_int lda,
+                rocblas_int *ipiv, rocblas_int strideP, rocblas_float_complex *const B[], rocblas_int ldb, rocblas_int batch_count) {
+    return rocsolver_cgetrs_batched(handle,trans,n,nrhs,A,lda,ipiv,strideP,B,ldb,batch_count);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs_batched(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, rocblas_double_complex *const A[], rocblas_int lda,
+                rocblas_int *ipiv, rocblas_int strideP, rocblas_double_complex *const B[], rocblas_int ldb, rocblas_int batch_count) {
+    return rocsolver_zgetrs_batched(handle,trans,n,nrhs,A,lda,ipiv,strideP,B,ldb,batch_count);
+}
+
+//getrs_strided_batched
+
+template <typename T>
+inline rocblas_status
+rocsolver_getrs_strided_batched(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, T *A, rocblas_int lda, rocblas_int strideA,
+                rocblas_int *ipiv, rocblas_int strideP, T *B, rocblas_int ldb, rocblas_int strideB, rocblas_int batch_count);
+
+template <>
+inline rocblas_status
+rocsolver_getrs_strided_batched(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, float *A, rocblas_int lda, rocblas_int strideA,
+                rocblas_int *ipiv, rocblas_int strideP, float *B, rocblas_int ldb, rocblas_int strideB, rocblas_int batch_count) {
+    return rocsolver_sgetrs_strided_batched(handle,trans,n,nrhs,A,lda,strideA,ipiv,strideP,B,ldb,strideB,batch_count);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs_strided_batched(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, double *A, rocblas_int lda, rocblas_int strideA,
+                rocblas_int *ipiv, rocblas_int strideP, double *B, rocblas_int ldb, rocblas_int strideB, rocblas_int batch_count) {
+    return rocsolver_dgetrs_strided_batched(handle,trans,n,nrhs,A,lda,strideA,ipiv,strideP,B,ldb,strideB,batch_count);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs_strided_batched(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, rocblas_float_complex *A, rocblas_int lda, rocblas_int strideA,
+                rocblas_int *ipiv, rocblas_int strideP, rocblas_float_complex *B, rocblas_int ldb, rocblas_int strideB, rocblas_int batch_count) {
+    return rocsolver_cgetrs_strided_batched(handle,trans,n,nrhs,A,lda,strideA,ipiv,strideP,B,ldb,strideB,batch_count);
+}
+
+template <>
+inline rocblas_status
+rocsolver_getrs_strided_batched(rocblas_handle handle, rocblas_operation trans, rocblas_int n,
+                rocblas_int nrhs, rocblas_double_complex *A, rocblas_int lda, rocblas_int strideA,
+                rocblas_int *ipiv, rocblas_int strideP, rocblas_double_complex *B, rocblas_int ldb, rocblas_int strideB, rocblas_int batch_count) {
+    return rocsolver_zgetrs_strided_batched(handle,trans,n,nrhs,A,lda,strideA,ipiv,strideP,B,ldb,strideB,batch_count);
+}
+*/
+
+
+
+
+
 
 
 //geqr2

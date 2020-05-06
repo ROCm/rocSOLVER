@@ -4,11 +4,6 @@
  * ************************************************************************ */
 
 #include "testing_getrs_batched.hpp"
-#include "utility.h"
-#include <gtest/gtest.h>
-#include <math.h>
-#include <stdexcept>
-#include <vector>
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -83,69 +78,29 @@ protected:
 TEST_P(LUsolver_b, getrs_batched_float) {
   Arguments arg = setup_getrsB_arguments(GetParam());
 
-  rocblas_status status = testing_getrs_batched<float,float>(arg);
+  testing_getrs_batched<float,float>(arg);
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.M < 0 || arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M || arg.ldb < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
 }
 
 TEST_P(LUsolver_b, getrs_batched_double) {
   Arguments arg = setup_getrsB_arguments(GetParam());
 
-  rocblas_status status = testing_getrs_batched<double,double>(arg);
+  testing_getrs_batched<double,double>(arg);
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.M < 0 || arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M || arg.ldb < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
 }
 
 TEST_P(LUsolver_b, getrs_batched_float_complex) {
   Arguments arg = setup_getrsB_arguments(GetParam());
 
-  rocblas_status status = testing_getrs_batched<rocblas_float_complex,float>(arg);
+  testing_getrs_batched<rocblas_float_complex,float>(arg);
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.M < 0 || arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M || arg.ldb < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
 }
 
 TEST_P(LUsolver_b, getrs_batched_double_complex) {
   Arguments arg = setup_getrsB_arguments(GetParam());
 
-  rocblas_status status = testing_getrs_batched<rocblas_double_complex,double>(arg);
+  testing_getrs_batched<rocblas_double_complex,double>(arg);
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.M < 0 || arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M || arg.ldb < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
 }
 
 // This function mainly test the scope of matrix_size.
