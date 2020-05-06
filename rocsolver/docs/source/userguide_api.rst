@@ -190,6 +190,11 @@ rocsolver_<type>unglq()
 .. doxygenfunction:: rocsolver_zunglq
 .. doxygenfunction:: rocsolver_cunglq
 
+rocsolver_<type>ungbr()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zungbr
+.. doxygenfunction:: rocsolver_cungbr
+
 rocsolver_<type>unm2r()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_zunm2r
@@ -209,6 +214,11 @@ rocsolver_<type>unmlq()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_zunmlq
 .. doxygenfunction:: rocsolver_cunmlq
+
+rocsolver_<type>unmbr()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zunmbr
+.. doxygenfunction:: rocsolver_cunmbr
 
 
 

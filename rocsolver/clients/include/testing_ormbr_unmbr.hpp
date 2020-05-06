@@ -28,8 +28,8 @@
 
 using namespace std;
 
-template <typename T> 
-rocblas_status testing_ormbr(Arguments argus) {
+template <typename T, typename U> 
+rocblas_status testing_ormbr_unmbr(Arguments argus) {
     rocblas_int M = argus.M;
     rocblas_int N = argus.N;
     rocblas_int K = argus.K;
@@ -59,7 +59,12 @@ rocblas_status testing_ormbr(Arguments argus) {
     if (transA == 'N') {
         trans = rocblas_operation_none;
     } else if (transA == 'T') {
-        trans = rocblas_operation_transpose;
+        if (!is_complex<T>)
+            trans = rocblas_operation_transpose;
+        else {
+            trans = rocblas_operation_conjugate_transpose;
+            transA = 'C';
+        }
     } else {
         throw runtime_error("Unsupported operation option.");
     }
@@ -106,7 +111,7 @@ rocblas_status testing_ormbr(Arguments argus) {
             return rocblas_status_memory_error;
         }
         
-        return rocsolver_ormbr<T>(handle, storev, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
+        return rocsolver_ormbr_unmbr<T>(handle, storev, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
     }
 
     rocblas_int size_C = ldc*N;
@@ -167,7 +172,7 @@ rocblas_status testing_ormbr(Arguments argus) {
 
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<T>::epsilon();
+    double eps = std::numeric_limits<U>::epsilon();
     double max_err_1 = 0.0, max_val = 0.0;
     double diff;
     int piverr = 0;
@@ -177,14 +182,14 @@ rocblas_status testing_ormbr(Arguments argus) {
     =================================================================== */  
     if (argus.unit_check || argus.norm_check) {
         //GPU lapack
-        CHECK_ROCBLAS_ERROR(rocsolver_ormbr<T>(handle, storev, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc));
+        CHECK_ROCBLAS_ERROR(rocsolver_ormbr_unmbr<T>(handle, storev, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc));
         
         //copy output from device to cpu
         CHECK_HIP_ERROR(hipMemcpy(hCr.data(), dC, sizeof(T) * size_C, hipMemcpyDeviceToHost));
 
         //CPU lapack
         cpu_time_used = get_time_us();
-        cblas_ormbr<T>(storevC, side, trans, M, N, K, hA.data(), lda, hIpiv.data(), hC.data(), ldc, hW.data(), size_W);
+        cblas_ormbr_unmbr<T>(storevC, side, trans, M, N, K, hA.data(), lda, hIpiv.data(), hC.data(), ldc, hW.data(), size_W);
         cpu_time_used = get_time_us() - cpu_time_used;
 
         // +++++++++ Error Check +++++++++++++
@@ -200,7 +205,7 @@ rocblas_status testing_ormbr(Arguments argus) {
         max_err_1 = max_err_1 / max_val;
 
         if(argus.unit_check)
-           err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
+           err_res_check<U>(max_err_1, M, N, error_eps_multiplier, eps);
     }
  
 
@@ -209,10 +214,10 @@ rocblas_status testing_ormbr(Arguments argus) {
         int cold_calls = 2;
 
         for(int iter = 0; iter < cold_calls; iter++)
-            rocsolver_ormbr<T>(handle, storev, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
+            rocsolver_ormbr_unmbr<T>(handle, storev, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
         gpu_time_used = get_time_us();
         for(int iter = 0; iter < hot_calls; iter++)
-            rocsolver_ormbr<T>(handle, storev, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
+            rocsolver_ormbr_unmbr<T>(handle, storev, side, trans, M, N, K, dA, lda, dIpiv, dC, ldc);
         gpu_time_used = (get_time_us() - gpu_time_used) / hot_calls;       
         
         // only norm_check return an norm error, unit check won't return anything

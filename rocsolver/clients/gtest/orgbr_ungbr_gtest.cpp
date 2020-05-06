@@ -3,7 +3,7 @@
  *
  * ************************************************************************ */
 
-#include "testing_orgbr.hpp"
+#include "testing_orgbr_ungbr.hpp"
 #include "utility.h"
 #include <gtest/gtest.h>
 #include <math.h>
@@ -76,7 +76,7 @@ protected:
 TEST_P(OrthoGen, orgbr_float) {
     Arguments arg = setup_arguments_orgbr(GetParam());
 
-    rocblas_status status = testing_orgbr<float>(arg);
+    rocblas_status status = testing_orgbr_ungbr<float,float>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -94,7 +94,43 @@ TEST_P(OrthoGen, orgbr_float) {
 TEST_P(OrthoGen, orgbr_double) {
     Arguments arg = setup_arguments_orgbr(GetParam());
 
-    rocblas_status status = testing_orgbr<double>(arg);
+    rocblas_status status = testing_orgbr_ungbr<double,double>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.storev == 'C' && (arg.N > arg.M || arg.N < min(arg.M,arg.K))) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.storev == 'R' && (arg.M > arg.N || arg.M < min(arg.N,arg.K))) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(OrthoGen, ungbr_float_complex) {
+    Arguments arg = setup_arguments_orgbr(GetParam());
+
+    rocblas_status status = testing_orgbr_ungbr<rocblas_float_complex,float>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.lda < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.storev == 'C' && (arg.N > arg.M || arg.N < min(arg.M,arg.K))) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.storev == 'R' && (arg.M > arg.N || arg.M < min(arg.N,arg.K))) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(OrthoGen, ungbr_double_complex) {
+    Arguments arg = setup_arguments_orgbr(GetParam());
+
+    rocblas_status status = testing_orgbr_ungbr<rocblas_double_complex,double>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message

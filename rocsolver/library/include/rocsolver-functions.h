@@ -1031,6 +1031,79 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgbr(rocblas_handle handle,
                                                    const rocblas_int lda,
                                                    double *ipiv);
 
+/*! \brief UNGBR generates a m-by-n complex Matrix Q with orthonormal rows or columns.
+
+    \details
+    If storev is column-wise, then the matrix Q has orthonormal columns. If m >= k, Q is defined as the first 
+    n columns of the product of k Householder reflectors of order m
+    
+        Q = H(1) * H(2) * ... * H(k)
+
+    If m < k, Q is defined as the product of Householder reflectors of order m
+
+        Q = H(1) * H(2) * ... * H(m-1)
+
+    On the other hand, if storev is row-wise, then the matrix Q has orthonormal rows. If n > k, Q is defined as the
+    first m rows of the product of k Householder reflectors of order n
+
+        Q = H(k) * H(k-1) * ... * H(1)
+    
+    If n <= k, Q is defined as the product of Householder reflectors of order n
+
+        Q = H(n-1) * H(n-2) * ... * H(1)
+
+    The Householder matrices H(i) are never stored, they are computed from its corresponding 
+    Householder vectors v(i) and scalars ipiv_i as returned by GEBRD in its arguments A and tauq or taup.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    storev      rocblas_storev.\n
+                Specifies whether to work column-wise or row-wise.
+    @param[in]
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix Q. 
+                If row-wise, then min(n,k) <= m <= n.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The number of colums of the matrix Q. 
+                If column-wise, then min(m,k) <= n <= m. 
+    @param[in]
+    k           rocblas_int. k >= 0.\n
+                The number of columns (if storev is colum-wise) or rows (if row-wise) of the
+                original matrix reduced by GEBRD.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the i-th column (or row) has the Householder vector v(i)
+                as returned by GEBRD.
+                On exit, the computed matrix Q.
+    @param[in]
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A. 
+    @param[in]
+    ipiv        pointer to type. Array on the GPU of dimension min(m,k) if column-wise, or min(n,k) if row-wise.\n
+                The scalar factors of the Householder matrices H(i) as returned by GEBRD.
+
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cungbr(rocblas_handle handle,
+                                                   const rocblas_storev storev,
+                                                   const rocblas_int m,
+                                                   const rocblas_int n, 
+                                                   const rocblas_int k, 
+                                                   rocblas_float_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_float_complex *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(rocblas_handle handle,
+                                                   const rocblas_storev storev,
+                                                   const rocblas_int m,
+                                                   const rocblas_int n, 
+                                                   const rocblas_int k, 
+                                                   rocblas_double_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_double_complex *ipiv);
+
 /*! \brief ORM2R applies a matrix Q with orthonormal columns to a general m-by-n matrix C.
 
     \details
@@ -1778,6 +1851,107 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
                                                    const rocblas_int lda,
                                                    double *ipiv,
                                                    double *C,
+                                                   const rocblas_int ldc);
+
+
+/*! \brief UNMBR applies a complex matrix Q with orthonormal rows or columns to a general m-by-n matrix C.
+
+    \details
+    If storev is column-wise, then the matrix Q has orthonormal columns. 
+    If storev is row-wise, then the matrix Q has orthonormal rows.  
+    The matrix Q is applied in one of the following forms, depending on
+    the values of side and trans:
+
+        Q  * C  (No transpose from the left)
+        Q' * C  (Conjugate transpose from the left)
+        C * Q   (No transpose from the right), and
+        C * Q'  (Conjugate transpose from the right)
+
+    The order nq of unitary matrix Q is nq = m if applying from the left, or nq = n if applying from the right.
+
+    When storev is column-wise, if nq >= k, then Q is defined as the product of k Householder reflectors of order nq
+    
+        Q = H(1) * H(2) * ... * H(k),
+
+    and if nq < k, then Q is defined as the product 
+
+        Q = H(1) * H(2) * ... * H(nq-1).
+
+    When storev is row-wise, if nq > k, then Q is defined as the product of k Householder reflectors of order nq
+
+        Q = H(1) * H(2) * ... * H(k),
+    
+    and if n <= k, Q is defined as the product 
+
+        Q = H(1) * H(2) * ... * H(nq-1)
+
+    The Householder matrices H(i) are never stored, they are computed from its corresponding 
+    Householder vectors v(i) and scalars ipiv_i as returned by GEBRD in its arguments A and tauq or taup.
+
+    @param[in]
+    handle              rocblas_handle.
+    @param[in]
+    storev              rocblas_storev.\n
+                        Specifies whether to work column-wise or row-wise.
+    @param[in]
+    side                rocblas_side.\n
+                        Specifies from which side to apply Q.
+    @param[in]
+    trans               rocblas_operation.\n
+                        Specifies whether the matrix Q or its conjugate transpose is to be applied.
+    @param[in]
+    m                   rocblas_int. m >= 0.\n
+                        Number of rows of matrix C.
+    @param[in]
+    n                   rocblas_int. n >= 0.\n
+                        Number of columns of matrix C.
+    @param[in]          
+    k                   rocsovler_int. k >= 0.\n
+                        The number of columns (if storev is colum-wise) or rows (if row-wise) of the
+                        original matrix reduced by GEBRD.
+    @param[in]          
+    A                   pointer to type. Array on the GPU of size lda*min(nq,k) if column-wise, or lda*nq if row-wise.\n
+                        The i-th column (or row) has the Householder vector v(i) associated with H(i) as returned by GEBRD.
+    @param[in]
+    lda                 rocblas_int. lda >= nq if column-wise, or lda >= min(nq,k) if row-wise. \n
+                        Leading dimension of A.
+    @param[in]
+    ipiv                pointer to type. Array on the GPU of dimension at least min(nq,k).\n
+                        The scalar factors of the Householder matrices H(i) as returned by GEBRD.
+    @param[inout]
+    C                   pointer to type. Array on the GPU of size ldc*n.\n
+                        On input, the matrix C. On output it is overwritten with
+                        Q*C, C*Q, Q'*C, or C*Q'.  
+    @param[in]
+    lda                 rocblas_int. ldc >= m.\n
+                        Leading dimension of C. 
+
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cunmbr(rocblas_handle handle,
+                                                   const rocblas_storev storev,
+                                                   const rocblas_side side,
+                                                   const rocblas_operation trans,
+                                                   const rocblas_int m,
+                                                   const rocblas_int n, 
+                                                   const rocblas_int k, 
+                                                   rocblas_float_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_float_complex *ipiv,
+                                                   rocblas_float_complex *C,
+                                                   const rocblas_int ldc);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
+                                                   const rocblas_storev storev,
+                                                   const rocblas_side side,
+                                                   const rocblas_operation trans,
+                                                   const rocblas_int m,
+                                                   const rocblas_int n, 
+                                                   const rocblas_int k, 
+                                                   rocblas_double_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_double_complex *ipiv,
+                                                   rocblas_double_complex *C,
                                                    const rocblas_int ldc);
 
 

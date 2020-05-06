@@ -2,12 +2,12 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "rocauxiliary_ormbr.hpp"
+#include "rocauxiliary_ormbr_unmbr.hpp"
 
 template <typename T>
-rocblas_status rocsolver_ormbr_impl(rocblas_handle handle, const rocblas_storev storev, const rocblas_side side, const rocblas_operation trans, 
-                                   const rocblas_int m, const rocblas_int n, 
-                                   const rocblas_int k, T* A, const rocblas_int lda, T* ipiv, T *C, const rocblas_int ldc)
+rocblas_status rocsolver_ormbr_unmbr_impl(rocblas_handle handle, const rocblas_storev storev, const rocblas_side side, const rocblas_operation trans, 
+                                          const rocblas_int m, const rocblas_int n, 
+                                          const rocblas_int k, T* A, const rocblas_int lda, T* ipiv, T *C, const rocblas_int ldc)
 {
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -38,7 +38,7 @@ rocblas_status rocsolver_ormbr_impl(rocblas_handle handle, const rocblas_storev 
     size_t size_2;  //size of workspace
     size_t size_3;  //size of array of pointers to workspace
     size_t size_4;  // size of temporary array for triangular factor
-    rocsolver_ormbr_getMemorySize<T,false>(storev,side,m,n,k,batch_count,&size_1,&size_2,&size_3,&size_4);
+    rocsolver_ormbr_unmbr_getMemorySize<T,false>(storev,side,m,n,k,batch_count,&size_1,&size_2,&size_3,&size_4);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
     void *scalars, *work, *workArr, *trfact;
@@ -59,21 +59,21 @@ rocblas_status rocsolver_ormbr_impl(rocblas_handle handle, const rocblas_storev 
 
     // execution
     rocblas_status status = 
-           rocsolver_ormbr_template<false,false,T>(handle,storev,side,trans,
-                                                  m,n,k,
-                                                  A,0,    //shifted 0 entries
-                                                  lda,
-                                                  strideA,
-                                                  ipiv,
-                                                  strideP,
-                                                  C,0,  
-                                                  ldc,
-                                                  strideC,
-                                                  batch_count,
-                                                  (T*)scalars,
-                                                  (T*)work,
-                                                  (T**)workArr,
-                                                  (T*)trfact);
+           rocsolver_ormbr_unmbr_template<false,false,T>(handle,storev,side,trans,
+                                                         m,n,k,
+                                                         A,0,    //shifted 0 entries
+                                                         lda,
+                                                         strideA,
+                                                         ipiv,
+                                                         strideP,
+                                                         C,0,  
+                                                         ldc,
+                                                         strideC,
+                                                         batch_count,
+                                                         (T*)scalars,
+                                                         (T*)work,
+                                                         (T**)workArr,
+                                                         (T*)trfact);
 
     hipFree(scalars);
     hipFree(work);
@@ -104,7 +104,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sormbr(rocblas_handle handle,
                                                  float *C,
                                                  const rocblas_int ldc)
 {
-    return rocsolver_ormbr_impl<float>(handle, storev, side, trans, m, n, k, A, lda, ipiv, C, ldc);
+    return rocsolver_ormbr_unmbr_impl<float>(handle, storev, side, trans, m, n, k, A, lda, ipiv, C, ldc);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
@@ -120,7 +120,39 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
                                                  double *C,
                                                  const rocblas_int ldc)
 {
-    return rocsolver_ormbr_impl<double>(handle, storev, side, trans, m, n, k, A, lda, ipiv, C, ldc);
+    return rocsolver_ormbr_unmbr_impl<double>(handle, storev, side, trans, m, n, k, A, lda, ipiv, C, ldc);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cunmbr(rocblas_handle handle,
+                                                 const rocblas_storev storev,
+                                                 const rocblas_side side,
+                                                 const rocblas_operation trans,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
+                                                 rocblas_float_complex *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_float_complex *ipiv,
+                                                 rocblas_float_complex *C,
+                                                 const rocblas_int ldc)
+{
+    return rocsolver_ormbr_unmbr_impl<rocblas_float_complex>(handle, storev, side, trans, m, n, k, A, lda, ipiv, C, ldc);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
+                                                 const rocblas_storev storev,
+                                                 const rocblas_side side,
+                                                 const rocblas_operation trans,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
+                                                 rocblas_double_complex *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_double_complex *ipiv,
+                                                 rocblas_double_complex *C,
+                                                 const rocblas_int ldc)
+{
+    return rocsolver_ormbr_unmbr_impl<rocblas_double_complex>(handle, storev, side, trans, m, n, k, A, lda, ipiv, C, ldc);
 }
 
 } //extern C

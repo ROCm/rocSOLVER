@@ -7,8 +7,8 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORMBR_HPP
-#define ROCLAPACK_ORMBR_HPP
+#ifndef ROCLAPACK_ORMBR_UNMBR_HPP
+#define ROCLAPACK_ORMBR_UNMBR_HPP
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
@@ -17,8 +17,8 @@
 #include "../auxiliary/rocauxiliary_ormlq_unmlq.hpp"
 
 template <typename T, bool BATCHED>
-void rocsolver_ormbr_getMemorySize(const rocblas_storev storev, const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
-                                  size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
+void rocsolver_ormbr_unmbr_getMemorySize(const rocblas_storev storev, const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
+                                         size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
 {
     rocblas_int nq = side == rocblas_side_left ? m : n;
     if (storev == rocblas_column_wise)
@@ -27,8 +27,8 @@ void rocsolver_ormbr_getMemorySize(const rocblas_storev storev, const rocblas_si
         rocsolver_ormlq_unmlq_getMemorySize<T,BATCHED>(side,m,n,min(nq,k),batch_count,size_1,size_2,size_3,size_4);
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status rocsolver_ormbr_template(rocblas_handle handle, const rocblas_storev storev, const rocblas_side side, const rocblas_operation trans, 
+template <bool BATCHED, bool STRIDED, typename T, typename U, bool COMPLEX = is_complex<T>>
+rocblas_status rocsolver_ormbr_unmbr_template(rocblas_handle handle, const rocblas_storev storev, const rocblas_side side, const rocblas_operation trans, 
                                    const rocblas_int m, const rocblas_int n, 
                                    const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                    const rocblas_stride strideA, T* ipiv, 
@@ -76,7 +76,7 @@ rocblas_status rocsolver_ormbr_template(rocblas_handle handle, const rocblas_sto
     else {
         rocblas_operation transP;
         if (trans == rocblas_operation_none)
-            transP = rocblas_operation_transpose;
+            transP = (COMPLEX ? rocblas_operation_conjugate_transpose : rocblas_operation_transpose);
         else
             transP = rocblas_operation_none;
         if (nq > k) {

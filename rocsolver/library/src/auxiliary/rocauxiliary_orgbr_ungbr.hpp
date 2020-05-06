@@ -7,8 +7,8 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORGBR_HPP
-#define ROCLAPACK_ORGBR_HPP
+#ifndef ROCLAPACK_ORGBR_UNGBR_HPP
+#define ROCLAPACK_ORGBR_UNGBR_HPP
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
@@ -83,8 +83,8 @@ __global__ void copyshift_row(const bool copy, const rocblas_int dim, U A, const
 }
 
 template <typename T, bool BATCHED>
-void rocsolver_orgbr_getMemorySize(const rocblas_storev storev, const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
-                                  size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
+void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev, const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
+                                         size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
 {
     if (storev == rocblas_column_wise) {
         if (m >= k) {
@@ -108,7 +108,7 @@ void rocsolver_orgbr_getMemorySize(const rocblas_storev storev, const rocblas_in
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status rocsolver_orgbr_template(rocblas_handle handle, const rocblas_storev storev, const rocblas_int m, 
+rocblas_status rocsolver_orgbr_ungbr_template(rocblas_handle handle, const rocblas_storev storev, const rocblas_int m, 
                                    const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
                                    const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
                                    const rocblas_stride strideP, const rocblas_int batch_count,

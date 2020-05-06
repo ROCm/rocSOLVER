@@ -37,12 +37,12 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_orgqr_ungqr.cpp
   auxiliary/rocauxiliary_orgl2_ungl2.cpp
   auxiliary/rocauxiliary_orglq_unglq.cpp
-  auxiliary/rocauxiliary_orgbr.cpp
+  auxiliary/rocauxiliary_orgbr_ungbr.cpp
   auxiliary/rocauxiliary_orm2r_unm2r.cpp
   auxiliary/rocauxiliary_ormqr_unmqr.cpp
   auxiliary/rocauxiliary_orml2_unml2.cpp
   auxiliary/rocauxiliary_ormlq_unmlq.cpp
-  auxiliary/rocauxiliary_ormbr.cpp
+  auxiliary/rocauxiliary_ormbr_unmbr.cpp
 )
 
 set( rocsolver_lapack_source

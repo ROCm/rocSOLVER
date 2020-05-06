@@ -28,8 +28,8 @@
 
 using namespace std;
 
-template <typename T> 
-rocblas_status testing_orgbr(Arguments argus) {
+template <typename T, typename U> 
+rocblas_status testing_orgbr_ungbr(Arguments argus) {
     rocblas_int M = argus.M;
     rocblas_int N = argus.N;
     rocblas_int K = argus.K;
@@ -81,7 +81,7 @@ rocblas_status testing_orgbr(Arguments argus) {
             return rocblas_status_memory_error;
         }
         
-        return rocsolver_orgbr<T>(handle, storev, M, N, K, dA, lda, dIpiv);
+        return rocsolver_orgbr_ungbr<T>(handle, storev, M, N, K, dA, lda, dIpiv);
     }
 
     // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory
@@ -134,7 +134,7 @@ rocblas_status testing_orgbr(Arguments argus) {
 
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<T>::epsilon();
+    double eps = std::numeric_limits<U>::epsilon();
     double max_err_1 = 0.0, max_val = 0.0;
     double diff;
     int piverr = 0;
@@ -144,14 +144,14 @@ rocblas_status testing_orgbr(Arguments argus) {
     =================================================================== */  
     if (argus.unit_check || argus.norm_check) {
         //GPU lapack
-        CHECK_ROCBLAS_ERROR(rocsolver_orgbr<T>(handle, storev, M, N, K, dA, lda, dIpiv));
+        CHECK_ROCBLAS_ERROR(rocsolver_orgbr_ungbr<T>(handle, storev, M, N, K, dA, lda, dIpiv));
         
         //copy output from device to cpu
         CHECK_HIP_ERROR(hipMemcpy(hAr.data(), dA, sizeof(T) * size_A, hipMemcpyDeviceToHost));
 
         //CPU lapack
         cpu_time_used = get_time_us();
-        cblas_orgbr<T>(storevC, M, N, K, hA.data(), lda, hIpiv.data(), hW.data(), size_W);
+        cblas_orgbr_ungbr<T>(storevC, M, N, K, hA.data(), lda, hIpiv.data(), hW.data(), size_W);
         cpu_time_used = get_time_us() - cpu_time_used;
 
         // +++++++++ Error Check +++++++++++++
@@ -167,7 +167,7 @@ rocblas_status testing_orgbr(Arguments argus) {
         max_err_1 = max_err_1 / max_val;
 
         if(argus.unit_check)
-           err_res_check<T>(max_err_1, M, N, error_eps_multiplier, eps);
+           err_res_check<U>(max_err_1, M, N, error_eps_multiplier, eps);
     }
  
 
@@ -176,10 +176,10 @@ rocblas_status testing_orgbr(Arguments argus) {
         int cold_calls = 2;
 
         for(int iter = 0; iter < cold_calls; iter++)
-            rocsolver_orgbr<T>(handle, storev, M, N, K, dA, lda, dIpiv);
+            rocsolver_orgbr_ungbr<T>(handle, storev, M, N, K, dA, lda, dIpiv);
         gpu_time_used = get_time_us();
         for(int iter = 0; iter < hot_calls; iter++)
-            rocsolver_orgbr<T>(handle, storev, M, N, K, dA, lda, dIpiv);
+            rocsolver_orgbr_ungbr<T>(handle, storev, M, N, K, dA, lda, dIpiv);
         gpu_time_used = (get_time_us() - gpu_time_used) / hot_calls;       
         
         // only norm_check return an norm error, unit check won't return anything

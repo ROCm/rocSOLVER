@@ -3,7 +3,7 @@
  *
  * ************************************************************************ */
 
-#include "testing_ormbr.hpp"
+#include "testing_ormbr_unmbr.hpp"
 #include "utility.h"
 #include <gtest/gtest.h>
 #include <math.h>
@@ -98,7 +98,7 @@ protected:
 TEST_P(OrthoApp, ormbr_float) {
     Arguments arg = setup_arguments_ormbr(GetParam());
 
-    rocblas_status status = testing_ormbr<float>(arg);
+    rocblas_status status = testing_ormbr_unmbr<float,float>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message
@@ -117,7 +117,45 @@ TEST_P(OrthoApp, ormbr_float) {
 TEST_P(OrthoApp, ormbr_double) {
     Arguments arg = setup_arguments_ormbr(GetParam());
 
-    rocblas_status status = testing_ormbr<double>(arg);
+    rocblas_status status = testing_ormbr_unmbr<double,double>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        int nq = arg.side_option == 'L' ? arg.M : arg.N;
+        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.ldc < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.storev == 'C' && arg.lda < nq) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.storev == 'R' && arg.lda < min(nq,arg.K)) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(OrthoApp, unmbr_float_complex) {
+    Arguments arg = setup_arguments_ormbr(GetParam());
+
+    rocblas_status status = testing_ormbr_unmbr<rocblas_float_complex,float>(arg);
+
+    // if not success, then the input argument is problematic, so detect the error
+    // message
+    if (status != rocblas_status_success) {
+        int nq = arg.side_option == 'L' ? arg.M : arg.N;
+        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.ldc < arg.M) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.storev == 'C' && arg.lda < nq) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (arg.storev == 'R' && arg.lda < min(nq,arg.K)) {
+            EXPECT_EQ(rocblas_status_invalid_size, status);
+        }
+    }
+}
+
+TEST_P(OrthoApp, unmbr_double_complex) {
+    Arguments arg = setup_arguments_ormbr(GetParam());
+
+    rocblas_status status = testing_ormbr_unmbr<rocblas_double_complex,double>(arg);
 
     // if not success, then the input argument is problematic, so detect the error
     // message

@@ -31,8 +31,8 @@
 #include "testing_ormqr_unmqr.hpp"
 #include "testing_orglq_unglq.hpp"
 #include "testing_ormlq_unmlq.hpp"
-#include "testing_orgbr.hpp"
-#include "testing_ormbr.hpp"
+#include "testing_orgbr_ungbr.hpp"
+#include "testing_ormbr_unmbr.hpp"
 #include "utility.h"
 
 namespace po = boost::program_options;
@@ -636,15 +636,27 @@ int main(int argc, char *argv[])
   } 
   else if (function == "orgbr") {
     if (precision == 's')
-      testing_orgbr<float>(argus);
+      testing_orgbr_ungbr<float,float>(argus);
     else if (precision == 'd')
-      testing_orgbr<double>(argus);
+      testing_orgbr_ungbr<double,double>(argus);
+  } 
+  else if (function == "ungbr") {
+    if (precision == 'c')
+      testing_orgbr_ungbr<rocblas_float_complex,float>(argus);
+    else if (precision == 'z')
+      testing_orgbr_ungbr<rocblas_double_complex,double>(argus);
   } 
   else if (function == "ormbr") {
     if (precision == 's')
-      testing_ormbr<float>(argus);
+      testing_ormbr_unmbr<float,float>(argus);
     else if (precision == 'd')
-      testing_ormbr<double>(argus);
+      testing_ormbr_unmbr<double,double>(argus);
+  } 
+  else if (function == "unmbr") {
+    if (precision == 'c')
+      testing_ormbr_unmbr<rocblas_float_complex,float>(argus);
+    else if (precision == 'z')
+      testing_ormbr_unmbr<rocblas_double_complex,double>(argus);
   } 
   else {
     printf("Invalid value for --function \n");
