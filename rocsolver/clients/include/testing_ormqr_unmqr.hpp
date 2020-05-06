@@ -47,7 +47,7 @@ rocblas_status testing_ormqr_unmqr(Arguments argus) {
     rocblas_operation trans;
     rocblas_int size_W, order;
 
-    if (M < 1 || N < 1 || K < 1 || ldc < M) 
+    if (M < 1 || N < 1 || K < 1 || ldc < M || !check_transpose<T>(transA)) 
         invalid = true;
 
     if (sideC == 'L') {
@@ -63,18 +63,15 @@ rocblas_status testing_ormqr_unmqr(Arguments argus) {
         if (K > N || lda < N)
             invalid = true;
     } else {
-        throw runtime_error("Unsoported side option");
+        throw runtime_error("Unsupported side option");
     }
 
     if (transA == 'N') {
         trans = rocblas_operation_none;
     } else if (transA == 'T') {
-        if (!is_complex<T>)
-            trans = rocblas_operation_transpose;
-        else {
-            trans = rocblas_operation_conjugate_transpose;
-            transA = 'C';
-        }
+        trans = rocblas_operation_transpose;
+    } else if (transA == 'C') {
+        trans = rocblas_operation_conjugate_transpose;
     } else {
         throw runtime_error("Unsupported operation option.");
     } 

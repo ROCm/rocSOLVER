@@ -53,18 +53,15 @@ rocblas_status testing_ormbr_unmbr(Arguments argus) {
     rocblas_operation trans;
 
 
-    if (M < 1 || N < 1 || K < 1 || ldc < M)
+    if (M < 1 || N < 1 || K < 1 || ldc < M || !check_transpose<T>(transA))
         invalid = true;
 
     if (transA == 'N') {
         trans = rocblas_operation_none;
     } else if (transA == 'T') {
-        if (!is_complex<T>)
-            trans = rocblas_operation_transpose;
-        else {
-            trans = rocblas_operation_conjugate_transpose;
-            transA = 'C';
-        }
+        trans = rocblas_operation_transpose;
+    } else if (transA == 'C') {
+        trans = rocblas_operation_conjugate_transpose;
     } else {
         throw runtime_error("Unsupported operation option.");
     }

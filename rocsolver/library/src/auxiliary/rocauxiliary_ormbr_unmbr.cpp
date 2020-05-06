@@ -4,7 +4,7 @@
 
 #include "rocauxiliary_ormbr_unmbr.hpp"
 
-template <typename T>
+template <typename T, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_ormbr_unmbr_impl(rocblas_handle handle, const rocblas_storev storev, const rocblas_side side, const rocblas_operation trans, 
                                           const rocblas_int m, const rocblas_int n, 
                                           const rocblas_int k, T* A, const rocblas_int lda, T* ipiv, T *C, const rocblas_int ldc)
@@ -24,9 +24,12 @@ rocblas_status rocsolver_ormbr_unmbr_impl(rocblas_handle handle, const rocblas_s
         return rocblas_status_invalid_size;
     if (storev == rocblas_row_wise && lda < min(nq,k))
         return rocblas_status_invalid_size;
-
     if (!A || !ipiv || !C)
         return rocblas_status_invalid_pointer;
+    if (COMPLEX && trans == rocblas_operation_transpose)
+        return rocblas_status_invalid_value;
+    if (!COMPLEX && trans == rocblas_operation_conjugate_transpose)
+        return rocblas_status_invalid_value;
 
     rocblas_int strideA = 0;
     rocblas_int strideP = 0;

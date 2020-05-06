@@ -47,7 +47,7 @@ rocblas_status testing_ormlq_unmlq(Arguments argus) {
     rocblas_operation trans;
     rocblas_int size_W, order, size_A;
 
-    if (M < 1 || N < 1 || K < 1 || ldc < M || lda < K) 
+    if (M < 1 || N < 1 || K < 1 || ldc < M || lda < K || !check_transpose<T>(transA)) 
         invalid = true;
 
     if (sideC == 'L') {
@@ -71,12 +71,9 @@ rocblas_status testing_ormlq_unmlq(Arguments argus) {
     if (transA == 'N') {
         trans = rocblas_operation_none;
     } else if (transA == 'T') {
-        if (!is_complex<T>)
-            trans = rocblas_operation_transpose;
-        else {
-            trans = rocblas_operation_conjugate_transpose;
-            transA = 'C';
-        }
+        trans = rocblas_operation_transpose;
+    } else if (transA == 'C') {
+        trans = rocblas_operation_conjugate_transpose;
     } else {
         throw runtime_error("Unsupported operation option.");
     } 

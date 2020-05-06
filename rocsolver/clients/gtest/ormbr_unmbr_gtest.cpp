@@ -36,6 +36,7 @@ const vector<vector<int>> size_range = {
 // if s = 1, then side = 'R'
 // if t = 0, then trans = 'N'
 // if t = 1, then trans = 'T'
+// if t = 2, then trans = 'C'
 // if st = 0, then storev = 'C'
 // if st = 1, then storev = 'R'
 const vector<vector<int>> store = {
@@ -45,10 +46,14 @@ const vector<vector<int>> store = {
     {0, 0, 0, 0, 1},
     {0, 0, 0, 1, 0},
     {0, 0, 0, 1, 1},
+    {0, 0, 0, 2, 0},
+    {0, 0, 0, 2, 1},
     {0, 0, 1, 0, 0},
     {0, 0, 1, 0, 1},
     {0, 0, 1, 1, 0},
     {0, 0, 1, 1, 1},
+    {0, 0, 1, 2, 0},
+    {0, 0, 1, 2, 1},
 };
 
 const vector<vector<int>> large_size_range = {
@@ -64,7 +69,7 @@ Arguments setup_arguments_ormbr(ormbr_tuple tup)
     Arguments arg;
 
     arg.storev = store[4] == 0 ? 'C' : 'R';
-    arg.transA_option = store[3] == 0 ? 'N' : 'T';
+    arg.transA_option = (store[3] == 0 ? 'N' : (store[3] == 1 ? 'T' : 'C'));
     arg.side_option = store[2] == 0 ? 'L' : 'R';
 
     arg.K = size[2];
@@ -110,6 +115,8 @@ TEST_P(OrthoApp, ormbr_float) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         } else if (arg.storev == 'R' && arg.lda < min(nq,arg.K)) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (!check_transpose<float>(arg.transA_option)) {
+            EXPECT_EQ(rocblas_status_invalid_value, status);
         }
     }
 }
@@ -129,6 +136,8 @@ TEST_P(OrthoApp, ormbr_double) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         } else if (arg.storev == 'R' && arg.lda < min(nq,arg.K)) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (!check_transpose<double>(arg.transA_option)) {
+            EXPECT_EQ(rocblas_status_invalid_value, status);
         }
     }
 }
@@ -148,6 +157,8 @@ TEST_P(OrthoApp, unmbr_float_complex) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         } else if (arg.storev == 'R' && arg.lda < min(nq,arg.K)) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (!check_transpose<rocblas_float_complex>(arg.transA_option)) {
+            EXPECT_EQ(rocblas_status_invalid_value, status);
         }
     }
 }
@@ -167,6 +178,8 @@ TEST_P(OrthoApp, unmbr_double_complex) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         } else if (arg.storev == 'R' && arg.lda < min(nq,arg.K)) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (!check_transpose<rocblas_double_complex>(arg.transA_option)) {
+            EXPECT_EQ(rocblas_status_invalid_value, status);
         }
     }
 }

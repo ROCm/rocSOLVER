@@ -35,8 +35,9 @@ const vector<vector<int>> size_range = {
 // if s = 1, then side = 'R'
 // if t = 0, then trans = 'N'
 // if t = 1, then trans = 'T'
+// if t = 2, then trans = 'C'
 const vector<vector<int>> op_range = {
-    {-1,0,0,0}, {0,-1,0,0}, {0,0,0,0}, {0,0,0,1}, {0,0,1,0}, {0,0,1,1}, {1,1,0,0}   
+    {-1,0,0,0}, {0,-1,0,0}, {0,0,0,0}, {0,0,0,1}, {0,0,0,2}, {0,0,1,0}, {0,0,1,1}, {0,0,1,2}, {1,1,0,0}   
 };
 
 const vector<vector<int>> large_size_range = {
@@ -56,7 +57,7 @@ Arguments setup_arguments_orm(ormqr_tuple tup)
     arg.K = size[2];
     arg.ldc = arg.M + op[1]*10;
 
-    arg.transA_option = op[3] == 0 ? 'N' : 'T';
+    arg.transA_option = (op[3] == 0 ? 'N' : (op[3] == 1 ? 'T' : 'C'));
     arg.side_option = op[2] == 0 ? 'L' : 'R';
 
     if (op[2]) {
@@ -92,6 +93,8 @@ TEST_P(OrthoColApp, orm2r_float) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         } else if (arg.side_option == 'R' && (arg.K > arg.N || arg.lda < arg.N)) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (!check_transpose<float>(arg.transA_option)) {
+            EXPECT_EQ(rocblas_status_invalid_value, status);
         }
     }
 }
@@ -110,6 +113,8 @@ TEST_P(OrthoColApp, orm2r_double) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         } else if (arg.side_option == 'R' && (arg.K > arg.N || arg.lda < arg.N)) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (!check_transpose<double>(arg.transA_option)) {
+            EXPECT_EQ(rocblas_status_invalid_value, status);
         }
     }
 }
@@ -128,6 +133,8 @@ TEST_P(OrthoColApp, unm2r_float_complex) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         } else if (arg.side_option == 'R' && (arg.K > arg.N || arg.lda < arg.N)) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (!check_transpose<rocblas_float_complex>(arg.transA_option)) {
+            EXPECT_EQ(rocblas_status_invalid_value, status);
         }
     }
 }
@@ -146,6 +153,8 @@ TEST_P(OrthoColApp, unm2r_double_complex) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         } else if (arg.side_option == 'R' && (arg.K > arg.N || arg.lda < arg.N)) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (!check_transpose<rocblas_double_complex>(arg.transA_option)) {
+            EXPECT_EQ(rocblas_status_invalid_value, status);
         }
     }
 }
@@ -164,6 +173,8 @@ TEST_P(OrthoColApp, ormqr_float) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         } else if (arg.side_option == 'R' && (arg.K > arg.N || arg.lda < arg.N)) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (!check_transpose<float>(arg.transA_option)) {
+            EXPECT_EQ(rocblas_status_invalid_value, status);
         }
     }
 }
@@ -182,6 +193,8 @@ TEST_P(OrthoColApp, ormqr_double) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         } else if (arg.side_option == 'R' && (arg.K > arg.N || arg.lda < arg.N)) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (!check_transpose<double>(arg.transA_option)) {
+            EXPECT_EQ(rocblas_status_invalid_value, status);
         }
     }
 }
@@ -200,6 +213,8 @@ TEST_P(OrthoColApp, unmqr_float_complex) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         } else if (arg.side_option == 'R' && (arg.K > arg.N || arg.lda < arg.N)) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (!check_transpose<rocblas_float_complex>(arg.transA_option)) {
+            EXPECT_EQ(rocblas_status_invalid_value, status);
         }
     }
 }
@@ -218,6 +233,8 @@ TEST_P(OrthoColApp, unmqr_double_complex) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
         } else if (arg.side_option == 'R' && (arg.K > arg.N || arg.lda < arg.N)) {
             EXPECT_EQ(rocblas_status_invalid_size, status);
+        } else if (!check_transpose<rocblas_double_complex>(arg.transA_option)) {
+            EXPECT_EQ(rocblas_status_invalid_value, status);
         }
     }
 }
