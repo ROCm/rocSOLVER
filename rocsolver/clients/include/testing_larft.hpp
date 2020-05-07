@@ -21,7 +21,7 @@
 #include <gtest/gtest.h>
 #endif
 
-#define ERROR_EPS_MULTIPLIER 8000
+#define ERROR_EPS_MULTIPLIER 3000
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
@@ -87,6 +87,7 @@ rocblas_status testing_larft(Arguments argus)
     vector<T> hF(sizeF);
     vector<T> hF_r(sizeF);
     vector<T> htau(K);
+    vector<T> hW(K);
 
     auto dV_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)*sizeV), rocblas_test::device_free};
     T *dV = (T *)dV_managed.get();
@@ -104,20 +105,28 @@ rocblas_status testing_larft(Arguments argus)
         rocblas_init<T>(hV.data(), N, K, ldv);
         for (int j=0;j<K;++j) {
             for (int i=0;i<N;++i) {
-                hV[i+j*ldv] = (hV[i+j*ldv]-5)/5.0; 
+                if (i == j)
+                    hV[i+j*ldv] += 400;
+                else
+                    hV[i+j*ldv] -= 4;
             }
         }
+        cblas_geqrf<T>(N, K, hV.data(), ldv, htau.data(), hW.data(), K);
     } else {
         rocblas_init<T>(hV.data(), K, N, ldv);
         for (int j=0;j<N;++j) {
             for (int i=0;i<K;++i) {
-                hV[i+j*ldv] = (hV[i+j*ldv]-5)/5.0; 
+                if (i == j)
+                    hV[i+j*ldv] += 400;
+                else
+                    hV[i+j*ldv] -= 4;
             }
         }
+        cblas_gelqf<T>(K, N, hV.data(), ldv, htau.data(), hW.data(), K);
     }     
-    rocblas_init<T>(htau.data(), 1, K, 1); 
-    for (int j=0;j<K;++j) 
-        htau[j] = (htau[j]-5)/5.0; 
+//    rocblas_init<T>(htau.data(), 1, K, 1); 
+//    for (int j=0;j<K;++j) 
+//        htau[j] = (htau[j]-5)/5.0; 
 
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dV, hV.data(), sizeof(T) * sizeV, hipMemcpyHostToDevice));

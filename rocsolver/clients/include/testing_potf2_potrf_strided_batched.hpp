@@ -18,7 +18,7 @@
 #include "unit.h"
 #include "utility.h"
 
-#define ERROR_EPS_MULTIPLIER 8000
+#define ERROR_EPS_MULTIPLIER 3000
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
@@ -75,10 +75,7 @@ rocblas_status testing_potf2_potrf_strided_batched(Arguments argus) {
         return rocblas_status_memory_error;
     }
   
-    //  Random lower triangular matrices are not positive-definite as required
-    //  by the Cholesky decomposition
-    //
-    //  We start with full random matrix A. Calculate symmetric AAT = A*A^T.
+    //  We start with full random matrix A. Calculate symmetric AAT = A*A^H.
     //  Make AAT strictly diagonal dominant. A strictly diagonal dominant matrix
     //  is SPD so we can use Cholesky.
 
@@ -98,7 +95,7 @@ rocblas_status testing_potf2_potrf_strided_batched(Arguments argus) {
         }
 
         //  calculate AAT = hA * hA ^ T
-        cblas_gemm(rocblas_operation_none, rocblas_operation_transpose, N, N, N,
+        cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, N, N, N,
                    (T)1.0, M, lda, M, lda, (T)0.0, MMT, lda);
 
         //  copy AAT into hA, and make it positive-definite
@@ -106,7 +103,7 @@ rocblas_status testing_potf2_potrf_strided_batched(Arguments argus) {
             for (int j = 0; j < N; j++) {
                 M[i + j * lda] = MMT[i + j * lda];
             }
-            M[i + i * lda] += 1;
+            M[i + i * lda] += 100;
         }
     }
 
