@@ -21,7 +21,7 @@
 #include <gtest/gtest.h>
 #endif
 
-#define ERROR_EPS_MULTIPLIER 8000
+#define ERROR_EPS_MULTIPLIER 3000
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
@@ -138,7 +138,10 @@ rocblas_status testing_ormbr(Arguments argus) {
         rocblas_init<T>(hA.data(), nq, size_P, lda);
         for (int i = 0; i < nq; i++) {
             for (int j = 0; j < size_P; j++) {
-                hA[i + j*lda] = (hA[i + j*lda] - 5.0) / 5.0;    //entries in [-1, 1]
+                if (i == j)
+                    hA[i + j*lda] += 400;
+                else
+                    hA[i + j*lda] -= 4;
             }
         }
         cblas_gebrd<T>(nq, size_P, hA.data(), lda, D.data(), E.data(), hIpiv.data(), P.data(), hW.data(), size_W); 
@@ -146,17 +149,15 @@ rocblas_status testing_ormbr(Arguments argus) {
         rocblas_init<T>(hA.data(), size_P, nq, lda);
         for (int i = 0; i < size_P; i++) {
             for (int j = 0; j < nq; j++) {
-                hA[i + j*lda] = (hA[i + j*lda] - 5.0) / 5.0;    //entries in [-1, 1]
+                if (i == j)
+                    hA[i + j*lda] += 400;
+                else
+                    hA[i + j*lda] -= 4;
             }
         }
         cblas_gebrd<T>(size_P, nq, hA.data(), lda, D.data(), E.data(), P.data(), hIpiv.data(), hW.data(), size_W); 
     }
     rocblas_init<T>(hC.data(), M, N, ldc);
-    for (int i = 0; i < M; i++) {
-        for (int j = 0; j < N; j++) {
-            hC[i + j*ldc] = (hC[i + j*ldc] - 5.0) / 5.0;    //entries in [-1, 1]
-        }
-    }
     
 
     // copy data from CPU to device

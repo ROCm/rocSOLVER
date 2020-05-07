@@ -22,7 +22,7 @@
 #endif
 
 // this is max error PER element
-#define ERROR_EPS_MULTIPLIER 8000
+#define ERROR_EPS_MULTIPLIER 3000
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
@@ -90,8 +90,18 @@ rocblas_status testing_gelq2_gelqf_strided_batched(Arguments argus) {
     }
 
     //initialize full random matrix hA with all entries in [1, 10]
-    for(int b=0; b < batch_count; ++b)
-        rocblas_init<T>((hA.data() + b*strideA), M, N, lda);
+    for(int b=0; b < batch_count; ++b) {
+        T* a = hA.data() + b*strideA;
+        rocblas_init<T>(a, M, N, lda);
+        for (rocblas_int i = 0; i < M; ++i) {
+            for (rocblas_int j = 0; j < N; ++j) {
+                if (i == j)
+                    a[i+j*lda] += 400;
+                else
+                    a[i+j*lda] -= 4;
+            }
+        }
+    }
 
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(T) * size_A, hipMemcpyHostToDevice));

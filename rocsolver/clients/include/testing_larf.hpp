@@ -21,7 +21,7 @@
 #include <gtest/gtest.h>
 #endif
 
-#define ERROR_EPS_MULTIPLIER 8000
+#define ERROR_EPS_MULTIPLIER 3000
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
@@ -79,6 +79,7 @@ rocblas_status testing_larf(Arguments argus) {
 
     // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory
     vector<T> hx(sizex);
+    vector<T> x(sizex);
     vector<T> hA(sizeA);
     vector<T> hA_r(sizeA);
     vector<T> hw(sizew);
@@ -96,10 +97,17 @@ rocblas_status testing_larf(Arguments argus) {
         return rocblas_status_memory_error;
     }
 
-    //initialize full random inputs, all entries in [1, 10]
-    rocblas_init<T>(hx.data(), 1, order, abs(incx));
+    //initialize full random inputs
+    rocblas_init<T>(x.data(), 1, order, abs(incx));
+    cblas_larfg<T>(order, x.data(), x.data()+abs(incx), abs(incx), &halpha);
+    x[0] = 1;
+    for (rocblas_int i = 0; i < order; i++) {
+        if (incx < 0)
+            hx[i*abs(incx)] = x[(order-1-i)*abs(incx)];
+        else
+            hx[i*incx] = x[i*incx];
+    }
     rocblas_init<T>(hA.data(), M, N, lda);
-    rocblas_init<T>(&halpha, 1, 1, 1);
 
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dx, hx.data(), sizeof(T) * sizex, hipMemcpyHostToDevice));

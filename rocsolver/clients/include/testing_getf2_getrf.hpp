@@ -22,7 +22,7 @@
 #endif
 
 // this is max error PER element after the LU
-#define ERROR_EPS_MULTIPLIER 10000
+#define ERROR_EPS_MULTIPLIER 3000
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
@@ -90,6 +90,15 @@ rocblas_status testing_getf2_getrf(Arguments argus) {
 
     //initialize full random matrix hA with all entries in [1, 10]
     rocblas_init<T>(hA.data(), M, N, lda);
+    for (rocblas_int i = 0; i < M; ++i) {
+        for (rocblas_int j = 0; j < N; ++j) {
+            if (i == j)
+                hA[i+j*lda] += 400;
+            else
+                hA[i+j*lda] -= 4;
+        }
+    }
+ 
 
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(T) * size_A, hipMemcpyHostToDevice));
