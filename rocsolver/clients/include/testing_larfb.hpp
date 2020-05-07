@@ -21,7 +21,7 @@
 #include <gtest/gtest.h>
 #endif
 
-#define ERROR_EPS_MULTIPLIER 8000
+#define ERROR_EPS_MULTIPLIER 3000
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
@@ -118,6 +118,7 @@ rocblas_status testing_larfb(Arguments argus)
     vector<T> hA(sizeA);
     vector<T> hA_r(sizeA);
     vector<T> hW(sizeW);
+    vector<T> htau(K);    
 
     auto dV_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)*sizeV), rocblas_test::device_free};
     T *dV = (T *)dV_managed.get();
@@ -136,50 +137,68 @@ rocblas_status testing_larfb(Arguments argus)
             rocblas_init<T>(hV.data(), M, K, ldv);
             for (int i=0; i<M; ++i) {
                 for (int j=0; j<K; ++j) {
-                    hV[i+j*ldv] = (hV[i+j*ldv] - 5) / 5;
+                    if (i == j)
+                        hV[i+j*ldv] += 400;
+                    else
+                        hV[i+j*ldv] -= 4;
                 }
             }
+            cblas_geqrf<T>(M, K, hV.data(), ldv, htau.data(), hW.data(), sizeW);
         }
         else
         {
             rocblas_init<T>(hV.data(), K, M, ldv);
             for (int i=0; i<K; ++i) {
                 for (int j=0; j<M; ++j) {
-                    hV[i+j*ldv] = (hV[i+j*ldv] - 5) / 5;
+                    if (i == j)
+                        hV[i+j*ldv] += 400;
+                    else
+                        hV[i+j*ldv] -= 4;
                 }
             }
+            cblas_gelqf<T>(K, M, hV.data(), ldv, htau.data(), hW.data(), sizeW);
         } 
+        cblas_larft<T>(directC, storevC, M, K, hV.data(), ldv, htau.data(), hF.data(), ldt);
     } else {
         if (storevC == 'C') {
             rocblas_init<T>(hV.data(), N, K, ldv);
             for (int i=0; i<N; ++i) {
                 for (int j=0; j<K; ++j) {
-                    hV[i+j*ldv] = (hV[i+j*ldv] - 5) / 5;
+                    if (i == j)
+                        hV[i+j*ldv] += 400;
+                    else
+                        hV[i+j*ldv] -= 4;
                 }
             } 
+            cblas_geqrf<T>(N, K, hV.data(), ldv, htau.data(), hW.data(), sizeW);
         }
         else 
         {
             rocblas_init<T>(hV.data(), K, N, ldv);
             for (int i=0; i<K; ++i) {
                 for (int j=0; j<N; ++j) {
-                    hV[i+j*ldv] = (hV[i+j*ldv] - 5) / 5;
+                    if(i == j)
+                        hV[i+j*ldv] += 400;
+                    else
+                        hV[i+j*ldv] -= 4;
                 }
             } 
+            cblas_gelqf<T>(K, N, hV.data(), ldv, htau.data(), hW.data(), sizeW);
         }
+        cblas_larft<T>(directC, storevC, N, K, hV.data(), ldv, htau.data(), hF.data(), ldt);
     }
-    rocblas_init<T>(hF.data(), K, K, ldt);
-    for (int i=0; i<K; ++i) {
-        for (int j=0; j<K; ++j) {
-            hF[i+j*ldt] = (hF[i+j*ldt] - 5) / 5;
-        }
-    } 
+//    rocblas_init<T>(hF.data(), K, K, ldt);
+//    for (int i=0; i<K; ++i) {
+//        for (int j=0; j<K; ++j) {
+//            hF[i+j*ldt] = (hF[i+j*ldt] - 5) / 5;
+//        }
+//    } 
     rocblas_init<T>(hA.data(), M, N, lda);
-    for (int i=0; i<M; ++i) {
-        for (int j=0; j<N; ++j) {
-            hA[i+j*lda] = (hA[i+j*lda] - 5) / 5;
-        }
-    } 
+//    for (int i=0; i<M; ++i) {
+//        for (int j=0; j<N; ++j) {
+//            hA[i+j*lda] = (hA[i+j*lda] - 5) / 5;
+//        }
+//    } 
     
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dV, hV.data(), sizeof(T) * sizeV, hipMemcpyHostToDevice));

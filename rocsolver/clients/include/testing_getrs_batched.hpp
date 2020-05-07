@@ -22,7 +22,7 @@
 #endif
 
 // this is max error PER element after the solution
-#define GETRF_ERROR_EPS_MULTIPLIER 10000
+#define GETRF_ERROR_EPS_MULTIPLIER 3000
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
@@ -124,13 +124,11 @@ template <typename T, typename U> rocblas_status testing_getrs_batched(Arguments
         // put it into [0, 1]
         for (int i = 0; i < M; i++) {
             for (int j = 0; j < M; j++) {
-                hA[b][i + j * lda] = (hA[b][i + j * lda] - 1.0) / 10.0;
+                if (i == j)
+                    hA[b][i + j * lda] += 400;
+                else
+                    hA[b][i + j * lda] -= 4;
             }
-        }
-
-        // now make it diagonally dominant
-        for (int i = 0; i < M; i++) {
-            hA[b][i + i * lda] *= 420.0;
         }
     }
 

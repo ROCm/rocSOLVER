@@ -21,7 +21,7 @@
 #include <gtest/gtest.h>
 #endif
 
-#define ERROR_EPS_MULTIPLIER 8000
+#define ERROR_EPS_MULTIPLIER 3000
 // AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
 // AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
 // A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
@@ -126,15 +126,13 @@ rocblas_status testing_orml2_ormlq(Arguments argus) {
     rocblas_init<T>(hA.data(), K, order, lda);
     for (int i = 0; i < K; i++) {
         for (int j = 0; j < order; j++) {
-            hA[i + j*lda] = (hA[i + j*lda] - 5.0) / 5.0;    //entries in [-1, 1]
+            if (i == j)
+                hA[i + j*lda] += 400;
+            else
+                hA[i + j*lda] -= 4;
         }
     }
     rocblas_init<T>(hC.data(), M, N, ldc);
-    for (int i = 0; i < M; i++) {
-        for (int j = 0; j < N; j++) {
-            hC[i + j*ldc] = (hC[i + j*ldc] - 5.0) / 5.0;    //entries in [-1, 1]
-        }
-    }
     
     //Compute QR factorization
     cblas_gelqf<T>(K, order, hA.data(), lda, hIpiv.data(), hW.data(), size_W); 
