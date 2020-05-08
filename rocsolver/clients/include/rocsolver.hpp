@@ -1003,14 +1003,12 @@ inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_ha
         return GEQLF ?
                 // rocsolver_sgeqlf_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, bc) :
                 rocblas_status_not_implemented :
-                // rocsolver_sgeql2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, bc);
-                rocblas_status_not_implemented;
+                rocsolver_sgeql2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, bc);
     else
         return GEQLF ?
                 // rocsolver_sgeqlf(handle, m, n, A, lda, ipiv) :
                 rocblas_status_not_implemented :
-                // rocsolver_sgeql2(handle, m, n, A, lda, ipiv);
-                rocblas_status_not_implemented;
+                rocsolver_sgeql2(handle, m, n, A, lda, ipiv);
 }
 
 inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_handle handle, rocblas_int m,
@@ -1021,14 +1019,12 @@ inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_ha
         return GEQLF ?
                 // rocsolver_dgeqlf_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, bc) :
                 rocblas_status_not_implemented :
-                // rocsolver_dgeql2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, bc);
-                rocblas_status_not_implemented;
+                rocsolver_dgeql2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, bc);
     else
         return GEQLF ?
                 // rocsolver_dgeqlf(handle, m, n, A, lda, ipiv) :
                 rocblas_status_not_implemented :
-                // rocsolver_dgeql2(handle, m, n, A, lda, ipiv);
-                rocblas_status_not_implemented;
+                rocsolver_dgeql2(handle, m, n, A, lda, ipiv);
 }
 
 inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_handle handle, rocblas_int m,
@@ -1039,14 +1035,12 @@ inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_ha
         return GEQLF ?
                 // rocsolver_cgeqlf_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, bc) :
                 rocblas_status_not_implemented :
-                // rocsolver_cgeql2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, bc);
-                rocblas_status_not_implemented;
+                rocsolver_cgeql2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, bc);
     else
         return GEQLF ?
                 // rocsolver_cgeqlf(handle, m, n, A, lda, ipiv) :
                 rocblas_status_not_implemented :
-                // rocsolver_cgeql2(handle, m, n, A, lda, ipiv);
-                rocblas_status_not_implemented;
+                rocsolver_cgeql2(handle, m, n, A, lda, ipiv);
 }
 
 inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_handle handle, rocblas_int m,
@@ -1057,14 +1051,12 @@ inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_ha
         return GEQLF ?
                 // rocsolver_zgeqlf_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, bc) :
                 rocblas_status_not_implemented :
-                // rocsolver_zgeql2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, bc);
-                rocblas_status_not_implemented;
+                rocsolver_zgeql2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, bc);
     else
         return GEQLF ?
                 // rocsolver_zgeqlf(handle, m, n, A, lda, ipiv) :
                 rocblas_status_not_implemented :
-                // rocsolver_zgeql2(handle, m, n, A, lda, ipiv);
-                rocblas_status_not_implemented;
+                rocsolver_zgeql2(handle, m, n, A, lda, ipiv);
 }
 
 // batched
@@ -1075,8 +1067,7 @@ inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_ha
     return GEQLF ?
             // rocsolver_sgeqlf_batched(handle, m, n, A, lda, ipiv, stP, bc) :
             rocblas_status_not_implemented :
-            // rocsolver_sgeql2_batched(handle, m, n, A, lda, ipiv, stP, bc);
-            rocblas_status_not_implemented;
+            rocsolver_sgeql2_batched(handle, m, n, A, lda, ipiv, stP, bc);
 }
 
 inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_handle handle, rocblas_int m,
@@ -1086,8 +1077,7 @@ inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_ha
     return GEQLF ?
             // rocsolver_dgeqlf_batched(handle, m, n, A, lda, ipiv, stP, bc) :
             rocblas_status_not_implemented :
-            // rocsolver_dgeql2_batched(handle, m, n, A, lda, ipiv, stP, bc);
-            rocblas_status_not_implemented;
+            rocsolver_dgeql2_batched(handle, m, n, A, lda, ipiv, stP, bc);
 }
 
 inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_handle handle, rocblas_int m,
@@ -1097,8 +1087,7 @@ inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_ha
     return GEQLF ?
             // rocsolver_cgeqlf_batched(handle, m, n, A, lda, ipiv, stP, bc) :
             rocblas_status_not_implemented :
-            // rocsolver_cgeql2_batched(handle, m, n, A, lda, ipiv, stP, bc);
-            rocblas_status_not_implemented;
+            rocsolver_cgeql2_batched(handle, m, n, A, lda, ipiv, stP, bc);
 }
 
 inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_handle handle, rocblas_int m,
@@ -1108,8 +1097,7 @@ inline rocblas_status rocsolver_geql2_geqlf(bool STRIDED, bool GEQLF, rocblas_ha
     return GEQLF ?
             // rocsolver_zgeqlf_batched(handle, m, n, A, lda, ipiv, stP, bc) :
             rocblas_status_not_implemented :
-            // rocsolver_zgeql2_batched(handle, m, n, A, lda, ipiv, stP, bc);
-            rocblas_status_not_implemented;
+            rocsolver_zgeql2_batched(handle, m, n, A, lda, ipiv, stP, bc);
 }
 /********************************************************/
 
