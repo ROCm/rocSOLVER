@@ -3740,8 +3740,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(
                  const rocblas_stride strideB, const rocblas_int batch_count);
 
 
-/*! \brief POTF2 computes the Cholesky factorization of a real symmetric
-    positive definite matrix A.
+/*! \brief POTF2 computes the Cholesky factorization of a real symmetric/complex
+    Hermitian positive definite matrix A.
 
     \details
     (This is the unblocked version of the algorithm). 
@@ -3778,19 +3778,35 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_spotf2(rocblas_handle handle,
                                                    const rocblas_fill uplo,
-                                                   const rocblas_int n, float *A,
+                                                   const rocblas_int n,
+                                                   float *A,
                                                    const rocblas_int lda,
                                                    rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dpotf2(rocblas_handle handle,
                                                    const rocblas_fill uplo,
-                                                   const rocblas_int n, double *A,
+                                                   const rocblas_int n,
+                                                   double *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotf2(rocblas_handle handle,
+                                                   const rocblas_fill uplo,
+                                                   const rocblas_int n,
+                                                   rocblas_float_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2(rocblas_handle handle,
+                                                   const rocblas_fill uplo,
+                                                   const rocblas_int n,
+                                                   rocblas_double_complex *A,
                                                    const rocblas_int lda,
                                                    rocblas_int* info);
 
 
 /*! \brief POTF2_BATCHED computes the Cholesky factorization of a 
-    batch of real symmetric positive definite matrices.
+    batch of real symmetric/complex Hermitian positive definite matrices.
 
     \details
     (This is the unblocked version of the algorithm). 
@@ -3844,8 +3860,24 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dpotf2_batched(rocblas_handle handle,
                                                            rocblas_int* info,
                                                            const rocblas_int batch_count);
 
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotf2_batched(rocblas_handle handle,
+                                                           const rocblas_fill uplo,
+                                                           const rocblas_int n, 
+                                                           rocblas_float_complex *const A[],
+                                                           const rocblas_int lda,
+                                                           rocblas_int* info,
+                                                           const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_batched(rocblas_handle handle,
+                                                           const rocblas_fill uplo,
+                                                           const rocblas_int n, 
+                                                           rocblas_double_complex *const A[],
+                                                           const rocblas_int lda,
+                                                           rocblas_int* info,
+                                                           const rocblas_int batch_count);
+
 /*! \brief POTF2_STRIDED_BATCHED computes the Cholesky factorization of a 
-    batch of real symmetric positive definite matrices.
+    batch of real symmetric/complex Hermitian positive definite matrices.
 
     \details
     (This is the unblocked version of the algorithm). 
@@ -3905,8 +3937,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dpotf2_strided_batched(rocblas_handle 
                                                                    rocblas_int* info,
                                                                    const rocblas_int batch_count);
 
-/*! \brief POTRF computes the Cholesky factorization of a real symmetric
-    positive definite matrix A.
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotf2_strided_batched(rocblas_handle handle,
+                                                                   const rocblas_fill uplo,
+                                                                   const rocblas_int n, 
+                                                                   rocblas_float_complex *A,
+                                                                   const rocblas_int lda,
+                                                                   const rocblas_stride strideA,
+                                                                   rocblas_int* info,
+                                                                   const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_strided_batched(rocblas_handle handle,
+                                                                   const rocblas_fill uplo,
+                                                                   const rocblas_int n, 
+                                                                   rocblas_double_complex *A,
+                                                                   const rocblas_int lda,
+                                                                   const rocblas_stride strideA,
+                                                                   rocblas_int* info,
+                                                                   const rocblas_int batch_count);
+
+/*! \brief POTRF computes the Cholesky factorization of a real symmetric/complex
+    Hermitian positive definite matrix A.
 
     \details
     (This is the blocked version of the algorithm). 
@@ -3943,19 +3993,35 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dpotf2_strided_batched(rocblas_handle 
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_spotrf(rocblas_handle handle,
                                                    const rocblas_fill uplo,
-                                                   const rocblas_int n, float *A,
+                                                   const rocblas_int n,
+                                                   float *A,
                                                    const rocblas_int lda,
                                                    rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrf(rocblas_handle handle,
                                                    const rocblas_fill uplo,
-                                                   const rocblas_int n, double *A,
+                                                   const rocblas_int n,
+                                                   double *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrf(rocblas_handle handle,
+                                                   const rocblas_fill uplo,
+                                                   const rocblas_int n,
+                                                   rocblas_float_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf(rocblas_handle handle,
+                                                   const rocblas_fill uplo,
+                                                   const rocblas_int n,
+                                                   rocblas_double_complex *A,
                                                    const rocblas_int lda,
                                                    rocblas_int* info);
 
 
 /*! \brief POTRF_BATCHED computes the Cholesky factorization of a 
-    batch of real symmetric positive definite matrices.
+    batch of real symmetric/complex Hermitian positive definite matrices.
 
     \details
     (This is the blocked version of the algorithm). 
@@ -4009,8 +4075,24 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrf_batched(rocblas_handle handle,
                                                            rocblas_int* info,
                                                            const rocblas_int batch_count);
 
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrf_batched(rocblas_handle handle,
+                                                           const rocblas_fill uplo,
+                                                           const rocblas_int n, 
+                                                           rocblas_float_complex *const A[],
+                                                           const rocblas_int lda,
+                                                           rocblas_int* info,
+                                                           const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_batched(rocblas_handle handle,
+                                                           const rocblas_fill uplo,
+                                                           const rocblas_int n, 
+                                                           rocblas_double_complex *const A[],
+                                                           const rocblas_int lda,
+                                                           rocblas_int* info,
+                                                           const rocblas_int batch_count);
+
 /*! \brief POTRF_STRIDED_BATCHED computes the Cholesky factorization of a 
-    batch of real symmetric positive definite matrices.
+    batch of real symmetric/complex Hermitian positive definite matrices.
 
     \details
     (This is the blocked version of the algorithm). 
@@ -4065,6 +4147,24 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrf_strided_batched(rocblas_handle 
                                                                    const rocblas_fill uplo,
                                                                    const rocblas_int n, 
                                                                    double *A,
+                                                                   const rocblas_int lda,
+                                                                   const rocblas_stride strideA,
+                                                                   rocblas_int* info,
+                                                                   const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrf_strided_batched(rocblas_handle handle,
+                                                                   const rocblas_fill uplo,
+                                                                   const rocblas_int n, 
+                                                                   rocblas_float_complex *A,
+                                                                   const rocblas_int lda,
+                                                                   const rocblas_stride strideA,
+                                                                   rocblas_int* info,
+                                                                   const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle handle,
+                                                                   const rocblas_fill uplo,
+                                                                   const rocblas_int n, 
+                                                                   rocblas_double_complex *A,
                                                                    const rocblas_int lda,
                                                                    const rocblas_stride strideA,
                                                                    rocblas_int* info,

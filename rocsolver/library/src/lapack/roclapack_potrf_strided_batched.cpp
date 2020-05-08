@@ -4,7 +4,7 @@
 
 #include "roclapack_potrf.hpp"
 
-template <typename T, typename U>
+template <typename S, typename T, typename U>
 rocblas_status rocsolver_potrf_strided_batched_impl(rocblas_handle handle, const rocblas_fill uplo,    
                                             const rocblas_int n, U A, const rocblas_int lda, const rocblas_stride strideA, 
                                             rocblas_int* info, const rocblas_int batch_count) 
@@ -46,14 +46,14 @@ rocblas_status rocsolver_potrf_strided_batched_impl(rocblas_handle handle, const
 
     // execution
     rocblas_status status =
-           rocsolver_potrf_template<T>(handle,uplo,n,
-                                      A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
-                                      lda,strideA,
-                                      info,batch_count,
-                                      (T*)scalars,
-                                      (T*)work,
-                                      (T*)pivotGPU,
-                                      (rocblas_int*)iinfo);
+           rocsolver_potrf_template<S,T>(handle,uplo,n,
+                                         A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
+                                         lda,strideA,
+                                         info,batch_count,
+                                         (T*)scalars,
+                                         (T*)work,
+                                         (T*)pivotGPU,
+                                         (rocblas_int*)iinfo);
 
     hipFree(scalars);
     hipFree(work);
@@ -71,15 +71,31 @@ rocblas_status rocsolver_potrf_strided_batched_impl(rocblas_handle handle, const
  * ===========================================================================
  */
 
-extern "C" ROCSOLVER_EXPORT rocblas_status
-rocsolver_spotrf_strided_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
-                 float *A, const rocblas_int lda, const rocblas_stride strideA, rocblas_int* info, const rocblas_int batch_count) {
-  return rocsolver_potrf_strided_batched_impl<float>(handle, uplo, n, A, lda, strideA, info, batch_count);
+extern "C" {
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotrf_strided_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 float *A, const rocblas_int lda, const rocblas_stride strideA, rocblas_int* info, const rocblas_int batch_count)
+{
+    return rocsolver_potrf_strided_batched_impl<float,float>(handle, uplo, n, A, lda, strideA, info, batch_count);
 }
 
-extern "C" ROCSOLVER_EXPORT rocblas_status
-rocsolver_dpotrf_strided_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
-                 double *A, const rocblas_int lda, const rocblas_stride strideA, rocblas_int* info, const rocblas_int batch_count) {
-  return rocsolver_potrf_strided_batched_impl<double>(handle, uplo, n, A, lda, strideA, info, batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrf_strided_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 double *A, const rocblas_int lda, const rocblas_stride strideA, rocblas_int* info, const rocblas_int batch_count)
+{
+    return rocsolver_potrf_strided_batched_impl<double,double>(handle, uplo, n, A, lda, strideA, info, batch_count);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrf_strided_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 rocblas_float_complex *A, const rocblas_int lda, const rocblas_stride strideA, rocblas_int* info, const rocblas_int batch_count)
+{
+    return rocsolver_potrf_strided_batched_impl<float,rocblas_float_complex>(handle, uplo, n, A, lda, strideA, info, batch_count);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 rocblas_double_complex *A, const rocblas_int lda, const rocblas_stride strideA, rocblas_int* info, const rocblas_int batch_count)
+{
+    return rocsolver_potrf_strided_batched_impl<double,rocblas_double_complex>(handle, uplo, n, A, lda, strideA, info, batch_count);
+}
+
 }
 

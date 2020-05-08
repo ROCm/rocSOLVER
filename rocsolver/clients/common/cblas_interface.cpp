@@ -35,14 +35,12 @@ void zgetrf_(int *m, int *n, rocblas_double_complex *A, int *lda, int *ipiv,
 void spotrf_(char *uplo, int *m, float *A, int *lda, int *info);
 void dpotrf_(char *uplo, int *m, double *A, int *lda, int *info);
 void cpotrf_(char *uplo, int *m, rocblas_float_complex *A, int *lda, int *info);
-void zpotrf_(char *uplo, int *m, rocblas_double_complex *A, int *lda,
-             int *info);
+void zpotrf_(char *uplo, int *m, rocblas_double_complex *A, int *lda, int *info);
 
 void spotf2_(char *uplo, int *n, float *A, int *lda, int *info);
 void dpotf2_(char *uplo, int *n, double *A, int *lda, int *info);
 void cpotf2_(char *uplo, int *n, rocblas_float_complex *A, int *lda, int *info);
-void zpotf2_(char *uplo, int *n, rocblas_double_complex *A, int *lda,
-             int *info);
+void zpotf2_(char *uplo, int *n, rocblas_double_complex *A, int *lda, int *info);
 
 void sgetf2_(int *m, int *n, float *A, int *lda, int *ipiv, int *info);
 void dgetf2_(int *m, int *n, double *A, int *lda, int *ipiv, int *info);
@@ -1235,6 +1233,20 @@ void cblas_potf2(rocblas_fill uplo, rocblas_int n, double *A,
   dpotf2_(&uploC, &n, A, &lda, info);
 }
 
+template <>
+void cblas_potf2(rocblas_fill uplo, rocblas_int n, rocblas_float_complex *A,
+                        rocblas_int lda, rocblas_int *info) {
+  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+  cpotf2_(&uploC, &n, A, &lda, info);
+}
+
+template <>
+void cblas_potf2(rocblas_fill uplo, rocblas_int n, rocblas_double_complex *A,
+                        rocblas_int lda, rocblas_int *info) {
+  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+  zpotf2_(&uploC, &n, A, &lda, info);
+}
+
 // potrf
 template <>
 void cblas_potrf(rocblas_fill uplo, rocblas_int n, float *A,
@@ -1248,6 +1260,20 @@ void cblas_potrf(rocblas_fill uplo, rocblas_int n, double *A,
                         rocblas_int lda, rocblas_int *info) {
   char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
   dpotrf_(&uploC, &n, A, &lda, info);
+}
+
+template <>
+void cblas_potrf(rocblas_fill uplo, rocblas_int n, rocblas_float_complex *A,
+                        rocblas_int lda, rocblas_int *info) {
+  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+  cpotrf_(&uploC, &n, A, &lda, info);
+}
+
+template <>
+void cblas_potrf(rocblas_fill uplo, rocblas_int n, rocblas_double_complex *A,
+                        rocblas_int lda, rocblas_int *info) {
+  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+  zpotrf_(&uploC, &n, A, &lda, info);
 }
 
 // getf2

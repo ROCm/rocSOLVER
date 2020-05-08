@@ -57,12 +57,12 @@ Lapack Auxiliary Function       single double single complex double complex
 =============================== ====== ====== ============== ==============
 Lapack Function                 single double single complex double complex
 =============================== ====== ====== ============== ==============
-**rocsolver_potf2**             x      x                        
-rocsolver_potf2_batched         x      x                       
-rocsolver_potf2_strided_batched x      x                       
-**rocsolver_potrf**             x      x                        
-rocsolver_potrf_batched         x      x                       
-rocsolver_potrf_strided_batched x      x                       
+**rocsolver_potf2**             x      x          x             x
+rocsolver_potf2_batched         x      x          x             x
+rocsolver_potf2_strided_batched x      x          x             x
+**rocsolver_potrf**             x      x          x             x
+rocsolver_potrf_batched         x      x          x             x
+rocsolver_potrf_strided_batched x      x          x             x
 **rocsolver_getf2**             x      x          x             x
 rocsolver_getf2_batched         x      x          x             x
 rocsolver_getf2_strided_batched x      x          x             x

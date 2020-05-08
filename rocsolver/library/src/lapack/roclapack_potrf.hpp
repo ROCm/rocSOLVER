@@ -38,7 +38,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n, const rocblas_int batch_
     }   
 }
 
-template <typename T, typename U>
+template <typename S, typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                         const rocblas_fill uplo, const rocblas_int n, U A,
                                         const rocblas_int shiftA,
@@ -72,8 +72,9 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     #endif
 
     //constants for rocblas functions calls
-    T one = 1;
-    T minone = -1;
+    T t_one = 1;
+    S s_one = 1;
+    S s_minone = -1;
 
     rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
     dim3 gridReset(blocksReset, 1, 1);
@@ -101,13 +102,13 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                 // update trailing submatrix
                 for (int b=0;b<batch_count;++b) {
                     M = load_ptr_batch<T>(AA,b,shiftA,strideA);
-                    rocblas_trsm(handle, rocblas_side_left, uplo, rocblas_operation_transpose,
-                             rocblas_diagonal_non_unit, jb, (n - j - jb), &one,
+                    rocblas_trsm(handle, rocblas_side_left, uplo, rocblas_operation_conjugate_transpose,
+                             rocblas_diagonal_non_unit, jb, (n - j - jb), &t_one,
                              (M + idx2D(j, j, lda)), lda, (M + idx2D(j, j + jb, lda)), lda);
                 }
 
-                rocblasCall_syrk<T>(handle, uplo, rocblas_operation_transpose, n-j-jb, jb, &minone,
-                                A, shiftA + idx2D(j,j+jb,lda), lda, strideA, &one,
+                rocblasCall_syrk_herk<S,T>(handle, uplo, rocblas_operation_conjugate_transpose, n-j-jb, jb, &s_minone,
+                                A, shiftA + idx2D(j,j+jb,lda), lda, strideA, &s_one,
                                 A, shiftA + idx2D(j+jb,j+jb,lda), lda, strideA, batch_count);
             }
         }
@@ -126,13 +127,13 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                 // update trailing submatrix
                 for (int b=0;b<batch_count;++b) {
                     M = load_ptr_batch<T>(AA,b,shiftA,strideA);
-                    rocblas_trsm(handle, rocblas_side_right, uplo, rocblas_operation_transpose,
-                             rocblas_diagonal_non_unit, (n - j - jb), jb, &one,
+                    rocblas_trsm(handle, rocblas_side_right, uplo, rocblas_operation_conjugate_transpose,
+                             rocblas_diagonal_non_unit, (n - j - jb), jb, &t_one,
                              (M + idx2D(j, j, lda)), lda, (M + idx2D(j + jb, j, lda)), lda);
                 }
 
-                rocblasCall_syrk<T>(handle, uplo, rocblas_operation_none, n-j-jb, jb, &minone,
-                                A, shiftA + idx2D(j+jb,j,lda), lda, strideA, &one,
+                rocblasCall_syrk_herk<S,T>(handle, uplo, rocblas_operation_none, n-j-jb, jb, &s_minone,
+                                A, shiftA + idx2D(j+jb,j,lda), lda, strideA, &s_one,
                                 A, shiftA + idx2D(j+jb,j+jb,lda), lda, strideA, batch_count);
             }
         }
