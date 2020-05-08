@@ -18,7 +18,7 @@ def runCompileCommand(platform, project, jobName)
                 ${getRocBLAS}
                 ${auxiliary.exitIfNotSuccess()}
                 ${centos}
-                ${sles} LD_LIBRARY_PATH=/opt/rocm/hcc/lib CXX=/opt/rocm/bin/${compiler} ${project.paths.build_command} ${hipClang} ${debug}
+                ${sles} ${project.paths.build_command} ${hipClang} ${debug}
                 ${auxiliary.exitIfNotSuccess()}
                 """
     platform.runCommand(this, command)
@@ -30,7 +30,7 @@ def runTestCommand (platform, project, gfilter)
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}/build/release/clients/staging
-                ${sudo} LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}
+                ${sudo} GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}
                 """
 
     platform.runCommand(this, command)
