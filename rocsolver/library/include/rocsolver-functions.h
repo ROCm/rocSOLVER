@@ -3275,7 +3275,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_strided_batched(rocblas_handle 
                  [ 0 ]
 
     where R is upper triangular (upper trapezoidal if m < n), and Q is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q = H(1) * H(2) * ... * H(k), with k = min(m,n)
 
@@ -3347,7 +3347,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2(rocblas_handle handle,
                      [  0  ]
 
     where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
@@ -3436,7 +3436,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_batched(rocblas_handle handle,
                      [  0  ] 
 
     where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
@@ -3533,7 +3533,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched(rocblas_handle 
                  [ L ]
 
     where L is lower triangular (lower trapezoidal if m < n), and Q is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q = H(1) * H(2) * ... * H(k), with k = min(m,n)
 
@@ -3605,7 +3605,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2(rocblas_handle handle,
                      [ L_j ]
 
     where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
@@ -3694,7 +3694,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_batched(rocblas_handle handle,
                      [ L_j ] 
 
     where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
@@ -3790,7 +3790,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_strided_batched(rocblas_handle 
         A = [ L 0 ] * Q
  
     where L is lower triangular (lower trapezoidal if m > n), and Q is 
-    a n-by-n orthogonal matrix represented as the product of Householder matrices
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q = H(k) * H(k-1) * ... * H(1), with k = min(m,n)
 
@@ -3861,7 +3861,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2(rocblas_handle handle,
         A_j = [ L_j 0 ] * Q_j 
 
     where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is 
-    a n-by-n orthogonal matrix represented as the product of Householder matrices
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(k) * H_j(k-1) * ... * H_j(1), with k = min(m,n)
 
@@ -3949,7 +3949,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_batched(rocblas_handle handle,
         A_j = [ L_j 0 ] * Q_j 
 
     where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is 
-    a n-by-n orthogonal matrix represented as the product of Householder matrices
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(k) * H_j(k-1) * ... * H_j(1), with k = min(m,n)
 
@@ -4047,7 +4047,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_strided_batched(rocblas_handle 
                  [ 0 ]
  
     where R is upper triangular (upper trapezoidal if m < n), and Q is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q = H(1) * H(2) * ... * H(k), with k = min(m,n)
 
@@ -4119,7 +4119,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
                      [  0  ] 
 
     where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
@@ -4208,7 +4208,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched(rocblas_handle handle,
                      [  0  ] 
 
     where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
@@ -4305,7 +4305,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(rocblas_handle 
                  [ L ]
  
     where L is lower triangular (lower trapezoidal if m < n), and Q is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q = H(1) * H(2) * ... * H(k), with k = min(m,n)
 
@@ -4377,7 +4377,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf(rocblas_handle handle,
                      [ L_j ] 
 
     where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
@@ -4466,7 +4466,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_batched(rocblas_handle handle,
                      [ L_j ] 
 
     where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
@@ -4562,7 +4562,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_strided_batched(rocblas_handle 
         A = [ L 0 ] * Q
  
     where L is lower triangular (lower trapezoidal if m > n), and Q is 
-    a n-by-n orthogonal matrix represented as the product of Householder matrices
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q = H(k) * H(k-1) * ... * H(1), with k = min(m,n)
 
@@ -4633,7 +4633,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf(rocblas_handle handle,
         A_j = [ L_j 0 ] * Q_j 
 
     where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is 
-    a n-by-n orthogonal matrix represented as the product of Householder matrices
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(k) * H_j(k-1) * ... * H_j(1), with k = min(m,n)
 
@@ -4721,7 +4721,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_batched(rocblas_handle handle,
         A_j = [ L_j 0 ] * Q_j 
 
     where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is 
-    a n-by-n orthogonal matrix represented as the product of Householder matrices
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(k) * H_j(k-1) * ... * H_j(1), with k = min(m,n)
 
