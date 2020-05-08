@@ -7,6 +7,7 @@
 #include "testing_getf2_getrf.hpp"
 #include "testing_getf2_getrf_npvt.hpp"
 #include "testing_geqr2_geqrf.hpp"
+#include "testing_geql2_geqlf.hpp"
 #include "testing_gelq2_gelqf.hpp"
 #include "testing_getri.hpp"
 #include "testing_getrs.hpp"
@@ -506,6 +507,66 @@ try
             testing_geqr2_geqrf<true,false,1,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_geqr2_geqrf<true,false,1,rocblas_double_complex>(argus);
+    }
+    else if (function == "geql2") {
+        if (precision == 's')
+            testing_geql2_geqlf<false,false,0,float>(argus);
+        else if (precision == 'd')
+            testing_geql2_geqlf<false,false,0,double>(argus);
+        else if (precision == 'c')
+            testing_geql2_geqlf<false,false,0,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_geql2_geqlf<false,false,0,rocblas_double_complex>(argus);
+    }
+    else if (function == "geql2_batched") {
+        if (precision == 's')
+            testing_geql2_geqlf<true,true,0,float>(argus);
+        else if (precision == 'd')
+            testing_geql2_geqlf<true,true,0,double>(argus);
+        else if (precision == 'c')
+            testing_geql2_geqlf<true,true,0,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_geql2_geqlf<true,true,0,rocblas_double_complex>(argus);
+    }
+    else if (function == "geql2_strided_batched") {
+        if (precision == 's')
+            testing_geql2_geqlf<false,true,0,float>(argus);
+        else if (precision == 'd')
+            testing_geql2_geqlf<false,true,0,double>(argus);
+        else if (precision == 'c')
+            testing_geql2_geqlf<false,true,0,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_geql2_geqlf<false,true,0,rocblas_double_complex>(argus);
+    }
+    else if (function == "geqlf") {
+        if (precision == 's')
+            testing_geql2_geqlf<false,false,1,float>(argus);
+        else if (precision == 'd')
+            testing_geql2_geqlf<false,false,1,double>(argus);
+        else if (precision == 'c')
+            testing_geql2_geqlf<false,false,1,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_geql2_geqlf<false,false,1,rocblas_double_complex>(argus);
+    }
+    else if (function == "geqlf_batched") {
+        if (precision == 's')
+            testing_geql2_geqlf<true,true,1,float>(argus);
+        else if (precision == 'd')
+            testing_geql2_geqlf<true,true,1,double>(argus);
+        else if (precision == 'c')
+            testing_geql2_geqlf<true,true,1,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_geql2_geqlf<true,true,1,rocblas_double_complex>(argus);
+    }
+    else if (function == "geqlf_strided_batched") {
+        if (precision == 's')
+            testing_geql2_geqlf<false,true,1,float>(argus);
+        else if (precision == 'd')
+            testing_geql2_geqlf<false,true,1,double>(argus);
+        else if (precision == 'c')
+            testing_geql2_geqlf<false,true,1,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_geql2_geqlf<false,true,1,rocblas_double_complex>(argus);
     }
     else if (function == "gelq2") {
         if (precision == 's')

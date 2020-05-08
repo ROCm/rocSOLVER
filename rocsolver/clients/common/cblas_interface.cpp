@@ -106,6 +106,15 @@ void dgeqrf_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, in
 void cgeqrf_(int *m, int *n, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *lwork, int *info);
 void zgeqrf_(int *m, int *n, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *lwork, int *info);
 
+void sgeql2_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *info);
+void dgeql2_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *info);
+void cgeql2_(int *m, int *n, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *info);
+void zgeql2_(int *m, int *n, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *info);
+void sgeqlf_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
+void dgeqlf_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
+void cgeqlf_(int *m, int *n, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *lwork, int *info);
+void zgeqlf_(int *m, int *n, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *lwork, int *info);
+
 void sgelq2_(int *m, int *n, float *A, int *lda, float *ipiv, float *work, int *info);
 void dgelq2_(int *m, int *n, double *A, int *lda, double *ipiv, double *work, int *info);
 void cgelq2_(int *m, int *n, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *info);
@@ -1590,6 +1599,64 @@ void cblas_geqr2<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_d
                                rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work) {
   int info;
   zgeqr2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+// geqlf
+template <>
+void cblas_geqlf<float>(rocblas_int m, rocblas_int n, float *A,
+                        rocblas_int lda, float *ipiv, float *work, rocblas_int lwork) {
+  int info;
+  sgeqlf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_geqlf<double>(rocblas_int m, rocblas_int n, double *A,
+                         rocblas_int lda, double *ipiv, double *work, rocblas_int lwork) {
+  int info;
+  dgeqlf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_geqlf<rocblas_float_complex>(rocblas_int m, rocblas_int n, rocblas_float_complex *A,
+                         rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, rocblas_int lwork) {
+  int info;
+  cgeqlf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_geqlf<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_double_complex *A,
+                         rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, rocblas_int lwork) {
+  int info;
+  zgeqlf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+// geql2
+template <>
+void cblas_geql2<float>(rocblas_int m, rocblas_int n, float *A,
+                               rocblas_int lda, float *ipiv, float *work) {
+  int info;
+  sgeql2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_geql2<double>(rocblas_int m, rocblas_int n, double *A,
+                               rocblas_int lda, double *ipiv, double *work) {
+  int info;
+  dgeql2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_geql2<rocblas_float_complex>(rocblas_int m, rocblas_int n, rocblas_float_complex *A,
+                               rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work) {
+  int info;
+  cgeql2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_geql2<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_double_complex *A,
+                               rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work) {
+  int info;
+  zgeql2_(&m, &n, A, &lda, ipiv, work, &info);
 }
 
 // gelqf
