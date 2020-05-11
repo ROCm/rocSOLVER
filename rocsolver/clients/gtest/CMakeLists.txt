@@ -52,11 +52,11 @@ set(roclapack_test_source
     larf_gtest.cpp
     larft_gtest.cpp
     larfb_gtest.cpp
-    orgqr_ungqr_gtest.cpp
-    orglq_unglq_gtest.cpp
+    orgxr_ungxr_gtest.cpp
+    orglx_unglx_gtest.cpp
     orgbr_ungbr_gtest.cpp
-    ormqr_unmqr_gtest.cpp
-    ormlq_unmlq_gtest.cpp
+    ormxr_unmxr_gtest.cpp
+    ormlx_unmlx_gtest.cpp
     ormbr_unmbr_gtest.cpp
     getf2_getrf_gtest.cpp
     getf2_getrf_batched_gtest.cpp

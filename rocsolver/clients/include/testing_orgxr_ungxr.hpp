@@ -28,8 +28,8 @@
 
 using namespace std;
 
-template <typename T, typename U, int glq> 
-rocblas_status testing_orglq_unglq(Arguments argus) {
+template <typename T, typename U, int gqr> 
+rocblas_status testing_orgxr_ungxr(Arguments argus) {
     rocblas_int M = argus.M;
     rocblas_int N = argus.N;
     rocblas_int K = argus.K;
@@ -39,12 +39,17 @@ rocblas_status testing_orglq_unglq(Arguments argus) {
     std::unique_ptr<rocblas_test::handle_struct> unique_ptr_handle(new rocblas_test::handle_struct);
     rocblas_handle handle = unique_ptr_handle->handle;
 
+    rocblas_int size_A = lda * N;
+
     // check invalid size and quick return
-    if (M < 1 || N < 1 || N < M || K < 1 || K > M || lda < M) {
-        auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
+    if (M < 1 || N < 1 || N > M || K < 1 || K > N || lda < M) {
+        size_t t;
+        t = size_A > 0 ? size_A : 1;
+        auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)*t), rocblas_test::device_free};
         T *dA = (T *)dA_managed.get();
 
-        auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
+        t = N > 0 ? N : 1;
+        auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)*t), rocblas_test::device_free};
         T *dIpiv = (T *)dIpiv_managed.get();
 
         if (!dA || !dIpiv) {
@@ -52,25 +57,23 @@ rocblas_status testing_orglq_unglq(Arguments argus) {
             return rocblas_status_memory_error;
         }
         
-        if(glq) {
-            return rocsolver_orglq_unglq<T>(handle, M, N, K, dA, lda, dIpiv);
+        if(gqr) {
+            return rocsolver_orgqr_ungqr<T>(handle, M, N, K, dA, lda, dIpiv);
         }
         else { 
-            return rocsolver_orgl2_ungl2<T>(handle, M, N, K, dA, lda, dIpiv);
+            return rocsolver_org2r_ung2r<T>(handle, M, N, K, dA, lda, dIpiv);
         }
     }
-
-    rocblas_int size_A = lda * N;
 
     // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory
     vector<T> hA(size_A);
     vector<T> hAr(size_A);
-    vector<T> hW(M);
-    vector<T> hIpiv(M);
+    vector<T> hW(N);
+    vector<T> hIpiv(N);
 
     auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)*size_A), rocblas_test::device_free};
     T *dA = (T *)dA_managed.get();
-    auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)*M), rocblas_test::device_free};
+    auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)*N), rocblas_test::device_free};
     T *dIpiv = (T *)dIpiv_managed.get();
 
     if ((size_A > 0 && !dA) || !dIpiv) {
@@ -88,9 +91,9 @@ rocblas_status testing_orglq_unglq(Arguments argus) {
                 hA[i+j*lda] -= 4;
         }
     }
-    
-    //Compute LQ factorization
-    cblas_gelqf<T>(M, N, hA.data(), lda, hIpiv.data(), hW.data(), M); 
+
+    //Compute QR factorization
+    cblas_geqrf<T>(M, N, hA.data(), lda, hIpiv.data(), hW.data(), N); 
 
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(T) * size_A, hipMemcpyHostToDevice));
@@ -108,22 +111,22 @@ rocblas_status testing_orglq_unglq(Arguments argus) {
     =================================================================== */  
     if (argus.unit_check || argus.norm_check) {
         //GPU lapack
-        if(glq) {
-            CHECK_ROCBLAS_ERROR(rocsolver_orglq_unglq<T>(handle, M, N, K, dA, lda, dIpiv));
+        if(gqr) {
+            CHECK_ROCBLAS_ERROR(rocsolver_orgqr_ungqr<T>(handle, M, N, K, dA, lda, dIpiv));
         }
         else {
-            CHECK_ROCBLAS_ERROR(rocsolver_orgl2_ungl2<T>(handle, M, N, K, dA, lda, dIpiv));
+            CHECK_ROCBLAS_ERROR(rocsolver_org2r_ung2r<T>(handle, M, N, K, dA, lda, dIpiv));
         }   
         //copy output from device to cpu
         CHECK_HIP_ERROR(hipMemcpy(hAr.data(), dA, sizeof(T) * size_A, hipMemcpyDeviceToHost));
 
         //CPU lapack
         cpu_time_used = get_time_us();
-        if(glq) {
-            cblas_orglq_unglq<T>(M, N, K, hA.data(), lda, hIpiv.data(), hW.data());
+        if(gqr) {
+            cblas_orgqr_ungqr<T>(M, N, K, hA.data(), lda, hIpiv.data(), hW.data());
         }
         else {
-            cblas_orgl2_ungl2<T>(M, N, K, hA.data(), lda, hIpiv.data(), hW.data());
+            cblas_org2r_ung2r<T>(M, N, K, hA.data(), lda, hIpiv.data(), hW.data());
         }
         cpu_time_used = get_time_us() - cpu_time_used;
 
@@ -148,20 +151,20 @@ rocblas_status testing_orglq_unglq(Arguments argus) {
         // GPU rocBLAS
         int cold_calls = 2;
 
-        if(glq) {
+        if(gqr) {
             for(int iter = 0; iter < cold_calls; iter++)
-                rocsolver_orglq_unglq<T>(handle, M, N, K, dA, lda, dIpiv);
+                rocsolver_orgqr_ungqr<T>(handle, M, N, K, dA, lda, dIpiv);
             gpu_time_used = get_time_us();
             for(int iter = 0; iter < hot_calls; iter++)
-                rocsolver_orglq_unglq<T>(handle, M, N, K, dA, lda, dIpiv);
+                rocsolver_orgqr_ungqr<T>(handle, M, N, K, dA, lda, dIpiv);
             gpu_time_used = (get_time_us() - gpu_time_used) / hot_calls;       
         }
         else {
             for(int iter = 0; iter < cold_calls; iter++)
-                rocsolver_orgl2_ungl2<T>(handle, M, N, K, dA, lda, dIpiv);
+                rocsolver_org2r_ung2r<T>(handle, M, N, K, dA, lda, dIpiv);
             gpu_time_used = get_time_us();
             for(int iter = 0; iter < hot_calls; iter++)
-                rocsolver_orgl2_ungl2<T>(handle, M, N, K, dA, lda, dIpiv);
+                rocsolver_org2r_ung2r<T>(handle, M, N, K, dA, lda, dIpiv);
             gpu_time_used = (get_time_us() - gpu_time_used) / hot_calls;       
         }
 

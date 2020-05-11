@@ -29,7 +29,7 @@
 using namespace std;
 
 template <typename T, typename U, int mqr> 
-rocblas_status testing_ormqr_unmqr(Arguments argus) {
+rocblas_status testing_ormxr_unmxr(Arguments argus) {
     rocblas_int M = argus.M;
     rocblas_int N = argus.N;
     rocblas_int K = argus.K;
