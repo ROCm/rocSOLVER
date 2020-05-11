@@ -53,7 +53,52 @@ rocblas_status rocsolver_geql2_template(rocblas_handle handle, const rocblas_int
                                         const rocblas_stride strideP, const rocblas_int batch_count,
                                         T* scalars, T* work, T** workArr, T* diag)
 {
-    return rocblas_status_not_implemented;
+    // quick return
+    if (m == 0 || n == 0 || batch_count == 0) 
+        return rocblas_status_success;
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int dim = min(m, n);    //total number of pivots    
+
+    for (rocblas_int j = 0; j < dim; j++) {
+        // generate Householder reflector to work on column j
+        rocsolver_larfg_template(handle,
+                                 m - j,                                 //order of reflector
+                                 A, shiftA + idx2D(m-j-1,n-j-1,lda),    //value of alpha
+                                 A, shiftA + idx2D(0,n-j-1,lda),        //vector x to work on
+                                 1, strideA,                            //inc of x    
+                                 (ipiv + dim-j-1), strideP,             //tau
+                                 batch_count, diag, work);
+
+        // insert one in A(m-j-1,n-j-1) tobuild/apply the householder matrix 
+        hipLaunchKernelGGL(set_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(m-j-1,n-j-1,lda),lda,strideA,1,true);
+        
+        // conjugate tau
+        if (COMPLEX)
+            rocsolver_lacgv_template<T>(handle, 1, ipiv, dim-j-1, 1, strideP, batch_count);
+
+        // Apply Householder reflector to the rest of matrix from the left 
+        rocsolver_larf_template(handle,rocblas_side_left,           //side
+                                m - j,                              //number of rows of matrix to modify
+                                n - j - 1,                          //number of columns of matrix to modify    
+                                A, shiftA + idx2D(0,n-j-1,lda),     //householder vector x
+                                1, strideA,                         //inc of x
+                                (ipiv + dim-j-1), strideP,          //householder scalar (alpha)
+                                A, shiftA,                          //matrix to work on
+                                lda, strideA,                       //leading dimension
+                                batch_count, scalars, work, workArr);
+
+        // restore original value of A(m-j-1,n-j-1)
+        hipLaunchKernelGGL(restore_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(m-j-1,n-j-1,lda),lda,strideA,1);
+        
+        // restore tau
+        if (COMPLEX)
+            rocsolver_lacgv_template<T>(handle, 1, ipiv, dim-j-1, 1, strideP, batch_count);
+    }
+
+    return rocblas_status_success;
 }
 
 #endif /* ROCLAPACK_GEQL2_H */
