@@ -23,11 +23,11 @@ typedef vector<int> wpTuple;
 const vector<vector<int>> range = {
     {-1,1}, {1,0},                  //error 
     {0,1},                          //quick return
-    {10,1}, {20,2}, {30,3}    
+    {10,1}, {10,-1}, {20,2}, {30,3}, {30,-3}
 };
 
 const vector<vector<int>> large_range = {
-    {192,10}, {250,20}, {500,30}, {1500,40}
+    {192,10}, {192,-10}, {250,20}, {500,30}, {1500,40}, {1500,-40}
 };
 
 

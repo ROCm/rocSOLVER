@@ -52,8 +52,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char* buf, size_t l
                     On input it is the vector x, 
                     on output it is overwritten with vector conjg(x).
     @param[in]
-    incx            rocblas_int. incx > 0.\n
+    incx            rocblas_int. incx != 0.\n
                     The increment between consecutive elements of x. 
+                    If incx is negative, the elements of x are indexed in
+                    reverse order.
     *************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_clacgv(rocblas_handle handle,

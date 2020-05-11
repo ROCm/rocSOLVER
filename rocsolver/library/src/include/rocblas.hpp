@@ -394,9 +394,9 @@ rocblas_status rocblasCall_syrk(rocblas_handle    handle,
                                  cast2constType<T>(beta),C,offsetC,ldc,strideC,batch_count);
 }
 
-// syrk & herk
+// herk
 template <typename S, typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
-rocblas_status rocblasCall_syrk_herk(rocblas_handle    handle,
+rocblas_status rocblasCall_herk(rocblas_handle    handle,
                             rocblas_fill      uplo,
                             rocblas_operation transA,
                             rocblas_int       n,
@@ -418,7 +418,7 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle    handle,
 }
 
 template <typename S, typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
-rocblas_status rocblasCall_syrk_herk(rocblas_handle    handle,
+rocblas_status rocblasCall_herk(rocblas_handle    handle,
                             rocblas_fill      uplo,
                             rocblas_operation transA,
                             rocblas_int       n,

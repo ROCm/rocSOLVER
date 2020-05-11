@@ -31,6 +31,7 @@ using namespace std;
 template <typename T> 
 rocblas_status testing_lacgv(Arguments argus) {
     rocblas_int N = argus.N;
+    rocblas_int lda = abs(argus.incx);
     rocblas_int inc = argus.incx;
     int hot_calls = argus.iters;
     
@@ -50,7 +51,7 @@ rocblas_status testing_lacgv(Arguments argus) {
         return rocsolver_lacgv<T>(handle,N,dA,inc);
     }
 
-    rocblas_int size_A = inc * N;
+    rocblas_int size_A = lda * N;
     
     // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory
     vector<T> hA(size_A);
@@ -65,8 +66,8 @@ rocblas_status testing_lacgv(Arguments argus) {
     }
     
     //initialize full random matrix hA with all entries in [1, 10
-    //for sdimplicity, consider M = lda = inc
-    rocblas_init<T>(hA.data(), inc, N, inc);
+    //for sdimplicity, consider M = lda = abs(inc)
+    rocblas_init<T>(hA.data(), 1, N, lda);
  
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(T) * size_A, hipMemcpyHostToDevice));
@@ -89,10 +90,10 @@ rocblas_status testing_lacgv(Arguments argus) {
 
         //++++++++++++ error check ++++++++++++++++
         if (argus.unit_check) {
-            unit_check_general(inc,N,inc,hA.data(),hAr.data());  
+            unit_check_general(1,N,lda,hA.data(),hAr.data());  
         } else {
             for (int i = 0; i < N; i++) {
-                diff = abs(hAr[i * inc] - hA[i * inc]);
+                diff = abs(hAr[i * lda] - hA[i * lda]);
                 max_err_1 = max_err_1 > diff ? max_err_1 : diff;
             }
         }              
