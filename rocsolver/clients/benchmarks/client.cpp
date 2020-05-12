@@ -3,6 +3,7 @@
  * ************************************************************************ */
 
 #include <boost/program_options.hpp>
+#include "testing_gebd2_gebrd.hpp"
 #include "testing_getf2_getrf.hpp"
 #include "testing_geqr2_geqrf.hpp"
 #include "testing_gelq2_gelqf.hpp"
@@ -518,6 +519,16 @@ try
             testing_getrs<false,true,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_getrs<false,true,rocblas_double_complex>(argus);
+    }
+    else if (function == "gebd2") {
+        if (precision == 's')
+            testing_gebd2_gebrd<false,false,0,float>(argus);
+        else if (precision == 'd')
+            testing_gebd2_gebrd<false,false,0,double>(argus);
+        else if (precision == 'c')
+            testing_gebd2_gebrd<false,false,0,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_gebd2_gebrd<false,false,0,rocblas_double_complex>(argus);
     }
     else if (function == "lacgv") {
         if (precision == 'c')

@@ -63,6 +63,7 @@ set(roclapack_test_source
     getrs_gtest.cpp
     geqr2_geqrf_gtest.cpp
     gelq2_gelqf_gtest.cpp
+    gebd2_gebrd_gtest.cpp
     )
 
 set(rocsolver_test_source

@@ -847,5 +847,133 @@ inline rocblas_status rocsolver_gelq2_gelqf(bool STRIDED, bool GELQF, rocblas_ha
 /********************************************************/
 
 
+/******************** GEBD2_GEBRD ********************/
+// normal and strided_batched
+inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_handle handle, rocblas_int m,
+                        rocblas_int n, float *A, rocblas_int lda, rocblas_stride stA, float *D, rocblas_stride stD,
+                        float *E, rocblas_stride stE, float *tauq, rocblas_stride stQ, float *taup,
+                        rocblas_stride stP, rocblas_int bc)
+{
+    if (STRIDED) 
+        return GEBRD ?
+                //rocsolver_sgebrd_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc) :
+                rocblas_status_not_implemented :
+                //rocsolver_sgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
+                rocblas_status_not_implemented;
+    else
+        return GEBRD ?
+                //rocsolver_sgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
+                rocblas_status_not_implemented :
+                //rocsolver_sgebd2(handle, m, n, A, lda, D, E, tauq, taup);
+                rocblas_status_not_implemented;
+}
+
+inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_handle handle, rocblas_int m,
+                        rocblas_int n, double *A, rocblas_int lda, rocblas_stride stA, double *D, rocblas_stride stD,
+                        double *E, rocblas_stride stE, double *tauq, rocblas_stride stQ, double *taup,
+                        rocblas_stride stP, rocblas_int bc)
+{
+    if (STRIDED) 
+        return GEBRD ?
+                //rocsolver_dgebrd_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc) :
+                rocblas_status_not_implemented :
+                //rocsolver_dgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
+                rocblas_status_not_implemented;
+    else
+        return GEBRD ?
+                //rocsolver_dgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
+                rocblas_status_not_implemented :
+                //rocsolver_dgebd2(handle, m, n, A, lda, D, E, tauq, taup);
+                rocblas_status_not_implemented;
+}
+
+inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_handle handle, rocblas_int m,
+                        rocblas_int n, rocblas_float_complex *A, rocblas_int lda, rocblas_stride stA, float *D, rocblas_stride stD,
+                        float *E, rocblas_stride stE, rocblas_float_complex *tauq, rocblas_stride stQ, rocblas_float_complex *taup,
+                        rocblas_stride stP, rocblas_int bc)
+{
+    if (STRIDED) 
+        return GEBRD ?
+                //rocsolver_cgebrd_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc) :
+                rocblas_status_not_implemented :
+                //rocsolver_cgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
+                rocblas_status_not_implemented;
+    else
+        return GEBRD ?
+                //rocsolver_cgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
+                rocblas_status_not_implemented :
+                //rocsolver_cgebd2(handle, m, n, A, lda, D, E, tauq, taup);
+                rocblas_status_not_implemented;
+}
+
+inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_handle handle, rocblas_int m,
+                        rocblas_int n, rocblas_double_complex *A, rocblas_int lda, rocblas_stride stA, double *D, rocblas_stride stD,
+                        double *E, rocblas_stride stE, rocblas_double_complex *tauq, rocblas_stride stQ, rocblas_double_complex *taup,
+                        rocblas_stride stP, rocblas_int bc)
+{
+    if (STRIDED) 
+        return GEBRD ?
+                //rocsolver_zgebrd_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc) :
+                rocblas_status_not_implemented :
+                //rocsolver_zgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
+                rocblas_status_not_implemented;
+    else
+        return GEBRD ?
+                //rocsolver_zgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
+                rocblas_status_not_implemented :
+                //rocsolver_zgebd2(handle, m, n, A, lda, D, E, tauq, taup);
+                rocblas_status_not_implemented;
+}
+
+// batched
+inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_handle handle, rocblas_int m,
+                        rocblas_int n, float *const A[], rocblas_int lda, rocblas_stride stA, float *D, rocblas_stride stD,
+                        float *E, rocblas_stride stE, float *tauq, rocblas_stride stQ, float *taup,
+                        rocblas_stride stP, rocblas_int bc)
+{
+    return GEBRD ?
+            //rocsolver_sgebrd_batched(handle, m, n, A, lda, D, stD, E, stE, tauq, stQ, taup, stP, bc) :
+            rocblas_status_not_implemented :
+            //rocsolver_sgebd2_batched(handle, m, n, A, lda, D, stD, E, stE, tauq, stQ, taup, stP, bc);
+            rocblas_status_not_implemented;
+}
+
+inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_handle handle, rocblas_int m,
+                        rocblas_int n, double *const A[], rocblas_int lda, rocblas_stride stA, double *D, rocblas_stride stD,
+                        double *E, rocblas_stride stE, double *tauq, rocblas_stride stQ, double *taup,
+                        rocblas_stride stP, rocblas_int bc)
+{
+    return GEBRD ?
+            //rocsolver_dgebrd_batched(handle, m, n, A, lda, D, stD, E, stE, tauq, stQ, taup, stP, bc) :
+            rocblas_status_not_implemented :
+            //rocsolver_dgebd2_batched(handle, m, n, A, lda, D, stD, E, stE, tauq, stQ, taup, stP, bc);
+            rocblas_status_not_implemented;
+}
+
+inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_handle handle, rocblas_int m,
+                        rocblas_int n, rocblas_float_complex *const A[], rocblas_int lda, rocblas_stride stA, float *D, rocblas_stride stD,
+                        float *E, rocblas_stride stE, rocblas_float_complex *tauq, rocblas_stride stQ, rocblas_float_complex *taup,
+                        rocblas_stride stP, rocblas_int bc)
+{
+    return GEBRD ?
+            //rocsolver_cgebrd_batched(handle, m, n, A, lda, D, stD, E, stE, tauq, stQ, taup, stP, bc) :
+            rocblas_status_not_implemented :
+            //rocsolver_cgebd2_batched(handle, m, n, A, lda, D, stD, E, stE, tauq, stQ, taup, stP, bc);
+            rocblas_status_not_implemented;
+}
+
+inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_handle handle, rocblas_int m,
+                        rocblas_int n, rocblas_double_complex *const A[], rocblas_int lda, rocblas_stride stA, double *D, rocblas_stride stD,
+                        double *E, rocblas_stride stE, rocblas_double_complex *tauq, rocblas_stride stQ, rocblas_double_complex *taup,
+                        rocblas_stride stP, rocblas_int bc)
+{
+    return GEBRD ?
+            //rocsolver_zgebrd_batched(handle, m, n, A, lda, D, stD, E, stE, tauq, stQ, taup, stP, bc) :
+            rocblas_status_not_implemented :
+            //rocsolver_zgebd2_batched(handle, m, n, A, lda, D, stD, E, stE, tauq, stQ, taup, stP, bc);
+            rocblas_status_not_implemented;
+}
+/********************************************************/
+
 
 #endif /* ROCSOLVER_HPP */
