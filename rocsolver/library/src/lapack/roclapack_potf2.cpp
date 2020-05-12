@@ -69,14 +69,30 @@ rocblas_status rocsolver_potf2_impl(rocblas_handle handle, const rocblas_fill up
  * ===========================================================================
  */
 
-extern "C" ROCSOLVER_EXPORT rocblas_status
-rocsolver_spotf2(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
-                 float *A, const rocblas_int lda, rocblas_int* info) {
-  return rocsolver_potf2_impl<float>(handle, uplo, n, A, lda, info);
+extern "C" {
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotf2(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 float *A, const rocblas_int lda, rocblas_int* info)
+{
+    return rocsolver_potf2_impl<float>(handle, uplo, n, A, lda, info);
 }
 
-extern "C" ROCSOLVER_EXPORT rocblas_status
-rocsolver_dpotf2(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
-                 double *A, const rocblas_int lda, rocblas_int* info) {
-  return rocsolver_potf2_impl<double>(handle, uplo, n, A, lda, info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotf2(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 double *A, const rocblas_int lda, rocblas_int* info)
+{
+    return rocsolver_potf2_impl<double>(handle, uplo, n, A, lda, info);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotf2(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 rocblas_float_complex *A, const rocblas_int lda, rocblas_int* info)
+{
+    return rocsolver_potf2_impl<rocblas_float_complex>(handle, uplo, n, A, lda, info);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 rocblas_double_complex *A, const rocblas_int lda, rocblas_int* info)
+{
+    return rocsolver_potf2_impl<rocblas_double_complex>(handle, uplo, n, A, lda, info);
+}
+
 }

@@ -25,7 +25,7 @@
 
 using namespace std;
 
-template <typename T, int potrf> 
+template <typename T, typename U, int potrf> 
 rocblas_status testing_potf2_potrf_batched(Arguments argus) {
     rocblas_int N = argus.N;
     rocblas_int lda = argus.lda;
@@ -40,8 +40,8 @@ rocblas_status testing_potf2_potrf_batched(Arguments argus) {
 
     // check invalid size and quick return
     if (N < 1 || lda < N || batch_count < 1) {
-        T **dA;
-        hipMalloc(&dA,sizeof(T*));
+        auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T*)), rocblas_test::device_free};
+        T **dA = (T **)dA_managed.get();
 
         auto dinfo_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(int)), rocblas_test::device_free};
         rocblas_int *dinfo = (rocblas_int *)dinfo_managed.get();
@@ -121,7 +121,7 @@ rocblas_status testing_potf2_potrf_batched(Arguments argus) {
     double max_err_1 = 0.0, max_val = 0.0;
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<T>::epsilon();
+    double eps = std::numeric_limits<U>::epsilon();
     double diff, err;
     int pderror = 0, last = N, ii, fi;
 
@@ -174,10 +174,9 @@ rocblas_status testing_potf2_potrf_batched(Arguments argus) {
                         fi = last;
                     }
                     for (int i = ii; i < fi; i++) {
-                        diff = fabs(hA[b][i + j * lda]);
+                        diff = abs(hA[b][i + j * lda]);
                         max_val = max_val > diff ? max_val : diff;
-                        diff = hA[b][i + j * lda];
-                        diff = fabs(AAT[b][i + j * lda] - diff);
+                        diff = abs(AAT[b][i + j * lda] - hA[b][i + j * lda]);
                         err = err > diff ? err : diff;                    
                     }
                 }
@@ -187,7 +186,7 @@ rocblas_status testing_potf2_potrf_batched(Arguments argus) {
         }
 
         if(argus.unit_check && !pderror)
-            potf2_err_res_check<T>(max_err_1, N, error_eps_multiplier, eps); 
+            potf2_err_res_check<U>(max_err_1, N, error_eps_multiplier, eps); 
     }
 
     if (argus.timing) {
