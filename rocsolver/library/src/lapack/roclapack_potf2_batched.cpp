@@ -70,16 +70,32 @@ rocblas_status rocsolver_potf2_batched_impl(rocblas_handle handle, const rocblas
  * ===========================================================================
  */
 
-extern "C" ROCSOLVER_EXPORT rocblas_status
-rocsolver_spotf2_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
-                 float *const A[], const rocblas_int lda, rocblas_int* info, const rocblas_int batch_count) {
-  return rocsolver_potf2_batched_impl<float>(handle, uplo, n, A, lda, info, batch_count);
+extern "C" {
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotf2_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 float *const A[], const rocblas_int lda, rocblas_int* info, const rocblas_int batch_count)
+{
+    return rocsolver_potf2_batched_impl<float>(handle, uplo, n, A, lda, info, batch_count);
 }
 
-extern "C" ROCSOLVER_EXPORT rocblas_status
-rocsolver_dpotf2_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
-                 double *const A[], const rocblas_int lda, rocblas_int* info, const rocblas_int batch_count) {
-  return rocsolver_potf2_batched_impl<double>(handle, uplo, n, A, lda, info, batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotf2_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 double *const A[], const rocblas_int lda, rocblas_int* info, const rocblas_int batch_count)
+{
+    return rocsolver_potf2_batched_impl<double>(handle, uplo, n, A, lda, info, batch_count);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotf2_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 rocblas_float_complex *const A[], const rocblas_int lda, rocblas_int* info, const rocblas_int batch_count)
+{
+    return rocsolver_potf2_batched_impl<rocblas_float_complex>(handle, uplo, n, A, lda, info, batch_count);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_batched(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int* info, const rocblas_int batch_count)
+{
+    return rocsolver_potf2_batched_impl<rocblas_double_complex>(handle, uplo, n, A, lda, info, batch_count);
+}
+
 }
 
 #undef batched

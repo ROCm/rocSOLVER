@@ -64,11 +64,11 @@ template <typename T, typename U> rocblas_status testing_getrs_batched(Arguments
 
     // check here to prevent undefined memory allocation error
     if (batch_count < 1 || M < 1 || nhrs < 1 || lda < M || ldb < M) {
-        T **dA;
-        hipMalloc(&dA,sizeof(T*));
+        auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T*)), rocblas_test::device_free};
+        T **dA = (T **)dA_managed.get();
 
-        T **dB;
-        hipMalloc(&dB,sizeof(T*));
+        auto dB_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T*)), rocblas_test::device_free};
+        T **dB = (T **)dB_managed.get();
 
         auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(int)), rocblas_test::device_free};
         rocblas_int *dIpiv = (rocblas_int *)dIpiv_managed.get();

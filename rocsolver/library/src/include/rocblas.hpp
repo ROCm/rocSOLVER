@@ -394,6 +394,51 @@ rocblas_status rocblasCall_syrk(rocblas_handle    handle,
                                  cast2constType<T>(beta),C,offsetC,ldc,strideC,batch_count);
 }
 
+// herk
+template <typename S, typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
+rocblas_status rocblasCall_herk(rocblas_handle    handle,
+                            rocblas_fill      uplo,
+                            rocblas_operation transA,
+                            rocblas_int       n,
+                            rocblas_int       k,
+                            U                 alpha,
+                            V                 A,
+                            rocblas_int       offsetA,
+                            rocblas_int       lda,
+                            rocblas_stride    strideA,
+                            U                 beta,
+                            V                 C,
+                            rocblas_int       offsetC,
+                            rocblas_int       ldc,
+                            rocblas_stride    strideC,
+                            rocblas_int       batch_count)
+{
+    return rocblas_syrk_template(handle,uplo,transA,n,k,cast2constType<S>(alpha),cast2constType<T>(A),offsetA,lda,strideA,
+                                 cast2constType<S>(beta),C,offsetC,ldc,strideC,batch_count);
+}
+
+template <typename S, typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
+rocblas_status rocblasCall_herk(rocblas_handle    handle,
+                            rocblas_fill      uplo,
+                            rocblas_operation transA,
+                            rocblas_int       n,
+                            rocblas_int       k,
+                            U                 alpha,
+                            V                 A,
+                            rocblas_int       offsetA,
+                            rocblas_int       lda,
+                            rocblas_stride    strideA,
+                            U                 beta,
+                            V                 C,
+                            rocblas_int       offsetC,
+                            rocblas_int       ldc,
+                            rocblas_stride    strideC,
+                            rocblas_int       batch_count)
+{
+    return rocblas_herk_template(handle,uplo,transA,n,k,cast2constType<S>(alpha),cast2constType<T>(A),offsetA,lda,strideA,
+                                 cast2constType<S>(beta),C,offsetC,ldc,strideC,batch_count);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////

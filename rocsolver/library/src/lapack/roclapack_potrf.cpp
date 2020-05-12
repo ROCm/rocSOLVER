@@ -4,7 +4,7 @@
 
 #include "roclapack_potrf.hpp"
 
-template <typename T, typename U>
+template <typename S, typename T, typename U>
 rocblas_status rocsolver_potrf_impl(rocblas_handle handle, const rocblas_fill uplo,    
                                     const rocblas_int n, U A, const rocblas_int lda, rocblas_int* info) 
 { 
@@ -48,14 +48,14 @@ rocblas_status rocsolver_potrf_impl(rocblas_handle handle, const rocblas_fill up
 
     // execution
     rocblas_status status =
-           rocsolver_potrf_template<T>(handle,uplo,n,
-                                      A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
-                                      lda,strideA,
-                                      info,batch_count,
-                                      (T*)scalars,
-                                      (T*)work,
-                                      (T*)pivotGPU,
-                                      (rocblas_int*)iinfo);
+           rocsolver_potrf_template<S,T>(handle,uplo,n,
+                                         A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
+                                         lda,strideA,
+                                         info,batch_count,
+                                         (T*)scalars,
+                                         (T*)work,
+                                         (T*)pivotGPU,
+                                         (rocblas_int*)iinfo);
 
     hipFree(scalars);
     hipFree(work);
@@ -73,14 +73,30 @@ rocblas_status rocsolver_potrf_impl(rocblas_handle handle, const rocblas_fill up
  * ===========================================================================
  */
 
-extern "C" ROCSOLVER_EXPORT rocblas_status
-rocsolver_spotrf(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
-                 float *A, const rocblas_int lda, rocblas_int* info) {
-  return rocsolver_potrf_impl<float>(handle, uplo, n, A, lda, info);
+extern "C" {
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotrf(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 float *A, const rocblas_int lda, rocblas_int* info)
+{
+    return rocsolver_potrf_impl<float,float>(handle, uplo, n, A, lda, info);
 }
 
-extern "C" ROCSOLVER_EXPORT rocblas_status
-rocsolver_dpotrf(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
-                 double *A, const rocblas_int lda, rocblas_int* info) {
-  return rocsolver_potrf_impl<double>(handle, uplo, n, A, lda, info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrf(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 double *A, const rocblas_int lda, rocblas_int* info)
+{
+    return rocsolver_potrf_impl<double,double>(handle, uplo, n, A, lda, info);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrf(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 rocblas_float_complex *A, const rocblas_int lda, rocblas_int* info)
+{
+    return rocsolver_potrf_impl<float,rocblas_float_complex>(handle, uplo, n, A, lda, info);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+                 rocblas_double_complex *A, const rocblas_int lda, rocblas_int* info)
+{
+    return rocsolver_potrf_impl<double,rocblas_double_complex>(handle, uplo, n, A, lda, info);
+}
+
 }

@@ -240,6 +240,24 @@ template <typename T> char type2char();
 
 /* ============================================================================================
  */
+/*  Check transpose operation for real and complex types. */
+
+template <typename T> bool check_transpose(char trans) {
+  if (is_complex<T>)
+    return trans != 'T';
+  else
+    return trans != 'C';
+}
+
+template <typename T> bool check_transpose(rocblas_operation trans) {
+  if (is_complex<T>)
+    return trans != rocblas_operation_transpose;
+  else
+    return trans != rocblas_operation_conjugate_transpose;
+}
+
+/* ============================================================================================
+ */
 /*! \brief  Debugging purpose, print out CPU and GPU result matrix, not valid in
  * complex number  */
 template <typename T>

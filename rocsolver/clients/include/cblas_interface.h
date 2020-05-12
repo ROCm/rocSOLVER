@@ -139,44 +139,47 @@ template <typename T>
 void cblas_gelqf(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work, rocblas_int sizeW);
 
 template <typename T>
+void cblas_lacgv(rocblas_int n, T* x, rocblas_int incx);
+
+template <typename T>
 void cblas_laswp(rocblas_int n, T* A, rocblas_int lda, rocblas_int k1, rocblas_int k2, rocblas_int *ipiv, rocblas_int inc);
 
 template <typename T>
-void cblas_org2r(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
+void cblas_org2r_ung2r(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
 
 template <typename T>
-void cblas_orgqr(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
+void cblas_orgqr_ungqr(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
 
 template <typename T>
-void cblas_orgl2(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
+void cblas_orgl2_ungl2(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
 
 template <typename T>
-void cblas_orglq(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
+void cblas_orglq_unglq(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
 
 template <typename T>
-void cblas_orgbr(char storev, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work, rocblas_int size_w);
+void cblas_orgbr_ungbr(char storev, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work, rocblas_int size_w);
 
 template <typename T>
 void cblas_gebrd(rocblas_int m, rocblas_int n, T *A, rocblas_int lda, T *D, T *E, T *tauq, T *taup, T *work, rocblas_int size_w);
 
 template <typename T>
-void cblas_orm2r(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
+void cblas_orm2r_unm2r(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
                  T *C, rocblas_int ldc, T *work);
 
 template <typename T>
-void cblas_ormqr(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
+void cblas_ormqr_unmqr(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
                  T *C, rocblas_int ldc, T *work, rocblas_int sizeW);
 
 template <typename T>
-void cblas_orml2(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
+void cblas_orml2_unml2(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
                  T *C, rocblas_int ldc, T *work);
 
 template <typename T>
-void cblas_ormlq(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
+void cblas_ormlq_unmlq(rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
                  T *C, rocblas_int ldc, T *work, rocblas_int sizeW);
 
 template <typename T>
-void cblas_ormbr(char storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
+void cblas_ormbr_unmbr(char storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
                  T *C, rocblas_int ldc, T *work, rocblas_int sizeW);
 
 

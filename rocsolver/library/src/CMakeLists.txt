@@ -27,21 +27,22 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 set( rocsolver_auxiliary_source
+  auxiliary/rocauxiliary_lacgv.cpp
   auxiliary/rocauxiliary_laswp.cpp
   auxiliary/rocauxiliary_larfg.cpp
   auxiliary/rocauxiliary_larf.cpp
   auxiliary/rocauxiliary_larft.cpp
   auxiliary/rocauxiliary_larfb.cpp
-  auxiliary/rocauxiliary_org2r.cpp
-  auxiliary/rocauxiliary_orgqr.cpp
-  auxiliary/rocauxiliary_orgl2.cpp
-  auxiliary/rocauxiliary_orglq.cpp
-  auxiliary/rocauxiliary_orgbr.cpp
-  auxiliary/rocauxiliary_orm2r.cpp
-  auxiliary/rocauxiliary_ormqr.cpp
-  auxiliary/rocauxiliary_orml2.cpp
-  auxiliary/rocauxiliary_ormlq.cpp
-  auxiliary/rocauxiliary_ormbr.cpp
+  auxiliary/rocauxiliary_org2r_ung2r.cpp
+  auxiliary/rocauxiliary_orgqr_ungqr.cpp
+  auxiliary/rocauxiliary_orgl2_ungl2.cpp
+  auxiliary/rocauxiliary_orglq_unglq.cpp
+  auxiliary/rocauxiliary_orgbr_ungbr.cpp
+  auxiliary/rocauxiliary_orm2r_unm2r.cpp
+  auxiliary/rocauxiliary_ormqr_unmqr.cpp
+  auxiliary/rocauxiliary_orml2_unml2.cpp
+  auxiliary/rocauxiliary_ormlq_unmlq.cpp
+  auxiliary/rocauxiliary_ormbr_unmbr.cpp
 )
 
 set( rocsolver_lapack_source

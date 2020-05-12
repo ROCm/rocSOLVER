@@ -26,6 +26,7 @@ The following table summarizes the LAPACK functionality implemented in rocSOLVER
 =============================== ====== ====== ============== ==============
 Lapack Auxiliary Function       single double single complex double complex
 =============================== ====== ====== ============== ==============
+**rocsolver_lacgv**                              x              x
 **rocsolver_laswp**             x      x         x              x
 **rocsolver_larfg**             x      x         x              x
 **rocsolver_larft**             x      x         x              x
@@ -41,17 +42,27 @@ Lapack Auxiliary Function       single double single complex double complex
 **rocsolver_orml2**             x      x      
 **rocsolver_ormlq**             x      x      
 **rocsolver_ormbr**             x      x      
+**rocsolver_ung2r**                              x              x      
+**rocsolver_ungqr**                              x              x     
+**rocsolver_ungl2**                              x              x      
+**rocsolver_unglq**                              x              x     
+**rocsolver_ungbr**                              x              x     
+**rocsolver_unm2r**                              x              x      
+**rocsolver_unmqr**                              x              x     
+**rocsolver_unml2**                              x              x      
+**rocsolver_unmlq**                              x              x     
+**rocsolver_unmbr**                              x              x     
 =============================== ====== ====== ============== ==============
 
 =============================== ====== ====== ============== ==============
 Lapack Function                 single double single complex double complex
 =============================== ====== ====== ============== ==============
-**rocsolver_potf2**             x      x                        
-rocsolver_potf2_batched         x      x                       
-rocsolver_potf2_strided_batched x      x                       
-**rocsolver_potrf**             x      x                        
-rocsolver_potrf_batched         x      x                       
-rocsolver_potrf_strided_batched x      x                       
+**rocsolver_potf2**             x      x          x             x
+rocsolver_potf2_batched         x      x          x             x
+rocsolver_potf2_strided_batched x      x          x             x
+**rocsolver_potrf**             x      x          x             x
+rocsolver_potrf_batched         x      x          x             x
+rocsolver_potrf_strided_batched x      x          x             x
 **rocsolver_getf2**             x      x          x             x
 rocsolver_getf2_batched         x      x          x             x
 rocsolver_getf2_strided_batched x      x          x             x

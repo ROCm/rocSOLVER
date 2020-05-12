@@ -46,17 +46,18 @@ set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
 
 set(roclapack_test_source
+    lacgv_gtest.cpp
     laswp_gtest.cpp
     larfg_gtest.cpp
     larf_gtest.cpp
     larft_gtest.cpp
     larfb_gtest.cpp
-    org2r_orgqr_gtest.cpp
-    orgl2_orglq_gtest.cpp
-    orgbr_gtest.cpp
-    orm2r_ormqr_gtest.cpp
-    orml2_ormlq_gtest.cpp
-    ormbr_gtest.cpp
+    orgxr_ungxr_gtest.cpp
+    orglx_unglx_gtest.cpp
+    orgbr_ungbr_gtest.cpp
+    ormxr_unmxr_gtest.cpp
+    ormlx_unmlx_gtest.cpp
+    ormbr_unmbr_gtest.cpp
     getf2_getrf_gtest.cpp
     getf2_getrf_batched_gtest.cpp
     getf2_getrf_strided_batched_gtest.cpp
