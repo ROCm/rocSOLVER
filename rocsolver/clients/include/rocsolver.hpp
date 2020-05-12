@@ -688,6 +688,43 @@ inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED, bool GEQRF, rocblas_ha
             rocsolver_zgeqrf_batched(handle, m, n, A, lda, ipiv, stP, bc) :
             rocsolver_zgeqr2_batched(handle, m, n, A, lda, ipiv, stP, bc);
 }
+
+// ptr_batched
+inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED, bool GEQRF, rocblas_handle handle, rocblas_int m,
+                        rocblas_int n, float *const A[], rocblas_int lda, rocblas_stride stA,
+                        float *const ipiv[], rocblas_stride stP, rocblas_int bc)
+{
+    return GEQRF ?
+            rocsolver_sgeqrf_ptr_batched(handle, m, n, A, lda, ipiv, bc) :
+            rocblas_status_not_implemented;
+}
+
+inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED, bool GEQRF, rocblas_handle handle, rocblas_int m,
+                        rocblas_int n, double *const A[], rocblas_int lda, rocblas_stride stA,
+                        double *const ipiv[], rocblas_stride stP, rocblas_int bc)
+{
+    return GEQRF ?
+            rocsolver_dgeqrf_ptr_batched(handle, m, n, A, lda, ipiv, bc) :
+            rocblas_status_not_implemented;
+}
+
+inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED, bool GEQRF, rocblas_handle handle, rocblas_int m,
+                        rocblas_int n, rocblas_float_complex *const A[], rocblas_int lda, rocblas_stride stA,
+                        rocblas_float_complex *const ipiv[], rocblas_stride stP, rocblas_int bc)
+{
+    return GEQRF ?
+            rocsolver_cgeqrf_ptr_batched(handle, m, n, A, lda, ipiv, bc) :
+            rocblas_status_not_implemented;
+}
+
+inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED, bool GEQRF, rocblas_handle handle, rocblas_int m,
+                        rocblas_int n, rocblas_double_complex *const A[], rocblas_int lda, rocblas_stride stA,
+                        rocblas_double_complex *const ipiv[], rocblas_stride stP, rocblas_int bc)
+{
+    return GEQRF ?
+            rocsolver_zgeqrf_ptr_batched(handle, m, n, A, lda, ipiv, bc) :
+            rocblas_status_not_implemented;
+}
 /********************************************************/
 
 

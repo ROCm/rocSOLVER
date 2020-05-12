@@ -419,6 +419,16 @@ try
         else if (precision == 'z')
             testing_geqr2_geqrf<false,true,1,rocblas_double_complex>(argus);
     }
+    else if (function == "geqrf_ptr_batched") {
+        if (precision == 's')
+            testing_geqr2_geqrf<true,false,1,float>(argus);
+        else if (precision == 'd')
+            testing_geqr2_geqrf<true,false,1,double>(argus);
+        else if (precision == 'c')
+            testing_geqr2_geqrf<true,false,1,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_geqr2_geqrf<true,false,1,rocblas_double_complex>(argus);
+    }
     else if (function == "gelq2") {
         if (precision == 's')
             testing_gelq2_gelqf<false,false,0,float>(argus);
