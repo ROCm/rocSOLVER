@@ -47,7 +47,7 @@ void rocsolver_larf_getMemorySize(const rocblas_side side, const rocblas_int m, 
     *size *= sizeof(T)*batch_count;
 }
 
-template <typename T, typename U, bool COMPLEX = !std::is_floating_point<T>::value>
+template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side side, const rocblas_int m,
                                         const rocblas_int n, U x, const rocblas_int shiftx, const rocblas_int incx, 
                                         const rocblas_stride stridex, const T* alpha, const rocblas_stride stridep, U A, const rocblas_int shiftA, 

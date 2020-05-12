@@ -65,6 +65,14 @@ Lapack Auxiliary Functions
 
 These are functions that support more advanced Lapack routines.
 
+Complex vector manipulations
+--------------------------------------
+
+rocsolver_<type>lacgv()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zlacgv
+.. doxygenfunction:: rocsolver_clacgv
+
 Matrix permutations and manipulations
 --------------------------------------
 
@@ -80,31 +88,31 @@ Householder reflexions
 
 rocsolver_<type>larfg()
 ^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zlarfg
+.. doxygenfunction:: rocsolver_clarfg
 .. doxygenfunction:: rocsolver_dlarfg
 .. doxygenfunction:: rocsolver_slarfg
-.. doxygenfunction:: rocsolver_clarfg
-.. doxygenfunction:: rocsolver_zlarfg
 
 rocsolver_<type>larft()
 ^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zlarft
+.. doxygenfunction:: rocsolver_clarft
 .. doxygenfunction:: rocsolver_dlarft
 .. doxygenfunction:: rocsolver_slarft
-.. doxygenfunction:: rocsolver_clarft
-.. doxygenfunction:: rocsolver_zlarft
 
 rocsolver_<type>larf()
 ^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zlarf
+.. doxygenfunction:: rocsolver_clarf
 .. doxygenfunction:: rocsolver_dlarf
 .. doxygenfunction:: rocsolver_slarf
-.. doxygenfunction:: rocsolver_clarf
-.. doxygenfunction:: rocsolver_zlarf
 
 rocsolver_<type>larfb()
 ^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zlarfb
+.. doxygenfunction:: rocsolver_clarfb
 .. doxygenfunction:: rocsolver_dlarfb
 .. doxygenfunction:: rocsolver_slarfb
-.. doxygenfunction:: rocsolver_clarfb
-.. doxygenfunction:: rocsolver_zlarfb
 
 Orthonormal matrices
 ---------------------------
@@ -159,6 +167,59 @@ rocsolver_<type>ormbr()
 .. doxygenfunction:: rocsolver_dormbr
 .. doxygenfunction:: rocsolver_sormbr
 
+Unitary matrices
+---------------------------
+
+rocsolver_<type>ung2r()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zung2r
+.. doxygenfunction:: rocsolver_cung2r
+
+rocsolver_<type>ungqr()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zungqr
+.. doxygenfunction:: rocsolver_cungqr
+
+rocsolver_<type>ungl2()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zungl2
+.. doxygenfunction:: rocsolver_cungl2
+
+rocsolver_<type>unglq()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zunglq
+.. doxygenfunction:: rocsolver_cunglq
+
+rocsolver_<type>ungbr()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zungbr
+.. doxygenfunction:: rocsolver_cungbr
+
+rocsolver_<type>unm2r()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zunm2r
+.. doxygenfunction:: rocsolver_cunm2r
+
+rocsolver_<type>unmqr()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zunmqr
+.. doxygenfunction:: rocsolver_cunmqr
+
+rocsolver_<type>unml2()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zunml2
+.. doxygenfunction:: rocsolver_cunml2
+
+rocsolver_<type>unmlq()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zunmlq
+.. doxygenfunction:: rocsolver_cunmlq
+
+rocsolver_<type>unmbr()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zunmbr
+.. doxygenfunction:: rocsolver_cunmbr
+
 
 
 Lapack Functions
@@ -171,31 +232,43 @@ Special Matrix Factorizations
 
 rocsolver_<type>potf2()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zpotf2
+.. doxygenfunction:: rocsolver_cpotf2
 .. doxygenfunction:: rocsolver_dpotf2
 .. doxygenfunction:: rocsolver_spotf2
 
 rocsolver_<type>potf2_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zpotf2_batched
+.. doxygenfunction:: rocsolver_cpotf2_batched
 .. doxygenfunction:: rocsolver_dpotf2_batched
 .. doxygenfunction:: rocsolver_spotf2_batched
 
 rocsolver_<type>potf2_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zpotf2_strided_batched
+.. doxygenfunction:: rocsolver_cpotf2_strided_batched
 .. doxygenfunction:: rocsolver_dpotf2_strided_batched
 .. doxygenfunction:: rocsolver_spotf2_strided_batched
 
 rocsolver_<type>potrf()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zpotrf
+.. doxygenfunction:: rocsolver_cpotrf
 .. doxygenfunction:: rocsolver_dpotrf
 .. doxygenfunction:: rocsolver_spotrf
 
 rocsolver_<type>potrf_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zpotrf_batched
+.. doxygenfunction:: rocsolver_cpotrf_batched
 .. doxygenfunction:: rocsolver_dpotrf_batched
 .. doxygenfunction:: rocsolver_spotrf_batched
 
 rocsolver_<type>potrf_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zpotrf_strided_batched
+.. doxygenfunction:: rocsolver_cpotrf_strided_batched
 .. doxygenfunction:: rocsolver_dpotrf_strided_batched
 .. doxygenfunction:: rocsolver_spotrf_strided_batched
 
@@ -247,93 +320,93 @@ rocsolver_<type>getrf_strided_batched()
 
 rocsolver_<type>geqr2()
 ^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgeqr2
+.. doxygenfunction:: rocsolver_cgeqr2
 .. doxygenfunction:: rocsolver_dgeqr2
 .. doxygenfunction:: rocsolver_sgeqr2
-.. doxygenfunction:: rocsolver_cgeqr2
-.. doxygenfunction:: rocsolver_zgeqr2
 
 rocsolver_<type>geqr2_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgeqr2_batched
+.. doxygenfunction:: rocsolver_cgeqr2_batched
 .. doxygenfunction:: rocsolver_dgeqr2_batched
 .. doxygenfunction:: rocsolver_sgeqr2_batched
-.. doxygenfunction:: rocsolver_cgeqr2_batched
-.. doxygenfunction:: rocsolver_zgeqr2_batched
 
 rocsolver_<type>geqr2_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgeqr2_strided_batched
+.. doxygenfunction:: rocsolver_cgeqr2_strided_batched
 .. doxygenfunction:: rocsolver_dgeqr2_strided_batched
 .. doxygenfunction:: rocsolver_sgeqr2_strided_batched
-.. doxygenfunction:: rocsolver_cgeqr2_strided_batched
-.. doxygenfunction:: rocsolver_zgeqr2_strided_batched
 
 .. _qr_label:
 
 rocsolver_<type>geqrf()
 ^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgeqrf
+.. doxygenfunction:: rocsolver_cgeqrf
 .. doxygenfunction:: rocsolver_dgeqrf
 .. doxygenfunction:: rocsolver_sgeqrf
-.. doxygenfunction:: rocsolver_cgeqrf
-.. doxygenfunction:: rocsolver_zgeqrf
 
 .. _qr_batched_label:
 
 rocsolver_<type>geqrf_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgeqrf_batched
+.. doxygenfunction:: rocsolver_cgeqrf_batched
 .. doxygenfunction:: rocsolver_dgeqrf_batched
 .. doxygenfunction:: rocsolver_sgeqrf_batched
-.. doxygenfunction:: rocsolver_cgeqrf_batched
-.. doxygenfunction:: rocsolver_zgeqrf_batched
 
 .. _qr_strided_label:
 
 rocsolver_<type>geqrf_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgeqrf_strided_batched
+.. doxygenfunction:: rocsolver_cgeqrf_strided_batched
 .. doxygenfunction:: rocsolver_dgeqrf_strided_batched
 .. doxygenfunction:: rocsolver_sgeqrf_strided_batched
-.. doxygenfunction:: rocsolver_cgeqrf_strided_batched
-.. doxygenfunction:: rocsolver_zgeqrf_strided_batched
 
 rocsolver_<type>gelq2()
 ^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgelq2
+.. doxygenfunction:: rocsolver_cgelq2
 .. doxygenfunction:: rocsolver_dgelq2
 .. doxygenfunction:: rocsolver_sgelq2
-.. doxygenfunction:: rocsolver_cgelq2
-.. doxygenfunction:: rocsolver_zgelq2
 
 rocsolver_<type>gelq2_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgelq2_batched
+.. doxygenfunction:: rocsolver_cgelq2_batched
 .. doxygenfunction:: rocsolver_dgelq2_batched
 .. doxygenfunction:: rocsolver_sgelq2_batched
-.. doxygenfunction:: rocsolver_cgelq2_batched
-.. doxygenfunction:: rocsolver_zgelq2_batched
 
 rocsolver_<type>gelq2_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgelq2_strided_batched
+.. doxygenfunction:: rocsolver_cgelq2_strided_batched
 .. doxygenfunction:: rocsolver_dgelq2_strided_batched
 .. doxygenfunction:: rocsolver_sgelq2_strided_batched
-.. doxygenfunction:: rocsolver_cgelq2_strided_batched
-.. doxygenfunction:: rocsolver_zgelq2_strided_batched
 
 rocsolver_<type>gelqf()
 ^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgelqf
+.. doxygenfunction:: rocsolver_cgelqf
 .. doxygenfunction:: rocsolver_dgelqf
 .. doxygenfunction:: rocsolver_sgelqf
-.. doxygenfunction:: rocsolver_cgelqf
-.. doxygenfunction:: rocsolver_zgelqf
 
 rocsolver_<type>gelqf_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgelqf_batched
+.. doxygenfunction:: rocsolver_cgelqf_batched
 .. doxygenfunction:: rocsolver_dgelqf_batched
 .. doxygenfunction:: rocsolver_sgelqf_batched
-.. doxygenfunction:: rocsolver_cgelqf_batched
-.. doxygenfunction:: rocsolver_zgelqf_batched
 
 rocsolver_<type>gelqf_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgelqf_strided_batched
+.. doxygenfunction:: rocsolver_cgelqf_strided_batched
 .. doxygenfunction:: rocsolver_dgelqf_strided_batched
 .. doxygenfunction:: rocsolver_sgelqf_strided_batched
-.. doxygenfunction:: rocsolver_cgelqf_strided_batched
-.. doxygenfunction:: rocsolver_zgelqf_strided_batched
 
 General systems solvers
 --------------------------
