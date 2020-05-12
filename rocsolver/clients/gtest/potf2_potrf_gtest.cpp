@@ -62,7 +62,7 @@ protected:
 TEST_P(CholeskyFact, potf2_float) {
   Arguments arg = setup_chol_arguments(GetParam());
 
-  rocblas_status status = testing_potf2_potrf<float,0>(arg);
+  rocblas_status status = testing_potf2_potrf<float,float,0>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -79,7 +79,41 @@ TEST_P(CholeskyFact, potf2_float) {
 TEST_P(CholeskyFact, potf2_double) {
   Arguments arg = setup_chol_arguments(GetParam());
 
-  rocblas_status status = testing_potf2_potrf<double,0>(arg);
+  rocblas_status status = testing_potf2_potrf<double,double,0>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.N < 0) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else if (arg.lda < arg.N) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
+
+TEST_P(CholeskyFact, potf2_float_complex) {
+  Arguments arg = setup_chol_arguments(GetParam());
+
+  rocblas_status status = testing_potf2_potrf<rocblas_float_complex,float,0>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.N < 0) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else if (arg.lda < arg.N) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
+
+TEST_P(CholeskyFact, potf2_double_complex) {
+  Arguments arg = setup_chol_arguments(GetParam());
+
+  rocblas_status status = testing_potf2_potrf<rocblas_double_complex,double,0>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -96,7 +130,7 @@ TEST_P(CholeskyFact, potf2_double) {
 TEST_P(CholeskyFact, potrf_float) {
   Arguments arg = setup_chol_arguments(GetParam());
 
-  rocblas_status status = testing_potf2_potrf<float,1>(arg);
+  rocblas_status status = testing_potf2_potrf<float,float,1>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message
@@ -113,7 +147,41 @@ TEST_P(CholeskyFact, potrf_float) {
 TEST_P(CholeskyFact, potrf_double) {
   Arguments arg = setup_chol_arguments(GetParam());
 
-  rocblas_status status = testing_potf2_potrf<double,1>(arg);
+  rocblas_status status = testing_potf2_potrf<double,double,1>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.N < 0) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else if (arg.lda < arg.N) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
+
+TEST_P(CholeskyFact, potrf_float_complex) {
+  Arguments arg = setup_chol_arguments(GetParam());
+
+  rocblas_status status = testing_potf2_potrf<rocblas_float_complex,float,1>(arg);
+
+  // if not success, then the input argument is problematic, so detect the error
+  // message
+  if (status != rocblas_status_success) {
+
+    if (arg.N < 0) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    } else if (arg.lda < arg.N) {
+      EXPECT_EQ(rocblas_status_invalid_size, status);
+    }
+  }
+}
+
+TEST_P(CholeskyFact, potrf_double_complex) {
+  Arguments arg = setup_chol_arguments(GetParam());
+
+  rocblas_status status = testing_potf2_potrf<rocblas_double_complex,double,1>(arg);
 
   // if not success, then the input argument is problematic, so detect the error
   // message

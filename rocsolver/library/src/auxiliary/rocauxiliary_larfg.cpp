@@ -28,11 +28,10 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n, 
     rocsolver_larfg_getMemorySize<T>(n,batch_count,&size_1,&size_2);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-    void* norms;
-    hipMalloc(&norms,size_1);  
-    void* work;
-    hipMalloc(&work, size_2);  
-    if (!norms || !work) 
+    void *norms, *work;
+    hipMalloc(&norms,size_1);
+    hipMalloc(&work, size_2);
+    if (!norms || (size_2 && !work)) 
         return rocblas_status_memory_error;
 
     // execution

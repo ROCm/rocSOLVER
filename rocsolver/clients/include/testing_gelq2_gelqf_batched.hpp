@@ -47,8 +47,8 @@ rocblas_status testing_gelq2_gelqf_batched(Arguments argus) {
 
     // check invalid size and quick return
     if (M < 1 || N < 1 || lda < M || batch_count < 0) {
-        T** dA;
-        hipMalloc(&dA, sizeof(T*)); 
+        auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T*)), rocblas_test::device_free};
+        T **dA = (T **)dA_managed.get();
 
         auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
         T *dIpiv = (T *)dIpiv_managed.get();
