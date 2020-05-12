@@ -1465,4 +1465,39 @@ inline rocblas_status rocsolver_gelqf_strided_batched(rocblas_handle handle, roc
   return rocsolver_zgelqf_strided_batched(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
 }
 
+
+//gebd2
+
+template <typename S, typename T>
+inline rocblas_status rocsolver_gebd2(rocblas_handle handle, rocblas_int m, rocblas_int n, T *A, rocblas_int lda,
+                                      S *D, S *E, T *tauq, T *taup);
+
+template <>
+inline rocblas_status rocsolver_gebd2(rocblas_handle handle, rocblas_int m, rocblas_int n, float *A, rocblas_int lda,
+                                      float *D, float *E, float *tauq, float *taup) {
+  //return rocsolver_sgebd2(handle, m, n, A, lda, D, E, tauq, taup);
+  return rocblas_status_not_implemented;
+}
+
+template <>
+inline rocblas_status rocsolver_gebd2(rocblas_handle handle, rocblas_int m, rocblas_int n, double *A, rocblas_int lda,
+                                      double *D, double *E, double *tauq, double *taup) {
+  //return rocsolver_dgebd2(handle, m, n, A, lda, D, E, tauq, taup);
+  return rocblas_status_not_implemented;
+}
+
+template <>
+inline rocblas_status rocsolver_gebd2(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_float_complex *A, rocblas_int lda,
+                                      float *D, float *E, rocblas_float_complex *tauq, rocblas_float_complex *taup) {
+  //return rocsolver_cgebd2(handle, m, n, A, lda, D, E, tauq, taup);
+  return rocblas_status_not_implemented;
+}
+
+template <>
+inline rocblas_status rocsolver_gebd2(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_double_complex *A, rocblas_int lda,
+                                      double *D, double *E, rocblas_double_complex *tauq, rocblas_double_complex *taup) {
+  //return rocsolver_zgebd2(handle, m, n, A, lda, D, E, tauq, taup);
+  return rocblas_status_not_implemented;
+}
+
 #endif /* ROCSOLVER_HPP */
