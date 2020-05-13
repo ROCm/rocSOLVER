@@ -357,13 +357,6 @@ rocsolver_<type>geqrf_batched()
 .. doxygenfunction:: rocsolver_dgeqrf_batched
 .. doxygenfunction:: rocsolver_sgeqrf_batched
 
-rocsolver_<type>geqrf_ptr_batched()
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygenfunction:: rocsolver_zgeqrf_ptr_batched
-.. doxygenfunction:: rocsolver_cgeqrf_ptr_batched
-.. doxygenfunction:: rocsolver_dgeqrf_ptr_batched
-.. doxygenfunction:: rocsolver_sgeqrf_ptr_batched
-
 .. _qr_strided_label:
 
 rocsolver_<type>geqrf_strided_batched()

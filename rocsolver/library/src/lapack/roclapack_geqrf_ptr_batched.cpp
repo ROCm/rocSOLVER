@@ -5,6 +5,14 @@
 #define batched
 #include "roclapack_geqrf.hpp"
 
+/*
+ * ===========================================================================
+ *    geqrf_ptr_batched is not intended for inclusion in the public API. It
+ *    exists to provide a geqrf_batched method with a signature identical to
+ *    the cuBLAS implementation, for use exclusively in hipBLAS.
+ * ===========================================================================
+ */
+
 template <typename T>
 __global__ void copy_array_to_ptrs(rocblas_stride n, T *const ptrs[], T* array)
 {

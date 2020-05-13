@@ -8,6 +8,28 @@
 #include "rocsolver.h"
 #include "clientcommon.hpp"
 
+// The following functions are not included in the public API and must be declared
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+rocblas_status rocsolver_sgeqrf_ptr_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *const A[],
+                                            const rocblas_int lda, float *const ipiv[], const rocblas_int batch_count);
+
+rocblas_status rocsolver_dgeqrf_ptr_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *const A[],
+                                            const rocblas_int lda, double *const ipiv[], const rocblas_int batch_count);
+
+rocblas_status rocsolver_cgeqrf_ptr_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_float_complex *const A[],
+                                            const rocblas_int lda, rocblas_float_complex *const ipiv[], const rocblas_int batch_count);
+
+rocblas_status rocsolver_zgeqrf_ptr_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_double_complex *const A[],
+                                            const rocblas_int lda, rocblas_double_complex *const ipiv[], const rocblas_int batch_count);
+
+#ifdef __cplusplus
+}
+#endif
+
 /******************** LACGV ********************/
 inline rocblas_status rocsolver_lacgv(rocblas_handle handle, rocblas_int n, rocblas_float_complex *x, rocblas_int incx) {
   return rocsolver_clacgv(handle,n,x,incx);
