@@ -408,7 +408,17 @@ rocsolver_<type>gelqf_strided_batched()
 .. doxygenfunction:: rocsolver_dgelqf_strided_batched
 .. doxygenfunction:: rocsolver_sgelqf_strided_batched
 
-General systems solvers
+General Matrix Diagonalizations
+------------------------------
+
+rocsolver_<type>gebd2()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgebd2
+.. doxygenfunction:: rocsolver_cgebd2
+.. doxygenfunction:: rocsolver_dgebd2
+.. doxygenfunction:: rocsolver_sgebd2
+
+General Systems Solvers
 --------------------------
 
 rocsolver_<type>getrs()

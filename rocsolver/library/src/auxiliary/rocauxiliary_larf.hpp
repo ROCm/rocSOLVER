@@ -14,6 +14,24 @@
 #include "rocsolver.h"
 
 template <typename T, bool BATCHED>
+void rocsolver_larf_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+                                  size_t *size_1, size_t *size_2, size_t *size_3)
+{
+    // size of scalars (constants)
+    *size_1 = sizeof(T)*3;        
+
+    // size of workspace
+    *size_2 = max(m,n);
+    *size_2 *= sizeof(T)*batch_count;
+
+    // size of array of pointers to workspace
+    if (BATCHED)
+        *size_3 = sizeof(T*)*batch_count;
+    else
+        *size_3 = 0;
+}
+
+template <typename T, bool BATCHED>
 void rocsolver_larf_getMemorySize(const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
                                   size_t *size_1, size_t *size_2, size_t *size_3)
 {

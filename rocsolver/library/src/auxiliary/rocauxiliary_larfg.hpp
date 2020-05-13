@@ -68,6 +68,19 @@ __global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms, U al
     }
 }
 
+
+template <typename T>
+void rocsolver_larfg_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+                                   size_t *size_1, size_t *size_2)
+{
+    // size of norms
+    *size_1 = sizeof(T)*batch_count;
+
+    // size of workspace
+    *size_2 = (max(m,n) - 2)/ROCBLAS_DOT_NB + 2;
+    *size_2 *= sizeof(T)*batch_count;
+}
+
 template <typename T>
 void rocsolver_larfg_getMemorySize(const rocblas_int n, const rocblas_int batch_count,
                                    size_t *size_1, size_t *size_2)
@@ -76,7 +89,7 @@ void rocsolver_larfg_getMemorySize(const rocblas_int n, const rocblas_int batch_
     *size_1 = sizeof(T)*batch_count;
 
     // size of workspace
-    *size_2 = (n-2)/ROCBLAS_DOT_NB + 2;
+    *size_2 = (n - 2)/ROCBLAS_DOT_NB + 2;
     *size_2 *= sizeof(T)*batch_count;
 }
 

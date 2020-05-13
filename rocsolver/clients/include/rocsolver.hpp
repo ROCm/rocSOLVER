@@ -864,8 +864,7 @@ inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_ha
         return GEBRD ?
                 //rocsolver_sgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
                 rocblas_status_not_implemented :
-                //rocsolver_sgebd2(handle, m, n, A, lda, D, E, tauq, taup);
-                rocblas_status_not_implemented;
+                rocsolver_sgebd2(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_handle handle, rocblas_int m,
@@ -883,8 +882,7 @@ inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_ha
         return GEBRD ?
                 //rocsolver_dgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
                 rocblas_status_not_implemented :
-                //rocsolver_dgebd2(handle, m, n, A, lda, D, E, tauq, taup);
-                rocblas_status_not_implemented;
+                rocsolver_dgebd2(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_handle handle, rocblas_int m,
@@ -902,8 +900,7 @@ inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_ha
         return GEBRD ?
                 //rocsolver_cgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
                 rocblas_status_not_implemented :
-                //rocsolver_cgebd2(handle, m, n, A, lda, D, E, tauq, taup);
-                rocblas_status_not_implemented;
+                rocsolver_cgebd2(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_handle handle, rocblas_int m,
@@ -921,8 +918,7 @@ inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_ha
         return GEBRD ?
                 //rocsolver_zgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
                 rocblas_status_not_implemented :
-                //rocsolver_zgebd2(handle, m, n, A, lda, D, E, tauq, taup);
-                rocblas_status_not_implemented;
+                rocsolver_zgebd2(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 // batched
