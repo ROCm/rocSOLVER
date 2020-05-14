@@ -74,6 +74,7 @@ set( rocsolver_lapack_source
   lapack/roclapack_gelqf_batched.cpp
   lapack/roclapack_gelqf_strided_batched.cpp
   lapack/roclapack_gebd2.cpp
+  lapack/roclapack_gebd2_strided_batched.cpp
 )
 
 set( auxiliaries
