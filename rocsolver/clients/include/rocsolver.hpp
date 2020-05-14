@@ -858,8 +858,7 @@ inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_ha
         return GEBRD ?
                 //rocsolver_sgebrd_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc) :
                 rocblas_status_not_implemented :
-                //rocsolver_sgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
-                rocblas_status_not_implemented;
+                rocsolver_sgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
     else
         return GEBRD ?
                 //rocsolver_sgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
@@ -876,8 +875,7 @@ inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_ha
         return GEBRD ?
                 //rocsolver_dgebrd_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc) :
                 rocblas_status_not_implemented :
-                //rocsolver_dgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
-                rocblas_status_not_implemented;
+                rocsolver_dgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
     else
         return GEBRD ?
                 //rocsolver_dgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
@@ -894,8 +892,7 @@ inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_ha
         return GEBRD ?
                 //rocsolver_cgebrd_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc) :
                 rocblas_status_not_implemented :
-                //rocsolver_cgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
-                rocblas_status_not_implemented;
+                rocsolver_cgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
     else
         return GEBRD ?
                 //rocsolver_cgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
@@ -912,8 +909,7 @@ inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_ha
         return GEBRD ?
                 //rocsolver_zgebrd_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc) :
                 rocblas_status_not_implemented :
-                //rocsolver_zgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
-                rocblas_status_not_implemented;
+                rocsolver_zgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
     else
         return GEBRD ?
                 //rocsolver_zgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
