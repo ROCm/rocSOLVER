@@ -188,3 +188,5 @@ add_subdirectory( rocsolver/library )
 if( BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS )
   add_subdirectory( rocsolver/clients )
 endif( )
+
+target_compile_definitions( rocsolver PRIVATE ROCM_USE_FLOAT16 )
