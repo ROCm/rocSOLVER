@@ -74,6 +74,7 @@ set(roclapack_test_source
     # gelq2_gelqf_batched_gtest.cpp
     # gelq2_gelqf_strided_batched_gtest.cpp
     gebd2_gtest.cpp
+    gebd2_batched_gtest.cpp
     gebd2_strided_batched_gtest.cpp
     )
 

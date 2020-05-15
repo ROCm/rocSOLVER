@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "testing_gebd2.hpp"
+#include "testing_gebd2_batched.hpp"
 #include "testing_gebd2_strided_batched.hpp"
 #include "testing_getf2_getrf.hpp"
 #include "testing_getf2_getrf_batched.hpp"
@@ -533,6 +534,16 @@ int main(int argc, char *argv[])
       testing_gebd2<rocblas_float_complex,float>(argus);
     else if (precision == 'z')
       testing_gebd2<rocblas_double_complex,double>(argus);
+  } 
+  else if (function == "gebd2_batched") {
+    if (precision == 's')
+      testing_gebd2_batched<float,float>(argus);
+    else if (precision == 'd')
+      testing_gebd2_batched<double,double>(argus);
+    else if (precision == 'c')
+      testing_gebd2_batched<rocblas_float_complex,float>(argus);
+    else if (precision == 'z')
+      testing_gebd2_batched<rocblas_double_complex,double>(argus);
   } 
   else if (function == "gebd2_strided_batched") {
     if (precision == 's')

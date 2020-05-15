@@ -1496,6 +1496,45 @@ inline rocblas_status rocsolver_gebd2(rocblas_handle handle, rocblas_int m, rocb
   return rocsolver_zgebd2(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
+//gebd2_batched
+
+template <typename S, typename T>
+inline rocblas_status rocsolver_gebd2_batched(rocblas_handle handle, rocblas_int m, rocblas_int n, T *const A[],
+                                      rocblas_int lda, S *D, rocblas_stride strideD, S *E, rocblas_stride strideE,
+                                      T *tauq, rocblas_stride strideQ, T *taup, rocblas_stride strideP,
+                                      rocblas_int batch_count);
+
+template <>
+inline rocblas_status rocsolver_gebd2_batched(rocblas_handle handle, rocblas_int m, rocblas_int n, float *const A[],
+                                      rocblas_int lda, float *D, rocblas_stride strideD, float *E, rocblas_stride strideE,
+                                      float *tauq, rocblas_stride strideQ, float *taup, rocblas_stride strideP,
+                                      rocblas_int batch_count) {
+  return rocsolver_sgebd2_batched(handle, m, n, A, lda, D, strideD, E, strideE, tauq, strideQ, taup, strideP, batch_count);
+}
+
+template <>
+inline rocblas_status rocsolver_gebd2_batched(rocblas_handle handle, rocblas_int m, rocblas_int n, double *const A[],
+                                      rocblas_int lda, double *D, rocblas_stride strideD, double *E, rocblas_stride strideE,
+                                      double *tauq, rocblas_stride strideQ, double *taup, rocblas_stride strideP,
+                                      rocblas_int batch_count) {
+  return rocsolver_dgebd2_batched(handle, m, n, A, lda, D, strideD, E, strideE, tauq, strideQ, taup, strideP, batch_count);
+}
+
+template <>
+inline rocblas_status rocsolver_gebd2_batched(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_float_complex *const A[],
+                                      rocblas_int lda, float *D, rocblas_stride strideD, float *E, rocblas_stride strideE,
+                                      rocblas_float_complex *tauq, rocblas_stride strideQ, rocblas_float_complex *taup, rocblas_stride strideP,
+                                      rocblas_int batch_count) {
+  return rocsolver_cgebd2_batched(handle, m, n, A, lda, D, strideD, E, strideE, tauq, strideQ, taup, strideP, batch_count);
+}
+
+template <>
+inline rocblas_status rocsolver_gebd2_batched(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_double_complex *const A[],
+                                      rocblas_int lda, double *D, rocblas_stride strideD, double *E, rocblas_stride strideE,
+                                      rocblas_double_complex *tauq, rocblas_stride strideQ, rocblas_double_complex *taup, rocblas_stride strideP,
+                                      rocblas_int batch_count) {
+  return rocsolver_zgebd2_batched(handle, m, n, A, lda, D, strideD, E, strideE, tauq, strideQ, taup, strideP, batch_count);
+}
 
 //gebd2_strided_batched
 
