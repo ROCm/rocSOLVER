@@ -15,6 +15,7 @@
 #include "testing_larfb.hpp"
 #include "testing_lacgv.hpp"
 #include "testing_laswp.hpp"
+#include "testing_labrd.hpp"
 #include "testing_orgxr_ungxr.hpp"
 #include "testing_ormxr_unmxr.hpp"
 #include "testing_orglx_unglx.hpp"
@@ -607,6 +608,16 @@ try
             testing_larfb<rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_larfb<rocblas_double_complex>(argus);
+    } 
+    else if (function == "labrd") {
+        if (precision == 's')
+            testing_labrd<float>(argus);
+        else if (precision == 'd')
+            testing_labrd<double>(argus);
+        else if (precision == 'c')
+            testing_labrd<rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_labrd<rocblas_double_complex>(argus);
     } 
     else if (function == "org2r") {
         if (precision == 's')

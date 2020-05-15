@@ -130,6 +130,9 @@ template <typename T>
 void cblas_larfb(rocblas_side side, rocblas_operation trans, rocblas_direct direct, rocblas_storev storev, rocblas_int m, rocblas_int n, rocblas_int k, 
                  T* V, rocblas_int ldv, T *F, rocblas_int ldt, T *A, rocblas_int lda, T *W, rocblas_int ldw);
 
+template <typename S, typename T>
+void cblas_labrd(rocblas_int m, rocblas_int n, rocblas_int nb, T *A, rocblas_int lda, S *D, S *E, T *tauq, T *taup, T *X, rocblas_int ldx, T *Y, rocblas_int ldy);
+
 template <typename T>
 void cblas_geqr2(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work);
 

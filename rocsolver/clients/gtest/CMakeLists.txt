@@ -52,6 +52,7 @@ set(roclapack_test_source
     larf_gtest.cpp
     larft_gtest.cpp
     larfb_gtest.cpp
+    labrd_gtest.cpp
     orgxr_ungxr_gtest.cpp
     orglx_unglx_gtest.cpp
     ormxr_unmxr_gtest.cpp
