@@ -530,6 +530,16 @@ try
         else if (precision == 'z')
             testing_gebd2_gebrd<false,false,0,rocblas_double_complex>(argus);
     }
+    else if (function == "gebd2_batched") {
+        if (precision == 's')
+            testing_gebd2_gebrd<true,true,0,float>(argus);
+        else if (precision == 'd')
+            testing_gebd2_gebrd<true,true,0,double>(argus);
+        else if (precision == 'c')
+            testing_gebd2_gebrd<true,true,0,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_gebd2_gebrd<true,true,0,rocblas_double_complex>(argus);
+    }
     else if (function == "gebd2_strided_batched") {
         if (precision == 's')
             testing_gebd2_gebrd<false,true,0,float>(argus);
