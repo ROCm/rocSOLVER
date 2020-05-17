@@ -50,7 +50,7 @@ rocsolver_sgetrs_batched(rocblas_handle handle, const rocblas_operation trans, c
                  const rocblas_int nrhs, float *const A[], const rocblas_int lda,
                  const rocblas_int *ipiv, const rocblas_stride strideP, float *const B[], const rocblas_int ldb, const rocblas_int batch_count) 
 {
-  return rocsolver_getrs_batched_impl<float>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
+    return rocsolver_getrs_batched_impl<float>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
 }
 
 extern "C" ROCSOLVER_EXPORT rocblas_status
@@ -58,7 +58,7 @@ rocsolver_dgetrs_batched(rocblas_handle handle, const rocblas_operation trans, c
                  const rocblas_int nrhs, double *const A[], const rocblas_int lda,
                  const rocblas_int *ipiv, const rocblas_stride strideP, double *const B[], const rocblas_int ldb, const rocblas_int batch_count) 
 {
-  return rocsolver_getrs_batched_impl<double>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
+    return rocsolver_getrs_batched_impl<double>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
 }
 
 extern "C" ROCSOLVER_EXPORT rocblas_status 
@@ -68,7 +68,7 @@ rocsolver_cgetrs_batched(
                  const rocblas_int *ipiv, const rocblas_stride strideP, rocblas_float_complex *const B[], 
                  const rocblas_int ldb, const rocblas_int batch_count)
 {
-  return rocsolver_getrs_batched_impl<rocblas_float_complex>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
+    return rocsolver_getrs_batched_impl<rocblas_float_complex>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
 }
 
 extern "C" ROCSOLVER_EXPORT rocblas_status 
@@ -78,7 +78,7 @@ rocsolver_zgetrs_batched(
                  const rocblas_int *ipiv, const rocblas_stride strideP, rocblas_double_complex *const B[], 
                  const rocblas_int ldb, const rocblas_int batch_count)
 {
-  return rocsolver_getrs_batched_impl<rocblas_double_complex>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
+    return rocsolver_getrs_batched_impl<rocblas_double_complex>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
 }
 
 #undef batched

@@ -47,7 +47,7 @@ find_package( Threads REQUIRED )
 
 set(roclapack_test_source
 #    lacgv_gtest.cpp
-    laswp_gtest.cpp
+#    laswp_gtest.cpp
 #    larfg_gtest.cpp
 #    larf_gtest.cpp
 #    larft_gtest.cpp
@@ -58,19 +58,19 @@ set(roclapack_test_source
 #    ormxr_unmxr_gtest.cpp
 #    ormlx_unmlx_gtest.cpp
 #    ormbr_unmbr_gtest.cpp
-#    getf2_getrf_gtest.cpp
+    getf2_getrf_gtest.cpp
 #    getf2_getrf_batched_gtest.cpp
 #    getf2_getrf_strided_batched_gtest.cpp
-#    potf2_potrf_gtest.cpp
+    potf2_potrf_gtest.cpp
 #    potf2_potrf_batched_gtest.cpp
 #    potf2_potrf_strided_batched_gtest.cpp
     getrs_gtest.cpp
 #    getrs_batched_gtest.cpp
 #    getrs_strided_batched_gtest.cpp
-#    geqr2_geqrf_gtest.cpp
+    geqr2_geqrf_gtest.cpp
 #    geqr2_geqrf_batched_gtest.cpp
 #    geqr2_geqrf_strided_batched_gtest.cpp
-#    gelq2_gelqf_gtest.cpp
+    gelq2_gelqf_gtest.cpp
 #    gelq2_gelqf_batched_gtest.cpp
 #    gelq2_gelqf_strided_batched_gtest.cpp
     )

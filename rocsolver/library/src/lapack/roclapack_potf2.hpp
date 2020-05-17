@@ -74,13 +74,14 @@ void rocsolver_potf2_getMemorySize(const rocblas_int n, const rocblas_int batch_
 }
 
 template <typename T>
-rocblas_status rocsolver_potf2_potrf_argCheck(const rocblas_int n, const rocblas_int lda,
+rocblas_status rocsolver_potf2_potrf_argCheck(const rocblas_fill uplo, const rocblas_int n, const rocblas_int lda,
                                               T A, rocblas_int *info, const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
 
     // 1. invalid/non-supported values
-    // N/A
+    if (uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
+        return rocblas_status_invalid_value;
 
     // 2. invalid size
     if (n < 0 || lda < n || batch_count < 0)

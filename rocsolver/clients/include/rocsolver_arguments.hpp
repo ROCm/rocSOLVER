@@ -43,7 +43,7 @@ public:
   char storev = 'C';
 
   rocblas_int apiCallCount = 1;
-  rocblas_int batch_count = 10;
+  rocblas_int batch_count = 5;
 
   rocblas_int bsa =
       128 * 128; //  bsa > transA_option == 'N' ? lda * K : lda * M
@@ -56,7 +56,7 @@ public:
   rocblas_int unit_check = 1;
   rocblas_int timing = 0;
 
-  rocblas_int iters = 10;
+  rocblas_int iters = 5;
 
   Arguments &operator=(const Arguments &rhs) {
     M = rhs.M;

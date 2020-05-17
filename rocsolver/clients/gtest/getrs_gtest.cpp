@@ -21,7 +21,7 @@ typedef std::tuple<vector<int>, vector<int>> getrs_tuple;
 // if trans = 1 then transpose
 // if trans = 2 then conjugate transpose
 
-// case when N = nrhs = 0 will execute the bad arguments test
+// case when N = nrhs = 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
 // for checkin_lapack tests
@@ -64,6 +64,12 @@ Arguments setup_getrs_arguments(getrs_tuple tup) {
         arg.transA_option = 'C';
 
     arg.timing = 0;
+        
+    // only testing standard use case for strides 
+    // strides are ignored in normal and batched tests
+    arg.bsp = arg.M;  
+    arg.bsa = arg.lda * arg.M;
+    arg.bsb = arg.ldb * arg.N;
 
     return arg;
 }
@@ -81,30 +87,42 @@ protected:
 
 TEST_P(GETRS, __float) {
     Arguments arg = setup_getrs_arguments(GetParam());
+
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,false,float>();
-//    testing_getrs<float,float>(arg);
+
+    arg.batch_count = 1;
+    testing_getrs<false,false,float>(arg);
 }
 
 TEST_P(GETRS, __double) {
     Arguments arg = setup_getrs_arguments(GetParam());
+
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,false,double>();
-//    testing_getrs<double,double>(arg);
+
+    arg.batch_count = 1;
+    testing_getrs<false,false,double>(arg);
 }
 
 TEST_P(GETRS, __float_complex) {
     Arguments arg = setup_getrs_arguments(GetParam());
+
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,false,rocblas_float_complex>();
-//    testing_getrs<rocblas_float_complex,float>(arg);
+
+    arg.batch_count = 1;
+    testing_getrs<false,false,rocblas_float_complex>(arg);
 }
 
 TEST_P(GETRS, __double_complex) {
     Arguments arg = setup_getrs_arguments(GetParam());
+
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,false,rocblas_double_complex>();
-//    testing_getrs<rocblas_double_complex,double>(arg);
+
+    arg.batch_count = 1;
+    testing_getrs<false,false,rocblas_double_complex>(arg);
 }
 
 
@@ -113,30 +131,42 @@ TEST_P(GETRS, __double_complex) {
 
 TEST_P(GETRS, batched__float) {
     Arguments arg = setup_getrs_arguments(GetParam());
+
     if (arg.M == 0 && arg.N == 0)
-        testing_getrs_bad_arg<true,false,float>();
-//    testing_getrs<float,float>(arg);
+        testing_getrs_bad_arg<true,true,float>();
+
+    arg.batch_count = 3;
+    testing_getrs<true,true,float>(arg);
 }
 
 TEST_P(GETRS, batched__double) {
     Arguments arg = setup_getrs_arguments(GetParam());
+
     if (arg.M == 0 && arg.N == 0)
-        testing_getrs_bad_arg<true,false,double>();
-//    testing_getrs<double,double>(arg);
+        testing_getrs_bad_arg<true,true,double>();
+
+    arg.batch_count = 3;
+    testing_getrs<true,true,double>(arg);
 }
 
-TEST_P(GETRS, batched_float__complex) {
+TEST_P(GETRS, batched__float_complex) {
     Arguments arg = setup_getrs_arguments(GetParam());
+
     if (arg.M == 0 && arg.N == 0)
-        testing_getrs_bad_arg<true,false,rocblas_float_complex>();
-//    testing_getrs<rocblas_float_complex,float>(arg);
+        testing_getrs_bad_arg<true,true,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_getrs<true,true,rocblas_float_complex>(arg);
 }
 
-TEST_P(GETRS, batched_double__complex) {
+TEST_P(GETRS, batched__double_complex) {
     Arguments arg = setup_getrs_arguments(GetParam());
+
     if (arg.M == 0 && arg.N == 0)
-        testing_getrs_bad_arg<true,false,rocblas_double_complex>();
-//    testing_getrs<rocblas_double_complex,double>(arg);
+        testing_getrs_bad_arg<true,true,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_getrs<true,true,rocblas_double_complex>(arg);
 }
 
 
@@ -145,30 +175,42 @@ TEST_P(GETRS, batched_double__complex) {
 
 TEST_P(GETRS, strided_batched__float) {
     Arguments arg = setup_getrs_arguments(GetParam());
+
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,true,float>();
-//    testing_getrs<float,float>(arg);
+    
+    arg.batch_count = 3;
+    testing_getrs<false,true,float>(arg);
 }
 
 TEST_P(GETRS, strided_batched__double) {
     Arguments arg = setup_getrs_arguments(GetParam());
+
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,true,double>();
-//    testing_getrs<double,double>(arg);
+
+    arg.batch_count = 3;
+    testing_getrs<false,true,double>(arg);
 }
 
 TEST_P(GETRS, strided_batched__float_complex) {
     Arguments arg = setup_getrs_arguments(GetParam());
+
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,true,rocblas_float_complex>();
-//    testing_getrs<rocblas_float_complex,float>(arg);
+
+    arg.batch_count = 3;
+    testing_getrs<false,true,rocblas_float_complex>(arg);
 }
 
 TEST_P(GETRS, strided_batched__double_complex) {
     Arguments arg = setup_getrs_arguments(GetParam());
+
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,true,rocblas_double_complex>();
-//    testing_getrs<rocblas_double_complex,double>(arg);
+
+    arg.batch_count = 3;
+    testing_getrs<false,true,rocblas_double_complex>(arg);
 }
 
 

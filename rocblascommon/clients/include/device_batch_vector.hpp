@@ -131,6 +131,16 @@ public:
         return this->m_device_data;
     }
 
+    T* const* data()
+    {
+        return this->m_device_data;
+    }
+
+    const T* const* data() const
+    {
+        return this->m_device_data;
+    }
+
     //!
     //! @brief Random access.
     //! @param batch_index The batch index.

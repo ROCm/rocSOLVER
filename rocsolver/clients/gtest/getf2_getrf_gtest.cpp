@@ -4,11 +4,6 @@
  * ************************************************************************ */
 
 #include "testing_getf2_getrf.hpp"
-#include "utility.h"
-#include <gtest/gtest.h>
-#include <math.h>
-#include <stdexcept>
-#include <vector>
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -19,17 +14,25 @@ using namespace std;
 
 typedef std::tuple<vector<int>, int> getf2_getrf_tuple;
 
-// vector of vector, each vector is a {M, lda};
-// add/delete as a group
+// each matrix_size_range vector is a {m, lda}
+
+// case when m = n = 0 will also execute the bad arguments test
+// (null handle, null pointers and invalid values)
+
+// for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
-    {0, 1}, {-1, 1}, {20, 5}, {32, 32}, {50, 50}, {70, 100}
+    {0, 1},             //quick return
+    {-1, 1}, {20, 5},   //invalid
+    {32, 32}, {50, 50}, {70, 100}
 };
 
-// each is a N
 const vector<int> n_size_range = {
-    -1, 0, 16, 20, 40, 100,
+    0,      //quick return
+    -1,     //invalid
+    16, 20, 40, 100,
 };
 
+// for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
     {192, 192}, {640, 640}, {1000, 1024}, 
 };
@@ -40,169 +43,306 @@ const vector<int> large_n_size_range = {
 
 
 Arguments setup_arguments(getf2_getrf_tuple tup) {
+    vector<int> matrix_size = std::get<0>(tup);
+    int n_size = std::get<1>(tup);
 
-  vector<int> matrix_size = std::get<0>(tup);
-  int n_size = std::get<1>(tup);
+    Arguments arg;
 
-  Arguments arg;
+    arg.M = matrix_size[0];
+    arg.N = n_size;
+    arg.lda = matrix_size[1];
 
-  arg.M = matrix_size[0];
-  arg.N = n_size;
-  arg.lda = matrix_size[1];
+    arg.timing = 0;
 
-  arg.timing = 0;
+    // only testing standard use case for strides
+    // strides are ignored in normal and batched tests
+    arg.bsp = min(arg.M, arg.N);
+    arg.bsa = arg.lda * arg.N;
 
-  return arg;
+    return arg;
 }
 
-class LUfact : public ::TestWithParam<getf2_getrf_tuple> {
+class GETF2 : public ::TestWithParam<getf2_getrf_tuple> {
 protected:
-  LUfact() {}
-  virtual ~LUfact() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    GETF2() {}
+    virtual ~GETF2() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-TEST_P(LUfact, getf2_float) {
-  Arguments arg = setup_arguments(GetParam());
+class GETRF : public ::TestWithParam<getf2_getrf_tuple> {
+protected:
+    GETRF() {}
+    virtual ~GETRF() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
 
-  rocblas_status status = testing_getf2_getrf<float,float,0>(arg);
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
+// non-batch tests
 
-    if (arg.M < 0 || arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+TEST_P(GETF2, __float) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,false,0,float>();
+
+    arg.batch_count = 1;
+    testing_getf2_getrf<false,false,0,float>(arg);
 }
 
-TEST_P(LUfact, getf2_float_complex) {
-  Arguments arg = setup_arguments(GetParam());
+TEST_P(GETF2, __double) {
+    Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf<rocblas_float_complex,float,0>(arg);
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,false,0,double>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.M < 0 || arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_getf2_getrf<false,false,0,double>(arg);
 }
 
-TEST_P(LUfact, getf2_double) {
-  Arguments arg = setup_arguments(GetParam());
+TEST_P(GETF2, __float_complex) {
+    Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf<double,double,0>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_getf2_getrf_bad_arg<false,false,0,rocblas_float_complex>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.M < 0 || arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_getf2_getrf<false,false,0,rocblas_float_complex>(arg);
 }
 
-TEST_P(LUfact, getf2_double_complex) {
-  Arguments arg = setup_arguments(GetParam());
+TEST_P(GETF2, __double_complex) {
+    Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf<rocblas_double_complex,double,0>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_getf2_getrf_bad_arg<false,false,0,rocblas_double_complex>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.M < 0 || arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_getf2_getrf<false,false,0,rocblas_double_complex>(arg);
 }
 
-TEST_P(LUfact, getrf_float) {
-  Arguments arg = setup_arguments(GetParam());
+TEST_P(GETRF, __float) {
+    Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf<float,float,1>(arg);
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,false,1,float>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.M < 0 || arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_getf2_getrf<false,false,1,float>(arg);
 }
 
-TEST_P(LUfact, getrf_float_complex) {
-  Arguments arg = setup_arguments(GetParam());
+TEST_P(GETRF, __double) {
+    Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf<rocblas_float_complex,float,1>(arg);
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,false,1,double>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.M < 0 || arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_getf2_getrf<false,false,1,double>(arg);
 }
 
-TEST_P(LUfact, getrf_double) {
-  Arguments arg = setup_arguments(GetParam());
+TEST_P(GETRF, __float_complex) {
+    Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf<double,double,1>(arg);
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,false,1,rocblas_float_complex>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.M < 0 || arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_getf2_getrf<false,false,1,rocblas_float_complex>(arg);
 }
 
-TEST_P(LUfact, getrf_double_complex) {
-  Arguments arg = setup_arguments(GetParam());
+TEST_P(GETRF, __double_complex) {
+    Arguments arg = setup_arguments(GetParam());
 
-  rocblas_status status = testing_getf2_getrf<rocblas_double_complex,double,1>(arg);
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,false,1,rocblas_double_complex>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.M < 0 || arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_getf2_getrf<false,false,1,rocblas_double_complex>(arg);
 }
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, LUfact,
+
+// batched tests 
+
+TEST_P(GETF2, batched__float) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<true,true,0,float>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<true,true,0,float>(arg);
+}
+
+TEST_P(GETF2, batched__double) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<true,true,0,double>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<true,true,0,double>(arg);
+}
+
+TEST_P(GETF2, batched__float_complex) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<true,true,0,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<true,true,0,rocblas_float_complex>(arg);
+}
+
+TEST_P(GETF2, batched__double_complex) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<true,true,0,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<true,true,0,rocblas_double_complex>(arg);
+}
+
+TEST_P(GETRF, batched__float) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<true,true,1,float>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<true,true,1,float>(arg);
+}
+
+TEST_P(GETRF, batched__double) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<true,true,1,double>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<true,true,1,double>(arg);
+}
+
+TEST_P(GETRF, batched__float_complex) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<true,true,1,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<true,true,1,rocblas_float_complex>(arg);
+}
+
+TEST_P(GETRF, batched__double_complex) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<true,true,1,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<true,true,1,rocblas_double_complex>(arg);
+}
+
+
+// strided_batched cases
+
+TEST_P(GETF2, strided_batched__float) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,true,0,float>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<false,true,0,float>(arg);
+}
+
+TEST_P(GETF2, strided_batched__double) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,true,0,double>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<false,true,0,double>(arg);
+}
+
+TEST_P(GETF2, strided_batched__float_complex) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,true,0,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<false,true,0,rocblas_float_complex>(arg);
+}
+
+TEST_P(GETF2, strided_batched__double_complex) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,true,0,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<false,true,0,rocblas_double_complex>(arg);
+}
+
+TEST_P(GETRF, strided_batched__float) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,true,1,float>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<false,true,1,float>(arg);
+}
+
+TEST_P(GETRF, strided_batched__double) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,true,1,double>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<false,true,1,double>(arg);
+}
+
+TEST_P(GETRF, strided_batched__float_complex) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,true,1,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<false,true,1,rocblas_float_complex>(arg);
+}
+
+TEST_P(GETRF, strided_batched__double_complex) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.M == 0 && arg.N == 0) 
+        testing_getf2_getrf_bad_arg<false,true,1,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_getf2_getrf<false,true,1,rocblas_double_complex>(arg);
+}
+
+
+
+
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, GETF2,
                         Combine(ValuesIn(large_matrix_size_range),
                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, LUfact,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, GETF2,
+                        Combine(ValuesIn(matrix_size_range),
+                                ValuesIn(n_size_range)));
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, GETRF,
+                        Combine(ValuesIn(large_matrix_size_range),
+                                ValuesIn(large_n_size_range)));
+
+INSTANTIATE_TEST_CASE_P(checkin_lapack, GETRF,
                         Combine(ValuesIn(matrix_size_range),
                                 ValuesIn(n_size_range)));
