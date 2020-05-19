@@ -164,7 +164,7 @@ install_packages( )
   local library_dependencies_ubuntu=( "make" "cmake-curses-gui" "pkg-config"
                                       "python2.7" "python3" "python-yaml" "python3-yaml" "python3*-distutils"
                                       "llvm-6.0-dev" "zlib1g-dev" "wget")
-  local library_dependencies_centos=( "epel-release"
+  local library_dependencies_centos_7=( "epel-release"
                                       "make" "cmake3" "rpm-build"
                                       "python34" "PyYAML" "python3*-PyYAML" "python3*-distutils-extra"
                                       "gcc-c++" "llvm7.0-devel" "llvm7.0-static"
@@ -181,7 +181,7 @@ install_packages( )
   if [[ "${build_hip_clang}" == false ]]; then
     # Installing rocm-dev installs hip-hcc, which overwrites the hip-vdi runtime
     library_dependencies_ubuntu+=( "rocm-dev" )
-    library_dependencies_centos+=( "rocm-dev" )
+    library_dependencies_centos_7+=( "rocm-dev" )
     library_dependencies_centos_8+=( "rocm-dev" )
     library_dependencies_fedora+=( "rocm-dev" )
     library_dependencies_sles+=( "rocm-dev" )
@@ -189,7 +189,7 @@ install_packages( )
 
   # dependencies to build the client
   local client_dependencies_ubuntu=( "gfortran" "libomp-dev" "libboost-program-options-dev")
-  local client_dependencies_centos=( "devtoolset-7-gcc-gfortran" "libgomp" "boost-devel" )
+  local client_dependencies_centos_7=( "devtoolset-7-gcc-gfortran" "libgomp" "boost-devel" )
   local client_dependencies_centos_8=( "gcc-gfortran" "libgomp" "boost-devel" )
   local client_dependencies_fedora=( "gcc-gfortran" "libgomp" "boost-devel" )
   local client_dependencies_sles=( "gcc-fortran" "libgomp1" "libboost_program_options1_66_0-devel" )
@@ -211,11 +211,11 @@ install_packages( )
         if [[ "${build_clients}" == true ]]; then
           install_yum_packages "${client_dependencies_centos_8[@]}"
         fi
-      else
-        install_yum_packages "${library_dependencies_centos[@]}"
+      elif [[ ( "${VERSION_ID}" -ge 7 ) ]]; then
+        install_yum_packages "${library_dependencies_centos_7[@]}"
 
         if [[ "${build_clients}" == true ]]; then
-          install_yum_packages "${client_dependencies_centos[@]}"
+          install_yum_packages "${client_dependencies_centos_7[@]}"
         fi
       fi
       ;;
@@ -446,7 +446,9 @@ fi
 
 case "${ID}" in
   centos|rhel)
-    cmake_common_options="${cmake_common_options} -DCMAKE_FIND_ROOT_PATH=/usr/lib64/llvm7.0/lib/cmake/"
+    if [[ ( "${VERSION_ID}" -ge 7 ) ]]; then
+      cmake_common_options="${cmake_common_options} -DCMAKE_FIND_ROOT_PATH=/usr/lib64/llvm7.0/lib/cmake/"
+    fi
     ;;
 esac
 
