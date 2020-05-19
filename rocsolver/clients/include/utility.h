@@ -258,15 +258,43 @@ template <typename T> bool check_transpose(rocblas_operation trans) {
 
 /* ============================================================================================
  */
-/*! \brief  Debugging purpose, print out CPU and GPU result matrix, not valid in
- * complex number  */
-template <typename T>
+/*! \brief  Debugging purpose, print out CPU and GPU result matrix */
+
+template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+void print_diag(vector<T> CPU_result, vector<T> GPU_result,
+                  rocblas_int n, rocblas_int lda) {
+  for (int i = 0; i < n; i++)
+    printf("matrix  col %d, row %d, CPU result=%f, GPU result=%f\n", i, i,
+           CPU_result[i + i * lda], GPU_result[i + i * lda]);
+}
+
+template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+void print_diag(vector<T> CPU_result, vector<T> GPU_result,
+                  rocblas_int n, rocblas_int lda) {
+  for (int i = 0; i < n; i++)
+    printf("matrix  col %d, row %d, CPU result=%f+%fi, GPU result=%f+%fi\n", i, i,
+           CPU_result[i + i * lda].real(), CPU_result[i + i * lda].imag(),
+           GPU_result[i + i * lda].real(), GPU_result[i + i * lda].imag());
+}
+
+template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
 void print_matrix(vector<T> CPU_result, vector<T> GPU_result, rocblas_int m,
                   rocblas_int n, rocblas_int lda) {
   for (int i = 0; i < m; i++)
     for (int j = 0; j < n; j++) {
       printf("matrix  col %d, row %d, CPU result=%f, GPU result=%f\n", i, j,
              CPU_result[j + i * lda], GPU_result[j + i * lda]);
+    }
+}
+
+template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+void print_matrix(vector<T> CPU_result, vector<T> GPU_result, rocblas_int m,
+                  rocblas_int n, rocblas_int lda) {
+  for (int i = 0; i < m; i++)
+    for (int j = 0; j < n; j++) {
+      printf("matrix  col %d, row %d, CPU result=%f+%fi, GPU result=%f+%fi\n", i, j,
+             CPU_result[j + i * lda].real(), CPU_result[j + i * lda].imag(),
+             GPU_result[j + i * lda].real(), GPU_result[j + i * lda].imag());
     }
 }
 
