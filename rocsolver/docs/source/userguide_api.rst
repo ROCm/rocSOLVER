@@ -114,6 +114,16 @@ rocsolver_<type>larfb()
 .. doxygenfunction:: rocsolver_dlarfb
 .. doxygenfunction:: rocsolver_slarfb
 
+Bidiagonal forms
+--------------------------
+
+rocsolver_<type>labrd()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zlabrd
+.. doxygenfunction:: rocsolver_clabrd
+.. doxygenfunction:: rocsolver_dlabrd
+.. doxygenfunction:: rocsolver_slabrd
+
 Orthonormal matrices
 ---------------------------
 

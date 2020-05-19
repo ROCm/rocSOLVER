@@ -526,6 +526,146 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
                                                  rocblas_double_complex *A,
                                                  const rocblas_int lda); 
 
+/*! \brief LABRD computes the bidiagonal form of the first k rows and columns of a general
+    m-by-n matrix A, as well as the matrices X and Y needed to reduce the remaining parts of A.
+
+    \details
+    The bidiagonal form is given by:
+
+        B = Q' * A * P
+
+    where B is upper bidiagonal if m >= n and lower bidiagonal if m < n, and Q and 
+    P are orthogonal/unitary matrices represented as the product of Householder matrices
+
+        Q = H(1) * H(2) * ... *  H(n)  and P = G(1) * G(2) * ... * G(n-1), if m >= n, or
+        Q = H(1) * H(2) * ... * H(m-1) and P = G(1) * G(2) * ... *  G(m),  if m < n
+
+    Each Householder matrix H(i) and G(i) is given by
+
+        H(i) = I - tauq[i-1] * v(i)' * v(i), and
+        G(i) = I - taup[i-1] * u(i)' * u(i)
+    
+    where the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1;
+    while the first i elements of the Householder vector u(i) are zero, and u(i)[i+1] = 1.
+
+    The unreduced part of the matrix A can be updated using a block update:
+
+        A = A - V * Y**H - X * U**H
+
+    where V is an n-by-k matrix and U is an n-by-k formed using the vectors v and u.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    m         rocblas_int. m >= 0.\n
+              The number of rows of the matrix A.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of columns of the matrix A.
+    @param[in]
+    k         rocblas_int. k >= 0.\n
+              The number of leading rows and columns of the matrix A to be reduced.
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the m-by-n matrix to be factored.
+              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
+              subdiagonal (if m < n) contain the bidiagonal form B.
+              If m >= n, the elements below the diagonal are the m - i elements
+              of vector v(i) for i = 1,2,...,n, and the elements above the
+              superdiagonal are the n - i - 1 elements of vector u(i) for i = 1,2,...,n-1.
+              If m < n, the elements below the subdiagonal are the m - i - 1
+              elements of vector v(i) for i = 1,2,...,m-1, and the elements above the
+              diagonal are the n - i elements of vector u(i) for i = 1,2,...,m.
+    @param[in]
+    lda       rocblas_int. lda >= m.\n
+              specifies the leading dimension of A.
+    @param[out]
+    D         pointer to real type. Array on the GPU of dimension min(m,n).\n
+              The diagonal elements of B.
+    @param[out]
+    E         pointer to real type. Array on the GPU of dimension min(m,n)-1.\n
+              The off-diagonal elements of B.
+    @param[out]
+    tauq      pointer to type. Array on the GPU of dimension min(m,n).\n
+              The scalar factors of the Householder matrices H(i).
+    @param[out]
+    taup      pointer to type. Array on the GPU of dimension min(m,n).\n
+              The scalar factors of the Householder matrices G(i).
+    @param[out]
+    X         pointer to type. Array on the GPU of dimension ldx*k.\n
+              The m-by-k matrix needed to reduce the unreduced parts of A.
+    @param[in]
+    ldx       rocblas_int. ldx >= m.\n
+              specifies the leading dimension of X.
+    @param[out]
+    Y         pointer to type. Array on the GPU of dimension ldy*k.\n
+              The n-by-k matrix needed to reduce the unreduced parts of A.
+    @param[in]
+    ldy       rocblas_int. ldy >= n.\n
+              specifies the leading dimension of Y.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_slabrd(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
+                                                 float *A,
+                                                 const rocblas_int lda,
+                                                 float *D,
+                                                 float *E,
+                                                 float *tauq,
+                                                 float *taup,
+                                                 float *X,
+                                                 const rocblas_int ldx,
+                                                 float *Y,
+                                                 const rocblas_int ldy);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlabrd(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
+                                                 double *A,
+                                                 const rocblas_int lda,
+                                                 double *D,
+                                                 double *E,
+                                                 double *tauq,
+                                                 double *taup,
+                                                 double *X,
+                                                 const rocblas_int ldx,
+                                                 double *Y,
+                                                 const rocblas_int ldy);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_clabrd(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
+                                                 rocblas_float_complex *A,
+                                                 const rocblas_int lda,
+                                                 float *D,
+                                                 float *E,
+                                                 rocblas_float_complex *tauq,
+                                                 rocblas_float_complex *taup,
+                                                 rocblas_float_complex *X,
+                                                 const rocblas_int ldx,
+                                                 rocblas_float_complex *Y,
+                                                 const rocblas_int ldy);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
+                                                 const rocblas_int k,
+                                                 rocblas_double_complex *A,
+                                                 const rocblas_int lda,
+                                                 double *D,
+                                                 double *E,
+                                                 rocblas_double_complex *tauq,
+                                                 rocblas_double_complex *taup,
+                                                 rocblas_double_complex *X,
+                                                 const rocblas_int ldx,
+                                                 rocblas_double_complex *Y,
+                                                 const rocblas_int ldy);
+
 /*! \brief ORG2R generates a m-by-n Matrix Q with orthonormal columns.
 
     \details

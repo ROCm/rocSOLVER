@@ -171,28 +171,24 @@ inline rocblas_status rocsolver_larfb(rocblas_handle handle, rocblas_side side, 
 /******************** LABRD ********************/
 inline rocblas_status rocsolver_labrd(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_int nb, float *A, rocblas_int lda,
                                       float *D, float *E, float *tauq, float *taup, float *X, rocblas_int ldx, float *Y, rocblas_int ldy) {
-  //return rocsolver_slabrd(handle, m, n, nb, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
-  return rocblas_status_not_implemented;
+  return rocsolver_slabrd(handle, m, n, nb, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
 }
 
 inline rocblas_status rocsolver_labrd(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_int nb, double *A, rocblas_int lda,
                                       double *D, double *E, double *tauq, double *taup, double *X, rocblas_int ldx, double *Y, rocblas_int ldy) {
-  //return rocsolver_dlabrd(handle, m, n, nb, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
-  return rocblas_status_not_implemented;
+  return rocsolver_dlabrd(handle, m, n, nb, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
 }
 
 inline rocblas_status rocsolver_labrd(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_int nb, rocblas_float_complex *A, rocblas_int lda,
                                       float *D, float *E, rocblas_float_complex *tauq, rocblas_float_complex *taup, rocblas_float_complex *X, rocblas_int ldx,
                                       rocblas_float_complex *Y, rocblas_int ldy) {
-  //return rocsolver_clabrd(handle, m, n, nb, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
-  return rocblas_status_not_implemented;
+  return rocsolver_clabrd(handle, m, n, nb, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
 }
 
 inline rocblas_status rocsolver_labrd(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_int nb, rocblas_double_complex *A, rocblas_int lda,
                                       double *D, double *E, rocblas_double_complex *tauq, rocblas_double_complex *taup, rocblas_double_complex *X, rocblas_int ldx,
                                       rocblas_double_complex *Y, rocblas_int ldy) {
-  //return rocsolver_zlabrd(handle, m, n, nb, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
-  return rocblas_status_not_implemented;
+  return rocsolver_zlabrd(handle, m, n, nb, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
 }
 /***************************************************************/
 
