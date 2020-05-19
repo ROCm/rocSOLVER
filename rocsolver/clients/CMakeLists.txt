@@ -39,9 +39,9 @@ endif( )
 # Hip headers required of all clients; clients use hip to allocate device memory
 list( APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} /opt/rocm )
 
-# Don't search for hip package again if it's already found
+#Don't search for hip package again if it's already
 if(NOT hip_FOUND)
-  message( "HIP package NOT found, beginning search" )
+  find_package( hip REQUIRED CONFIG PATHS ${ROCM_PATH} )
 endif()
 
 # Quietly look for CUDA, but if not found it's not an error
