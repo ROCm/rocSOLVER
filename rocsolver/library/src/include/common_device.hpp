@@ -67,24 +67,43 @@ __global__ void restau(const rocblas_int k, T *ipiv, const rocblas_stride stride
         tau[i] = -tau[i];
 }
 
-template <typename T, typename U>
-__global__ void set_one_diag(T* diag, U A, const rocblas_int shifta, const rocblas_stride stridea)
+
+template <typename T, typename S, typename U, std::enable_if_t<!is_complex<T> || is_complex<S>, int> = 0>
+__global__ void set_diag(S* D, const rocblas_int shiftd, const rocblas_stride strided,
+                         U A, const rocblas_int shifta, const rocblas_stride stridea, bool set_one)
 {
     int b = hipBlockIdx_x;
 
-    T* d = load_ptr_batch<T>(A,b,shifta,stridea);
-    diag[b] = d[0];
-    d[0] = T(1);
+    S* d = load_ptr_batch<S>(D,b,shiftd,strided);
+    T* a = load_ptr_batch<T>(A,b,shifta,stridea);
+
+    d[0] = a[0];
+    a[0] = set_one ? T(1) : a[0];
 }
 
-template <typename T, typename U>
-__global__ void restore_diag(T* diag, U A, const rocblas_int shifta, const rocblas_stride stridea)
+template <typename T, typename S, typename U, std::enable_if_t<is_complex<T> && !is_complex<S>, int> = 0>
+__global__ void set_diag(S* D, const rocblas_int shiftd, const rocblas_stride strided,
+                         U A, const rocblas_int shifta, const rocblas_stride stridea, bool set_one)
 {
     int b = hipBlockIdx_x;
 
-    T* d = load_ptr_batch<T>(A,b,shifta,stridea);
+    S* d = load_ptr_batch<S>(D,b,shiftd,strided);
+    T* a = load_ptr_batch<T>(A,b,shifta,stridea);
 
-    d[0] = diag[b];
+    d[0] = a[0].real();
+    a[0] = set_one ? T(1) : a[0];
+}
+
+template <typename T, typename S, typename U>
+__global__ void restore_diag(S* D, const rocblas_int shiftd, const rocblas_stride strided,
+                             U A, const rocblas_int shifta, const rocblas_stride stridea)
+{
+    int b = hipBlockIdx_x;
+
+    S* d = load_ptr_batch<S>(D,b,shiftd,strided);
+    T* a = load_ptr_batch<T>(A,b,shifta,stridea);
+
+    a[0] = d[0];
 }
 
 

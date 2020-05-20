@@ -78,7 +78,7 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int
                                  batch_count, diag, work);
 
         // insert one in A(j,j) tobuild/apply the householder matrix 
-        hipLaunchKernelGGL(set_one_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(j,j,lda),strideA);
+        hipLaunchKernelGGL(set_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(j,j,lda),strideA,true);
 
         // Apply Householder reflector to the rest of matrix from the right 
         if (j < m - 1) {
@@ -94,7 +94,7 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int
         }
 
         // restore original value of A(j,j)
-        hipLaunchKernelGGL(restore_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(j,j,lda),strideA);
+        hipLaunchKernelGGL(restore_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(j,j,lda),strideA);
 
         // restore the jth row of A
         if (COMPLEX)

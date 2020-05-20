@@ -114,7 +114,7 @@ rocblas_status rocsolver_orm2r_unm2r_template(rocblas_handle handle, const rocbl
         }
     
         // insert one in A(i,i) tobuild/apply the householder matrix 
-        hipLaunchKernelGGL(set_one_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(i,i,lda),strideA);
+        hipLaunchKernelGGL(set_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(i,i,lda),strideA,true);
 
         // Apply current Householder reflector 
         rocsolver_larf_template(handle,side,                        //side
@@ -129,7 +129,7 @@ rocblas_status rocsolver_orm2r_unm2r_template(rocblas_handle handle, const rocbl
                                 scalars, work, workArr);
 
         // restore original value of A(i,i)
-        hipLaunchKernelGGL(restore_diag,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,A,shiftA+idx2D(i,i,lda),strideA);
+        hipLaunchKernelGGL(restore_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(i,i,lda),strideA);
     }
 
     // restore tau
