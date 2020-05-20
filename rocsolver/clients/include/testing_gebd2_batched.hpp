@@ -137,8 +137,9 @@ rocblas_status testing_gebd2_batched(Arguments argus) {
     double gpu_time_used, cpu_time_used;
     double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
     double eps = std::numeric_limits<U>::epsilon();
-    double max_err_1 = 0.0, max_val = 0.0;
-    double diff, err;
+    double max_err_1 = 0.0, max_val = 0.0, max_val_d = 0.0;
+    double diff, diff_d, err, err_d;
+    bool   flipped = false;
 
 /* =====================================================================
            ROCSOLVER
@@ -185,15 +186,35 @@ rocblas_status testing_gebd2_batched(Arguments argus) {
             for (int j = 0; j < min(M, N); j++) {
                 diff = abs((hD.data() + b*strideP)[j]);
                 max_val = max_val > diff ? max_val : diff;
-                diff = abs((hDr.data() + b*strideP)[j] - (hD.data() + b*strideP)[j]);
+                max_val_d = max_val_d > diff ? max_val_d : diff;
+                diff   = abs((hDr.data() + b*strideP)[j] - (hD.data() + b*strideP)[j]);
+                diff_d = abs((hDr.data() + b*strideP)[j] + (hD.data() + b*strideP)[j]);
                 err = err > diff ? err : diff;
+            
+                if (diff_d < diff)
+                {
+                    flipped = true;
+                    err_d = err_d > diff_d ? err_d : diff_d;
+                }
+                else
+                    err_d = err_d > diff ? err_d : diff;
             }
             // check if the off-diagonal elements returned are identical
             for (int j = 0; j < min(M, N) - 1; j++) {
                 diff = abs((hE.data() + b*strideP)[j]);
                 max_val = max_val > diff ? max_val : diff;
-                diff = abs((hEr.data() + b*strideP)[j] - (hE.data() + b*strideP)[j]);
+                max_val_d = max_val_d > diff ? max_val_d : diff;
+                diff   = abs((hEr.data() + b*strideP)[j] - (hE.data() + b*strideP)[j]);
+                diff_d = abs((hEr.data() + b*strideP)[j] + (hE.data() + b*strideP)[j]);
                 err = err > diff ? err : diff;
+            
+                if (diff_d < diff)
+                {
+                    flipped = true;
+                    err_d = err_d > diff_d ? err_d : diff_d;
+                }
+                else
+                    err_d = err_d > diff ? err_d : diff;
             }
             // hAr contains calculated bidiagonal form, so error is hA - hAr
             for (int i = 0; i < M; i++) {
@@ -204,12 +225,16 @@ rocblas_status testing_gebd2_batched(Arguments argus) {
                     err = err > diff ? err : diff;
                 }
             }
-            err = err / max_val;
+            err = flipped ? err_d / max_val_d : err / max_val;
             max_err_1 = max_err_1 > err ? max_err_1 : err;
         }
 
         if(argus.unit_check)
-           gebd2_err_res_check<U>(max_err_1, M, N, error_eps_multiplier, eps);
+        {
+            if (flipped)
+                cout << "WARNING: Diagonal element has flipped sign; checking diagonal magnitudes only" << endl;
+            gebd2_err_res_check<U>(max_err_1, M, N, error_eps_multiplier, eps);
+        }
     }
  
     if (argus.timing) {
