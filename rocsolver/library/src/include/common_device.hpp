@@ -107,4 +107,59 @@ __global__ void restore_diag(S* D, const rocblas_int shiftd, const rocblas_strid
 }
 
 
+template <typename T, typename S, typename U, std::enable_if_t<!is_complex<T> || is_complex<S>, int> = 0>
+__global__ void set_diag_n(S* D, const rocblas_int shiftd, const rocblas_stride strided,
+                           U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
+                           const rocblas_int n, bool set_one)
+{
+    int b = hipBlockIdx_x;
+    int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    int j = i + i*lda;
+
+    S* d = load_ptr_batch<S>(D,b,shiftd,strided);
+    T* a = load_ptr_batch<T>(A,b,shifta,stridea);
+
+    if (i < n)
+    {
+        d[i] = a[j];
+        a[j] = set_one ? T(1) : a[j];
+    }
+}
+
+template <typename T, typename S, typename U, std::enable_if_t<is_complex<T> && !is_complex<S>, int> = 0>
+__global__ void set_diag_n(S* D, const rocblas_int shiftd, const rocblas_stride strided,
+                           U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
+                           const rocblas_int n, bool set_one)
+{
+    int b = hipBlockIdx_x;
+    int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    int j = i + i*lda;
+
+    S* d = load_ptr_batch<S>(D,b,shiftd,strided);
+    T* a = load_ptr_batch<T>(A,b,shifta,stridea);
+
+    if (i < n)
+    {
+        d[i] = a[j].real();
+        a[j] = set_one ? T(1) : a[j];
+    }
+}
+
+template <typename T, typename S, typename U>
+__global__ void restore_diag_n(S* D, const rocblas_int shiftd, const rocblas_stride strided,
+                               U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
+                               const rocblas_int n)
+{
+    int b = hipBlockIdx_x;
+    int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    int j = i + i*lda;
+
+    S* d = load_ptr_batch<S>(D,b,shiftd,strided);
+    T* a = load_ptr_batch<T>(A,b,shifta,stridea);
+
+    if (i < n)
+        a[j] = d[i];
+}
+
+
 #endif
