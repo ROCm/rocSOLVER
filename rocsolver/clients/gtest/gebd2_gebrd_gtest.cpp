@@ -122,6 +122,46 @@ TEST_P(GEBD2, __double_complex) {
     testing_gebd2_gebrd<false,false,0,rocblas_double_complex>(arg);
 }
 
+TEST_P(GEBRD, __float) {
+    Arguments arg = setup_arguments_bd(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gebd2_gebrd_bad_arg<false,false,1,float>();
+
+    arg.batch_count = 1;
+    testing_gebd2_gebrd<false,false,1,float>(arg);
+}
+
+TEST_P(GEBRD, __double) {
+    Arguments arg = setup_arguments_bd(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gebd2_gebrd_bad_arg<false,false,1,double>();
+
+    arg.batch_count = 1;
+    testing_gebd2_gebrd<false,false,1,double>(arg);
+}
+
+TEST_P(GEBRD, __float_complex) {
+    Arguments arg = setup_arguments_bd(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gebd2_gebrd_bad_arg<false,false,1,rocblas_float_complex>();
+
+    arg.batch_count = 1;
+    testing_gebd2_gebrd<false,false,1,rocblas_float_complex>(arg);
+}
+
+TEST_P(GEBRD, __double_complex) {
+    Arguments arg = setup_arguments_bd(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gebd2_gebrd_bad_arg<false,false,1,rocblas_double_complex>();
+
+    arg.batch_count = 1;
+    testing_gebd2_gebrd<false,false,1,rocblas_double_complex>(arg);
+}
+
 
 // batched tests
 
@@ -214,5 +254,13 @@ INSTANTIATE_TEST_CASE_P(daily_lapack, GEBD2,
                                 ValuesIn(large_n_size_range)));
 
 INSTANTIATE_TEST_CASE_P(checkin_lapack, GEBD2,
+                        Combine(ValuesIn(matrix_size_range),
+                                ValuesIn(n_size_range)));
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, GEBRD,
+                        Combine(ValuesIn(large_matrix_size_range),
+                                ValuesIn(large_n_size_range)));
+
+INSTANTIATE_TEST_CASE_P(checkin_lapack, GEBRD,
                         Combine(ValuesIn(matrix_size_range),
                                 ValuesIn(n_size_range)));
