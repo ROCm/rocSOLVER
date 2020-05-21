@@ -12,7 +12,7 @@ class host_strided_batch_vector;
 //!
 //! @brief Implementation of a strided batched vector on device.
 //!
-template <typename T, size_t PAD = 4096, typename U = T>
+template <typename T, size_t PAD = 0, typename U = T>
 class device_strided_batch_vector : public d_vector<T, PAD, U>
 {
 public:

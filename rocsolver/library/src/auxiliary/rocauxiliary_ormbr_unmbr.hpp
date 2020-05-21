@@ -26,7 +26,7 @@ void rocsolver_ormbr_unmbr_getMemorySize(const rocblas_storev storev, const rocb
         rocsolver_ormlq_unmlq_getMemorySize<T,BATCHED>(side,m,n,min(nq,k),batch_count,size_1,size_2,size_3,size_4);
 }
 
-template <typename T, typename U>
+template <bool COMPLEX, typename T, typename U>
 rocblas_status rocsolver_ormbr_argCheck(const rocblas_storev storev, const rocblas_side side, const rocblas_operation trans,
                                         const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int lda,
                                         const rocblas_int ldc, T A, T C, U ipiv)
@@ -36,7 +36,9 @@ rocblas_status rocsolver_ormbr_argCheck(const rocblas_storev storev, const rocbl
     // 1. invalid/non-supported values
     if (side != rocblas_side_left && side != rocblas_side_right)
         return rocblas_status_invalid_value;
-    if (trans != rocblas_operation_none && trans != rocblas_operation_transpose)
+    if (trans != rocblas_operation_none && trans != rocblas_operation_transpose && trans != rocblas_operation_conjugate_transpose)
+        return rocblas_status_invalid_value;
+    if ((COMPLEX && trans == rocblas_operation_transpose) || (!COMPLEX && trans == rocblas_operation_conjugate_transpose))
         return rocblas_status_invalid_value;
     if (storev != rocblas_column_wise && storev != rocblas_row_wise)
         return rocblas_status_invalid_value;    

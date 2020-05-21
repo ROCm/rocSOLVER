@@ -1,14 +1,9 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
 #include "testing_larf.hpp"
-#include "utility.h"
-#include <gtest/gtest.h>
-#include <math.h>
-#include <stdexcept>
-#include <vector>
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -19,26 +14,31 @@ using namespace std;
 
 typedef std::tuple<vector<int>, vector<int>> mtuple;
 
-//{M,N,lda}
-const vector<vector<int>> matrix_size_range = {
-    {0,10,1}, {10,0,10},
-    {-1,10,1}, {10,-1,10}, {10,10,5}, 
-    {12,20,12}, {20,15,20}, {35,35,50}  
-};
+// each size_range vector is a {M,N,lda}
 
-//{incx,s}
+// each incx_range vector is a {incx,s}
 //if s = 0, then side = 'L'
 //if s = 1, then side = 'R'
+
+// case when M == 0 and incx == 0  also execute the bad arguments test
+// (null handle, null pointers and invalid values)
+
 const vector<vector<int>> incx_range = {
-    {0,0},
+    {0,0},  //invalid
     {-10,0}, {-5,1}, {-1,0}, {1,1}, {5,0}, {10,1}
 };
 
-//{M,N,lda}
+// for checkin_lapack tests
+const vector<vector<int>> matrix_size_range = {
+    {0,10,1}, {10,0,10},                //quick return
+    {-1,10,1}, {10,-1,10}, {10,10,5},   //invalid
+    {12,20,12}, {20,15,20}, {35,35,50}  
+};
+
+// for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
     {192,192,192}, {640,300,700}, {1024,2000,1024}, {2547,2547,2550}
 };
-
 
 
 Arguments larf_setup_arguments(mtuple tup) {
@@ -60,86 +60,55 @@ Arguments larf_setup_arguments(mtuple tup) {
   return arg;
 }
 
-class app_HHreflec : public ::TestWithParam<mtuple> {
+class LARF : public ::TestWithParam<mtuple> {
 protected:
-  app_HHreflec() {}
-  virtual ~app_HHreflec() {}
+  LARF() {}
+  virtual ~LARF() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
 
-TEST_P(app_HHreflec, larf_float) {
-  Arguments arg = larf_setup_arguments(GetParam());
+TEST_P(LARF, __float) {
+    Arguments arg = larf_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larf<float,float>(arg);
+    if (arg.M == 0 && arg.incx == 0)
+        testing_larf_bad_arg<float>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0 || arg.M < 0 || arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.incx == 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    testing_larf<float>(arg);
 }
 
-TEST_P(app_HHreflec, larf_double) {
-  Arguments arg = larf_setup_arguments(GetParam());
+TEST_P(LARF, __double) {
+    Arguments arg = larf_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larf<double,double>(arg);
+    if (arg.M == 0 && arg.incx == 0)
+        testing_larf_bad_arg<double>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0 || arg.M < 0 || arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.incx == 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    testing_larf<double>(arg);
 }
 
-TEST_P(app_HHreflec, larf_float_complex) {
-  Arguments arg = larf_setup_arguments(GetParam());
+TEST_P(LARF, __float_complex) {
+    Arguments arg = larf_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larf<rocblas_float_complex,float>(arg);
+    if (arg.M == 0 && arg.incx == 0)
+        testing_larf_bad_arg<rocblas_float_complex>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0 || arg.M < 0 || arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.incx == 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    testing_larf<rocblas_float_complex>(arg);
 }
 
-TEST_P(app_HHreflec, larf_double_complex) {
-  Arguments arg = larf_setup_arguments(GetParam());
+TEST_P(LARF, __double_complex) {
+    Arguments arg = larf_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larf<rocblas_double_complex,double>(arg);
+    if (arg.M == 0 && arg.incx == 0)
+        testing_larf_bad_arg<rocblas_double_complex>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0 || arg.M < 0 || arg.lda < arg.M) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.incx == 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    testing_larf<rocblas_double_complex>(arg);
 }
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, app_HHreflec,
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, LARF,
                         Combine(ValuesIn(large_matrix_size_range),
                                 ValuesIn(incx_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, app_HHreflec,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, LARF,
                         Combine(ValuesIn(matrix_size_range),
                                 ValuesIn(incx_range)));

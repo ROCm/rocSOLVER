@@ -84,7 +84,7 @@ template <typename T, bool BATCHED>
 void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev, const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
                                          size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
 {
-    if (storev == rocblas_column_wise) {
+   if (storev == rocblas_column_wise) {
         if (m >= k) {
             rocsolver_orgqr_ungqr_getMemorySize<T,BATCHED>(m,n,k,batch_count,size_1,size_2,size_3,size_4);
         } else {

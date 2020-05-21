@@ -14,7 +14,7 @@ class host_vector;
 //!
 //! @brief pseudo-vector subclass which uses device memory
 //!
-template <typename T, size_t PAD = 4096, typename U = T>
+template <typename T, size_t PAD = 0, typename U = T>
 class device_vector : private d_vector<T, PAD, U>
 {
 
@@ -96,6 +96,24 @@ public:
     {
         return 0;
     }
+
+    //!
+    //! @brief Returns the data pointer.
+    //!
+    T* data()
+    {
+        return this->m_data;
+    }
+
+    //!
+    //! @brief Returns the data pointer.
+    //!
+    const T* data() const
+    {
+        return this->m_data;
+    }
+
+
 
     //!
     //! @brief Decay into pointer wherever pointer is expected.

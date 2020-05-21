@@ -18,7 +18,7 @@ typedef std::tuple<vector<int>, vector<int>> wpTuple;
 
 // each range2 vector is a {k1,k2,inc}
 
-// case when n = 0, k1 = 1 and k2 = 3  will execute the bad arguments test
+// case when n = 0, k1 = 1 and k2 = 3  will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
 // for checkin_lapack tests
@@ -57,49 +57,55 @@ Arguments laswp_setup_arguments(wpTuple tup) {
     return arg;
 }
 
-class permut : public ::TestWithParam<wpTuple> {
+class LASWP : public ::TestWithParam<wpTuple> {
 protected:
-    permut() {}
-    virtual ~permut() {}
+    LASWP() {}
+    virtual ~LASWP() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
-TEST_P(permut, laswp_float) {
+TEST_P(LASWP, __float) {
     Arguments arg = laswp_setup_arguments(GetParam());
+
     if (arg.N == 0 && arg.k1 == 1 && arg.k2 == 3)
         testing_laswp_bad_arg<float>();
+
     testing_laswp<float>(arg);
 }
 
-TEST_P(permut, laswp_double) {
+TEST_P(LASWP, __double) {
     Arguments arg = laswp_setup_arguments(GetParam());
+
     if (arg.N == 0 && arg.k1 == 1 && arg.k2 == 3)
         testing_laswp_bad_arg<double>();
+
     testing_laswp<double>(arg);
 }
 
-TEST_P(permut, laswp_float_complex) {
+TEST_P(LASWP, __float_complex) {
     Arguments arg = laswp_setup_arguments(GetParam());
+
     if (arg.N == 0 && arg.k1 == 1 && arg.k2 == 3)
         testing_laswp_bad_arg<rocblas_float_complex>();
+
     testing_laswp<rocblas_float_complex>(arg);
 }
 
-TEST_P(permut, laswp_double_complex) {
+TEST_P(LASWP, __double_complex) {
     Arguments arg = laswp_setup_arguments(GetParam());
+
     if (arg.N == 0 && arg.k1 == 1 && arg.k2 == 3)
         testing_laswp_bad_arg<rocblas_double_complex>();
+
     testing_laswp<rocblas_double_complex>(arg);
 }
 
-// daily_lapack tests normal execution with medium to large sizes
-INSTANTIATE_TEST_CASE_P(daily_lapack, permut,
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, LASWP,
                         Combine(ValuesIn(large_range1),
                                 ValuesIn(large_range2)));
 
-// checkin_lapack tests normal execution with small sizes, invalid sizes,
-// quick returns, and corner cases
-INSTANTIATE_TEST_CASE_P(checkin_lapack, permut,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, LASWP,
                         Combine(ValuesIn(range1),
                                 ValuesIn(range2)));

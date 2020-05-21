@@ -16,7 +16,7 @@ class host_batch_vector;
 //!  - an array of pointers in host memory
 //!  - an array of pointers in device memory
 //!
-template <typename T, size_t PAD = 4096, typename U = T>
+template <typename T, size_t PAD = 0, typename U = T>
 class device_batch_vector : private d_vector<T, PAD, U>
 {
 public:

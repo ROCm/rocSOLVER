@@ -66,7 +66,9 @@ double norm_error(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda,
 
     double gold_norm = xlange(&norm_type, &M, &N, gold_double.data(), &lda, work);
     xaxpy(&size, &alpha, gold_double.data(), &incx, comp_double.data(), &incx);
-    double error = xlange(&norm_type, &M, &N, comp_double.data(), &lda, work) / gold_norm;
+    double error = xlange(&norm_type, &M, &N, comp_double.data(), &lda, work);
+    if (gold_norm > 0)
+        error /= gold_norm;
 
     return error;
 }
@@ -95,9 +97,41 @@ double norm_error(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda,
 
     double gold_norm = xlange(&norm_type, &M, &N, gold_double.data(), &lda, work);
     xaxpy(&size, &alpha, gold_double.data(), &incx, comp_double.data(), &incx);
-    double error = xlange(&norm_type, &M, &N, comp_double.data(), &lda, work) / gold_norm;
+    double error = xlange(&norm_type, &M, &N, comp_double.data(), &lda, work);
+    if (gold_norm > 0)
+        error /= gold_norm;
 
     return error;
 }
+
+template <typename T>
+double norm_error_upperTr(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda, T* gold, T* comp)
+{
+    for (rocblas_int i = 0; i < M; ++i) {
+        for (rocblas_int j = 0; j < N; ++j) {
+            if (i > j) {
+                gold[i+j*lda] = T(0);
+                comp[i+j*lda] = T(0);
+            }
+        }
+    }
+    return norm_error(norm_type,M,N,lda,gold,comp);
+}
+
+template <typename T>
+double norm_error_lowerTr(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda, T* gold, T* comp)
+{
+    for (rocblas_int i = 0; i < M; ++i) {
+        for (rocblas_int j = 0; j < N; ++j) {
+            if (i < j) {
+                gold[i+j*lda] = T(0);
+                comp[i+j*lda] = T(0);
+            }
+        }
+    }
+    return norm_error(norm_type,M,N,lda,gold,comp);
+}
+
+
 
 #endif

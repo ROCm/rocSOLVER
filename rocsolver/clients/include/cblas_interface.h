@@ -8,6 +8,7 @@
 
 #include <rocblas.h>
 #include "clientcommon.hpp"
+#include "rocsolver_datatype2string.hpp"
 
 /*!\file
  * \brief provide template functions interfaces to CBLAS and LAPACK interfaces, it is
@@ -120,13 +121,13 @@ template <typename T>
 void cblas_larfg(rocblas_int n, T* alpha, T* x, rocblas_int incx, T* tau);
 
 template <typename T>
-void cblas_larf(char side, rocblas_int m, rocblas_int n, T* x, rocblas_int incx, T* alpha, T *A, rocblas_int lda, T *work);
+void cblas_larf(rocblas_side side, rocblas_int m, rocblas_int n, T* x, rocblas_int incx, T* alpha, T *A, rocblas_int lda, T *work);
 
 template <typename T>
-void cblas_larft(char direct, char storev, rocblas_int n, rocblas_int k, T* V, rocblas_int ldv, T* tau, T *F, rocblas_int ldt);
+void cblas_larft(rocblas_direct direct, rocblas_storev storev, rocblas_int n, rocblas_int k, T* V, rocblas_int ldv, T* tau, T *F, rocblas_int ldt);
 
 template <typename T>
-void cblas_larfb(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
+void cblas_larfb(rocblas_side side, rocblas_operation trans, rocblas_direct direct, rocblas_storev storev, rocblas_int m, rocblas_int n, rocblas_int k, 
                  T* V, rocblas_int ldv, T *F, rocblas_int ldt, T *A, rocblas_int lda, T *W, rocblas_int ldw);
 
 template <typename T>
@@ -151,16 +152,16 @@ template <typename T>
 void cblas_org2r_ung2r(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
 
 template <typename T>
-void cblas_orgqr_ungqr(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
+void cblas_orgqr_ungqr(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work, rocblas_int sizeW);
 
 template <typename T>
 void cblas_orgl2_ungl2(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
 
 template <typename T>
-void cblas_orglq_unglq(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work);
+void cblas_orglq_unglq(rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work, rocblas_int sizeW);
 
 template <typename T>
-void cblas_orgbr_ungbr(char storev, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work, rocblas_int size_w);
+void cblas_orgbr_ungbr(rocblas_storev storev, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work, rocblas_int size_w);
 
 template <typename T>
 void cblas_gebrd(rocblas_int m, rocblas_int n, T *A, rocblas_int lda, T *D, T *E, T *tauq, T *taup, T *work, rocblas_int size_w);
@@ -182,7 +183,7 @@ void cblas_ormlq_unmlq(rocblas_side side, rocblas_operation trans, rocblas_int m
                  T *C, rocblas_int ldc, T *work, rocblas_int sizeW);
 
 template <typename T>
-void cblas_ormbr_unmbr(char storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
+void cblas_ormbr_unmbr(rocblas_storev storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, T *A, rocblas_int lda, T *Ipiv, 
                  T *C, rocblas_int ldc, T *work, rocblas_int sizeW);
 
 

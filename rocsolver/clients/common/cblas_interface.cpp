@@ -5,9 +5,10 @@
 #include "cblas_interface.h"
 #include "cblas.h"
 #include "rocblas.h"
+//#include "rocsolver.h"
 //#include "utility.h"
-#include <memory>
-#include <typeinfo>
+//#include <memory>
+//#include <typeinfo>
 
 /*!\file
  * \brief provide template functions interfaces to CBLAS C89 interfaces, it is
@@ -223,105 +224,129 @@ void cblas_larfg<rocblas_double_complex>(rocblas_int n, rocblas_double_complex *
 //larf
 
 template <>
-void cblas_larf<float>(char side, rocblas_int m, rocblas_int n, float *x, rocblas_int incx, float *alpha, float *A, rocblas_int lda, float *work) {
+void cblas_larf<float>(rocblas_side sideR, rocblas_int m, rocblas_int n, float *x, rocblas_int incx, float *alpha, float *A, rocblas_int lda, float *work) {
+    char side = rocblas2char_side(sideR);
     slarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
 }
 
 template <>
-void cblas_larf<double>(char side, rocblas_int m, rocblas_int n, double *x, rocblas_int incx, double *alpha, double *A, rocblas_int lda, double *work) {
+void cblas_larf<double>(rocblas_side sideR, rocblas_int m, rocblas_int n, double *x, rocblas_int incx, double *alpha, double *A, rocblas_int lda, double *work) {
+    char side = rocblas2char_side(sideR);
     dlarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
 }
 
 template <>
-void cblas_larf<rocblas_float_complex>(char side, rocblas_int m, rocblas_int n, rocblas_float_complex *x, rocblas_int incx, rocblas_float_complex *alpha, rocblas_float_complex *A, rocblas_int lda, rocblas_float_complex *work) {
+void cblas_larf<rocblas_float_complex>(rocblas_side sideR, rocblas_int m, rocblas_int n, rocblas_float_complex *x, rocblas_int incx, rocblas_float_complex *alpha, rocblas_float_complex *A, rocblas_int lda, rocblas_float_complex *work) {
+    char side = rocblas2char_side(sideR);
     clarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
 }
 
 template <>
-void cblas_larf<rocblas_double_complex>(char side, rocblas_int m, rocblas_int n, rocblas_double_complex *x, rocblas_int incx, rocblas_double_complex *alpha, rocblas_double_complex *A, rocblas_int lda, rocblas_double_complex *work) {
+void cblas_larf<rocblas_double_complex>(rocblas_side sideR, rocblas_int m, rocblas_int n, rocblas_double_complex *x, rocblas_int incx, rocblas_double_complex *alpha, rocblas_double_complex *A, rocblas_int lda, rocblas_double_complex *work) {
+    char side = rocblas2char_side(sideR);
     zlarf_(&side, &m, &n, x, &incx, alpha, A, &lda, work);
 }
 
 //larft
 
 template <>
-void cblas_larft<float>(char direct, char storev, rocblas_int n, rocblas_int k, float *V, rocblas_int ldv, float *tau, float *T, rocblas_int ldt) {
+void cblas_larft<float>(rocblas_direct directR, rocblas_storev storevR, rocblas_int n, rocblas_int k, float *V, rocblas_int ldv, float *tau, float *T, rocblas_int ldt) {
+    char direct = rocblas2char_direct(directR);
+    char storev = rocblas2char_storev(storevR);
     slarft_(&direct, &storev, &n, &k, V, &ldv, tau, T, &ldt);
 }
 
 template <>
-void cblas_larft<double>(char direct, char storev, rocblas_int n, rocblas_int k, double *V, rocblas_int ldv, double *tau, double *T, rocblas_int ldt) {
+void cblas_larft<double>(rocblas_direct directR, rocblas_storev storevR, rocblas_int n, rocblas_int k, double *V, rocblas_int ldv, double *tau, double *T, rocblas_int ldt) {
+    char direct = rocblas2char_direct(directR);
+    char storev = rocblas2char_storev(storevR);
     dlarft_(&direct, &storev, &n, &k, V, &ldv, tau, T, &ldt);
 }
 
 template <>
-void cblas_larft<rocblas_float_complex>(char direct, char storev, rocblas_int n, rocblas_int k, rocblas_float_complex *V, rocblas_int ldv, rocblas_float_complex *tau, rocblas_float_complex *T, rocblas_int ldt) {
+void cblas_larft<rocblas_float_complex>(rocblas_direct directR, rocblas_storev storevR, rocblas_int n, rocblas_int k, rocblas_float_complex *V, rocblas_int ldv, rocblas_float_complex *tau, rocblas_float_complex *T, rocblas_int ldt) {
+    char direct = rocblas2char_direct(directR);
+    char storev = rocblas2char_storev(storevR);
     clarft_(&direct, &storev, &n, &k, V, &ldv, tau, T, &ldt);
 }
 
 template <>
-void cblas_larft<rocblas_double_complex>(char direct, char storev, rocblas_int n, rocblas_int k, rocblas_double_complex *V, rocblas_int ldv, rocblas_double_complex *tau, rocblas_double_complex *T, rocblas_int ldt) {
+void cblas_larft<rocblas_double_complex>(rocblas_direct directR, rocblas_storev storevR, rocblas_int n, rocblas_int k, rocblas_double_complex *V, rocblas_int ldv, rocblas_double_complex *tau, rocblas_double_complex *T, rocblas_int ldt) {
+    char direct = rocblas2char_direct(directR);
+    char storev = rocblas2char_storev(storevR);
     zlarft_(&direct, &storev, &n, &k, V, &ldv, tau, T, &ldt);
 }
 
 //larfb
 
 template <>
-void cblas_larfb<float>(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
+void cblas_larfb<float>(rocblas_side sideR, rocblas_operation transR, rocblas_direct directR, rocblas_storev storevR, rocblas_int m, rocblas_int n, rocblas_int k, 
                         float *V, rocblas_int ldv, float *T, rocblas_int ldt, float *A, rocblas_int lda, float *W, rocblas_int ldw) {
+    char side = rocblas2char_side(sideR);
+    char trans = rocblas2char_operation(transR);
+    char direct = rocblas2char_direct(directR);
+    char storev = rocblas2char_storev(storevR);
     slarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
 }
 
 template <>
-void cblas_larfb<double>(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
+void cblas_larfb<double>(rocblas_side sideR, rocblas_operation transR, rocblas_direct directR, rocblas_storev storevR, rocblas_int m, rocblas_int n, rocblas_int k, 
                          double *V, rocblas_int ldv, double *T, rocblas_int ldt, double *A, rocblas_int lda, double *W, rocblas_int ldw) {
+    char side = rocblas2char_side(sideR);
+    char trans = rocblas2char_operation(transR);
+    char direct = rocblas2char_direct(directR);
+    char storev = rocblas2char_storev(storevR);
     dlarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
 }
 
 template <>
-void cblas_larfb<rocblas_float_complex>(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
+void cblas_larfb<rocblas_float_complex>(rocblas_side sideR, rocblas_operation transR, rocblas_direct directR, rocblas_storev storevR, rocblas_int m, rocblas_int n, rocblas_int k, 
                         rocblas_float_complex *V, rocblas_int ldv, rocblas_float_complex *T, rocblas_int ldt, rocblas_float_complex *A, rocblas_int lda,
                         rocblas_float_complex *W, rocblas_int ldw) {
+    char side = rocblas2char_side(sideR);
+    char trans = rocblas2char_operation(transR);
+    char direct = rocblas2char_direct(directR);
+    char storev = rocblas2char_storev(storevR);
     clarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
 }
 
 template <>
-void cblas_larfb<rocblas_double_complex>(char side, char trans, char direct, char storev, rocblas_int m, rocblas_int n, rocblas_int k, 
+void cblas_larfb<rocblas_double_complex>(rocblas_side sideR, rocblas_operation transR, rocblas_direct directR, rocblas_storev storevR, rocblas_int m, rocblas_int n, rocblas_int k, 
                          rocblas_double_complex *V, rocblas_int ldv, rocblas_double_complex *T, rocblas_int ldt, rocblas_double_complex *A, rocblas_int lda,
                          rocblas_double_complex *W, rocblas_int ldw) {
+    char side = rocblas2char_side(sideR);
+    char trans = rocblas2char_operation(transR);
+    char direct = rocblas2char_direct(directR);
+    char storev = rocblas2char_storev(storevR);
     zlarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
 }
 
 // orgqr & ungqr
 template <>
 void cblas_orgqr_ungqr<float>(rocblas_int m, rocblas_int n, rocblas_int k, float *A,
-                               rocblas_int lda, float *ipiv, float *work) {
+                               rocblas_int lda, float *ipiv, float *work, rocblas_int lwork) {
   int info;
-  int lwork = n;
   sorgqr_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
 }
 
 template <>
 void cblas_orgqr_ungqr<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
-                               rocblas_int lda, double *ipiv, double *work) {
+                               rocblas_int lda, double *ipiv, double *work, rocblas_int lwork) {
   int info;
-  int lwork = n;
   dorgqr_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
 }
 
 template <>
 void cblas_orgqr_ungqr<rocblas_float_complex>(rocblas_int m, rocblas_int n, rocblas_int k, rocblas_float_complex *A,
-                               rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work) {
+                               rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, rocblas_int lwork) {
   int info;
-  int lwork = n;
   cungqr_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
 }
 
 template <>
 void cblas_orgqr_ungqr<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_int k, rocblas_double_complex *A,
-                               rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work) {
+                               rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, rocblas_int lwork) {
   int info;
-  int lwork = n;
   zungqr_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
 }
 
@@ -569,33 +594,29 @@ void cblas_orml2_unml2<rocblas_double_complex>(rocblas_side side, rocblas_operat
 // orglq & unglq
 template <>
 void cblas_orglq_unglq<float>(rocblas_int m, rocblas_int n, rocblas_int k, float *A,
-                               rocblas_int lda, float *ipiv, float *work) {
+                               rocblas_int lda, float *ipiv, float *work, rocblas_int lwork) {
   int info;
-  int lwork = m;
   sorglq_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
 }
 
 template <>
 void cblas_orglq_unglq<double>(rocblas_int m, rocblas_int n, rocblas_int k, double *A,
-                               rocblas_int lda, double *ipiv, double *work) {
+                               rocblas_int lda, double *ipiv, double *work, rocblas_int lwork) {
   int info;
-  int lwork = m;
   dorglq_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
 }
 
 template <>
 void cblas_orglq_unglq<rocblas_float_complex>(rocblas_int m, rocblas_int n, rocblas_int k, rocblas_float_complex *A,
-                               rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work) {
+                               rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, rocblas_int lwork) {
   int info;
-  int lwork = m;
   cunglq_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
 }
 
 template <>
 void cblas_orglq_unglq<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_int k, rocblas_double_complex *A,
-                               rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work) {
+                               rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, rocblas_int lwork) {
   int info;
-  int lwork = m;
   zunglq_(&m, &n, &k, A, &lda, ipiv, work, &lwork, &info);
 }
 
@@ -630,73 +651,61 @@ void cblas_orgl2_ungl2<rocblas_double_complex>(rocblas_int m, rocblas_int n, roc
 
 // ormbr & unmbr
 template <>
-void cblas_ormbr_unmbr<float>(char storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, float *A,
+void cblas_ormbr_unmbr<float>(rocblas_storev storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, float *A,
                                rocblas_int lda, float *ipiv, float *C, rocblas_int ldc, float *work, rocblas_int lwork) {
   int info;
-  char sideC = 'R', transC = 'T';
+  char sideC = rocblas2char_side(side);
+  char transC = rocblas2char_operation(trans);
   char vect;
-  if (storev == 'C')
+  if (storev == rocblas_column_wise)
     vect = 'Q';
   else
     vect = 'P';
-  if (side == rocblas_side_left)
-    sideC = 'L';
-  if (trans == rocblas_operation_none)
-    transC = 'N';
 
   sormbr_(&vect, &sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &lwork, &info);
 }
 
 template <>
-void cblas_ormbr_unmbr<double>(char storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, double *A,
+void cblas_ormbr_unmbr<double>(rocblas_storev storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, double *A,
                                rocblas_int lda, double *ipiv, double *C, rocblas_int ldc, double *work, rocblas_int lwork) {
   int info;
-  char sideC = 'R', transC = 'T';
+  char sideC = rocblas2char_side(side);
+  char transC = rocblas2char_operation(trans);
   char vect;
-  if (storev == 'C')
+  if (storev == rocblas_column_wise)
     vect = 'Q';
   else
     vect = 'P';
-  if (side == rocblas_side_left)
-    sideC = 'L';
-  if (trans == rocblas_operation_none)
-    transC = 'N';
 
   dormbr_(&vect, &sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &lwork, &info);
 }
 
 template <>
-void cblas_ormbr_unmbr<rocblas_float_complex>(char storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, rocblas_float_complex *A,
+void cblas_ormbr_unmbr<rocblas_float_complex>(rocblas_storev storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, rocblas_float_complex *A,
                                rocblas_int lda, rocblas_float_complex *ipiv, rocblas_float_complex *C, rocblas_int ldc, rocblas_float_complex *work, rocblas_int lwork) {
   int info;
-  char sideC = 'R', transC = 'C';
+  char sideC = rocblas2char_side(side);
+  char transC = rocblas2char_operation(trans);
   char vect;
-  if (storev == 'C')
+  if (storev == rocblas_column_wise)
     vect = 'Q';
   else
     vect = 'P';
-  if (side == rocblas_side_left)
-    sideC = 'L';
-  if (trans == rocblas_operation_none)
-    transC = 'N';
 
   cunmbr_(&vect, &sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &lwork, &info);
 }
 
 template <>
-void cblas_ormbr_unmbr<rocblas_double_complex>(char storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, rocblas_double_complex *A,
+void cblas_ormbr_unmbr<rocblas_double_complex>(rocblas_storev storev, rocblas_side side, rocblas_operation trans, rocblas_int m, rocblas_int n, rocblas_int k, rocblas_double_complex *A,
                                rocblas_int lda, rocblas_double_complex *ipiv, rocblas_double_complex *C, rocblas_int ldc, rocblas_double_complex *work, rocblas_int lwork) {
   int info;
-  char sideC = 'R', transC = 'C';
+  char sideC = rocblas2char_side(side);
+  char transC = rocblas2char_operation(trans);
   char vect;
-  if (storev == 'C')
+  if (storev == rocblas_column_wise)
     vect = 'Q';
   else
     vect = 'P';
-  if (side == rocblas_side_left)
-    sideC = 'L';
-  if (trans == rocblas_operation_none)
-    transC = 'N';
 
   zunmbr_(&vect, &sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work, &lwork, &info);
 }
@@ -1525,11 +1534,11 @@ void cblas_gelq2<rocblas_double_complex>(rocblas_int m, rocblas_int n, rocblas_d
 
 //orgbr & ungbr
 template <>
-void cblas_orgbr_ungbr<float>(char storev, rocblas_int m, rocblas_int n, rocblas_int k, float *A, rocblas_int lda, float *Ipiv, float *work, rocblas_int size_w)
+void cblas_orgbr_ungbr<float>(rocblas_storev storev, rocblas_int m, rocblas_int n, rocblas_int k, float *A, rocblas_int lda, float *Ipiv, float *work, rocblas_int size_w)
 {
     int info;
     char vect;
-    if (storev == 'C')
+    if (storev == rocblas_column_wise)
         vect = 'Q';
     else
         vect = 'P';
@@ -1537,11 +1546,11 @@ void cblas_orgbr_ungbr<float>(char storev, rocblas_int m, rocblas_int n, rocblas
 }
 
 template <>
-void cblas_orgbr_ungbr<double>(char storev,rocblas_int m, rocblas_int n, rocblas_int k, double *A, rocblas_int lda, double *Ipiv, double *work, rocblas_int size_w)
+void cblas_orgbr_ungbr<double>(rocblas_storev storev,rocblas_int m, rocblas_int n, rocblas_int k, double *A, rocblas_int lda, double *Ipiv, double *work, rocblas_int size_w)
 {
     int info;
     char vect;
-    if (storev == 'C')
+    if (storev == rocblas_column_wise)
         vect = 'Q';
     else
         vect = 'P';
@@ -1549,11 +1558,11 @@ void cblas_orgbr_ungbr<double>(char storev,rocblas_int m, rocblas_int n, rocblas
 }
 
 template <>
-void cblas_orgbr_ungbr<rocblas_float_complex>(char storev, rocblas_int m, rocblas_int n, rocblas_int k, rocblas_float_complex *A, rocblas_int lda, rocblas_float_complex *Ipiv, rocblas_float_complex *work, rocblas_int size_w)
+void cblas_orgbr_ungbr<rocblas_float_complex>(rocblas_storev storev, rocblas_int m, rocblas_int n, rocblas_int k, rocblas_float_complex *A, rocblas_int lda, rocblas_float_complex *Ipiv, rocblas_float_complex *work, rocblas_int size_w)
 {
     int info;
     char vect;
-    if (storev == 'C')
+    if (storev == rocblas_column_wise)
         vect = 'Q';
     else
         vect = 'P';
@@ -1561,11 +1570,11 @@ void cblas_orgbr_ungbr<rocblas_float_complex>(char storev, rocblas_int m, rocbla
 }
 
 template <>
-void cblas_orgbr_ungbr<rocblas_double_complex>(char storev,rocblas_int m, rocblas_int n, rocblas_int k, rocblas_double_complex *A, rocblas_int lda, rocblas_double_complex *Ipiv, rocblas_double_complex *work, rocblas_int size_w)
+void cblas_orgbr_ungbr<rocblas_double_complex>(rocblas_storev storev,rocblas_int m, rocblas_int n, rocblas_int k, rocblas_double_complex *A, rocblas_int lda, rocblas_double_complex *Ipiv, rocblas_double_complex *work, rocblas_int size_w)
 {
     int info;
     char vect;
-    if (storev == 'C')
+    if (storev == rocblas_column_wise)
         vect = 'Q';
     else
         vect = 'P';

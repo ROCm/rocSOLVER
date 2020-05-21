@@ -26,7 +26,7 @@ void rocsolver_orm2r_unm2r_getMemorySize(const rocblas_side side, const rocblas_
     *size_4 = sizeof(T)*batch_count;
 }
 
-template <typename T, typename U>
+template <bool COMPLEX, typename T, typename U>
 rocblas_status rocsolver_orm2r_ormqr_argCheck(const rocblas_side side, const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
                                               const rocblas_int k, const rocblas_int lda, const rocblas_int ldc, T A, T C, U ipiv)
 {
@@ -36,6 +36,8 @@ rocblas_status rocsolver_orm2r_ormqr_argCheck(const rocblas_side side, const roc
     if (side != rocblas_side_left && side != rocblas_side_right)
         return rocblas_status_invalid_value;
     if (trans != rocblas_operation_none && trans != rocblas_operation_transpose && trans != rocblas_operation_conjugate_transpose)
+        return rocblas_status_invalid_value;
+    if ((COMPLEX && trans == rocblas_operation_transpose) || (!COMPLEX && trans == rocblas_operation_conjugate_transpose))
         return rocblas_status_invalid_value;
     bool left = (side == rocblas_side_left);    
 

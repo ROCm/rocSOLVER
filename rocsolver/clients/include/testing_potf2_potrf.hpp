@@ -232,7 +232,7 @@ void testing_potf2_potrf(Arguments argus)
         host_strided_batch_vector<rocblas_int> hinfo(1,1,1,bc);
         device_batch_vector<T> dA(size_A,1,bc);
         device_strided_batch_vector<rocblas_int> dinfo(1,1,1,bc);
-        CHECK_HIP_ERROR(dA.memcheck());
+        if (size_A) CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dinfo.memcheck());
 
         // check quick return
@@ -263,7 +263,7 @@ void testing_potf2_potrf(Arguments argus)
         host_strided_batch_vector<rocblas_int> hinfo(1,1,1,bc);
         device_strided_batch_vector<T> dA(size_A,1,stA,bc);
         device_strided_batch_vector<rocblas_int> dinfo(1,1,1,bc);
-        CHECK_HIP_ERROR(dA.memcheck());
+        if (size_A) CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dinfo.memcheck());
 
         // check quick return

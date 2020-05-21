@@ -36,6 +36,24 @@ __global__ void conj_in_place(const rocblas_int m, const rocblas_int n, U A,
         Ap[i + j*lda] = conj(Ap[i + j*lda]);
 }
 
+template <typename T>
+rocblas_status rocsolver_lacgv_argCheck(const rocblas_int n, const rocblas_int incx, T x)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    // N/A
+    
+    // 2. invalid size
+    if (n < 0 || !incx)
+        return rocblas_status_invalid_size;
+
+    // 3. invalid pointers
+    if (n && !x)
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
+}
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_lacgv_template(rocblas_handle handle, const rocblas_int n, U x, const rocblas_int shiftx,

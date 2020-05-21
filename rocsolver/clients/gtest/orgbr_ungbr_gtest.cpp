@@ -4,11 +4,6 @@
  * ************************************************************************ */
 
 #include "testing_orgbr_ungbr.hpp"
-#include "utility.h"
-#include <gtest/gtest.h>
-#include <math.h>
-#include <stdexcept>
-#include <vector>
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -19,23 +14,38 @@ using namespace std;
 
 typedef std::tuple<vector<int>, vector<int>> orgbr_tuple;
 
-// vector of vector, each vector is a {M or N, N or M, K};
-const vector<vector<int>> size_range = {
-    {-1,1,1}, {0,1,1}, {1,-1,1}, {1,0,1}, {1,1,-1}, {30,30,0}, {10,30,5}, {20,5,10}, {20,20,25}, {50,50,30}, {70,40,40}, {100,100,80}
-};
+// each size_range is a {M, N, K};
 
-// each is a {lda, st}
+// each store vector is a {lda, st}
 // if lda = -1, then lda < limit (invalid size)
 // if lda = 0, then lda = limit
 // if lda = 1, then lda > limit
 // if st = 0, then storev = 'C'
 // if st = 1, then storev = 'R'
+
+// case when m = 0, n = 0 and storev = 'C' will also execute the bad arguments test
+// (null handle, null pointers and invalid values)
+
 const vector<vector<int>> store = {
-    {-1, 0}, {-1, 1}, {0, 0}, {0, 1}, {1, 0}, {1, 1}
+    {-1, 0}, {-1, 1},   //always invalid
+    {0, 0}, {0, 1}, {1, 0}, {1, 1}
 };
 
+// for checkin_lapack tests 
+const vector<vector<int>> size_range = {
+    {0,0,0},                        //always quick return
+    {0,1,0},                        //quick return for storev = 'R' invalid for 'C'   
+    {1,0,0},                        //quick return for storev = 'C' invalid for 'R'
+    {-1,1,1}, {1,-1,1}, {1,1,-1},   //always invalid
+    {10,30,5},                      //invalid for storev = 'C'
+    {30,10,5},                      //invalid for storev = 'R'
+    {30,10,20}, {10,30,20},         //always invalid
+    {30,30,0}, {20,20,20}, {50,50,50}, {100,100,50}
+};
+
+// for daily_lapack tests
 const vector<vector<int>> large_size_range = {
-    {200,150,100}, {270,270,270}, {400,400,405}, {800,500,300}, {1500,1000,300}, {2024,2024,2030} 
+    {150,150,100}, {270,270,270}, {400,400,400}, {800,800,300}, {1000,1000,1000}, {1500,1500,800} 
 };
 
 
@@ -48,15 +58,9 @@ Arguments setup_arguments_orgbr(orgbr_tuple tup)
 
     arg.storev = store[1] == 1 ? 'R' : 'C';
     arg.K = size[2];
-    if (store[1]) {
-        arg.N = size[0];
-        arg.lda = max(size[1],size[2]);
-        arg.M = size[1];
-    } else {
-        arg.M = size[0];
-        arg.lda = size[0];
-        arg.N = size[1];
-    }
+    arg.M = size[0];
+    arg.lda = size[0];
+    arg.N = size[1];
 
     arg.lda += store[0]*10;
 
@@ -65,91 +69,71 @@ Arguments setup_arguments_orgbr(orgbr_tuple tup)
     return arg;
 }
 
-class OrthoGen : public ::TestWithParam<orgbr_tuple> {
+class ORGBR : public ::TestWithParam<orgbr_tuple> {
 protected:
-    OrthoGen() {}
-    virtual ~OrthoGen() {}
+    ORGBR() {}
+    virtual ~ORGBR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
-TEST_P(OrthoGen, orgbr_float) {
+class UNGBR : public ::TestWithParam<orgbr_tuple> {
+protected:
+    UNGBR() {}
+    virtual ~UNGBR() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+TEST_P(ORGBR, __float) {
     Arguments arg = setup_arguments_orgbr(GetParam());
+    
+    if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
+        testing_orgbr_ungbr_bad_arg<float>();
 
-    rocblas_status status = testing_orgbr_ungbr<float,float>(arg);
-
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'C' && (arg.N > arg.M || arg.N < min(arg.M,arg.K))) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'R' && (arg.M > arg.N || arg.M < min(arg.N,arg.K))) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    testing_orgbr_ungbr<float>(arg);
 }
 
-TEST_P(OrthoGen, orgbr_double) {
+TEST_P(ORGBR, __double) {
     Arguments arg = setup_arguments_orgbr(GetParam());
+    
+    if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
+        testing_orgbr_ungbr_bad_arg<double>();
 
-    rocblas_status status = testing_orgbr_ungbr<double,double>(arg);
-
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'C' && (arg.N > arg.M || arg.N < min(arg.M,arg.K))) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'R' && (arg.M > arg.N || arg.M < min(arg.N,arg.K))) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    testing_orgbr_ungbr<double>(arg);
 }
 
-TEST_P(OrthoGen, ungbr_float_complex) {
+TEST_P(UNGBR, __float_complex) {
     Arguments arg = setup_arguments_orgbr(GetParam());
+    
+    if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
+        testing_orgbr_ungbr_bad_arg<rocblas_float_complex>();
 
-    rocblas_status status = testing_orgbr_ungbr<rocblas_float_complex,float>(arg);
-
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'C' && (arg.N > arg.M || arg.N < min(arg.M,arg.K))) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'R' && (arg.M > arg.N || arg.M < min(arg.N,arg.K))) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    testing_orgbr_ungbr<rocblas_float_complex>(arg);
 }
 
-TEST_P(OrthoGen, ungbr_double_complex) {
+TEST_P(UNGBR, __double_complex) {
     Arguments arg = setup_arguments_orgbr(GetParam());
+    
+    if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
+        testing_orgbr_ungbr_bad_arg<rocblas_double_complex>();
 
-    rocblas_status status = testing_orgbr_ungbr<rocblas_double_complex,double>(arg);
-
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'C' && (arg.N > arg.M || arg.N < min(arg.M,arg.K))) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'R' && (arg.M > arg.N || arg.M < min(arg.N,arg.K))) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    testing_orgbr_ungbr<rocblas_double_complex>(arg);
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, OrthoGen,
+INSTANTIATE_TEST_CASE_P(daily_lapack, ORGBR,
                         Combine(ValuesIn(large_size_range),
                                 ValuesIn(store)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, OrthoGen,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, ORGBR,
+                        Combine(ValuesIn(size_range),
+                                ValuesIn(store)));
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, UNGBR,
+                        Combine(ValuesIn(large_size_range),
+                                ValuesIn(store)));
+
+INSTANTIATE_TEST_CASE_P(checkin_lapack, UNGBR,
                         Combine(ValuesIn(size_range),
                                 ValuesIn(store)));

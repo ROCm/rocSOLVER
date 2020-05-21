@@ -265,9 +265,9 @@ void testing_getrs(Arguments argus)
         device_batch_vector<T> dA(size_A,1,bc);
         device_batch_vector<T> dB(size_B,1,bc);
         device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,stP,bc);
-        CHECK_HIP_ERROR(dA.memcheck());
-        CHECK_HIP_ERROR(dB.memcheck());
-        CHECK_HIP_ERROR(dIpiv.memcheck());
+        if (size_A) CHECK_HIP_ERROR(dA.memcheck());
+        if (size_B) CHECK_HIP_ERROR(dB.memcheck());
+        if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
 
         // check quick return
         if (m == 0 || nrhs == 0 || bc == 0) {
@@ -299,9 +299,9 @@ void testing_getrs(Arguments argus)
         device_strided_batch_vector<T> dA(size_A,1,stA,bc);
         device_strided_batch_vector<T> dB(size_B,1,stB,bc);
         device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,stP,bc);
-        CHECK_HIP_ERROR(dA.memcheck());
-        CHECK_HIP_ERROR(dB.memcheck());
-        CHECK_HIP_ERROR(dIpiv.memcheck());
+        if (size_A) CHECK_HIP_ERROR(dA.memcheck());
+        if (size_B) CHECK_HIP_ERROR(dB.memcheck());
+        if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
 
         // check quick return
         if (m == 0 || nrhs == 0 || bc == 0) {
