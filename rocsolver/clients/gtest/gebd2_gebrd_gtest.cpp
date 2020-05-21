@@ -248,6 +248,46 @@ TEST_P(GEBD2, strided_batched__double_complex) {
     testing_gebd2_gebrd<false,true,0,rocblas_double_complex>(arg);
 }
 
+TEST_P(GEBRD, strided_batched__float) {
+    Arguments arg = setup_arguments_bd(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gebd2_gebrd_bad_arg<false,true,1,float>();
+
+    arg.batch_count = 3;
+    testing_gebd2_gebrd<false,true,1,float>(arg);
+}
+
+TEST_P(GEBRD, strided_batched__double) {
+    Arguments arg = setup_arguments_bd(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gebd2_gebrd_bad_arg<false,true,1,double>();
+
+    arg.batch_count = 3;
+    testing_gebd2_gebrd<false,true,1,double>(arg);
+}
+
+TEST_P(GEBRD, strided_batched__float_complex) {
+    Arguments arg = setup_arguments_bd(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gebd2_gebrd_bad_arg<false,true,1,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_gebd2_gebrd<false,true,1,rocblas_float_complex>(arg);
+}
+
+TEST_P(GEBRD, strided_batched__double_complex) {
+    Arguments arg = setup_arguments_bd(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gebd2_gebrd_bad_arg<false,true,1,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_gebd2_gebrd<false,true,1,rocblas_double_complex>(arg);
+}
+
 
 INSTANTIATE_TEST_CASE_P(daily_lapack, GEBD2,
                         Combine(ValuesIn(large_matrix_size_range),
