@@ -442,6 +442,13 @@ rocsolver_<type>gebd2_strided_batched()
 .. doxygenfunction:: rocsolver_dgebd2_strided_batched
 .. doxygenfunction:: rocsolver_sgebd2_strided_batched
 
+rocsolver_<type>gebrd()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgebrd
+.. doxygenfunction:: rocsolver_cgebrd
+.. doxygenfunction:: rocsolver_dgebrd
+.. doxygenfunction:: rocsolver_sgebrd
+
 General Systems Solvers
 --------------------------
 

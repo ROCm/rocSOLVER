@@ -886,8 +886,7 @@ inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_ha
                 rocsolver_sgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
     else
         return GEBRD ?
-                //rocsolver_sgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
-                rocblas_status_not_implemented :
+                rocsolver_sgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
                 rocsolver_sgebd2(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
@@ -903,8 +902,7 @@ inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_ha
                 rocsolver_dgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
     else
         return GEBRD ?
-                //rocsolver_dgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
-                rocblas_status_not_implemented :
+                rocsolver_dgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
                 rocsolver_dgebd2(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
@@ -920,8 +918,7 @@ inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_ha
                 rocsolver_cgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
     else
         return GEBRD ?
-                //rocsolver_cgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
-                rocblas_status_not_implemented :
+                rocsolver_cgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
                 rocsolver_cgebd2(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
@@ -937,8 +934,7 @@ inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED, bool GEBRD, rocblas_ha
                 rocsolver_zgebd2_strided_batched(handle, m, n, A, lda, stA, D, stD, E, stE, tauq, stQ, taup, stP, bc);
     else
         return GEBRD ?
-                //rocsolver_zgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
-                rocblas_status_not_implemented :
+                rocsolver_zgebrd(handle, m, n, A, lda, D, E, tauq, taup) :
                 rocsolver_zgebd2(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
