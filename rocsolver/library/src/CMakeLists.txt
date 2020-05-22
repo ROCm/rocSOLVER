@@ -79,6 +79,7 @@ set( rocsolver_lapack_source
   lapack/roclapack_gebd2_batched.cpp
   lapack/roclapack_gebd2_strided_batched.cpp
   lapack/roclapack_gebrd.cpp
+  lapack/roclapack_gebrd_batched.cpp
   lapack/roclapack_gebrd_strided_batched.cpp
 )
 

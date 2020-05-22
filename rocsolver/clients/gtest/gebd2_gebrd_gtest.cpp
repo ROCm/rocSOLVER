@@ -205,6 +205,46 @@ TEST_P(GEBD2, batched__double_complex) {
     testing_gebd2_gebrd<true,true,0,rocblas_double_complex>(arg);
 }
 
+TEST_P(GEBRD, batched__float) {
+    Arguments arg = setup_arguments_bd(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gebd2_gebrd_bad_arg<true,true,1,float>();
+
+    arg.batch_count = 3;
+    testing_gebd2_gebrd<true,true,1,float>(arg);
+}
+
+TEST_P(GEBRD, batched__double) {
+    Arguments arg = setup_arguments_bd(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gebd2_gebrd_bad_arg<true,true,1,double>();
+
+    arg.batch_count = 3;
+    testing_gebd2_gebrd<true,true,1,double>(arg);
+}
+
+TEST_P(GEBRD, batched__float_complex) {
+    Arguments arg = setup_arguments_bd(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gebd2_gebrd_bad_arg<true,true,1,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_gebd2_gebrd<true,true,1,rocblas_float_complex>(arg);
+}
+
+TEST_P(GEBRD, batched__double_complex) {
+    Arguments arg = setup_arguments_bd(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gebd2_gebrd_bad_arg<true,true,1,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_gebd2_gebrd<true,true,1,rocblas_double_complex>(arg);
+}
+
 
 // strided_batched cases
 

@@ -449,6 +449,13 @@ rocsolver_<type>gebrd()
 .. doxygenfunction:: rocsolver_dgebrd
 .. doxygenfunction:: rocsolver_sgebrd
 
+rocsolver_<type>gebrd_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgebrd_batched
+.. doxygenfunction:: rocsolver_cgebrd_batched
+.. doxygenfunction:: rocsolver_dgebrd_batched
+.. doxygenfunction:: rocsolver_sgebrd_batched
+
 rocsolver_<type>gebrd_strided_batched()
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_zgebrd_strided_batched
