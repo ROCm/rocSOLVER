@@ -1,169 +1,219 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include <cmath> // std::abs
-#include <fstream>
-#include <iostream>
-#include <limits> // std::numeric_limits<T>::epsilon();
-#include <stdlib.h>
-#include <string>
-#include <vector>
-
-#include "arg_check.h"
-#include "cblas_interface.h"
-#include "norm.h"
-#include "rocblas_test_unique_ptr.hpp"
+#include "norm.hpp"
+#include "rocsolver_test.hpp"
+#include "rocsolver_arguments.hpp"
 #include "rocsolver.hpp"
-#include "unit.h"
-#include "utility.h"
-#ifdef GOOGLE_TEST
-#include <gtest/gtest.h>
-#endif
+#include "cblas_interface.h"
+#include "clientcommon.hpp"
 
-// this is max error PER element 
-#define ERROR_EPS_MULTIPLIER 3000
-// AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
-// AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
-// A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
+template <typename T>
+void larfg_checkBadArgs(const rocblas_handle handle, 
+                         const rocblas_int n, 
+                         T da,
+                         T dx, 
+                         const rocblas_int inc,
+                         T dt)
+{
+    // handle
+    EXPECT_ROCBLAS_STATUS(rocsolver_larfg(nullptr,n,da,dx,inc,dt),
+                          rocblas_status_invalid_handle); 
 
-using namespace std;
+    // values
+    // N/A
+    
+    // pointers
+    EXPECT_ROCBLAS_STATUS(rocsolver_larfg(handle,n,(T)nullptr,dx,inc,dt),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_larfg(handle,n,da,(T)nullptr,inc,dt),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_larfg(handle,n,da,dx,inc,(T)nullptr),
+                          rocblas_status_invalid_pointer);
 
-template <typename T, typename U> 
-rocblas_status testing_larfg(Arguments argus) {
-    rocblas_int N = argus.N;
-    rocblas_int incx = argus.incx;
-    int hot_calls = argus.iters;
-    rocblas_int safe_size = 100; // arbitrarily set to 100
-    rocblas_status status;
+    // quick return with invalid pointers
+    EXPECT_ROCBLAS_STATUS(rocsolver_larfg(handle,0,(T)nullptr,(T)nullptr,inc,(T)nullptr),
+                          rocblas_status_success);
+}
 
-    std::unique_ptr<rocblas_test::handle_struct> unique_ptr_handle(new rocblas_test::handle_struct);
-    rocblas_handle handle = unique_ptr_handle->handle;
+template <typename T>
+void testing_larfg_bad_arg()
+{
+    // safe arguments
+    rocblas_local_handle handle;  
+    rocblas_int n = 2;
+    rocblas_int inc = 1;
 
-    // check invalid size and quick return
-    if (N < 1 || incx < 1) {
-        auto dx_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * safe_size), rocblas_test::device_free};
-        T *dx = (T *)dx_managed.get();
+    // memory allocation
+    device_strided_batch_vector<T> da(1,1,1,1);
+    device_strided_batch_vector<T> dx(1,1,1,1);
+    device_strided_batch_vector<T> dt(1,1,1,1);
+    CHECK_HIP_ERROR(da.memcheck());
+    CHECK_HIP_ERROR(dx.memcheck());
+    CHECK_HIP_ERROR(dt.memcheck());
 
-        auto dalpha_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
-        T *dalpha = (T *)dalpha_managed.get();
+    // check bad arguments
+    larfg_checkBadArgs(handle,n,da.data(),dx.data(),inc,dt.data());
+}   
 
-        auto dtau_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
-        T *dtau = (T *)dtau_managed.get();
-        
-        if (!dx || !dalpha || !dtau) {
-            PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
-            return rocblas_status_memory_error;
-        }
-        
-        return rocsolver_larfg<T>(handle, N, dalpha, dx, incx, dtau);
-    }
 
-    rocblas_int sizex = 1;
-    if (N > 1)    
-        sizex += (N - 2) * incx;    
-
-    // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory
-    vector<T> hx(sizex);
-    vector<T> hx_r(sizex);
-    T htau, htau_r;
-    T halpha, halpha_r;
-
-    auto dx_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * sizex), rocblas_test::device_free};
-    T *dx = (T *)dx_managed.get();
-    auto dalpha_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
-    T *dalpha = (T *)dalpha_managed.get();
-    auto dtau_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
-    T *dtau = (T *)dtau_managed.get();
-  
-    if ((sizex > 0 && !dx) || !dalpha || !dtau) {
-        PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
-        return rocblas_status_memory_error;
-    }
-
-    //initialize full random inputs, all entries in [1, 10]
-    rocblas_init<T>(hx.data(), 1, N-1, incx);
-    rocblas_init<T>(&halpha, 1, 1, 1);
+template <typename T, typename Td, typename Th> 
+void larfg_getError(const rocblas_handle handle,
+                         const rocblas_int n,
+                         Td &da,
+                         Td &dx,
+                         const rocblas_int inc,
+                         Td &dt,
+                         Th &ha,
+                         Th &hx,
+                         Th &hxr,
+                         Th &ht,
+                         double *max_err)
+{
+    //initialize data 
+    rocblas_init<T>(ha, true);
+    rocblas_init<T>(hx, true);
 
     // copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(dx, hx.data(), sizeof(T) * sizex, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dalpha, &halpha, sizeof(T), hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(da.transfer_from(ha));
+    CHECK_HIP_ERROR(dx.transfer_from(hx));
 
-    double gpu_time_used, cpu_time_used;
-    double error_eps_multiplier = ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<U>::epsilon();
-    double max_err_1 = 0.0, max_val = 0.0;
-    double diff;
-    int piverr = 0;
+    // execute computations
+    //GPU lapack
+    CHECK_ROCBLAS_ERROR(rocsolver_larfg(handle,n,da.data(),dx.data(),inc,dt.data()));
+    CHECK_HIP_ERROR(hxr.transfer_from(dx));
 
-/* =====================================================================
-           ROCSOLVER
-    =================================================================== */  
-    if (argus.unit_check || argus.norm_check) {
-        //GPU lapack
-        CHECK_ROCBLAS_ERROR(rocsolver_larfg<T>(handle, N, dalpha, dx, incx, dtau));
+    //CPU lapack
+    cblas_larfg<T>(n,ha[0],hx[0],inc,ht[0]);
+
+    // error is ||hx - hxr|| (not necessary to check tau, for now)
+    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
+    // IT MIGHT BE REVISITED IN THE FUTURE)
+    // using norm-1 which is infinity norm for this data setup 
+    *max_err = norm_error('O',1,n-1,inc,hx[0],hxr[0]);
+}
+
+
+template <typename T, typename Td, typename Th> 
+void larfg_getPerfData(const rocblas_handle handle,
+                         const rocblas_int n,
+                         Td &da,
+                         Td &dx,
+                         const rocblas_int inc,
+                         Td &dt,
+                         Th &ha,
+                         Th &hx,
+                         Th &ht,
+                         double *gpu_time_used,
+                         double *cpu_time_used,
+                         const rocblas_int hot_calls)
+{
+    // cpu-lapack performance
+    *cpu_time_used = get_time_us();
+    cblas_larfg<T>(n,ha[0],hx[0],inc,ht[0]);
+    *cpu_time_used = get_time_us() - *cpu_time_used;
         
-        //copy output from device to cpu
-        CHECK_HIP_ERROR(hipMemcpy(hx_r.data(), dx, sizeof(T) * sizex, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(&halpha_r, dalpha, sizeof(T), hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(&htau_r, dtau, sizeof(T), hipMemcpyDeviceToHost));
+    // cold calls    
+    for(int iter = 0; iter < 2; iter++)
+        CHECK_ROCBLAS_ERROR(rocsolver_larfg(handle,n,da.data(),dx.data(),inc,dt.data()));
 
-        //CPU lapack
-        cpu_time_used = get_time_us();
-        cblas_larfg<T>(N, &halpha, hx.data(), incx, &htau);
-        cpu_time_used = get_time_us() - cpu_time_used;
+    // gpu-lapack performance
+    *gpu_time_used = get_time_us();
+    for(int iter = 0; iter < hot_calls; iter++)
+        rocsolver_larfg(handle,n,da.data(),dx.data(),inc,dt.data());
+    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;       
+}
 
-        // +++++++++ Error Check +++++++++++++
-        //check v
-        for (int i = 0; i < N-1; i++) {
-            diff = abs(hx[i * incx]);
-            max_val = max_val > diff ? max_val : diff;
-            diff = abs(hx_r[i * incx] - hx[i * incx]);
-            max_err_1 = max_err_1 > diff ? max_err_1 : diff;
-        }
-        //check beta
-        max_val = max_val > abs(halpha) ? max_val : abs(halpha);
-        diff = abs(halpha_r - halpha);
-        max_err_1 = max_err_1 > diff ? max_err_1 : diff;
-        //check tau
-        max_val = max_val > abs(htau) ? max_val : abs(htau);
-        diff = abs(htau_r - htau);
-        max_err_1 = max_err_1 > diff ? max_err_1 : diff;
 
-        max_err_1 = max_err_1 / max_val;
-        
-        if(argus.unit_check)
-            getf2_err_res_check<U>(max_err_1, 1, N, error_eps_multiplier, eps);
-    }
- 
-
-    if (argus.timing) {
-        // GPU rocBLAS
-        int cold_calls = 2;
-
-        for(int iter = 0; iter < cold_calls; iter++)
-            rocsolver_larfg<T>(handle, N, dalpha, dx, incx, dtau);
-        gpu_time_used = get_time_us();
-        for(int iter = 0; iter < hot_calls; iter++)
-            rocsolver_larfg<T>(handle, N, dalpha, dx, incx, dtau);
-        gpu_time_used = (get_time_us() - gpu_time_used) / hot_calls;       
-
-        // only norm_check return an norm error, unit check won't return anything
-        cout << "N,incx,gpu_time(us),cpu_time(us)";
-
-        if (argus.norm_check)
-            cout << ",norm_error_host_ptr";
-
-        cout << endl;
-        cout << N << "," << incx << "," << gpu_time_used << ","<< cpu_time_used;
-
-        if (argus.norm_check)
-            cout << "," << max_err_1;
-
-        cout << endl;
-    }
+template <typename T> 
+void testing_larfg(Arguments argus) 
+{
+    // get arguments 
+    rocblas_local_handle handle;  
+    rocblas_int n = argus.N;
+    rocblas_int inc = argus.incx;
+    rocblas_int hot_calls = argus.iters;
     
-    return rocblas_status_success;
+    // check non-supported values 
+    // N/A
+
+    // determine sizes
+    size_t size_x = size_t(n-1);
+    size_t stx = size_x * inc;
+    double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
+
+    // check invalid sizes
+    bool invalid_size = (n < 0 || inc < 1);
+    if (invalid_size) {
+        EXPECT_ROCBLAS_STATUS(rocsolver_larfg(handle,n,(T*)nullptr,(T*)nullptr,inc,(T*)nullptr),
+                              rocblas_status_invalid_size);
+
+        if (argus.timing)  
+            ROCSOLVER_BENCH_INFORM(1);
+
+        return;
+    }             
+
+    // memory allocations
+    host_strided_batch_vector<T> hx(size_x,inc,stx,1);
+    host_strided_batch_vector<T> hxr(size_x,inc,stx,1);
+    host_strided_batch_vector<T> ha(1,1,1,1);
+    host_strided_batch_vector<T> ht(1,1,1,1);
+    device_strided_batch_vector<T> dx(size_x,inc,stx,1);
+    device_strided_batch_vector<T> da(1,1,1,1);
+    device_strided_batch_vector<T> dt(1,1,1,1);
+    CHECK_HIP_ERROR(da.memcheck());
+    if (size_x) CHECK_HIP_ERROR(dx.memcheck());
+    CHECK_HIP_ERROR(dt.memcheck());
+    
+    // check quick return
+    if (n == 0) {
+        EXPECT_ROCBLAS_STATUS(rocsolver_larfg(handle,n,da.data(),dx.data(),inc,dt.data()),
+                              rocblas_status_success);
+
+        if (argus.timing)  
+            ROCSOLVER_BENCH_INFORM(0);
+        
+        return;
+    }
+
+    // check computations
+    if (argus.unit_check || argus.norm_check)
+        larfg_getError<T>(handle, n, da, dx, inc, dt, 
+                          ha, hx, hxr, ht, &max_error); 
+
+    // collect performance data 
+    if (argus.timing) 
+        larfg_getPerfData<T>(handle, n, da, dx, inc, dt,
+                          ha, hx, ht, &gpu_time_used, &cpu_time_used, hot_calls); 
+        
+    // validate results for rocsolver-test
+    // using n * machine_precision as tolerance
+    if (argus.unit_check) 
+        rocsolver_test_check<T>(max_error,n);     
+
+    // output results for rocsolver-bench
+    if (argus.timing) {
+        rocblas_cout << "\n============================================\n";
+        rocblas_cout << "Arguments:\n";
+        rocblas_cout << "============================================\n";
+        rocsolver_bench_output("n", "inc");
+        rocsolver_bench_output(n, inc);
+
+        rocblas_cout << "\n============================================\n";
+        rocblas_cout << "Results:\n";
+        rocblas_cout << "============================================\n";
+        if (argus.norm_check) {
+            rocsolver_bench_output("cpu_time", "gpu_time", "error");
+            rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+        }
+        else {
+            rocsolver_bench_output("cpu_time", "gpu_time");
+            rocsolver_bench_output(cpu_time_used, gpu_time_used);
+        }
+        rocblas_cout << std::endl;
+    }
 }
 
 #undef ERROR_EPS_MULTIPLIER

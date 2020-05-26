@@ -12,11 +12,9 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "common_device.hpp"
-#include "ideal_sizes.hpp"
-#include "../auxiliary/rocauxiliary_orgl2_ungl2.hpp"
-#include "../auxiliary/rocauxiliary_larfb.hpp"
-#include "../auxiliary/rocauxiliary_larft.hpp"
+#include "rocauxiliary_orgl2_ungl2.hpp"
+#include "rocauxiliary_larfb.hpp"
+#include "rocauxiliary_larft.hpp"
 
 template <typename T, typename U>
 __global__ void set_zero_row(const rocblas_int m, const rocblas_int kk, U A,

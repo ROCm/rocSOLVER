@@ -1,14 +1,9 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
 #include "testing_larfg.hpp"
-#include "utility.h"
-#include <gtest/gtest.h>
-#include <math.h>
-#include <stdexcept>
-#include <vector>
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -19,115 +14,91 @@ using namespace std;
 
 typedef std::tuple<int, int> mtuple;
 
-const vector<int> n_size_range = {
-    -1, 0, 1, 12, 20, 35,  
-};
+// case when n = 0 and incx = 0 also execute the bad arguments test
+// (null handle, null pointers and invalid values)
 
 const vector<int> incx_range = {
-    -1, 0, 1, 5, 8, 10,
+    -1, 0,          //invalid
+     1, 5, 8, 10,
 };
 
+// for checkin_lapack tests
+const vector<int> n_size_range = {
+    0,  //quick return
+    -1, //invalid
+    1, 12, 20, 35,  
+};
+
+// for daily_lapack tests
 const vector<int> large_n_size_range = {
     192, 640, 1024, 2547,
 };
 
 
-
 Arguments setup_arguments(mtuple tup) {
+    int n_size = std::get<0>(tup);
+    int inc = std::get<1>(tup);
 
-  int n_size = std::get<0>(tup);
-  int inc = std::get<1>(tup);
+    Arguments arg;
 
-  Arguments arg;
+    arg.N = n_size;
+    arg.incx = inc;
 
-  arg.N = n_size;
-  arg.incx = inc;
+    arg.timing = 0;
 
-  arg.timing = 0;
-
-  return arg;
+    return arg;
 }
 
-class HHreflec : public ::TestWithParam<mtuple> {
+class LARFG : public ::TestWithParam<mtuple> {
 protected:
-  HHreflec() {}
-  virtual ~HHreflec() {}
+  LARFG() {}
+  virtual ~LARFG() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
 
-TEST_P(HHreflec, larfg_float) {
-  Arguments arg = setup_arguments(GetParam());
+TEST_P(LARFG, __float) {
+    Arguments arg = setup_arguments(GetParam());
+    
+    if (arg.N == 0 && arg.incx == 0)
+        testing_larfg_bad_arg<float>();
 
-  rocblas_status status = testing_larfg<float,float>(arg);
-
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.incx < 1) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    testing_larfg<float>(arg);
 }
 
-TEST_P(HHreflec, larfg_double) {
+TEST_P(LARFG, __double) {
   Arguments arg = setup_arguments(GetParam());
+    
+    if (arg.N == 0 && arg.incx == 0)
+        testing_larfg_bad_arg<double>();
 
-  rocblas_status status = testing_larfg<double,double>(arg);
-
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.incx < 1) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    testing_larfg<double>(arg);
 }
 
-TEST_P(HHreflec, larfg_float_complex) {
+TEST_P(LARFG, __float_complex) {
   Arguments arg = setup_arguments(GetParam());
+    
+    if (arg.N == 0 && arg.incx == 0)
+        testing_larfg_bad_arg<rocblas_float_complex>();
 
-  rocblas_status status = testing_larfg<rocblas_float_complex,float>(arg);
-
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.incx < 1) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    testing_larfg<rocblas_float_complex>(arg);
 }
 
-TEST_P(HHreflec, larfg_double_complex) {
+TEST_P(LARFG, __double_complex) {
   Arguments arg = setup_arguments(GetParam());
+    
+    if (arg.N == 0 && arg.incx == 0)
+        testing_larfg_bad_arg<rocblas_double_complex>();
 
-  rocblas_status status = testing_larfg<rocblas_double_complex,double>(arg);
-
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.incx < 1) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    testing_larfg<rocblas_double_complex>(arg);
 }
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, HHreflec,
+
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, LARFG,
                         Combine(ValuesIn(large_n_size_range),
                                 ValuesIn(incx_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, HHreflec,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, LARFG,
                         Combine(ValuesIn(n_size_range),
                                 ValuesIn(incx_range)));

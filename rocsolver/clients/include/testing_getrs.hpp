@@ -1,189 +1,365 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include <cmath> // std::abs
-#include <fstream>
-#include <iostream>
-#include <limits> // std::numeric_limits<T>::epsilon();
-#include <stdlib.h>
-#include <string>
-#include <vector>
-
-#include "arg_check.h"
-#include "cblas_interface.h"
-#include "norm.h"
-#include "rocblas_test_unique_ptr.hpp"
+#include "norm.hpp"
+#include "rocsolver_test.hpp"
+#include "rocsolver_arguments.hpp"
 #include "rocsolver.hpp"
-#include "unit.h"
-#include "utility.h"
-#ifdef GOOGLE_TEST
-#include <gtest/gtest.h>
-#endif
+#include "cblas_interface.h"
+#include "clientcommon.hpp"
 
-// this is max error PER element after the solution
-#define GETRF_ERROR_EPS_MULTIPLIER 3000
-// AS IN THE ORIGINAL ROCSOLVER TEST UNITS, WE CURRENTLY USE A HIGH TOLERANCE 
-// AND THE MAX NORM TO EVALUATE THE ERROR. THIS IS NOT "NUMERICALLY SOUND"; 
-// A MAJOR REFACTORING OF ALL UNIT TESTS WILL BE REQUIRED.  
 
-using namespace std;
+template <bool STRIDED, typename T, typename U>
+void getrs_checkBadArgs(const rocblas_handle handle, 
+                         const rocblas_operation trans, 
+                         const rocblas_int m, 
+                         const rocblas_int nrhs, 
+                         T dA, 
+                         const rocblas_int lda, 
+                         const rocblas_stride stA,
+                         U dIpiv, 
+                         const rocblas_stride stP,
+                         T dB, 
+                         const rocblas_int ldb,
+                         const rocblas_stride stB,
+                         const rocblas_int bc)
+{
+    // handle
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED,nullptr,trans,m,nrhs,dA,lda,stA,dIpiv,stP,dB,ldb,stB,bc), 
+                          rocblas_status_invalid_handle);
+    
+    // values
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED,handle,rocblas_operation(-1),m,nrhs,dA,lda,stA,dIpiv,stP,dB,ldb,stB,bc), 
+                          rocblas_status_invalid_value);
 
-template <typename T, typename U> rocblas_status testing_getrs(Arguments argus) {
+    // sizes (only check batch_count if applicable)
+    if (STRIDED)
+        EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED,handle,trans,m,nrhs,dA,lda,stA,dIpiv,stP,dB,ldb,stB,-1), 
+                              rocblas_status_invalid_size);
+        
+    // pointers
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED,handle,trans,m,nrhs,(T)nullptr,lda,stA,dIpiv,stP,dB,ldb,stB,bc),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED,handle,trans,m,nrhs,dA,lda,stA,(U)nullptr,stP,dB,ldb,stB,bc), 
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED,handle,trans,m,nrhs,dA,lda,stA,dIpiv,stP,(T)nullptr,ldb,stB,bc),
+                          rocblas_status_invalid_pointer);
 
-    rocblas_int M = argus.M;
-    rocblas_int nhrs = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_int ldb = argus.ldb;
-    char trans = argus.transA_option;
-    int hot_calls = argus.iters;
+    // quick return with invalid pointers
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED,handle,trans,0,nrhs,(T)nullptr,lda,stA,(U)nullptr,stP,(T)nullptr,ldb,stB,bc), 
+                          rocblas_status_success);
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED,handle,trans,m,0,dA,lda,stA,dIpiv,stP,(T)nullptr,ldb,stB,bc),
+                          rocblas_status_success);
+    
+    // quick return with zero batch_count if applicable
+    if (STRIDED)
+        EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED,handle,trans,m,nrhs,dA,lda,stA,dIpiv,stP,dB,ldb,stB,0),
+                              rocblas_status_success);
+}
 
-    rocblas_operation transRoc;
-    if (trans == 'N') {
-        transRoc = rocblas_operation_none;
-    } else if (trans == 'T') {
-        transRoc = rocblas_operation_transpose;
-    } else if (trans == 'C') {
-        transRoc = rocblas_operation_conjugate_transpose;
+
+template <bool BATCHED, bool STRIDED, typename T>
+void testing_getrs_bad_arg()
+{
+    // safe arguments
+    rocblas_local_handle handle;
+    rocblas_int m = 1;
+    rocblas_int nrhs = 1;
+    rocblas_int lda = 1;
+    rocblas_int ldb = 1;
+    rocblas_stride stA = 1;
+    rocblas_stride stP = 1;
+    rocblas_stride stB = 1;
+    rocblas_int bc = 1;
+    rocblas_operation trans = rocblas_operation_none;
+
+    if (BATCHED) {
+        // memory allocations
+        device_batch_vector<T> dA(1,1,1);
+        device_batch_vector<T> dB(1,1,1);
+        device_strided_batch_vector<rocblas_int> dIpiv(1,1,1,1);
+        CHECK_HIP_ERROR(dA.memcheck());
+        CHECK_HIP_ERROR(dB.memcheck());
+        CHECK_HIP_ERROR(dIpiv.memcheck());
+        
+        // check bad arguments
+        getrs_checkBadArgs<STRIDED>(handle,trans,m,nrhs,dA.data(),lda,stA,dIpiv.data(),stP,dB.data(),ldb,stB,bc);
+
     } else {
-        throw runtime_error("Unsupported transpose operation.");
+        // memory allocations
+        device_strided_batch_vector<T> dA(1,1,1,1);
+        device_strided_batch_vector<T> dB(1,1,1,1);
+        device_strided_batch_vector<rocblas_int> dIpiv(1,1,1,1);
+        CHECK_HIP_ERROR(dA.memcheck());
+        CHECK_HIP_ERROR(dB.memcheck());
+        CHECK_HIP_ERROR(dIpiv.memcheck());
+
+        // check bad arguments
+        getrs_checkBadArgs<STRIDED>(handle,trans,m,nrhs,dA.data(),lda,stA,dIpiv.data(),stP,dB.data(),ldb,stB,bc);
     }
+}
 
-    rocblas_int size_A = lda * M;
-    rocblas_int size_B = ldb * nhrs;
 
-    std::unique_ptr<rocblas_test::handle_struct> unique_ptr_handle(new rocblas_test::handle_struct);
-    rocblas_handle handle = unique_ptr_handle->handle;
+template <bool STRIDED, typename T, typename Td, typename Ud, typename Th, typename Uh>
+void getrs_getError(const rocblas_handle handle, 
+                        const rocblas_operation trans, 
+                        const rocblas_int m, 
+                        const rocblas_int nrhs, 
+                        Td &dA, 
+                        const rocblas_int lda, 
+                        const rocblas_stride stA, 
+                        Ud &dIpiv, 
+                        const rocblas_stride stP, 
+                        Td &dB, 
+                        const rocblas_int ldb, 
+                        const rocblas_stride stB, 
+                        const rocblas_int bc,
+                        Th &hA, 
+                        Uh &hIpiv, 
+                        Th &hB, 
+                        Th &hBRes, 
+                        double *max_err)
+{
+    // input data initialization 
+    rocblas_init<T>(hA, true);
+    rocblas_init<T>(hB, true);
 
-    // check here to prevent undefined memory allocation error
-    if (M < 1 || nhrs < 1 || lda < M || ldb < M) {
-        auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
-        T *dA = (T *)dA_managed.get();
-
-        auto dB_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T)), rocblas_test::device_free};
-        T *dB = (T *)dB_managed.get();
-
-        auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(int)), rocblas_test::device_free};
-        rocblas_int *dIpiv = (rocblas_int *)dIpiv_managed.get();
-
-        if (!dA || !dIpiv || !dB) {
-            PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
-            return rocblas_status_memory_error;
-        }
-
-        return rocsolver_getrs<T>(handle, transRoc, M, nhrs, dA, lda, dIpiv, dB, ldb);
-    }
-
-    // Naming: dK is in GPU (device) memory. hK is in CPU (host) memory
-    vector<T> hA(size_A);
-    vector<T> hB(size_B);
-    vector<int> hIpiv(M);
-    vector<T> hBRes(size_B);
-
-    double gpu_time_used, cpu_time_used;
-    double error_eps_multiplier = GETRF_ERROR_EPS_MULTIPLIER;
-    double eps = std::numeric_limits<U>::epsilon();
-
-    // allocate memory on device
-    auto dA_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * size_A), rocblas_test::device_free};
-    T *dA = (T *)dA_managed.get();
-
-    auto dB_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(T) * size_B), rocblas_test::device_free};
-    T *dB = (T *)dB_managed.get();
-
-    auto dIpiv_managed = rocblas_unique_ptr{rocblas_test::device_malloc(sizeof(int) * M), rocblas_test::device_free};
-    rocblas_int *dIpiv = (rocblas_int *)dIpiv_managed.get();
-  
-    if (!dA || !dIpiv || !dB) {
-        PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
-        return rocblas_status_memory_error;
-    }
-
-    //  initialize full random matrix h and hB 
-    rocblas_init<T>(hA.data(), M, M, lda);
-    rocblas_init<T>(hB.data(), M, nhrs, ldb);
-
-    // put it into [0, 1]
-    for (int i = 0; i < M; i++) {
-        for (int j = 0; j < M; j++) {
-            if (i == j)
-                hA[i+j*lda] += 400;
-            else    
-                hA[i + j * lda] -= 4;
+    // scale A to avoid singularities 
+    for (rocblas_int b = 0; b < bc; ++b) {
+        for (rocblas_int i = 0; i < m; i++) {
+            for (rocblas_int j = 0; j < m; j++) {
+                if (i == j)
+                    hA[b][i + j * lda] += 400;
+                else    
+                    hA[b][i + j * lda] -= 4;
+            }
         }
     }
 
     // do the LU decomposition of matrix A w/ the reference LAPACK routine
     int retCBLAS;
-    cblas_getrf<T>(M, M, hA.data(), lda, hIpiv.data(), &retCBLAS);
-    if (retCBLAS != 0) {
-        // error encountered - unlucky pick of random numbers? no use to continue
-        return rocblas_status_success;
+    for (rocblas_int b = 0; b < bc; ++b) {
+        retCBLAS = 0;
+        cblas_getrf<T>(m, m, hA[b], lda, hIpiv[b], &retCBLAS);
+        if (retCBLAS != 0) 
+            return; // error encountered - unlucky pick of random numbers? no use to continue
     }
 
     // now copy pivoting indices and matrices to the GPU
-    CHECK_HIP_ERROR(hipMemcpy(dA, hA.data(), sizeof(T) * size_A, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dB, hB.data(), sizeof(T) * size_B, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dIpiv, hIpiv.data(), sizeof(int) * M, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(dA.transfer_from(hA));
+    CHECK_HIP_ERROR(dB.transfer_from(hB));
+    CHECK_HIP_ERROR(dIpiv.transfer_from(hIpiv));
 
-    double max_err_1 = 0.0, max_val = 0.0, diff;
+    // execute computations
+    // GPU lapack
+    CHECK_ROCBLAS_ERROR(rocsolver_getrs(STRIDED,handle, trans, m, nrhs, dA.data(), lda, stA, dIpiv.data(), stP, dB.data(), ldb, stB, bc));
+    CHECK_HIP_ERROR(hBRes.transfer_from(dB));
 
-/* =====================================================================
-           ROCSOLVER
-    =================================================================== */
-    if (argus.unit_check || argus.norm_check) {
-        //GPU lapack
-        CHECK_ROCBLAS_ERROR(rocsolver_getrs<T>(handle, transRoc, M, nhrs, dA, lda, dIpiv, dB, ldb));
-        CHECK_HIP_ERROR(hipMemcpy(hBRes.data(), dB, sizeof(T) * size_B, hipMemcpyDeviceToHost));
-
-        //CPU lapack
-        cpu_time_used = get_time_us();
-        cblas_getrs<T>(trans, M, nhrs, hA.data(), lda, hIpiv.data(), hB.data(), ldb);
-        cpu_time_used = get_time_us() - cpu_time_used;
-
-
-        // Error Check
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < nhrs; j++) {
-                diff = abs(hB[i + j * ldb]);
-                max_val = max_val > diff ? max_val : diff;
-                diff = abs(hBRes[i + j * ldb] - hB[i + j * ldb]);
-                max_err_1 = max_err_1 > diff ? max_err_1 : diff;
-            }
-        }
-        max_err_1 = max_err_1 / max_val;
-
-        getrs_err_res_check<U>(max_err_1, M, nhrs, error_eps_multiplier, eps);
+    // CPU lapack
+    for (rocblas_int b = 0; b < bc; ++b) {
+        cblas_getrs<T>(trans, m, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
     }
-
-    if (argus.timing) {
-        // GPU rocBLAS
-        int cold_calls = 2;
-
-        for(int iter = 0; iter < cold_calls; iter++)
-            rocsolver_getrs<T>(handle, transRoc, M, nhrs, dA, lda, dIpiv, dB, ldb);
-        gpu_time_used = get_time_us(); // in microseconds
-        for(int iter = 0; iter < hot_calls; iter++)
-            rocsolver_getrs<T>(handle, transRoc, M, nhrs, dA, lda, dIpiv, dB, ldb);
-        gpu_time_used = get_time_us() - gpu_time_used;
-
-        // only norm_check return an norm error, unit check won't return anything
-        cout << "trans , M , nhrs , lda , ldb , us [gpu] , us [cpu]";
-
-        if (argus.norm_check)
-            cout << ", norm_error_host_ptr";
-
-        cout << endl;
-
-        cout << trans << " , " << M << " , " << nhrs << " , " << lda << " , " << ldb << " , " << gpu_time_used << " , " << cpu_time_used;
-
-        if (argus.norm_check)
-            cout << " , " << max_err_1;
-
-        cout << endl;
+   
+    // error is ||hB - hBRes|| / ||hB|| 
+    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
+    // IT MIGHT BE REVISITED IN THE FUTURE)
+    // using vector-induced infinity norm
+    double err;
+    *max_err = 0;
+    for (rocblas_int b = 0; b < bc; ++b) {
+        err = norm_error('I',m,nrhs,ldb,hB[b],hBRes[b]);
+        *max_err = err > *max_err ? err : *max_err;
     }
-    
-    return rocblas_status_success;
 }
+
+
+template <bool STRIDED, typename T, typename Td, typename Ud, typename Th, typename Uh>
+void getrs_getPerfData(const rocblas_handle handle, 
+                            const rocblas_operation trans, 
+                            const rocblas_int m, 
+                            const rocblas_int nrhs, 
+                            Td &dA, 
+                            const rocblas_int lda, 
+                            const rocblas_stride stA, 
+                            Ud &dIpiv, 
+                            const rocblas_stride stP, 
+                            Td &dB, 
+                            const rocblas_int ldb, 
+                            const rocblas_stride stB, 
+                            const rocblas_int bc,
+                            Th &hA, 
+                            Uh &hIpiv, 
+                            Th &hB, 
+                            double *gpu_time_used,
+                            double *cpu_time_used,
+                            const rocblas_int hot_calls)
+{
+    // cpu-lapack performance
+    *cpu_time_used = get_time_us();
+    for (rocblas_int b = 0; b < bc; ++b) {
+        cblas_getrs<T>(trans, m, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
+    }
+    *cpu_time_used = get_time_us() - *cpu_time_used;
+
+    // cold calls
+    for(int iter = 0; iter < 2; iter++)
+        CHECK_ROCBLAS_ERROR(rocsolver_getrs(STRIDED,handle, trans, m, nrhs, dA.data(), lda, stA, dIpiv.data(), stP, dB.data(), ldb, stB, bc));
+        
+    // gpu-lapack performance
+    *gpu_time_used = get_time_us(); 
+    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+        rocsolver_getrs(STRIDED,handle, trans, m, nrhs, dA.data(), lda, stA, dIpiv.data(), stP, dB.data(), ldb, stB, bc);
+    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;
+}
+
+
+template <bool BATCHED, bool STRIDED, typename T> 
+void testing_getrs(Arguments argus) 
+{
+    // get arguments 
+    rocblas_local_handle handle;
+    rocblas_int m = argus.M;
+    rocblas_int nrhs = argus.N;
+    rocblas_int lda = argus.lda;
+    rocblas_int ldb = argus.ldb;
+    rocblas_stride stA = argus.bsa;
+    rocblas_stride stP = argus.bsp;
+    rocblas_stride stB = argus.bsb;
+    rocblas_int bc = argus.batch_count;
+    char transC = argus.transA_option;
+    rocblas_operation trans = char2rocblas_operation(transC);
+    rocblas_int hot_calls = argus.iters;
+
+    // check non-supported values 
+    // N/A
+
+    // determine sizes
+    size_t size_A = size_t(lda) * m;
+    size_t size_B = size_t(ldb) * nrhs;
+    size_t size_P = size_t(m);
+    double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
+
+    // check invalid sizes 
+    bool invalid_size = (m < 0 || nrhs < 0 || lda < m || ldb < m || bc < 0);
+    if (invalid_size) {
+        if (BATCHED)
+            EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED,handle, trans, m, nrhs, (T *const *)nullptr, lda, stA, (rocblas_int*)nullptr, stP, (T *const *)nullptr, ldb, stB, bc),
+                                  rocblas_status_invalid_size);
+        else
+            EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED,handle, trans, m, nrhs, (T *)nullptr, lda, stA, (rocblas_int*)nullptr, stP, (T *)nullptr, ldb, stB, bc),
+                                  rocblas_status_invalid_size);
+
+        if (argus.timing) 
+             ROCSOLVER_BENCH_INFORM(1);
+
+        return;
+    }
+
+    if (BATCHED) {
+        // memory allocations
+        host_batch_vector<T> hA(size_A,1,bc);
+        host_batch_vector<T> hB(size_B,1,bc);
+        host_batch_vector<T> hBRes(size_B,1,bc);
+        host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,stP,bc);
+        device_batch_vector<T> dA(size_A,1,bc);
+        device_batch_vector<T> dB(size_B,1,bc);
+        device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,stP,bc);
+        if (size_A) CHECK_HIP_ERROR(dA.memcheck());
+        if (size_B) CHECK_HIP_ERROR(dB.memcheck());
+        if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
+
+        // check quick return
+        if (m == 0 || nrhs == 0 || bc == 0) {
+            EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED,handle, trans, m, nrhs, dA.data(), lda, stA, dIpiv.data(), stP, dB.data(), ldb, stB, bc),
+                                  rocblas_status_success);
+            if (argus.timing)
+                ROCSOLVER_BENCH_INFORM(0);
+
+            return;
+        }
+
+        // check computations
+        if (argus.unit_check || argus.norm_check) 
+            getrs_getError<STRIDED,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
+                                          hA, hIpiv, hB, hBRes, &max_error);
+
+        // collect performance data
+        if (argus.timing) 
+            getrs_getPerfData<STRIDED,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
+                                              hA, hIpiv, hB, &gpu_time_used, &cpu_time_used, hot_calls);
+    } 
+
+    else {
+        // memory allocations
+        host_strided_batch_vector<T> hA(size_A,1,stA,bc);
+        host_strided_batch_vector<T> hB(size_B,1,stB,bc);
+        host_strided_batch_vector<T> hBRes(size_B,1,stB,bc);
+        host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,stP,bc);
+        device_strided_batch_vector<T> dA(size_A,1,stA,bc);
+        device_strided_batch_vector<T> dB(size_B,1,stB,bc);
+        device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,stP,bc);
+        if (size_A) CHECK_HIP_ERROR(dA.memcheck());
+        if (size_B) CHECK_HIP_ERROR(dB.memcheck());
+        if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
+
+        // check quick return
+        if (m == 0 || nrhs == 0 || bc == 0) {
+            EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED,handle, trans, m, nrhs, dA.data(), lda, stA, dIpiv.data(), stP, dB.data(), ldb, stB, bc),
+                                  rocblas_status_success);
+            if (argus.timing)
+                ROCSOLVER_BENCH_INFORM(0);
+
+            return;
+        }
+
+        // check computations
+        if (argus.unit_check || argus.norm_check) 
+            getrs_getError<STRIDED,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
+                                          hA, hIpiv, hB, hBRes, &max_error);
+
+        // collect performance data
+        if (argus.timing) 
+            getrs_getPerfData<STRIDED,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
+                                              hA, hIpiv, hB, &gpu_time_used, &cpu_time_used, hot_calls);
+    }
+
+    // validate results for rocsolver-test
+    // using m * machine_precision as tolerance
+    if (argus.unit_check) 
+        rocsolver_test_check<T>(max_error,m);     
+
+    // output results for rocsolver-bench
+    if (argus.timing) {
+        rocblas_cout << "\n============================================\n";
+        rocblas_cout << "Arguments:\n";
+        rocblas_cout << "============================================\n";
+        if (BATCHED) {
+            rocsolver_bench_output("trans", "m", "nrhs", "lda", "ldb", "strideP", "batch_c");
+            rocsolver_bench_output(transC, m, nrhs, lda, ldb, stP, bc);
+        }
+        else if (STRIDED) {
+            rocsolver_bench_output("trans", "m", "nrhs", "lda", "ldb", "strideA", "strideP", "strideB", "batch_c");
+            rocsolver_bench_output(transC, m, nrhs, lda, ldb, stA, stP, stB, bc);
+        }
+        else {
+            rocsolver_bench_output("trans", "m", "nrhs", "lda", "ldb");
+            rocsolver_bench_output(transC, m, nrhs, lda, ldb);
+        }
+        rocblas_cout << "\n============================================\n";
+        rocblas_cout << "Results:\n";
+        rocblas_cout << "============================================\n";
+        if (argus.norm_check) {
+            rocsolver_bench_output("cpu_time", "gpu_time", "error");
+            rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+        }
+        else {
+            rocsolver_bench_output("cpu_time", "gpu_time");
+            rocsolver_bench_output(cpu_time_used, gpu_time_used);
+        }
+        rocblas_cout << std::endl;
+    }
+}
+  
 
 #undef GETRF_ERROR_EPS_MULTIPLIER

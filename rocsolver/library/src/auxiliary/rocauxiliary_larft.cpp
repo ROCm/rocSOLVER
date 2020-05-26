@@ -16,14 +16,9 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle, const rocblas_direct 
     //logging is missing ???
 
     // argument checking
-    if (n < 0 || k < 1 || ldf < k)
-        return rocblas_status_invalid_size;
-    if (ldv < n && storev == rocblas_column_wise)
-        return rocblas_status_invalid_size;
-    if (ldv < k && storev == rocblas_row_wise)
-        return rocblas_status_invalid_size;
-    if (!V || !tau || !F)
-        return rocblas_status_invalid_pointer;
+    rocblas_status st = rocsolver_larft_argCheck(direct,storev,n,k,ldv,ldf,V,tau,F);
+    if (st != rocblas_status_continue)
+        return st;
 
     rocblas_stride stridev = 0;
     rocblas_stride stridet = 0;

@@ -15,15 +15,9 @@ rocblas_status rocsolver_orgbr_ungbr_impl(rocblas_handle handle, const rocblas_s
     //logging is missing ???
 
     // argument checking
-    if (m < 0 || n < 0 || k < 0 || lda < m)
-        return rocblas_status_invalid_size;
-    if (!A || !ipiv)
-        return rocblas_status_invalid_pointer;
-
-    if (storev == rocblas_column_wise && (n > m || n < min(m,k)))
-        return rocblas_status_invalid_size;
-    if (storev == rocblas_row_wise && (m > n || m < min(n,k)))
-        return rocblas_status_invalid_size;
+    rocblas_status st = rocsolver_orgbr_argCheck(storev,m,n,k,lda,A,ipiv);
+    if (st != rocblas_status_continue)
+        return st;
 
     rocblas_stride strideA = 0;
     rocblas_stride strideP = 0;

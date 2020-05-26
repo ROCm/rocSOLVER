@@ -6,7 +6,8 @@
 #define COMMON_DEVICE_H
 
 #include <hip/hip_runtime.h>
-#include "utility.hpp"
+#include "ideal_sizes.hpp"
+#include "libcommon.hpp"
 
 // **********************************************************
 // GPU kernels that are used by many rocsolver functions

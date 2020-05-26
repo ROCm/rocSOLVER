@@ -12,8 +12,6 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "common_device.hpp"
-#include "ideal_sizes.hpp"
 #include "roclapack_potf2.hpp"
 
 template<typename U>

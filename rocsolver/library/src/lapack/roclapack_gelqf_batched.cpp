@@ -16,10 +16,9 @@ rocblas_status rocsolver_gelqf_batched_impl(rocblas_handle handle, const rocblas
     //logging is missing ???    
     
     // argument checking
-    if (!A || !ipiv)
-        return rocblas_status_invalid_pointer;
-    if (m < 0 || n < 0 || lda < m || batch_count < 0)
-        return rocblas_status_invalid_size;
+    rocblas_status st = rocsolver_gelq2_gelqf_argCheck(m,n,lda,A,ipiv,batch_count);
+    if (st != rocblas_status_continue)
+        return st;
 
     rocblas_stride strideA = 0;
 

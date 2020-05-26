@@ -14,10 +14,9 @@ rocblas_status rocsolver_orglq_unglq_impl(rocblas_handle handle, const rocblas_i
     //logging is missing ???
 
     // argument checking
-    if (m < 0 || n < 0 || n < m || k < 0 || k > m || lda < m)
-        return rocblas_status_invalid_size;
-    if (!A || !ipiv)
-        return rocblas_status_invalid_pointer;
+    rocblas_status st = rocsolver_orgl2_orglq_argCheck(m,n,k,lda,A,ipiv);
+    if (st != rocblas_status_continue)
+        return st;
 
     rocblas_stride strideA = 0;
     rocblas_stride strideP = 0;

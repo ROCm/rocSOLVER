@@ -12,7 +12,6 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "common_device.hpp"
 
 template <typename T>
 __device__ void swap(const rocblas_int n, T *a, const rocblas_int lda,
@@ -45,6 +44,26 @@ __global__ void laswp_kernel(const rocblas_int n, U AA, const rocblas_int shiftA
     }
 }
 
+template <typename T>
+rocblas_status rocsolver_laswp_argCheck(const rocblas_int n, const rocblas_int lda, const rocblas_int k1, const rocblas_int k2,
+                                        const rocblas_int incx, T A, const rocblas_int *ipiv)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    // N/A
+    
+    // 2. invalid size
+    if (n < 0 || lda < 1 || !incx || k1 < 1 || k2 < 1 || k2 < k1)
+        return rocblas_status_invalid_size;
+
+    // 3. invalid pointers
+    if ((n && !A) || !ipiv)
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
+}
+
 
 template <typename T, typename U>
 rocblas_status rocsolver_laswp_template(rocblas_handle handle, const rocblas_int n, U A, const rocblas_int shiftA,
@@ -52,7 +71,7 @@ rocblas_status rocsolver_laswp_template(rocblas_handle handle, const rocblas_int
                               const rocblas_int *ipiv, const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int incx, 
                               const rocblas_int batch_count) {
     // quick return
-    if (n == 0 || !batch_count) 
+    if (n == 0 || batch_count == 0) 
         return rocblas_status_success;
 
     rocblas_int start, end, inc;

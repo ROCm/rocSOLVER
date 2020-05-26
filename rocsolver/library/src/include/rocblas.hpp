@@ -5,10 +5,12 @@
 #ifndef _ROCBLAS_HPP_
 #define _ROCBLAS_HPP_
 
+template <typename T>
+struct rocblas_index_value_t;
+
 #include <rocblas.h>
 #include "rocblas-exported-proto.hpp"
-#include "helpers.h"
-#include "ideal_sizes.hpp"
+#include "helpers.hpp"
 #include "common_device.hpp"
 
 // scal

@@ -17,10 +17,9 @@ rocblas_status rocsolver_getf2_batched_impl(rocblas_handle handle, const rocblas
     //logging is missing ???    
     
     // argument checking
-    if (!A || !ipiv || !info)
-        return rocblas_status_invalid_pointer;
-    if (m < 0 || n < 0 || lda < m || batch_count < 0)
-        return rocblas_status_invalid_size;
+    rocblas_status st = rocsolver_getf2_getrf_argCheck(m,n,lda,A,ipiv,info,batch_count);
+    if (st != rocblas_status_continue)
+        return st;
 
     rocblas_stride strideA = 0;
 

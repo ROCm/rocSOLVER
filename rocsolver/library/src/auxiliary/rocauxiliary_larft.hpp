@@ -12,8 +12,7 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "common_device.hpp"
-#include "../auxiliary/rocauxiliary_lacgv.hpp"
+#include "rocauxiliary_lacgv.hpp"
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 __global__ void set_triangular(const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, const rocblas_stride strideV, 
@@ -112,6 +111,31 @@ void rocsolver_larft_getMemorySize(const rocblas_int k, const rocblas_int batch_
     *size *= sizeof(T)*k*batch_count;
 }
 
+template <typename T, typename U>
+rocblas_status rocsolver_larft_argCheck(const rocblas_direct direct, const rocblas_storev storev, const rocblas_int n,
+                                        const rocblas_int k, const rocblas_int ldv, const rocblas_int ldf, T V, U tau, U F)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    if (direct != rocblas_backward_direction && direct != rocblas_forward_direction)
+        return rocblas_status_invalid_value;
+    if (storev != rocblas_column_wise && storev != rocblas_row_wise)
+        return rocblas_status_invalid_value;
+    bool row = (storev == rocblas_row_wise);
+
+    // 2. invalid size
+    if (n < 0 || k < 1 || ldf < k)
+        return rocblas_status_invalid_size;
+    if ((row && ldv < k) || (!row && ldv < n))    
+        return rocblas_status_invalid_size;
+
+    // 3. invalid pointers
+    if ((n && !V) || !tau || !F)
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
+}
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_larft_template(rocblas_handle handle, const rocblas_direct direct, 

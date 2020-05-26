@@ -1,14 +1,9 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
 #include "testing_gelq2_gelqf.hpp"
-#include "utility.h"
-#include <gtest/gtest.h>
-#include <math.h>
-#include <stdexcept>
-#include <vector>
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -17,18 +12,27 @@ using ::testing::ValuesIn;
 using namespace std;
 
 
-typedef std::tuple<vector<int>, int> gelq_tuple;
+typedef std::tuple<vector<int>, int> geqr_tuple;
 
-// vector of vector, each vector is a {M, lda};
+// each matrix_size_range is a {m, lda}
+
+// case when m = n = 0 will also execute the bad arguments test
+// (null handle, null pointers and invalid values)
+
+// for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
-    {0, 1}, {-1, 1}, {20, 5}, {50, 50}, {70, 100}, {130, 130}, {150, 200}
+    {0, 1},             //quick return 
+    {-1, 1}, {20, 5},   //invalid
+    {50, 50}, {70, 100}, {130, 130}, {150, 200}
 };
 
-// each is a N
 const vector<int> n_size_range = {
-    -1, 0, 16, 20, 130, 150
+    0,  //quick return
+    -1, //invalid
+    16, 20, 130, 150
 };
 
+// for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
     {152, 152}, {640, 640}, {1000, 1024}, 
 };
@@ -38,7 +42,7 @@ const vector<int> large_n_size_range = {
 };
 
 
-Arguments setup_arguments_lq(gelq_tuple tup) 
+Arguments setup_arguments_lq(geqr_tuple tup) 
 {
     vector<int> matrix_size = std::get<0>(tup);
     int n_size = std::get<1>(tup);
@@ -51,150 +55,294 @@ Arguments setup_arguments_lq(gelq_tuple tup)
 
     arg.timing = 0;
 
+    // only testing standard use case for strides
+    // strides are ignored in normal and batched tests
+    arg.bsp = min(arg.M, arg.N);
+    arg.bsa = arg.lda * arg.N;
+
     return arg;
 }
 
-class LQfact : public ::TestWithParam<gelq_tuple> {
+class GELQ2 : public ::TestWithParam<geqr_tuple> {
 protected:
-    LQfact() {}
-    virtual ~LQfact() {}
+    GELQ2() {}
+    virtual ~GELQ2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
-TEST_P(LQfact, gelq2_float) {
+class GELQF : public ::TestWithParam<geqr_tuple> {
+protected:
+    GELQF() {}
+    virtual ~GELQF() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+
+// non-batch tests
+
+TEST_P(GELQ2, __float) {
     Arguments arg = setup_arguments_lq(GetParam());
 
-    rocblas_status status = testing_gelq2_gelqf<float,float,0>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,false,0,float>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    arg.batch_count = 1;
+    testing_gelq2_gelqf<false,false,0,float>(arg);
 }
 
-TEST_P(LQfact, gelq2_double) {
+TEST_P(GELQ2, __double) {
     Arguments arg = setup_arguments_lq(GetParam());
 
-    rocblas_status status = testing_gelq2_gelqf<double,double,0>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,false,0,double>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    arg.batch_count = 1;
+    testing_gelq2_gelqf<false,false,0,double>(arg);
 }
 
-TEST_P(LQfact, gelq2_float_complex) {
+TEST_P(GELQ2, __float_complex) {
     Arguments arg = setup_arguments_lq(GetParam());
 
-    rocblas_status status = testing_gelq2_gelqf<rocblas_float_complex,float,0>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,false,0,rocblas_float_complex>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    arg.batch_count = 1;
+    testing_gelq2_gelqf<false,false,0,rocblas_float_complex>(arg);
 }
 
-TEST_P(LQfact, gelq2_double_complex) {
+TEST_P(GELQ2, __double_complex) {
     Arguments arg = setup_arguments_lq(GetParam());
 
-    rocblas_status status = testing_gelq2_gelqf<rocblas_double_complex,double,0>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,false,0,rocblas_double_complex>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    arg.batch_count = 1;
+    testing_gelq2_gelqf<false,false,0,rocblas_double_complex>(arg);
 }
 
-TEST_P(LQfact, gelqf_float) {
+TEST_P(GELQF, __float) {
     Arguments arg = setup_arguments_lq(GetParam());
 
-    rocblas_status status = testing_gelq2_gelqf<float,float,1>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,false,1,float>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    arg.batch_count = 1;
+    testing_gelq2_gelqf<false,false,1,float>(arg);
 }
 
-TEST_P(LQfact, gelqf_double) {
+TEST_P(GELQF, __double) {
     Arguments arg = setup_arguments_lq(GetParam());
 
-    rocblas_status status = testing_gelq2_gelqf<double,double,1>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,false,1,double>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    arg.batch_count = 1;
+    testing_gelq2_gelqf<false,false,1,double>(arg);
 }
 
-TEST_P(LQfact, gelqf_float_complex) {
+TEST_P(GELQF, __float_complex) {
     Arguments arg = setup_arguments_lq(GetParam());
 
-    rocblas_status status = testing_gelq2_gelqf<rocblas_float_complex,float,1>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,false,1,rocblas_float_complex>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    arg.batch_count = 1;
+    testing_gelq2_gelqf<false,false,1,rocblas_float_complex>(arg);
 }
 
-TEST_P(LQfact, gelqf_double_complex) {
+TEST_P(GELQF, __double_complex) {
     Arguments arg = setup_arguments_lq(GetParam());
 
-    rocblas_status status = testing_gelq2_gelqf<rocblas_double_complex,double,1>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,false,1,rocblas_double_complex>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    arg.batch_count = 1;
+    testing_gelq2_gelqf<false,false,1,rocblas_double_complex>(arg);
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, LQfact,
+// batched tests
+
+TEST_P(GELQ2, batched__float) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<true,true,0,float>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<true,true,0,float>(arg);
+}
+
+TEST_P(GELQ2, batched__double) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<true,true,0,double>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<true,true,0,double>(arg);
+}
+
+TEST_P(GELQ2, batched__float_complex) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<true,true,0,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<true,true,0,rocblas_float_complex>(arg);
+}
+
+TEST_P(GELQ2, batched__double_complex) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<true,true,0,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<true,true,0,rocblas_double_complex>(arg);
+}
+
+TEST_P(GELQF, batched__float) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<true,true,1,float>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<true,true,1,float>(arg);
+}
+
+TEST_P(GELQF, batched__double) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<true,true,1,double>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<true,true,1,double>(arg);
+}
+
+TEST_P(GELQF, batched__float_complex) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<true,true,1,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<true,true,1,rocblas_float_complex>(arg);
+}
+
+TEST_P(GELQF, batched__double_complex) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<true,true,1,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<true,true,1,rocblas_double_complex>(arg);
+}
+
+
+// strided_batched cases
+
+TEST_P(GELQ2, strided_batched__float) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,true,0,float>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<false,true,0,float>(arg);
+}
+
+TEST_P(GELQ2, strided_batched__double) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,true,0,double>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<false,true,0,double>(arg);
+}
+
+TEST_P(GELQ2, strided_batched__float_complex) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,true,0,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<false,true,0,rocblas_float_complex>(arg);
+}
+
+TEST_P(GELQ2, strided_batched__double_complex) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,true,0,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<false,true,0,rocblas_double_complex>(arg);
+}
+
+TEST_P(GELQF, strided_batched__float) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,true,1,float>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<false,true,1,float>(arg);
+}
+
+TEST_P(GELQF, strided_batched__double) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,true,1,double>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<false,true,1,double>(arg);
+}
+
+TEST_P(GELQF, strided_batched__float_complex) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,true,1,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<false,true,1,rocblas_float_complex>(arg);
+}
+
+TEST_P(GELQF, strided_batched__double_complex) {
+    Arguments arg = setup_arguments_lq(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_gelq2_gelqf_bad_arg<false,true,1,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_gelq2_gelqf<false,true,1,rocblas_double_complex>(arg);
+}
+
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, GELQ2,
                         Combine(ValuesIn(large_matrix_size_range),
                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, LQfact,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, GELQ2,
                         Combine(ValuesIn(matrix_size_range),
                                 ValuesIn(n_size_range)));
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, GELQF,
+                        Combine(ValuesIn(large_matrix_size_range),
+                                ValuesIn(large_n_size_range)));
+
+INSTANTIATE_TEST_CASE_P(checkin_lapack, GELQF,
+                        Combine(ValuesIn(matrix_size_range),
+                                ValuesIn(n_size_range)));
+
+

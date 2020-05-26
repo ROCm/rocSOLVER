@@ -15,18 +15,9 @@ rocblas_status rocsolver_ormlq_unmlq_impl(rocblas_handle handle, const rocblas_s
     //logging is missing ???
 
     // argument checking
-    if (m < 0 || n < 0 ||  k < 0 || ldc < m || lda < k)
-        return rocblas_status_invalid_size;
-    if (side == rocblas_side_left && k > m)
-        return rocblas_status_invalid_size;
-    if (side == rocblas_side_right && k > n)
-        return rocblas_status_invalid_size;
-    if (!A || !ipiv || !C)
-        return rocblas_status_invalid_pointer;
-    if (COMPLEX && trans == rocblas_operation_transpose)
-        return rocblas_status_invalid_value;
-    if (!COMPLEX && trans == rocblas_operation_conjugate_transpose)
-        return rocblas_status_invalid_value;
+    rocblas_status st = rocsolver_orml2_ormlq_argCheck<COMPLEX>(side,trans,m,n,k,lda,ldc,A,C,ipiv);
+    if (st != rocblas_status_continue)
+        return st;
 
     rocblas_stride strideA = 0;
     rocblas_stride strideP = 0;

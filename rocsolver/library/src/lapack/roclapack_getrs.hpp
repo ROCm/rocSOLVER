@@ -11,8 +11,30 @@
 #define ROCLAPACK_GETRS_HPP
 
 #include "rocblas.hpp"
-#include "common_device.hpp"
+#include "rocsolver.h"
 #include "../auxiliary/rocauxiliary_laswp.hpp"
+
+template <typename T>
+rocblas_status rocsolver_getrs_argCheck(const rocblas_operation trans, const rocblas_int n, const rocblas_int nrhs,
+                                        const rocblas_int lda, const rocblas_int ldb,
+                                        T A, T B, const rocblas_int *ipiv, const rocblas_int batch_count = 1)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    if (trans != rocblas_operation_none && trans != rocblas_operation_transpose && trans != rocblas_operation_conjugate_transpose)
+        return rocblas_status_invalid_value;
+
+    // 2. invalid size
+    if (n < 0 || nrhs < 0 || lda < n || ldb < n || batch_count < 0)
+        return rocblas_status_invalid_size;
+
+    // 3. invalid pointers
+    if ((n && !A) || (n && !ipiv) || (nrhs*n && !B))
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
+}
 
 
 template <typename T, typename U>

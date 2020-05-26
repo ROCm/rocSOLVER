@@ -15,10 +15,9 @@ rocblas_status rocsolver_geqrf_strided_batched_impl(rocblas_handle handle, const
     //logging is missing ???    
     
     // argument checking
-    if (!A || !ipiv)
-        return rocblas_status_invalid_pointer;
-    if (m < 0 || n < 0 || lda < m || batch_count < 0)
-        return rocblas_status_invalid_size;
+    rocblas_status st = rocsolver_geqr2_geqrf_argCheck(m,n,lda,A,ipiv,batch_count);
+    if (st != rocblas_status_continue)
+        return st;
 
     // memory managment
     size_t size_1;  //size of constants

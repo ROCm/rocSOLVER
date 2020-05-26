@@ -1,14 +1,9 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
 #include "testing_ormbr_unmbr.hpp"
-#include "utility.h"
-#include <gtest/gtest.h>
-#include <math.h>
-#include <stdexcept>
-#include <vector>
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -19,13 +14,9 @@ using namespace std;
 
 typedef std::tuple<vector<int>, vector<int>> ormbr_tuple;
 
-// vector of vector, each vector is a {M, N, K};
-const vector<vector<int>> size_range = {
-    {-1,1,1}, {0,1,1}, {1,-1,1}, {1,0,1}, {1,1,-1}, {1,1,0}, 
-    {10,30,5}, {20,5,10}, {20,20,25}, {50,50,30}, {70,40,40}, 
-};
+// each size_range vector is a {M, N, K}
 
-// each is a {lda, ldc, s, t, st}
+// each store vector is a {lda, ldc, s, t, st}
 // if lda = -1, then lda < limit (invalid size)
 // if lda = 0, then lda = limit
 // if lda = 1, then lda > limit
@@ -39,8 +30,13 @@ const vector<vector<int>> size_range = {
 // if t = 2, then trans = 'C'
 // if st = 0, then storev = 'C'
 // if st = 1, then storev = 'R'
+
+// case when m = 0, n = 1, side = 'L', trans = 'T' and storev = 'C'
+// will also execute the bad arguments test
+// (null handle, null pointers and invalid values)
+
 const vector<vector<int>> store = {
-    {-1, 0, 0, 0, 0}, {0, -1, 0, 0, 0}, 
+    {-1, 0, 0, 0, 0}, {0, -1, 0, 0, 0}, //invalid
     {1, 1, 0, 0, 0}, {1, 1, 0, 0, 1}, 
     {0, 0, 0, 0, 0},
     {0, 0, 0, 0, 1},
@@ -56,6 +52,14 @@ const vector<vector<int>> store = {
     {0, 0, 1, 2, 1},
 };
 
+// for checkin_lapack tests
+const vector<vector<int>> size_range = {
+    {0,1,1}, {1,0,1}, {1,1,0},      //quick return  
+    {-1,1,1}, {1,-1,1}, {1,1,-1},   //invalid
+    {10,30,5}, {20,5,10}, {20,20,25}, {50,50,30}, {70,40,40}, 
+};
+
+// for daily_lapack tests
 const vector<vector<int>> large_size_range = {
     {200,150,100}, {270,270,270}, {400,400,405}, {800,500,300}, {1500,1000,300},  
 };
@@ -92,103 +96,71 @@ Arguments setup_arguments_ormbr(ormbr_tuple tup)
     return arg;
 }
 
-class OrthoApp : public ::TestWithParam<ormbr_tuple> {
+class ORMBR : public ::TestWithParam<ormbr_tuple> {
 protected:
-    OrthoApp() {}
-    virtual ~OrthoApp() {}
+    ORMBR() {}
+    virtual ~ORMBR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
-TEST_P(OrthoApp, ormbr_float) {
+class UNMBR : public ::TestWithParam<ormbr_tuple> {
+protected:
+    UNMBR() {}
+    virtual ~UNMBR() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+TEST_P(ORMBR, __float) {
     Arguments arg = setup_arguments_ormbr(GetParam());
 
-    rocblas_status status = testing_ormbr_unmbr<float,float>(arg);
+    if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T' && arg.storev == 'C')
+        testing_ormbr_unmbr_bad_arg<float>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        int nq = arg.side_option == 'L' ? arg.M : arg.N;
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.ldc < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'C' && arg.lda < nq) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'R' && arg.lda < min(nq,arg.K)) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (!check_transpose<float>(arg.transA_option)) {
-            EXPECT_EQ(rocblas_status_invalid_value, status);
-        }
-    }
+    testing_ormbr_unmbr<float>(arg);
 }
 
-TEST_P(OrthoApp, ormbr_double) {
+TEST_P(ORMBR, __double) {
     Arguments arg = setup_arguments_ormbr(GetParam());
 
-    rocblas_status status = testing_ormbr_unmbr<double,double>(arg);
+    if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T' && arg.storev == 'C')
+        testing_ormbr_unmbr_bad_arg<double>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        int nq = arg.side_option == 'L' ? arg.M : arg.N;
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.ldc < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'C' && arg.lda < nq) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'R' && arg.lda < min(nq,arg.K)) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (!check_transpose<double>(arg.transA_option)) {
-            EXPECT_EQ(rocblas_status_invalid_value, status);
-        }
-    }
+    testing_ormbr_unmbr<double>(arg);
 }
 
-TEST_P(OrthoApp, unmbr_float_complex) {
+TEST_P(UNMBR, __float_complex) {
     Arguments arg = setup_arguments_ormbr(GetParam());
 
-    rocblas_status status = testing_ormbr_unmbr<rocblas_float_complex,float>(arg);
+    if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T' && arg.storev == 'C')
+        testing_ormbr_unmbr_bad_arg<rocblas_float_complex>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        int nq = arg.side_option == 'L' ? arg.M : arg.N;
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.ldc < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'C' && arg.lda < nq) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'R' && arg.lda < min(nq,arg.K)) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (!check_transpose<rocblas_float_complex>(arg.transA_option)) {
-            EXPECT_EQ(rocblas_status_invalid_value, status);
-        }
-    }
+    testing_ormbr_unmbr<rocblas_float_complex>(arg);
 }
 
-TEST_P(OrthoApp, unmbr_double_complex) {
+TEST_P(UNMBR, __double_complex) {
     Arguments arg = setup_arguments_ormbr(GetParam());
 
-    rocblas_status status = testing_ormbr_unmbr<rocblas_double_complex,double>(arg);
+    if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T' && arg.storev == 'C')
+        testing_ormbr_unmbr_bad_arg<rocblas_double_complex>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        int nq = arg.side_option == 'L' ? arg.M : arg.N;
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.ldc < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'C' && arg.lda < nq) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.storev == 'R' && arg.lda < min(nq,arg.K)) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (!check_transpose<rocblas_double_complex>(arg.transA_option)) {
-            EXPECT_EQ(rocblas_status_invalid_value, status);
-        }
-    }
+    testing_ormbr_unmbr<rocblas_double_complex>(arg);
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, OrthoApp,
+INSTANTIATE_TEST_CASE_P(daily_lapack, ORMBR,
                         Combine(ValuesIn(large_size_range),
                                 ValuesIn(store)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, OrthoApp,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, ORMBR,
+                        Combine(ValuesIn(size_range),
+                                ValuesIn(store)));
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, UNMBR,
+                        Combine(ValuesIn(large_size_range),
+                                ValuesIn(store)));
+
+INSTANTIATE_TEST_CASE_P(checkin_lapack, UNMBR,
                         Combine(ValuesIn(size_range),
                                 ValuesIn(store)));

@@ -12,9 +12,8 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "common_device.hpp"
-#include "../auxiliary/rocauxiliary_lacgv.hpp"
-#include "../auxiliary/rocauxiliary_larf.hpp"
+#include "rocauxiliary_lacgv.hpp"
+#include "rocauxiliary_larf.hpp"
 
 template <typename T, typename U>
 __global__ void init_ident_row(const rocblas_int m, const rocblas_int n, const rocblas_int k, U A,
@@ -54,6 +53,24 @@ void rocsolver_orgl2_ungl2_getMemorySize(const rocblas_int m, const rocblas_int 
     rocsolver_larf_getMemorySize<T>(rocblas_side_right,m,n,batch_count,size);
 }
 
+template <typename T, typename U>
+rocblas_status rocsolver_orgl2_orglq_argCheck(const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int lda, T A, U ipiv)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    // N/A
+
+    // 2. invalid size
+    if (m < 0 || n < 0 || n < m || k < 0 || k > m || lda < m)
+        return rocblas_status_invalid_size;
+
+    // 3. invalid pointers
+    if ((k && !ipiv) || (m*n && !A))
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
+}
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_orgl2_ungl2_template(rocblas_handle handle, const rocblas_int m, 

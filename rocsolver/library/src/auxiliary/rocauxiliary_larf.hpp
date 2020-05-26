@@ -12,7 +12,6 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "common_device.hpp"
 
 template <typename T, bool BATCHED>
 void rocsolver_larf_getMemorySize(const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
@@ -45,6 +44,28 @@ void rocsolver_larf_getMemorySize(const rocblas_side side, const rocblas_int m, 
     else
         *size = m;
     *size *= sizeof(T)*batch_count;
+}
+
+template <typename T, typename U>
+rocblas_status rocsolver_larf_argCheck(const rocblas_side side, const rocblas_int m, const rocblas_int n, 
+                                       const rocblas_int lda, const rocblas_int incx, T x, T A, U alpha)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    if (side != rocblas_side_left && side != rocblas_side_right)
+        return rocblas_status_invalid_value;
+    bool left = (side == rocblas_side_left);
+    
+    // 2. invalid size
+    if (n < 0 || m < 0 || lda < m || !incx)
+        return rocblas_status_invalid_size;
+
+    // 3. invalid pointers
+    if ((m*n && !A) || (left && m && (!alpha || !x)) || (!left && n && (!alpha || !x)))
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
 }
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>

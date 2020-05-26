@@ -15,15 +15,19 @@ rocblas_status rocsolver_getrs_batched_impl(rocblas_handle handle, const rocblas
 
     //logging is missing ???    
 
-    if (n < 0 || nrhs < 0 || lda < n || ldb < n || batch_count < 0) 
-        return rocblas_status_invalid_size;
-
-    if (!A || !ipiv || !B)
-        return rocblas_status_invalid_pointer;
+    // argument checking
+    rocblas_status st = rocsolver_getrs_argCheck(trans,n,nrhs,lda,ldb,A,B,ipiv,batch_count);
+    if (st != rocblas_status_continue)
+        return st;
 
     rocblas_stride strideA = 0;
     rocblas_stride strideB = 0;
 
+    // memory managment
+    // this function does not requiere memory work space
+    // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
+
+    // execution
     return rocsolver_getrs_template<T>(handle,trans,n,nrhs,
                                         A,0,
                                         lda,strideA,
@@ -46,7 +50,7 @@ rocsolver_sgetrs_batched(rocblas_handle handle, const rocblas_operation trans, c
                  const rocblas_int nrhs, float *const A[], const rocblas_int lda,
                  const rocblas_int *ipiv, const rocblas_stride strideP, float *const B[], const rocblas_int ldb, const rocblas_int batch_count) 
 {
-  return rocsolver_getrs_batched_impl<float>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
+    return rocsolver_getrs_batched_impl<float>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
 }
 
 extern "C" ROCSOLVER_EXPORT rocblas_status
@@ -54,7 +58,7 @@ rocsolver_dgetrs_batched(rocblas_handle handle, const rocblas_operation trans, c
                  const rocblas_int nrhs, double *const A[], const rocblas_int lda,
                  const rocblas_int *ipiv, const rocblas_stride strideP, double *const B[], const rocblas_int ldb, const rocblas_int batch_count) 
 {
-  return rocsolver_getrs_batched_impl<double>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
+    return rocsolver_getrs_batched_impl<double>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
 }
 
 extern "C" ROCSOLVER_EXPORT rocblas_status 
@@ -64,7 +68,7 @@ rocsolver_cgetrs_batched(
                  const rocblas_int *ipiv, const rocblas_stride strideP, rocblas_float_complex *const B[], 
                  const rocblas_int ldb, const rocblas_int batch_count)
 {
-  return rocsolver_getrs_batched_impl<rocblas_float_complex>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
+    return rocsolver_getrs_batched_impl<rocblas_float_complex>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
 }
 
 extern "C" ROCSOLVER_EXPORT rocblas_status 
@@ -74,7 +78,7 @@ rocsolver_zgetrs_batched(
                  const rocblas_int *ipiv, const rocblas_stride strideP, rocblas_double_complex *const B[], 
                  const rocblas_int ldb, const rocblas_int batch_count)
 {
-  return rocsolver_getrs_batched_impl<rocblas_double_complex>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
+    return rocsolver_getrs_batched_impl<rocblas_double_complex>(handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
 }
 
 #undef batched

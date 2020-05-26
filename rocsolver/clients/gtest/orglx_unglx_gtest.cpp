@@ -1,14 +1,9 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
 #include "testing_orglx_unglx.hpp"
-#include "utility.h"
-#include <gtest/gtest.h>
-#include <math.h>
-#include <stdexcept>
-#include <vector>
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -19,22 +14,33 @@ using namespace std;
 
 typedef std::tuple<vector<int>, int> orglq_tuple;
 
-// vector of vector, each vector is a {M, lda, K};
+// each m_size_range vector is a {M, lda, K}
+
+//case when m = 0 and n = 0 will also execute the bad arguments test
+// (null handle, null pointers and invalid values)
+
+// for checkin_lapack tests
 const vector<vector<int>> m_size_range = {
-    {0, 1, 1}, {-1, 1, 1}, {20, 5, 1}, {10, 10, 20}, {10, 10, 10}, {20, 50, 20}, {130, 130, 50}
+    {0, 1, 0},                              //quick return
+    {-1, 1, 1}, {20, 5, 1}, {10, 10, 20},   //always invalid 
+    {30, 30, 25},                           //invalid for case *
+    {10, 10, 10}, {20, 50, 20}, 
 };
 
-// each is a N
 const vector<int> n_size_range = {
-    -1, 0, 50, 70, 130
+    0,  //quick return
+    -1, //always invalid
+    25, //invalid for case *
+    50, 70, 130
 };
 
+// for daily_lapack tests
 const vector<vector<int>> large_m_size_range = {
     {164, 164, 130}, {198, 640, 198}, {130, 130, 130}, {220, 220, 140}, {400, 400, 200} 
 };
 
 const vector<int> large_n_size_range = {
-    130, 400, 640, 1000, 2000
+    400, 640, 1000, 2000
 };
 
 
@@ -55,147 +61,141 @@ Arguments setup_arguments_orglq(orglq_tuple tup)
     return arg;
 }
 
-class OrthoRowGen : public ::TestWithParam<orglq_tuple> {
+class ORGL2 : public ::TestWithParam<orglq_tuple> {
 protected:
-    OrthoRowGen() {}
-    virtual ~OrthoRowGen() {}
+    ORGL2() {}
+    virtual ~ORGL2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
-TEST_P(OrthoRowGen, orgl2_float) {
+class UNGL2 : public ::TestWithParam<orglq_tuple> {
+protected:
+    UNGL2() {}
+    virtual ~UNGL2() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+class ORGLQ : public ::TestWithParam<orglq_tuple> {
+protected:
+    ORGLQ() {}
+    virtual ~ORGLQ() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+class UNGLQ : public ::TestWithParam<orglq_tuple> {
+protected:
+    UNGLQ() {}
+    virtual ~UNGLQ() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+
+TEST_P(ORGL2, __float) {
     Arguments arg = setup_arguments_orglq(GetParam());
 
-    rocblas_status status = testing_orglx_unglx<float,float,0>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_orglx_unglx_bad_arg<float,0>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.N < arg.M || arg.K > arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    testing_orglx_unglx<float,0>(arg);
 }
 
-TEST_P(OrthoRowGen, orgl2_double) {
+TEST_P(ORGL2, __double) {
     Arguments arg = setup_arguments_orglq(GetParam());
 
-    rocblas_status status = testing_orglx_unglx<double,double,0>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_orglx_unglx_bad_arg<double,0>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.N < arg.M || arg.K > arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    testing_orglx_unglx<double,0>(arg);
 }
 
-TEST_P(OrthoRowGen, ungl2_float_complex) {
+TEST_P(UNGL2, __float_complex) {
     Arguments arg = setup_arguments_orglq(GetParam());
 
-    rocblas_status status = testing_orglx_unglx<rocblas_float_complex,float,0>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_orglx_unglx_bad_arg<rocblas_float_complex,0>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.N < arg.M || arg.K > arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    testing_orglx_unglx<rocblas_float_complex,0>(arg);
 }
 
-TEST_P(OrthoRowGen, ungl2_double_complex) {
+TEST_P(UNGL2, __double_complex) {
     Arguments arg = setup_arguments_orglq(GetParam());
 
-    rocblas_status status = testing_orglx_unglx<rocblas_double_complex,double,0>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_orglx_unglx_bad_arg<rocblas_double_complex,0>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.N < arg.M || arg.K > arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    testing_orglx_unglx<rocblas_double_complex,0>(arg);
 }
 
-TEST_P(OrthoRowGen, orglq_float) {
+TEST_P(ORGLQ, __float) {
     Arguments arg = setup_arguments_orglq(GetParam());
 
-    rocblas_status status = testing_orglx_unglx<float,float,1>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_orglx_unglx_bad_arg<float,1>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.N < arg.M || arg.K > arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    testing_orglx_unglx<float,1>(arg);
 }
 
-TEST_P(OrthoRowGen, orglq_double) {
+TEST_P(ORGLQ, __double) {
     Arguments arg = setup_arguments_orglq(GetParam());
 
-    rocblas_status status = testing_orglx_unglx<double,double,1>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_orglx_unglx_bad_arg<double,1>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.N < arg.M || arg.K > arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    testing_orglx_unglx<double,1>(arg);
 }
 
-TEST_P(OrthoRowGen, unglq_float_complex) {
+TEST_P(UNGLQ, __float_complex) {
     Arguments arg = setup_arguments_orglq(GetParam());
 
-    rocblas_status status = testing_orglx_unglx<rocblas_float_complex,float,1>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_orglx_unglx_bad_arg<rocblas_float_complex,1>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.N < arg.M || arg.K > arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    testing_orglx_unglx<rocblas_float_complex,1>(arg);
 }
 
-TEST_P(OrthoRowGen, unglq_double_complex) {
+TEST_P(UNGLQ, __double_complex) {
     Arguments arg = setup_arguments_orglq(GetParam());
 
-    rocblas_status status = testing_orglx_unglx<rocblas_double_complex,double,1>(arg);
+    if (arg.M == 0 && arg.N == 0)
+        testing_orglx_unglx_bad_arg<rocblas_double_complex,1>();
 
-    // if not success, then the input argument is problematic, so detect the error
-    // message
-    if (status != rocblas_status_success) {
-        if (arg.M < 0 || arg.N < 0 || arg.K < 0 || arg.N < arg.M || arg.K > arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        } else if (arg.lda < arg.M) {
-            EXPECT_EQ(rocblas_status_invalid_size, status);
-        }
-    }
+    testing_orglx_unglx<rocblas_double_complex,1>(arg);
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, OrthoRowGen,
+INSTANTIATE_TEST_CASE_P(daily_lapack, ORGL2,
                         Combine(ValuesIn(large_m_size_range),
                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, OrthoRowGen,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, ORGL2,
                         Combine(ValuesIn(m_size_range),
                                 ValuesIn(n_size_range)));
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, UNGL2,
+                        Combine(ValuesIn(large_m_size_range),
+                                ValuesIn(large_n_size_range)));
+
+INSTANTIATE_TEST_CASE_P(checkin_lapack, UNGL2,
+                        Combine(ValuesIn(m_size_range),
+                                ValuesIn(n_size_range)));
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, ORGLQ,
+                        Combine(ValuesIn(large_m_size_range),
+                                ValuesIn(large_n_size_range)));
+
+INSTANTIATE_TEST_CASE_P(checkin_lapack, ORGLQ,
+                        Combine(ValuesIn(m_size_range),
+                                ValuesIn(n_size_range)));
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, UNGLQ,
+                        Combine(ValuesIn(large_m_size_range),
+                                ValuesIn(large_n_size_range)));
+
+INSTANTIATE_TEST_CASE_P(checkin_lapack, UNGLQ,
+                        Combine(ValuesIn(m_size_range),
+                                ValuesIn(n_size_range)));
+
