@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "norm.hpp"
@@ -127,7 +127,7 @@ void orgbr_ungbr_getError(const rocblas_handle handle,
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm 
-    *max_err = norm_error_upperTr('F',m,n,lda,hA[0],hAr[0]);
+    *max_err = norm_error('F',m,n,lda,hA[0],hAr[0]);
 }
 
 
@@ -236,7 +236,7 @@ void testing_orgbr_ungbr(Arguments argus)
     // using s * machine_precision as tolerance
     rocblas_int s = row ? n : m;
     if (argus.unit_check) 
-        rocsolver_test_check<T>(max_error,k);     
+        rocsolver_test_check<T>(max_error,s);     
 
     // output results for rocsolver-bench
     if (argus.timing) {

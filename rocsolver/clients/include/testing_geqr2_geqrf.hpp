@@ -286,9 +286,10 @@ void testing_geqr2_geqrf(Arguments argus)
     }
 
     // validate results for rocsolver-test
-    // using min(m,n) * machine_precision as tolerance
+    // using m * machine_precision as tolerance 
+    // (for possibly singular of ill-conditioned matrices we could use m*min(m,n))
     if (argus.unit_check) 
-        rocsolver_test_check<T>(max_error,min(m,n));     
+        rocsolver_test_check<T>(max_error,m);     
 
     // output results for rocsolver-bench
     if (argus.timing) {

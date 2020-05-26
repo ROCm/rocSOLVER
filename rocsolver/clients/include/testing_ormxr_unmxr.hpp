@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "norm.hpp"
@@ -139,7 +139,7 @@ void ormxr_unmxr_getError(const rocblas_handle handle,
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm 
-    *max_err = norm_error_upperTr('F',m,n,ldc,hC[0],hCr[0]);
+    *max_err = norm_error('F',m,n,ldc,hC[0],hCr[0]);
 }
 
 

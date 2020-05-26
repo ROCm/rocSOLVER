@@ -25,7 +25,7 @@ const vector<int> incx_range = {
 // for checkin_lapack tests
 const vector<int> n_size_range = {
     0,  //quick return
-    -1, //invlaid
+    -1, //invalid
     1, 12, 20, 35,  
 };
 

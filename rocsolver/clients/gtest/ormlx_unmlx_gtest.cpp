@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -29,7 +29,8 @@ typedef std::tuple<vector<int>, vector<int>> ormlq_tuple;
 // if t = 1, then trans = 'T'
 // if t = 2, then trans = 'C'
 
-// case when
+// case when m = 0, side = 'L' and trans = 'T' will also execute the bad arguments test
+// (null handle, null pointers and invalid values)
 
 const vector<vector<int>> op_range = {
     {-1,0,0,0}, {0,-1,0,0},     //invalid

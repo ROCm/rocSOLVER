@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -14,7 +14,7 @@ using namespace std;
 
 typedef std::tuple<vector<int>, vector<int>> bTuple;
 
-// each matrtix_size vector is a {M,N,lda,s,ldv,st}
+// each matrix_size vector is a {M,N,lda,s,ldv,st}
 //if s = 0, then side = 'L'
 //if s = 1, then side = 'R'
 //if st = 0, then storev = 'C'
@@ -30,6 +30,7 @@ typedef std::tuple<vector<int>, vector<int>> bTuple;
 // case when m = 0 and k = 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
+// for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
     {0,1,1,0,1,0}, {1,0,1,0,1,0},                       //quick return
     {-1,1,1,0,1,0}, {1,-1,1,0,1,0}, {15,15,5,0,15,0},   //invalid
@@ -43,6 +44,7 @@ const vector<vector<int>> reflector_size_range = {
     {7,7,0,1}, {10,10,0,1}, {12,70,0,2}, {15,15,0,2}
 };
 
+// for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
     {192,192,192,0,192,0}, {640,640,640,1,700,0}, 
     {640,640,700,0,640,0}, {840,1024,840,1,1024,0}, {2547,1980,2547,0,2547,0},
