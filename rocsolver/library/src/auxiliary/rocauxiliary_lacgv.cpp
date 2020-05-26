@@ -13,24 +13,24 @@ rocblas_status rocsolver_lacgv_impl(rocblas_handle handle, const rocblas_int n, 
     // logging is missing ???
 
     // argument checking
-    if (n < 0 || !incx)
-        return rocblas_status_invalid_size;
-    if (!x)
-        return rocblas_status_invalid_pointer;
+    rocblas_status st = rocsolver_lacgv_argCheck(n,incx,x);
+    if (st != rocblas_status_continue)
+        return st;
 
     rocblas_stride stridex = 0;
     rocblas_int batch_count = 1;
 
+    // memory managment
+    // this function does not requiere memory work space
+    // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
+
     // execution
-    rocblas_status status =
-           rocsolver_lacgv_template<T>(handle,
+    return rocsolver_lacgv_template<T>(handle,
                                        n,
                                        x,0,    //vector shifted 0 entries
                                        incx,
                                        stridex,
                                        batch_count);
-
-    return status;
 }
 
 

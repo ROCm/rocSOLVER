@@ -1,14 +1,9 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
 #include "testing_potf2_potrf.hpp"
-#include "utility.h"
-#include <gtest/gtest.h>
-#include <math.h>
-#include <stdexcept>
-#include <vector>
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -19,187 +14,330 @@ using namespace std;
 
 typedef std::tuple<vector<int>, char> chol_tuple;
 
-// vector of vector, each vector is a {N, lda};
+// each size_range vector is a {N, lda}
+
+// each uplo_range is a {uplo}
+
+// case when n = 0 and uplo = L will also execute the bad arguments test
+// (null handle, null pointers and invalid values)
+
+const vector<char> uplo_range = {'L', 'U'};
+
+// for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
-    {-1, 1}, {0, 1}, {10, 2}, {10, 10}, {20, 30}, {50, 50}, {70, 80}
+    {0, 1},             //quick return
+    {-1, 1}, {10, 2},   //invalid
+    {10, 10}, {20, 30}, {50, 50}, {70, 80}
 };
 
+// for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
     {192, 192}, {640, 960}, {1000, 1000}, {1024, 1024}, {2000, 2000},
 };
 
-// vector of char, each is an uplo, which can be "Lower (L) or Upper (U)"
-// Each letter is capitalizied, e.g. do not use 'l', but use 'L' instead.
-
-const vector<char> uplo_range = {'L', 'U'};
 
 Arguments setup_chol_arguments(chol_tuple tup) 
 {
-  vector<int> matrix_size = std::get<0>(tup);
-  char uplo = std::get<1>(tup);
+    vector<int> matrix_size = std::get<0>(tup);
+    char uplo = std::get<1>(tup);
 
-  Arguments arg;
+    Arguments arg;
 
-  // see the comments about matrix_size_range above
-  arg.N = matrix_size[0];
-  arg.lda = matrix_size[1];
+    arg.N = matrix_size[0];
+    arg.lda = matrix_size[1];
 
-  arg.uplo_option = uplo;
+    arg.uplo_option = uplo;
 
-  arg.timing = 0;
+    arg.timing = 0;
 
-  return arg;
+    // only testing standard use case for strides
+    // strides are ignored in normal and batched tests
+    arg.bsa = arg.lda * arg.N;
+
+    return arg;
 }
 
-class CholeskyFact : public ::TestWithParam<chol_tuple> {
+
+class POTF2 : public ::TestWithParam<chol_tuple> {
 protected:
-  CholeskyFact() {}
-  virtual ~CholeskyFact() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    POTF2() {}
+    virtual ~POTF2() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-TEST_P(CholeskyFact, potf2_float) {
-  Arguments arg = setup_chol_arguments(GetParam());
+class POTRF : public ::TestWithParam<chol_tuple> {
+protected:
+    POTRF() {}
+    virtual ~POTRF() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
 
-  rocblas_status status = testing_potf2_potrf<float,float,0>(arg);
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
+// non-batch tests
 
-    if (arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.N) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+TEST_P(POTF2, __float) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,false,0,float>();
+
+    arg.batch_count = 1;
+    testing_potf2_potrf<false,false,0,float>(arg);
 }
 
-TEST_P(CholeskyFact, potf2_double) {
-  Arguments arg = setup_chol_arguments(GetParam());
+TEST_P(POTF2, __double) {
+    Arguments arg = setup_chol_arguments(GetParam());
 
-  rocblas_status status = testing_potf2_potrf<double,double,0>(arg);
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,false,0,double>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.N) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_potf2_potrf<false,false,0,double>(arg);
 }
 
-TEST_P(CholeskyFact, potf2_float_complex) {
-  Arguments arg = setup_chol_arguments(GetParam());
+TEST_P(POTF2, __float_complex) {
+    Arguments arg = setup_chol_arguments(GetParam());
 
-  rocblas_status status = testing_potf2_potrf<rocblas_float_complex,float,0>(arg);
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,false,0,rocblas_float_complex>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.N) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_potf2_potrf<false,false,0,rocblas_float_complex>(arg);
 }
 
-TEST_P(CholeskyFact, potf2_double_complex) {
-  Arguments arg = setup_chol_arguments(GetParam());
+TEST_P(POTF2, __double_complex) {
+    Arguments arg = setup_chol_arguments(GetParam());
 
-  rocblas_status status = testing_potf2_potrf<rocblas_double_complex,double,0>(arg);
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,false,0,rocblas_double_complex>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.N) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_potf2_potrf<false,false,0,rocblas_double_complex>(arg);
 }
 
-TEST_P(CholeskyFact, potrf_float) {
-  Arguments arg = setup_chol_arguments(GetParam());
+TEST_P(POTRF, __float) {
+    Arguments arg = setup_chol_arguments(GetParam());
 
-  rocblas_status status = testing_potf2_potrf<float,float,1>(arg);
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,false,1,float>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.N) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_potf2_potrf<false,false,1,float>(arg);
 }
 
-TEST_P(CholeskyFact, potrf_double) {
-  Arguments arg = setup_chol_arguments(GetParam());
+TEST_P(POTRF, __double) {
+    Arguments arg = setup_chol_arguments(GetParam());
 
-  rocblas_status status = testing_potf2_potrf<double,double,1>(arg);
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,false,1,double>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.N) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_potf2_potrf<false,false,1,double>(arg);
 }
 
-TEST_P(CholeskyFact, potrf_float_complex) {
-  Arguments arg = setup_chol_arguments(GetParam());
+TEST_P(POTRF, __float_complex) {
+    Arguments arg = setup_chol_arguments(GetParam());
 
-  rocblas_status status = testing_potf2_potrf<rocblas_float_complex,float,1>(arg);
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,false,1,rocblas_float_complex>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.N) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_potf2_potrf<false,false,1,rocblas_float_complex>(arg);
 }
 
-TEST_P(CholeskyFact, potrf_double_complex) {
-  Arguments arg = setup_chol_arguments(GetParam());
+TEST_P(POTRF, __double_complex) {
+    Arguments arg = setup_chol_arguments(GetParam());
 
-  rocblas_status status = testing_potf2_potrf<rocblas_double_complex,double,1>(arg);
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,false,1,rocblas_double_complex>();
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } else if (arg.lda < arg.N) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    }
-  }
+    arg.batch_count = 1;
+    testing_potf2_potrf<false,false,1,rocblas_double_complex>(arg);
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, CholeskyFact,
+// batched tests
+
+TEST_P(POTF2, batched__float) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<true,true,0,float>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<true,true,0,float>(arg);
+}
+
+TEST_P(POTF2, batched__double) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<true,true,0,double>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<true,true,0,double>(arg);
+}
+
+TEST_P(POTF2, batched__float_complex) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<true,true,0,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<true,true,0,rocblas_float_complex>(arg);
+}
+
+TEST_P(POTF2, batched__double_complex) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<true,true,0,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<true,true,0,rocblas_double_complex>(arg);
+}
+
+TEST_P(POTRF, batched__float) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<true,true,1,float>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<true,true,1,float>(arg);
+}
+
+TEST_P(POTRF, batched__double) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<true,true,1,double>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<true,true,1,double>(arg);
+}
+
+TEST_P(POTRF, batched__float_complex) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<true,true,1,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<true,true,1,rocblas_float_complex>(arg);
+}
+
+TEST_P(POTRF, batched__double_complex) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<true,true,1,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<true,true,1,rocblas_double_complex>(arg);
+}
+
+
+// strided_batched cases
+
+TEST_P(POTF2, strided_batched__float) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,true,0,float>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<false,true,0,float>(arg);
+}
+
+TEST_P(POTF2, strided_batched__double) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,true,0,double>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<false,true,0,double>(arg);
+}
+
+TEST_P(POTF2, strided_batched__float_complex) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,true,0,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<false,true,0,rocblas_float_complex>(arg);
+}
+
+TEST_P(POTF2, strided_batched__double_complex) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,true,0,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<false,true,0,rocblas_double_complex>(arg);
+}
+
+TEST_P(POTRF, strided_batched__float) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,true,1,float>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<false,true,1,float>(arg);
+}
+
+TEST_P(POTRF, strided_batched__double) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,true,1,double>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<false,true,1,double>(arg);
+}
+
+TEST_P(POTRF, strided_batched__float_complex) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,true,1,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<false,true,1,rocblas_float_complex>(arg);
+}
+
+TEST_P(POTRF, strided_batched__double_complex) {
+    Arguments arg = setup_chol_arguments(GetParam());
+
+    if (arg.uplo_option == 'L' && arg.N == 0)
+        testing_potf2_potrf_bad_arg<false,true,1,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_potf2_potrf<false,true,1,rocblas_double_complex>(arg);
+}
+
+
+
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, POTF2,
                         Combine(ValuesIn(large_matrix_size_range),
                                 ValuesIn(uplo_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, CholeskyFact,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, POTF2,
+                        Combine(ValuesIn(matrix_size_range),
+                                ValuesIn(uplo_range)));
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, POTRF,
+                        Combine(ValuesIn(large_matrix_size_range),
+                                ValuesIn(uplo_range)));
+
+INSTANTIATE_TEST_CASE_P(checkin_lapack, POTRF,
                         Combine(ValuesIn(matrix_size_range),
                                 ValuesIn(uplo_range)));

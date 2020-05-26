@@ -14,10 +14,9 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle, const rocblas_int m,
     //logging is missing ???    
 
     // argument checking
-    if (m < 0 || n < 0 || lda < m) 
-        return rocblas_status_invalid_size;
-    if (!A || !ipiv || !info)
-        return rocblas_status_invalid_pointer;
+    rocblas_status st = rocsolver_getf2_getrf_argCheck(m,n,lda,A,ipiv,info);
+    if (st != rocblas_status_continue)
+        return st;
 
     rocblas_stride strideA = 0;
     rocblas_stride strideP = 0;

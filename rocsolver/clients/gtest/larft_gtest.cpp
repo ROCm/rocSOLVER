@@ -1,14 +1,9 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
 #include "testing_larft.hpp"
-#include "utility.h"
-#include <gtest/gtest.h>
-#include <math.h>
-#include <stdexcept>
-#include <vector>
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -19,21 +14,31 @@ using namespace std;
 
 typedef std::tuple<vector<int>, vector<int>> mTuple;
 
-//{N,ldv,s}
+// each order_size_range vector is {N,ldv,s}
 //if s = 0, then storev = 'C'
 //if s = 1, then storev = 'R'
-const vector<vector<int>> order_size_range = {
-    {-1,1,0}, {0,1,0}, {10,5,0}, {10,3,1}, {15,15,0}, {20,20,1}, {35,50,0}  
-};
 
-//{K,ldt,d}
+// each reflector_size_range is {K,ldt,d}
 //if d = 0, then direct = 'F'
 //if d = 1, then direct = 'B'
 //FOR NOW ONLY FORWARD DIRECTION HAS BEEN IMPLEMENTED
-const vector<vector<int>> reflector_size_range = {
-    {0,1,0}, {5,1,0}, {5,5,0}, {10,20,0}, {15,15,0}
+
+// case when n == 0 and k == 0 will also execute the bad arguments test
+// (null handle, null pointers and invalid values)
+
+// for checkin_lapack tests
+const vector<vector<int>> order_size_range = {
+    {0,1,0},                        //quick return
+    {-1,1,0}, {10,5,0}, {10,3,1},   //invalid
+    {15,15,0}, {20,20,1}, {35,50,0}  
 };
 
+const vector<vector<int>> reflector_size_range = {
+    {0,1,0}, {5,1,0},               //invalid
+    {5,5,0}, {10,20,0}, {15,15,0}
+};
+
+// for daily_lapack tests
 const vector<vector<int>> large_order_size_range = {
     {192,192,0}, {640,75,1}, {1024,1200,0}, {2048,100,1}
 };
@@ -41,6 +46,8 @@ const vector<vector<int>> large_order_size_range = {
 const vector<vector<int>> large_reflector_size_range = {
     {15,15,0}, {25,40,0}, {45,45,0}, {60,70,0}, {75,75,0}
 };
+
+
 
 Arguments larft_setup_arguments(mTuple tup) {
 
@@ -62,78 +69,57 @@ Arguments larft_setup_arguments(mTuple tup) {
   return arg;
 }
 
-class HHreflec_blk : public ::TestWithParam<mTuple> {
+
+class LARFT : public ::TestWithParam<mTuple> {
 protected:
-  HHreflec_blk() {}
-  virtual ~HHreflec_blk() {}
+  LARFT() {}
+  virtual ~LARFT() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
 
-TEST_P(HHreflec_blk, larft_float) {
-  Arguments arg = larft_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larft<float,float>(arg);
+TEST_P(LARFT, __float) {
+    Arguments arg = larft_setup_arguments(GetParam());
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
+    if (arg.N == 0 && arg.K == 0)
+        testing_larft_bad_arg<float>();    
 
-    if (arg.N < 0 || arg.K < 1 || (arg.ldv < arg.N && arg.storev == 'C') || (arg.ldv < arg.K && arg.storev == 'R') || arg.ldt < arg.K) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } 
-  }
+    testing_larft<float>(arg);
 }
 
-TEST_P(HHreflec_blk, larft_double) {
-  Arguments arg = larft_setup_arguments(GetParam());
+TEST_P(LARFT, __double) {
+    Arguments arg = larft_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larft<double,double>(arg);
+    if (arg.N == 0 && arg.K == 0)
+        testing_larft_bad_arg<double>();    
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0 || arg.K < 1 || (arg.ldv < arg.N && arg.storev == 'C') || (arg.ldv < arg.K && arg.storev == 'R') || arg.ldt < arg.K) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } 
-  }
+    testing_larft<double>(arg);
 }
 
-TEST_P(HHreflec_blk, larft_float_complex) {
+TEST_P(LARFT, __float_complex) {
   Arguments arg = larft_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larft<rocblas_float_complex,float>(arg);
+    if (arg.N == 0 && arg.K == 0)
+        testing_larft_bad_arg<rocblas_float_complex>();    
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0 || arg.K < 1 || (arg.ldv < arg.N && arg.storev == 'C') || (arg.ldv < arg.K && arg.storev == 'R') || arg.ldt < arg.K) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } 
-  }
+    testing_larft<rocblas_float_complex>(arg);
 }
 
-TEST_P(HHreflec_blk, larft_double_complex) {
+TEST_P(LARFT, __double_complex) {
   Arguments arg = larft_setup_arguments(GetParam());
 
-  rocblas_status status = testing_larft<rocblas_double_complex,double>(arg);
+    if (arg.N == 0 && arg.K == 0)
+        testing_larft_bad_arg<rocblas_double_complex>();    
 
-  // if not success, then the input argument is problematic, so detect the error
-  // message
-  if (status != rocblas_status_success) {
-
-    if (arg.N < 0 || arg.K < 1 || (arg.ldv < arg.N && arg.storev == 'C') || (arg.ldv < arg.K && arg.storev == 'R') || arg.ldt < arg.K) {
-      EXPECT_EQ(rocblas_status_invalid_size, status);
-    } 
-  }
+    testing_larft<rocblas_double_complex>(arg);
 }
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, HHreflec_blk,
+
+INSTANTIATE_TEST_CASE_P(daily_lapack, LARFT,
                         Combine(ValuesIn(large_order_size_range),
                                 ValuesIn(large_reflector_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, HHreflec_blk,
+INSTANTIATE_TEST_CASE_P(checkin_lapack, LARFT,
                         Combine(ValuesIn(order_size_range),
                                 ValuesIn(reflector_size_range)));

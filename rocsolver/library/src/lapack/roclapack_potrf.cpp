@@ -14,10 +14,9 @@ rocblas_status rocsolver_potrf_impl(rocblas_handle handle, const rocblas_fill up
     //logging is missing ???    
     
     // argument checking
-    if (!A || !info)
-        return rocblas_status_invalid_pointer;
-    if (n < 0 || lda < n)
-        return rocblas_status_invalid_size;
+    rocblas_status st = rocsolver_potf2_potrf_argCheck(uplo,n,lda,A,info);
+    if (st != rocblas_status_continue)
+        return st;
 
     rocblas_stride strideA = 0;
     rocblas_int batch_count = 1;

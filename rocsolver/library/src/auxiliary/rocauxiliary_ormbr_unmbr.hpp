@@ -12,9 +12,8 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "common_device.hpp"
-#include "../auxiliary/rocauxiliary_ormqr_unmqr.hpp"
-#include "../auxiliary/rocauxiliary_ormlq_unmlq.hpp"
+#include "rocauxiliary_ormqr_unmqr.hpp"
+#include "rocauxiliary_ormlq_unmlq.hpp"
 
 template <typename T, bool BATCHED>
 void rocsolver_ormbr_unmbr_getMemorySize(const rocblas_storev storev, const rocblas_side side, const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
@@ -25,6 +24,41 @@ void rocsolver_ormbr_unmbr_getMemorySize(const rocblas_storev storev, const rocb
         rocsolver_ormqr_unmqr_getMemorySize<T,BATCHED>(side,m,n,min(nq,k),batch_count,size_1,size_2,size_3,size_4);
     else
         rocsolver_ormlq_unmlq_getMemorySize<T,BATCHED>(side,m,n,min(nq,k),batch_count,size_1,size_2,size_3,size_4);
+}
+
+template <bool COMPLEX, typename T, typename U>
+rocblas_status rocsolver_ormbr_argCheck(const rocblas_storev storev, const rocblas_side side, const rocblas_operation trans,
+                                        const rocblas_int m, const rocblas_int n, const rocblas_int k, const rocblas_int lda,
+                                        const rocblas_int ldc, T A, T C, U ipiv)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    if (side != rocblas_side_left && side != rocblas_side_right)
+        return rocblas_status_invalid_value;
+    if (trans != rocblas_operation_none && trans != rocblas_operation_transpose && trans != rocblas_operation_conjugate_transpose)
+        return rocblas_status_invalid_value;
+    if ((COMPLEX && trans == rocblas_operation_transpose) || (!COMPLEX && trans == rocblas_operation_conjugate_transpose))
+        return rocblas_status_invalid_value;
+    if (storev != rocblas_column_wise && storev != rocblas_row_wise)
+        return rocblas_status_invalid_value;    
+    bool left = (side == rocblas_side_left);
+    bool row = (storev == rocblas_row_wise);
+
+    // 2. invalid size
+    rocblas_int nq = left ? m : n;
+    if (m < 0 || n < 0 ||  k < 0 || ldc < m)
+        return rocblas_status_invalid_size;
+    if (!row && lda < nq)
+        return rocblas_status_invalid_size;
+    if (row && lda < min(nq,k))
+        return rocblas_status_invalid_size;
+
+    // 3. invalid pointers
+    if ((min(nq,k) > 0 && !A) || (min(nq,k) > 0 && !ipiv) || (m*n && !C))
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U, bool COMPLEX = is_complex<T>>

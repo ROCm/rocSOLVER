@@ -15,22 +15,10 @@ rocblas_status rocsolver_ormbr_unmbr_impl(rocblas_handle handle, const rocblas_s
     //logging is missing ???
 
     // argument checking
-    if (m < 0 || n < 0 ||  k < 0 || ldc < m)
-        return rocblas_status_invalid_size;
+    rocblas_status st = rocsolver_ormbr_argCheck<COMPLEX>(storev,side,trans,m,n,k,lda,ldc,A,C,ipiv);
+    if (st != rocblas_status_continue)
+        return st;   
     
-    rocblas_int nq = side == rocblas_side_left ? m : n;
-
-    if (storev == rocblas_column_wise && lda < nq)
-        return rocblas_status_invalid_size;
-    if (storev == rocblas_row_wise && lda < min(nq,k))
-        return rocblas_status_invalid_size;
-    if (!A || !ipiv || !C)
-        return rocblas_status_invalid_pointer;
-    if (COMPLEX && trans == rocblas_operation_transpose)
-        return rocblas_status_invalid_value;
-    if (!COMPLEX && trans == rocblas_operation_conjugate_transpose)
-        return rocblas_status_invalid_value;
-
     rocblas_int strideA = 0;
     rocblas_int strideP = 0;
     rocblas_int strideC = 0;
