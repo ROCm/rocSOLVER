@@ -43,7 +43,7 @@ inline void xaxpy(int* n, double* alpha, rocblas_double_complex* x, int* incx, r
 /* Norm of error functions */
 
 template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
-double norm_error(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda, T* gold, T* comp)
+double norm_error(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda, T* gold, T* comp, bool absVal = false)
 {
     // norm type can be 'O', 'I', 'F', 'o', 'i', 'f' for one, infinity or Frobenius norm
     // one norm is max column sum
@@ -55,8 +55,8 @@ double norm_error(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda,
 
     for(rocblas_int i = 0; i < N * lda; i++)
     {
-        gold_double[i] = double(gold[i]);
-        comp_double[i] = double(comp[i]);
+        gold_double[i] = absVal ? abs(double(gold[i])) : double(gold[i]);
+        comp_double[i] = absVal ? abs(double(comp[i])) : double(comp[i]);
     }
 
     double work[M];

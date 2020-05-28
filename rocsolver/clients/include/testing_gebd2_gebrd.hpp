@@ -182,9 +182,9 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
     double err;
     *max_err = 0;
     for (rocblas_int b = 0; b < bc; ++b) {
-        err = norm_error('F',1,s,1,hD[b],hDRes[b]);
+        err = norm_error('F',1,s,1,hD[b],hDRes[b],true);
         *max_err = err > *max_err ? err : *max_err;
-        err = norm_error('F',1,s-1,1,hE[b],hERes[b]);
+        err = norm_error('F',1,s-1,1,hE[b],hERes[b],true);
         *max_err = err > *max_err ? err : *max_err;
     }
 }
