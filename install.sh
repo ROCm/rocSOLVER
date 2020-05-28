@@ -453,6 +453,7 @@ case "${ID}" in
 esac
 
 CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" ${main}
+check_exit_code "$?"
 
 make -j$(nproc) install
 check_exit_code "$?"
