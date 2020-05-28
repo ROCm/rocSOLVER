@@ -62,13 +62,10 @@ rocblas_status rocsolver_gebrd_batched_impl(rocblas_handle handle, const rocblas
     hipLaunchKernelGGL(set_ptr_array, dim3(batch_count,1,1), dim3(1,1,1), 0, stream, (T**)XArr, (T*)X, strideX);
     hipLaunchKernelGGL(set_ptr_array, dim3(batch_count,1,1), dim3(1,1,1), 0, stream, (T**)YArr, (T*)Y, strideY);
 
-    // scalars constants for rocblas functions calls
-    // (to standarize and enable re-use, size_1 always equals 3)
-    std::vector<T> sca(size_1);
-    sca[0] = -1;
-    sca[1] = 0;
-    sca[2] = 1;
-    RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca.data(), sizeof(T)*size_1, hipMemcpyHostToDevice));
+    // scalar constants for rocblas functions calls
+    // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
+    T sca[] = { -1, 0, 1 };
+    RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
 
     // execution
     rocblas_status status =
