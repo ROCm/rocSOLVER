@@ -223,13 +223,44 @@ void testing_geqr2_geqrf(Arguments argus)
         return;
     }
 
-    if (BATCHED) {
+    if (BATCHED && STRIDED) {
         // memory allocations
         host_batch_vector<T> hA(size_A,1,bc);
         host_batch_vector<T> hARes(size_A,1,bc);
         host_strided_batch_vector<T> hIpiv(size_P,1,stP,bc);
         device_batch_vector<T> dA(size_A,1,bc);
         device_strided_batch_vector<T> dIpiv(size_P,1,stP,bc);
+        if (size_A) CHECK_HIP_ERROR(dA.memcheck());
+        if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
+
+        // check quick return
+        if (m == 0 || n == 0 || bc == 0) {
+            EXPECT_ROCBLAS_STATUS(rocsolver_geqr2_geqrf(STRIDED,GEQRF,handle, m, n, dA.data(), lda, stA, dIpiv.data(), stP, bc),
+                                  rocblas_status_success);
+            if (argus.timing)
+                ROCSOLVER_BENCH_INFORM(0);
+
+            return;
+        }
+
+        // check computations
+        if (argus.unit_check || argus.norm_check) 
+            geqr2_geqrf_getError<STRIDED,GEQRF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+                                          hA, hARes, hIpiv, &max_error);
+
+        // collect performance data
+        if (argus.timing) 
+            geqr2_geqrf_getPerfData<STRIDED,GEQRF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls);
+    } 
+
+    else if (BATCHED) {
+        // memory allocations
+        host_batch_vector<T> hA(size_A,1,bc);
+        host_batch_vector<T> hARes(size_A,1,bc);
+        host_batch_vector<T> hIpiv(size_P,1,bc);
+        device_batch_vector<T> dA(size_A,1,bc);
+        device_batch_vector<T> dIpiv(size_P,1,bc);
         if (size_A) CHECK_HIP_ERROR(dA.memcheck());
         if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
 
