@@ -70,8 +70,8 @@ rocblas_status rocsolver_lacgv_template(rocblas_handle handle, const rocblas_int
     rocblas_int offset = incx < 0 ? shiftx - (n-1)*incx : shiftx;
 
     // conjugate x
-    rocblas_int blocks = (n - 1)/1024 + 1;
-    hipLaunchKernelGGL(conj_in_place<T>, dim3(1,blocks,batch_count), dim3(1,1024,1), 0, stream,
+    rocblas_int blocks = (n - 1)/64 + 1;
+    hipLaunchKernelGGL(conj_in_place<T>, dim3(1,blocks,batch_count), dim3(1,64,1), 0, stream,
                        1, n, x, offset, incx, stridex);
 
     return rocblas_status_success;
