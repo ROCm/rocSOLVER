@@ -329,6 +329,49 @@ TEST_P(GEQRF, strided_batched__double_complex) {
 }
 
 
+// ptr_batched tests
+
+TEST_P(GEQRF, ptr_batched__float) {
+    Arguments arg = setup_arguments_qr(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_geqr2_geqrf_bad_arg<true,false,1,float>();
+
+    arg.batch_count = 3;
+    testing_geqr2_geqrf<true,false,1,float>(arg);
+}
+
+TEST_P(GEQRF, ptr_batched__double) {
+    Arguments arg = setup_arguments_qr(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_geqr2_geqrf_bad_arg<true,false,1,double>();
+
+    arg.batch_count = 3;
+    testing_geqr2_geqrf<true,false,1,double>(arg);
+}
+
+TEST_P(GEQRF, ptr_batched__float_complex) {
+    Arguments arg = setup_arguments_qr(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_geqr2_geqrf_bad_arg<true,false,1,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_geqr2_geqrf<true,false,1,rocblas_float_complex>(arg);
+}
+
+TEST_P(GEQRF, ptr_batched__double_complex) {
+    Arguments arg = setup_arguments_qr(GetParam());
+
+    if (arg.M == 0 && arg.N == 0)
+        testing_geqr2_geqrf_bad_arg<true,false,1,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_geqr2_geqrf<true,false,1,rocblas_double_complex>(arg);
+}
+
+
 INSTANTIATE_TEST_CASE_P(daily_lapack, GEQR2,
                         Combine(ValuesIn(large_matrix_size_range),
                                 ValuesIn(large_n_size_range)));

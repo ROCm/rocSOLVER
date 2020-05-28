@@ -69,6 +69,7 @@ set( rocsolver_lapack_source
   lapack/roclapack_gelq2_strided_batched.cpp
   lapack/roclapack_geqrf.cpp
   lapack/roclapack_geqrf_batched.cpp
+  lapack/roclapack_geqrf_ptr_batched.cpp
   lapack/roclapack_geqrf_strided_batched.cpp
   lapack/roclapack_gelqf.cpp
   lapack/roclapack_gelqf_batched.cpp
