@@ -565,7 +565,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of the matrix A.
     @param[in]
-    k         rocblas_int. k >= 0.\n
+    k         rocblas_int. min(m,n) >= k >= 0.\n
               The number of leading rows and columns of the matrix A to be reduced.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n

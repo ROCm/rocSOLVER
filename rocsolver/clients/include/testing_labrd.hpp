@@ -50,9 +50,9 @@ void labrd_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,0,n,nb,(T)nullptr,lda,dD,dE,dTauq,dTaup,(T)nullptr,ldx,dY,ldy), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,0,n,0,(T)nullptr,lda,dD,dE,dTauq,dTaup,(T)nullptr,ldx,dY,ldy), 
                           rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,0,nb,(T)nullptr,lda,dD,dE,dTauq,dTaup,dX,ldx,(T)nullptr,ldy), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,0,0,(T)nullptr,lda,dD,dE,dTauq,dTaup,dX,ldx,(T)nullptr,ldy), 
                           rocblas_status_success);
     EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,0,dA,lda,(S)nullptr,(S)nullptr,(U)nullptr,(U)nullptr,(T)nullptr,ldx,(T)nullptr,ldy),
                           rocblas_status_success);
@@ -242,7 +242,7 @@ void testing_labrd(Arguments argus)
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0 ;
 
     // check invalid sizes 
-    bool invalid_size = (m < 0 || n < 0 || nb < 0 || lda < m || ldx < m || ldy < n);
+    bool invalid_size = (m < 0 || n < 0 || nb < 0 || nb > min(m,n) || lda < m || ldx < m || ldy < n);
     if (invalid_size) {
         EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle, m, n, nb, (T*)nullptr, lda, (S*)nullptr, (S*)nullptr, (T*)nullptr, (T*)nullptr, (T*)nullptr, ldx, (T*)nullptr, ldy),
                               rocblas_status_invalid_size);

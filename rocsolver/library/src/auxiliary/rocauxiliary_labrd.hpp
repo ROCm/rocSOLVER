@@ -44,7 +44,7 @@ rocblas_status rocsolver_labrd_argCheck(const rocblas_int m, const rocblas_int n
     // N/A
 
     // 2. invalid size
-    if (m < 0 || n < 0 || nb < 0 || lda < m || ldx < m || ldy < n || batch_count < 0)
+    if (m < 0 || n < 0 || nb < 0 || nb > min(m,n) || lda < m || ldx < m || ldy < n || batch_count < 0)
         return rocblas_status_invalid_size;
 
     // 3. invalid pointers
