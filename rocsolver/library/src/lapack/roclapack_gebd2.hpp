@@ -80,7 +80,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
 
             // copy A(j,j) to D and insert one to build/apply the householder matrix 
             hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
-                D, j, strideD, A, shiftA + idx2D(j,j,lda), strideA, true);
+                D, j, strideD, A, shiftA + idx2D(j,j,lda), lda, strideA, 1, true);
 
             // Apply Householder reflector H(j)
             if (j < n - 1)
@@ -106,7 +106,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
             
             // restore original value of A(j,j)
             hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
-                D, j, strideD, A, shiftA + idx2D(j,j,lda), strideA);
+                D, j, strideD, A, shiftA + idx2D(j,j,lda), lda, strideA, 1);
             
             if (j < n - 1)
             {
@@ -124,7 +124,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
 
                 // copy A(j,j+1) to E and insert one to build/apply the householder matrix 
                 hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
-                    E, j, strideE, A, shiftA + idx2D(j,j+1,lda), strideA, true);
+                    E, j, strideE, A, shiftA + idx2D(j,j+1,lda), lda, strideA, 1, true);
                 
                 // Apply Householder reflector G(j)
                 rocsolver_larf_template(handle,rocblas_side_right,          //side
@@ -142,12 +142,12 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
 
                 // restore original value of A(j,j+1)
                 hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
-                    E, j, strideE, A, shiftA + idx2D(j,j+1,lda), strideA);
+                    E, j, strideE, A, shiftA + idx2D(j,j+1,lda), lda, strideA, 1);
             }
             else
             {
                 // zero taup(j)
-                hipLaunchKernelGGL(reset_batch_info, dim3(1,batch_count), dim3(1,1), 0, stream, taup + j, strideP, 1, 0);
+                hipLaunchKernelGGL(reset_batch_info<T>, dim3(1,batch_count), dim3(1,1), 0, stream, taup + j, strideP, 1, 0);
             }
         }
     }
@@ -170,7 +170,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
             
             // copy A(j,j) to D and insert one to build/apply the householder matrix 
             hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
-                D, j, strideD, A, shiftA + idx2D(j,j,lda), strideA, true);
+                D, j, strideD, A, shiftA + idx2D(j,j,lda), lda, strideA, 1, true);
 
             // Apply Householder reflector G(j)
             if (j < m - 1)
@@ -191,7 +191,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
             
             // restore original value of A(j,j)
             hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
-                D, j, strideD, A, shiftA + idx2D(j,j,lda), strideA);
+                D, j, strideD, A, shiftA + idx2D(j,j,lda), lda, strideA, 1);
             
             if (j < m - 1)
             {
@@ -206,7 +206,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
 
                 // copy A(j+1,j) to D and insert one to build/apply the householder matrix 
                 hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
-                    E, j, strideE, A, shiftA + idx2D(j+1,j,lda), strideA, true);
+                    E, j, strideE, A, shiftA + idx2D(j+1,j,lda), lda, strideA, 1, true);
                 
                 // conjugate tauq
                 if (COMPLEX)
@@ -229,12 +229,12 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
 
                 // restore original value of A(j,j+1)
                 hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
-                    E, j, strideE, A, shiftA + idx2D(j+1,j,lda), strideA);
+                    E, j, strideE, A, shiftA + idx2D(j+1,j,lda), lda, strideA, 1);
             }
             else
             {
                 // zero tauq(j)
-                hipLaunchKernelGGL(reset_batch_info, dim3(1,batch_count), dim3(1,1), 0, stream, tauq + j, strideQ, 1, 0);
+                hipLaunchKernelGGL(reset_batch_info<T>, dim3(1,batch_count), dim3(1,1), 0, stream, tauq + j, strideQ, 1, 0);
             }
         }
     }

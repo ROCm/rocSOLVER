@@ -17,18 +17,6 @@
 #include "../auxiliary/rocauxiliary_labrd.hpp"
 
 
-template <typename T, typename U>
-__global__ void set_zero_batch(const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_stride strideA)
-{
-    int b = hipBlockIdx_x;
-    int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
-
-    T* a = load_ptr_batch<T>(A,b,shiftA,strideA);
-
-    if (i < n)
-        a[i] = 0;
-}
-
 template <typename T, bool BATCHED>
 void rocsolver_gebrd_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
                                   size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4, size_t *size_5, size_t *size_6)
@@ -99,11 +87,11 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle, const rocblas_int
 
     // zero X and Y
     blocks = (ldx*k - 1)/64 + 1;
-    hipLaunchKernelGGL(set_zero_batch<T>, dim3(batch_count,blocks,1), dim3(1,64,1), 0, stream,
-        ldx*k, X, shiftX, strideX);
+    hipLaunchKernelGGL(reset_batch_info<T>, dim3(blocks,batch_count,1), dim3(64,1,1), 0, stream,
+        X + shiftX, strideX, ldx*k, 0);
     blocks = (ldy*k - 1)/64 + 1;
-    hipLaunchKernelGGL(set_zero_batch<T>, dim3(batch_count,blocks,1), dim3(1,64,1), 0, stream,
-        ldy*k, Y, shiftY, strideY);
+    hipLaunchKernelGGL(reset_batch_info<T>, dim3(blocks,batch_count,1), dim3(64,1,1), 0, stream,
+        Y + shiftY, strideY, ldy*k, 0);
     
     while (j < dim - k) {
         // Reduce block to bidiagonal form
@@ -129,16 +117,16 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle, const rocblas_int
         blocks = (jb - 1)/64 + 1;
         if (m >= n)
         {
-            hipLaunchKernelGGL(restore_diag_n<T>, dim3(batch_count,blocks,1), dim3(1,64,1), 0, stream,
+            hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count,blocks,1), dim3(1,64,1), 0, stream,
                 D, j, strideD, A, shiftA + idx2D(j,j,lda), lda, strideA, jb);
-            hipLaunchKernelGGL(restore_diag_n<T>, dim3(batch_count,blocks,1), dim3(1,64,1), 0, stream,
+            hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count,blocks,1), dim3(1,64,1), 0, stream,
                 E, j, strideE, A, shiftA + idx2D(j,j+1,lda), lda, strideA, jb);
         }
         else
         {
-            hipLaunchKernelGGL(restore_diag_n<T>, dim3(batch_count,blocks,1), dim3(1,64,1), 0, stream,
+            hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count,blocks,1), dim3(1,64,1), 0, stream,
                 D, j, strideD, A, shiftA + idx2D(j,j,lda), lda, strideA, jb);
-            hipLaunchKernelGGL(restore_diag_n<T>, dim3(batch_count,blocks,1), dim3(1,64,1), 0, stream,
+            hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count,blocks,1), dim3(1,64,1), 0, stream,
                 E, j, strideE, A, shiftA + idx2D(j+1,j,lda), lda, strideA, jb);
         }
 

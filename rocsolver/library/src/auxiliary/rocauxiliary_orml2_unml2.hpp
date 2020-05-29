@@ -119,7 +119,7 @@ rocblas_status rocsolver_orml2_unml2_template(rocblas_handle handle, const rocbl
             rocsolver_lacgv_template<T>(handle, nq-i-1, A, shiftA + idx2D(i,i+1,lda), lda, strideA, batch_count);
     
         // insert one in A(i,i) tobuild/apply the householder matrix 
-        hipLaunchKernelGGL(set_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(i,i,lda),strideA,true);
+        hipLaunchKernelGGL(set_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(i,i,lda),lda,strideA,1,true);
 
         // Apply current Householder reflector 
         rocsolver_larf_template(handle,side,                        //side
@@ -134,7 +134,7 @@ rocblas_status rocsolver_orml2_unml2_template(rocblas_handle handle, const rocbl
                                 scalars, work, workArr);
 
         // restore original value of A(i,i)
-        hipLaunchKernelGGL(restore_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(i,i,lda),strideA);
+        hipLaunchKernelGGL(restore_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(i,i,lda),lda,strideA,1);
 
         if (COMPLEX && i < nq - 1)
             rocsolver_lacgv_template<T>(handle, nq-i-1, A, shiftA + idx2D(i,i+1,lda), lda, strideA, batch_count);

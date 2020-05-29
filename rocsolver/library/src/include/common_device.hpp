@@ -22,12 +22,12 @@ __global__ void reset_info(T *info, const rocblas_int n, U val) {
         info[idx] = T(val);
 }
 
-template<typename T, typename U>
-__global__ void reset_batch_info(T *info, const rocblas_stride stride, const rocblas_int n, U val) {
+template<typename T, typename S, typename U>
+__global__ void reset_batch_info(U info, const rocblas_stride stride, const rocblas_int n, S val) {
     int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     int b = hipBlockIdx_y;
 
-    T* inf = info + b * stride;
+    T* inf = load_ptr_batch<T>(info,b,0,stride);
     if (idx < n)
         inf[idx] = T(val);
 }
@@ -70,47 +70,8 @@ __global__ void restau(const rocblas_int k, T *ipiv, const rocblas_stride stride
 
 template <typename T, typename S, typename U, std::enable_if_t<!is_complex<T> || is_complex<S>, int> = 0>
 __global__ void set_diag(S* D, const rocblas_int shiftd, const rocblas_stride strided,
-                         U A, const rocblas_int shifta, const rocblas_stride stridea, bool set_one)
-{
-    int b = hipBlockIdx_x;
-
-    S* d = load_ptr_batch<S>(D,b,shiftd,strided);
-    T* a = load_ptr_batch<T>(A,b,shifta,stridea);
-
-    d[0] = a[0];
-    a[0] = set_one ? T(1) : a[0];
-}
-
-template <typename T, typename S, typename U, std::enable_if_t<is_complex<T> && !is_complex<S>, int> = 0>
-__global__ void set_diag(S* D, const rocblas_int shiftd, const rocblas_stride strided,
-                         U A, const rocblas_int shifta, const rocblas_stride stridea, bool set_one)
-{
-    int b = hipBlockIdx_x;
-
-    S* d = load_ptr_batch<S>(D,b,shiftd,strided);
-    T* a = load_ptr_batch<T>(A,b,shifta,stridea);
-
-    d[0] = a[0].real();
-    a[0] = set_one ? T(1) : a[0];
-}
-
-template <typename T, typename S, typename U>
-__global__ void restore_diag(S* D, const rocblas_int shiftd, const rocblas_stride strided,
-                             U A, const rocblas_int shifta, const rocblas_stride stridea)
-{
-    int b = hipBlockIdx_x;
-
-    S* d = load_ptr_batch<S>(D,b,shiftd,strided);
-    T* a = load_ptr_batch<T>(A,b,shifta,stridea);
-
-    a[0] = d[0];
-}
-
-
-template <typename T, typename S, typename U, std::enable_if_t<!is_complex<T> || is_complex<S>, int> = 0>
-__global__ void set_diag_n(S* D, const rocblas_int shiftd, const rocblas_stride strided,
-                           U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
-                           const rocblas_int n, bool set_one)
+                         U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
+                         const rocblas_int n, bool set_one)
 {
     int b = hipBlockIdx_x;
     int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -127,9 +88,9 @@ __global__ void set_diag_n(S* D, const rocblas_int shiftd, const rocblas_stride 
 }
 
 template <typename T, typename S, typename U, std::enable_if_t<is_complex<T> && !is_complex<S>, int> = 0>
-__global__ void set_diag_n(S* D, const rocblas_int shiftd, const rocblas_stride strided,
-                           U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
-                           const rocblas_int n, bool set_one)
+__global__ void set_diag(S* D, const rocblas_int shiftd, const rocblas_stride strided,
+                         U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
+                         const rocblas_int n, bool set_one)
 {
     int b = hipBlockIdx_x;
     int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -146,9 +107,9 @@ __global__ void set_diag_n(S* D, const rocblas_int shiftd, const rocblas_stride 
 }
 
 template <typename T, typename S, typename U>
-__global__ void restore_diag_n(S* D, const rocblas_int shiftd, const rocblas_stride strided,
-                               U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
-                               const rocblas_int n)
+__global__ void restore_diag(S* D, const rocblas_int shiftd, const rocblas_stride strided,
+                             U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
+                             const rocblas_int n)
 {
     int b = hipBlockIdx_x;
     int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;

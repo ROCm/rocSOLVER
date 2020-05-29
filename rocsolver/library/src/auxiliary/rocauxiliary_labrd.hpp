@@ -105,7 +105,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle, const rocblas_int
                                     (tauq + j), strideQ,                   //tau
                                     batch_count, norms, work);
             hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
-                D, j, strideD, A, shiftA + idx2D(j,j,lda), strideA, j < n-1);
+                D, j, strideD, A, shiftA + idx2D(j,j,lda), lda, strideA, 1, j < n-1);
 
             if (j < n - 1)
             {
@@ -168,7 +168,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle, const rocblas_int
                                         (taup + j), strideP,                   //tau
                                         batch_count, norms, work);
                 hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
-                    E, j, strideE, A, shiftA + idx2D(j,j+1,lda), strideA, true);
+                    E, j, strideE, A, shiftA + idx2D(j,j+1,lda), lda, strideA, 1, true);
 
                 // compute column j of X
                 rocblasCall_gemv<T>(handle, rocblas_operation_none, m-j-1, n-j-1,
@@ -238,7 +238,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle, const rocblas_int
                                     (taup + j), strideP,                   //tau
                                     batch_count, norms, work);
             hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
-                D, j, strideD, A, shiftA + idx2D(j,j,lda), strideA, j < m-1);
+                D, j, strideD, A, shiftA + idx2D(j,j,lda), lda, strideA, 1, j < m-1);
             
             if (j < m - 1)
             {
@@ -298,7 +298,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle, const rocblas_int
                                         (tauq + j), strideQ,                   //tau
                                         batch_count, norms, work);
                 hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
-                    E, j, strideE, A, shiftA + idx2D(j+1,j,lda), strideA, true);
+                    E, j, strideE, A, shiftA + idx2D(j+1,j,lda), lda, strideA, 1, true);
                 
                 // compute column j of Y
                 rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, m-j-1, n-j-1,

@@ -5,15 +5,6 @@
 #define batched
 #include "roclapack_gebrd.hpp"
 
-template <typename T>
-__global__ void set_ptr_array(T** ptrs, T* array, const rocblas_stride stride)
-{
-    int b = hipBlockIdx_x;
-
-    ptrs[b] = array + b*stride;
-}
-
-
 template <typename S, typename T, typename U>
 rocblas_status rocsolver_gebrd_batched_impl(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                                         U A, const rocblas_int lda, S* D, const rocblas_stride strideD,
@@ -57,10 +48,11 @@ rocblas_status rocsolver_gebrd_batched_impl(rocblas_handle handle, const rocblas
     if (!scalars || (size_2 && !work) || (size_3 && !workArr) || (size_4 && !diag) || (size_5 && !X) || (size_6 && !Y))
         return rocblas_status_memory_error;
     
+    rocblas_int blocks = (batch_count - 1)/32 + 1;
     hipMalloc(&XArr, sizeof(T*) * batch_count);
     hipMalloc(&YArr, sizeof(T*) * batch_count);
-    hipLaunchKernelGGL(set_ptr_array, dim3(batch_count,1,1), dim3(1,1,1), 0, stream, (T**)XArr, (T*)X, strideX);
-    hipLaunchKernelGGL(set_ptr_array, dim3(batch_count,1,1), dim3(1,1,1), 0, stream, (T**)YArr, (T*)Y, strideY);
+    hipLaunchKernelGGL(get_array, dim3(blocks,1,1), dim3(32,1,1), 0, stream, (T**)XArr, (T*)X, strideX, batch_count);
+    hipLaunchKernelGGL(get_array, dim3(blocks,1,1), dim3(32,1,1), 0, stream, (T**)YArr, (T*)Y, strideY, batch_count);
 
     // scalar constants for rocblas functions calls
     // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
