@@ -15,7 +15,7 @@ typedef enum rocblas_initialization_ : int
     rocblas_initialization_hpl        = 333,
 } rocblas_initialization;
 
-inline rocblas_ostream& operator<<(rocblas_ostream& os, rocblas_initialization init)
+inline rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_initialization init)
 {
 #define CASE(x) \
     case x:     \
