@@ -71,6 +71,7 @@ set(rocsolver_test_source
 
 set( rocsolver_benchmark_common
       ../../../rocblascommon/clients/common/utility.cpp
+      ../../../rocblascommon/library/src/rocblas_ostream.cpp
       ../common/cblas_interface.cpp
     )
 

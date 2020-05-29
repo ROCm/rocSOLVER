@@ -43,6 +43,7 @@ endif( )
 set( rocsolver_benchmark_common
       ../common/cblas_interface.cpp
       ../../../rocblascommon/clients/common/utility.cpp
+      ../../../rocblascommon/library/src/rocblas_ostream.cpp
     )
 
 add_executable( rocsolver-bench client.cpp ${rocsolver_benchmark_common} )
