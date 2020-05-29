@@ -1,9 +1,9 @@
 /************************************************************************
  * Derived from the BSD3-licensed
- * LAPACK routine (version 3.9.0) --
+ * LAPACK routine (version 3.8.0) --
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
- *     November 2019
+ *     November 2017
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 

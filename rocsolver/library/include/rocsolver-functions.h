@@ -527,7 +527,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
                                                  const rocblas_int lda); 
 
 /*! \brief LABRD computes the bidiagonal form of the first k rows and columns of a general
-    m-by-n matrix A, as well as the matrices X and Y needed to reduce the remaining parts of A.
+    m-by-n matrix A, as well as the matrices X and Y needed to reduce the remaining part of A.
 
     \details
     The bidiagonal form is given by:
@@ -537,22 +537,24 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
     where B is upper bidiagonal if m >= n and lower bidiagonal if m < n, and Q and 
     P are orthogonal/unitary matrices represented as the product of Householder matrices
 
-        Q = H(1) * H(2) * ... *  H(n)  and P = G(1) * G(2) * ... * G(n-1), if m >= n, or
-        Q = H(1) * H(2) * ... * H(m-1) and P = G(1) * G(2) * ... *  G(m),  if m < n
+        Q = H(1) * H(2) * ... *  H(k)  and P = G(1) * G(2) * ... * G(k-1), if m >= n, or
+        Q = H(1) * H(2) * ... * H(k-1) and P = G(1) * G(2) * ... *  G(k),  if m < n
 
     Each Householder matrix H(i) and G(i) is given by
 
-        H(i) = I - tauq[i-1] * v(i)' * v(i), and
-        G(i) = I - taup[i-1] * u(i)' * u(i)
+        H(i) = I - tauq[i-1] * v(i) * v(i)', and
+        G(i) = I - taup[i-1] * u(i) * u(i)'
     
-    where the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1;
+    If m >= n, the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1;
     while the first i elements of the Householder vector u(i) are zero, and u(i)[i+1] = 1.
+    If m < n, the first i elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1;
+    while the first i-1 elements of the Householder vector u(i) are zero, and u(i)[i] = 1.
 
     The unreduced part of the matrix A can be updated using a block update:
 
-        A = A - V * Y**H - X * U**H
+        A = A - V * Y' - X * U'
 
-    where V is an n-by-k matrix and U is an n-by-k formed using the vectors v and u.
+    where V is an m-by-k matrix and U is an n-by-k formed using the vectors v and u.
 
     @param[in]
     handle    rocblas_handle.
@@ -580,26 +582,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
     lda       rocblas_int. lda >= m.\n
               specifies the leading dimension of A.
     @param[out]
-    D         pointer to real type. Array on the GPU of dimension min(m,n).\n
+    D         pointer to real type. Array on the GPU of dimension k.\n
               The diagonal elements of B.
     @param[out]
-    E         pointer to real type. Array on the GPU of dimension min(m,n)-1.\n
+    E         pointer to real type. Array on the GPU of dimension k.\n
               The off-diagonal elements of B.
     @param[out]
-    tauq      pointer to type. Array on the GPU of dimension min(m,n).\n
+    tauq      pointer to type. Array on the GPU of dimension k.\n
               The scalar factors of the Householder matrices H(i).
     @param[out]
-    taup      pointer to type. Array on the GPU of dimension min(m,n).\n
+    taup      pointer to type. Array on the GPU of dimension k.\n
               The scalar factors of the Householder matrices G(i).
     @param[out]
     X         pointer to type. Array on the GPU of dimension ldx*k.\n
-              The m-by-k matrix needed to reduce the unreduced parts of A.
+              The m-by-k matrix needed to reduce the unreduced part of A.
     @param[in]
     ldx       rocblas_int. ldx >= m.\n
               specifies the leading dimension of X.
     @param[out]
     Y         pointer to type. Array on the GPU of dimension ldy*k.\n
-              The n-by-k matrix needed to reduce the unreduced parts of A.
+              The n-by-k matrix needed to reduce the unreduced part of A.
     @param[in]
     ldy       rocblas_int. ldy >= n.\n
               specifies the leading dimension of Y.
@@ -3683,11 +3685,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_strided_batched(rocblas_handle 
 
     Each Householder matrix H(i) and G(i) is given by
 
-        H(i) = I - tauq[i-1] * v(i)' * v(i), and
-        G(i) = I - taup[i-1] * u(i)' * u(i)
+        H(i) = I - tauq[i-1] * v(i) * v(i)', and
+        G(i) = I - taup[i-1] * u(i) * u(i)'
     
-    where the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1;
+    If m >= n, the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1;
     while the first i elements of the Householder vector u(i) are zero, and u(i)[i+1] = 1.
+    If m < n, the first i elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1;
+    while the first i-1 elements of the Householder vector u(i) are zero, and u(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -3783,11 +3787,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2(rocblas_handle handle,
 
     Each Householder matrix H_j(i) and G_j(i), for j = 1,2,...,batch_count, is given by
 
-        H_j(i) = I - tauq_j[i-1] * v_j(i)' * v_j(i), and
-        G_j(i) = I - taup_j[i-1] * u_j(i)' * u_j(i)
+        H_j(i) = I - tauq_j[i-1] * v_j(i) * v_j(i)', and
+        G_j(i) = I - taup_j[i-1] * u_j(i) * u_j(i)'
     
-    where the first i-1 elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1;
+    If m >= n, the first i-1 elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1;
     while the first i elements of the Householder vector u_j(i) are zero, and u_j(i)[i+1] = 1.
+    If m < n, the first i elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1;
+    while the first i-1 elements of the Householder vector u_j(i) are zero, and u_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -3926,11 +3932,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_batched(rocblas_handle handle,
 
     Each Householder matrix H_j(i) and G_j(i), for j = 1,2,...,batch_count, is given by
 
-        H_j(i) = I - tauq_j[i-1] * v_j(i)' * v_j(i), and
-        G_j(i) = I - taup_j[i-1] * u_j(i)' * u_j(i)
+        H_j(i) = I - tauq_j[i-1] * v_j(i) * v_j(i)', and
+        G_j(i) = I - taup_j[i-1] * u_j(i) * u_j(i)'
     
-    where the first i-1 elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1;
+    If m >= n, the first i-1 elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1;
     while the first i elements of the Householder vector u_j(i) are zero, and u_j(i)[i+1] = 1.
+    If m < n, the first i elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1;
+    while the first i-1 elements of the Householder vector u_j(i) are zero, and u_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4077,11 +4085,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_strided_batched(rocblas_handle 
 
     Each Householder matrix H(i) and G(i) is given by
 
-        H(i) = I - tauq[i-1] * v(i)' * v(i), and
-        G(i) = I - taup[i-1] * u(i)' * u(i)
+        H(i) = I - tauq[i-1] * v(i) * v(i)', and
+        G(i) = I - taup[i-1] * u(i) * u(i)'
     
-    where the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1;
+    If m >= n, the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1;
     while the first i elements of the Householder vector u(i) are zero, and u(i)[i+1] = 1.
+    If m < n, the first i elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1;
+    while the first i-1 elements of the Householder vector u(i) are zero, and u(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4177,11 +4187,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd(rocblas_handle handle,
 
     Each Householder matrix H_j(i) and G_j(i), for j = 1,2,...,batch_count, is given by
 
-        H_j(i) = I - tauq_j[i-1] * v_j(i)' * v_j(i), and
-        G_j(i) = I - taup_j[i-1] * u_j(i)' * u_j(i)
+        H_j(i) = I - tauq_j[i-1] * v_j(i) * v_j(i)', and
+        G_j(i) = I - taup_j[i-1] * u_j(i) * u_j(i)'
     
-    where the first i-1 elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1;
+    If m >= n, the first i-1 elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1;
     while the first i elements of the Householder vector u_j(i) are zero, and u_j(i)[i+1] = 1.
+    If m < n, the first i elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1;
+    while the first i-1 elements of the Householder vector u_j(i) are zero, and u_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4320,11 +4332,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_batched(rocblas_handle handle,
 
     Each Householder matrix H_j(i) and G_j(i), for j = 1,2,...,batch_count, is given by
 
-        H_j(i) = I - tauq_j[i-1] * v_j(i)' * v_j(i), and
-        G_j(i) = I - taup_j[i-1] * u_j(i)' * u_j(i)
+        H_j(i) = I - tauq_j[i-1] * v_j(i) * v_j(i)', and
+        G_j(i) = I - taup_j[i-1] * u_j(i) * u_j(i)'
     
-    where the first i-1 elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1;
+    If m >= n, the first i-1 elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1;
     while the first i elements of the Householder vector u_j(i) are zero, and u_j(i)[i+1] = 1.
+    If m < n, the first i elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1;
+    while the first i-1 elements of the Householder vector u_j(i) are zero, and u_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
