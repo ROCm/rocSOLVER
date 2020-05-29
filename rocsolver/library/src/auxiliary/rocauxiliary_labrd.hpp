@@ -48,7 +48,7 @@ rocblas_status rocsolver_labrd_argCheck(const rocblas_int m, const rocblas_int n
         return rocblas_status_invalid_size;
 
     // 3. invalid pointers
-    if (m*n*nb && (!A || !D || !E || !tauq || !taup || !X || !Y))
+    if ((m*n && !A) || (nb && !D) || (nb && !E) || (nb && !tauq) || (nb && !taup) || (m*nb && !X) || (n*nb && !Y))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;

@@ -50,11 +50,11 @@ void labrd_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,0,n,nb,(T)nullptr,lda,(S)nullptr,(S)nullptr,(U)nullptr,(U)nullptr,(T)nullptr,ldx,(T)nullptr,ldy),
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,0,n,nb,(T)nullptr,lda,dD,dE,dTauq,dTaup,(T)nullptr,ldx,dY,ldy), 
                           rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,0,nb,(T)nullptr,lda,(S)nullptr,(S)nullptr,(U)nullptr,(U)nullptr,(T)nullptr,ldx,(T)nullptr,ldy),
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,0,nb,(T)nullptr,lda,dD,dE,dTauq,dTaup,dX,ldx,(T)nullptr,ldy), 
                           rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,0,(T)nullptr,lda,(S)nullptr,(S)nullptr,(U)nullptr,(U)nullptr,(T)nullptr,ldx,(T)nullptr,ldy),
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,0,dA,lda,(S)nullptr,(S)nullptr,(U)nullptr,(U)nullptr,(T)nullptr,ldx,(T)nullptr,ldy),
                           rocblas_status_success);
 }
 
@@ -110,10 +110,9 @@ void labrd_getError(const rocblas_handle handle,
                         Td &dY, 
                         const rocblas_int ldy,
                         Th &hA,
+                        Th &hARes,
                         Sh &hD, 
-                        Sh &hDRes, 
                         Sh &hE, 
-                        Sh &hERes, 
                         Uh &hTauq, 
                         Uh &hTaup, 
                         Th &hX,
@@ -128,7 +127,9 @@ void labrd_getError(const rocblas_handle handle,
     // scale A to avoid singularities
     for (rocblas_int i = 0; i < m; i++) {
         for (rocblas_int j = 0; j < n; j++) {
-            if (i == j)
+            if (i == j ||
+                (m >= n && j == i+1) ||
+                (m < n && i == j+1))
                 hA[0][i + j * lda] += 400;
             else    
                 hA[0][i + j * lda] -= 4;
@@ -147,23 +148,20 @@ void labrd_getError(const rocblas_handle handle,
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_labrd(handle, m, n, nb, dA.data(), lda, dD.data(), dE.data(), dTauq.data(), dTaup.data(), dX.data(), ldx, dY.data(), ldy));
-    CHECK_HIP_ERROR(hDRes.transfer_from(dD));
-    CHECK_HIP_ERROR(hERes.transfer_from(dE));
+    CHECK_HIP_ERROR(hARes.transfer_from(dA));
     CHECK_HIP_ERROR(hXRes.transfer_from(dX));
     CHECK_HIP_ERROR(hYRes.transfer_from(dY));
 
     // CPU lapack
     cblas_labrd<S,T>(m, n, nb, hA[0], lda, hD[0], hE[0], hTauq[0], hTaup[0], hX[0], ldx, hY[0], ldy);
    
-    // error is max(||hD - hDRes|| / ||hD||, ||hE - hERes|| / ||hE||, ||hX - hXRes|| / ||hX||, ||hY - hYRes|| / ||hY||)
+    // error is max(||hA - hARes|| / ||hA||, ||hX - hXRes|| / ||hX||, ||hY - hYRes|| / ||hY||)
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
     double err;
     *max_err = 0;
-    err = norm_error('F',1,nb,1,hD[0],hDRes[0]);
-    *max_err = err > *max_err ? err : *max_err;
-    err = norm_error('F',1,nb,1,hE[0],hERes[0]);
+    err = norm_error('F',m,n,lda,hA[0],hARes[0]);
     *max_err = err > *max_err ? err : *max_err;
     err = norm_error('F',m,nb,ldx,hX[0],hXRes[0]);
     *max_err = err > *max_err ? err : *max_err;
@@ -235,10 +233,10 @@ void testing_labrd(Arguments argus)
 
     // determine sizes
     size_t size_A = lda * n;
-    size_t size_D = min(m,n);
-    size_t size_E = min(m,n);
-    size_t size_Q = min(m,n);
-    size_t size_P = min(m,n);
+    size_t size_D = nb;
+    size_t size_E = nb;
+    size_t size_Q = nb;
+    size_t size_P = nb;
     size_t size_X = ldx * nb;
     size_t size_Y = ldy * nb;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0 ;
@@ -257,10 +255,9 @@ void testing_labrd(Arguments argus)
 
     // memory allocations
     host_strided_batch_vector<T> hA(size_A,1,size_A,1);
+    host_strided_batch_vector<T> hARes(size_A,1,size_A,1);
     host_strided_batch_vector<S> hD(size_D,1,size_D,1);
-    host_strided_batch_vector<S> hDRes(size_D,1,size_D,1);
     host_strided_batch_vector<S> hE(size_E,1,size_E,1);
-    host_strided_batch_vector<S> hERes(size_E,1,size_E,1);
     host_strided_batch_vector<T> hTauq(size_Q,1,size_Q,1);
     host_strided_batch_vector<T> hTaup(size_P,1,size_P,1);
     host_strided_batch_vector<T> hX(size_X,1,size_X,1);
@@ -295,7 +292,7 @@ void testing_labrd(Arguments argus)
     // check computations
     if (argus.unit_check || argus.norm_check) 
         labrd_getError<S,T>(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy,
-                            hA, hD, hDRes, hE, hERes, hTauq, hTaup, hX, hXRes, hY, hYRes, &max_error);
+                            hA, hARes, hD, hE, hTauq, hTaup, hX, hXRes, hY, hYRes, &max_error);
 
     // collect performance data
     if (argus.timing) 
@@ -303,9 +300,9 @@ void testing_labrd(Arguments argus)
                                hA, hD, hE, hTauq, hTaup, hX, hY, &gpu_time_used, &cpu_time_used, hot_calls);
 
     // validate results for rocsolver-test
-    // using 100 * max(m,n) * machine_precision as tolerance
+    // using nb * max(m,n) * machine_precision as tolerance
     if (argus.unit_check) 
-        rocsolver_test_check<T>(max_error,100*max(m,n));     
+        rocsolver_test_check<T>(max_error,nb*max(m,n));     
 
     // output results for rocsolver-bench
     if (argus.timing) {

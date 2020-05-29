@@ -133,10 +133,9 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
                         const rocblas_stride stP, 
                         const rocblas_int bc,
                         Th &hA,
+                        Th &hARes,
                         Sh &hD, 
-                        Sh &hDRes, 
                         Sh &hE, 
-                        Sh &hERes, 
                         Uh &hTauq, 
                         Uh &hTaup, 
                         double *max_err)
@@ -150,9 +149,11 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
     for (rocblas_int b = 0; b < bc; ++b) {
         for (rocblas_int i = 0; i < m; i++) {
             for (rocblas_int j = 0; j < n; j++) {
-                if (i == j)
+                if (i == j ||
+                    (m >= n && j == i+1) ||
+                    (m < n && i == j+1))
                     hA[b][i + j * lda] += 400;
-                else    
+                else
                     hA[b][i + j * lda] -= 4;
             }
         }
@@ -164,8 +165,7 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle, m, n, dA.data(), lda, stA, dD.data(), stD, dE.data(), stE, dTauq.data(), stQ, dTaup.data(), stP, bc));
-    CHECK_HIP_ERROR(hDRes.transfer_from(dD));
-    CHECK_HIP_ERROR(hERes.transfer_from(dE));
+    CHECK_HIP_ERROR(hARes.transfer_from(dA));
 
     // CPU lapack
     for (rocblas_int b = 0; b < bc; ++b) {
@@ -174,7 +174,7 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
             cblas_gebd2<S,T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
     }
    
-    // error is max(||hD - hDRes|| / ||hD||, ||hE - hERes|| / ||hE||)
+    // error is ||hA - hARes|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
@@ -182,9 +182,7 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
     double err;
     *max_err = 0;
     for (rocblas_int b = 0; b < bc; ++b) {
-        err = norm_error('F',1,s,1,hD[b],hDRes[b],true);
-        *max_err = err > *max_err ? err : *max_err;
-        err = norm_error('F',1,s-1,1,hE[b],hERes[b],true);
+        err = norm_error('F',m,n,lda,hA[b],hARes[b]);
         *max_err = err > *max_err ? err : *max_err;
     }
 }
@@ -286,10 +284,9 @@ void testing_gebd2_gebrd(Arguments argus)
     if (BATCHED) {
         // memory allocations
         host_batch_vector<T> hA(size_A,1,bc);
+        host_batch_vector<T> hARes(size_A,1,bc);
         host_strided_batch_vector<S> hD(size_D,1,stD,bc);
-        host_strided_batch_vector<S> hDRes(size_D,1,stD,bc);
         host_strided_batch_vector<S> hE(size_E,1,stE,bc);
-        host_strided_batch_vector<S> hERes(size_E,1,stE,bc);
         host_strided_batch_vector<T> hTaup(size_P,1,stP,bc);
         host_strided_batch_vector<T> hTauq(size_Q,1,stQ,bc);
         device_batch_vector<T> dA(size_A,1,bc);
@@ -316,7 +313,7 @@ void testing_gebd2_gebrd(Arguments argus)
         // check computations
         if (argus.unit_check || argus.norm_check) 
             gebd2_gebrd_getError<STRIDED,GEBRD,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
-                                          hA, hD, hDRes, hE, hERes, hTauq, hTaup, &max_error);
+                                          hA, hARes, hD, hE, hTauq, hTaup, &max_error);
 
         // collect performance data
         if (argus.timing) 
@@ -327,10 +324,9 @@ void testing_gebd2_gebrd(Arguments argus)
     else {
         // memory allocations
         host_strided_batch_vector<T> hA(size_A,1,stA,bc);
+        host_strided_batch_vector<T> hARes(size_A,1,stA,bc);
         host_strided_batch_vector<S> hD(size_D,1,stD,bc);
-        host_strided_batch_vector<S> hDRes(size_D,1,stD,bc);
         host_strided_batch_vector<S> hE(size_E,1,stE,bc);
-        host_strided_batch_vector<S> hERes(size_E,1,stE,bc);
         host_strided_batch_vector<T> hTaup(size_P,1,stP,bc);
         host_strided_batch_vector<T> hTauq(size_Q,1,stQ,bc);
         device_strided_batch_vector<T> dA(size_A,1,stA,bc);
@@ -357,7 +353,7 @@ void testing_gebd2_gebrd(Arguments argus)
         // check computations
         if (argus.unit_check || argus.norm_check) 
             gebd2_gebrd_getError<STRIDED,GEBRD,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
-                                          hA, hD, hDRes, hE, hERes, hTauq, hTaup, &max_error);
+                                          hA, hARes, hD, hE, hTauq, hTaup, &max_error);
 
         // collect performance data
         if (argus.timing) 
@@ -366,9 +362,9 @@ void testing_gebd2_gebrd(Arguments argus)
     }
 
     // validate results for rocsolver-test
-    // using 20 * m*n * machine_precision as tolerance
+    // using m*n * machine_precision as tolerance
     if (argus.unit_check) 
-        rocsolver_test_check<T>(max_error,20*m*n);     
+        rocsolver_test_check<T>(max_error,m*n);     
 
     // output results for rocsolver-bench
     if (argus.timing) {

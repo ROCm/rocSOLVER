@@ -29,7 +29,7 @@ const vector<vector<int>> matrix_size_range = {
 const vector<int> n_size_range = {
     0,  //quick return
     -1, //invalid
-    16, 20, 130, 150
+    16, 20, 120, 150
 };
 
 // for daily_lapack tests
