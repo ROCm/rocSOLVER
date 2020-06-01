@@ -68,8 +68,10 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle, const rocblas_int
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);
-    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device); 
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_host); 
     
+    T minone = -1;
+    T one = 1;
     rocblas_int k = GEBRD_GEBD2_SWITCHSIZE;
     rocblas_int dim = min(m, n);    //total number of pivots
     rocblas_int jb, j = 0;
@@ -104,14 +106,14 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle, const rocblas_int
 
         //update the rest of the matrix
         rocblasCall_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose,
-                                            m-j-jb, n-j-jb, jb, cast2constType<T>(scalars),
+                                            m-j-jb, n-j-jb, jb, &minone,
                                             A, shiftA + idx2D(j+jb,j,lda), lda, strideA,
-                                            Y, shiftY + jb, ldy, strideY, cast2constType<T>(scalars+2),
+                                            Y, shiftY + jb, ldy, strideY, &one,
                                             A, shiftA + idx2D(j+jb,j+jb,lda), lda, strideA, batch_count, workArr);
         rocblasCall_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, rocblas_operation_none,
-                                            m-j-jb, n-j-jb, jb, cast2constType<T>(scalars),
+                                            m-j-jb, n-j-jb, jb, &minone,
                                             X, shiftX + jb, ldx, strideX,
-                                            A, shiftA + idx2D(j,j+jb,lda), lda, strideA, cast2constType<T>(scalars+2),
+                                            A, shiftA + idx2D(j,j+jb,lda), lda, strideA, &one,
                                             A, shiftA + idx2D(j+jb,j+jb,lda), lda, strideA, batch_count, workArr);
 
         blocks = (jb - 1)/64 + 1;
