@@ -104,11 +104,13 @@ void ormbr_unmbr_getError(const rocblas_handle handle,
                          Th &hCr,
                          double *max_err)
 {
+    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
+
     size_t size_W = max(max(m,n),k);
     std::vector<T> hW(size_W);
     size_t s = max(hIpiv.n(),2);
-    std::vector<T> E(s-1);
-    std::vector<T> D(s);
+    std::vector<S> E(s-1);
+    std::vector<S> D(s);
     std::vector<T> P(s);
     rocblas_int nq = (side == rocblas_side_left) ? m : n;
     
@@ -128,7 +130,7 @@ void ormbr_unmbr_getError(const rocblas_handle handle,
                     hA[0][i+j*lda] -= 4;
             }
         }
-        cblas_gebrd<T>(nq, s, hA[0], lda, D.data(), E.data(), hIpiv[0], P.data(), hW.data(), size_W);
+        cblas_gebrd<S,T>(nq, s, hA[0], lda, D.data(), E.data(), hIpiv[0], P.data(), hW.data(), size_W);
     } else {
         for (int i=0;i<s;++i) {
             for (int j=0;j<nq;++j) {
@@ -138,7 +140,7 @@ void ormbr_unmbr_getError(const rocblas_handle handle,
                     hA[0][i+j*lda] -= 4;
             }
         }
-        cblas_gebrd<T>(s, nq, hA[0], lda, D.data(), E.data(), P.data(), hIpiv[0], hW.data(), size_W);
+        cblas_gebrd<S,T>(s, nq, hA[0], lda, D.data(), E.data(), P.data(), hIpiv[0], hW.data(), size_W);
     }     
 
     // copy data from CPU to device

@@ -52,6 +52,7 @@ set(roclapack_test_source
     larf_gtest.cpp
     larft_gtest.cpp
     larfb_gtest.cpp
+    labrd_gtest.cpp
     orgxr_ungxr_gtest.cpp
     orglx_unglx_gtest.cpp
     ormxr_unmxr_gtest.cpp
@@ -63,6 +64,7 @@ set(roclapack_test_source
     getrs_gtest.cpp
     geqr2_geqrf_gtest.cpp
     gelq2_gelqf_gtest.cpp
+    gebd2_gebrd_gtest.cpp
     )
 
 set(rocsolver_test_source

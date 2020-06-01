@@ -32,6 +32,7 @@ Lapack Auxiliary Function       single double single complex double complex
 **rocsolver_larft**             x      x         x              x
 **rocsolver_larf**              x      x         x              x
 **rocsolver_larfb**             x      x         x              x
+**rocsolver_labrd**             x      x         x              x
 **rocsolver_org2r**             x      x      
 **rocsolver_orgqr**             x      x      
 **rocsolver_orgl2**             x      x      
@@ -81,9 +82,15 @@ rocsolver_gelq2_strided_batched x      x          x             x
 **rocsolver_gelqf**             x      x          x             x
 rocsolver_gelqf_batched         x      x          x             x
 rocsolver_gelqf_strided_batched x      x          x             x
-**rocsolver_getrs**             x      x          x             x 
+**rocsolver_getrs**             x      x          x             x
 rocsolver_getrs_batched         x      x          x             x
 rocsolver_getrs_strided_batched x      x          x             x
+**rocsolver_gebd2**             x      x          x             x 
+rocsolver_gebd2_batched         x      x          x             x
+rocsolver_gebd2_strided_batched x      x          x             x
+**rocsolver_gebrd**             x      x          x             x
+rocsolver_gebrd_batched         x      x          x             x
+rocsolver_gebrd_strided_batched x      x          x             x
 =============================== ====== ====== ============== ==============
 
 

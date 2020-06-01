@@ -33,6 +33,7 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_larf.cpp
   auxiliary/rocauxiliary_larft.cpp
   auxiliary/rocauxiliary_larfb.cpp
+  auxiliary/rocauxiliary_labrd.cpp
   auxiliary/rocauxiliary_org2r_ung2r.cpp
   auxiliary/rocauxiliary_orgqr_ungqr.cpp
   auxiliary/rocauxiliary_orgl2_ungl2.cpp
@@ -74,6 +75,12 @@ set( rocsolver_lapack_source
   lapack/roclapack_gelqf.cpp
   lapack/roclapack_gelqf_batched.cpp
   lapack/roclapack_gelqf_strided_batched.cpp
+  lapack/roclapack_gebd2.cpp
+  lapack/roclapack_gebd2_batched.cpp
+  lapack/roclapack_gebd2_strided_batched.cpp
+  lapack/roclapack_gebrd.cpp
+  lapack/roclapack_gebrd_batched.cpp
+  lapack/roclapack_gebrd_strided_batched.cpp
 )
 
 set( auxiliaries
