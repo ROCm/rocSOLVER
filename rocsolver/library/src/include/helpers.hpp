@@ -4,7 +4,10 @@
 
 #ifndef HELPERS_H
 #define HELPERS_H
+
+#include <hip/hip_runtime.h>
 #include <cstring>
+#include <iostream>
 
 inline size_t idx2D(const size_t i, const size_t j, const size_t lda) 
 {
@@ -50,6 +53,47 @@ T *const * cast2constPointer(T *const *array)
 {
     T *const *R = array;
     return R;
+}
+
+
+template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+void print_device_matrix(const std::string name, const rocblas_int m, const rocblas_int n, U A, const rocblas_int lda)
+{
+    T hA[lda * n];
+    hipMemcpy(hA, A, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+
+    std::cerr << m << "-by-" << n << " matrix: " << name << '\n';
+    for (int i = 0; i < m; i++)
+    {
+        std::cerr << "    ";
+        for (int j = 0; j < n; j++)
+        {
+            std::cerr << hA[j*lda + i];
+            if (j < n - 1)
+             std::cerr << ", ";
+        }
+        std::cerr << '\n';
+    }
+}
+
+template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+void print_device_matrix(const std::string name, const rocblas_int m, const rocblas_int n, U A, const rocblas_int lda)
+{
+    T hA[lda * n];
+    hipMemcpy(hA, A, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+
+    std::cerr << m << "-by-" << n << " matrix: " << name << '\n';
+    for (int i = 0; i < m; i++)
+    {
+        std::cerr << "    ";
+        for (int j = 0; j < n; j++)
+        {
+            std::cerr << '[' << hA[j*lda + i].real() << "+" << hA[j*lda + i].imag() << "i]";
+            if (j < n - 1)
+             std::cerr << ", ";
+        }
+        std::cerr << '\n';
+    }
 }
 
 

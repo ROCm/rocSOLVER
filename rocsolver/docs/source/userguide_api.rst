@@ -114,6 +114,16 @@ rocsolver_<type>larfb()
 .. doxygenfunction:: rocsolver_dlarfb
 .. doxygenfunction:: rocsolver_slarfb
 
+Bidiagonal forms
+--------------------------
+
+rocsolver_<type>labrd()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zlabrd
+.. doxygenfunction:: rocsolver_clabrd
+.. doxygenfunction:: rocsolver_dlabrd
+.. doxygenfunction:: rocsolver_slabrd
+
 Orthonormal matrices
 ---------------------------
 
@@ -408,7 +418,52 @@ rocsolver_<type>gelqf_strided_batched()
 .. doxygenfunction:: rocsolver_dgelqf_strided_batched
 .. doxygenfunction:: rocsolver_sgelqf_strided_batched
 
-General systems solvers
+General Matrix Diagonalizations
+------------------------------
+
+rocsolver_<type>gebd2()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgebd2
+.. doxygenfunction:: rocsolver_cgebd2
+.. doxygenfunction:: rocsolver_dgebd2
+.. doxygenfunction:: rocsolver_sgebd2
+
+rocsolver_<type>gebd2_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgebd2_batched
+.. doxygenfunction:: rocsolver_cgebd2_batched
+.. doxygenfunction:: rocsolver_dgebd2_batched
+.. doxygenfunction:: rocsolver_sgebd2_batched
+
+rocsolver_<type>gebd2_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgebd2_strided_batched
+.. doxygenfunction:: rocsolver_cgebd2_strided_batched
+.. doxygenfunction:: rocsolver_dgebd2_strided_batched
+.. doxygenfunction:: rocsolver_sgebd2_strided_batched
+
+rocsolver_<type>gebrd()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgebrd
+.. doxygenfunction:: rocsolver_cgebrd
+.. doxygenfunction:: rocsolver_dgebrd
+.. doxygenfunction:: rocsolver_sgebrd
+
+rocsolver_<type>gebrd_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgebrd_batched
+.. doxygenfunction:: rocsolver_cgebrd_batched
+.. doxygenfunction:: rocsolver_dgebrd_batched
+.. doxygenfunction:: rocsolver_sgebrd_batched
+
+rocsolver_<type>gebrd_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgebrd_strided_batched
+.. doxygenfunction:: rocsolver_cgebrd_strided_batched
+.. doxygenfunction:: rocsolver_dgebrd_strided_batched
+.. doxygenfunction:: rocsolver_sgebrd_strided_batched
+
+General Systems Solvers
 --------------------------
 
 rocsolver_<type>getrs()

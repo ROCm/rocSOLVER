@@ -76,11 +76,13 @@ void orgbr_ungbr_getError(const rocblas_handle handle,
                          Th &hIpiv,
                          double *max_err)
 {
+    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
+
     size_t size_W = max(max(m,n),k);
     std::vector<T> hW(size_W);
     size_t s = max(hIpiv.n(),2);
-    std::vector<T> E(s-1);
-    std::vector<T> D(s);
+    std::vector<S> E(s-1);
+    std::vector<S> D(s);
     std::vector<T> P(s);
     
     //initialize data 
@@ -98,7 +100,7 @@ void orgbr_ungbr_getError(const rocblas_handle handle,
                     hA[0][i+j*lda] -= 4;
             }
         }
-        cblas_gebrd<T>(m, k, hA[0], lda, D.data(), E.data(), hIpiv[0], P.data(), hW.data(), size_W);
+        cblas_gebrd<S,T>(m, k, hA[0], lda, D.data(), E.data(), hIpiv[0], P.data(), hW.data(), size_W);
     } else {
         for (int i=0;i<k;++i) {
             for (int j=0;j<n;++j) {
@@ -108,7 +110,7 @@ void orgbr_ungbr_getError(const rocblas_handle handle,
                     hA[0][i+j*lda] -= 4;
             }
         }
-        cblas_gebrd<T>(k, n, hA[0], lda, D.data(), E.data(), P.data(), hIpiv[0], hW.data(), size_W);
+        cblas_gebrd<S,T>(k, n, hA[0], lda, D.data(), E.data(), P.data(), hIpiv[0], hW.data(), size_W);
     }     
     
     // copy data from CPU to device

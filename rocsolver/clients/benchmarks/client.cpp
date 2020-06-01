@@ -3,6 +3,7 @@
  * ************************************************************************ */
 
 #include <boost/program_options.hpp>
+#include "testing_gebd2_gebrd.hpp"
 #include "testing_getf2_getrf.hpp"
 #include "testing_geqr2_geqrf.hpp"
 #include "testing_gelq2_gelqf.hpp"
@@ -14,6 +15,7 @@
 #include "testing_larfb.hpp"
 #include "testing_lacgv.hpp"
 #include "testing_laswp.hpp"
+#include "testing_labrd.hpp"
 #include "testing_orgxr_ungxr.hpp"
 #include "testing_ormxr_unmxr.hpp"
 #include "testing_orglx_unglx.hpp"
@@ -519,6 +521,66 @@ try
         else if (precision == 'z')
             testing_getrs<false,true,rocblas_double_complex>(argus);
     }
+    else if (function == "gebd2") {
+        if (precision == 's')
+            testing_gebd2_gebrd<false,false,0,float>(argus);
+        else if (precision == 'd')
+            testing_gebd2_gebrd<false,false,0,double>(argus);
+        else if (precision == 'c')
+            testing_gebd2_gebrd<false,false,0,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_gebd2_gebrd<false,false,0,rocblas_double_complex>(argus);
+    }
+    else if (function == "gebd2_batched") {
+        if (precision == 's')
+            testing_gebd2_gebrd<true,true,0,float>(argus);
+        else if (precision == 'd')
+            testing_gebd2_gebrd<true,true,0,double>(argus);
+        else if (precision == 'c')
+            testing_gebd2_gebrd<true,true,0,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_gebd2_gebrd<true,true,0,rocblas_double_complex>(argus);
+    }
+    else if (function == "gebd2_strided_batched") {
+        if (precision == 's')
+            testing_gebd2_gebrd<false,true,0,float>(argus);
+        else if (precision == 'd')
+            testing_gebd2_gebrd<false,true,0,double>(argus);
+        else if (precision == 'c')
+            testing_gebd2_gebrd<false,true,0,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_gebd2_gebrd<false,true,0,rocblas_double_complex>(argus);
+    }
+    else if (function == "gebrd") {
+        if (precision == 's')
+            testing_gebd2_gebrd<false,false,1,float>(argus);
+        else if (precision == 'd')
+            testing_gebd2_gebrd<false,false,1,double>(argus);
+        else if (precision == 'c')
+            testing_gebd2_gebrd<false,false,1,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_gebd2_gebrd<false,false,1,rocblas_double_complex>(argus);
+    }
+    else if (function == "gebrd_batched") {
+        if (precision == 's')
+            testing_gebd2_gebrd<true,true,1,float>(argus);
+        else if (precision == 'd')
+            testing_gebd2_gebrd<true,true,1,double>(argus);
+        else if (precision == 'c')
+            testing_gebd2_gebrd<true,true,1,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_gebd2_gebrd<true,true,1,rocblas_double_complex>(argus);
+    }
+    else if (function == "gebrd_strided_batched") {
+        if (precision == 's')
+            testing_gebd2_gebrd<false,true,1,float>(argus);
+        else if (precision == 'd')
+            testing_gebd2_gebrd<false,true,1,double>(argus);
+        else if (precision == 'c')
+            testing_gebd2_gebrd<false,true,1,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_gebd2_gebrd<false,true,1,rocblas_double_complex>(argus);
+    }
     else if (function == "lacgv") {
         if (precision == 'c')
             testing_lacgv<rocblas_float_complex>(argus);
@@ -576,6 +638,16 @@ try
             testing_larfb<rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_larfb<rocblas_double_complex>(argus);
+    } 
+    else if (function == "labrd") {
+        if (precision == 's')
+            testing_labrd<float>(argus);
+        else if (precision == 'd')
+            testing_labrd<double>(argus);
+        else if (precision == 'c')
+            testing_labrd<rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_labrd<rocblas_double_complex>(argus);
     } 
     else if (function == "org2r") {
         if (precision == 's')
