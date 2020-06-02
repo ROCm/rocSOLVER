@@ -47,9 +47,13 @@ Options:
   -c | --clients              Pass this flag to also build the library clients benchmark and gtest.
                               (Generated binaries will be located at builddir/clients/staging)
 
-  -h | --hip-clang            Pass this flag to build library for amdgpu backend using hip-clang.
+  -h | --hip-clang            Pass this flag to build library using hipclang compiler.
+                              (This is the default building option).
+
+  --hcc                       Pass this flag to build library using deprecated hcc compiler.
 
   -s | --static               Pass this flag to build rocsolver as a static library.
+                              (rocsolver must be built statically when the used companion rocblas is also static). 
 
   -r | --relocatable          Pass this to add RUNPATH(based on ROCM_RPATH) and remove ldconf entry.
 
@@ -178,14 +182,11 @@ install_packages( )
   local library_dependencies_sles=(   "make" "cmake" "python3-PyYAM" "python3-distutils-extra"
                                       "gcc-c++" "libcxxtools9" "rpm-build" "wget" )
 
-  if [[ "${build_hip_clang}" == false ]]; then
-    # Installing rocm-dev installs hip-hcc, which overwrites the hip-vdi runtime
-    library_dependencies_ubuntu+=( "rocm-dev" )
-    library_dependencies_centos_7+=( "rocm-dev" )
-    library_dependencies_centos_8+=( "rocm-dev" )
-    library_dependencies_fedora+=( "rocm-dev" )
-    library_dependencies_sles+=( "rocm-dev" )
-  fi
+  library_dependencies_ubuntu+=( "rocm-dev" )
+  library_dependencies_centos_7+=( "rocm-dev" )
+  library_dependencies_centos_8+=( "rocm-dev" )
+  library_dependencies_fedora+=( "rocm-dev" )
+  library_dependencies_sles+=( "rocm-dev" )
 
   # dependencies to build the client
   local client_dependencies_ubuntu=( "gfortran" "libomp-dev" "libboost-program-options-dev")
@@ -275,7 +276,7 @@ build_package=false
 install_dependencies=false
 static_lib=false
 build_clients=false
-build_hip_clang=true
+build_hcc=false
 lib_dir=rocsolver-install
 install_dir=/opt/rocm
 rocblas_dir=/opt/rocm/rocblas
@@ -295,7 +296,7 @@ fi
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static,relocatable --options hipcdgsr -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,hcc,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static,relocatable --options hipcdgsr -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -333,8 +334,8 @@ while true; do
     -s|--static)
         static_lib=true
         shift ;;
-    -h|--hip-clang)
-        build_hip_clang=true
+    --hcc)
+        build_hcc=true
         shift ;;
     --build_dir)
         build_dir=${2}
@@ -399,7 +400,7 @@ fi
 
 # We append customary rocm path; if user provides custom rocm path in ${path}, our
 # hard-coded path has lesser priority
-if [[ "${build_hip_clang}" == true ]]; then
+if [[ "${build_hcc}" == false ]]; then
   export PATH=${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}
 else
   export PATH=${PATH}:${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/hcc/bin
@@ -439,9 +440,9 @@ if [[ "${build_relocatable}" == true ]]; then
     cmake_common_options="${cmake_common_options} -DROCM_DISABLE_LDCONFIG=ON"
 fi
 
-compiler="hcc"
-if [[ "${build_hip_clang}" == true ]]; then
-  compiler="hipcc"
+compiler="hipcc"
+if [[ "${build_hcc}" == true ]]; then
+  compiler="hcc"
 fi
 
 case "${ID}" in
