@@ -47,10 +47,10 @@ Options:
   -c | --clients              Pass this flag to also build the library clients benchmark and gtest.
                               (Generated binaries will be located at builddir/clients/staging)
 
-  --hip-clang                 Pass this flag to build library using hipclang compiler.
+  -h | --hip-clang            Pass this flag to build library using hipclang compiler.
                               (This is the default building option).
 
-  -h | --hcc                  Pass this flag to build library using deprecated hcc compiler.
+  --hcc                       Pass this flag to build library using deprecated hcc compiler.
 
   -s | --static               Pass this flag to build rocsolver as a static library.
                               (rocsolver must be built statically when the used companion rocblas is also static). 
@@ -337,7 +337,7 @@ while true; do
     -s|--static)
         static_lib=true
         shift ;;
-    -h|--hcc)
+    --hcc)
         build_hcc=true
         shift ;;
     --build_dir)
