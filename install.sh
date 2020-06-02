@@ -47,9 +47,10 @@ Options:
   -c | --clients              Pass this flag to also build the library clients benchmark and gtest.
                               (Generated binaries will be located at builddir/clients/staging)
 
-  -h | --hip-clang            Pass this flag to build library for amdgpu backend using hip-clang.
+  -h | --hcc                  Pass this flag to build library using deprecated compiler hcc.
 
   -s | --static               Pass this flag to build rocsolver as a static library.
+                              (rocsolver must be built statically when the used companion rocblas is also static). 
 
   -r | --relocatable          Pass this to add RUNPATH(based on ROCM_RPATH) and remove ldconf entry.
 
@@ -275,7 +276,7 @@ build_package=false
 install_dependencies=false
 static_lib=false
 build_clients=false
-build_hip_clang=true
+build_hcc=false
 lib_dir=rocsolver-install
 install_dir=/opt/rocm
 rocblas_dir=/opt/rocm/rocblas
@@ -333,8 +334,8 @@ while true; do
     -s|--static)
         static_lib=true
         shift ;;
-    -h|--hip-clang)
-        build_hip_clang=true
+    -h|--hcc)
+        build_hcc=true
         shift ;;
     --build_dir)
         build_dir=${2}
@@ -439,9 +440,9 @@ if [[ "${build_relocatable}" == true ]]; then
     cmake_common_options="${cmake_common_options} -DROCM_DISABLE_LDCONFIG=ON"
 fi
 
-compiler="hcc"
-if [[ "${build_hip_clang}" == true ]]; then
-  compiler="hipcc"
+compiler="hipcc"
+if [[ "${build_hcc}" == true ]]; then
+  compiler="hcc"
 fi
 
 case "${ID}" in
