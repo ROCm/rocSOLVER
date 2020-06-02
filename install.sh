@@ -47,7 +47,10 @@ Options:
   -c | --clients              Pass this flag to also build the library clients benchmark and gtest.
                               (Generated binaries will be located at builddir/clients/staging)
 
-  -h | --hcc                  Pass this flag to build library using deprecated compiler hcc.
+  --hip-clang                 Pass this flag to build library using hipclang compiler.
+                              (This is the default building option).
+
+  -h | --hcc                  Pass this flag to build library using deprecated hcc compiler.
 
   -s | --static               Pass this flag to build rocsolver as a static library.
                               (rocsolver must be built statically when the used companion rocblas is also static). 
@@ -296,7 +299,7 @@ fi
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static,relocatable --options hipcdgsr -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,hcc,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static,relocatable --options hipcdgsr -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
