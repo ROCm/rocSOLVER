@@ -182,14 +182,11 @@ install_packages( )
   local library_dependencies_sles=(   "make" "cmake" "python3-PyYAM" "python3-distutils-extra"
                                       "gcc-c++" "libcxxtools9" "rpm-build" "wget" )
 
-  if [[ "${build_hip_clang}" == false ]]; then
-    # Installing rocm-dev installs hip-hcc, which overwrites the hip-vdi runtime
-    library_dependencies_ubuntu+=( "rocm-dev" )
-    library_dependencies_centos_7+=( "rocm-dev" )
-    library_dependencies_centos_8+=( "rocm-dev" )
-    library_dependencies_fedora+=( "rocm-dev" )
-    library_dependencies_sles+=( "rocm-dev" )
-  fi
+  library_dependencies_ubuntu+=( "rocm-dev" )
+  library_dependencies_centos_7+=( "rocm-dev" )
+  library_dependencies_centos_8+=( "rocm-dev" )
+  library_dependencies_fedora+=( "rocm-dev" )
+  library_dependencies_sles+=( "rocm-dev" )
 
   # dependencies to build the client
   local client_dependencies_ubuntu=( "gfortran" "libomp-dev" "libboost-program-options-dev")
@@ -403,7 +400,7 @@ fi
 
 # We append customary rocm path; if user provides custom rocm path in ${path}, our
 # hard-coded path has lesser priority
-if [[ "${build_hip_clang}" == true ]]; then
+if [[ "${build_hcc}" == false ]]; then
   export PATH=${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}
 else
   export PATH=${PATH}:${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/hcc/bin
