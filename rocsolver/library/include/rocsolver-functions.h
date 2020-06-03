@@ -2151,10 +2151,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
     @param[in]
     pivoting  rocblas_int (boolean). Optional parameter set to 1 (true) by default.\n
               If set to 0 (false) it will disable pivoting -row interchanges- for small
-              matrices, ie. when m <= 64 and n <= 64. In this case ipiv will return as
-              ipiv = [1 2 3 ... min(m,n)]. Using this option will give a boost in performance 
-              especially for square matrices of size up to 32. (Warning: LU factorization
-              without pivoting is numerically unstable).     
+              matrices (when m <= 64 and n <= 64). In this case ipiv will return as
+              ipiv = [1 2 3 ... min(m,n)]. Using this option could give an extra 
+              boost in performance. (Warning: LU factorization without pivoting is numerically unstable).     
             
     ********************************************************************/
 
@@ -2247,10 +2246,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2(rocblas_handle handle,
     @param[in]
     pivoting  rocblas_int (boolean). Optional parameter set to 1 (true) by default.\n
               If set to 0 (false) it will disable pivoting -row interchanges- for small
-              matrices, ie. when m <= 64 and n <= 64. In this case ipiv will return as
-              ipiv = [1 2 3 ... min(m,n)]. Using this option will give a boost in performance 
-              especially for square matrices of size up to 32. (Warning: LU factorization
-              without pivoting is numerically unstable).     
+              matrices (when m <= 64 and n <= 64). In this case ipiv will return as
+              ipiv = [1 2 3 ... min(m,n)]. Using this option could give an extra 
+              boost in performance. (Warning: LU factorization without pivoting is numerically unstable).     
             
     ********************************************************************/
 
@@ -2355,10 +2353,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(rocblas_handle handle,
     @param[in]
     pivoting  rocblas_int (boolean). Optional parameter set to 1 (true) by default.\n
               If set to 0 (false) it will disable pivoting -row interchanges- for small
-              matrices, ie. when m <= 64 and n <= 64. In this case ipiv will return as
-              ipiv = [1 2 3 ... min(m,n)]. Using this option will give a boost in performance 
-              especially for square matrices of size up to 32. (Warning: LU factorization
-              without pivoting is numerically unstable).     
+              matrices (when m <= 64 and n <= 64). In this case ipiv will return as
+              ipiv = [1 2 3 ... min(m,n)]. Using this option could give an extra 
+              boost in performance. (Warning: LU factorization without pivoting is numerically unstable).     
             
     ********************************************************************/
 

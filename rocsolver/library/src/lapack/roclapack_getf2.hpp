@@ -18,15 +18,12 @@
 #include "rocsolver.h"
 #include "../auxiliary/rocauxiliary_laswp.hpp"
 
-#define runLUfact(DIM)                                                          \
-    hipLaunchKernelGGL(LUfact_kernel<DIM,T>,grid,block,0,stream,                \
-                       m,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,pivot);     
-
-#define runLUfactSmall(DIM)                                                     \
-    m == n ?                                                                    \
-        hipLaunchKernelGGL(LUfact_kernel_sq<DIM,T>,grid,block,0,stream,         \
-                           A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,pivot):\
-        hipLaunchKernelGGL(LUfact_kernel<DIM,T>,grid,block,0,stream,            \
+#define runLUfactSmall(DIM)                                                         \
+    if (m == n)                                                                     \
+        hipLaunchKernelGGL((LUfact_kernel_sq<DIM,T>),grid,block,0,stream,           \
+                           A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,pivot);    \
+    else                                                                            \
+        hipLaunchKernelGGL((LUfact_kernel<DIM,T>),grid,block,0,stream,              \
                            m,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,pivot);
      
 
@@ -81,6 +78,7 @@ __global__ void LUfact_kernel(const rocblas_int m, U AA, const rocblas_int shift
     int pivot_index;
 
     // for each pivot
+    #pragma unroll
     for (int k = 0; k < DIM; ++k) { 
         // share current column
         common[myrow] = rA[k];
@@ -116,7 +114,6 @@ __global__ void LUfact_kernel(const rocblas_int m, U AA, const rocblas_int shift
 
         //share pivot row
         if (myrow == k) {
-            #pragma unroll
             for (int j = k+1; j < DIM; ++j)
                 common[j] = rA[j];
         }
@@ -124,7 +121,6 @@ __global__ void LUfact_kernel(const rocblas_int m, U AA, const rocblas_int shift
             
         // update trailing matrix
         if (myrow > k) {
-            #pragma unroll
             for (int j = k+1; j < DIM; ++j)
                 rA[j] -= rA[k] * common[j];   
         }   
@@ -270,38 +266,38 @@ rocblas_status LUfact_small_sizes(rocblas_handle handle, const rocblas_int m,
         case 30: runLUfactSmall(30); break;
         case 31: runLUfactSmall(31); break;
         case 32: runLUfactSmall(32); break;
-        case 33: runLUfact(33); break;
-        case 34: runLUfact(34); break;
-        case 35: runLUfact(35); break;
-        case 36: runLUfact(36); break;
-        case 37: runLUfact(37); break;
-        case 38: runLUfact(38); break;
-        case 39: runLUfact(39); break;
-        case 40: runLUfact(40); break;
-        case 41: runLUfact(41); break;
-        case 42: runLUfact(42); break;
-        case 43: runLUfact(43); break;
-        case 44: runLUfact(44); break;
-        case 45: runLUfact(45); break;
-        case 46: runLUfact(46); break;
-        case 47: runLUfact(47); break;
-        case 48: runLUfact(48); break;
-        case 49: runLUfact(49); break;
-        case 50: runLUfact(50); break;
-        case 51: runLUfact(51); break;
-        case 52: runLUfact(52); break;
-        case 53: runLUfact(53); break;
-        case 54: runLUfact(54); break;
-        case 55: runLUfact(55); break;
-        case 56: runLUfact(56); break;
-        case 57: runLUfact(57); break;
-        case 58: runLUfact(58); break;
-        case 59: runLUfact(59); break;
-        case 60: runLUfact(60); break;
-        case 61: runLUfact(61); break;
-        case 62: runLUfact(62); break;
-        case 63: runLUfact(63); break;
-        case 64: runLUfact(64); break;
+        case 33: runLUfactSmall(33); break;
+        case 34: runLUfactSmall(34); break;
+        case 35: runLUfactSmall(35); break;
+        case 36: runLUfactSmall(36); break;
+        case 37: runLUfactSmall(37); break;
+        case 38: runLUfactSmall(38); break;
+        case 39: runLUfactSmall(39); break;
+        case 40: runLUfactSmall(40); break;
+        case 41: runLUfactSmall(41); break;
+        case 42: runLUfactSmall(42); break;
+        case 43: runLUfactSmall(43); break;
+        case 44: runLUfactSmall(44); break;
+        case 45: runLUfactSmall(45); break;
+        case 46: runLUfactSmall(46); break;
+        case 47: runLUfactSmall(47); break;
+        case 48: runLUfactSmall(48); break;
+        case 49: runLUfactSmall(49); break;
+        case 50: runLUfactSmall(50); break;
+        case 51: runLUfactSmall(51); break;
+        case 52: runLUfactSmall(52); break;
+        case 53: runLUfactSmall(53); break;
+        case 54: runLUfactSmall(54); break;
+        case 55: runLUfactSmall(55); break;
+        case 56: runLUfactSmall(56); break;
+        case 57: runLUfactSmall(57); break;
+        case 58: runLUfactSmall(58); break;
+        case 59: runLUfactSmall(59); break;
+        case 60: runLUfactSmall(60); break;
+        case 61: runLUfactSmall(61); break;
+        case 62: runLUfactSmall(62); break;
+        case 63: runLUfactSmall(63); break;
+        case 64: runLUfactSmall(64); break;
     }
     
     return rocblas_status_success;
