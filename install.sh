@@ -334,6 +334,9 @@ while true; do
     -s|--static)
         static_lib=true
         shift ;;
+    -h | --hip-clang)
+        build_hcc=false
+        shift ;;
     --hcc)
         build_hcc=true
         shift ;;
