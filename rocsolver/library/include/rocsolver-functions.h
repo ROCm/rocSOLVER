@@ -2111,7 +2111,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
     using partial pivoting with row interchanges.
 
     \details
-    (This is the right-looking Level 2 BLAS version of the algorithm).
+    (This is the unblocked Level 2 BLAS version of the algorithm. If m <= 64 and n <= 64,
+     an optimized internal implementation without BLAS calls is executed).
 
     The factorization has the form
 
@@ -2147,6 +2148,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
     info      pointer to a rocblas_int on the GPU.\n
               If info = 0, succesful exit. 
               If info = i > 0, U is singular. U(i,i) is the first zero pivot.
+    @param[in]
+    pivoting  rocblas_int (boolean). Optional parameter set to 1 (true) by default.\n
+              If set to 0 (false) it will disable pivoting -row interchanges- for small
+              matrices, ie. when m <= 64 and n <= 64. In this case ipiv will return as
+              ipiv = [1 2 3 ... min(m,n)]. Using this option will give a boost in performance 
+              especially for square matrices of size up to 32. (Warning: LU factorization
+              without pivoting is numerically unstable).     
             
     ********************************************************************/
 
@@ -2156,7 +2164,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2(rocblas_handle handle,
                                                    float *A,
                                                    const rocblas_int lda,
                                                    rocblas_int *ipiv,
-                                                   rocblas_int *info);
+                                                   rocblas_int *info,
+                                                   const rocblas_int pivot = 1);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2(rocblas_handle handle,
                                                    const rocblas_int m,
@@ -2164,7 +2173,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2(rocblas_handle handle,
                                                    double *A,
                                                    const rocblas_int lda,
                                                    rocblas_int *ipiv,
-                                                   rocblas_int *info);
+                                                   rocblas_int *info,
+                                                   const rocblas_int pivot = 1);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2(rocblas_handle handle,
                                                    const rocblas_int m,
@@ -2172,7 +2182,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2(rocblas_handle handle,
                                                    rocblas_float_complex *A,
                                                    const rocblas_int lda,
                                                    rocblas_int *ipiv,
-                                                   rocblas_int *info);
+                                                   rocblas_int *info,
+                                                   const rocblas_int pivot = 1);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2(rocblas_handle handle,
                                                    const rocblas_int m,
@@ -2180,13 +2191,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2(rocblas_handle handle,
                                                    rocblas_double_complex *A,
                                                    const rocblas_int lda,
                                                    rocblas_int *ipiv,
-                                                   rocblas_int *info);
+                                                   rocblas_int *info,
+                                                   const rocblas_int pivot = 1);
 
 /*! \brief GETF2_BATCHED computes the LU factorization of a batch of general m-by-n matrices
     using partial pivoting with row interchanges.
 
     \details
-    (This is the right-looking Level 2 BLAS version of the algorithm).
+    (This is the unblocked Level 2 BLAS version of the algorithm. If m <= 64 and n <= 64,
+     an optimized internal implementation without BLAS calls is executed).
 
     The factorization of matrix A_i in the batch has the form
 
@@ -2231,6 +2244,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch. 
+    @param[in]
+    pivoting  rocblas_int (boolean). Optional parameter set to 1 (true) by default.\n
+              If set to 0 (false) it will disable pivoting -row interchanges- for small
+              matrices, ie. when m <= 64 and n <= 64. In this case ipiv will return as
+              ipiv = [1 2 3 ... min(m,n)]. Using this option will give a boost in performance 
+              especially for square matrices of size up to 32. (Warning: LU factorization
+              without pivoting is numerically unstable).     
             
     ********************************************************************/
 
@@ -2242,7 +2262,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2_batched(rocblas_handle handle,
                                                    rocblas_int *ipiv,
                                                    const rocblas_stride strideP,
                                                    rocblas_int *info,
-                                                   const rocblas_int batch_count);
+                                                   const rocblas_int batch_count,
+                                                   const rocblas_int pivot = 1);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_batched(rocblas_handle handle,
                                                    const rocblas_int m,
@@ -2252,7 +2273,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_batched(rocblas_handle handle,
                                                    rocblas_int *ipiv,
                                                    const rocblas_stride strideP,
                                                    rocblas_int *info,
-                                                   const rocblas_int batch_count);
+                                                   const rocblas_int batch_count,
+                                                   const rocblas_int pivot = 1);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_batched(rocblas_handle handle,
                                                    const rocblas_int m,
@@ -2262,7 +2284,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_batched(rocblas_handle handle,
                                                    rocblas_int *ipiv,
                                                    const rocblas_stride strideP,
                                                    rocblas_int *info,
-                                                   const rocblas_int batch_count);
+                                                   const rocblas_int batch_count,
+                                                   const rocblas_int pivot = 1);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(rocblas_handle handle,
                                                    const rocblas_int m,
@@ -2272,13 +2295,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(rocblas_handle handle,
                                                    rocblas_int *ipiv,
                                                    const rocblas_stride strideP,
                                                    rocblas_int *info,
-                                                   const rocblas_int batch_count);
+                                                   const rocblas_int batch_count,
+                                                   const rocblas_int pivot = 1);
 
 /*! \brief GETF2_STRIDED_BATCHED computes the LU factorization of a batch of general m-by-n matrices
     using partial pivoting with row interchanges.
 
     \details
-    (This is the right-looking Level 2 BLAS version of the algorithm).
+    (This is the unblocked Level 2 BLAS version of the algorithm. If m <= 64 and n <= 64,
+     an optimized internal implementation without BLAS calls is executed).
     
     The factorization of matrix A_i in the batch has the form
 
@@ -2327,6 +2352,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch. 
+    @param[in]
+    pivoting  rocblas_int (boolean). Optional parameter set to 1 (true) by default.\n
+              If set to 0 (false) it will disable pivoting -row interchanges- for small
+              matrices, ie. when m <= 64 and n <= 64. In this case ipiv will return as
+              ipiv = [1 2 3 ... min(m,n)]. Using this option will give a boost in performance 
+              especially for square matrices of size up to 32. (Warning: LU factorization
+              without pivoting is numerically unstable).     
             
     ********************************************************************/
 
@@ -2339,7 +2371,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2_strided_batched(rocblas_handle 
                                                    rocblas_int *ipiv,
                                                    const rocblas_stride strideP,
                                                    rocblas_int *info,
-                                                   const rocblas_int batch_count);
+                                                   const rocblas_int batch_count,
+                                                   const rocblas_int pivot = 1);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_strided_batched(rocblas_handle handle,
                                                    const rocblas_int m,
@@ -2350,7 +2383,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_strided_batched(rocblas_handle 
                                                    rocblas_int *ipiv,
                                                    const rocblas_stride strideP,
                                                    rocblas_int *info,
-                                                   const rocblas_int batch_count);
+                                                   const rocblas_int batch_count,
+                                                   const rocblas_int pivot = 1);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_strided_batched(rocblas_handle handle,
                                                    const rocblas_int m,
@@ -2361,7 +2395,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_strided_batched(rocblas_handle 
                                                    rocblas_int *ipiv,
                                                    const rocblas_stride strideP,
                                                    rocblas_int *info,
-                                                   const rocblas_int batch_count);
+                                                   const rocblas_int batch_count,
+                                                   const rocblas_int pivot = 1);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(rocblas_handle handle,
                                                    const rocblas_int m,
@@ -2372,13 +2407,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(rocblas_handle 
                                                    rocblas_int *ipiv,
                                                    const rocblas_stride strideP,
                                                    rocblas_int *info,
-                                                   const rocblas_int batch_count);
+                                                   const rocblas_int batch_count,
+                                                   const rocblas_int pivot = 1);
 
 /*! \brief GETRF computes the LU factorization of a general m-by-n matrix A
     using partial pivoting with row interchanges.
 
     \details
-    (This is the right-looking Level 3 BLAS version of the algorithm).
+    (This is the blocked Level 3 BLAS version of the algorithm).
 
     The factorization has the form
 
@@ -2453,7 +2489,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf(rocblas_handle handle,
     using partial pivoting with row interchanges.
 
     \details
-    (This is the right-looking Level 3 BLAS version of the algorithm).
+    (This is the blocked Level 3 BLAS version of the algorithm).
 
     The factorization of matrix A_i in the batch has the form
 
@@ -2545,7 +2581,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_batched(rocblas_handle handle,
     using partial pivoting with row interchanges.
 
     \details
-    (This is the right-looking Level 3 BLAS version of the algorithm).
+    (This is the blocked Level 3 BLAS version of the algorithm).
     
     The factorization of matrix A_i in the batch has the form
 

@@ -8,7 +8,7 @@
 #include "rocsolver.hpp"
 #include "cblas_interface.h"
 #include "clientcommon.hpp"
-
+ 
 
 template <bool STRIDED, bool GETRF, typename T, typename U>
 void getf2_getrf_checkBadArgs(const rocblas_handle handle, 
@@ -128,7 +128,7 @@ void getf2_getrf_getError(const rocblas_handle handle,
             }
         }
     }
-    
+
     // now copy data to the GPU
     CHECK_HIP_ERROR(dA.transfer_from(hA));
 
@@ -143,7 +143,7 @@ void getf2_getrf_getError(const rocblas_handle handle,
             cblas_getrf<T>(m, n, hA[b], lda, hIpiv[b], hinfo[b]):
             cblas_getf2<T>(m, n, hA[b], lda, hIpiv[b], hinfo[b]);
     }
-   
+
     // expecting original matrix to be non-singular
     // error is ||hA - hARes|| / ||hA|| (ideally ||LU - Lres Ures|| / ||LU||) 
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
@@ -168,7 +168,7 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
                         Ud &dIpiv, 
                         const rocblas_stride stP, 
                         Ud &dinfo,
-                        const rocblas_int bc,
+                        const rocblas_int bc, const rocblas_int pivot,
                         Th &hA, 
                         Uh &hIpiv, 
                         Uh &hinfo,
@@ -187,12 +187,12 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
-        CHECK_ROCBLAS_ERROR(rocsolver_getf2_getrf(STRIDED,GETRF,handle, m, n, dA.data(), lda, stA, dIpiv.data(), stP, dinfo.data(), bc));
+        CHECK_ROCBLAS_ERROR(rocsolver_getf2_getrf(STRIDED,GETRF,handle, m, n, dA.data(), lda, stA, dIpiv.data(), stP, dinfo.data(), bc, pivot));
         
     // gpu-lapack performance
     *gpu_time_used = get_time_us(); 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
-        rocsolver_getf2_getrf(STRIDED,GETRF,handle, m, n, dA.data(), lda, stA, dIpiv.data(), stP, dinfo.data(), bc);
+        rocsolver_getf2_getrf(STRIDED,GETRF,handle, m, n, dA.data(), lda, stA, dIpiv.data(), stP, dinfo.data(), bc, pivot);
     *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;
 }
 
@@ -209,6 +209,7 @@ void testing_getf2_getrf(Arguments argus)
     rocblas_stride stP = argus.bsp;
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
+    rocblas_int pivot = argus.pivot;
 
     // check non-supported values 
     // N/A
@@ -264,7 +265,7 @@ void testing_getf2_getrf(Arguments argus)
 
         // collect performance data
         if (argus.timing) 
-            getf2_getrf_getPerfData<STRIDED,GETRF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, 
+            getf2_getrf_getPerfData<STRIDED,GETRF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, pivot,
                                               hA, hIpiv, hinfo, &gpu_time_used, &cpu_time_used, hot_calls);
     } 
 
@@ -298,7 +299,7 @@ void testing_getf2_getrf(Arguments argus)
 
         // collect performance data
         if (argus.timing) 
-            getf2_getrf_getPerfData<STRIDED,GETRF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, 
+            getf2_getrf_getPerfData<STRIDED,GETRF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, pivot,
                                               hA, hIpiv, hinfo, &gpu_time_used, &cpu_time_used, hot_calls);
     }
 
@@ -309,33 +310,36 @@ void testing_getf2_getrf(Arguments argus)
 
     // output results for rocsolver-bench
     if (argus.timing) {
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Arguments:\n";
-        rocblas_cout << "============================================\n";
-        if (BATCHED) {
-            rocsolver_bench_output("m", "n", "lda", "strideP", "batch_c");
-            rocsolver_bench_output(m, n, lda, stP, bc);
+        if (!argus.perf) {
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Arguments:\n";
+            rocblas_cout << "============================================\n";
+            if (BATCHED) {
+                rocsolver_bench_output("m", "n", "lda", "strideP", "batch_c");
+                rocsolver_bench_output(m, n, lda, stP, bc);
+            }
+            else if (STRIDED) {
+                rocsolver_bench_output("m", "n", "lda", "strideA", "strideP", "batch_c");
+                rocsolver_bench_output(m, n, lda, stA, stP, bc);
+            }
+            else {
+                rocsolver_bench_output("m", "n", "lda");
+                rocsolver_bench_output(m, n, lda);
+            }
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Results:\n";
+            rocblas_cout << "============================================\n";
+            if (argus.norm_check) {
+                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            }
+            else {
+                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            }
+            rocblas_cout << std::endl;
         }
-        else if (STRIDED) {
-            rocsolver_bench_output("m", "n", "lda", "strideA", "strideP", "batch_c");
-            rocsolver_bench_output(m, n, lda, stA, stP, bc);
-        }
-        else {
-            rocsolver_bench_output("m", "n", "lda");
-            rocsolver_bench_output(m, n, lda);
-        }
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Results:\n";
-        rocblas_cout << "============================================\n";
-        if (argus.norm_check) {
-            rocsolver_bench_output("cpu_time", "gpu_time", "error");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
-        }
-        else {
-            rocsolver_bench_output("cpu_time", "gpu_time");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used);
-        }
-        rocblas_cout << std::endl;
+        else rocsolver_bench_output(gpu_time_used);
     }
 }
   

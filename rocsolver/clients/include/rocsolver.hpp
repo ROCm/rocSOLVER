@@ -479,95 +479,95 @@ inline rocblas_status rocsolver_potf2_potrf(bool STRIDED, bool POTRF, rocblas_ha
 // normal and strided_batched
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED, bool GETRF, rocblas_handle handle, rocblas_int m,
                         rocblas_int n, float *A, rocblas_int lda, rocblas_stride stA,
-                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc)
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc, rocblas_int pivot = 1)
 {
     if (STRIDED) 
         return GETRF ?
                 rocsolver_sgetrf_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, info, bc) :
-                rocsolver_sgetf2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, info, bc);
+                rocsolver_sgetf2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, info, bc, pivot);
     else
         return GETRF ?
                 rocsolver_sgetrf(handle, m, n, A, lda, ipiv, info) :
-                rocsolver_sgetf2(handle, m, n, A, lda, ipiv, info);
+                rocsolver_sgetf2(handle, m, n, A, lda, ipiv, info, pivot);
 }
 
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED, bool GETRF, rocblas_handle handle, rocblas_int m,
                         rocblas_int n, double *A, rocblas_int lda, rocblas_stride stA,
-                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc)
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc, rocblas_int pivot = 1)
 {
     if (STRIDED) 
         return GETRF ?
                 rocsolver_dgetrf_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, info, bc) :
-                rocsolver_dgetf2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, info, bc);
+                rocsolver_dgetf2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, info, bc, pivot);
     else
         return GETRF ?
                 rocsolver_dgetrf(handle, m, n, A, lda, ipiv, info) :
-                rocsolver_dgetf2(handle, m, n, A, lda, ipiv, info);
+                rocsolver_dgetf2(handle, m, n, A, lda, ipiv, info, pivot);
 }
 
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED, bool GETRF, rocblas_handle handle, rocblas_int m,
                         rocblas_int n, rocblas_float_complex *A, rocblas_int lda, rocblas_stride stA,
-                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc)
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc, rocblas_int pivot = 1)
 {
     if (STRIDED) 
         return GETRF ?
                 rocsolver_cgetrf_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, info, bc) :
-                rocsolver_cgetf2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, info, bc);
+                rocsolver_cgetf2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, info, bc, pivot);
     else
         return GETRF ?
                 rocsolver_cgetrf(handle, m, n, A, lda, ipiv, info) :
-                rocsolver_cgetf2(handle, m, n, A, lda, ipiv, info);
+                rocsolver_cgetf2(handle, m, n, A, lda, ipiv, info, pivot);
 }
 
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED, bool GETRF, rocblas_handle handle, rocblas_int m,
                         rocblas_int n, rocblas_double_complex *A, rocblas_int lda, rocblas_stride stA,
-                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc)
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc, rocblas_int pivot = 1)
 {
     if (STRIDED) 
         return GETRF ?
                 rocsolver_zgetrf_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, info, bc) :
-                rocsolver_zgetf2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, info, bc);
+                rocsolver_zgetf2_strided_batched(handle, m, n, A, lda, stA, ipiv, stP, info, bc, pivot);
     else
         return GETRF ?
                 rocsolver_zgetrf(handle, m, n, A, lda, ipiv, info) :
-                rocsolver_zgetf2(handle, m, n, A, lda, ipiv, info);
+                rocsolver_zgetf2(handle, m, n, A, lda, ipiv, info, pivot);
 }
 
 // batched
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED, bool GETRF, rocblas_handle handle, rocblas_int m,
                         rocblas_int n, float *const A[], rocblas_int lda, rocblas_stride stA,
-                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc)
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc, rocblas_int pivot = 1)
 {
     return GETRF ?
             rocsolver_sgetrf_batched(handle, m, n, A, lda, ipiv, stP, info, bc) :
-            rocsolver_sgetf2_batched(handle, m, n, A, lda, ipiv, stP, info, bc);
+            rocsolver_sgetf2_batched(handle, m, n, A, lda, ipiv, stP, info, bc, pivot);
 }
 
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED, bool GETRF, rocblas_handle handle, rocblas_int m,
                         rocblas_int n, double *const A[], rocblas_int lda, rocblas_stride stA,
-                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc)
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc, rocblas_int pivot = 1)
 {
     return GETRF ?
             rocsolver_dgetrf_batched(handle, m, n, A, lda, ipiv, stP, info, bc) :
-            rocsolver_dgetf2_batched(handle, m, n, A, lda, ipiv, stP, info, bc);
+            rocsolver_dgetf2_batched(handle, m, n, A, lda, ipiv, stP, info, bc, pivot);
 }
 
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED, bool GETRF, rocblas_handle handle, rocblas_int m,
                         rocblas_int n, rocblas_float_complex *const A[], rocblas_int lda, rocblas_stride stA,
-                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc)
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc, rocblas_int pivot = 1)
 {
     return GETRF ?
             rocsolver_cgetrf_batched(handle, m, n, A, lda, ipiv, stP, info, bc) :
-            rocsolver_cgetf2_batched(handle, m, n, A, lda, ipiv, stP, info, bc);
+            rocsolver_cgetf2_batched(handle, m, n, A, lda, ipiv, stP, info, bc, pivot);
 }
 
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED, bool GETRF, rocblas_handle handle, rocblas_int m,
                         rocblas_int n, rocblas_double_complex *const A[], rocblas_int lda, rocblas_stride stA,
-                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc)
+                        rocblas_int *ipiv, rocblas_stride stP, rocblas_int *info, rocblas_int bc, rocblas_int pivot = 1)
 {
     return GETRF ?
             rocsolver_zgetrf_batched(handle, m, n, A, lda, ipiv, stP, info, bc) :
-            rocsolver_zgetf2_batched(handle, m, n, A, lda, ipiv, stP, info, bc);
+            rocsolver_zgetf2_batched(handle, m, n, A, lda, ipiv, stP, info, bc, pivot);
 }
 /********************************************************/
 
