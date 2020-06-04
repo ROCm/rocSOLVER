@@ -19,6 +19,8 @@ typedef std::tuple<vector<int>, int> getf2_getrf_tuple;
 // case when m = n = 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
+// ONLY FUNCTIONALITY WITH ROW INTERCHANGE (PARTIAL PIVOTING) IS TESTED HERE.
+
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
     {0, 1},             //quick return
