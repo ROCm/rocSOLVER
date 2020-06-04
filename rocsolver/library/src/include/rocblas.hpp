@@ -553,6 +553,11 @@ rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side, rocblas_fi
     return rocblas_dtrmm(handle,side,uplo,trans,diag,m,n,alpha,A,lda,B,ldb);
 }*/
 
+// trtri
+template <typename T>
+rocblas_status rocblas_trtri(rocblas_handle handle, rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n,
+                            const T *A, rocblas_int lda, T *invA, rocblas_int ldinvA);
+
 
 
 #endif // _ROCBLAS_HPP_
