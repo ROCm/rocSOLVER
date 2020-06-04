@@ -473,6 +473,13 @@ rocsolver_<type>getri()
 .. doxygenfunction:: rocsolver_dgetri
 .. doxygenfunction:: rocsolver_sgetri
 
+rocsolver_<type>getri_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetri_strided_batched
+.. doxygenfunction:: rocsolver_cgetri_strided_batched
+.. doxygenfunction:: rocsolver_dgetri_strided_batched
+.. doxygenfunction:: rocsolver_sgetri_strided_batched
+
 General Systems Solvers
 --------------------------
 

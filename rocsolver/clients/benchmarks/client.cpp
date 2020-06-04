@@ -548,6 +548,16 @@ try
         else if (precision == 'z')
             testing_getri<false,false,rocblas_double_complex>(argus);
     }
+    else if (function == "getri_strided_batched") {
+        if (precision == 's')
+            testing_getri<false,true,float>(argus);
+        else if (precision == 'd')
+            testing_getri<false,true,double>(argus);
+        else if (precision == 'c')
+            testing_getri<false,true,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_getri<false,true,rocblas_double_complex>(argus);
+    }
     else if (function == "gebd2") {
         if (precision == 's')
             testing_gebd2_gebrd<false,false,0,float>(argus);
