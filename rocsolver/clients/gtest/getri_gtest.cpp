@@ -103,6 +103,50 @@ TEST_P(GETRI, __double_complex) {
 
 
 
+// batched tests
+
+TEST_P(GETRI, batched__float) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.N == 0)
+        testing_getri_bad_arg<true,true,float>();
+
+    arg.batch_count = 3;
+    testing_getri<true,true,float>(arg);
+}
+
+TEST_P(GETRI, batched__double) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.N == 0)
+        testing_getri_bad_arg<true,true,double>();
+
+    arg.batch_count = 3;
+    testing_getri<true,true,double>(arg);
+}
+
+TEST_P(GETRI, batched__float_complex) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.N == 0)
+        testing_getri_bad_arg<true,true,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_getri<true,true,rocblas_float_complex>(arg);
+}
+
+TEST_P(GETRI, batched__double_complex) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.N == 0)
+        testing_getri_bad_arg<true,true,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_getri<true,true,rocblas_double_complex>(arg);
+}
+
+
+
 // strided_batched tests
 
 TEST_P(GETRI, strided_batched__float) {
