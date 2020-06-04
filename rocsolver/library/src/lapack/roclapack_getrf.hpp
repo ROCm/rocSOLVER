@@ -63,7 +63,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
 
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the algorithm
     if (m < GETRF_GETF2_SWITCHSIZE || n < GETRF_GETF2_SWITCHSIZE) 
-        return rocsolver_getf2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count, scalars, pivotGPU);
+        return rocsolver_getf2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count, 1, scalars, pivotGPU);
 
     // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
     //      TRSM_BATCH FUNCTIONALITY IS ENABLED. ****
@@ -97,7 +97,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
         // Factor diagonal and subdiagonal blocks 
         jb = min(dim - j, GETRF_GETF2_SWITCHSIZE);  //number of columns in the block
         hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,iinfo,batch_count,0);
-        rocsolver_getf2_template<T>(handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, ipiv, shiftP + j, strideP, iinfo, batch_count, scalars, pivotGPU);
+        rocsolver_getf2_template<T>(handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, ipiv, shiftP + j, strideP, iinfo, batch_count, 1, scalars, pivotGPU);
         
         // adjust pivot indices and check singularity
         sizePivot = min(m - j, jb);     //number of pivots in the block

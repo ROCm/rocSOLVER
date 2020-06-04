@@ -55,6 +55,8 @@ public:
   rocblas_int norm_check = 0;
   rocblas_int unit_check = 1;
   rocblas_int timing = 0;
+  rocblas_int perf = 0;
+  rocblas_int pivot = 1;  
 
   rocblas_int iters = 5;
 
@@ -103,6 +105,8 @@ public:
     norm_check = rhs.norm_check;
     unit_check = rhs.unit_check;
     timing = rhs.timing;
+    perf = rhs.perf;
+    pivot = rhs.pivot;
 
     iters = rhs.iters;
 

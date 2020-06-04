@@ -173,6 +173,15 @@ try
          po::value<rocblas_int>(&argus.iters)->default_value(10),
          "Iterations to run inside timing loop")
         
+        ("perf",
+         po::value<rocblas_int>(&argus.perf)->default_value(0),
+         "If equal 1, only GPU timing results are printed (default is 0)")
+
+        ("pivot",
+         po::value<rocblas_int>(&argus.pivot)->default_value(1),
+         "If equal 0, no pivoting -row interchange- is executed (default is 1)."
+         "Only applicable to LU factotization")
+        
         ("device",
          po::value<rocblas_int>(&device_id)->default_value(0),
          "Set default device to be used for subsequent program runs");
@@ -187,6 +196,11 @@ try
         return 0;
     }
 
+    // disabling pivoting cancels norm check as computations without
+    // pivoting are numerically unstable
+    if (!argus.pivot)
+        argus.norm_check = 0;
+
     // catch invalid arguments for:
 
     // precision
@@ -194,9 +208,11 @@ try
         throw std::invalid_argument("Invalid value for --precision ");
 
     // deviceID
-    rocblas_int device_count = query_device_property();
-    if (device_count <= device_id) 
-        throw std::invalid_argument("Invalid Device ID");
+    if (!argus.perf) {
+        rocblas_int device_count = query_device_property();
+        if (device_count <= device_id) 
+            throw std::invalid_argument("Invalid Device ID");
+    }
     set_device(device_id);
 
     // operation transA
@@ -360,7 +376,7 @@ try
             testing_getf2_getrf<false,true,1,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_getf2_getrf<false,true,1,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "geqr2") {
         if (precision == 's')
             testing_geqr2_geqrf<false,false,0,float>(argus);
