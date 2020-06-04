@@ -13,19 +13,20 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, typename U>
+template <typename T, typename U, typename V>
 __global__ void copy_and_zero(const rocblas_int m, const rocblas_int n,
                               U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
-                              T *work, const rocblas_int shiftw, const rocblas_int ldw, const rocblas_stride stridew)
+                              V W, const rocblas_int shiftw, const rocblas_int ldw, const rocblas_stride stridew,
+                              rocblas_fill uplo)
 {
     int b = hipBlockIdx_x;
     int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
     int j = hipBlockIdx_z * hipBlockDim_z + hipThreadIdx_z;
 
     T* a = load_ptr_batch<T>(A,b,shifta,stridea);
-    T* w = load_ptr_batch<T>(work,b,shiftw,stridew);
+    T* w = load_ptr_batch<T>(W,b,shiftw,stridew);
 
-    if (i < m && j < n && i > j)
+    if (i < m && j < n && (uplo == rocblas_fill_lower ? i > j : i <= j))
     {
         w[i + j*ldw] = a[i + j*lda];
         a[i + j*lda] = 0;
@@ -60,10 +61,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n, const rocblas_int batch_
     *size_1 = sizeof(T)*3;
 
     // for workspace
-    if (n <= GETRI_SWITCHSIZE)
-        *size_2 = n;
-    else
-        *size_2 = n*GETRI_SWITCHSIZE;
+    *size_2 = n*n;
     *size_2 *= sizeof(T)*batch_count;
 
     // size of array of pointers to workspace
@@ -118,7 +116,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
     T minone = -1;
     T one = 1;
     rocblas_int blocks1, blocks2;
-    T* M;
+    T *M, *W;
     rocblas_int jb, nb = GETRI_SWITCHSIZE;
     rocblas_int ldw = n;
     rocblas_stride strideW;
@@ -136,12 +134,17 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
     //      FUNCTIONALITY IS ENABLED. ****
     
     // compute inv(U)
+    blocks1 = (n - 1)/32 + 1;
+    strideW = n*n;
     for (int b = 0; b < batch_count; ++b)
     {
         M = load_ptr_batch<T>(AA,b,shiftA,strideA);
+        W = load_ptr_batch<T>(work,b,0,strideW);
         rocblas_trtri(handle, rocblas_fill_upper, rocblas_diagonal_non_unit,
-                      n, M, lda, M, lda);
+                      n, M, lda, W, ldw);
     }
+    hipLaunchKernelGGL(copy_and_zero<T>, dim3(batch_count,blocks1,blocks1), dim3(1,32,32), 0, stream,
+                       n, n, work, 0, ldw, strideW, A, shiftA, lda, strideA, rocblas_fill_upper);
     
     if (n <= nb)
     {
@@ -152,7 +155,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
         {
             blocks1 = ((n-j) - 1)/64 + 1;
             hipLaunchKernelGGL(copy_and_zero<T>, dim3(batch_count,blocks1,1), dim3(1,64,1), 0, stream,
-                               n-j, 1, A, shiftA + idx2D(j,j,lda), lda, strideA, work, j, ldw, strideW);
+                               n-j, 1, A, shiftA + idx2D(j,j,lda), lda, strideA, work, j, ldw, strideW, rocblas_fill_lower);
 
             rocblasCall_gemv(handle, rocblas_operation_none, n, n-j-1,
                              &minone, 0, A, shiftA + idx2D(0,j+1,lda), lda, strideA,
@@ -174,7 +177,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
             blocks1 = ((n-j) - 1)/32 + 1;
             blocks2 = (jb - 1)/32 + 1;
             hipLaunchKernelGGL(copy_and_zero<T>, dim3(batch_count,blocks1,blocks2), dim3(1,32,32), 0, stream,
-                               n-j, jb, A, shiftA + idx2D(j,j,lda), lda, strideA, work, j, ldw, strideW);
+                               n-j, jb, A, shiftA + idx2D(j,j,lda), lda, strideA, work, j, ldw, strideW, rocblas_fill_lower);
 
             if (j+jb < n)
                 rocblasCall_gemm<BATCHED,STRIDED>(handle, rocblas_operation_none, rocblas_operation_none,
