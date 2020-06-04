@@ -463,6 +463,16 @@ rocsolver_<type>gebrd_strided_batched()
 .. doxygenfunction:: rocsolver_dgebrd_strided_batched
 .. doxygenfunction:: rocsolver_sgebrd_strided_batched
 
+General Matrix Inversion
+--------------------------
+
+rocsolver_<type>getri()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetri
+.. doxygenfunction:: rocsolver_cgetri
+.. doxygenfunction:: rocsolver_dgetri
+.. doxygenfunction:: rocsolver_sgetri
+
 General Systems Solvers
 --------------------------
 

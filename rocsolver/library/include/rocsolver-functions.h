@@ -4795,6 +4795,58 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(rocblas_handle 
                                                                  const rocblas_stride strideB,
                                                                  const rocblas_int batch_count);
 
+/*! \brief GETRI inverts a general n-by-n matrix A using the LU factorization
+    computed by GETRF.
+
+    \details
+    The inverse is computed by solving the linear system
+
+        inv(A) * L = inv(U)
+
+    where L is the lower triangular factor of A with unit diagonal elements, and U is the
+    upper triangular factor.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of the matrix A. 
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the factors L and U of the factorization A = P*L*U returned by GETRF.
+              On exit, the inverse of A.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A. 
+    @param[in]
+    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
+              The pivot indices returned by GETRF.
+            
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri(rocblas_handle handle,
+                                                   const rocblas_int n, 
+                                                   float *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_int *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri(rocblas_handle handle,
+                                                   const rocblas_int n, 
+                                                   double *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_int *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri(rocblas_handle handle,
+                                                   const rocblas_int n, 
+                                                   rocblas_float_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_int *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(rocblas_handle handle,
+                                                   const rocblas_int n, 
+                                                   rocblas_double_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_int *ipiv);
 
 /*! \brief POTF2 computes the Cholesky factorization of a real symmetric/complex
     Hermitian positive definite matrix A.
