@@ -52,10 +52,10 @@ rocsolver_destroy_handle(rocsolver_handle handle) {
   return rocblas_destroy_handle(handle);
 }
 
-ROCSOLVER_EXPORT __inline rocsolver_status
-rocsolver_add_stream(rocsolver_handle handle, hipStream_t stream) {
-  return rocblas_add_stream(handle, stream);
-}
+//ROCSOLVER_EXPORT __inline rocsolver_status
+//rocsolver_add_stream(rocsolver_handle handle, hipStream_t stream) {
+//  return rocblas_add_stream(handle, stream);
+//}
 
 ROCSOLVER_EXPORT __inline rocsolver_status
 rocsolver_set_stream(rocsolver_handle handle, hipStream_t stream) {
