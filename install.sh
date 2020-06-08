@@ -57,7 +57,7 @@ Options:
 
   -r | --relocatable          Pass this to add RUNPATH(based on ROCM_RPATH) and remove ldconf entry.
 
-  -n | --no-optimizations     Pass this flag to disbale optimizations for small sizes
+  -n | --no-optimizations     Pass this flag to disable optimizations for small sizes
 
 EOF
 }
