@@ -49,6 +49,7 @@ __global__ void getf2_check_singularity(U AA, const rocblas_int shiftA, const ro
         invpivot[id] = 1.0 / A[j * lda + ipiv[j] - 1];
 }
 
+#ifdef OPTIMAL
 template <rocblas_int DIM, typename T, typename U>
 __attribute__((amdgpu_flat_work_group_size(WaveSize,WaveSize)))
 __global__ void LUfact_kernel(const rocblas_int m, U AA, const rocblas_int shiftA, const rocblas_int lda, 
@@ -216,8 +217,6 @@ __global__ void LUfact_kernel_sq(U AA, const rocblas_int shiftA, const rocblas_i
         A[myrow + j*lda] = rA[j];
 }
 
-
-
 template <typename T, typename U>
 rocblas_status LUfact_small_sizes(rocblas_handle handle, const rocblas_int m,
                                   const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
@@ -302,6 +301,7 @@ rocblas_status LUfact_small_sizes(rocblas_handle handle, const rocblas_int m,
     
     return rocblas_status_success;
 }
+#endif //OPTIMAL
 
 template <typename T>
 void rocsolver_getf2_getMemorySize(const rocblas_int batch_count,
@@ -361,10 +361,13 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
     if (m == 0 || n == 0) 
         return rocblas_status_success;
 
+    #ifdef OPTIMAL
     // if very small size, use optimized LU factorization
     if (m <= WaveSize && n <= WaveSize)
         return LUfact_small_sizes<T>(handle,m,n,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,batch_count,pivot);
         
+    #endif
+
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);

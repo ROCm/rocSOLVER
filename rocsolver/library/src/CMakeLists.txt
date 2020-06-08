@@ -139,6 +139,10 @@ if( NOT BUILD_SHARED_LIBS )
   set_target_properties( rocsolver PROPERTIES PREFIX "lib" )
 endif( )
 
+if(OPTIMAL)
+  target_compile_definitions(rocsolver PUBLIC OPTIMAL)
+endif( )
+
 ############################################################
 # Installation
 
