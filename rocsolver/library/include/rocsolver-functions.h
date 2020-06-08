@@ -2099,6 +2099,146 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
                                                    const rocblas_int ldc);
 
 
+/*! \brief BDSQR computes the singular value decomposition (SVD) of a
+    n-by-n bidiagonal matrix B.
+
+    \details
+    The SVD of B has the form:
+    
+        B = Ub * S * Vb'
+
+    where S is the n-by-n diagonal matrix of singular values of B, the columns of Ub are the left
+    singular vectors of B, and the columns of Vb are its right singular vectors. 
+    
+    The computation of the singular vectors is optional; this function accepts input matrices
+    U (of size nu-by-n) and V (of size n-by-nv) that are overwritten with U*Ub and Vb'*V. If nu = 0 
+    no left vectors are computed; if nv = 0 no right vectors are computed. 
+
+    Optionally, this function can also compute Ub'*C for a given n-by-nc input matrix C.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether B is upper or lower bidiagonal.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The size of matrix B.
+    @param[in]
+    nv          rocblas_int. nv >= 0.\n
+                The number of columns of matrix V.
+    @param[in]
+    nu          rocblas_int. nu >= 0.\n
+                The number of rows of matrix U.
+    @param[in]
+    nc          rocblas_int. nu >= 0.\n
+                The number of columns of matrix C.
+    @param[inout]
+    D           pointer to real type. Array on the GPU of dimension n.\n
+                On entry, the diagonal elements of B. On exit, if info = 0,
+                the singular values of B in decreasing order; if info > 0,
+                the diagonal elements of a bidiagonal matrix 
+                orthogonally equivalent to B.
+    @param[inout]
+    E           pointer to real type. Array on the GPU of dimension n-1.\n
+                On entry, the off-diagonal elements of B. On exit, if info > 0,
+                the off-diagonal elements of a bidiagonal matrix
+                orthogonally equivalent to B (if info = 0 this matrix converges to zero).
+    @param[inout]
+    V           pointer to type. Array on the GPU of dimension ldv*nv.\n
+                On entry, the matrix V. On exit, it is overwritten with Vb'*V.
+                (Not referenced if nv = 0).
+    @param[in]
+    ldv         rocblas_int. ldv >= n if nv > 0, or ldv >=1 if nv = 0.\n
+                Specifies the leading dimension of V.
+    @param[inout]
+    U           pointer to type. Array on the GPU of dimension ldu*n.\n
+                On entry, the matrix U. On exit, it is overwritten with U*Ub.
+                (Not referenced if nu = 0).
+    @param[in]
+    ldu         rocblas_int. ldu >= nu.\n
+                Specifies the leading dimension of U.
+    @param[inout]
+    C           pointer to type. Array on the GPU of dimension ldc*nc.\n
+                On entry, the matrix C. On exit, it is overwritten with Ub'*C.
+                (Not referenced if nc = 0).
+    @param[in]
+    ldc         rocblas_int. ldc >= n if nc > 0, or ldc >=1 if nc = 0.\n
+                Specifies the leading dimension of C.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, i elements of E have not converged to zero. 
+    
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sbdsqr(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n, 
+                                                 const rocblas_int nv, 
+                                                 const rocblas_int nu, 
+                                                 const rocblas_int nc,
+                                                 float* D,
+                                                 float* E, 
+                                                 float* V,
+                                                 const rocblas_int ldv,
+                                                 float* U,
+                                                 const rocblas_int ldu,
+                                                 float* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int *info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dbdsqr(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n, 
+                                                 const rocblas_int nv, 
+                                                 const rocblas_int nu, 
+                                                 const rocblas_int nc,
+                                                 double* D,
+                                                 double* E, 
+                                                 double* V,
+                                                 const rocblas_int ldv,
+                                                 double* U,
+                                                 const rocblas_int ldu,
+                                                 double* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int *info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cbdsqr(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n, 
+                                                 const rocblas_int nv, 
+                                                 const rocblas_int nu, 
+                                                 const rocblas_int nc,
+                                                 float* D,
+                                                 float* E, 
+                                                 rocblas_float_complex* V,
+                                                 const rocblas_int ldv,
+                                                 rocblas_float_complex* U,
+                                                 const rocblas_int ldu,
+                                                 rocblas_float_complex* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int *info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n, 
+                                                 const rocblas_int nv, 
+                                                 const rocblas_int nu, 
+                                                 const rocblas_int nc,
+                                                 double* D,
+                                                 double* E, 
+                                                 rocblas_double_complex* V,
+                                                 const rocblas_int ldv,
+                                                 rocblas_double_complex* U,
+                                                 const rocblas_int ldu,
+                                                 rocblas_double_complex* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int *info);
+
+
+
+
 
 /*
  * ===========================================================================
