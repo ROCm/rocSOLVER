@@ -32,7 +32,9 @@ Options:
   --rocblas_dir <blasdir>     Specify path to the companion rocBLAS-library root directory. 
                               Use only absolute paths.
                               (Default is /opt/rocm/rocblas)
-   
+    
+  --hcc                       Pass this flag to build library using deprecated hcc compiler.
+  
   -g | --debug                Pass this flag to build in Debug mode (equivalent to set CMAKE_BUILD_TYPE=Debug).
                               (Default build type is Release)
 
@@ -50,12 +52,12 @@ Options:
   -h | --hip-clang            Pass this flag to build library using hipclang compiler.
                               (This is the default building option).
 
-  --hcc                       Pass this flag to build library using deprecated hcc compiler.
-
   -s | --static               Pass this flag to build rocsolver as a static library.
                               (rocsolver must be built statically when the used companion rocblas is also static). 
 
   -r | --relocatable          Pass this to add RUNPATH(based on ROCM_RPATH) and remove ldconf entry.
+
+  -n | --no-optimizations     Pass this flag to disable optimizations for small sizes
 
 EOF
 }
@@ -283,6 +285,7 @@ rocblas_dir=/opt/rocm/rocblas
 build_dir=./build
 build_type=Release
 build_relocatable=false
+optimal=true
 
 rocm_path=/opt/rocm
 if ! [ -z ${ROCM_PATH+x} ]; then
@@ -296,7 +299,7 @@ fi
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,hcc,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static,relocatable --options hipcdgsr -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,hcc,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static,relocatable,no-optimizations --options hipcdgsrn -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -336,6 +339,9 @@ while true; do
         shift ;;
     -h | --hip-clang)
         build_hcc=false
+        shift ;;
+    -n | --no-optimizations)
+        optimal=false
         shift ;;
     --hcc)
         build_hcc=true
@@ -428,6 +434,10 @@ cmake_common_options="${cmake_common_options} -DROCM_PATH=${rocm_path} -Drocblas
 
 if [[ "${static_lib}" == true ]]; then
   cmake_common_options="${cmake_common_options} -DBUILD_SHARED_LIBS=OFF"
+fi
+
+if [[ "${optimal}" == true ]]; then
+  cmake_common_options="${cmake_common_options} -DOPTIMAL=ON"
 fi
 
 if [[ "${build_clients}" == true ]]; then
