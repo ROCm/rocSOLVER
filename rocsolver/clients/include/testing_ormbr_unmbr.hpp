@@ -245,6 +245,8 @@ void testing_ormbr_unmbr(Arguments argus)
     size_t size_A = row ? size_t(lda)*nq : size_t(lda)*size_P;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
+    size_t size_Cr = argus.unit_check || argus.norm_check ? size_C : 0;
+
     // check invalid sizes
     bool invalid_size = ((m < 0 || n < 0 || k < 0 || ldc < m) || 
                          (row && lda < min(nq,k)) || (!row && lda < nq));
@@ -260,7 +262,7 @@ void testing_ormbr_unmbr(Arguments argus)
 
     // memory allocations
     host_strided_batch_vector<T> hC(size_C,1,size_C,1);
-    host_strided_batch_vector<T> hCr(size_C,1,size_C,1);
+    host_strided_batch_vector<T> hCr(size_Cr,1,size_Cr,1);
     host_strided_batch_vector<T> hIpiv(size_P,1,size_P,1);
     host_strided_batch_vector<T> hA(size_A,1,size_A,1);
     device_strided_batch_vector<T> dC(size_C,1,size_C,1);

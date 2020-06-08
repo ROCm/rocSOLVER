@@ -198,6 +198,8 @@ void testing_geqr2_geqrf(Arguments argus)
     rocblas_stride stP = argus.bsp;
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
+
+    rocblas_stride stARes = argus.unit_check || argus.norm_check ? stA : 0;
     
     // check non-supported values 
     // N/A
@@ -206,6 +208,8 @@ void testing_geqr2_geqrf(Arguments argus)
     size_t size_A = size_t(lda) * n;
     size_t size_P = size_t(min(m,n));
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0 ;
+
+    size_t size_ARes = argus.unit_check || argus.norm_check ? size_A : 0;
 
     // check invalid sizes 
     bool invalid_size = (m < 0 || n < 0 || lda < m || bc < 0);
@@ -226,7 +230,7 @@ void testing_geqr2_geqrf(Arguments argus)
     if (BATCHED && STRIDED) {
         // memory allocations
         host_batch_vector<T> hA(size_A,1,bc);
-        host_batch_vector<T> hARes(size_A,1,bc);
+        host_batch_vector<T> hARes(size_ARes,1,bc);
         host_strided_batch_vector<T> hIpiv(size_P,1,stP,bc);
         device_batch_vector<T> dA(size_A,1,bc);
         device_strided_batch_vector<T> dIpiv(size_P,1,stP,bc);
@@ -257,7 +261,7 @@ void testing_geqr2_geqrf(Arguments argus)
     else if (BATCHED) {
         // memory allocations
         host_batch_vector<T> hA(size_A,1,bc);
-        host_batch_vector<T> hARes(size_A,1,bc);
+        host_batch_vector<T> hARes(size_ARes,1,bc);
         host_batch_vector<T> hIpiv(size_P,1,bc);
         device_batch_vector<T> dA(size_A,1,bc);
         device_batch_vector<T> dIpiv(size_P,1,bc);
@@ -288,7 +292,7 @@ void testing_geqr2_geqrf(Arguments argus)
     else {
         // memory allocations
         host_strided_batch_vector<T> hA(size_A,1,stA,bc);
-        host_strided_batch_vector<T> hARes(size_A,1,stA,bc);
+        host_strided_batch_vector<T> hARes(size_ARes,1,stARes,bc);
         host_strided_batch_vector<T> hIpiv(size_P,1,stP,bc);
         device_strided_batch_vector<T> dA(size_A,1,stA,bc);
         device_strided_batch_vector<T> dIpiv(size_P,1,stP,bc);

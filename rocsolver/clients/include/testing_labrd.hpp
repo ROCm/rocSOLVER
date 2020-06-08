@@ -241,6 +241,10 @@ void testing_labrd(Arguments argus)
     size_t size_Y = ldy * nb;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0 ;
 
+    size_t size_ARes = argus.unit_check || argus.norm_check ? size_A : 0;
+    size_t size_XRes = argus.unit_check || argus.norm_check ? size_X : 0;
+    size_t size_YRes = argus.unit_check || argus.norm_check ? size_Y : 0;
+
     // check invalid sizes 
     bool invalid_size = (m < 0 || n < 0 || nb < 0 || nb > min(m,n) || lda < m || ldx < m || ldy < n);
     if (invalid_size) {
@@ -255,15 +259,15 @@ void testing_labrd(Arguments argus)
 
     // memory allocations
     host_strided_batch_vector<T> hA(size_A,1,size_A,1);
-    host_strided_batch_vector<T> hARes(size_A,1,size_A,1);
+    host_strided_batch_vector<T> hARes(size_ARes,1,size_ARes,1);
     host_strided_batch_vector<S> hD(size_D,1,size_D,1);
     host_strided_batch_vector<S> hE(size_E,1,size_E,1);
     host_strided_batch_vector<T> hTauq(size_Q,1,size_Q,1);
     host_strided_batch_vector<T> hTaup(size_P,1,size_P,1);
     host_strided_batch_vector<T> hX(size_X,1,size_X,1);
-    host_strided_batch_vector<T> hXRes(size_X,1,size_X,1);
+    host_strided_batch_vector<T> hXRes(size_XRes,1,size_XRes,1);
     host_strided_batch_vector<T> hY(size_Y,1,size_Y,1);
-    host_strided_batch_vector<T> hYRes(size_Y,1,size_Y,1);
+    host_strided_batch_vector<T> hYRes(size_YRes,1,size_YRes,1);
     device_strided_batch_vector<T> dA(size_A,1,size_A,1);
     device_strided_batch_vector<S> dD(size_D,1,size_D,1);
     device_strided_batch_vector<S> dE(size_E,1,size_E,1);
