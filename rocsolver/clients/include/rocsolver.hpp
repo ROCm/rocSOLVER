@@ -185,6 +185,34 @@ inline rocblas_status rocsolver_larfb(rocblas_handle handle, rocblas_side side, 
 
 
 /******************** LABRD ********************/
+inline rocblas_status rocsolver_bdsqr(rocblas_handle handle, rocblas_fill uplo, rocblas_int n, rocblas_int nv, rocblas_int nu, rocblas_int nc,  float *D, float *E,
+                                      float *V, rocblas_int ldv, float *U, rocblas_int ldu, float *C, rocblas_int ldc, rocblas_int *info) 
+{
+  return rocsolver_sbdsqr(handle, uplo, n, nv, nu, nc, D, E, V, ldv, U, ldu, C, ldc, info);
+}
+
+inline rocblas_status rocsolver_bdsqr(rocblas_handle handle, rocblas_fill uplo, rocblas_int n, rocblas_int nv, rocblas_int nu, rocblas_int nc,  double *D, double *E,
+                                      double *V, rocblas_int ldv, double *U, rocblas_int ldu, double *C, rocblas_int ldc, rocblas_int *info) 
+{
+  return rocsolver_dbdsqr(handle, uplo, n, nv, nu, nc, D, E, V, ldv, U, ldu, C, ldc, info);
+}
+
+inline rocblas_status rocsolver_bdsqr(rocblas_handle handle, rocblas_fill uplo, rocblas_int n, rocblas_int nv, rocblas_int nu, rocblas_int nc,  float *D, float *E,
+                                      rocblas_float_complex *V, rocblas_int ldv, rocblas_float_complex *U, rocblas_int ldu, rocblas_float_complex *C, rocblas_int ldc, rocblas_int *info) 
+{
+  return rocsolver_cbdsqr(handle, uplo, n, nv, nu, nc, D, E, V, ldv, U, ldu, C, ldc, info);
+}
+
+inline rocblas_status rocsolver_bdsqr(rocblas_handle handle, rocblas_fill uplo, rocblas_int n, rocblas_int nv, rocblas_int nu, rocblas_int nc,  double *D, double *E,
+                                      rocblas_double_complex *V, rocblas_int ldv, rocblas_double_complex *U, rocblas_int ldu, rocblas_double_complex *C, rocblas_int ldc, rocblas_int *info) 
+{
+  return rocsolver_zbdsqr(handle, uplo, n, nv, nu, nc, D, E, V, ldv, U, ldu, C, ldc, info);
+}
+/***************************************************************/
+
+
+
+/******************** LABRD ********************/
 inline rocblas_status rocsolver_labrd(rocblas_handle handle, rocblas_int m, rocblas_int n, rocblas_int nb, float *A, rocblas_int lda,
                                       float *D, float *E, float *tauq, float *taup, float *X, rocblas_int ldx, float *Y, rocblas_int ldy) {
   return rocsolver_slabrd(handle, m, n, nb, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);

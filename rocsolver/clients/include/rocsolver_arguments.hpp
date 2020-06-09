@@ -12,6 +12,7 @@ public:
   rocblas_int M = 128;
   rocblas_int N = 128;
   rocblas_int K = 128;
+  rocblas_int S4 = 128;
   rocblas_int k1 = 1;
   rocblas_int k2 = 2;
 
@@ -64,6 +65,7 @@ public:
     M = rhs.M;
     N = rhs.N;
     K = rhs.K;
+    S4 = rhs.S4;
     k1 = rhs.k1;
     k2 = rhs.k2;
 
