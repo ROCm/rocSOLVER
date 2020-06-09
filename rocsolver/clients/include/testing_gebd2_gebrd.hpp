@@ -253,6 +253,8 @@ void testing_gebd2_gebrd(Arguments argus)
     rocblas_stride stP = argus.bsp;
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
+
+    rocblas_stride stARes = argus.unit_check || argus.norm_check ? stA : 0;
     
     // check non-supported values 
     // N/A
@@ -264,6 +266,8 @@ void testing_gebd2_gebrd(Arguments argus)
     size_t size_Q = min(m,n);
     size_t size_P = min(m,n);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0 ;
+    
+    size_t size_ARes = argus.unit_check || argus.norm_check ? size_A : 0;
 
     // check invalid sizes 
     bool invalid_size = (m < 0 || n < 0 || lda < m || bc < 0);
@@ -284,7 +288,7 @@ void testing_gebd2_gebrd(Arguments argus)
     if (BATCHED) {
         // memory allocations
         host_batch_vector<T> hA(size_A,1,bc);
-        host_batch_vector<T> hARes(size_A,1,bc);
+        host_batch_vector<T> hARes(size_ARes,1,bc);
         host_strided_batch_vector<S> hD(size_D,1,stD,bc);
         host_strided_batch_vector<S> hE(size_E,1,stE,bc);
         host_strided_batch_vector<T> hTaup(size_P,1,stP,bc);
@@ -324,7 +328,7 @@ void testing_gebd2_gebrd(Arguments argus)
     else {
         // memory allocations
         host_strided_batch_vector<T> hA(size_A,1,stA,bc);
-        host_strided_batch_vector<T> hARes(size_A,1,stA,bc);
+        host_strided_batch_vector<T> hARes(size_ARes,1,stARes,bc);
         host_strided_batch_vector<S> hD(size_D,1,stD,bc);
         host_strided_batch_vector<S> hE(size_E,1,stE,bc);
         host_strided_batch_vector<T> hTaup(size_P,1,stP,bc);

@@ -190,6 +190,8 @@ void testing_potf2_potrf(Arguments argus)
     char uploC = argus.uplo_option;
     rocblas_fill uplo = char2rocblas_fill(uploC);
 
+    size_t stARes = argus.unit_check || argus.norm_check ? stA : 0;
+
     // check non-supported values 
     if (uplo != rocblas_fill_upper && uplo != rocblas_fill_lower) {
         if (BATCHED)
@@ -208,6 +210,8 @@ void testing_potf2_potrf(Arguments argus)
     // determine sizes
     size_t size_A = size_t(lda) * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
+
+    size_t size_ARes = argus.unit_check || argus.norm_check ? size_A : 0;
 
     // check invalid sizes 
     bool invalid_size = (n < 0 || lda < n || bc < 0);
@@ -228,7 +232,7 @@ void testing_potf2_potrf(Arguments argus)
     if (BATCHED) {
         // memory allocations
         host_batch_vector<T> hA(size_A,1,bc);
-        host_batch_vector<T> hARes(size_A,1,bc);
+        host_batch_vector<T> hARes(size_ARes,1,bc);
         host_strided_batch_vector<rocblas_int> hinfo(1,1,1,bc);
         device_batch_vector<T> dA(size_A,1,bc);
         device_strided_batch_vector<rocblas_int> dinfo(1,1,1,bc);
@@ -259,7 +263,7 @@ void testing_potf2_potrf(Arguments argus)
     else {
         // memory allocations
         host_strided_batch_vector<T> hA(size_A,1,stA,bc);
-        host_strided_batch_vector<T> hARes(size_A,1,stA,bc);
+        host_strided_batch_vector<T> hARes(size_ARes,1,stARes,bc);
         host_strided_batch_vector<rocblas_int> hinfo(1,1,1,bc);
         device_strided_batch_vector<T> dA(size_A,1,stA,bc);
         device_strided_batch_vector<rocblas_int> dinfo(1,1,1,bc);

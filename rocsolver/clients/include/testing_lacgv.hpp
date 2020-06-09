@@ -124,6 +124,8 @@ void testing_lacgv(Arguments argus)
     size_t size_A = size_t(n) * abs(inc);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
+    size_t size_Ar = argus.unit_check || argus.norm_check ? size_A : 0;
+
     // check invalid sizes
     bool invalid_size = (n < 0 || !inc);
     if (invalid_size) {
@@ -138,7 +140,7 @@ void testing_lacgv(Arguments argus)
 
     // memory allocations
     host_strided_batch_vector<T> hA(size_A,1,size_A,1);
-    host_strided_batch_vector<T> hAr(size_A,1,size_A,1);
+    host_strided_batch_vector<T> hAr(size_Ar,1,size_Ar,1);
     device_strided_batch_vector<T> dA(size_A,1,size_A,1);
     if (size_A) CHECK_HIP_ERROR(dA.memcheck());
     
