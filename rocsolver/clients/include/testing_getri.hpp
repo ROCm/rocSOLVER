@@ -13,15 +13,20 @@
 template <bool STRIDED, typename T, typename U>
 void getri_checkBadArgs(const rocblas_handle handle, 
                          const rocblas_int n, 
+                         T dA1, 
                          T dA, 
                          const rocblas_int lda, 
                          const rocblas_stride stA,
                          U dIpiv, 
                          const rocblas_stride stP,
+                         U dInfo, 
                          const rocblas_int bc)
 {
+    // NOTE: dA1 and dInfo are only used for getri_outofplace_batched
+    // They are ignored in bad arg checks
+
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,nullptr,n,dA,lda,stA,dIpiv,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,nullptr,n,dA1,dA,lda,stA,dIpiv,stP,dInfo,bc), 
                           rocblas_status_invalid_handle);
     
     // values
@@ -29,22 +34,22 @@ void getri_checkBadArgs(const rocblas_handle handle,
 
     // sizes (only check batch_count if applicable)
     if (STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,n,dA,lda,stA,dIpiv,stP,-1), 
+        EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,n,dA1,dA,lda,stA,dIpiv,stP,dInfo,-1), 
                               rocblas_status_invalid_size);
         
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,n,(T)nullptr,lda,stA,dIpiv,stP,bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,n,dA1,(T)nullptr,lda,stA,dIpiv,stP,dInfo,bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,n,dA,lda,stA,(U)nullptr,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,n,dA1,dA,lda,stA,(U)nullptr,stP,dInfo,bc), 
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,0,(T)nullptr,lda,stA,(U)nullptr,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,0,dA1,(T)nullptr,lda,stA,(U)nullptr,stP,dInfo,bc), 
                           rocblas_status_success);
     
     // quick return with zero batch_count if applicable
     if (STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,n,dA,lda,stA,dIpiv,stP,0),
+        EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,n,dA1,dA,lda,stA,dIpiv,stP,dInfo,0),
                               rocblas_status_success);
 }
 
@@ -62,23 +67,27 @@ void testing_getri_bad_arg()
 
     if (BATCHED) {
         // memory allocations
+        device_batch_vector<T> dA1(1,1,1);
         device_batch_vector<T> dA(1,1,1);
         device_strided_batch_vector<rocblas_int> dIpiv(1,1,1,1);
+        device_strided_batch_vector<rocblas_int> dInfo(1,1,1,1);
         CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dIpiv.memcheck());
         
         // check bad arguments
-        getri_checkBadArgs<STRIDED>(handle,n,dA.data(),lda,stA,dIpiv.data(),stP,bc);
+        getri_checkBadArgs<STRIDED>(handle,n,dA1.data(),dA.data(),lda,stA,dIpiv.data(),stP,dInfo.data(),bc);
 
     } else {
         // memory allocations
+        device_strided_batch_vector<T> dA1(1,1,1,1);
         device_strided_batch_vector<T> dA(1,1,1,1);
         device_strided_batch_vector<rocblas_int> dIpiv(1,1,1,1);
+        device_strided_batch_vector<rocblas_int> dInfo(1,1,1,1);
         CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dIpiv.memcheck());
 
         // check bad arguments
-        getri_checkBadArgs<STRIDED>(handle,n,dA.data(),lda,stA,dIpiv.data(),stP,bc);
+        getri_checkBadArgs<STRIDED>(handle,n,dA1.data(),dA.data(),lda,stA,dIpiv.data(),stP,dInfo.data(),bc);
     }
 }
 
@@ -86,15 +95,19 @@ void testing_getri_bad_arg()
 template <bool STRIDED, typename T, typename Td, typename Ud, typename Th, typename Uh>
 void getri_getError(const rocblas_handle handle, 
                         const rocblas_int n, 
+                        Td &dA1, 
                         Td &dA, 
                         const rocblas_int lda, 
                         const rocblas_stride stA, 
                         Ud &dIpiv, 
                         const rocblas_stride stP, 
+                        Ud &dInfo, 
                         const rocblas_int bc,
+                        Th &hA1, 
                         Th &hA, 
                         Th &hARes, 
                         Uh &hIpiv, 
+                        Uh &hInfo, 
                         double *max_err)
 {
     rocblas_int sizeW = n;
@@ -125,12 +138,15 @@ void getri_getError(const rocblas_handle handle,
     }
     
     // now copy data to the GPU
-    CHECK_HIP_ERROR(dA.transfer_from(hA));
+    if (dA1.n() > 0)
+        CHECK_HIP_ERROR(dA1.transfer_from(hA));
+    else
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
     CHECK_HIP_ERROR(dIpiv.transfer_from(hIpiv));
 
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_getri(STRIDED,handle, n, dA.data(), lda, stA, dIpiv.data(), stP, bc));
+    CHECK_ROCBLAS_ERROR(rocsolver_getri(STRIDED,handle, n, dA1.data(), dA.data(), lda, stA, dIpiv.data(), stP, dInfo.data(), bc));
     CHECK_HIP_ERROR(hARes.transfer_from(dA));
 
     // CPU lapack
@@ -155,14 +171,18 @@ void getri_getError(const rocblas_handle handle,
 template <bool STRIDED, typename T, typename Td, typename Ud, typename Th, typename Uh>
 void getri_getPerfData(const rocblas_handle handle, 
                         const rocblas_int n, 
+                        Td &dA1, 
                         Td &dA, 
                         const rocblas_int lda, 
                         const rocblas_stride stA, 
                         Ud &dIpiv, 
                         const rocblas_stride stP, 
+                        Ud &dInfo, 
                         const rocblas_int bc,
+                        Th &hA1, 
                         Th &hA, 
                         Uh &hIpiv, 
+                        Uh &hInfo, 
                         double *gpu_time_used,
                         double *cpu_time_used,
                         const rocblas_int hot_calls)
@@ -179,12 +199,12 @@ void getri_getPerfData(const rocblas_handle handle,
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
-        CHECK_ROCBLAS_ERROR(rocsolver_getri(STRIDED,handle, n, dA.data(), lda, stA, dIpiv.data(), stP, bc));
+        CHECK_ROCBLAS_ERROR(rocsolver_getri(STRIDED,handle, n, dA1.data(), dA.data(), lda, stA, dIpiv.data(), stP, dInfo.data(), bc));
         
     // gpu-lapack performance
     *gpu_time_used = get_time_us(); 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
-        rocsolver_getri(STRIDED,handle, n, dA.data(), lda, stA, dIpiv.data(), stP, bc);
+        rocsolver_getri(STRIDED,handle, n, dA1.data(), dA.data(), lda, stA, dIpiv.data(), stP, dInfo.data(), bc);
     *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;
 }
 
@@ -217,10 +237,10 @@ void testing_getri(Arguments argus)
     bool invalid_size = (n < 0 || lda < n || bc < 0);
     if (invalid_size) {
         if (BATCHED)
-            EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED, handle, n, (T *const *)nullptr, lda, stA, (rocblas_int*)nullptr, stP, bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED, handle, n, (T *const *)nullptr, (T *const *)nullptr, lda, stA, (rocblas_int*)nullptr, stP, (rocblas_int*)nullptr, bc),
                                   rocblas_status_invalid_size);
         else
-            EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED, handle, n, (T *)nullptr, lda, stA, (rocblas_int*)nullptr, stP, bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED, handle, n, (T *)nullptr, (T *)nullptr, lda, stA, (rocblas_int*)nullptr, stP, (rocblas_int*)nullptr, bc),
                                   rocblas_status_invalid_size);
 
         if (argus.timing) 
@@ -229,19 +249,23 @@ void testing_getri(Arguments argus)
         return;
     }
 
-    if (BATCHED) {
+    if (BATCHED && STRIDED) {
         // memory allocations
+        host_batch_vector<T> hA1(0,1,bc);
         host_batch_vector<T> hA(size_A,1,bc);
         host_batch_vector<T> hARes(size_ARes,1,bc);
         host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,stP,bc);
+        host_strided_batch_vector<rocblas_int> hInfo(0,1,0,bc);
+        device_batch_vector<T> dA1(0,1,bc);
         device_batch_vector<T> dA(size_A,1,bc);
         device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,stP,bc);
+        device_strided_batch_vector<rocblas_int> dInfo(0,1,0,bc);
         if (size_A) CHECK_HIP_ERROR(dA.memcheck());
         if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
 
         // check quick return
         if (n == 0 || bc == 0) {
-            EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED, handle, n, dA.data(), lda, stA, dIpiv.data(), stP, bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED, handle, n, dA1.data(), dA.data(), lda, stA, dIpiv.data(), stP, dInfo.data(), bc),
                                   rocblas_status_success);
             if (argus.timing)
                 ROCSOLVER_BENCH_INFORM(0);
@@ -251,28 +275,69 @@ void testing_getri(Arguments argus)
 
         // check computations
         if (argus.unit_check || argus.norm_check) 
-            getri_getError<STRIDED,T>(handle, n, dA, lda, stA, dIpiv, stP, bc, 
-                                          hA, hARes, hIpiv, &max_error);
+            getri_getError<STRIDED,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
+                                          hA1, hA, hARes, hIpiv, hInfo, &max_error);
 
         // collect performance data
         if (argus.timing) 
-            getri_getPerfData<STRIDED,T>(handle, n, dA, lda, stA, dIpiv, stP, bc, 
-                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls);
+            getri_getPerfData<STRIDED,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
+                                              hA1, hA, hIpiv, hInfo, &gpu_time_used, &cpu_time_used, hot_calls);
+    } 
+    
+    else if (BATCHED) {
+        // memory allocations
+        host_batch_vector<T> hA1(size_A,1,bc);
+        host_batch_vector<T> hA(size_A,1,bc);
+        host_batch_vector<T> hARes(size_ARes,1,bc);
+        host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,stP,bc);
+        host_strided_batch_vector<rocblas_int> hInfo(1,1,1,bc);
+        device_batch_vector<T> dA1(size_A,1,bc);
+        device_batch_vector<T> dA(size_A,1,bc);
+        device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,stP,bc);
+        device_strided_batch_vector<rocblas_int> dInfo(1,1,1,bc);
+        if (size_A) CHECK_HIP_ERROR(dA1.memcheck());
+        if (size_A) CHECK_HIP_ERROR(dA.memcheck());
+        if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
+        CHECK_HIP_ERROR(dInfo.memcheck());
+
+        // check quick return
+        if (n == 0 || bc == 0) {
+            EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED, handle, n, dA1.data(), dA.data(), lda, stA, dIpiv.data(), stP, dInfo.data(), bc),
+                                  rocblas_status_success);
+            if (argus.timing)
+                ROCSOLVER_BENCH_INFORM(0);
+
+            return;
+        }
+
+        // check computations
+        if (argus.unit_check || argus.norm_check) 
+            getri_getError<STRIDED,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
+                                          hA1, hA, hARes, hIpiv, hInfo, &max_error);
+
+        // collect performance data
+        if (argus.timing) 
+            getri_getPerfData<STRIDED,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
+                                              hA1, hA, hIpiv, hInfo, &gpu_time_used, &cpu_time_used, hot_calls);
     } 
 
     else {
         // memory allocations
+        host_strided_batch_vector<T> hA1(0,1,0,bc);
         host_strided_batch_vector<T> hA(size_A,1,stA,bc);
         host_strided_batch_vector<T> hARes(size_ARes,1,stARes,bc);
         host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,stP,bc);
+        host_strided_batch_vector<rocblas_int> hInfo(0,1,0,bc);
+        device_strided_batch_vector<T> dA1(0,1,0,bc);
         device_strided_batch_vector<T> dA(size_A,1,stA,bc);
         device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,stP,bc);
+        device_strided_batch_vector<rocblas_int> dInfo(0,1,0,bc);
         if (size_A) CHECK_HIP_ERROR(dA.memcheck());
         if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
 
         // check quick return
         if (n == 0 || bc == 0) {
-            EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED, handle, n, dA.data(), lda, stA, dIpiv.data(), stP, bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED, handle, n, dA1.data(), dA.data(), lda, stA, dIpiv.data(), stP, dInfo.data(), bc),
                                   rocblas_status_success);
             if (argus.timing)
                 ROCSOLVER_BENCH_INFORM(0);
@@ -282,13 +347,13 @@ void testing_getri(Arguments argus)
 
         // check computations
         if (argus.unit_check || argus.norm_check) 
-            getri_getError<STRIDED,T>(handle, n, dA, lda, stA, dIpiv, stP, bc, 
-                                          hA, hARes, hIpiv, &max_error);
+            getri_getError<STRIDED,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
+                                          hA1, hA, hARes, hIpiv, hInfo, &max_error);
 
         // collect performance data
         if (argus.timing) 
-            getri_getPerfData<STRIDED,T>(handle, n, dA, lda, stA, dIpiv, stP, bc, 
-                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls);
+            getri_getPerfData<STRIDED,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
+                                              hA1, hA, hIpiv, hInfo, &gpu_time_used, &cpu_time_used, hot_calls);
     }
 
     // validate results for rocsolver-test

@@ -59,6 +59,7 @@ set( rocsolver_lapack_source
   lapack/roclapack_getri.cpp
   lapack/roclapack_getri_batched.cpp
   lapack/roclapack_getri_strided_batched.cpp
+  lapack/roclapack_getri_outofplace_batched.cpp
   lapack/roclapack_potf2.cpp
   lapack/roclapack_potf2_batched.cpp
   lapack/roclapack_potf2_strided_batched.cpp

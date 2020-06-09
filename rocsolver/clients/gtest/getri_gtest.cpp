@@ -191,6 +191,50 @@ TEST_P(GETRI, strided_batched__double_complex) {
 
 
 
+// outofplace_batched tests
+
+TEST_P(GETRI, outofplace_batched__float) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.N == 0)
+        testing_getri_bad_arg<true,false,float>();
+    
+    arg.batch_count = 3;
+    testing_getri<true,false,float>(arg);
+}
+
+TEST_P(GETRI, outofplace_batched__double) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.N == 0)
+        testing_getri_bad_arg<true,false,double>();
+
+    arg.batch_count = 3;
+    testing_getri<true,false,double>(arg);
+}
+
+TEST_P(GETRI, outofplace_batched__float_complex) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.N == 0)
+        testing_getri_bad_arg<true,false,rocblas_float_complex>();
+
+    arg.batch_count = 3;
+    testing_getri<true,false,rocblas_float_complex>(arg);
+}
+
+TEST_P(GETRI, outofplace_batched__double_complex) {
+    Arguments arg = setup_arguments(GetParam());
+
+    if (arg.N == 0)
+        testing_getri_bad_arg<true,false,rocblas_double_complex>();
+
+    arg.batch_count = 3;
+    testing_getri<true,false,rocblas_double_complex>(arg);
+}
+
+
+
 
 
 INSTANTIATE_TEST_CASE_P(daily_lapack, GETRI,

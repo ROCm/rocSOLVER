@@ -91,6 +91,26 @@ rocblas_status rocsolver_getri_argCheck(const rocblas_int n, const rocblas_int l
     return rocblas_status_continue;
 }
 
+template <typename T>
+rocblas_status rocsolver_getri_argCheck(const rocblas_int n, const rocblas_int lda, const rocblas_int ldc, T A, T C,
+                                        rocblas_int *ipiv, rocblas_int *info, const rocblas_int batch_count = 1)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    // N/A
+    
+    // 2. invalid size
+    if (n < 0 || lda < n || ldc < n || batch_count < 0)
+        return rocblas_status_invalid_size;
+
+    // 3. invalid pointers
+    if ((n && !A) || (n && !C) || (n && !ipiv) || (batch_count && !info))
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
+}
+
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int n, U A, const rocblas_int shiftA,
                                         const rocblas_int lda, const rocblas_stride strideA, rocblas_int *ipiv,
