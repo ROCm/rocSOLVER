@@ -198,6 +198,8 @@ void testing_larft(Arguments argus)
     size_t size_V = row ? size_t(ldv)*n : size_t(ldv)*k;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
+    size_t size_Tr = argus.unit_check || argus.norm_check ? size_T : 0;
+
     // check invalid sizes
     bool invalid_size = (n < 0 || k < 1 || ldt < k || (row && ldv < k) || (!row && ldv < n));
     if (invalid_size) {
@@ -212,7 +214,7 @@ void testing_larft(Arguments argus)
 
     // memory allocations
     host_strided_batch_vector<T> hT(size_T,1,size_T,1);
-    host_strided_batch_vector<T> hTr(size_T,1,size_T,1);
+    host_strided_batch_vector<T> hTr(size_Tr,1,size_Tr,1);
     host_strided_batch_vector<T> ht(size_tau,1,size_tau,1);
     host_strided_batch_vector<T> hV(size_V,1,size_V,1);
     device_strided_batch_vector<T> dT(size_T,1,size_T,1);

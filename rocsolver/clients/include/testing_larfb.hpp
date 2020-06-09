@@ -279,6 +279,8 @@ void testing_larfb(Arguments argus)
     size_t size_A = size_t(lda) * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
+    size_t size_Ar = argus.unit_check || argus.norm_check ? size_A : 0;
+
     // check invalid sizes
     bool invalid_size = (m < 0 || n < 0 || k < 1 || ldt < k || lda < m ||
                          (row && ldv < k) || (!row && !left && ldv < n) || (!row && left && ldv < m));
@@ -295,7 +297,7 @@ void testing_larfb(Arguments argus)
     // memory allocations
     host_strided_batch_vector<T> hT(size_T,1,size_T,1);
     host_strided_batch_vector<T> hA(size_A,1,size_A,1);
-    host_strided_batch_vector<T> hAr(size_A,1,size_A,1);
+    host_strided_batch_vector<T> hAr(size_Ar,1,size_Ar,1);
     host_strided_batch_vector<T> hV(size_V,1,size_V,1);
     device_strided_batch_vector<T> dT(size_T,1,size_T,1);
     device_strided_batch_vector<T> dA(size_A,1,size_A,1);

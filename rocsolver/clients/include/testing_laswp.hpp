@@ -159,6 +159,8 @@ void testing_laswp(Arguments argus)
     size_t size_P = k1 + size_t(k2-k1)*abs(inc);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
+    size_t size_Ar = argus.unit_check || argus.norm_check ? size_A : 0;
+
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < 1 || !inc || k1 < 1 || k2 < 1 || k2 < k1);
     if (invalid_size) {
@@ -173,7 +175,7 @@ void testing_laswp(Arguments argus)
 
     // memory allocations
     host_strided_batch_vector<T> hA(size_A,1,size_A,1);
-    host_strided_batch_vector<T> hAr(size_A,1,size_A,1);
+    host_strided_batch_vector<T> hAr(size_Ar,1,size_Ar,1);
     host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,size_P,1); 
     device_strided_batch_vector<T> dA(size_A,1,size_A,1);
     device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,size_P,1);

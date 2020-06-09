@@ -190,6 +190,8 @@ void testing_orgbr_ungbr(Arguments argus)
     size_t size_P = row ? size_t(min(n,k)) : size_t(min(m,k));
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
+    size_t size_Ar = argus.unit_check || argus.norm_check ? size_A : 0;
+
     // check invalid sizes
     bool invalid_size = ((m < 0 || n < 0 || k < 0 || lda < m) || 
                          (row && (m > n || m < min(n,k))) || 
@@ -206,7 +208,7 @@ void testing_orgbr_ungbr(Arguments argus)
 
     // memory allocations
     host_strided_batch_vector<T> hA(size_A,1,size_A,1);
-    host_strided_batch_vector<T> hAr(size_A,1,size_A,1);
+    host_strided_batch_vector<T> hAr(size_Ar,1,size_Ar,1);
     host_strided_batch_vector<T> hIpiv(size_P,1,size_P,1);
     device_strided_batch_vector<T> dA(size_A,1,size_A,1);
     device_strided_batch_vector<T> dIpiv(size_P,1,size_P,1);
