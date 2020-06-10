@@ -22,8 +22,8 @@ void getri_checkBadArgs(const rocblas_handle handle,
                          U dInfo, 
                          const rocblas_int bc)
 {
-    // NOTE: dA1 and dInfo are only used for getri_outofplace_batched
-    // They are ignored in bad arg checks
+    // NOTE: dA1 is only used for getri_outofplace_batched
+    // It is ignored in bad arg checks
 
     // handle
     EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,nullptr,n,dA1,dA,lda,stA,dIpiv,stP,dInfo,bc), 
@@ -42,6 +42,8 @@ void getri_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,n,dA1,dA,lda,stA,(U)nullptr,stP,dInfo,bc), 
                           rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,n,dA1,dA,lda,stA,dIpiv,stP,(U)nullptr,bc), 
+                          rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,0,dA1,(T)nullptr,lda,stA,(U)nullptr,stP,dInfo,bc), 
@@ -49,7 +51,7 @@ void getri_checkBadArgs(const rocblas_handle handle,
     
     // quick return with zero batch_count if applicable
     if (STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,n,dA1,dA,lda,stA,dIpiv,stP,dInfo,0),
+        EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED,handle,n,dA1,dA,lda,stA,dIpiv,stP,(U)nullptr,0),
                               rocblas_status_success);
 }
 
@@ -255,11 +257,11 @@ void testing_getri(Arguments argus)
         host_batch_vector<T> hA(size_A,1,bc);
         host_batch_vector<T> hARes(size_ARes,1,bc);
         host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,stP,bc);
-        host_strided_batch_vector<rocblas_int> hInfo(0,1,0,bc);
+        host_strided_batch_vector<rocblas_int> hInfo(1,1,1,bc);
         device_batch_vector<T> dA1(0,1,bc);
         device_batch_vector<T> dA(size_A,1,bc);
         device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,stP,bc);
-        device_strided_batch_vector<rocblas_int> dInfo(0,1,0,bc);
+        device_strided_batch_vector<rocblas_int> dInfo(1,1,1,bc);
         if (size_A) CHECK_HIP_ERROR(dA.memcheck());
         if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
 
@@ -327,11 +329,11 @@ void testing_getri(Arguments argus)
         host_strided_batch_vector<T> hA(size_A,1,stA,bc);
         host_strided_batch_vector<T> hARes(size_ARes,1,stARes,bc);
         host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,stP,bc);
-        host_strided_batch_vector<rocblas_int> hInfo(0,1,0,bc);
+        host_strided_batch_vector<rocblas_int> hInfo(1,1,1,bc);
         device_strided_batch_vector<T> dA1(0,1,0,bc);
         device_strided_batch_vector<T> dA(size_A,1,stA,bc);
         device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,stP,bc);
-        device_strided_batch_vector<rocblas_int> dInfo(0,1,0,bc);
+        device_strided_batch_vector<rocblas_int> dInfo(1,1,1,bc);
         if (size_A) CHECK_HIP_ERROR(dA.memcheck());
         if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
 

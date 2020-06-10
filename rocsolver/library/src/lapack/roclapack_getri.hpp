@@ -13,6 +13,25 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
+template <typename T, typename U>
+__global__ void getri_check_singularity(const rocblas_int n, U A, const rocblas_int shifta, const rocblas_int lda,
+                                        const rocblas_stride stridea, rocblas_int *info)
+{
+    int b = hipBlockIdx_x;
+
+    T* a = load_ptr_batch<T>(A,b,shifta,stridea);
+
+    for (rocblas_int j = 0; j < n; ++j)
+    {
+        if (a[j + j * lda] == 0)
+        {
+            info[b] = j + 1;
+            return;
+        }
+    }
+    info[b] = 0;
+}
+
 template <typename T, typename U, typename V>
 __global__ void copy_and_zero(const rocblas_int m, const rocblas_int n,
                               U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
@@ -73,7 +92,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n, const rocblas_int batch_
 
 template <typename T>
 rocblas_status rocsolver_getri_argCheck(const rocblas_int n, const rocblas_int lda, T A, rocblas_int *ipiv,
-                                        const rocblas_int batch_count = 1)
+                                        rocblas_int *info, const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
 
@@ -85,7 +104,7 @@ rocblas_status rocsolver_getri_argCheck(const rocblas_int n, const rocblas_int l
         return rocblas_status_invalid_size;
 
     // 3. invalid pointers
-    if ((n && !A) || (n && !ipiv))
+    if ((n && !A) || (n && !ipiv) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -114,7 +133,7 @@ rocblas_status rocsolver_getri_argCheck(const rocblas_int n, const rocblas_int l
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int n, U A, const rocblas_int shiftA,
                                         const rocblas_int lda, const rocblas_stride strideA, rocblas_int *ipiv,
-                                        const rocblas_int shiftP, const rocblas_stride strideP,
+                                        const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int *info,
                                         const rocblas_int batch_count, T* scalars, T* work, T** workArr)
 {
     // quick return if zero instances in batch
@@ -125,8 +144,13 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
     rocblas_get_stream(handle, &stream);
 
     // quick return if no dimensions
-    if (n == 0) 
+    if (n == 0)
+    {
+        rocblas_int blocks = (batch_count - 1)/32 + 1;
+        hipLaunchKernelGGL(reset_info, dim3(blocks,1,1), dim3(32,1,1), 0, stream,
+                           info, batch_count, 0);
         return rocblas_status_success;
+    }
 
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
@@ -152,6 +176,10 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
 
     // **** TRTRI_BATCH IS EXECUTED IN A FOR-LOOP UNTIL 
     //      FUNCTIONALITY IS ENABLED. ****
+
+    // check for singularities
+    hipLaunchKernelGGL(getri_check_singularity<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
+                       n, A, shiftA, lda, strideA, info);
     
     // compute inv(U)
     blocks1 = (n - 1)/32 + 1;

@@ -664,8 +664,8 @@ inline rocblas_status rocsolver_getri(bool STRIDED, rocblas_handle handle, rocbl
                         rocblas_int *info, rocblas_int bc)
 {
     return STRIDED ?
-            rocsolver_sgetri_strided_batched(handle, n, A, lda, stA, ipiv, stP, bc) :
-            rocsolver_sgetri(handle, n, A, lda, ipiv);
+            rocsolver_sgetri_strided_batched(handle, n, A, lda, stA, ipiv, stP, info, bc) :
+            rocsolver_sgetri(handle, n, A, lda, ipiv, info);
 }
 
 inline rocblas_status rocsolver_getri(bool STRIDED, rocblas_handle handle, rocblas_int n, double *A1,
@@ -673,8 +673,8 @@ inline rocblas_status rocsolver_getri(bool STRIDED, rocblas_handle handle, rocbl
                         rocblas_int *info, rocblas_int bc)
 {
     return STRIDED ?
-            rocsolver_dgetri_strided_batched(handle, n, A, lda, stA, ipiv, stP, bc) :
-            rocsolver_dgetri(handle, n, A, lda, ipiv);
+            rocsolver_dgetri_strided_batched(handle, n, A, lda, stA, ipiv, stP, info, bc) :
+            rocsolver_dgetri(handle, n, A, lda, ipiv, info);
 }
 
 inline rocblas_status rocsolver_getri(bool STRIDED, rocblas_handle handle, rocblas_int n, rocblas_float_complex *A1,
@@ -682,8 +682,8 @@ inline rocblas_status rocsolver_getri(bool STRIDED, rocblas_handle handle, rocbl
                         rocblas_int *info, rocblas_int bc)
 {
     return STRIDED ?
-            rocsolver_cgetri_strided_batched(handle, n, A, lda, stA, ipiv, stP, bc) :
-            rocsolver_cgetri(handle, n, A, lda, ipiv);
+            rocsolver_cgetri_strided_batched(handle, n, A, lda, stA, ipiv, stP, info, bc) :
+            rocsolver_cgetri(handle, n, A, lda, ipiv, info);
 }
 
 inline rocblas_status rocsolver_getri(bool STRIDED, rocblas_handle handle, rocblas_int n, rocblas_double_complex *A1,
@@ -691,8 +691,8 @@ inline rocblas_status rocsolver_getri(bool STRIDED, rocblas_handle handle, rocbl
                         rocblas_int *info, rocblas_int bc)
 {
     return STRIDED ?
-            rocsolver_zgetri_strided_batched(handle, n, A, lda, stA, ipiv, stP, bc) :
-            rocsolver_zgetri(handle, n, A, lda, ipiv);
+            rocsolver_zgetri_strided_batched(handle, n, A, lda, stA, ipiv, stP, info, bc) :
+            rocsolver_zgetri(handle, n, A, lda, ipiv, info);
 }
 
 // batched and outofplace_batched
@@ -701,7 +701,7 @@ inline rocblas_status rocsolver_getri(bool STRIDED, rocblas_handle handle, rocbl
                         rocblas_int *info, rocblas_int bc)
 {
   return STRIDED ?
-            rocsolver_sgetri_batched(handle, n, A, lda, ipiv, stP, bc) :
+            rocsolver_sgetri_batched(handle, n, A, lda, ipiv, stP, info, bc) :
             rocsolver_sgetri_outofplace_batched(handle, n, A1, lda, ipiv, stP, A, lda, info, bc);
 }
 
@@ -710,7 +710,7 @@ inline rocblas_status rocsolver_getri(bool STRIDED, rocblas_handle handle, rocbl
                         rocblas_int *info, rocblas_int bc)
 {
   return STRIDED ?
-            rocsolver_dgetri_batched(handle, n, A, lda, ipiv, stP, bc) :
+            rocsolver_dgetri_batched(handle, n, A, lda, ipiv, stP, info, bc) :
             rocsolver_dgetri_outofplace_batched(handle, n, A1, lda, ipiv, stP, A, lda, info, bc);
 }
 
@@ -719,7 +719,7 @@ inline rocblas_status rocsolver_getri(bool STRIDED, rocblas_handle handle, rocbl
                         rocblas_int *info, rocblas_int bc)
 {
   return STRIDED ?
-            rocsolver_cgetri_batched(handle, n, A, lda, ipiv, stP, bc) :
+            rocsolver_cgetri_batched(handle, n, A, lda, ipiv, stP, info, bc) :
             rocsolver_cgetri_outofplace_batched(handle, n, A1, lda, ipiv, stP, A, lda, info, bc);
 }
 
@@ -728,7 +728,7 @@ inline rocblas_status rocsolver_getri(bool STRIDED, rocblas_handle handle, rocbl
                         rocblas_int *info, rocblas_int bc)
 {
   return STRIDED ?
-            rocsolver_zgetri_batched(handle, n, A, lda, ipiv, stP, bc) :
+            rocsolver_zgetri_batched(handle, n, A, lda, ipiv, stP, info, bc) :
             rocsolver_zgetri_outofplace_batched(handle, n, A1, lda, ipiv, stP, A, lda, info, bc);
 }
 /********************************************************/

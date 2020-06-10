@@ -7,7 +7,7 @@
 template <typename T, typename U>
 rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle, const rocblas_int n, U A,
                                         const rocblas_int lda, const rocblas_stride strideA, rocblas_int* ipiv,
-                                        const rocblas_stride strideP, const rocblas_int batch_count) 
+                                        const rocblas_stride strideP, rocblas_int *info, const rocblas_int batch_count) 
 { 
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -15,7 +15,7 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle, const
     //logging is missing ???    
     
     // argument checking
-    rocblas_status st = rocsolver_getri_argCheck(n,lda,A,ipiv,batch_count);
+    rocblas_status st = rocsolver_getri_argCheck(n,lda,A,ipiv,info,batch_count);
     if (st != rocblas_status_continue)
         return st;
         
@@ -45,6 +45,7 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle, const
                                                   lda,strideA,
                                                   ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)
                                                   strideP,
+                                                  info,
                                                   batch_count,
                                                   (T*)scalars,
                                                   (T*)work,
@@ -66,27 +67,31 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle, const
 extern "C" {
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_strided_batched(rocblas_handle handle, const rocblas_int n, float *A,
-                 const rocblas_int lda, const rocblas_stride strideA, rocblas_int* ipiv, const rocblas_stride strideP, const rocblas_int batch_count) 
+                 const rocblas_int lda, const rocblas_stride strideA, rocblas_int* ipiv, const rocblas_stride strideP, rocblas_int *info,
+                 const rocblas_int batch_count) 
 {
-    return rocsolver_getri_strided_batched_impl<float>(handle, n, A, lda, strideA, ipiv, strideP, batch_count);
+    return rocsolver_getri_strided_batched_impl<float>(handle, n, A, lda, strideA, ipiv, strideP, info, batch_count);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri_strided_batched(rocblas_handle handle, const rocblas_int n, double *A,
-                 const rocblas_int lda, const rocblas_stride strideA, rocblas_int* ipiv, const rocblas_stride strideP, const rocblas_int batch_count) 
+                 const rocblas_int lda, const rocblas_stride strideA, rocblas_int* ipiv, const rocblas_stride strideP, rocblas_int *info,
+                 const rocblas_int batch_count) 
 {
-    return rocsolver_getri_strided_batched_impl<double>(handle, n, A, lda, strideA, ipiv, strideP, batch_count);
+    return rocsolver_getri_strided_batched_impl<double>(handle, n, A, lda, strideA, ipiv, strideP, info, batch_count);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri_strided_batched(rocblas_handle handle, const rocblas_int n, rocblas_float_complex *A,
-                 const rocblas_int lda, const rocblas_stride strideA, rocblas_int* ipiv, const rocblas_stride strideP, const rocblas_int batch_count) 
+                 const rocblas_int lda, const rocblas_stride strideA, rocblas_int* ipiv, const rocblas_stride strideP, rocblas_int *info,
+                 const rocblas_int batch_count) 
 {
-    return rocsolver_getri_strided_batched_impl<rocblas_float_complex>(handle, n, A, lda, strideA, ipiv, strideP, batch_count);
+    return rocsolver_getri_strided_batched_impl<rocblas_float_complex>(handle, n, A, lda, strideA, ipiv, strideP, info, batch_count);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle handle, const rocblas_int n, rocblas_double_complex *A,
-                 const rocblas_int lda, const rocblas_stride strideA, rocblas_int* ipiv, const rocblas_stride strideP, const rocblas_int batch_count) 
+                 const rocblas_int lda, const rocblas_stride strideA, rocblas_int* ipiv, const rocblas_stride strideP, rocblas_int *info,
+                 const rocblas_int batch_count) 
 {
-    return rocsolver_getri_strided_batched_impl<rocblas_double_complex>(handle, n, A, lda, strideA, ipiv, strideP, batch_count);
+    return rocsolver_getri_strided_batched_impl<rocblas_double_complex>(handle, n, A, lda, strideA, ipiv, strideP, info, batch_count);
 }
 
 } //extern C

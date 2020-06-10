@@ -53,9 +53,6 @@ rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle, co
     rocblas_int blocks = (n - 1)/32 + 1;
     hipLaunchKernelGGL(copy_batch<T>, dim3(batch_count,blocks,blocks), dim3(1,32,32), 0, stream,
                        n, n, A, 0, lda, 0, C, 0, ldc, 0);
-    blocks = (batch_count - 1)/32 + 1;
-    hipLaunchKernelGGL(reset_info, dim3(blocks,1,1), dim3(32,1,1), 0, stream,
-                       info, batch_count, 0);
 
     // memory managment
     size_t size_1;  //size of constants
@@ -83,6 +80,7 @@ rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle, co
                                                   ldc, strideC,
                                                   ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)
                                                   strideP,
+                                                  info,
                                                   batch_count,
                                                   (T*)scalars,
                                                   (T*)work,

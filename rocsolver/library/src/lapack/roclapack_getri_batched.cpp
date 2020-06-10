@@ -8,7 +8,7 @@
 template <typename T, typename U>
 rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle, const rocblas_int n, U A,
                                         const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP,
-                                        const rocblas_int batch_count) 
+                                        rocblas_int *info, const rocblas_int batch_count) 
 { 
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -16,7 +16,7 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle, const rocblas
     //logging is missing ???    
     
     // argument checking
-    rocblas_status st = rocsolver_getri_argCheck(n,lda,A,ipiv,batch_count);
+    rocblas_status st = rocsolver_getri_argCheck(n,lda,A,ipiv,info,batch_count);
     if (st != rocblas_status_continue)
         return st;
 
@@ -48,6 +48,7 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle, const rocblas
                                                   lda, strideA,
                                                   ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)
                                                   strideP,
+                                                  info,
                                                   batch_count,
                                                   (T*)scalars,
                                                   (T*)work,
@@ -69,27 +70,31 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle, const rocblas
 extern "C" {
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_batched(rocblas_handle handle, const rocblas_int n, float *const A[],
-                 const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP, const rocblas_int batch_count) 
+                 const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP, rocblas_int *info,
+                 const rocblas_int batch_count) 
 {
-    return rocsolver_getri_batched_impl<float>(handle, n, A, lda, ipiv, strideP, batch_count);
+    return rocsolver_getri_batched_impl<float>(handle, n, A, lda, ipiv, strideP, info, batch_count);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri_batched(rocblas_handle handle, const rocblas_int n, double *const A[],
-                 const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP, const rocblas_int batch_count) 
+                 const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP, rocblas_int *info,
+                 const rocblas_int batch_count) 
 {
-    return rocsolver_getri_batched_impl<double>(handle, n, A, lda, ipiv, strideP, batch_count);
+    return rocsolver_getri_batched_impl<double>(handle, n, A, lda, ipiv, strideP, info, batch_count);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri_batched(rocblas_handle handle, const rocblas_int n, rocblas_float_complex *const A[],
-                 const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP, const rocblas_int batch_count) 
+                 const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP, rocblas_int *info,
+                 const rocblas_int batch_count) 
 {
-    return rocsolver_getri_batched_impl<rocblas_float_complex>(handle, n, A, lda, ipiv, strideP, batch_count);
+    return rocsolver_getri_batched_impl<rocblas_float_complex>(handle, n, A, lda, ipiv, strideP, info, batch_count);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_batched(rocblas_handle handle, const rocblas_int n, rocblas_double_complex *const A[],
-                 const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP, const rocblas_int batch_count) 
+                 const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP, rocblas_int *info,
+                 const rocblas_int batch_count) 
 {
-    return rocsolver_getri_batched_impl<rocblas_double_complex>(handle, n, A, lda, ipiv, strideP, batch_count);
+    return rocsolver_getri_batched_impl<rocblas_double_complex>(handle, n, A, lda, ipiv, strideP, info, batch_count);
 }
 
 } //extern C

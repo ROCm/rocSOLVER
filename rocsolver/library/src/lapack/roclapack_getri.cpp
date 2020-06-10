@@ -6,7 +6,7 @@
 
 template <typename T, typename U>
 rocblas_status rocsolver_getri_impl(rocblas_handle handle, const rocblas_int n, U A,
-                                    const rocblas_int lda, rocblas_int *ipiv)
+                                    const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info)
 {
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -14,7 +14,7 @@ rocblas_status rocsolver_getri_impl(rocblas_handle handle, const rocblas_int n, 
     //logging is missing ???    
 
     // argument checking
-    rocblas_status st = rocsolver_getri_argCheck(n,lda,A,ipiv);
+    rocblas_status st = rocsolver_getri_argCheck(n,lda,A,ipiv,info);
     if (st != rocblas_status_continue)
         return st;
 
@@ -48,6 +48,7 @@ rocblas_status rocsolver_getri_impl(rocblas_handle handle, const rocblas_int n, 
                                                     lda,strideA,
                                                     ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)
                                                     strideP,
+                                                    info,
                                                     batch_count,
                                                     (T*)scalars,
                                                     (T*)work,
@@ -69,27 +70,27 @@ rocblas_status rocsolver_getri_impl(rocblas_handle handle, const rocblas_int n, 
 extern "C" {
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri(rocblas_handle handle, const rocblas_int n,
-                 float *A, const rocblas_int lda, rocblas_int *ipiv) 
+                 float *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info) 
 {
-    return rocsolver_getri_impl<float>(handle, n, A, lda, ipiv);
+    return rocsolver_getri_impl<float>(handle, n, A, lda, ipiv, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri(rocblas_handle handle, const rocblas_int n,
-                 double *A, const rocblas_int lda, rocblas_int *ipiv) 
+                 double *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info) 
 {
-    return rocsolver_getri_impl<double>(handle, n, A, lda, ipiv);
+    return rocsolver_getri_impl<double>(handle, n, A, lda, ipiv, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri(rocblas_handle handle, const rocblas_int n,
-                 rocblas_float_complex *A, const rocblas_int lda, rocblas_int *ipiv) 
+                 rocblas_float_complex *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info) 
 {
-    return rocsolver_getri_impl<rocblas_float_complex>(handle, n, A, lda, ipiv);
+    return rocsolver_getri_impl<rocblas_float_complex>(handle, n, A, lda, ipiv, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(rocblas_handle handle, const rocblas_int n,
-                 rocblas_double_complex *A, const rocblas_int lda, rocblas_int *ipiv) 
+                 rocblas_double_complex *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info) 
 {
-    return rocsolver_getri_impl<rocblas_double_complex>(handle, n, A, lda, ipiv);
+    return rocsolver_getri_impl<rocblas_double_complex>(handle, n, A, lda, ipiv, info);
 }
 
 } //extern C
