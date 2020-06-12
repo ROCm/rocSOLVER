@@ -9,6 +9,26 @@
 #include "ideal_sizes.hpp"
 #include "libcommon.hpp"
 
+
+// **********************************************************
+// device functions that are used by many kernels
+// **********************************************************
+
+
+template <typename T>
+__device__ void swap(const rocblas_int n, T *a, const rocblas_int inca,
+                     T *b, const rocblas_int incb)
+{
+    int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    if (tid < n)
+    {
+        T orig = a[inca * tid];
+        a[inca * tid] = b[incb * tid];
+        b[incb * tid] = orig;
+    }
+}
+
+
 // **********************************************************
 // GPU kernels that are used by many rocsolver functions
 // **********************************************************

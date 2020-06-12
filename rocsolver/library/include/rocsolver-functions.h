@@ -4795,6 +4795,228 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(rocblas_handle 
                                                                  const rocblas_stride strideB,
                                                                  const rocblas_int batch_count);
 
+/*! \brief GETRI inverts a general n-by-n matrix A using the LU factorization
+    computed by GETRF.
+
+    \details
+    The inverse is computed by solving the linear system
+
+        inv(A) * L = inv(U)
+
+    where L is the lower triangular factor of A with unit diagonal elements, and U is the
+    upper triangular factor.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of the matrix A. 
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the factors L and U of the factorization A = P*L*U returned by GETRF.
+              On exit, the inverse of A if info = 0; otherwise undefined.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A. 
+    @param[in]
+    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
+              The pivot indices returned by GETRF.
+    @param[out]
+    info      pointer to a rocblas_int on the GPU.\n
+              If info = 0, succesful exit. 
+              If info = i > 0, U is singular. U(i,i) is the first zero pivot.
+            
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri(rocblas_handle handle,
+                                                   const rocblas_int n, 
+                                                   float *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_int *ipiv,
+                                                   rocblas_int *info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri(rocblas_handle handle,
+                                                   const rocblas_int n, 
+                                                   double *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_int *ipiv,
+                                                   rocblas_int *info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri(rocblas_handle handle,
+                                                   const rocblas_int n, 
+                                                   rocblas_float_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_int *ipiv,
+                                                   rocblas_int *info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(rocblas_handle handle,
+                                                   const rocblas_int n, 
+                                                   rocblas_double_complex *A,
+                                                   const rocblas_int lda,
+                                                   rocblas_int *ipiv,
+                                                   rocblas_int *info);
+
+/*! \brief GETRI_BATCHED inverts a batch of general n-by-n matrices using
+    the LU factorization computed by GETRF_BATCHED.
+
+    \details
+    The inverse is computed by solving the linear system
+
+        inv(A_j) * L_j = inv(U_j)
+
+    where L_j is the lower triangular factor of A_j with unit diagonal elements, and U_j is the
+    upper triangular factor.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of all matrices A_j in the batch.
+    @param[inout]
+    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+              On entry, the factors L_j and U_j of the factorization A = P_j*L_j*U_j returned by
+              GETRF_BATCHED.
+              On exit, the inverses of A_j if info_j = 0; otherwise undefined.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of matrices A_j.
+    @param[in]
+    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n 
+              The pivot indices returned by GETRF_BATCHED.
+    @param[in]
+    strideP   rocblas_stride.\n
+              Stride from the start of one vector ipiv_j to the next one ipiv_(i+j).
+              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    @param[out]
+    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+              If info_j = 0, successful exit for inversion of A_j. 
+              If info_j = i > 0, U_j is singular. U_j(i,i) is the first zero pivot.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch. 
+            
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_batched(rocblas_handle handle,
+                                                         const rocblas_int n, 
+                                                         float *const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_int *ipiv,
+                                                         const rocblas_stride strideP,
+                                                         rocblas_int *info,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri_batched(rocblas_handle handle,
+                                                         const rocblas_int n, 
+                                                         double *const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_int *ipiv,
+                                                         const rocblas_stride strideP,
+                                                         rocblas_int *info,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri_batched(rocblas_handle handle,
+                                                         const rocblas_int n, 
+                                                         rocblas_float_complex *const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_int *ipiv,
+                                                         const rocblas_stride strideP,
+                                                         rocblas_int *info,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_batched(rocblas_handle handle,
+                                                         const rocblas_int n, 
+                                                         rocblas_double_complex *const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_int *ipiv,
+                                                         const rocblas_stride strideP,
+                                                         rocblas_int *info,
+                                                         const rocblas_int batch_count);
+
+/*! \brief GETRI_STRIDED_BATCHED inverts a batch of general n-by-n matrices using
+    the LU factorization computed by GETRF_STRIDED_BATCHED.
+
+    \details
+    The inverse is computed by solving the linear system
+
+        inv(A_j) * L_j = inv(U_j)
+
+    where L_j is the lower triangular factor of A_j with unit diagonal elements, and U_j is the
+    upper triangular factor.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of all matrices A_i in the batch.
+    @param[inout]
+    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+              On entry, the factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by
+              GETRF_STRIDED_BATCHED.
+              On exit, the inverses of A_j if info_j = 0; otherwise undefined.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of matrices A_j.
+    @param[in]
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_j and the next one A_(j+1).
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    @param[in]
+    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n 
+              The pivot indices returned by GETRF_STRIDED_BATCHED.
+    @param[in]
+    strideP   rocblas_stride.\n
+              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    @param[out]
+    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+              If info_j = 0, successful exit for inversion of A_j. 
+              If info_j = i > 0, U_j is singular. U_j(i,i) is the first zero pivot.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch. 
+            
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_int n, 
+                                                                 float *A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_int *ipiv,
+                                                                 const rocblas_stride strideP,
+                                                                 rocblas_int *info,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_int n, 
+                                                                 double *A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_int *ipiv,
+                                                                 const rocblas_stride strideP,
+                                                                 rocblas_int *info,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_int n, 
+                                                                 rocblas_float_complex *A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_int *ipiv,
+                                                                 const rocblas_stride strideP,
+                                                                 rocblas_int *info,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_int n, 
+                                                                 rocblas_double_complex *A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_int *ipiv,
+                                                                 const rocblas_stride strideP,
+                                                                 rocblas_int *info,
+                                                                 const rocblas_int batch_count);
 
 /*! \brief POTF2 computes the Cholesky factorization of a real symmetric/complex
     Hermitian positive definite matrix A.

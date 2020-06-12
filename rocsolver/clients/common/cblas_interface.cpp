@@ -60,6 +60,11 @@ void zgetrs_(char *trans, int *n, int *nrhs, rocblas_double_complex *A,
              int *lda, int *ipiv, rocblas_double_complex *B, int *ldb,
              int *info);
 
+void sgetri_(int *n, float *A, int *lda, int *ipiv, float *work, int *lwork, int *info);
+void dgetri_(int *n, double *A, int *lda, int *ipiv, double *work, int *lwork, int *info);
+void cgetri_(int *n, rocblas_float_complex *A, int *lda, int *ipiv, rocblas_float_complex *work, int *lwork, int *info);
+void zgetri_(int *n, rocblas_double_complex *A, int *lda, int *ipiv, rocblas_double_complex *work, int *lwork, int *info);
+
 void slarfg_(int *n, float *alpha, float *x, int *incx, float *tau);
 void dlarfg_(int *n, double *alpha, double *x, int *incx, double *tau);
 void clarfg_(int *n, rocblas_float_complex *alpha, rocblas_float_complex *x, int *incx, rocblas_float_complex *tau);
@@ -1452,6 +1457,39 @@ void cblas_getrs<rocblas_double_complex>(
   rocblas_int info;
   char transC = rocblas2char_operation(trans);   
   zgetrs_(&transC, &n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
+}
+
+// getri
+template <>
+void cblas_getri<float>(rocblas_int n, float *A, rocblas_int lda, rocblas_int *ipiv, float *work,
+                        rocblas_int *lwork)
+{
+  rocblas_int info;
+  sgetri_(&n, A, &lda, ipiv, work, lwork, &info);
+}
+
+template <>
+void cblas_getri<double>(rocblas_int n, double *A, rocblas_int lda, rocblas_int *ipiv, double *work,
+                        rocblas_int *lwork)
+{
+  rocblas_int info;
+  dgetri_(&n, A, &lda, ipiv, work, lwork, &info);
+}
+
+template <>
+void cblas_getri<rocblas_float_complex>(rocblas_int n, rocblas_float_complex *A, rocblas_int lda,
+                        rocblas_int *ipiv, rocblas_float_complex *work, rocblas_int *lwork)
+{
+  rocblas_int info;
+  cgetri_(&n, A, &lda, ipiv, work, lwork, &info);
+}
+
+template <>
+void cblas_getri<rocblas_double_complex>(rocblas_int n, rocblas_double_complex *A, rocblas_int lda,
+                        rocblas_int *ipiv, rocblas_double_complex *work, rocblas_int *lwork)
+{
+  rocblas_int info;
+  zgetri_(&n, A, &lda, ipiv, work, lwork, &info);
 }
 
 // geqrf

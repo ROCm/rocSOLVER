@@ -103,4 +103,32 @@ rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side, rocblas_fi
     return rocblas_ztrmm(handle,side,uplo,trans,diag,m,n,alpha,A,lda,B,ldb);
 }
 
+// trtri
+template <>
+rocblas_status rocblas_trtri(rocblas_handle handle, rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n,
+                            const float *A, rocblas_int lda, float *invA, rocblas_int ldinvA)
+{
+    return rocblas_strtri(handle, uplo, diag, n, A, lda, invA, ldinvA);
+}
+
+template <>
+rocblas_status rocblas_trtri(rocblas_handle handle, rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n,
+                            const double *A, rocblas_int lda, double *invA, rocblas_int ldinvA)
+{
+    return rocblas_dtrtri(handle, uplo, diag, n, A, lda, invA, ldinvA);
+}
+
+template <>
+rocblas_status rocblas_trtri(rocblas_handle handle, rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n,
+                            const rocblas_float_complex *A, rocblas_int lda, rocblas_float_complex *invA, rocblas_int ldinvA)
+{
+    return rocblas_ctrtri(handle, uplo, diag, n, A, lda, invA, ldinvA);
+}
+
+template <>
+rocblas_status rocblas_trtri(rocblas_handle handle, rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n,
+                            const rocblas_double_complex *A, rocblas_int lda, rocblas_double_complex *invA, rocblas_int ldinvA)
+{
+    return rocblas_ztrtri(handle, uplo, diag, n, A, lda, invA, ldinvA);
+}
 

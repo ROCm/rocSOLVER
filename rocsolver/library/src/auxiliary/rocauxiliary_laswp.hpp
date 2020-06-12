@@ -13,19 +13,6 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T>
-__device__ void swap(const rocblas_int n, T *a, const rocblas_int lda,
-                               const rocblas_int i,
-                               const rocblas_int exch) {
-
-    int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-    if (tid < n) {
-        T orig = a[i + lda * tid];
-        a[i + lda * tid] = a[exch + lda * tid];
-        a[exch + lda * tid] = orig;
-    }
-}
-
 template <typename T, typename U>
 __global__ void laswp_kernel(const rocblas_int n, U AA, const rocblas_int shiftA,
                             const rocblas_int lda, const rocblas_stride stride, const rocblas_int i, const rocblas_int k1,
@@ -40,7 +27,7 @@ __global__ void laswp_kernel(const rocblas_int n, U AA, const rocblas_int shiftA
     //will exchange rows i and exch if they are not the same
     if (exch != i) {
         T* A = load_ptr_batch(AA,id,shiftA,stride);
-        swap(n,A,lda,i-1,exch-1);  //row indices are base-1 from the API
+        swap(n, A+i-1, lda, A+exch-1, lda);  //row indices are base-1 from the API
     }
 }
 
