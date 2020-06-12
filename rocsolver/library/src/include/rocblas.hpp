@@ -183,6 +183,43 @@ rocblas_status rocblasCall_gemv(rocblas_handle    handle,
                             rocblas_int       offseta,
                             rocblas_int       lda,
                             rocblas_stride    strideA,
+                            T*                x,
+                            rocblas_int       offsetx,
+                            rocblas_int       incx,
+                            rocblas_stride    stridex,
+                            U                 beta,
+                            rocblas_stride    stride_beta,
+                            T *const          y[],
+                            rocblas_int       offsety,
+                            rocblas_int       incy,
+                            rocblas_stride    stridey,
+                            rocblas_int       batch_count,
+                            T**               work)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks =  (batch_count - 1)/256 + 1;
+    hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,x,stridex,batch_count);
+ 
+    return rocblas_gemv_template<T>(handle,transA,m,n,alpha,stride_alpha,
+                                      cast2constType<T>(A),offseta,lda,strideA,
+                                      cast2constType<T>(work),offsetx,incx,stridex,beta,stride_beta,
+                                      y,offsety,incy,stridey,batch_count);
+}
+
+// gemv overload
+template<typename T, typename U>
+rocblas_status rocblasCall_gemv(rocblas_handle    handle,
+                            rocblas_operation transA,
+                            rocblas_int       m,
+                            rocblas_int       n,
+                            U                 alpha,
+                            rocblas_stride    stride_alpha,
+                            T *const          A[],
+                            rocblas_int       offseta,
+                            rocblas_int       lda,
+                            rocblas_stride    strideA,
                             T *const          x[],
                             rocblas_int       offsetx,
                             rocblas_int       incx,
@@ -552,6 +589,11 @@ rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side, rocblas_fi
 {
     return rocblas_dtrmm(handle,side,uplo,trans,diag,m,n,alpha,A,lda,B,ldb);
 }*/
+
+// trtri
+template <typename T>
+rocblas_status rocblas_trtri(rocblas_handle handle, rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n,
+                            const T *A, rocblas_int lda, T *invA, rocblas_int ldinvA);
 
 
 

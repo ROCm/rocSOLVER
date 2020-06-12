@@ -463,6 +463,30 @@ rocsolver_<type>gebrd_strided_batched()
 .. doxygenfunction:: rocsolver_dgebrd_strided_batched
 .. doxygenfunction:: rocsolver_sgebrd_strided_batched
 
+General Matrix Inversion
+--------------------------
+
+rocsolver_<type>getri()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetri
+.. doxygenfunction:: rocsolver_cgetri
+.. doxygenfunction:: rocsolver_dgetri
+.. doxygenfunction:: rocsolver_sgetri
+
+rocsolver_<type>getri_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetri_batched
+.. doxygenfunction:: rocsolver_cgetri_batched
+.. doxygenfunction:: rocsolver_dgetri_batched
+.. doxygenfunction:: rocsolver_sgetri_batched
+
+rocsolver_<type>getri_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetri_strided_batched
+.. doxygenfunction:: rocsolver_cgetri_strided_batched
+.. doxygenfunction:: rocsolver_dgetri_strided_batched
+.. doxygenfunction:: rocsolver_sgetri_strided_batched
+
 General Systems Solvers
 --------------------------
 

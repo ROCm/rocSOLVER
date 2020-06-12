@@ -85,6 +85,9 @@ rocsolver_gelqf_strided_batched x      x          x             x
 **rocsolver_getrs**             x      x          x             x
 rocsolver_getrs_batched         x      x          x             x
 rocsolver_getrs_strided_batched x      x          x             x
+**rocsolver_getri**             x      x          x             x
+rocsolver_getri_batched         x      x          x             x
+rocsolver_getri_strided_batched x      x          x             x
 **rocsolver_gebd2**             x      x          x             x 
 rocsolver_gebd2_batched         x      x          x             x
 rocsolver_gebd2_strided_batched x      x          x             x

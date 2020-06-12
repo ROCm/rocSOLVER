@@ -7,6 +7,7 @@
 #include "testing_getf2_getrf.hpp"
 #include "testing_geqr2_geqrf.hpp"
 #include "testing_gelq2_gelqf.hpp"
+#include "testing_getri.hpp"
 #include "testing_getrs.hpp"
 #include "testing_potf2_potrf.hpp"
 #include "testing_larfg.hpp"
@@ -536,6 +537,46 @@ try
             testing_getrs<false,true,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_getrs<false,true,rocblas_double_complex>(argus);
+    }
+    else if (function == "getri") {
+        if (precision == 's')
+            testing_getri<false,false,float>(argus);
+        else if (precision == 'd')
+            testing_getri<false,false,double>(argus);
+        else if (precision == 'c')
+            testing_getri<false,false,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_getri<false,false,rocblas_double_complex>(argus);
+    }
+    else if (function == "getri_batched") {
+        if (precision == 's')
+            testing_getri<true,true,float>(argus);
+        else if (precision == 'd')
+            testing_getri<true,true,double>(argus);
+        else if (precision == 'c')
+            testing_getri<true,true,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_getri<true,true,rocblas_double_complex>(argus);
+    }
+    else if (function == "getri_strided_batched") {
+        if (precision == 's')
+            testing_getri<false,true,float>(argus);
+        else if (precision == 'd')
+            testing_getri<false,true,double>(argus);
+        else if (precision == 'c')
+            testing_getri<false,true,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_getri<false,true,rocblas_double_complex>(argus);
+    }
+    else if (function == "getri_outofplace_batched") {
+        if (precision == 's')
+            testing_getri<true,false,float>(argus);
+        else if (precision == 'd')
+            testing_getri<true,false,double>(argus);
+        else if (precision == 'c')
+            testing_getri<true,false,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_getri<true,false,rocblas_double_complex>(argus);
     }
     else if (function == "gebd2") {
         if (precision == 's')
