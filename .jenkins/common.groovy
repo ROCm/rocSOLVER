@@ -15,7 +15,7 @@ def runCompileCommand(platform, project, jobName)
     {
         pullRequest.labels.each
         {
-            if (it == "noOptimization")
+            if (it == "noOptimizations")
             {
                 project.paths.build_command = "./install.sh -cn"
             }
