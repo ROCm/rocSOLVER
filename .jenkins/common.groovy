@@ -11,6 +11,17 @@ def runCompileCommand(platform, project, jobName)
     String debug = project.buildName.contains('Debug') ? '-g' : ''   
     String centos = platform.jenkinsLabel.contains('centos') ? 'source scl_source enable devtoolset-7' : ''
 
+    if (env.BRANCH_NAME ==~ /PR-\d+/)
+    {
+        pullRequest.labels.each
+        {
+            if (it == "noOptimizations")
+            {
+                project.paths.build_command = "./install.sh -cn"
+            }
+        }
+    }
+
     def getRocBLAS = auxiliary.getLibrary('rocBLAS-internal',platform.jenkinsLabel,'develop')
     def command = """#!/usr/bin/env bash
                 set -x
