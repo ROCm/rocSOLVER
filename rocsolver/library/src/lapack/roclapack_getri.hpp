@@ -70,6 +70,33 @@ __global__ void getri_trtri(const rocblas_int n, U A, const rocblas_int shiftA, 
 }
 
 template <typename T, typename U, typename V>
+__global__ void getri_trsm(const rocblas_int m, const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
+                           const rocblas_stride strideA, V W, const rocblas_int shiftW, const rocblas_int ldw,
+                            const rocblas_stride strideW)
+{
+    // trsm kernel assuming no transpose, unit diagonal, lower triangular matrix from the right
+    int b = hipBlockIdx_x;
+
+    T* a = load_ptr_batch<T>(A,b,shiftA,strideA);
+    T* w = load_ptr_batch<T>(W,b,shiftW,strideW);
+
+    T aij;
+    for (int j = n - 1; j >= 0; j--)
+    {
+        for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
+        {
+            aij = a[i + j * lda];
+
+            for (int k = j + 1; k < n; k++)
+                aij -= w[k + j * ldw] * a[i + k * lda];
+            
+            a[i + j * lda] = aij;
+        }
+        __syncthreads();
+    }
+}
+
+template <typename T, typename U, typename V>
 __global__ void copy_and_zero(const rocblas_int m, const rocblas_int n,
                               U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
                               V W, const rocblas_int shiftw, const rocblas_int ldw, const rocblas_stride stridew,
@@ -200,23 +227,14 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
     T minone = -1;
     T one = 1;
     T *M, *W;
+    rocblas_int threads = min(n, 1024);
     rocblas_int fails = 0;
     rocblas_int jb, nb = GETRI_SWITCHSIZE;
     rocblas_int ldw = n;
     rocblas_stride strideW;
 
-    // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-    //      TRTRI_BATCH FUNCTIONALITY IS ENABLED. ****
-    #ifdef batched
-        T* AA[batch_count];
-        hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
-    #else
-        T* AA = A;
-    #endif
-
     // compute inv(U)
     strideW = n;
-    rocblas_int threads = min(n, 1024);
     hipHostRegister(&fails, sizeof(rocblas_int), hipHostRegisterDefault);
     hipLaunchKernelGGL(getri_trtri<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
                        n, A, shiftA, lda, strideA, work, 0, ldw, strideW, info, &fails);
@@ -265,14 +283,8 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
                                                   &one, A, shiftA + idx2D(0,j,lda), lda, strideA,
                                                   batch_count, workArr);
             
-            for (int b = 0; b < batch_count; ++b)
-            {
-                M = load_ptr_batch<T>(AA,b,shiftA,strideA);
-                rocblas_trsm(handle, rocblas_side_right, rocblas_fill_lower, rocblas_operation_none,
-                             rocblas_diagonal_unit, n, jb,
-                             &one, work + j + b*strideW, ldw,
-                             M + idx2D(0,j,lda), lda);
-            }
+            hipLaunchKernelGGL(getri_trsm<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
+                       n, jb, A, shiftA + idx2D(0,j,lda), lda, strideA, work, j, ldw, strideW);
         }
     }
     
