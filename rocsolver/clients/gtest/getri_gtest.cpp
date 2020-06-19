@@ -28,7 +28,7 @@ const vector<vector<int>> matrix_size_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
-    {192, 192}, {640, 640}, {1000, 1024}, 
+    {192, 192}, {640, 640}, {1000, 1024}, {1200, 1230} 
 };
 
 
