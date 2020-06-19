@@ -16,7 +16,7 @@
 template <typename T, typename U, typename V>
 __global__ void getri_trtri(const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
                             const rocblas_stride strideA, V W, const rocblas_int shiftW, const rocblas_int ldw,
-                            const rocblas_stride strideW, rocblas_int *info, rocblas_int *fails)
+                            const rocblas_stride strideW, rocblas_int *info)
 {
     // unblocked trtri kernel assuming non-unit upper triangular matrix
     int b = hipBlockIdx_x;
@@ -72,13 +72,16 @@ __global__ void getri_trtri(const rocblas_int n, U A, const rocblas_int shiftA, 
 template <typename T, typename U, typename V>
 __global__ void getri_trsm(const rocblas_int m, const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
                            const rocblas_stride strideA, V W, const rocblas_int shiftW, const rocblas_int ldw,
-                            const rocblas_stride strideW)
+                            const rocblas_stride strideW, rocblas_int *info)
 {
     // trsm kernel assuming no transpose, unit diagonal, lower triangular matrix from the right
     int b = hipBlockIdx_x;
 
     T* a = load_ptr_batch<T>(A,b,shiftA,strideA);
     T* w = load_ptr_batch<T>(W,b,shiftW,strideW);
+
+    if (info[b] != 0)
+        return;
 
     T aij;
     for (int j = n - 1; j >= 0; j--)
@@ -100,7 +103,7 @@ template <typename T, typename U, typename V>
 __global__ void copy_and_zero(const rocblas_int m, const rocblas_int n,
                               U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
                               V W, const rocblas_int shiftw, const rocblas_int ldw, const rocblas_stride stridew,
-                              rocblas_fill uplo)
+                              rocblas_fill uplo, rocblas_int *info)
 {
     int b = hipBlockIdx_x;
     int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -109,22 +112,34 @@ __global__ void copy_and_zero(const rocblas_int m, const rocblas_int n,
     T* a = load_ptr_batch<T>(A,b,shifta,stridea);
     T* w = load_ptr_batch<T>(W,b,shiftw,stridew);
 
-    if (i < m && j < n && (uplo == rocblas_fill_lower ? i > j : i <= j))
+    if (info[b] == 0)
     {
-        w[i + j*ldw] = a[i + j*lda];
-        a[i + j*lda] = 0;
+        if (i < m && j < n && (uplo == rocblas_fill_lower ? i > j : i <= j))
+        {
+            w[i + j*ldw] = a[i + j*lda];
+            a[i + j*lda] = 0;
+        }
+    }
+    else
+    {
+        if (i < m && j < n)
+            w[i + j*ldw] = 0;
     }
 }
 
 template <typename T, typename U>
 __global__ void getri_pivot(const rocblas_int n,
                             U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
-                            rocblas_int *ipiv, const rocblas_int shiftp, const rocblas_stride stridep)
+                            rocblas_int *ipiv, const rocblas_int shiftp, const rocblas_stride stridep,
+                            rocblas_int *info)
 {
     int b = hipBlockIdx_x;
 
     T* a = load_ptr_batch<T>(A,b,shifta,stridea);
     rocblas_int* p = load_ptr_batch<rocblas_int>(ipiv,b,shiftp,stridep);
+
+    if (info[b] != 0)
+        return;
 
     rocblas_int jp;
     for (rocblas_int j = n-2; j >= 0; --j)
@@ -228,19 +243,14 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
     T one = 1;
     T *M, *W;
     rocblas_int threads = min(n, 1024);
-    rocblas_int fails = 0;
     rocblas_int jb, nb = GETRI_SWITCHSIZE;
     rocblas_int ldw = n;
     rocblas_stride strideW;
 
     // compute inv(U)
     strideW = n;
-    hipHostRegister(&fails, sizeof(rocblas_int), hipHostRegisterDefault);
     hipLaunchKernelGGL(getri_trtri<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
-                       n, A, shiftA, lda, strideA, work, 0, ldw, strideW, info, &fails);
-    hipHostUnregister(&fails);
-    if (fails == batch_count)
-        return rocblas_status_success;
+                       n, A, shiftA, lda, strideA, work, 0, ldw, strideW, info);
     
     if (n <= nb)
     {
@@ -251,7 +261,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
         {
             rocblas_int blocks = ((n-j) - 1)/64 + 1;
             hipLaunchKernelGGL(copy_and_zero<T>, dim3(batch_count,blocks,1), dim3(1,64,1), 0, stream,
-                               n-j, 1, A, shiftA + idx2D(j,j,lda), lda, strideA, work, j, ldw, strideW, rocblas_fill_lower);
+                               n-j, 1, A, shiftA + idx2D(j,j,lda), lda, strideA, work, j, ldw, strideW, rocblas_fill_lower, info);
 
             rocblasCall_gemv(handle, rocblas_operation_none, n, n-j-1,
                              &minone, 0, A, shiftA + idx2D(0,j+1,lda), lda, strideA,
@@ -273,7 +283,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
             rocblas_int blocks1 = ((n-j) - 1)/32 + 1;
             rocblas_int blocks2 = (jb - 1)/32 + 1;
             hipLaunchKernelGGL(copy_and_zero<T>, dim3(batch_count,blocks1,blocks2), dim3(1,32,32), 0, stream,
-                               n-j, jb, A, shiftA + idx2D(j,j,lda), lda, strideA, work, j, ldw, strideW, rocblas_fill_lower);
+                               n-j, jb, A, shiftA + idx2D(j,j,lda), lda, strideA, work, j, ldw, strideW, rocblas_fill_lower, info);
 
             if (j+jb < n)
                 rocblasCall_gemm<BATCHED,STRIDED>(handle, rocblas_operation_none, rocblas_operation_none,
@@ -284,12 +294,12 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
                                                   batch_count, workArr);
             
             hipLaunchKernelGGL(getri_trsm<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
-                       n, jb, A, shiftA + idx2D(0,j,lda), lda, strideA, work, j, ldw, strideW);
+                       n, jb, A, shiftA + idx2D(0,j,lda), lda, strideA, work, j, ldw, strideW, info);
         }
     }
     
     hipLaunchKernelGGL(getri_pivot<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
-                       n, A, shiftA, lda, strideA, ipiv, shiftP, strideP);
+                       n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info);
 
     rocblas_set_pointer_mode(handle,old_mode);
     return rocblas_status_success;
