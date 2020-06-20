@@ -250,25 +250,25 @@ __global__ void bdsqrKernel(const rocblas_int n,
     // re-arange singular values/vectors if algorithm converged
     if (k == 0) {
         // all positive
-        for (rocblas_int i = 0; i < n; ++i)
-            if (D[i] < 0) D[i] = -D[i];
+        for (rocblas_int ii = 0; ii < n; ++ii)
+            if (D[ii] < 0) D[ii] = -D[ii];
 
         // in drecreasing order
         rocblas_int idx;
-        for (rocblas_int i = 0; i < n-1; ++i) {
-            idx = 0;
-            smin = D[0];
-            // detect minimum
-            for (rocblas_int j = 1; j < n-i; ++j) {
-                if (D[j] <= smin) {
-                    idx = j;
-                    smin = D[j];
+        for (rocblas_int ii = 0; ii < n-1; ++ii) {
+            idx = ii;
+            smax = D[ii];
+            // detect maximum
+            for (rocblas_int jj = ii+1; jj < n; ++jj) {
+                if (D[jj] > smax) {
+                    idx = jj;
+                    smax = D[jj];
                 }
             }
             // swap
-            if (idx != n-i-1) {
-                D[idx] = D[n-i-1];
-                D[n-i-1] = smin;
+            if (idx != ii) {
+                D[idx] = D[ii];
+                D[ii] = smax;
             }
         }
     }

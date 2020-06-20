@@ -150,13 +150,13 @@ void bdsqr_getError(const rocblas_handle handle,
     if (nu > 0) CHECK_HIP_ERROR(dU.transfer_from(hU));
     if (nc > 0) CHECK_HIP_ERROR(dC.transfer_from(hC));
 
-rocblas_cout<<std::endl;
+/*rocblas_cout<<std::endl;
 for (int i=0;i<n;++i) 
     rocblas_cout << hD[0][i] << " ";
 rocblas_cout<<std::endl;
 for (int i=0;i<n-1;++i) 
     rocblas_cout << hE[0][i] << " ";
-
+*/
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(), dV.data(), ldv, dU.data(), ldu, dC.data(), ldc, dinfo.data()));
@@ -166,18 +166,28 @@ for (int i=0;i<n-1;++i)
     if (nu > 0) CHECK_HIP_ERROR(hUres.transfer_from(dU));
     if (nc > 0) CHECK_HIP_ERROR(hCres.transfer_from(dC));
 
-rocblas_cout<<std::endl;
+/*rocblas_cout<<std::endl;
 rocblas_cout<<std::endl;
 for (int i=0;i<n;++i) 
     rocblas_cout << hDres[0][i] << " ";
 rocblas_cout<<std::endl;
 for (int i=0;i<n-1;++i) 
     rocblas_cout << hEres[0][i] << " ";
-
+*/
 
     // CPU lapack
     cblas_bdsqr<T>(uplo,n,nv,nu,nc,hD[0],hE[0],hV[0],ldv,hU[0],ldu,hC[0],ldc,hW.data(),hinfo[0]);
-   
+  
+/*rocblas_cout<<std::endl;
+rocblas_cout<<std::endl;
+for (int i=0;i<n;++i) 
+    rocblas_cout << hD[0][i] << " ";
+rocblas_cout<<std::endl;
+for (int i=0;i<n-1;++i) 
+    rocblas_cout << hE[0][i] << " ";
+rocblas_cout<<std::endl;
+rocblas_cout << hinfo[0][0];
+*/ 
     // error is 
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
     // IT MIGHT BE REVISITED IN THE FUTURE)
@@ -186,12 +196,12 @@ for (int i=0;i<n-1;++i)
     *max_err = 0;
     err = norm_error('F',1,n,1,hD[0],hDres[0]);
     *max_err = err > *max_err ? err : *max_err;
-    if (nv > 0) {err = norm_error('F',n,nv,ldv,hV[0],hVres[0]);
-    *max_err = err > *max_err ? err : *max_err;}
-    if (nu > 0) {err = norm_error('F',nu,n,ldu,hU[0],hUres[0]);
-    *max_err = err > *max_err ? err : *max_err;}
-    if (nc > 0) {err = norm_error('F',n,nc,ldc,hC[0],hCres[0]);
-    *max_err = err > *max_err ? err : *max_err;}
+//    if (nv > 0) {err = norm_error('F',n,nv,ldv,hV[0],hVres[0]);
+//    *max_err = err > *max_err ? err : *max_err;}
+//    if (nu > 0) {err = norm_error('F',nu,n,ldu,hU[0],hUres[0]);
+//    *max_err = err > *max_err ? err : *max_err;}
+//    if (nc > 0) {err = norm_error('F',n,nc,ldc,hC[0],hCres[0]);
+//    *max_err = err > *max_err ? err : *max_err;}
     if (hinfo[0][0] >  0) {err = norm_error('F',1,n-1,1,hE[0],hEres[0]);
     *max_err = err > *max_err ? err : *max_err;}    
 }
