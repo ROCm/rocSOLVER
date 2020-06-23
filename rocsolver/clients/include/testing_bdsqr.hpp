@@ -124,7 +124,12 @@ void bdsqr_getError(const rocblas_handle handle,
     
     // input data initialization 
     rocblas_init<S>(hD, true);
-    rocblas_init<S>(hE, true);
+    rocblas_init<S>(hE, false);
+    for (rocblas_int i = 0; i < n-1; ++i) {
+        hE[0][i] -= 5;
+        hD[0][i] -= 4;
+    }
+    hD[0][n-1] -= 4;
 
     // make V,U and C identities so that results are actually singular vectors of B
     if (nv > 0) {
@@ -150,13 +155,14 @@ void bdsqr_getError(const rocblas_handle handle,
     if (nu > 0) CHECK_HIP_ERROR(dU.transfer_from(hU));
     if (nc > 0) CHECK_HIP_ERROR(dC.transfer_from(hC));
 
-/*rocblas_cout<<std::endl;
+rocblas_cout<<std::endl;
 for (int i=0;i<n;++i) 
     rocblas_cout << hD[0][i] << " ";
 rocblas_cout<<std::endl;
 for (int i=0;i<n-1;++i) 
     rocblas_cout << hE[0][i] << " ";
-*/
+rocblas_cout<<std::flush;
+
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(), dV.data(), ldv, dU.data(), ldu, dC.data(), ldc, dinfo.data()));
@@ -166,19 +172,41 @@ for (int i=0;i<n-1;++i)
     if (nu > 0) CHECK_HIP_ERROR(hUres.transfer_from(dU));
     if (nc > 0) CHECK_HIP_ERROR(hCres.transfer_from(dC));
 
-/*rocblas_cout<<std::endl;
+rocblas_cout<<std::endl;
 rocblas_cout<<std::endl;
 for (int i=0;i<n;++i) 
     rocblas_cout << hDres[0][i] << " ";
 rocblas_cout<<std::endl;
 for (int i=0;i<n-1;++i) 
     rocblas_cout << hEres[0][i] << " ";
+
+/*
+rocblas_cout<<std::endl;
+rocblas_cout<<std::endl;
+for (int i=0;i<n;++i) {
+    for (int j=0;j<nv;++j) 
+        rocblas_cout << hVres[0][i+j*ldv] << " ";
+    rocblas_cout << std::endl;
+}
+rocblas_cout<<std::endl;
+for (int i=0;i<nu;++i) {
+    for (int j=0;j<n;++j) 
+        rocblas_cout << hUres[0][i+j*ldu] << " ";
+    rocblas_cout << std::endl;
+}
+rocblas_cout<<std::endl;
+for (int i=0;i<n;++i) {
+    for (int j=0;j<nc;++j) 
+        rocblas_cout << hCres[0][i+j*ldc] << " ";
+    rocblas_cout << std::endl;
+}
 */
+
 
     // CPU lapack
     cblas_bdsqr<T>(uplo,n,nv,nu,nc,hD[0],hE[0],hV[0],ldv,hU[0],ldu,hC[0],ldc,hW.data(),hinfo[0]);
-  
-/*rocblas_cout<<std::endl;
+
+rocblas_cout<<std::endl;
 rocblas_cout<<std::endl;
 for (int i=0;i<n;++i) 
     rocblas_cout << hD[0][i] << " ";
@@ -187,7 +215,28 @@ for (int i=0;i<n-1;++i)
     rocblas_cout << hE[0][i] << " ";
 rocblas_cout<<std::endl;
 rocblas_cout << hinfo[0][0];
-*/ 
+/*
+rocblas_cout<<std::endl;
+rocblas_cout<<std::endl;
+for (int i=0;i<n;++i) {
+    for (int j=0;j<nv;++j) 
+        rocblas_cout << hV[0][i+j*ldv] << " ";
+    rocblas_cout << std::endl;
+}
+rocblas_cout<<std::endl;
+for (int i=0;i<nu;++i) {
+    for (int j=0;j<n;++j) 
+        rocblas_cout << hU[0][i+j*ldu] << " ";
+    rocblas_cout << std::endl;
+}
+rocblas_cout<<std::endl;
+for (int i=0;i<n;++i) {
+    for (int j=0;j<nc;++j) 
+        rocblas_cout << hC[0][i+j*ldc] << " ";
+    rocblas_cout << std::endl;
+}
+  */
+    
     // error is 
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
     // IT MIGHT BE REVISITED IN THE FUTURE)
@@ -196,12 +245,12 @@ rocblas_cout << hinfo[0][0];
     *max_err = 0;
     err = norm_error('F',1,n,1,hD[0],hDres[0]);
     *max_err = err > *max_err ? err : *max_err;
-//    if (nv > 0) {err = norm_error('F',n,nv,ldv,hV[0],hVres[0]);
-//    *max_err = err > *max_err ? err : *max_err;}
-//    if (nu > 0) {err = norm_error('F',nu,n,ldu,hU[0],hUres[0]);
-//    *max_err = err > *max_err ? err : *max_err;}
-//    if (nc > 0) {err = norm_error('F',n,nc,ldc,hC[0],hCres[0]);
-//    *max_err = err > *max_err ? err : *max_err;}
+    if (nv > 0) {err = norm_error('F',n,nv,ldv,hV[0],hVres[0]);
+    *max_err = err > *max_err ? err : *max_err;}
+    if (nu > 0) {err = norm_error('F',nu,n,ldu,hU[0],hUres[0]);
+    *max_err = err > *max_err ? err : *max_err;}
+    if (nc > 0) {err = norm_error('F',n,nc,ldc,hC[0],hCres[0]);
+    *max_err = err > *max_err ? err : *max_err;}
     if (hinfo[0][0] >  0) {err = norm_error('F',1,n-1,1,hE[0],hEres[0]);
     *max_err = err > *max_err ? err : *max_err;}    
 }

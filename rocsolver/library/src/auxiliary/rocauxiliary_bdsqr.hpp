@@ -22,18 +22,90 @@
 template <typename T>
 __device__ void lartg(T &f, T &g, T &c, T &s, T &r)
 {
-    T t;
-    if (std::abs(g) > std::abs(f)) {
-        t = -f/g;
-        s = 1 / T(std::sqrt(1 + t*t));
-        c = s * t;
+    if (g == 0) {
+        c = 1;
+        s = 0;
     } else {
-        t = -g/f;
-        c = 1 / T(std::sqrt(1 + t*t));
-        s = c * t;
+        T t;
+        if (std::abs(g) > std::abs(f)) {
+            t = -f/g;
+            s = 1 / T(std::sqrt(1 + t*t));
+            c = s * t;
+        } else {
+            t = -g/f;
+            c = 1 / T(std::sqrt(1 + t*t));
+            s = c * t;
+        }
     }
-    r = T(std::sqrt(f*f + g*g));
+    r = c*f - s*g;
 } 
+
+
+/** LASR device function applies a sequence of rotations P(i) i=1,2,...z 
+    to a m-by-n matrix A from either the left (P*A with z=m) or the right (A*P' with z=n).
+    P = P(z-1)*...*P(1) if forward direction, 
+    P = P(1)*...*P(z-1) if backward direction. **/
+template <typename T, typename W>
+__device__ void lasr(const rocblas_side side, 
+                     const rocblas_direct direc,
+                     const rocblas_int m,
+                     const rocblas_int n,
+                     W* c, W* s,
+                     T* A, const rocblas_int lda)
+{
+    T temp;
+    W cs, sn;
+
+    if (side == rocblas_side_left) {
+        if (direc == rocblas_forward_direction) {
+            for (rocblas_int i = 0; i < m-1; ++i) {
+                for (rocblas_int j = 0; j < n; ++j) {
+                    temp = A[i + j*lda];
+                    cs = c[i];
+                    sn = s[i];
+                    A[i + j*lda] = cs*temp + sn*A[i+1 + j*lda];
+                    A[i+1 + j*lda] = cs*A[i+1 + j*lda] - sn*temp;
+                }
+            }
+
+        } else {
+            for (rocblas_int i = m-1; i > 0; --i) {
+                for (rocblas_int j = 0; j < n; ++j) {
+                    temp = A[i + j*lda];
+                    cs = c[i];
+                    sn = s[i];
+                    A[i + j*lda] = cs*temp - sn*A[i-1 + j*lda];
+                    A[i-1 + j*lda] = cs*A[i-1 + j*lda] + sn*temp;
+                }
+            }
+        }
+    }
+
+    else {
+        if (direc == rocblas_forward_direction) {
+            for (rocblas_int j = 0; j < n-1; ++j) {
+                for (rocblas_int i = 0; i < m; ++i) {
+                    temp = A[i + j*lda];
+                    cs = c[j];
+                    sn = s[j];
+                    A[i + j*lda] = cs*temp + sn*A[i + (j+1)*lda];
+                    A[i + (j+1)*lda] = cs*A[i + (j+1)*lda] - sn*temp;
+                }
+            }
+
+        } else {
+            for (rocblas_int j = n-1; j > 0; --j) {
+                for (rocblas_int i = 0; i < m; ++i) {
+                    temp = A[i + j*lda];
+                    cs = c[j];
+                    sn = s[j];
+                    A[i + j*lda] = cs*temp - sn*A[i + (j-1)*lda];
+                    A[i + (j-1)*lda] = cs*A[i + (j-1)*lda] + sn*temp;
+                }
+            }
+        }
+    }
+}
 
 
 /** ESTIMATE device function computes an estimate of the smallest
@@ -88,12 +160,14 @@ __device__ void t2bQRstep(const rocblas_int n,
                           W2* V, const rocblas_int ldv, 
                           W2* U, const rocblas_int ldu, 
                           W2* C, const rocblas_int ldc, 
-                          const W1 sh)
+                          const W1 sh, W1* rots)
 {
     W1 f, g, c, s, r;
+    rocblas_int nr = nv ? 2*(n-1) : 0;
 
     int sgn = (W1(0) < D[0]) - (D[0] < W1(0)); 
-    f = (std::abs(D[0]) - sh) * (W1(sgn) + sh/D[0]); 
+    if (D[0] == 0) f = 0;
+    else f = (std::abs(D[0]) - sh) * (W1(sgn) + sh/D[0]); 
     g = E[0];
 
     for (rocblas_int k = 0; k < n-1; ++k) { 
@@ -104,6 +178,11 @@ __device__ void t2bQRstep(const rocblas_int n,
         E[k] = c*E[k] + s*D[k];
         g = -s*D[k+1];
         D[k+1] = c*D[k+1];
+        // save rotations to update singular vectors
+        if (nv) {
+            rots[k] = c;
+            rots[k+n-1] = -s;
+        }
 
         // then apply rotation by rows
         lartg(f,g,c,s,r);
@@ -114,8 +193,21 @@ __device__ void t2bQRstep(const rocblas_int n,
             g = -s*E[k+1];
             E[k+1] = c*E[k+1];
         }    
+        // save rotations to update singular vectors
+        if (nu || nc) {
+            rots[k+nr] = c;
+            rots[k+nr+n-1] = -s;
+        }
     } 
     E[n-2] = f;
+
+    // update singular vectors
+    if (nv)
+        lasr(rocblas_side_left, rocblas_forward_direction, n, nv, rots, rots+n-1, V, ldv);
+    if (nu)
+        lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots+nr, rots+nr+n-1, U, ldu);
+    if (nc)
+        lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots+nr, rots+nr+n-1, C, ldc);
 }
 
 
@@ -131,12 +223,14 @@ __device__ void b2tQRstep(const rocblas_int n,
                           W2* V, const rocblas_int ldv, 
                           W2* U, const rocblas_int ldu, 
                           W2* C, const rocblas_int ldc, 
-                          const W1 sh)
+                          const W1 sh, W1* rots)
 {
     W1 f, g, c, s, r;
+    rocblas_int nr = nv ? 2*(n-1) : 0;
 
     int sgn = (W1(0) < D[n-1]) - (D[n-1] < W1(0));
-    f = (std::abs(D[n-1]) - sh) * (W1(sgn) + sh/D[n-1]);
+    if (D[n-1] == 0) f = 0;
+    else f = (std::abs(D[n-1]) - sh) * (W1(sgn) + sh/D[n-1]);
     g = E[n-2];
 
     for (rocblas_int k = n-1; k > 0; --k) {
@@ -147,6 +241,11 @@ __device__ void b2tQRstep(const rocblas_int n,
         E[k-1] = c*E[k-1] + s*D[k];
         g = -s*D[k-1];
         D[k-1] = c*D[k-1];
+        // save rotations to update singular vectors
+        if (nu || nc) {
+            rots[k+nr] = c;
+            rots[k+nr+n-1] = s;
+        }
 
         // then apply rotation by columns
         lartg(f,g,c,s,r);
@@ -157,8 +256,21 @@ __device__ void b2tQRstep(const rocblas_int n,
             g = -s*E[k-2];
             E[k-2] = c*E[k-2];
         }
+        // save rotations to update singular vectors
+        if (nv) {
+            rots[k] = c;
+            rots[k+n-1] = s;
+        }
     }
     E[0] = f;
+    
+    // update singular vectors
+    if (nv)
+        lasr(rocblas_side_left, rocblas_backward_direction, n, nv, rots, rots+n-1, V, ldv);
+    if (nu)
+        lasr(rocblas_side_right, rocblas_backward_direction, nu, n, rots+nr, rots+nr+n-1, U, ldu);
+    if (nc)
+        lasr(rocblas_side_left, rocblas_backward_direction, n, nc, rots+nr, rots+nr+n-1, C, ldc);
 }
 
 
@@ -178,11 +290,13 @@ __global__ void bdsqrKernel(const rocblas_int n,
                             W2 CC, const rocblas_int shiftC,
                             const rocblas_int ldc, const rocblas_stride strideC,
                             rocblas_int *info, const rocblas_int maxiter, 
-                            const W1 eps, const W1 sfm, const W1 tol, const W1 minshift)
+                            const W1 eps, const W1 sfm, const W1 tol, const W1 minshift,
+                            W1* workA, const rocblas_stride strideW)
 {
     rocblas_int bid = hipBlockIdx_x;
 
     // select batch instance to work with
+    W1* rots = workA + bid*strideW;
     W1* D = DD + bid*strideD;
     W1* E = EE + bid*strideE;
     T* V = load_ptr_batch<T>(VV,bid,shiftV,strideV);
@@ -202,7 +316,6 @@ __global__ void bdsqrKernel(const rocblas_int n,
 
     // main loop
     while (k > 0 && iter < maxiter) {
-        
         // split the diagonal blocks
         for (rocblas_int j = 0; j < k+1; ++j) {
             i = k-j-1;
@@ -241,8 +354,10 @@ __global__ void bdsqrKernel(const rocblas_int n,
 
                 // apply QR step
                 iter += k-i;    
-                if (t2b) t2bQRstep(k-i+1,nv,nu,nc,D+i,E+i,V,ldv,U,ldu,C,ldc,smin);
-                else b2tQRstep(k-i+1,nv,nu,nc,D+i,E+i,V,ldv,U,ldu,C,ldc,smin);
+                if (t2b) t2bQRstep(k-i+1, nv, nu, nc, D+i, E+i, V+i, ldv,
+                                   U+i*ldu, ldu, C+i, ldc, smin, rots);
+                else b2tQRstep(k-i+1, nv, nu, nc, D+i, E+i, V+i, ldv,
+                               U+i*ldu, ldu, C+i, ldc, smin, rots);
             }
         }
     }
@@ -250,8 +365,11 @@ __global__ void bdsqrKernel(const rocblas_int n,
     // re-arange singular values/vectors if algorithm converged
     if (k == 0) {
         // all positive
-        for (rocblas_int ii = 0; ii < n; ++ii)
+        for (rocblas_int ii = 0; ii < n; ++ii) {
             if (D[ii] < 0) D[ii] = -D[ii];
+            for (rocblas_int jj = 0; jj < nv; ++jj)
+                V[ii + ldv*jj] = -V[ii + ldv*jj];
+        }    
 
         // in drecreasing order
         rocblas_int idx;
@@ -293,14 +411,18 @@ __global__ void lower2upper(const rocblas_int n,
                             W2 UU, const rocblas_int shiftU,
                             const rocblas_int ldu, const rocblas_stride strideU,
                             W2 CC, const rocblas_int shiftC,
-                            const rocblas_int ldc, const rocblas_stride strideC)
+                            const rocblas_int ldc, const rocblas_stride strideC,
+                            W1* workA, const rocblas_stride strideW)
 {
     rocblas_int bid = hipBlockIdx_x;
     W1 f, g, c, s, r;
 
     // select batch instance to work with
+    W1* rots = workA + bid*strideW;
     W1* D = DD + bid*strideD;
     W1* E = EE + bid*strideE;
+    T* U = load_ptr_batch<T>(UU,bid,shiftU,strideU);
+    T* C = load_ptr_batch<T>(CC,bid,shiftC,strideC);
 
     f = D[0];
     g = E[0];
@@ -311,11 +433,34 @@ __global__ void lower2upper(const rocblas_int n,
         E[i] = -s*D[i+1];
         f = c*D[i+1];
         g = E[i+1];
+
+        // save rotation to update singular vectors
+        if (nu || nc) {
+            rots[i] = c;
+            rots[i+n-1] = -s;
+        }
     }       
     D[n-1] = f; 
+
+    // update singular vectors
+    if (nu) 
+        lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots, rots+n-1, U, ldu);
+    if (nc)
+        lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots, rots+n-1, C, ldc);
 }
 
 
+template <typename T>
+void rocsolver_bdsqr_getMemorySize(const rocblas_int n, const rocblas_int nv, const rocblas_int nu, const rocblas_int nc, 
+                                   const rocblas_int batch_count, size_t *size)
+{
+    // size of workspace
+    *size = 0;
+    if (nv) *size += 2;
+    if (nu || nc) *size += 2;
+    
+    *size *= sizeof(T)*(n-1)*batch_count;
+}
 
 template <typename W1, typename W2>
 rocblas_status rocsolver_bdsqr_argCheck(const rocblas_fill uplo,
@@ -369,7 +514,7 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                                            W2 C, const rocblas_int shiftC,
                                            const rocblas_int ldc, const rocblas_stride strideC,
                                            rocblas_int *info,
-                                           const rocblas_int batch_count)
+                                           const rocblas_int batch_count, W1* work)
 {
     // quick return
     if (n == 0 || batch_count == 0) 
@@ -388,12 +533,14 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     W1 minshift = std::max(eps,
                   tol/W1(100)) / (n*tol);   //(minimum accepted shift to not ruin relative accuracy) / (max singular value)
 
+    rocblas_stride strideW = 4*n;
+
     // rotate to upper bidiagonal if necessary 
     if (uplo == rocblas_fill_lower) {
        hipLaunchKernelGGL((lower2upper<T>),dim3(batch_count),dim3(1),0,stream,
                           n, nu, nc, D, strideD, E, strideE, 
                           U, shiftU, ldu, strideU,
-                          C, shiftC, ldc, strideC);
+                          C, shiftC, ldc, strideC, work, strideW);
     }                             
 
     // main computation of SVD
@@ -403,7 +550,7 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                        U, shiftU, ldu, strideU,
                        C, shiftC, ldc, strideC, 
                        info, maxiter,
-                       eps, sfm, tol, minshift);
+                       eps, sfm, tol, minshift, work, strideW);
     
     return rocblas_status_success;
 }

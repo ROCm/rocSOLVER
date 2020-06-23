@@ -263,7 +263,7 @@ try
     
     // select and dispatch function test/benchmark
     // (TODO) MOVE THIS TO A SEPARATE IMPROVED DISPATCH FUNCTION 
-/*    if (function == "potf2") {
+    if (function == "potf2") {
         if (precision == 's')
             testing_potf2_potrf<false,false,0,float>(argus);
         else if (precision == 'd')
@@ -871,9 +871,7 @@ try
         else
             throw std::invalid_argument("This function does not support the given --precision");
     } 
-    else if (function == "larf") {
-*/
-    if (function == "bdsqr") {
+    else if (function == "bdsqr") {
         if (precision == 's')
             testing_bdsqr<float>(argus);
         else if (precision == 'd')

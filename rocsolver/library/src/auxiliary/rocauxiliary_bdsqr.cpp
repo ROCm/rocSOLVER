@@ -11,13 +11,13 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
                                      const rocblas_int nv, 
                                      const rocblas_int nu, 
                                      const rocblas_int nc,
-                                     W1   D,
-                                     W1   E, 
-                                     W2   V,
+                                     W1*   D,
+                                     W1*   E, 
+                                     W2    V,
                                      const rocblas_int ldv,
-                                     W2   U,
+                                     W2    U,
                                      const rocblas_int ldu,
-                                     W2   C,
+                                     W2    C,
                                      const rocblas_int ldc,
                                      rocblas_int *info)
 { 
@@ -39,26 +39,15 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
     rocblas_int batch_count = 1;
 
     // memory managment
-/*    size_t size_1;  //size of constants
-    size_t size_2;  //size of workspace
-    size_t size_3;  //size of array of pointers to workspace
-    size_t size_4;  //size of cache for norms
-    rocsolver_labrd_getMemorySize<T,false>(m,n,batch_count,&size_1,&size_2,&size_3,&size_4);
+    size_t size;  //size of workspace
+    rocsolver_bdsqr_getMemorySize<W1>(n,nv,nu,nc,batch_count,&size);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-    void *scalars, *work, *workArr, *norms;
-    hipMalloc(&scalars,size_1);
-    hipMalloc(&work,size_2);
-    hipMalloc(&workArr,size_3);
-    hipMalloc(&norms,size_4);
-    if (!scalars || (size_2 && !work) || (size_3 && !workArr) || (size_4 && !norms))
+    void *work;
+    hipMalloc(&work,size);
+    if (size && !work)
         return rocblas_status_memory_error;
 
-    // scalar constants for rocblas functions calls
-    // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
-    T sca[] = { -1, 0, 1 };
-    RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
-*/
     // execution
     rocblas_status status =
            rocsolver_bdsqr_template<T>(handle,uplo,n,nv,nu,nc,
@@ -71,18 +60,10 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
                                          C,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
                                          ldc,strideC,
                                          info,
-                                         batch_count);
-//                                         (T*)scalars,
-//                                         (T*)work,
-//                                         (T**)workArr,
-//                                         (T*)norms);
-
-/*
-    hipFree(scalars);
+                                         batch_count,
+                                         (W1*)work);
     hipFree(work);
-    hipFree(workArr);
-    hipFree(norms);
-*/
+    
     return status;
 }
 
