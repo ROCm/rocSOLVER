@@ -148,6 +148,33 @@ __device__ T maxval(const rocblas_int n, T* V)
 }
 
 
+/** NEGVECT device function multiply a vector x of dimension n by -1**/
+template <typename T>
+__device__ void negvect(const rocblas_int n, T *x, const rocblas_int incx)
+{
+    for (rocblas_int i = 0; i < n; ++i)
+    {
+        x[incx * i] = -x[incx * i];
+    }
+}
+
+
+
+/** SWAPVECT device function swap vectors a and b of dimension n **/
+template <typename T>
+__device__ void swapvect(const rocblas_int n, T *a, const rocblas_int inca,
+                        T *b, const rocblas_int incb)
+{
+    T orig;
+    for (rocblas_int i = 0; i < n; ++i)
+    {
+        orig = a[inca * i];
+        a[inca * i] = b[incb * i];
+        b[incb * i] = orig;
+    }
+}
+
+
 /** T2BQRSTEP device function applies implicit QR interation to
     the n-by-n bidiagonal matrix given by D and E, using shift = sh,
     from top to bottom **/
@@ -366,9 +393,10 @@ __global__ void bdsqrKernel(const rocblas_int n,
     if (k == 0) {
         // all positive
         for (rocblas_int ii = 0; ii < n; ++ii) {
-            if (D[ii] < 0) D[ii] = -D[ii];
-            for (rocblas_int jj = 0; jj < nv; ++jj)
-                V[ii + ldv*jj] = -V[ii + ldv*jj];
+            if (D[ii] < 0) {
+                D[ii] = -D[ii];
+                if (nv) negvect(nv, V+ii, ldv);
+            }
         }    
 
         // in drecreasing order
@@ -387,6 +415,9 @@ __global__ void bdsqrKernel(const rocblas_int n,
             if (idx != ii) {
                 D[idx] = D[ii];
                 D[ii] = smax;
+                if (nv) swapvect(nv, V+idx, ldv, V+ii, ldv);
+                if (nu) swapvect(nu, U+idx*ldu, 1, U+ii*ldu, 1);
+                if (nc) swapvect(nc, C+idx, ldc, C+ii, ldc);
             }
         }
     }

@@ -9,6 +9,19 @@
 #include "cblas_interface.h"
 #include "clientcommon.hpp"
 
+template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+int sgn(T a)
+{
+    int s = (0 < a) - (a < 0);
+    return s;
+}
+
+template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+int sgn(T a)
+{
+    int s = (0 < a.real()) - (a.real() < 0);
+    return s;
+}
 
 template <typename S, typename T>
 void bdsqr_checkBadArgs(const rocblas_handle handle, 
@@ -90,7 +103,7 @@ void testing_bdsqr_bad_arg()
 }
 
 
-template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
+template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh, bool COMPLEX = is_complex<T>>
 void bdsqr_getError(const rocblas_handle handle, 
                         const rocblas_fill uplo,
                         const rocblas_int n, 
@@ -125,6 +138,7 @@ void bdsqr_getError(const rocblas_handle handle,
     // input data initialization 
     rocblas_init<S>(hD, true);
     rocblas_init<S>(hE, false);
+    // add possible gaps
     for (rocblas_int i = 0; i < n-1; ++i) {
         hE[0][i] -= 5;
         hD[0][i] -= 4;
@@ -155,13 +169,13 @@ void bdsqr_getError(const rocblas_handle handle,
     if (nu > 0) CHECK_HIP_ERROR(dU.transfer_from(hU));
     if (nc > 0) CHECK_HIP_ERROR(dC.transfer_from(hC));
 
-rocblas_cout<<std::endl;
+/*rocblas_cout<<std::endl;
 for (int i=0;i<n;++i) 
     rocblas_cout << hD[0][i] << " ";
 rocblas_cout<<std::endl;
 for (int i=0;i<n-1;++i) 
     rocblas_cout << hE[0][i] << " ";
-rocblas_cout<<std::flush;
+rocblas_cout<<std::flush;*/
 
     // execute computations
     // GPU lapack
@@ -172,7 +186,7 @@ rocblas_cout<<std::flush;
     if (nu > 0) CHECK_HIP_ERROR(hUres.transfer_from(dU));
     if (nc > 0) CHECK_HIP_ERROR(hCres.transfer_from(dC));
 
-rocblas_cout<<std::endl;
+/*rocblas_cout<<std::endl;
 rocblas_cout<<std::endl;
 for (int i=0;i<n;++i) 
     rocblas_cout << hDres[0][i] << " ";
@@ -180,7 +194,6 @@ rocblas_cout<<std::endl;
 for (int i=0;i<n-1;++i) 
     rocblas_cout << hEres[0][i] << " ";
 
-/*
 rocblas_cout<<std::endl;
 rocblas_cout<<std::endl;
 for (int i=0;i<n;++i) {
@@ -199,14 +212,13 @@ for (int i=0;i<n;++i) {
     for (int j=0;j<nc;++j) 
         rocblas_cout << hCres[0][i+j*ldc] << " ";
     rocblas_cout << std::endl;
-}
-*/
+}*/
 
 
     // CPU lapack
     cblas_bdsqr<T>(uplo,n,nv,nu,nc,hD[0],hE[0],hV[0],ldv,hU[0],ldu,hC[0],ldc,hW.data(),hinfo[0]);
 
-rocblas_cout<<std::endl;
+/*rocblas_cout<<std::endl;
 rocblas_cout<<std::endl;
 for (int i=0;i<n;++i) 
     rocblas_cout << hD[0][i] << " ";
@@ -215,7 +227,7 @@ for (int i=0;i<n-1;++i)
     rocblas_cout << hE[0][i] << " ";
 rocblas_cout<<std::endl;
 rocblas_cout << hinfo[0][0];
-/*
+
 rocblas_cout<<std::endl;
 rocblas_cout<<std::endl;
 for (int i=0;i<n;++i) {
@@ -234,23 +246,93 @@ for (int i=0;i<n;++i) {
     for (int j=0;j<nc;++j) 
         rocblas_cout << hC[0][i+j*ldc] << " ";
     rocblas_cout << std::endl;
-}
-  */
+}*/
     
     // error is 
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
     // IT MIGHT BE REVISITED IN THE FUTURE)
-    // using frobenius norm
     double err;
     *max_err = 0;
+    
+    // check diagonal
     err = norm_error('F',1,n,1,hD[0],hDres[0]);
     *max_err = err > *max_err ? err : *max_err;
-    if (nv > 0) {err = norm_error('F',n,nv,ldv,hV[0],hVres[0]);
+
+    // account for possible differences in signature of the vectors
+    if (nv || nu || nc) {
+        if (nv) {
+            for (rocblas_int i = 0; i < n; ++i) {   
+                for (rocblas_int k = 0; k < nv; ++k) {
+                    if (sgn(hV[0][i+k*ldv]) != sgn(hVres[0][i+k*ldv])) {
+                        for (rocblas_int j = k; j < nv; ++j) hV[0][i+j*ldv] = -hV[0][i+j*ldv];
+                        if (nu) {
+                            for (rocblas_int j = 0; j < nu; ++j) hU[0][j+i*ldu] = -hU[0][j+i*ldu];
+                        }
+                        if (nc) {
+                            for (rocblas_int j = 0; j < nc; ++j) hC[0][i+j*ldc] = -hC[0][i+j*ldc];
+                        }
+                        break;
+                    }
+                    else if (sgn(hV[0][i+k*ldv]) != 0) break;
+                }
+            }
+        }
+        else if (nu) {
+            for (rocblas_int i = 0; i < n; ++i) {   
+                for (rocblas_int k = 0; k < nu; ++k) {
+                    if (sgn(hU[0][k+i*ldu]) != sgn(hUres[0][k+i*ldu])) {
+                        for (rocblas_int j = k; j < nu; ++j) hU[0][j+i*ldu] = -hU[0][j+i*ldu];
+                        if (nc) {
+                            for (rocblas_int j = 0; j < nc; ++j) hC[0][i+j*ldc] = -hC[0][i+j*ldc];
+                        }
+                        break;
+                    }
+                    else if (sgn(hU[0][k+i*ldu]) != 0) break;
+                }                    
+            }
+        }
+        else {
+            for (rocblas_int i = 0; i < n; ++i) {   
+                for (rocblas_int k = 0; k < nc; ++k) {
+                    if (sgn(hC[0][i+k*ldv]) != sgn(hCres[0][i+k*ldv])) {
+                        for (rocblas_int j = k; j < nc; ++j) hC[0][i+j*ldc] = -hC[0][i+j*ldc];
+                        break;
+                    }
+                    else if (sgn(hC[0][i+k*ldv]) != 0) break;         
+                }           
+            }
+        }
+    }
+
+/*rocblas_cout<<std::endl;
+rocblas_cout<<std::endl;
+for (int i=0;i<n;++i) {
+    for (int j=0;j<nv;++j) 
+        rocblas_cout << hV[0][i+j*ldv] << " ";
+    rocblas_cout << std::endl;
+}
+rocblas_cout<<std::endl;
+for (int i=0;i<nu;++i) {
+    for (int j=0;j<n;++j) 
+        rocblas_cout << hU[0][i+j*ldu] << " ";
+    rocblas_cout << std::endl;
+}
+rocblas_cout<<std::endl;
+for (int i=0;i<n;++i) {
+    for (int j=0;j<nc;++j) 
+        rocblas_cout << hC[0][i+j*ldc] << " ";
+    rocblas_cout << std::endl;
+}*/
+    
+    // check vectors
+    if (nv) {err = norm_error('F',n,nv,ldv,hV[0],hVres[0]);
     *max_err = err > *max_err ? err : *max_err;}
-    if (nu > 0) {err = norm_error('F',nu,n,ldu,hU[0],hUres[0]);
+    if (nu) {err = norm_error('F',nu,n,ldu,hU[0],hUres[0]);
     *max_err = err > *max_err ? err : *max_err;}
-    if (nc > 0) {err = norm_error('F',n,nc,ldc,hC[0],hCres[0]);
+    if (nc) {err = norm_error('F',n,nc,ldc,hC[0],hCres[0]);
     *max_err = err > *max_err ? err : *max_err;}
+
+    // if not converged, also check E
     if (hinfo[0][0] >  0) {err = norm_error('F',1,n-1,1,hE[0],hEres[0]);
     *max_err = err > *max_err ? err : *max_err;}    
 }
