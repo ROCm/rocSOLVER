@@ -117,8 +117,7 @@ void getrs_initData(const rocblas_handle handle,
                         const rocblas_int bc,
                         Th &hA, 
                         Uh &hIpiv, 
-                        Th &hB,
-                        Uh &hInfo)
+                        Th &hB)
 {
     if (CPU)
     {
@@ -139,7 +138,8 @@ void getrs_initData(const rocblas_handle handle,
 
         // do the LU decomposition of matrix A w/ the reference LAPACK routine
         for (rocblas_int b = 0; b < bc; ++b) {
-            cblas_getrf<T>(m, m, hA[b], lda, hIpiv[b], hInfo[b]);
+            int info;
+            cblas_getrf<T>(m, m, hA[b], lda, hIpiv[b], &info);
         }
     }
 
@@ -171,12 +171,11 @@ void getrs_getError(const rocblas_handle handle,
                         Uh &hIpiv, 
                         Th &hB, 
                         Th &hBRes, 
-                        Uh &hInfo,
                         double *max_err)
 {
     // input data initialization 
     getrs_initData<true,true,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                      hA, hIpiv, hB, hInfo);
+                                      hA, hIpiv, hB);
 
     // execute computations
     // GPU lapack
@@ -185,9 +184,6 @@ void getrs_getError(const rocblas_handle handle,
 
     // CPU lapack
     for (rocblas_int b = 0; b < bc; ++b) {
-        if (hInfo[b][0] != 0)
-            return;  // error encountered - unlucky pick of random numbers? no use to continue
-        
         cblas_getrs<T>(trans, m, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
     }
    
@@ -221,27 +217,26 @@ void getrs_getPerfData(const rocblas_handle handle,
                             Th &hA, 
                             Uh &hIpiv, 
                             Th &hB, 
-                            Uh &hInfo,
                             double *gpu_time_used,
                             double *cpu_time_used,
                             const rocblas_int hot_calls)
 {
     // cpu-lapack performance
     getrs_initData<true,false,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                      hA, hIpiv, hB, hInfo);
+                                      hA, hIpiv, hB);
     *cpu_time_used = get_time_us();
     for (rocblas_int b = 0; b < bc; ++b) {
         cblas_getrs<T>(trans, m, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
     }
     *cpu_time_used = get_time_us() - *cpu_time_used;
     getrs_initData<true,false,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                      hA, hIpiv, hB, hInfo);
+                                      hA, hIpiv, hB);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         getrs_initData<false,true,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                        hA, hIpiv, hB, hInfo);
+                                        hA, hIpiv, hB);
 
         CHECK_ROCBLAS_ERROR(rocsolver_getrs(STRIDED,handle, trans, m, nrhs, dA.data(), lda, stA, dIpiv.data(), stP, dB.data(), ldb, stB, bc));
     }
@@ -251,7 +246,7 @@ void getrs_getPerfData(const rocblas_handle handle,
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         getrs_initData<false,true,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                        hA, hIpiv, hB, hInfo);
+                                        hA, hIpiv, hB);
         
         start = get_time_us();
         rocsolver_getrs(STRIDED,handle, trans, m, nrhs, dA.data(), lda, stA, dIpiv.data(), stP, dB.data(), ldb, stB, bc);
@@ -313,7 +308,6 @@ void testing_getrs(Arguments argus)
         host_batch_vector<T> hB(size_B,1,bc);
         host_batch_vector<T> hBRes(size_BRes,1,bc);
         host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,stP,bc);
-        host_strided_batch_vector<rocblas_int> hInfo(1,1,1,bc);
         device_batch_vector<T> dA(size_A,1,bc);
         device_batch_vector<T> dB(size_B,1,bc);
         device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,stP,bc);
@@ -334,12 +328,12 @@ void testing_getrs(Arguments argus)
         // check computations
         if (argus.unit_check || argus.norm_check) 
             getrs_getError<STRIDED,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                          hA, hIpiv, hB, hBRes, hInfo, &max_error);
+                                          hA, hIpiv, hB, hBRes, &max_error);
 
         // collect performance data
         if (argus.timing) 
             getrs_getPerfData<STRIDED,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                              hA, hIpiv, hB, hInfo, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hIpiv, hB, &gpu_time_used, &cpu_time_used, hot_calls);
     } 
 
     else {
@@ -348,7 +342,6 @@ void testing_getrs(Arguments argus)
         host_strided_batch_vector<T> hB(size_B,1,stB,bc);
         host_strided_batch_vector<T> hBRes(size_BRes,1,stBRes,bc);
         host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,stP,bc);
-        host_strided_batch_vector<rocblas_int> hInfo(1,1,1,bc);
         device_strided_batch_vector<T> dA(size_A,1,stA,bc);
         device_strided_batch_vector<T> dB(size_B,1,stB,bc);
         device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,stP,bc);
@@ -369,12 +362,12 @@ void testing_getrs(Arguments argus)
         // check computations
         if (argus.unit_check || argus.norm_check) 
             getrs_getError<STRIDED,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                          hA, hIpiv, hB, hBRes, hInfo, &max_error);
+                                          hA, hIpiv, hB, hBRes, &max_error);
 
         // collect performance data
         if (argus.timing) 
             getrs_getPerfData<STRIDED,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                              hA, hIpiv, hB, hInfo, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hIpiv, hB, &gpu_time_used, &cpu_time_used, hot_calls);
     }
 
     // validate results for rocsolver-test

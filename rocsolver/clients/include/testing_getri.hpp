@@ -176,9 +176,6 @@ void getri_getError(const rocblas_handle handle,
 
     // CPU lapack
     for (rocblas_int b = 0; b < bc; ++b) {
-        if (hInfo[b][0] != 0)
-            return;  // error encountered - unlucky pick of random numbers? no use to continue
-        
         cblas_getri<T>(n, hA[b], lda, hIpiv[b], hW.data(), &sizeW);
     }
    
