@@ -45,7 +45,8 @@ try
 
     // take arguments and set default values
     // (TODO) IMPROVE WORDING/INFORMATION. CHANGE ARGUMENT NAMES FOR 
-    // MORE RELATED NAMES (THIS IS BLAS BASED NAMES) 
+    // MORE RELATED NAMES (THESE ARE BLAS-BASED NAMES) 
+
     po::options_description desc("rocsolver client command line options");
     desc.add_options()("help,h", "produces this help message")
         

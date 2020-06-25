@@ -1,10 +1,10 @@
 /************************************************************************
  * Derived from the BSD3-licensed
- * LAPACK routine (version 3.7.0) --
+ * LAPACK routine (version 3.7.1) --
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
- *     December 2016
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ *     June 2017
+ * Copyright 2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_BDSQR_H
@@ -13,6 +13,13 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "common_device.hpp"
+
+
+// (TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS 
+//  FOR THE BATCHED VERSIONS (A DIFFERENT THREAD WORKS ON EACH INSTANCE OF THE BATCH).
+//  MORE PARALLELISM CAN BE INTRODUCED IN THE FUTURE IN AT LEAST TWO WAYS: 
+//  1. the splitted diagonal blocks can be worked in parallel as they are independent
+//  2. for each block, multiple threads can accelerate some of the reductions and vector operations 
 
 
 /** LARTG device function computes the sine (s) and cosine (c) values 
@@ -352,8 +359,9 @@ __global__ void bdsqrKernel(const rocblas_int n,
             }                
         }
 
-        // check is last singular value converged, 
+        // check if last singular value converged, 
         // if not, continue with the QR step
+        //(TODO: splitted blocks can be analyzed in parallel) 
         if (i == k-1) k--;
         else {
 

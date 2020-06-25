@@ -46,7 +46,6 @@ set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
 
 set(roclapack_test_source
-    bdsqr_gtest.cpp
     lacgv_gtest.cpp
     laswp_gtest.cpp
     larfg_gtest.cpp
@@ -54,6 +53,7 @@ set(roclapack_test_source
     larft_gtest.cpp
     larfb_gtest.cpp
     labrd_gtest.cpp
+    bdsqr_gtest.cpp
     orgxr_ungxr_gtest.cpp
     orglx_unglx_gtest.cpp
     ormxr_unmxr_gtest.cpp
