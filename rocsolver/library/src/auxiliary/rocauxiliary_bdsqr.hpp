@@ -154,7 +154,7 @@ __device__ void negvect(const rocblas_int n, T *x, const rocblas_int incx)
 {
     for (rocblas_int i = 0; i < n; ++i)
     {
-        x[incx * i] = -x[incx * i];
+        if (x[incx * i] != 0) x[incx * i] = -x[incx * i];
     }
 }
 
