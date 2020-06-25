@@ -184,7 +184,7 @@ inline rocblas_status rocsolver_larfb(rocblas_handle handle, rocblas_side side, 
 /***************************************************************/
 
 
-/******************** LABRD ********************/
+/******************** BDSQR ********************/
 inline rocblas_status rocsolver_bdsqr(rocblas_handle handle, rocblas_fill uplo, rocblas_int n, rocblas_int nv, rocblas_int nu, rocblas_int nc,  float *D, float *E,
                                       float *V, rocblas_int ldv, float *U, rocblas_int ldu, float *C, rocblas_int ldc, rocblas_int *info) 
 {
