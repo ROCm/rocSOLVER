@@ -185,23 +185,23 @@ __device__ void swapvect(const rocblas_int n, T *a, const rocblas_int inca,
 /** T2BQRSTEP device function applies implicit QR interation to
     the n-by-n bidiagonal matrix given by D and E, using shift = sh,
     from top to bottom **/
-template <typename W1, typename W2>
+template <typename S, typename W>
 __device__ void t2bQRstep(const rocblas_int n,
                           const rocblas_int nv,
                           const rocblas_int nu,
                           const rocblas_int nc,
-                          W1* D, W1* E, 
-                          W2* V, const rocblas_int ldv, 
-                          W2* U, const rocblas_int ldu, 
-                          W2* C, const rocblas_int ldc, 
-                          const W1 sh, W1* rots)
+                          S* D, S* E, 
+                          W* V, const rocblas_int ldv, 
+                          W* U, const rocblas_int ldu, 
+                          W* C, const rocblas_int ldc, 
+                          const S sh, S* rots)
 {
-    W1 f, g, c, s, r;
+    S f, g, c, s, r;
     rocblas_int nr = nv ? 2*(n-1) : 0;
 
-    int sgn = (W1(0) < D[0]) - (D[0] < W1(0)); 
+    int sgn = (S(0) < D[0]) - (D[0] < S(0)); 
     if (D[0] == 0) f = 0;
-    else f = (std::abs(D[0]) - sh) * (W1(sgn) + sh/D[0]); 
+    else f = (std::abs(D[0]) - sh) * (S(sgn) + sh/D[0]); 
     g = E[0];
 
     for (rocblas_int k = 0; k < n-1; ++k) { 
@@ -248,23 +248,23 @@ __device__ void t2bQRstep(const rocblas_int n,
 /** B2TQRSTEP device function applies implicit QR interation to
     the n-by-n bidiagonal matrix given by D and E, using shift = sh,
     from bottom to top **/
-template <typename W1, typename W2>
+template <typename S, typename W>
 __device__ void b2tQRstep(const rocblas_int n,
                           const rocblas_int nv,
                           const rocblas_int nu,
                           const rocblas_int nc,
-                          W1* D, W1* E, 
-                          W2* V, const rocblas_int ldv, 
-                          W2* U, const rocblas_int ldu, 
-                          W2* C, const rocblas_int ldc, 
-                          const W1 sh, W1* rots)
+                          S* D, S* E, 
+                          W* V, const rocblas_int ldv, 
+                          W* U, const rocblas_int ldu, 
+                          W* C, const rocblas_int ldc, 
+                          const S sh, S* rots)
 {
-    W1 f, g, c, s, r;
+    S f, g, c, s, r;
     rocblas_int nr = nv ? 2*(n-1) : 0;
 
-    int sgn = (W1(0) < D[n-1]) - (D[n-1] < W1(0));
+    int sgn = (S(0) < D[n-1]) - (D[n-1] < S(0));
     if (D[n-1] == 0) f = 0;
-    else f = (std::abs(D[n-1]) - sh) * (W1(sgn) + sh/D[n-1]);
+    else f = (std::abs(D[n-1]) - sh) * (S(sgn) + sh/D[n-1]);
     g = E[n-2];
 
     for (rocblas_int k = n-1; k > 0; --k) {
@@ -310,43 +310,43 @@ __device__ void b2tQRstep(const rocblas_int n,
 
 /** BDSQRKERNEL implements the main loop of the bdsqr algorithm 
     to compute the SVD of an upper bidiagonal matrix given by D and E **/
-template <typename T, typename W1, typename W2>
+template <typename T, typename S, typename W>
 __global__ void bdsqrKernel(const rocblas_int n,
                             const rocblas_int nv,
                             const rocblas_int nu,
                             const rocblas_int nc,
-                            W1* DD, const rocblas_stride strideD,
-                            W1* EE, const rocblas_stride strideE,
-                            W2 VV, const rocblas_int shiftV,
+                            S* DD, const rocblas_stride strideD,
+                            S* EE, const rocblas_stride strideE,
+                            W VV, const rocblas_int shiftV,
                             const rocblas_int ldv, const rocblas_stride strideV,
-                            W2 UU, const rocblas_int shiftU,
+                            W UU, const rocblas_int shiftU,
                             const rocblas_int ldu, const rocblas_stride strideU,
-                            W2 CC, const rocblas_int shiftC,
+                            W CC, const rocblas_int shiftC,
                             const rocblas_int ldc, const rocblas_stride strideC,
                             rocblas_int *info, const rocblas_int maxiter, 
-                            const W1 eps, const W1 sfm, const W1 tol, const W1 minshift,
-                            W1* workA, const rocblas_stride strideW)
+                            const S eps, const S sfm, const S tol, const S minshift,
+                            S* workA, const rocblas_stride strideW)
 {
     rocblas_int bid = hipBlockIdx_x;
 
     // select batch instance to work with
-    W1* rots = workA + bid*strideW;
-    W1* D = DD + bid*strideD;
-    W1* E = EE + bid*strideE;
+    S* rots = workA + bid*strideW;
+    S* D = DD + bid*strideD;
+    S* E = EE + bid*strideE;
     T* V = load_ptr_batch<T>(VV,bid,shiftV,strideV);
     T* U = load_ptr_batch<T>(UU,bid,shiftU,strideU);
     T* C = load_ptr_batch<T>(CC,bid,shiftC,strideC);
 
     // calculate threshold for zeroing elements (convergence threshold)
     int t2b = (D[0] >= D[n-1]) ? 1 : 0;                 //direction
-    W1 smin = estimate<W1>(n,D,E,t2b,tol,0);            //estimate of the smallest singular value 
-    W1 thresh = std::max(tol*smin/W1(std::sqrt(n)),
-                W1(maxiter)*sfm);                       //threshold
+    S smin = estimate<S>(n,D,E,t2b,tol,0);            //estimate of the smallest singular value 
+    S thresh = std::max(tol*smin/S(std::sqrt(n)),
+                S(maxiter)*sfm);                       //threshold
 
     rocblas_int k = n-1;    //k is the last element of last unconverged diagonal block 
     rocblas_int iter = 0;   //iter is the number of iterations (QR steps) applied
     rocblas_int i;
-    W1 sh, smax;
+    S sh, smax;
 
     // main loop
     while (k > 0 && iter < maxiter) {
@@ -376,9 +376,9 @@ __global__ void bdsqrKernel(const rocblas_int n,
                 t2b = 0;
                 sh = std::abs(D[k]);
             } 
-            smin = estimate<W1>(k-i+1,D+i,E+i,t2b,tol,1);   //shift
-            smax = std::max(maxval<W1>(k-i+1,D+i), 
-                            maxval<W1>(k-i,E+i));           //estimate of the largest singular value in the block
+            smin = estimate<S>(k-i+1,D+i,E+i,t2b,tol,1);   //shift
+            smax = std::max(maxval<S>(k-i+1,D+i), 
+                            maxval<S>(k-i,E+i));           //estimate of the largest singular value in the block
 
             // check for gaps, if none then continue
             if (smin >=0) {                             
@@ -441,25 +441,25 @@ __global__ void bdsqrKernel(const rocblas_int n,
 
 /** LOWER2UPPER kernel transforms a lower bidiagonal matrix given by D and E
     into an upper bidiagonal matrix via givens rotations **/
-template <typename T, typename W1, typename W2>
+template <typename T, typename S, typename W>
 __global__ void lower2upper(const rocblas_int n,
                             const rocblas_int nu,
                             const rocblas_int nc,
-                            W1* DD, const rocblas_stride strideD,
-                            W1* EE, const rocblas_stride strideE,
-                            W2 UU, const rocblas_int shiftU,
+                            S* DD, const rocblas_stride strideD,
+                            S* EE, const rocblas_stride strideE,
+                            W UU, const rocblas_int shiftU,
                             const rocblas_int ldu, const rocblas_stride strideU,
-                            W2 CC, const rocblas_int shiftC,
+                            W CC, const rocblas_int shiftC,
                             const rocblas_int ldc, const rocblas_stride strideC,
-                            W1* workA, const rocblas_stride strideW)
+                            S* workA, const rocblas_stride strideW)
 {
     rocblas_int bid = hipBlockIdx_x;
-    W1 f, g, c, s, r;
+    S f, g, c, s, r;
 
     // select batch instance to work with
-    W1* rots = workA + bid*strideW;
-    W1* D = DD + bid*strideD;
-    W1* E = EE + bid*strideE;
+    S* rots = workA + bid*strideW;
+    S* D = DD + bid*strideD;
+    S* E = EE + bid*strideE;
     T* U = load_ptr_batch<T>(UU,bid,shiftU,strideU);
     T* C = load_ptr_batch<T>(CC,bid,shiftC,strideC);
 
@@ -501,7 +501,7 @@ void rocsolver_bdsqr_getMemorySize(const rocblas_int n, const rocblas_int nv, co
     *size *= sizeof(T)*(n-1)*batch_count;
 }
 
-template <typename W1, typename W2>
+template <typename S, typename W>
 rocblas_status rocsolver_bdsqr_argCheck(const rocblas_fill uplo,
                                        const rocblas_int n,
                                        const rocblas_int nv,
@@ -510,11 +510,11 @@ rocblas_status rocsolver_bdsqr_argCheck(const rocblas_fill uplo,
                                        const rocblas_int ldv,
                                        const rocblas_int ldu,
                                        const rocblas_int ldc,
-                                       W1   D,
-                                       W1   E,
-                                       W2   V,
-                                       W2   U,
-                                       W2   C,
+                                       S   D,
+                                       S   E,
+                                       W   V,
+                                       W   U,
+                                       W   C,
                                        rocblas_int *info,
                                        const rocblas_int batch_count = 1)
 {
@@ -537,23 +537,23 @@ rocblas_status rocsolver_bdsqr_argCheck(const rocblas_fill uplo,
     return rocblas_status_continue;
 }
 
-template <typename T, typename W1, typename W2>
+template <typename T, typename S, typename W>
 rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                                            const rocblas_fill uplo,
                                            const rocblas_int n,
                                            const rocblas_int nv,
                                            const rocblas_int nu,
                                            const rocblas_int nc,
-                                           W1* D, const rocblas_stride strideD,
-                                           W1* E, const rocblas_stride strideE,
-                                           W2 V, const rocblas_int shiftV,
+                                           S* D, const rocblas_stride strideD,
+                                           S* E, const rocblas_stride strideE,
+                                           W V, const rocblas_int shiftV,
                                            const rocblas_int ldv, const rocblas_stride strideV,
-                                           W2 U, const rocblas_int shiftU,
+                                           W U, const rocblas_int shiftU,
                                            const rocblas_int ldu, const rocblas_stride strideU,
-                                           W2 C, const rocblas_int shiftC,
+                                           W C, const rocblas_int shiftC,
                                            const rocblas_int ldc, const rocblas_stride strideC,
                                            rocblas_int *info,
-                                           const rocblas_int batch_count, W1* work)
+                                           const rocblas_int batch_count, S* work)
 {
     // quick return
     if (n == 0 || batch_count == 0) 
@@ -563,14 +563,14 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     // set tolerance and max number of iterations
-    W1 eps = get_epsilon<W1>() / 2;         //machine precision (considering rounding strategy)
-    W1 sfm = get_safemin<W1>();             //safest minimum value such that 1/sfm does not overflow 
+    S eps = get_epsilon<S>() / 2;         //machine precision (considering rounding strategy)
+    S sfm = get_safemin<S>();             //safest minimum value such that 1/sfm does not overflow 
     rocblas_int maxiter = 6*n*n;            //max number of iterations (QR steps) before declaring not convergence
-    W1 tol = std::max(W1(10.0),
-             std::min(W1(100.0),
-             W1(pow(eps,-0.125)))) * eps;   //relative accuracy tolerance  
-    W1 minshift = std::max(eps,
-                  tol/W1(100)) / (n*tol);   //(minimum accepted shift to not ruin relative accuracy) / (max singular value)
+    S tol = std::max(S(10.0),
+             std::min(S(100.0),
+             S(pow(eps,-0.125)))) * eps;   //relative accuracy tolerance  
+    S minshift = std::max(eps,
+                  tol/S(100)) / (n*tol);   //(minimum accepted shift to not ruin relative accuracy) / (max singular value)
 
     rocblas_stride strideW = 4*n;
 

@@ -2123,7 +2123,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
                 Specifies whether B is upper or lower bidiagonal.
     @param[in]
     n           rocblas_int. n >= 0.\n
-                The size of matrix B.
+                The number of rows and columns of matrix B.
     @param[in]
     nv          rocblas_int. nv >= 0.\n
                 The number of columns of matrix V.

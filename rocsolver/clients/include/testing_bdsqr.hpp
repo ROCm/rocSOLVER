@@ -89,7 +89,7 @@ void testing_bdsqr_bad_arg()
 }
 
 
-template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh, bool COMPLEX = is_complex<T>>
+template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void bdsqr_getError(const rocblas_handle handle, 
                         const rocblas_fill uplo,
                         const rocblas_int n, 
@@ -362,14 +362,7 @@ void testing_bdsqr(Arguments argus)
 
     // check quick return
     if (n == 0) {
-        device_strided_batch_vector<T> dV(size_V,1,size_V,1);
-        device_strided_batch_vector<T> dU(size_U,1,size_U,1);
-        device_strided_batch_vector<T> dC(size_C,1,size_C,1);
-        if (size_V) CHECK_HIP_ERROR(dV.memcheck());
-        if (size_U) CHECK_HIP_ERROR(dU.memcheck());
-        if (size_C) CHECK_HIP_ERROR(dC.memcheck());
-
-        EXPECT_ROCBLAS_STATUS(rocsolver_bdsqr(handle,uplo,n,nv,nu,nc,dD.data(),dE.data(),dV.data(),ldv,dU.data(),ldu,dC.data(),ldc,dinfo.data()), 
+        EXPECT_ROCBLAS_STATUS(rocsolver_bdsqr(handle,uplo,n,nv,nu,nc,dD.data(),dE.data(),(T*)nullptr,ldv,(T*)nullptr,ldu,(T*)nullptr,ldc,dinfo.data()), 
                               rocblas_status_success);
         if (argus.timing)
             ROCSOLVER_BENCH_INFORM(0);
@@ -443,4 +436,3 @@ void testing_bdsqr(Arguments argus)
 }
   
 
-#undef GETRF_ERROR_EPS_MULTIPLIER

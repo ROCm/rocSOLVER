@@ -4,20 +4,20 @@
 
 #include "rocauxiliary_bdsqr.hpp"
 
-template <typename T, typename W1, typename W2>
+template <typename T, typename S, typename W>
 rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
                                      const rocblas_fill uplo,
                                      const rocblas_int n, 
                                      const rocblas_int nv, 
                                      const rocblas_int nu, 
                                      const rocblas_int nc,
-                                     W1*   D,
-                                     W1*   E, 
-                                     W2    V,
+                                     S*   D,
+                                     S*   E, 
+                                     W    V,
                                      const rocblas_int ldv,
-                                     W2    U,
+                                     W    U,
                                      const rocblas_int ldu,
-                                     W2    C,
+                                     W    C,
                                      const rocblas_int ldc,
                                      rocblas_int *info)
 { 
@@ -40,7 +40,7 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
 
     // memory managment
     size_t size;  //size of workspace
-    rocsolver_bdsqr_getMemorySize<W1>(n,nv,nu,nc,batch_count,&size);
+    rocsolver_bdsqr_getMemorySize<S>(n,nv,nu,nc,batch_count,&size);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
     void *work;
@@ -61,7 +61,7 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
                                          ldc,strideC,
                                          info,
                                          batch_count,
-                                         (W1*)work);
+                                         (S*)work);
     hipFree(work);
     
     return status;
