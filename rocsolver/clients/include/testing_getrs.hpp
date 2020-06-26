@@ -101,6 +101,58 @@ void testing_getrs_bad_arg()
 }
 
 
+template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
+void getrs_initData(const rocblas_handle handle, 
+                        const rocblas_operation trans, 
+                        const rocblas_int m, 
+                        const rocblas_int nrhs, 
+                        Td &dA, 
+                        const rocblas_int lda, 
+                        const rocblas_stride stA, 
+                        Ud &dIpiv, 
+                        const rocblas_stride stP, 
+                        Td &dB, 
+                        const rocblas_int ldb, 
+                        const rocblas_stride stB, 
+                        const rocblas_int bc,
+                        Th &hA, 
+                        Uh &hIpiv, 
+                        Th &hB)
+{
+    if (CPU)
+    {
+        rocblas_init<T>(hA, true);
+        rocblas_init<T>(hB, true);
+
+        // scale A to avoid singularities 
+        for (rocblas_int b = 0; b < bc; ++b) {
+            for (rocblas_int i = 0; i < m; i++) {
+                for (rocblas_int j = 0; j < m; j++) {
+                    if (i == j)
+                        hA[b][i + j * lda] += 400;
+                    else    
+                        hA[b][i + j * lda] -= 4;
+                }
+            }
+        }
+
+        // do the LU decomposition of matrix A w/ the reference LAPACK routine
+        for (rocblas_int b = 0; b < bc; ++b) {
+            int info;
+            cblas_getrf<T>(m, m, hA[b], lda, hIpiv[b], &info);
+        }
+    }
+
+    if (GPU)
+    {
+        // now copy pivoting indices and matrices to the GPU
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+        CHECK_HIP_ERROR(dB.transfer_from(hB));
+        CHECK_HIP_ERROR(dIpiv.transfer_from(hIpiv));
+    }
+}
+
+
 template <bool STRIDED, typename T, typename Td, typename Ud, typename Th, typename Uh>
 void getrs_getError(const rocblas_handle handle, 
                         const rocblas_operation trans, 
@@ -122,34 +174,8 @@ void getrs_getError(const rocblas_handle handle,
                         double *max_err)
 {
     // input data initialization 
-    rocblas_init<T>(hA, true);
-    rocblas_init<T>(hB, true);
-
-    // scale A to avoid singularities 
-    for (rocblas_int b = 0; b < bc; ++b) {
-        for (rocblas_int i = 0; i < m; i++) {
-            for (rocblas_int j = 0; j < m; j++) {
-                if (i == j)
-                    hA[b][i + j * lda] += 400;
-                else    
-                    hA[b][i + j * lda] -= 4;
-            }
-        }
-    }
-
-    // do the LU decomposition of matrix A w/ the reference LAPACK routine
-    int retCBLAS;
-    for (rocblas_int b = 0; b < bc; ++b) {
-        retCBLAS = 0;
-        cblas_getrf<T>(m, m, hA[b], lda, hIpiv[b], &retCBLAS);
-        if (retCBLAS != 0) 
-            return; // error encountered - unlucky pick of random numbers? no use to continue
-    }
-
-    // now copy pivoting indices and matrices to the GPU
-    CHECK_HIP_ERROR(dA.transfer_from(hA));
-    CHECK_HIP_ERROR(dB.transfer_from(hB));
-    CHECK_HIP_ERROR(dIpiv.transfer_from(hIpiv));
+    getrs_initData<true,true,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
+                                      hA, hIpiv, hB);
 
     // execute computations
     // GPU lapack
@@ -196,21 +222,37 @@ void getrs_getPerfData(const rocblas_handle handle,
                             const rocblas_int hot_calls)
 {
     // cpu-lapack performance
+    getrs_initData<true,false,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
+                                      hA, hIpiv, hB);
     *cpu_time_used = get_time_us();
     for (rocblas_int b = 0; b < bc; ++b) {
         cblas_getrs<T>(trans, m, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
     }
     *cpu_time_used = get_time_us() - *cpu_time_used;
+    getrs_initData<true,false,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
+                                      hA, hIpiv, hB);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
+    {
+        getrs_initData<false,true,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
+                                        hA, hIpiv, hB);
+
         CHECK_ROCBLAS_ERROR(rocsolver_getrs(STRIDED,handle, trans, m, nrhs, dA.data(), lda, stA, dIpiv.data(), stP, dB.data(), ldb, stB, bc));
+    }
         
     // gpu-lapack performance
-    *gpu_time_used = get_time_us(); 
+    double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    {
+        getrs_initData<false,true,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
+                                        hA, hIpiv, hB);
+        
+        start = get_time_us();
         rocsolver_getrs(STRIDED,handle, trans, m, nrhs, dA.data(), lda, stA, dIpiv.data(), stP, dB.data(), ldb, stB, bc);
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
 

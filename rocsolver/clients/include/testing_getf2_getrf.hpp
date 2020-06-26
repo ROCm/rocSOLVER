@@ -97,6 +97,46 @@ void testing_getf2_getrf_bad_arg()
 }
 
 
+template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
+void getf2_getrf_initData(const rocblas_handle handle, 
+                        const rocblas_int m, 
+                        const rocblas_int n, 
+                        Td &dA, 
+                        const rocblas_int lda, 
+                        const rocblas_stride stA, 
+                        Ud &dIpiv, 
+                        const rocblas_stride stP, 
+                        Ud &dinfo,
+                        const rocblas_int bc,
+                        Th &hA,
+                        Uh &hIpiv, 
+                        Uh &hinfo)
+{
+    if (CPU)
+    {
+        rocblas_init<T>(hA, true);
+
+        // scale A to avoid singularities 
+        for (rocblas_int b = 0; b < bc; ++b) {
+            for (rocblas_int i = 0; i < m; i++) {
+                for (rocblas_int j = 0; j < n; j++) {
+                    if (i == j)
+                        hA[b][i + j * lda] += 400;
+                    else    
+                        hA[b][i + j * lda] -= 4;
+                }
+            }
+        }
+    }
+
+    if (GPU)
+    {
+        // now copy data to the GPU
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+    }
+}
+
+
 template <bool STRIDED, bool GETRF, typename T, typename Td, typename Ud, typename Th, typename Uh>
 void getf2_getrf_getError(const rocblas_handle handle, 
                         const rocblas_int m, 
@@ -115,22 +155,8 @@ void getf2_getrf_getError(const rocblas_handle handle,
                         double *max_err)
 {
     // input data initialization 
-    rocblas_init<T>(hA, true);
-
-    // scale A to avoid singularities 
-    for (rocblas_int b = 0; b < bc; ++b) {
-        for (rocblas_int i = 0; i < m; i++) {
-            for (rocblas_int j = 0; j < n; j++) {
-                if (i == j)
-                    hA[b][i + j * lda] += 400;
-                else    
-                    hA[b][i + j * lda] -= 4;
-            }
-        }
-    }
-
-    // now copy data to the GPU
-    CHECK_HIP_ERROR(dA.transfer_from(hA));
+    getf2_getrf_initData<true,true,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, 
+                                     hA, hIpiv, hinfo);
 
     // execute computations
     // GPU lapack
@@ -177,6 +203,8 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
                         const rocblas_int hot_calls)
 {
     // cpu-lapack performance
+    getf2_getrf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, 
+                                     hA, hIpiv, hinfo);
     *cpu_time_used = get_time_us();
     for (rocblas_int b = 0; b < bc; ++b) {
         GETRF ?
@@ -184,16 +212,30 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
             cblas_getf2<T>(m, n, hA[b], lda, hIpiv[b], hinfo[b]);
     }
     *cpu_time_used = get_time_us() - *cpu_time_used;
+    getf2_getrf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, 
+                                     hA, hIpiv, hinfo);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
+    {
+        getf2_getrf_initData<false,true,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, 
+                                        hA, hIpiv, hinfo);
+
         CHECK_ROCBLAS_ERROR(rocsolver_getf2_getrf(STRIDED,GETRF,handle, m, n, dA.data(), lda, stA, dIpiv.data(), stP, dinfo.data(), bc, pivot));
+    }
         
     // gpu-lapack performance
-    *gpu_time_used = get_time_us(); 
+    double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    {
+        getf2_getrf_initData<false,true,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, 
+                                        hA, hIpiv, hinfo);
+        
+        start = get_time_us();
         rocsolver_getf2_getrf(STRIDED,GETRF,handle, m, n, dA.data(), lda, stA, dIpiv.data(), stP, dinfo.data(), bc, pivot);
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
 

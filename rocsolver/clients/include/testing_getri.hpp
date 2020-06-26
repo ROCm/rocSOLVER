@@ -94,6 +94,56 @@ void testing_getri_bad_arg()
 }
 
 
+template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
+void getri_initData(const rocblas_handle handle, 
+                        const rocblas_int n, 
+                        Td &dA1, 
+                        Td &dA, 
+                        const rocblas_int lda, 
+                        const rocblas_stride stA, 
+                        Ud &dIpiv, 
+                        const rocblas_stride stP, 
+                        Ud &dInfo, 
+                        const rocblas_int bc,
+                        Th &hA1, 
+                        Th &hA, 
+                        Uh &hIpiv, 
+                        Uh &hInfo)
+{
+    if (CPU)
+    {
+        rocblas_init<T>(hA, true);
+
+        // scale A to avoid singularities 
+        for (rocblas_int b = 0; b < bc; ++b) {
+            for (rocblas_int i = 0; i < n; i++) {
+                for (rocblas_int j = 0; j < n; j++) {
+                    if (i == j)
+                        hA[b][i + j * lda] += 400;
+                    else    
+                        hA[b][i + j * lda] -= 4;
+                }
+            }
+        }
+
+        // do the LU decomposition of matrix A w/ the reference LAPACK routine
+        for (rocblas_int b = 0; b < bc; ++b) {
+            cblas_getrf<T>(n, n, hA[b], lda, hIpiv[b], hInfo[b]);
+        }
+    }
+    
+    // now copy data to the GPU
+    if (GPU)
+    {
+        if (dA1.n() > 0)
+            CHECK_HIP_ERROR(dA1.transfer_from(hA));
+        else
+            CHECK_HIP_ERROR(dA.transfer_from(hA));
+        CHECK_HIP_ERROR(dIpiv.transfer_from(hIpiv));
+    }
+}
+
+
 template <bool STRIDED, typename T, typename Td, typename Ud, typename Th, typename Uh>
 void getri_getError(const rocblas_handle handle, 
                         const rocblas_int n, 
@@ -116,35 +166,8 @@ void getri_getError(const rocblas_handle handle,
     std::vector<T> hW(sizeW);
 
     // input data initialization 
-    rocblas_init<T>(hA, true);
-
-    // scale A to avoid singularities 
-    for (rocblas_int b = 0; b < bc; ++b) {
-        for (rocblas_int i = 0; i < n; i++) {
-            for (rocblas_int j = 0; j < n; j++) {
-                if (i == j)
-                    hA[b][i + j * lda] += 400;
-                else    
-                    hA[b][i + j * lda] -= 4;
-            }
-        }
-    }
-
-    // do the LU decomposition of matrix A w/ the reference LAPACK routine
-    int retCBLAS;
-    for (rocblas_int b = 0; b < bc; ++b) {
-        retCBLAS = 0;
-        cblas_getrf<T>(n, n, hA[b], lda, hIpiv[b], &retCBLAS);
-        if (retCBLAS != 0) 
-            return; // error encountered - unlucky pick of random numbers? no use to continue
-    }
-    
-    // now copy data to the GPU
-    if (dA1.n() > 0)
-        CHECK_HIP_ERROR(dA1.transfer_from(hA));
-    else
-        CHECK_HIP_ERROR(dA.transfer_from(hA));
-    CHECK_HIP_ERROR(dIpiv.transfer_from(hIpiv));
+    getri_initData<true,true,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
+                                      hA1, hA, hIpiv, hInfo);
 
     // execute computations
     // GPU lapack
@@ -193,21 +216,37 @@ void getri_getPerfData(const rocblas_handle handle,
     std::vector<T> hW(sizeW);
 
     // cpu-lapack performance
+    getri_initData<true,false,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
+                                      hA1, hA, hIpiv, hInfo);
     *cpu_time_used = get_time_us();
     for (rocblas_int b = 0; b < bc; ++b) {
         cblas_getri<T>(n, hA[b], lda, hIpiv[b], hW.data(), &sizeW);
     }
     *cpu_time_used = get_time_us() - *cpu_time_used;
+    getri_initData<true,false,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
+                                      hA1, hA, hIpiv, hInfo);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
+    {
+        getri_initData<false,true,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
+                                          hA1, hA, hIpiv, hInfo);
+
         CHECK_ROCBLAS_ERROR(rocsolver_getri(STRIDED,handle, n, dA1.data(), dA.data(), lda, stA, dIpiv.data(), stP, dInfo.data(), bc));
+    }
         
     // gpu-lapack performance
-    *gpu_time_used = get_time_us(); 
+    double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    {
+        getri_initData<false,true,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
+                                          hA1, hA, hIpiv, hInfo);
+        
+        start = get_time_us();
         rocsolver_getri(STRIDED,handle, n, dA1.data(), dA.data(), lda, stA, dIpiv.data(), stP, dInfo.data(), bc);
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
 
