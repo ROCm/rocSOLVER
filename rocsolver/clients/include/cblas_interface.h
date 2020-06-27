@@ -137,6 +137,11 @@ void cblas_larfb(rocblas_side side, rocblas_operation trans, rocblas_direct dire
 template <typename S, typename T>
 void cblas_labrd(rocblas_int m, rocblas_int n, rocblas_int nb, T *A, rocblas_int lda, S *D, S *E, T *tauq, T *taup, T *X, rocblas_int ldx, T *Y, rocblas_int ldy);
 
+template <typename T, typename W>
+void cblas_bdsqr(rocblas_fill uplo, rocblas_int n, rocblas_int nv, rocblas_int nu, rocblas_int nc, W *D, W *E, T *V, rocblas_int ldv, T *U, rocblas_int ldu,
+                 T *C, rocblas_int ldc, W *work, rocblas_int *info);
+
+
 template <typename T>
 void cblas_geqr2(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T *ipiv, T *work);
 

@@ -71,16 +71,6 @@ protected:
     virtual void TearDown() {}
 };
 
-class GEBRD : public ::TestWithParam<labrd_tuple> {
-protected:
-    GEBRD() {}
-    virtual ~GEBRD() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
-};
-
-
-// non-batch tests
 
 TEST_P(LABRD, __float) {
     Arguments arg = setup_arguments_bd(GetParam());

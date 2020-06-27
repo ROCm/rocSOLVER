@@ -17,6 +17,7 @@
 #include "testing_lacgv.hpp"
 #include "testing_laswp.hpp"
 #include "testing_labrd.hpp"
+#include "testing_bdsqr.hpp"
 #include "testing_orgxr_ungxr.hpp"
 #include "testing_ormxr_unmxr.hpp"
 #include "testing_orglx_unglx.hpp"
@@ -44,7 +45,8 @@ try
 
     // take arguments and set default values
     // (TODO) IMPROVE WORDING/INFORMATION. CHANGE ARGUMENT NAMES FOR 
-    // MORE RELATED NAMES (THIS IS BLAS BASED NAMES) 
+    // MORE RELATED NAMES (THESE ARE BLAS-BASED NAMES) 
+
     po::options_description desc("rocsolver client command line options");
     desc.add_options()("help,h", "produces this help message")
         
@@ -62,6 +64,10 @@ try
          "Specific...  the number of columns in "
          "A & C  and rows in B.")
 
+        ("size4,S4",
+         po::value<rocblas_int>(&argus.S4)->default_value(1024),
+         "Extra size value.")
+        
         ("k1",
          po::value<rocblas_int>(&argus.k1)->default_value(1),
          "First index for row interchange, used with laswp. ")
@@ -865,6 +871,16 @@ try
             testing_ormbr_unmbr<rocblas_double_complex>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
+    } 
+    else if (function == "bdsqr") {
+        if (precision == 's')
+            testing_bdsqr<float>(argus);
+        else if (precision == 'd')
+            testing_bdsqr<double>(argus);
+        else if (precision == 'c')
+            testing_bdsqr<rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_bdsqr<rocblas_double_complex>(argus);
     } 
     else 
         throw std::invalid_argument("Invalid value for --function");

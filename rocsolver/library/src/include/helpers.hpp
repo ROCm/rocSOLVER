@@ -8,6 +8,39 @@
 #include <hip/hip_runtime.h>
 #include <cstring>
 #include <iostream>
+#include <limits>
+
+template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+constexpr double get_epsilon()
+{
+    return std::numeric_limits<T>::epsilon();
+}
+
+template <typename T, std::enable_if_t<+is_complex<T>, int> = 0>
+constexpr auto get_epsilon()
+{
+    return get_epsilon<decltype(std::real(T{}))>();
+}
+
+
+template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+constexpr double get_safemin()
+{
+    auto eps = get_epsilon<T>();
+    auto s1 = std::numeric_limits<T>::min();
+    auto s2 = 1/std::numeric_limits<T>::max();
+    if (s2 > s1) return s2*(1+eps);
+    return s1;
+}
+
+template <typename T, std::enable_if_t<+is_complex<T>, int> = 0>
+constexpr auto get_safemin()
+{
+    return get_safemin<decltype(std::real(T{}))>();
+}
+
+
+
 
 inline size_t idx2D(const size_t i, const size_t j, const size_t lda) 
 {

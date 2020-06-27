@@ -80,6 +80,13 @@ void dlarft_(char *direct, char *storev, int *n, int *k, double *V, int *ldv, do
 void clarft_(char *direct, char *storev, int *n, int *k, rocblas_float_complex *V, int *ldv, rocblas_float_complex *tau, rocblas_float_complex *T, int *ldt);
 void zlarft_(char *direct, char *storev, int *n, int *k, rocblas_double_complex *V, int *ldv, rocblas_double_complex *tau, rocblas_double_complex *T, int *ldt);
 
+void sbdsqr_(char *uplo, int *n, int *nv, int *nu, int *nc, float *D, float *E, float *V, int *ldv, float *U, int *ldu, float *C, int *ldc, float *W, int *info);
+void dbdsqr_(char *uplo, int *n, int *nv, int *nu, int *nc, double *D, double *E, double *V, int *ldv, double *U, int *ldu, double *C, int *ldc, double *W, int *info);
+void cbdsqr_(char *uplo, int *n, int *nv, int *nu, int *nc, float *D, float *E, rocblas_float_complex *V, int *ldv, rocblas_float_complex *U, int *ldu, rocblas_float_complex *C, 
+             int *ldc, float *W, int *info);
+void zbdsqr_(char *uplo, int *n, int *nv, int *nu, int *nc, double *D, double *E, rocblas_double_complex *V, int *ldv, rocblas_double_complex *U, int *ldu, rocblas_double_complex *C, 
+             int *ldc, double *W, int *info);
+
 void slarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, float *V, int *ldv, float *T, int *ldt, float *A, int *lda, float *W, int *ldw);
 void dlarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, double *V, int *ldv, double *T, int *ldt, double *A, int *lda, double *W, int *ldw);
 void clarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, rocblas_float_complex *V, int *ldv, rocblas_float_complex *T, int *ldt, rocblas_float_complex *A, int *lda, rocblas_float_complex *W, int *ldw);
@@ -335,6 +342,41 @@ void cblas_larfb<rocblas_double_complex>(rocblas_side sideR, rocblas_operation t
     char storev = rocblas2char_storev(storevR);
     zlarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
 }
+
+
+//bdsqr
+template <>
+void cblas_bdsqr(rocblas_fill uplo, rocblas_int n, rocblas_int nv, rocblas_int nu, rocblas_int nc, float *D, float *E, float *V, rocblas_int ldv, float *U, rocblas_int ldu,
+                 float *C, rocblas_int ldc, float *work, rocblas_int *info)
+{
+    char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+    sbdsqr_(&uploC, &n, &nv, &nu, &nc, D, E, V, &ldv, U, &ldu, C, &ldc, work, info);
+}
+
+template <>
+void cblas_bdsqr(rocblas_fill uplo, rocblas_int n, rocblas_int nv, rocblas_int nu, rocblas_int nc, double *D, double *E, double *V, rocblas_int ldv, double *U, rocblas_int ldu,
+                 double *C, rocblas_int ldc, double *work, rocblas_int *info)
+{
+    char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+    dbdsqr_(&uploC, &n, &nv, &nu, &nc, D, E, V, &ldv, U, &ldu, C, &ldc, work, info);
+}
+
+template <>
+void cblas_bdsqr(rocblas_fill uplo, rocblas_int n, rocblas_int nv, rocblas_int nu, rocblas_int nc, float *D, float *E, rocblas_float_complex *V, rocblas_int ldv, rocblas_float_complex *U, rocblas_int ldu,
+                 rocblas_float_complex *C, rocblas_int ldc, float *work, rocblas_int *info)
+{
+    char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+    cbdsqr_(&uploC, &n, &nv, &nu, &nc, D, E, V, &ldv, U, &ldu, C, &ldc, work, info);
+}
+
+template <>
+void cblas_bdsqr(rocblas_fill uplo, rocblas_int n, rocblas_int nv, rocblas_int nu, rocblas_int nc, double *D, double *E, rocblas_double_complex *V, rocblas_int ldv, rocblas_double_complex *U, rocblas_int ldu,
+                 rocblas_double_complex *C, rocblas_int ldc, double *work, rocblas_int *info)
+{
+    char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+    zbdsqr_(&uploC, &n, &nv, &nu, &nc, D, E, V, &ldv, U, &ldu, C, &ldc, work, info);
+}
+
 
 //labrd
 template <>

@@ -124,6 +124,14 @@ rocsolver_<type>labrd()
 .. doxygenfunction:: rocsolver_dlabrd
 .. doxygenfunction:: rocsolver_slabrd
 
+rocsolver_<type>bdsqr()
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zbdsqr
+.. doxygenfunction:: rocsolver_cbdsqr
+.. doxygenfunction:: rocsolver_dbdsqr
+.. doxygenfunction:: rocsolver_sbdsqr
+
+
 Orthonormal matrices
 ---------------------------
 
