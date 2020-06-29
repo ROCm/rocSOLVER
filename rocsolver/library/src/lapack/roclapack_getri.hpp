@@ -146,7 +146,10 @@ __global__ void getri_pivot(const rocblas_int n,
     {
         jp = p[j] - 1;
         if (jp != j)
-            swap(n, a + j*lda, 1, a + jp*lda, 1);
+        {
+            swapvect(n, a + j*lda, 1, a + jp*lda, 1);
+            __threadfence();
+        }
     }
 }
 
