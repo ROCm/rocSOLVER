@@ -155,8 +155,8 @@ install_msgpack_from_source( )
 {
     if [[ ! -d "${build_dir}/deps/msgpack-c" ]]; then
       pushd .
-      mkdir -p ${build_dir}/deps
-      cd ${build_dir}/deps
+      mkdir -p "${build_dir}/deps"
+      cd "${build_dir}/deps"
       git clone -b cpp-3.0.1 https://github.com/msgpack/msgpack-c.git
       cd msgpack-c
       ${cmake_executable} .
