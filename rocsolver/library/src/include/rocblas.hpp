@@ -293,10 +293,10 @@ rocblas_status rocblasCall_gemm(rocblas_handle    handle,
                             rocblas_int       batch_count,
                             T**               work)
 {
-    return rocblas_gemm_template<BATCHED,STRIDED,T>(handle,trans_a,trans_b,m,n,k,alpha,
-                                                    cast2constType<T>(A),offset_a,ld_a,stride_a,
-                                                    cast2constType<T>(B),offset_b,ld_b,stride_b,beta,
-                                                    C,offset_c,ld_c,stride_c,batch_count);
+    return rocblas_gemm_template<BATCHED,T>(handle,trans_a,trans_b,m,n,k,alpha,
+                                            cast2constType<T>(A),offset_a,ld_a,stride_a,
+                                            cast2constType<T>(B),offset_b,ld_b,stride_b,beta,
+                                            C,offset_c,ld_c,stride_c,batch_count);
 }
 
 //gemm overload
@@ -330,10 +330,10 @@ rocblas_status rocblasCall_gemm(rocblas_handle    handle,
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,A,stride_a,batch_count);
  
-    return rocblas_gemm_template<BATCHED,STRIDED,T>(handle,trans_a,trans_b,m,n,k,alpha,
-                                                      cast2constType<T>(work),offset_a,ld_a,stride_a,
-                                                      cast2constType<T>(B),offset_b,ld_b,stride_b,beta,
-                                                      C,offset_c,ld_c,stride_c,batch_count);
+    return rocblas_gemm_template<BATCHED,T>(handle,trans_a,trans_b,m,n,k,alpha,
+                                            cast2constType<T>(work),offset_a,ld_a,stride_a,
+                                            cast2constType<T>(B),offset_b,ld_b,stride_b,beta,
+                                            C,offset_c,ld_c,stride_c,batch_count);
 }
 
 //gemm overload
@@ -367,10 +367,10 @@ rocblas_status rocblasCall_gemm(rocblas_handle    handle,
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,B,stride_b,batch_count);
  
-    return rocblas_gemm_template<BATCHED,STRIDED,T>(handle,trans_a,trans_b,m,n,k,alpha,
-                                                      cast2constType<T>(A),offset_a,ld_a,stride_a,
-                                                      cast2constType<T>(work),offset_b,ld_b,stride_b,beta,
-                                                      C,offset_c,ld_c,stride_c,batch_count);
+    return rocblas_gemm_template<BATCHED,T>(handle,trans_a,trans_b,m,n,k,alpha,
+                                            cast2constType<T>(A),offset_a,ld_a,stride_a,
+                                            cast2constType<T>(work),offset_b,ld_b,stride_b,beta,
+                                            C,offset_c,ld_c,stride_c,batch_count);
 }
 
 //gemm overload
@@ -404,10 +404,10 @@ rocblas_status rocblasCall_gemm(rocblas_handle    handle,
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,C,stride_c,batch_count);
  
-    return rocblas_gemm_template<BATCHED,STRIDED,T>(handle,trans_a,trans_b,m,n,k,alpha,
-                                                      cast2constType<T>(A),offset_a,ld_a,stride_a,
-                                                      cast2constType<T>(B),offset_b,ld_b,stride_b,beta,
-                                                      work,offset_c,ld_c,stride_c,batch_count);
+    return rocblas_gemm_template<BATCHED,T>(handle,trans_a,trans_b,m,n,k,alpha,
+                                            cast2constType<T>(A),offset_a,ld_a,stride_a,
+                                            cast2constType<T>(B),offset_b,ld_b,stride_b,beta,
+                                            work,offset_c,ld_c,stride_c,batch_count);
 }
 
 // syrk
