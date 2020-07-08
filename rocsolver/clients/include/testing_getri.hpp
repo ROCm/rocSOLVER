@@ -130,6 +130,14 @@ void getri_initData(const rocblas_handle handle,
         for (rocblas_int b = 0; b < bc; ++b) {
             cblas_getrf<T>(n, n, hA[b], lda, hIpiv[b], hInfo[b]);
         }
+
+        // introduce artificial pivots for correctness testing
+        for (rocblas_int b = 0; b < bc; ++b)
+        {
+            if (n > 4 + b)
+                hIpiv[b][3 + b] = 1;
+                hIpiv[b][4 + b] = 1;
+        }
     }
     
     // now copy data to the GPU
