@@ -35,63 +35,58 @@ will become link-time and run-time dependencies for the user applciation.
 The following code snippet uses rocSOLVER to compute the QR factorization of a general m-by-n real matrix in double precsision. 
 For a description of function rocsolver_dgeqrf see the API documentation [here](https://rocsolver.readthedocs.io/en/latest/userguide_api.html#rocsolver-type-geqrf).
 
-```C
-///////////////////////////
-// example.c source code //
-///////////////////////////
+```cpp
+/////////////////////////////
+// example.cpp source code //
+/////////////////////////////
 
-#include <iostream>
-#include <stdlib.h>
+#include <algorithm> // for std::min
+#include <stddef.h>  // for size_t
 #include <vector>
-#include <rocsolver.h>      // this includes all the rocsolver C interfaces and type declarations
-
-using namespace std;
+#include <hip/hip_runtime_api.h> // for hip functions
+#include <rocsolver.h> // for all the rocsolver C interfaces and type declarations
 
 int main() {
-    rocsolver_int M;
-    rocsolver_int N;
-    rocsolver_int lda;
+  rocblas_int M;
+  rocblas_int N;
+  rocblas_int lda;
 
-    // initialize M, N and lda with desired values
-    // here===>>
+  // here is where you would initialize M, N and lda with desired values
 
-    rocsolver_handle handle;
-    rocsolver_create_handle(&handle); // this creates the rocsolver handle
+  rocsolver_handle handle;
+  rocsolver_create_handle(&handle);
 
-    size_t size_A = size_t(lda) * N;     // this is the size of the array that will hold the matrix
-    size_t size_piv = size_t(min(M, N)); // this is size of array that will have the Householder scalars   
+  size_t size_A = size_t(lda) * N;          // the size of the array for the matrix
+  size_t size_piv = size_t(std::min(M, N)); // the size of array for the Householder scalars
 
-    vector<double> hA(size_A);        // creates array for matrix in CPU
-    vector<double> hIpiv(size_piv);   // creates array for householder scalars in CPU
+  std::vector<double> hA(size_A);      // creates array for matrix in CPU
+  std::vector<double> hIpiv(size_piv); // creates array for householder scalars in CPU
 
-    double *dA, *dIpiv;
-    hipMalloc(&dA,sizeof(double)*size_A);       // allocates memory for matrix in GPU
-    hipMalloc(&dIpiv,sizeof(double)*size_piv);  // allocates memory for scalars in GPU
-  
-    // initialize matrix A (array hA) with input data
-    // here===>>
-    // ( matrices must be stored in column major format, i.e. entry (i,j)
-    //  should be accessed by hA[i + j*lda] )
+  double *dA, *dIpiv;
+  hipMalloc(&dA, sizeof(double)*size_A);      // allocates memory for matrix in GPU
+  hipMalloc(&dIpiv, sizeof(double)*size_piv); // allocates memory for scalars in GPU
 
+  // here is where you would initialize matrix A (array hA) with input data
+  // note: matrices must be stored in column major format,
+  //       i.e. entry (i,j) should be accessed by hA[i + j*lda]
 
-    hipMemcpy(dA,hA.data(),sizeof(double)*size_A,hipMemcpyHostToDevice); // copy data to GPU
-    rocsolver_dgeqrf(handle, M, N, dA, lda, dIpiv);                      // compute the QR factorization on the GPU   
-    hipMemcpy(hA.data(),dA,sizeof(double)*size_A,hipMemcpyDeviceToHost); // copy the results back to CPU
-    hipMemcpy(hIpiv.data(),dIpiv,sizeof(double)*size_piv,hipMemcpyDeviceToHost);
+  // copy data to GPU
+  hipMemcpy(dA, hA.data(), sizeof(double)*size_A, hipMemcpyHostToDevice);
+  // compute the QR factorization on the GPU
+  rocsolver_dgeqrf(handle, M, N, dA, lda, dIpiv);
+  // copy the results back to CPU
+  hipMemcpy(hA.data(), dA, sizeof(double)*size_A, hipMemcpyDeviceToHost);
+  hipMemcpy(hIpiv.data(), dIpiv, sizeof(double)*size_piv, hipMemcpyDeviceToHost);
 
-    // do something with the results in hA and hIpiv
-    // here===>>
+  // the results are now in hA and hIpiv, so you can use them here
 
-    hipFree(dA);                        // de-allocate GPU memory 
-    hipFree(dIpiv);
-    rocsolver_destroy_handle(handle);   // destroy handle
-  
-    return 0;
+  hipFree(dA);                        // de-allocate GPU memory
+  hipFree(dIpiv);
+  rocsolver_destroy_handle(handle);   // destroy handle
 }
 ```
 Compile command may vary depending on the system and session environment. Here is an example of a common use case
 
 ```bash
->> hipcc -I/opt/rocm/include -L/opt/rocm/lib -lrocsolver -lrocblas example.c -o example.exe            
+>> hipcc -I/opt/rocm/include -L/opt/rocm/lib -lrocsolver -lrocblas example.cpp -o example_executable
 ```
-
