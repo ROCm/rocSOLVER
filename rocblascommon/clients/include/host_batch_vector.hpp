@@ -19,6 +19,9 @@ template <typename T>
 class host_batch_vector
 {
 public:
+    using value_type = T;
+
+public:
     //!
     //! @brief Delete copy constructor.
     //!

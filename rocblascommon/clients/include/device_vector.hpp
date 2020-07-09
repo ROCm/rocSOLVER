@@ -17,6 +17,8 @@ class host_vector;
 template <typename T, size_t PAD = 0, typename U = T>
 class device_vector : private d_vector<T, PAD, U>
 {
+public:
+    using value_type = T;
 
 public:
     //!

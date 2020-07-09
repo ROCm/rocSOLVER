@@ -20,6 +20,9 @@ template <typename T, size_t PAD = 0, typename U = T>
 class device_batch_vector : private d_vector<T, PAD, U>
 {
 public:
+    using value_type = T;
+
+public:
     //!
     //! @brief Disallow copying.
     //!

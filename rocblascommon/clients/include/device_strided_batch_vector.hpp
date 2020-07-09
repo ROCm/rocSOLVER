@@ -16,6 +16,9 @@ template <typename T, size_t PAD = 0, typename U = T>
 class device_strided_batch_vector : public d_vector<T, PAD, U>
 {
 public:
+    using value_type = T;
+
+public:
     //!
     //! @brief The storage type to use.
     //!

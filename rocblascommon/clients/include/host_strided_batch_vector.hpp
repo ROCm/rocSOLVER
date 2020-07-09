@@ -16,6 +16,9 @@ template <typename T>
 class host_strided_batch_vector
 {
 public:
+    using value_type = T;
+
+public:
     //!
     //! @brief The storage type to use.
     //!
