@@ -12,6 +12,7 @@
 
 #include <rocblas.h>
 #include "rocsolver-extra-types.h"
+#include "rocsolver-export.h"
 
 //rocblas original types
 typedef rocblas_int rocsolver_int;
