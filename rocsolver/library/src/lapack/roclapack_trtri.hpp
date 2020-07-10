@@ -79,6 +79,27 @@ __global__ void trtri_kernel(const rocblas_int n, U A, const rocblas_int shiftA,
 }
 
 
+template <bool BATCHED, typename T>
+void rocsolver_trtri_getMemorySize(const rocblas_int n, const rocblas_int batch_count,
+                                  size_t *size_1, size_t *size_2, size_t *size_3)
+{
+    // for scalars
+    *size_1 = sizeof(T)*3;
+
+    // for workspace
+    if (n <= TRTRI_SWITCHSIZE)
+        *size_2 = n;
+    else
+        *size_2 = max(n, 2*128*128);
+    *size_2 *= sizeof(T)*batch_count;
+
+    // size of array of pointers to workspace
+    if (BATCHED)
+        *size_3 = 3 * sizeof(T*) * batch_count;
+    else
+        *size_3 = 0;
+}
+
 template <typename T>
 rocblas_status rocsolver_trtri_argCheck(const rocblas_int n, const rocblas_int lda, T A, rocblas_int *info,
                                         const rocblas_int batch_count = 1)
@@ -99,11 +120,11 @@ rocblas_status rocsolver_trtri_argCheck(const rocblas_int n, const rocblas_int l
     return rocblas_status_continue;
 }
 
-template <typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fill uplo, const rocblas_diagonal diag,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
                                         const rocblas_stride strideA, rocblas_int *info,
-                                        const rocblas_int batch_count, T* scalars, T* work)
+                                        const rocblas_int batch_count, T* scalars, T* work, T** workArr)
 {
     // quick return if zero instances in batch
     if (batch_count == 0) 
@@ -167,11 +188,12 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
         {
             jb = min(n-j, nb);
             
+            rocblasCall_trmm<BATCHED,STRIDED,T>(handle, rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
+                                                diag, j, jb, &one, A, shiftA, lda, strideA,
+                                                A, shiftA + idx2D(0,j,lda), lda, strideA, batch_count, work, workArr);
             for (int b = 0; b < batch_count; ++b)
             {
                 M = load_ptr_batch<T>(AA,b,shiftA,strideA);
-                rocblas_trmm(handle, rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
-                             diag, j, jb, &one, M, lda, M + idx2D(0,j,lda), lda);
                 rocblas_trsm(handle, rocblas_side_right, rocblas_fill_upper, rocblas_operation_none,
                              diag, j, jb, &minone, M + idx2D(j,j,lda), lda, M + idx2D(0,j,lda), lda);
             }

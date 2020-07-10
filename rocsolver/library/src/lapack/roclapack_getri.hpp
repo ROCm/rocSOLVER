@@ -103,21 +103,12 @@ template <bool BATCHED, typename T>
 void rocsolver_getri_getMemorySize(const rocblas_int n, const rocblas_int batch_count,
                                   size_t *size_1, size_t *size_2, size_t *size_3)
 {
-    // for scalars
-    *size_1 = sizeof(T)*3;
+    rocsolver_trtri_getMemorySize<BATCHED,T>(n,batch_count,size_1,size_2,size_3);
 
     // for workspace
-    if (n <= GETRI_SWITCHSIZE)
-        *size_2 = n;
-    else
-        *size_2 = n * GETRI_SWITCHSIZE;
-    *size_2 *= sizeof(T)*batch_count;
-
-    // size of array of pointers to workspace
-    if (BATCHED)
-        *size_3 = sizeof(T*) * batch_count;
-    else
-        *size_3 = 0;
+    size_t s2 = n * GETRI_SWITCHSIZE;
+    s2 *= sizeof(T)*batch_count;
+    *size_2 = max(*size_2, s2);
 }
 
 template <typename T>
@@ -195,9 +186,9 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
     rocblas_stride strideW;
 
     // compute inv(U)
-    rocsolver_trtri_template<T>(handle, rocblas_fill_upper, rocblas_diagonal_non_unit, n,
-                                A, shiftA, lda, strideA,
-                                info, batch_count, scalars, work);
+    rocsolver_trtri_template<BATCHED,STRIDED,T>(handle, rocblas_fill_upper, rocblas_diagonal_non_unit, n,
+                                                A, shiftA, lda, strideA,
+                                                info, batch_count, scalars, work, workArr);
     
     if (n <= nb)
     {
