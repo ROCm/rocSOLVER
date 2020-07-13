@@ -32,9 +32,9 @@ Options:
   --rocblas_dir <blasdir>     Specify path to the companion rocBLAS-library root directory. 
                               Use only absolute paths.
                               (Default is /opt/rocm/rocblas)
-    
+
   --hcc                       Pass this flag to build library using deprecated hcc compiler.
-  
+
   -g | --debug                Pass this flag to build in Debug mode (equivalent to set CMAKE_BUILD_TYPE=Debug).
                               (Default build type is Release)
 
@@ -253,12 +253,12 @@ install_packages( )
       ;;
 
     sles|opensuse-leap)
-       install_zypper_packages "${client_dependencies_sles[@]}"
+      install_zypper_packages "${client_dependencies_sles[@]}"
 
-        if [[ "${build_clients}" == true ]]; then
-            install_zypper_packages "${client_dependencies_sles[@]}"
-        fi
-        ;;
+      if [[ "${build_clients}" == true ]]; then
+        install_zypper_packages "${client_dependencies_sles[@]}"
+      fi
+      ;;
     *)
       echo "This script is currently supported on Ubuntu, CentOS, RHEL, SLES, OpenSUSE-Leap, and Fedora"
       exit 2
@@ -310,7 +310,7 @@ optimal=true
 
 rocm_path=/opt/rocm
 if ! [ -z ${ROCM_PATH+x} ]; then
-    rocm_path=${ROCM_PATH}
+  rocm_path=${ROCM_PATH}
 fi
 
 # #################################################
@@ -397,7 +397,7 @@ printf "\033[32mCreating project build directory in: \033[33m${build_dir}\033[0m
 # prep
 # #################################################
 # ensure a clean build environment
-rm -rf ${build_dir}
+rm -rf "${build_dir}"
 
 # Default cmake executable is called cmake
 cmake_executable=cmake
@@ -408,7 +408,7 @@ case "${ID}" in
   ;;
 esac
 
-main=`pwd`
+main=$(pwd)
 
 # #################################################
 # dependencies
@@ -420,8 +420,8 @@ if [[ "${install_dependencies}" == true ]]; then
     # The following builds googletest & lapack from source, installs into cmake default /usr/local
     pushd .
     printf "\033[32mBuilding \033[33mgoogletest & lapack\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
-    mkdir -p ${build_dir}/deps && cd ${build_dir}/deps
-    ${cmake_executable} -lpthread -DBUILD_BOOST=OFF ${main}/rocblascommon/deps
+    mkdir -p "${build_dir}/deps" && cd "${build_dir}/deps"
+    ${cmake_executable} -lpthread -DBUILD_BOOST=OFF "${main}/rocblascommon/deps"
     make -j$(nproc)
     elevate_if_not_root make install
     popd
@@ -443,7 +443,7 @@ pushd .
 cmake_common_options=""
 cmake_client_options=""
 
-mkdir -p ${build_dir} && cd ${build_dir}
+mkdir -p "${build_dir}" && cd "${build_dir}"
 
 if [[ "${build_type}" == Debug ]]; then
   mkdir -p debug && cd debug
@@ -513,7 +513,7 @@ if [[ "${build_package}" == true ]]; then
         elevate_if_not_root dnf install rocsolver-*.rpm
         ;;
       sles|opensuse-leap)
-	elevate_if_not_root zypper -n --no-gpg-checks install rocsolver-*.rpm
+        elevate_if_not_root zypper -n --no-gpg-checks install rocsolver-*.rpm
         ;;
     esac
   fi
