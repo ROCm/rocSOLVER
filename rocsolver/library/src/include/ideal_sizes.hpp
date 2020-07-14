@@ -29,6 +29,7 @@
 #define ROCBLAS_SCAL_NB 256
 #define ROCBLAS_DOT_NB 512
 #define ROCBLAS_TRMV_NB 512
+#define ROCBLAS_TRMM_NB 128
 
 
 #endif /* IDEAL_SIZES_HPP */

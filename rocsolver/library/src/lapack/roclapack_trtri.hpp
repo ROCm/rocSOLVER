@@ -90,7 +90,7 @@ void rocsolver_trtri_getMemorySize(const rocblas_int n, const rocblas_int batch_
     if (n <= TRTRI_SWITCHSIZE)
         *size_2 = n;
     else
-        *size_2 = max(n, 2*128*128);
+        *size_2 = max(n, 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB);
     *size_2 *= sizeof(T)*batch_count;
 
     // size of array of pointers to workspace

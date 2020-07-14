@@ -432,9 +432,11 @@ rocblas_status rocblasCall_trmm(rocblas_handle    handle,
                             T*                work,
                             T**               workArr)
 {
-    return rocblas_trmm_template<BATCHED,128,128,T>(handle,side,uplo,transA,diag,m,n,cast2constType<T>(alpha),
-                                                    cast2constType<T>(A + offsetA),lda,strideA,
-                                                    B + offsetB,ldb,strideB,batch_count,work,2*128*128);
+    constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
+    constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
+    return rocblas_trmm_template<BATCHED,nb,nb,T>(handle,side,uplo,transA,diag,m,n,cast2constType<T>(alpha),
+                                                  cast2constType<T>(A + offsetA),lda,strideA,
+                                                  B + offsetB,ldb,strideB,batch_count,work,strideW);
 }
 
 // trmm overload
@@ -459,6 +461,9 @@ rocblas_status rocblasCall_trmm(rocblas_handle    handle,
                             T*                work,
                             T**               workArr)
 {
+    constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
+    constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
+
     V AA = (V)workArr + batch_count;
     V BB = (V)workArr + 2*batch_count;
     
@@ -466,13 +471,13 @@ rocblas_status rocblasCall_trmm(rocblas_handle    handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, work, 2*128*128, batch_count);
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, work, strideW, batch_count);
     hipLaunchKernelGGL(shift_array, dim3(blocks), dim3(256), 0, stream, workArr + batch_count, A, offsetA, batch_count);
     hipLaunchKernelGGL(shift_array, dim3(blocks), dim3(256), 0, stream, workArr + 2*batch_count, B, offsetB, batch_count);
 
-    return rocblas_trmm_template<BATCHED,128,128,T>(handle,side,uplo,transA,diag,m,n,cast2constType<T>(alpha),
-                                                    cast2constType<T>(AA),lda,strideA,
-                                                    BB,ldb,strideB,batch_count,(V)workArr,2*128*128);
+    return rocblas_trmm_template<BATCHED,nb,nb,T>(handle,side,uplo,transA,diag,m,n,cast2constType<T>(alpha),
+                                                  cast2constType<T>(AA),lda,strideA,
+                                                  BB,ldb,strideB,batch_count,(V)workArr,strideW);
 }
 
 // syrk
