@@ -78,6 +78,50 @@ __global__ void trtri_kernel(const rocblas_int n, U A, const rocblas_int shiftA,
     }
 }
 
+template <typename T, typename U, typename V>
+__global__ void trtri_trsm(const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, U A, const rocblas_int shiftA,
+                           const rocblas_int lda, const rocblas_stride strideA, V B, const rocblas_int shiftB, const rocblas_int ldb,
+                           const rocblas_stride strideB, rocblas_int *info)
+{
+    // trsm kernel assuming no transpose, upper triangular matrix from the right with alpha = -1
+    int batch = hipBlockIdx_x;
+
+    T* a = load_ptr_batch<T>(A,batch,shiftA,strideA);
+    T* b = load_ptr_batch<T>(B,batch,shiftB,strideB);
+
+    if (info[batch] != 0)
+        return;
+
+    T ajj, bij;
+    for (int j = 0; j < n; j++)
+    {
+        // for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
+        //     b[i + j * ldb] = bij = -b[i + j * ldb];
+        // __syncthreads();
+
+        for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
+        {
+            bij = -b[i + j * ldb];
+
+            for (int k = 0; k < j; k++)
+                bij -= a[k + j * lda] * b[i + k * ldb];
+            
+            b[i + j * ldb] = bij;
+        }
+        __syncthreads();
+
+        if (diag == rocblas_diagonal_non_unit)
+        {
+            ajj = 1.0 / a[j + j * lda];
+            __syncthreads();
+
+            for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
+                b[i + j * ldb] *= ajj;
+            __syncthreads();
+        }
+    }
+}
+
 
 template <bool BATCHED, typename T>
 void rocsolver_trtri_getMemorySize(const rocblas_int n, const rocblas_int batch_count,
@@ -151,21 +195,14 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
     rocblas_get_pointer_mode(handle,&old_mode);
     rocblas_set_pointer_mode(handle,rocblas_pointer_mode_host);
 
-    // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-    //      TRSM_BATCH FUNCTIONALITY IS ENABLED. ****
-    #ifdef batched
-        T* AA[batch_count];
-        hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
-    #else
-        T* AA = A;
-    #endif
-
     T minone = -1;
     T one = 1;
     rocblas_int jb, nb = TRTRI_SWITCHSIZE;
     rocblas_int ldw;
     rocblas_stride strideW;
 
+    //check if matrices are singular
+    rocblas_int threads = min(n, 1024);
     rocblas_int blocks = (n - 1)/32 + 1;
     hipLaunchKernelGGL(trtri_check_singularity<T>, dim3(batch_count,blocks,1), dim3(1,32,1), 0, stream,
                         n, A, shiftA, lda, strideA, info);
@@ -175,7 +212,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
         //use unblocked version
         ldw = n;
         strideW = n;
-        hipLaunchKernelGGL(trtri_kernel<T>, dim3(batch_count,1,1), dim3(1,n,1), 0, stream,
+        hipLaunchKernelGGL(trtri_kernel<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
                         n, A, shiftA, lda, strideA, work, 0, ldw, strideW, info);
     }
     else
@@ -191,12 +228,8 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
             rocblasCall_trmm<BATCHED,STRIDED,T>(handle, rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
                                                 diag, j, jb, &one, A, shiftA, lda, strideA,
                                                 A, shiftA + idx2D(0,j,lda), lda, strideA, batch_count, work, workArr);
-            for (int b = 0; b < batch_count; ++b)
-            {
-                M = load_ptr_batch<T>(AA,b,shiftA,strideA);
-                rocblas_trsm(handle, rocblas_side_right, rocblas_fill_upper, rocblas_operation_none,
-                             diag, j, jb, &minone, M + idx2D(j,j,lda), lda, M + idx2D(0,j,lda), lda);
-            }
+            hipLaunchKernelGGL(trtri_trsm<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
+                       diag, j, jb, A, shiftA + idx2D(j,j,lda), lda, strideA, A, shiftA + idx2D(0,j,lda), lda, strideA, info);
 
             hipLaunchKernelGGL(trtri_kernel<T>, dim3(batch_count,1,1), dim3(1,jb,1), 0, stream,
                             jb, A, shiftA + idx2D(j,j,lda), lda, strideA, work, 0, ldw, strideW, info);

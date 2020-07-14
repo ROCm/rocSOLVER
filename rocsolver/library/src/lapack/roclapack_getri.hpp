@@ -16,29 +16,29 @@
 
 template <typename T, typename U, typename V>
 __global__ void getri_trsm(const rocblas_int m, const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
-                           const rocblas_stride strideA, V W, const rocblas_int shiftW, const rocblas_int ldw,
-                            const rocblas_stride strideW, rocblas_int *info)
+                           const rocblas_stride strideA, V B, const rocblas_int shiftB, const rocblas_int ldb,
+                            const rocblas_stride strideB, rocblas_int *info)
 {
     // trsm kernel assuming no transpose, unit diagonal, lower triangular matrix from the right
-    int b = hipBlockIdx_x;
+    int batch = hipBlockIdx_x;
 
-    T* a = load_ptr_batch<T>(A,b,shiftA,strideA);
-    T* w = load_ptr_batch<T>(W,b,shiftW,strideW);
+    T* a = load_ptr_batch<T>(A,batch,shiftA,strideA);
+    T* b = load_ptr_batch<T>(B,batch,shiftB,strideB);
 
-    if (info[b] != 0)
+    if (info[batch] != 0)
         return;
 
-    T aij;
+    T bij;
     for (int j = n - 1; j >= 0; j--)
     {
         for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
         {
-            aij = a[i + j * lda];
+            bij = b[i + j * ldb];
 
             for (int k = j + 1; k < n; k++)
-                aij -= w[k + j * ldw] * a[i + k * lda];
+                bij -= a[k + j * lda] * b[i + k * ldb];
             
-            a[i + j * lda] = aij;
+            b[i + j * ldb] = bij;
         }
         __syncthreads();
     }
@@ -232,7 +232,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
                                                   batch_count, workArr);
             
             hipLaunchKernelGGL(getri_trsm<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
-                       n, jb, A, shiftA + idx2D(0,j,lda), lda, strideA, work, j, ldw, strideW, info);
+                       n, jb, work, j, ldw, strideW, A, shiftA + idx2D(0,j,lda), lda, strideA, info);
         }
     }
     
