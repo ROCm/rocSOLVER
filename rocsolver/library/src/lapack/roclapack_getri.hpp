@@ -14,6 +14,208 @@
 #include "rocsolver.h"
 #include "roclapack_trtri.hpp"
 
+#ifdef OPTIMAL
+template <rocblas_int DIM, typename T, typename U>
+__attribute__((amdgpu_flat_work_group_size(WaveSize,WaveSize)))
+__global__ void getri_kernel(U AA, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
+                             rocblas_int* ipivA, const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int* info)
+{
+    int b = hipBlockIdx_x;
+    int i = hipThreadIdx_x;
+
+    if (i >= DIM)
+        return;
+    
+    // batch instance
+    T* A = load_ptr_batch<T>(AA,b,shiftA,strideA);
+    rocblas_int *ipiv = load_ptr_batch<rocblas_int>(ipivA,b,shiftP,strideP);
+       
+    // read corresponding row from global memory in local array
+    T rA[DIM];
+    #pragma unroll
+    for (int j = 0; j < DIM; ++j)
+        rA[j] = A[i + j*lda];
+
+    // shared memory (for communication between threads in group)
+    __shared__ T common[DIM];
+    __shared__ T diag[DIM];
+    __shared__ rocblas_int _info;
+    T temp;
+    rocblas_int jp;
+    
+    // compute info
+    if (i == 0)
+        _info = 0;
+    __syncthreads();
+    if (rA[i] == 0)
+    {
+        rocblas_int _info_temp = _info;
+        while (_info_temp == 0 || _info_temp > i + 1)
+            _info_temp = atomicCAS(&_info, _info_temp, i + 1);
+    }
+    __syncthreads();
+
+    if (i == 0)
+        info[b] = _info;
+    if (_info != 0)
+        return;
+    
+    //--- TRTRI ---
+
+    // diagonal element
+    rA[i] = 1.0 / rA[i];
+    
+    // compute element i of each column j
+    #pragma unroll
+    for (rocblas_int j = 1; j < DIM; j++)
+    {
+        // share current column and diagonal
+        common[i] = rA[j];
+        diag[i] = rA[i];
+        __syncthreads();
+        
+        if (i < j)
+        {
+            temp = 0;
+
+            for (rocblas_int ii = i; ii < j; ii++)
+                temp += rA[ii] * common[ii];
+
+            rA[j] = -diag[j] * temp;
+        }
+        __syncthreads();
+    }
+
+    //--- GETRI ---
+    
+    #pragma unroll
+    for (rocblas_int j = DIM-2; j >= 0; j--)
+    {
+        // extract lower triangular column (copy_and_zero)
+        if (i > j)
+        {
+            common[i] = rA[j];
+            rA[j] = 0;
+        }
+        __syncthreads();
+
+        // update column j (gemv)
+        temp = 0;
+        
+        for (rocblas_int ii = j+1; ii < DIM; ii++)
+            temp += rA[ii] * common[ii];
+
+        rA[j] -= temp;
+        __syncthreads();
+    }
+
+    // apply pivots (getri_pivot)
+    #pragma unroll
+    for (rocblas_int j = DIM-2; j >= 0; j--)
+    {
+        jp = ipiv[j] - 1;
+        if (jp != j)
+        {
+            temp = rA[j];
+            rA[j] = rA[jp];
+            rA[jp] = temp;
+        }
+    }
+
+    // write results to global memory from local array
+    #pragma unroll
+    for (int j = 0; j < DIM; j++)
+        A[i + j*lda] = rA[j];
+}
+
+template <typename T, typename U>
+rocblas_status getri_small_sizes(rocblas_handle handle, const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
+                                 const rocblas_stride strideA, rocblas_int *ipiv, const rocblas_int shiftP, const rocblas_stride strideP,
+                                 rocblas_int* info, const rocblas_int batch_count)
+{
+    #define runGetriSmall(DIM)                                                         \
+        hipLaunchKernelGGL((getri_kernel<DIM,T>), grid, block, 0, stream,              \
+                           A, shiftA, lda, strideA, ipiv, shiftP, strideP, info);
+    
+    dim3 grid(batch_count,1,1);
+    dim3 block(WaveSize,1,1);
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    // instantiate cases to make number of columns n known at compile time
+    // this should allow loop unrolling.
+    switch (n) {
+        case  1: runGetriSmall( 1); break;
+        case  2: runGetriSmall( 2); break;
+        case  3: runGetriSmall( 3); break;
+        case  4: runGetriSmall( 4); break;
+        case  5: runGetriSmall( 5); break;
+        case  6: runGetriSmall( 6); break;
+        case  7: runGetriSmall( 7); break;
+        case  8: runGetriSmall( 8); break;
+        case  9: runGetriSmall( 9); break;
+        case 10: runGetriSmall(10); break;
+        case 11: runGetriSmall(11); break;
+        case 12: runGetriSmall(12); break;
+        case 13: runGetriSmall(13); break;
+        case 14: runGetriSmall(14); break;
+        case 15: runGetriSmall(15); break;
+        case 16: runGetriSmall(16); break;
+        case 17: runGetriSmall(17); break;
+        case 18: runGetriSmall(18); break;
+        case 19: runGetriSmall(19); break;
+        case 20: runGetriSmall(20); break;
+        case 21: runGetriSmall(21); break;
+        case 22: runGetriSmall(22); break;
+        case 23: runGetriSmall(23); break;
+        case 24: runGetriSmall(24); break;
+        case 25: runGetriSmall(25); break;
+        case 26: runGetriSmall(26); break;
+        case 27: runGetriSmall(27); break;
+        case 28: runGetriSmall(28); break;
+        case 29: runGetriSmall(29); break;
+        case 30: runGetriSmall(30); break;
+        case 31: runGetriSmall(31); break;
+        case 32: runGetriSmall(32); break;
+        case 33: runGetriSmall(33); break;
+        case 34: runGetriSmall(34); break;
+        case 35: runGetriSmall(35); break;
+        case 36: runGetriSmall(36); break;
+        case 37: runGetriSmall(37); break;
+        case 38: runGetriSmall(38); break;
+        case 39: runGetriSmall(39); break;
+        case 40: runGetriSmall(40); break;
+        case 41: runGetriSmall(41); break;
+        case 42: runGetriSmall(42); break;
+        case 43: runGetriSmall(43); break;
+        case 44: runGetriSmall(44); break;
+        case 45: runGetriSmall(45); break;
+        case 46: runGetriSmall(46); break;
+        case 47: runGetriSmall(47); break;
+        case 48: runGetriSmall(48); break;
+        case 49: runGetriSmall(49); break;
+        case 50: runGetriSmall(50); break;
+        case 51: runGetriSmall(51); break;
+        case 52: runGetriSmall(52); break;
+        case 53: runGetriSmall(53); break;
+        case 54: runGetriSmall(54); break;
+        case 55: runGetriSmall(55); break;
+        case 56: runGetriSmall(56); break;
+        case 57: runGetriSmall(57); break;
+        case 58: runGetriSmall(58); break;
+        case 59: runGetriSmall(59); break;
+        case 60: runGetriSmall(60); break;
+        case 61: runGetriSmall(61); break;
+        case 62: runGetriSmall(62); break;
+        case 63: runGetriSmall(63); break;
+        case 64: runGetriSmall(64); break;
+    }
+    
+    return rocblas_status_success;
+}
+#endif //OPTIMAL
+
 template <typename T, typename U, typename V>
 __global__ void getri_trsm(const rocblas_int m, const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
                            const rocblas_stride strideA, V B, const rocblas_int shiftB, const rocblas_int ldb,
@@ -172,6 +374,13 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
                            info, batch_count, 0);
         return rocblas_status_success;
     }
+    
+    #ifdef OPTIMAL
+    // if very small size, use optimized inversion kernel
+    if (n <= WaveSize)
+        return getri_small_sizes<T>(handle,n,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,batch_count);
+
+    #endif
 
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
