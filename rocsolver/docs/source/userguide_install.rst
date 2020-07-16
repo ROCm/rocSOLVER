@@ -10,26 +10,24 @@ Building and installation
 Prerequisites
 =================
 
-rocSOLVER requires a ROCm enable platform. For more information on how to install  
-ROCm software stack, see `here <https://rocm.github.io/install.html>`_.
+rocSOLVER requires a ROCm-enabled platform. For more information, see the
+`ROCm install guide <https://rocmdocs.amd.com/en/latest/Installation_Guide/Installation-Guide.html>`_.
 
 rocSOLVER also requires a compatible version of rocBLAS installed on the system. 
-For more information on how to install
-rocBLAS, see `here <https://rocblas.readthedocs.io/en/master/install.html>`_.
+For more information, see the `rocBLAS install guide <https://rocblas.readthedocs.io/en/master/install.html>`_.
 
-(At this point where both libraries, rocBLAS and rocSOLVER, are still under active development, 
-it is hard to define minimal compatibility versions. So, for now,  a good rule of thumb is to 
-always accompany rocSOLVER with a rocBLAS version of the same source. For example, if you want to 
-install rocSOLVER from ROCm 3.3 release, then be sure that ROCm 3.3 rocBLAS is also installed; if you
-are building the rocSOLVER branch tip, then you will need to build and install rocBLAS
-branch tip as well.)
+rocBLAS and rocSOLVER are both still under active development, and it is hard to define minimal
+compatibility versions. For now, a good rule of thumb is to always use rocSOLVER the matching
+rocBLAS version. For example, if you want to install rocSOLVER from ROCm 3.3 release, then be sure
+that ROCm 3.3 rocBLAS is also installed; if you are building the rocSOLVER branch tip, then you
+will need to build and install rocBLAS branch tip as well.
 
 
 Installing from pre-built packages
 ====================================
 
-Latest ROCm release version of rocSOLVER can be installed using a package manager. On Ubuntu, for example, use the
-following commands:
+If you have added the ROCm repositories to your Linux distribution, the latest release version of
+rocSOLVER can be installed using a package manager. On Ubuntu, for example, use the commands:
 
 .. code-block:: bash
 
@@ -39,8 +37,8 @@ following commands:
 Building & installing from source
 =====================================
 
-The rocSOLVER source code is available `here <https://github.com/ROCmSoftwarePlatform/rocSOLVER.git>`_.
-Download/clone the desired branch using the command:
+The `rocSOLVER source code <https://github.com/ROCmSoftwarePlatform/rocSOLVER.git>`_ is hosted
+on GitHub. Download the code and checkout the desired branch using:
 
 .. code-block:: bash
 
@@ -76,7 +74,7 @@ in the output directory:
 Other output files from the configuration   
 and building process can also be found      
 at ``rocSOLVER/build`` and ``rocSOLVER/build/release`` directories.  
-It is assummed that all the library external
+It is assumed that all the library external
 dependencies have been installed.           
 It also assumes that rocBLAS library is     
 located at: ``/opt/rocm/rocblas``.          
@@ -180,7 +178,7 @@ generate a pre-built rocSOLVER package and
 install it, using a suitable package        
 manager, at the standard location           
 ``/opt/rocm/rocsolver``.                    
-This is the prefered approach to install    
+This is the preferred approach to install
 rocSOLVER in a system. This way the library 
 could be also safely removed using the      
 package manager.                            

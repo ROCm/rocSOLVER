@@ -9,12 +9,12 @@ Using rocSOLVER
 
 Once installed, rocSOLVER can be used just like any other library with a C API. 
 The header file will need to be included in the user code, and both the rocBLAS and rocSOLVER shared libraries 
-will become link-time and run-time dependencies for the user applciation.
+will become link-time and run-time dependencies for the user application.
 
 QR factorization of a single matrix
 ================================================
 
-The following code snippet uses rocSOLVER to compute the QR factorization of a general m-by-n real matrix in double precsision. 
+The following code snippet uses rocSOLVER to compute the QR factorization of a general m-by-n real matrix in double precision.
 For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`qr_label`. 
 
 .. code-block:: C
@@ -89,7 +89,7 @@ functionality followed in rocSOLVER, see :ref:`batch_label`.
 Strided_batched version
 ---------------------------
 
-The following code snippet uses rocSOLVER to compute the QR factorization of a series of general m-by-n real matrices in double precsision. 
+The following code snippet uses rocSOLVER to compute the QR factorization of a series of general m-by-n real matrices in double precision.
 The matrices must be stored in contiguous memory locations on the GPU, and are accessed by a pointer to the first matrix and a 
 stride value that gives the separation between one matrix and the next one. 
 For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`qr_strided_label`. 
@@ -157,7 +157,7 @@ For a full description of the used rocSOLVER routine, see the API documentation 
 Batched version
 ---------------------------
 
-The following code snippet uses rocSOLVER to compute the QR factorization of a series of general m-by-n real matrices in double precsision. 
+The following code snippet uses rocSOLVER to compute the QR factorization of a series of general m-by-n real matrices in double precision.
 The matrices do not need to be in contiguous memory locations on the GPU, and will be accessed by an array of pointers. 
 For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`qr_batched_label`. 
 
