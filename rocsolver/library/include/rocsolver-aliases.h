@@ -11,8 +11,8 @@
 //
 //
 
-#ifndef _ALIASES_H_
-#define _ALIASES_H_
+#ifndef ROCSOLVER_ALIASES_H_
+#define ROCSOLVER_ALIASES_H_
 
 #include <rocblas.h>
 #include "rocsolver-extra-types.h"
