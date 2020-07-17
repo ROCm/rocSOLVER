@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright 2016 Advanced Micro Devices, Inc.
+# Copyright 2016-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # This file is intended to be used in two ways; independently in a stand alone PROJECT
@@ -15,4 +15,8 @@ endif( )
 
 if( NOT BUILD_CLIENTS_BENCHMARKS )
   option( BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmarks" OFF )
+endif( )
+
+if( NOT BUILD_CLIENTS_SAMPLES )
+  option( BUILD_CLIENTS_SAMPLES "Build rocSOLVER samples" OFF )
 endif( )
