@@ -106,31 +106,19 @@ extern "C" {
 /*! \brief Creates a handle and sets the pointer mode to \c rocblas_pointer_mode_device.
     \deprecated Use \c rocblas_create_handle.
 */
-ROCSOLVER_EXPORT __inline rocsolver_status
+ROCSOLVER_EXPORT rocsolver_status
 rocsolver_create_handle(rocsolver_handle *handle)
         __attribute__((deprecated("use rocblas_create_handle")));
-ROCSOLVER_EXPORT __inline rocsolver_status
-rocsolver_create_handle(rocsolver_handle *handle) {
-  const rocblas_status stat = rocblas_create_handle(handle);
-  if (stat != rocblas_status_success) {
-    return stat;
-  }
-  return rocblas_set_pointer_mode(*handle, rocblas_pointer_mode_device);
-}
 
 /*! \deprecated Use \c rocblas_destroy_handle.
 */
 ROCSOLVER_EXPORT rocsolver_status
 rocsolver_destroy_handle(rocsolver_handle handle)
         __attribute__((deprecated("use rocblas_destroy_handle")));
-ROCSOLVER_EXPORT __inline rocsolver_status
-rocsolver_destroy_handle(rocsolver_handle handle) {
-  return rocblas_destroy_handle(handle);
-}
 
 // rocblas_add_stream was removed in ROCm 3.6; use rocblas_set_stream
 //
-//ROCSOLVER_EXPORT __inline rocsolver_status
+//ROCSOLVER_EXPORT rocsolver_status
 //rocsolver_add_stream(rocsolver_handle handle, hipStream_t stream) {
 //  return rocblas_add_stream(handle, stream);
 //}
@@ -140,20 +128,12 @@ rocsolver_destroy_handle(rocsolver_handle handle) {
 ROCSOLVER_EXPORT rocsolver_status
 rocsolver_set_stream(rocsolver_handle handle, hipStream_t stream)
         __attribute__((deprecated("use rocblas_set_stream")));
-ROCSOLVER_EXPORT __inline rocsolver_status
-rocsolver_set_stream(rocsolver_handle handle, hipStream_t stream) {
-  return rocblas_set_stream(handle, stream);
-}
 
 /*! \deprecated Use \c rocblas_get_stream.
 */
 ROCSOLVER_EXPORT rocsolver_status
 rocsolver_get_stream(rocsolver_handle handle, hipStream_t *stream)
         __attribute__((deprecated("use rocblas_get_stream")));
-ROCSOLVER_EXPORT __inline rocsolver_status
-rocsolver_get_stream(rocsolver_handle handle, hipStream_t *stream) {
-  return rocblas_get_stream(handle, stream);
-}
 
 /*! \deprecated Use \c rocblas_set_vector.
 */
@@ -161,11 +141,6 @@ ROCSOLVER_EXPORT rocsolver_status
 rocsolver_set_vector(rocsolver_int n, rocsolver_int elem_size, const void *x,
                      rocsolver_int incx, void *y, rocsolver_int incy)
         __attribute__((deprecated("use rocblas_set_vector")));
-ROCSOLVER_EXPORT __inline rocsolver_status
-rocsolver_set_vector(rocsolver_int n, rocsolver_int elem_size, const void *x,
-                     rocsolver_int incx, void *y, rocsolver_int incy) {
-  return rocblas_set_vector(n, elem_size, x, incx, y, incy);
-}
 
 /*! \deprecated Use \c rocblas_get_vector.
 */
@@ -173,11 +148,6 @@ ROCSOLVER_EXPORT rocsolver_status
 rocsolver_get_vector(rocsolver_int n, rocsolver_int elem_size, const void *x,
                      rocsolver_int incx, void *y, rocsolver_int incy)
         __attribute__((deprecated("use rocblas_get_vector")));
-ROCSOLVER_EXPORT __inline rocsolver_status
-rocsolver_get_vector(rocsolver_int n, rocsolver_int elem_size, const void *x,
-                     rocsolver_int incx, void *y, rocsolver_int incy) {
-  return rocblas_get_vector(n, elem_size, x, incx, y, incy);
-}
 
 /*! \deprecated Use \c rocblas_set_matrix.
 */
@@ -186,12 +156,6 @@ rocsolver_set_matrix(rocsolver_int rows, rocsolver_int cols,
                      rocsolver_int elem_size, const void *a, rocsolver_int lda,
                      void *b, rocsolver_int ldb)
         __attribute__((deprecated("use rocblas_set_matrix")));
-ROCSOLVER_EXPORT __inline rocsolver_status
-rocsolver_set_matrix(rocsolver_int rows, rocsolver_int cols,
-                     rocsolver_int elem_size, const void *a, rocsolver_int lda,
-                     void *b, rocsolver_int ldb) {
-  return rocblas_set_matrix(rows, cols, elem_size, a, lda, b, ldb);
-}
 
 /*! \deprecated Use \c rocblas_get_matrix.
 */
@@ -200,12 +164,6 @@ rocsolver_get_matrix(rocsolver_int rows, rocsolver_int cols,
                      rocsolver_int elem_size, const void *a, rocsolver_int lda,
                      void *b, rocsolver_int ldb)
         __attribute__((deprecated("use rocblas_get_matrix")));
-ROCSOLVER_EXPORT __inline rocsolver_status
-rocsolver_get_matrix(rocsolver_int rows, rocsolver_int cols,
-                     rocsolver_int elem_size, const void *a, rocsolver_int lda,
-                     void *b, rocsolver_int ldb) {
-  return rocblas_get_matrix(rows, cols, elem_size, a, lda, b, ldb);
-}
 
 #pragma GCC diagnostic pop // reenable deprecation warnings
 
