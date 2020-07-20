@@ -162,7 +162,7 @@ option( BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON )
 # by default, clients are not built
 include( rocsolver/clients/cmake/build-options.cmake )
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
-message(STATUS "benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
+message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
 message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
 
 
