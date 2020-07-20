@@ -2,8 +2,17 @@
 # Copyright 2016-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
+# the interface to rocblas for Fortran programs
+add_library( rocblas_module OBJECT
+  "${ROCBLAS_INCLUDE_DIR}/rocblas_module.f90"
+)
+
 add_executable( example-simple
   example_simple.cpp
+)
+add_executable( example-deprecated-aliases
+  example_deprecated_aliases.f90
+  $<TARGET_OBJECTS:rocblas_module>
 )
 
 set( c_samples
@@ -12,6 +21,7 @@ set( cpp_samples
   example-simple
 )
 set( fortran_samples
+  example-deprecated-aliases
 )
 
 foreach( exe ${c_samples} ${cpp_samples} ${fortran_samples} )
