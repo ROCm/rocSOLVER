@@ -130,7 +130,7 @@ message( STATUS "Boost.Command: ${Boost.Command}" )
 if( DEFINED ENV{BOOST_URL} )
   set( ext.Boost_URL "$ENV{BOOST_URL}" CACHE STRING "URL to download Boost from" )
 else( )
-  set( ext.Boost_URL "http://sourceforge.net/projects/boost/files/boost/${ext.Boost_VERSION}/boost_${ext.Boost_Version_Underscore}.${Boost_Ext}/download" CACHE STRING "URL to download Boost from" )
+  set( ext.Boost_URL "https://sourceforge.net/projects/boost/files/boost/${ext.Boost_VERSION}/boost_${ext.Boost_Version_Underscore}.${Boost_Ext}/download" CACHE STRING "URL to download Boost from" )
 endif( )
 mark_as_advanced( ext.Boost_URL )
 
