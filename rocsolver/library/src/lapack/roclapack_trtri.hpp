@@ -95,10 +95,6 @@ __global__ void trtri_trsm(const rocblas_diagonal diag, const rocblas_int m, con
     T ajj, bij;
     for (int j = 0; j < n; j++)
     {
-        // for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
-        //     b[i + j * ldb] = bij = -b[i + j * ldb];
-        // __syncthreads();
-
         for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
         {
             bij = -b[i + j * ldb];
@@ -134,7 +130,7 @@ void rocsolver_trtri_getMemorySize(const rocblas_int n, const rocblas_int batch_
     if (n <= TRTRI_SWITCHSIZE)
         *size_2 = n;
     else
-        *size_2 = max(n, 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB);
+        *size_2 = max(TRTRI_BLOCKSIZE, 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB);
     *size_2 *= sizeof(T)*batch_count;
 
     // size of array of pointers to workspace
@@ -197,7 +193,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
 
     T minone = -1;
     T one = 1;
-    rocblas_int jb, nb = TRTRI_SWITCHSIZE;
+    rocblas_int jb, nb = TRTRI_BLOCKSIZE;
     rocblas_int ldw;
     rocblas_stride strideW;
 
@@ -207,7 +203,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
     hipLaunchKernelGGL(trtri_check_singularity<T>, dim3(batch_count,blocks,1), dim3(1,32,1), 0, stream,
                         n, A, shiftA, lda, strideA, info);
     
-    if (n <= nb)
+    if (n <= TRTRI_SWITCHSIZE)
     {
         //use unblocked version
         ldw = n;
@@ -218,11 +214,11 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
     else
     {
         //use blocked version
-        T* M;
         ldw = nb;
         strideW = nb;
         for (rocblas_int j = 0; j < n; j += nb)
         {
+            threads = min(j, 1024);
             jb = min(n-j, nb);
             
             rocblasCall_trmm<BATCHED,STRIDED,T>(handle, rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,

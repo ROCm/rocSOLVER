@@ -306,9 +306,18 @@ void rocsolver_getri_getMemorySize(const rocblas_int n, const rocblas_int batch_
                                   size_t *size_1, size_t *size_2, size_t *size_3)
 {
     rocsolver_trtri_getMemorySize<BATCHED,T>(n,batch_count,size_1,size_2,size_3);
+    
+    #ifdef OPTIMAL
+    // if very small size, no workspace needed
+    if (n <= WaveSize)
+    {
+        *size_2 = 0;
+        return;
+    }
+    #endif
 
     // for workspace
-    size_t s2 = n * GETRI_SWITCHSIZE;
+    size_t s2 = (n <= GETRI_SWITCHSIZE ? n : n * GETRI_BLOCKSIZE);
     s2 *= sizeof(T)*batch_count;
     *size_2 = max(*size_2, s2);
 }
@@ -390,7 +399,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
     T minone = -1;
     T one = 1;
     rocblas_int threads = min(n, 1024);
-    rocblas_int jb, nb = GETRI_SWITCHSIZE;
+    rocblas_int jb, nb = GETRI_BLOCKSIZE;
     rocblas_int ldw = n;
     rocblas_stride strideW;
 
@@ -399,7 +408,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
                                                 A, shiftA, lda, strideA,
                                                 info, batch_count, scalars, work, workArr);
     
-    if (n <= nb)
+    if (n <= GETRI_SWITCHSIZE)
     {
         // use unblocked version
         strideW = n;
