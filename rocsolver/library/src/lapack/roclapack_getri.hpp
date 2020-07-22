@@ -133,9 +133,9 @@ rocblas_status getri_small_sizes(rocblas_handle handle, const rocblas_int n, U A
                                  const rocblas_stride strideA, rocblas_int *ipiv, const rocblas_int shiftP, const rocblas_stride strideP,
                                  rocblas_int* info, const rocblas_int batch_count)
 {
-    #define runGetriSmall(DIM)                                                         \
+    #define RUN_GETRI_SMALL(DIM)                                                         \
         hipLaunchKernelGGL((getri_kernel<DIM,T>), grid, block, 0, stream,              \
-                           A, shiftA, lda, strideA, ipiv, shiftP, strideP, info);
+                           A, shiftA, lda, strideA, ipiv, shiftP, strideP, info)
     
     dim3 grid(batch_count,1,1);
     dim3 block(WaveSize,1,1);
@@ -146,70 +146,71 @@ rocblas_status getri_small_sizes(rocblas_handle handle, const rocblas_int n, U A
     // instantiate cases to make number of columns n known at compile time
     // this should allow loop unrolling.
     switch (n) {
-        case  1: runGetriSmall( 1); break;
-        case  2: runGetriSmall( 2); break;
-        case  3: runGetriSmall( 3); break;
-        case  4: runGetriSmall( 4); break;
-        case  5: runGetriSmall( 5); break;
-        case  6: runGetriSmall( 6); break;
-        case  7: runGetriSmall( 7); break;
-        case  8: runGetriSmall( 8); break;
-        case  9: runGetriSmall( 9); break;
-        case 10: runGetriSmall(10); break;
-        case 11: runGetriSmall(11); break;
-        case 12: runGetriSmall(12); break;
-        case 13: runGetriSmall(13); break;
-        case 14: runGetriSmall(14); break;
-        case 15: runGetriSmall(15); break;
-        case 16: runGetriSmall(16); break;
-        case 17: runGetriSmall(17); break;
-        case 18: runGetriSmall(18); break;
-        case 19: runGetriSmall(19); break;
-        case 20: runGetriSmall(20); break;
-        case 21: runGetriSmall(21); break;
-        case 22: runGetriSmall(22); break;
-        case 23: runGetriSmall(23); break;
-        case 24: runGetriSmall(24); break;
-        case 25: runGetriSmall(25); break;
-        case 26: runGetriSmall(26); break;
-        case 27: runGetriSmall(27); break;
-        case 28: runGetriSmall(28); break;
-        case 29: runGetriSmall(29); break;
-        case 30: runGetriSmall(30); break;
-        case 31: runGetriSmall(31); break;
-        case 32: runGetriSmall(32); break;
-        case 33: runGetriSmall(33); break;
-        case 34: runGetriSmall(34); break;
-        case 35: runGetriSmall(35); break;
-        case 36: runGetriSmall(36); break;
-        case 37: runGetriSmall(37); break;
-        case 38: runGetriSmall(38); break;
-        case 39: runGetriSmall(39); break;
-        case 40: runGetriSmall(40); break;
-        case 41: runGetriSmall(41); break;
-        case 42: runGetriSmall(42); break;
-        case 43: runGetriSmall(43); break;
-        case 44: runGetriSmall(44); break;
-        case 45: runGetriSmall(45); break;
-        case 46: runGetriSmall(46); break;
-        case 47: runGetriSmall(47); break;
-        case 48: runGetriSmall(48); break;
-        case 49: runGetriSmall(49); break;
-        case 50: runGetriSmall(50); break;
-        case 51: runGetriSmall(51); break;
-        case 52: runGetriSmall(52); break;
-        case 53: runGetriSmall(53); break;
-        case 54: runGetriSmall(54); break;
-        case 55: runGetriSmall(55); break;
-        case 56: runGetriSmall(56); break;
-        case 57: runGetriSmall(57); break;
-        case 58: runGetriSmall(58); break;
-        case 59: runGetriSmall(59); break;
-        case 60: runGetriSmall(60); break;
-        case 61: runGetriSmall(61); break;
-        case 62: runGetriSmall(62); break;
-        case 63: runGetriSmall(63); break;
-        case 64: runGetriSmall(64); break;
+        case  1: RUN_GETRI_SMALL( 1); break;
+        case  2: RUN_GETRI_SMALL( 2); break;
+        case  3: RUN_GETRI_SMALL( 3); break;
+        case  4: RUN_GETRI_SMALL( 4); break;
+        case  5: RUN_GETRI_SMALL( 5); break;
+        case  6: RUN_GETRI_SMALL( 6); break;
+        case  7: RUN_GETRI_SMALL( 7); break;
+        case  8: RUN_GETRI_SMALL( 8); break;
+        case  9: RUN_GETRI_SMALL( 9); break;
+        case 10: RUN_GETRI_SMALL(10); break;
+        case 11: RUN_GETRI_SMALL(11); break;
+        case 12: RUN_GETRI_SMALL(12); break;
+        case 13: RUN_GETRI_SMALL(13); break;
+        case 14: RUN_GETRI_SMALL(14); break;
+        case 15: RUN_GETRI_SMALL(15); break;
+        case 16: RUN_GETRI_SMALL(16); break;
+        case 17: RUN_GETRI_SMALL(17); break;
+        case 18: RUN_GETRI_SMALL(18); break;
+        case 19: RUN_GETRI_SMALL(19); break;
+        case 20: RUN_GETRI_SMALL(20); break;
+        case 21: RUN_GETRI_SMALL(21); break;
+        case 22: RUN_GETRI_SMALL(22); break;
+        case 23: RUN_GETRI_SMALL(23); break;
+        case 24: RUN_GETRI_SMALL(24); break;
+        case 25: RUN_GETRI_SMALL(25); break;
+        case 26: RUN_GETRI_SMALL(26); break;
+        case 27: RUN_GETRI_SMALL(27); break;
+        case 28: RUN_GETRI_SMALL(28); break;
+        case 29: RUN_GETRI_SMALL(29); break;
+        case 30: RUN_GETRI_SMALL(30); break;
+        case 31: RUN_GETRI_SMALL(31); break;
+        case 32: RUN_GETRI_SMALL(32); break;
+        case 33: RUN_GETRI_SMALL(33); break;
+        case 34: RUN_GETRI_SMALL(34); break;
+        case 35: RUN_GETRI_SMALL(35); break;
+        case 36: RUN_GETRI_SMALL(36); break;
+        case 37: RUN_GETRI_SMALL(37); break;
+        case 38: RUN_GETRI_SMALL(38); break;
+        case 39: RUN_GETRI_SMALL(39); break;
+        case 40: RUN_GETRI_SMALL(40); break;
+        case 41: RUN_GETRI_SMALL(41); break;
+        case 42: RUN_GETRI_SMALL(42); break;
+        case 43: RUN_GETRI_SMALL(43); break;
+        case 44: RUN_GETRI_SMALL(44); break;
+        case 45: RUN_GETRI_SMALL(45); break;
+        case 46: RUN_GETRI_SMALL(46); break;
+        case 47: RUN_GETRI_SMALL(47); break;
+        case 48: RUN_GETRI_SMALL(48); break;
+        case 49: RUN_GETRI_SMALL(49); break;
+        case 50: RUN_GETRI_SMALL(50); break;
+        case 51: RUN_GETRI_SMALL(51); break;
+        case 52: RUN_GETRI_SMALL(52); break;
+        case 53: RUN_GETRI_SMALL(53); break;
+        case 54: RUN_GETRI_SMALL(54); break;
+        case 55: RUN_GETRI_SMALL(55); break;
+        case 56: RUN_GETRI_SMALL(56); break;
+        case 57: RUN_GETRI_SMALL(57); break;
+        case 58: RUN_GETRI_SMALL(58); break;
+        case 59: RUN_GETRI_SMALL(59); break;
+        case 60: RUN_GETRI_SMALL(60); break;
+        case 61: RUN_GETRI_SMALL(61); break;
+        case 62: RUN_GETRI_SMALL(62); break;
+        case 63: RUN_GETRI_SMALL(63); break;
+        case 64: RUN_GETRI_SMALL(64); break;
+        default: __builtin_unreachable();
     }
     
     return rocblas_status_success;

@@ -464,6 +464,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle    handle,
     constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
     constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
 
+    // since trmm doesn't have offset arguments, we need to manually offset A and B (and store in workArr)
     V AA = (V)workArr + batch_count;
     V BB = (V)workArr + 2*batch_count;
     
