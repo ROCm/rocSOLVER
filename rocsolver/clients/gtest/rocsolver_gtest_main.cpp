@@ -3,7 +3,7 @@
  * ************************************************************************ */
 
 #include "clientcommon.hpp"
-#include "rocblas-version.h"
+#include "internal/rocblas-version.h"
 #include "rocsolver-version.h"
 #include <gtest/gtest.h>
 #include <stdexcept>
