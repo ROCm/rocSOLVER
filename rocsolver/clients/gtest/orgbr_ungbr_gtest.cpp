@@ -122,18 +122,18 @@ TEST_P(UNGBR, __double_complex) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, ORGBR,
-                        Combine(ValuesIn(large_size_range),
-                                ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, ORGBR,
+                         Combine(ValuesIn(large_size_range),
+                                 ValuesIn(store)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, ORGBR,
-                        Combine(ValuesIn(size_range),
-                                ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORGBR,
+                         Combine(ValuesIn(size_range),
+                                 ValuesIn(store)));
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, UNGBR,
-                        Combine(ValuesIn(large_size_range),
-                                ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, UNGBR,
+                         Combine(ValuesIn(large_size_range),
+                                 ValuesIn(store)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, UNGBR,
-                        Combine(ValuesIn(size_range),
-                                ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNGBR,
+                         Combine(ValuesIn(size_range),
+                                 ValuesIn(store)));

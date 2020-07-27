@@ -217,12 +217,12 @@ TEST_P(GETRS, strided_batched__double_complex) {
 
 
 // daily_lapack tests normal execution with medium to large sizes
-INSTANTIATE_TEST_CASE_P(daily_lapack, GETRS,
-                        Combine(ValuesIn(large_matrix_sizeA_range),
-                                ValuesIn(large_matrix_sizeB_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GETRS,
+                         Combine(ValuesIn(large_matrix_sizeA_range),
+                                 ValuesIn(large_matrix_sizeB_range)));
 
 // checkin_lapack tests normal execution with small sizes, invalid sizes,
 // quick returns, and corner cases
-INSTANTIATE_TEST_CASE_P(checkin_lapack, GETRS,
-                        Combine(ValuesIn(matrix_sizeA_range),
-                                ValuesIn(matrix_sizeB_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GETRS,
+                         Combine(ValuesIn(matrix_sizeA_range),
+                                 ValuesIn(matrix_sizeB_range)));

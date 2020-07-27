@@ -326,18 +326,18 @@ TEST_P(POTRF, strided_batched__double_complex) {
 
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, POTF2,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(uplo_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, POTF2,
+                         Combine(ValuesIn(large_matrix_size_range),
+                                 ValuesIn(uplo_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, POTF2,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(uplo_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, POTF2,
+                         Combine(ValuesIn(matrix_size_range),
+                                 ValuesIn(uplo_range)));
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, POTRF,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(uplo_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, POTRF,
+                         Combine(ValuesIn(large_matrix_size_range),
+                                 ValuesIn(uplo_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, POTRF,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(uplo_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, POTRF,
+                         Combine(ValuesIn(matrix_size_range),
+                                 ValuesIn(uplo_range)));
