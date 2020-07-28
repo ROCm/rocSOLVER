@@ -67,8 +67,8 @@ TEST_P(LACGV, __double_complex) {
     testing_lacgv<rocblas_double_complex>(arg);
 }
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, LACGV,
-                        ValuesIn(large_range));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, LACGV,
+                         ValuesIn(large_range));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, LACGV,
-                        ValuesIn(range));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, LACGV,
+                         ValuesIn(range));

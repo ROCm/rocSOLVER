@@ -149,18 +149,18 @@ TEST_P(UNMBR, __double_complex) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, ORMBR,
-                        Combine(ValuesIn(large_size_range),
-                                ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, ORMBR,
+                         Combine(ValuesIn(large_size_range),
+                                 ValuesIn(store)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, ORMBR,
-                        Combine(ValuesIn(size_range),
-                                ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORMBR,
+                         Combine(ValuesIn(size_range),
+                                 ValuesIn(store)));
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, UNMBR,
-                        Combine(ValuesIn(large_size_range),
-                                ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, UNMBR,
+                         Combine(ValuesIn(large_size_range),
+                                 ValuesIn(store)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, UNMBR,
-                        Combine(ValuesIn(size_range),
-                                ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNMBR,
+                         Combine(ValuesIn(size_range),
+                                 ValuesIn(store)));

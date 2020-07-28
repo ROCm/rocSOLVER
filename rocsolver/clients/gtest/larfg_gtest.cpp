@@ -95,10 +95,10 @@ TEST_P(LARFG, __double_complex) {
 
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, LARFG,
-                        Combine(ValuesIn(large_n_size_range),
-                                ValuesIn(incx_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, LARFG,
+                         Combine(ValuesIn(large_n_size_range),
+                                 ValuesIn(incx_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, LARFG,
-                        Combine(ValuesIn(n_size_range),
-                                ValuesIn(incx_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, LARFG,
+                         Combine(ValuesIn(n_size_range),
+                                 ValuesIn(incx_range)));

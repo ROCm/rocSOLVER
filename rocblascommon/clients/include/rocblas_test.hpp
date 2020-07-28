@@ -103,7 +103,7 @@ bool match_test_category(const Arguments& arg, const char* category);
 // The filter is by category and by the type_filter() and function_filter()
 // functions in the testclass
 #define INSTANTIATE_TEST_CATEGORY(testclass, categ0ry)                                           \
-    INSTANTIATE_TEST_CASE_P(categ0ry,                                                            \
+    INSTANTIATE_TEST_SUITE_P(categ0ry,                                                            \
                             testclass,                                                           \
                             testing::ValuesIn(RocBLAS_TestData::begin([](const Arguments& arg) { \
                                                   return testclass::type_filter(arg)             \
