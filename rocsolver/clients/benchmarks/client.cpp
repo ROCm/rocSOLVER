@@ -205,8 +205,8 @@ try
 
     // disabling pivoting cancels norm check as computations without
     // pivoting are numerically unstable
-    if (!argus.pivot)
-        argus.norm_check = 0;
+    //if (!argus.pivot)
+    //    argus.norm_check = 0;
 
     // catch invalid arguments for:
 

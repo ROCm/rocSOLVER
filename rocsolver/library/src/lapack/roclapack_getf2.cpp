@@ -76,21 +76,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2(rocblas_handle handle, const ro
                  const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info, 
                  const rocblas_int pivot)
 {
-    return rocsolver_getf2_impl<double>(handle, m, n, A, lda, ipiv, info, pivot);
+//    return rocsolver_getf2_impl<double>(handle, m, n, A, lda, ipiv, info, pivot);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_float_complex *A,
                  const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info, 
                  const rocblas_int pivot)
 {
-    return rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, pivot);
+//    return rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, pivot);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_double_complex *A,
                  const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info, 
                  const rocblas_int pivot)
 {
-    return rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, pivot);
+//    return rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, pivot);
 }
 
 } //extern C

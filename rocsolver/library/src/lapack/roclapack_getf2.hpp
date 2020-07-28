@@ -18,14 +18,505 @@
 #include "rocsolver.h"
 #include "../auxiliary/rocauxiliary_laswp.hpp"
 
-#define runLUfactSmall(DIM)                                                         \
-    if (m == n)                                                                     \
-        hipLaunchKernelGGL((LUfact_kernel_sq<DIM,T>),grid,block,0,stream,           \
-                           A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,pivot);    \
-    else                                                                            \
-        hipLaunchKernelGGL((LUfact_kernel<DIM,T>),grid,block,0,stream,              \
-                           m,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,pivot);
-     
+#ifdef OPTIMAL
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          SERIES OF OPTIMIZED KERNELS FOR LU FACTORIZATION OF SMALL/MEDIUM SIZE MATRICES                    //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*************************************************************************
+    LUfact_panel_kernel takes care of of matrices with 
+    GETF2_MAX_THDS <= m <= GETF2_OPTIM_MAX_SIZE and n < WAVESIZE
+*************************************************************************/
+template <rocblas_int DIM, typename T, typename U>
+__global__ void __launch_bounds__(GETF2_MAX_THDS) 
+LUfact_panel_kernel(const rocblas_int m, const rocblas_int n, U AA, const rocblas_int shiftA, const rocblas_int lda, 
+                    const rocblas_stride strideA, rocblas_int* ipivA, const rocblas_int shiftP,
+                    const rocblas_stride strideP, rocblas_int* infoA, const rocblas_int batch_count, const int pivot)
+{
+    int myrow = hipThreadIdx_x;
+    int id = hipBlockIdx_x;
+
+    // batch instance
+    T* A = load_ptr_batch<T>(AA,id,shiftA,strideA);
+    rocblas_int *ipiv;
+    if (pivot) ipiv = load_ptr_batch<rocblas_int>(ipivA,id,shiftP,strideP);
+    rocblas_int *info = infoA + id;
+
+    // shared memory (for communication between threads in group)
+    // (SHUFFLES DO NOT IMPROVE PERFORMANCE IN THIS CASE)
+    extern __shared__ double lmem[];
+    T *common = (T*)lmem;
+    
+    // number of rows that each thread is going to handle
+    int nrows = m / GETF2_MAX_THDS;
+    if (myrow < m - nrows * GETF2_MAX_THDS)
+        nrows++;
+    
+    // local variables
+    T pivot_value;
+    T test_value;
+    int tmp;
+    int pivot_index;
+    int myinfo = 0;         //to build info
+    int mypivs[DIM];        //to build ipiv
+    int myrows[DIM];        //to store this-thread active-rows-indices
+    T rA[DIM][WAVESIZE];    //to store this-thread active-rows-values
+
+    // initialization
+    for (int i = 0; i < nrows; ++i) {
+        myrows[i] = myrow + i * GETF2_MAX_THDS;
+        mypivs[i] = myrows[i] + 1;
+    }
+    
+    // read corresponding rows from global memory into local array
+    for (int i = 0; i < nrows; ++i) {
+        for (int j = 0; j < n; ++j) 
+            rA[i][j] = A[myrows[i] + j*lda];
+    }    
+    
+    // for each pivot (main loop)
+    for (int k = 0; k < n; ++k) { 
+        
+        // share current column
+        for (int i = 0; i < nrows; ++i)
+            common[myrows[i]] = rA[i][k];
+        __syncthreads();
+
+        // search pivot index 
+        pivot_index = k;
+        pivot_value = common[k];    
+        if (pivot) {
+            for (int i = k+1; i < m; ++i) {
+                test_value = common[i];
+                if (std::abs(pivot_value) < std::abs(test_value)) {
+                    pivot_value = test_value;
+                    pivot_index = i;
+                }
+            }
+        }
+        
+        // check singularity and scale value for current column 
+        if (pivot_value != T(0.0))
+            pivot_value = 1.0 / pivot_value;
+        else if (myinfo == 0)
+            myinfo = k+1;
+
+        // swap rows (lazy swaping)
+        for (int i = 0; i < nrows; ++i) {
+            if (myrows[i] == pivot_index) {
+                myrows[i] = k;
+                //share pivot row
+                for (int j = k+1; j < n; ++j)
+                    common[j] = rA[i][j];
+            }
+            else if (myrows[i] == k) { 
+                myrows[i] = pivot_index;
+                mypivs[i] = pivot_index + 1;
+            }
+        }
+        __syncthreads();
+
+        // scale current column and update trailing matrix
+        for (int i = 0; i < nrows; ++i) {
+            if (myrows[i] > k) {
+                rA[i][k] *= pivot_value;
+                for (int j = k+1; j < n; ++j) 
+                      rA[i][j] -= rA[i][k] * common[j];   
+            }
+        }
+    }
+
+    // write results to global memory 
+    if (myrow == 0)
+        *info = myinfo; 
+    if (pivot) {
+        for (int i = 0; i < nrows; ++i) {
+            if (myrows[i] < n)
+                ipiv[myrows[i]] = mypivs[i];
+        }
+    }
+    for (int i = 0; i < nrows; ++i) { 
+        for (int j = 0; j < n; ++j) 
+            A[myrows[i] + j*lda] = rA[i][j];
+    }
+}
+
+/*******************************************************************
+    LUfact_panel_kernel_blk takes care of of matrices with 
+    GETF2_MAX_THDS <= m <= GETF2_OPTIM_MAX_SIZE and n = WAVESIZE
+    (to be used by GETRF if block size = WAVESIZE)
+*******************************************************************/
+template <rocblas_int DIM, typename T, typename U>
+__global__ void __launch_bounds__(GETF2_MAX_THDS) 
+LUfact_panel_kernel_blk(const rocblas_int m, U AA, const rocblas_int shiftA, const rocblas_int lda, 
+                        const rocblas_stride strideA, rocblas_int* ipivA, const rocblas_int shiftP,
+                        const rocblas_stride strideP, rocblas_int* infoA, const rocblas_int batch_count, const int pivot)
+{
+    int myrow = hipThreadIdx_x;
+    int id = hipBlockIdx_x;
+
+    // batch instance
+    T* A = load_ptr_batch<T>(AA,id,shiftA,strideA);
+    rocblas_int *ipiv;
+    if (pivot) ipiv = load_ptr_batch<rocblas_int>(ipivA,id,shiftP,strideP);
+    rocblas_int *info = infoA + id;
+
+    // shared memory (for communication between threads in group)
+    // (SHUFFLES DO NOT IMPROVE PERFORMANCE IN THIS CASE)
+    extern __shared__ double lmem[];
+    T *common = (T*)lmem;
+    
+    // number of rows that each thread is going to handle
+    int nrows = m / GETF2_MAX_THDS;
+    if (myrow < m - nrows * GETF2_MAX_THDS)
+        nrows++;
+    
+    // local variables
+    T pivot_value;
+    T test_value;
+    int tmp;
+    int pivot_index;
+    int myinfo = 0;         //to build info
+    int mypivs[DIM];        //to build ipiv
+    int myrows[DIM];        //to store this-thread active-rows-indices
+    T rA[DIM][WAVESIZE];    //to store this-thread active-rows-values
+
+    // initialization
+    for (int i = 0; i < nrows; ++i) {
+        myrows[i] = myrow + i * GETF2_MAX_THDS;
+        mypivs[i] = myrows[i] + 1;
+    }
+    
+    // read corresponding rows from global memory into local array
+    for (int i = 0; i < nrows; ++i) {
+        #pragma unroll WAVESIZE 
+        for (int j = 0; j < WAVESIZE; ++j) 
+            rA[i][j] = A[myrows[i] + j*lda];
+    }    
+    
+    // for each pivot (main loop)
+    #pragma unroll WAVESIZE
+    for (int k = 0; k < WAVESIZE; ++k) { 
+        
+        // share current column
+        for (int i = 0; i < nrows; ++i)
+            common[myrows[i]] = rA[i][k];
+        __syncthreads();
+
+        // search pivot index 
+        pivot_index = k;
+        pivot_value = common[k];    
+        if (pivot) {
+            for (int i = k+1; i < m; ++i) {
+                test_value = common[i];
+                if (std::abs(pivot_value) < std::abs(test_value)) {
+                    pivot_value = test_value;
+                    pivot_index = i;
+                }
+            }
+        }
+        
+        // check singularity and scale value for current column 
+        if (pivot_value != T(0.0))
+            pivot_value = 1.0 / pivot_value;
+        else if (myinfo == 0)
+            myinfo = k+1;
+
+        // swap rows (lazy swaping)
+        for (int i = 0; i < nrows; ++i) {
+            if (myrows[i] == pivot_index) {
+                myrows[i] = k;
+                //share pivot row
+                for (int j = k+1; j < WAVESIZE; ++j)
+                    common[j] = rA[i][j];
+            }
+            else if (myrows[i] == k) { 
+                myrows[i] = pivot_index;
+                mypivs[i] = pivot_index + 1;
+            }
+        }
+        __syncthreads();
+
+        // scale current column and update trailing matrix
+        for (int i = 0; i < nrows; ++i) {
+            if (myrows[i] > k) {
+                rA[i][k] *= pivot_value;
+                for (int j = k+1; j < WAVESIZE; ++j) 
+                      rA[i][j] -= rA[i][k] * common[j];   
+            }
+        }
+    }
+
+    // write results to global memory 
+    if (myrow == 0)
+        *info = myinfo; 
+    if (pivot) {
+        for (int i = 0; i < nrows; ++i) {
+            if (myrows[i] < WAVESIZE)
+                ipiv[myrows[i]] = mypivs[i];
+        }
+    }
+    for (int i = 0; i < nrows; ++i) { 
+        #pragma unroll WAVESIZE
+        for (int j = 0; j < WAVESIZE; ++j) 
+            A[myrows[i] + j*lda] = rA[i][j];
+    }
+}
+
+/**************************************************************************
+    Launcher of LUfact_panel kernels
+**************************************************************************/
+template <typename T, typename U>
+rocblas_status LUfact_panel(rocblas_handle handle, const rocblas_int m,
+                             const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
+                             const rocblas_stride strideA, rocblas_int *ipiv, const rocblas_int shiftP,
+                             const rocblas_stride strideP, rocblas_int* info, const rocblas_int batch_count,
+                             const rocblas_int pivot)
+{
+    #define RUN_LUFACT_PANEL(DIM)                                                                                   \
+            if (n == 64) hipLaunchKernelGGL((LUfact_panel_kernel_blk<DIM,T>),grid,block,lmemsize,stream,            \
+                                             m,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,batch_count,pivot);    \
+            else hipLaunchKernelGGL((LUfact_panel_kernel<DIM,T>),grid,block,lmemsize,stream,                        \
+                                     m,n,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,batch_count,pivot)   
+
+    // determine sizes
+    rocblas_int blocks = batch_count;
+    rocblas_int nthds = GETF2_MAX_THDS;
+    rocblas_int msize = m;
+    rocblas_int dim = (m - 1) / GETF2_MAX_THDS + 1;
+
+    //prepare kernel launch
+    dim3 grid(blocks,1,1);
+    dim3 block(nthds,1,1);
+    size_t lmemsize = msize * sizeof(T);
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    // instantiate cases to make size of local arrays known at compile time
+    // (NOTE: different number of cases could result if GETF2_MAX_THDS and/or GETF2_OPTIM_MAX_SIZE are tunned) 
+    // kernel launch
+    switch (dim) {
+        case  2: RUN_LUFACT_PANEL( 2); break;
+        case  3: RUN_LUFACT_PANEL( 3); break;
+        case  4: RUN_LUFACT_PANEL( 4); break;
+        case  5: RUN_LUFACT_PANEL( 5); break;
+        case  6: RUN_LUFACT_PANEL( 6); break;
+        case  7: RUN_LUFACT_PANEL( 7); break;
+        case  8: RUN_LUFACT_PANEL( 8); break;
+        default: __builtin_unreachable();
+    }
+
+    return rocblas_status_success;
+}
+
+/************************************************************************
+    LUfact_small_kernel takes care of of matrices with 
+    m <= GETF2_MAX_THDS and n <= WAVESIZE 
+************************************************************************/
+template <rocblas_int DIM, typename T, typename U>
+__global__ void __launch_bounds__(GETF2_MAX_THDS) 
+LUfact_small_kernel(const rocblas_int m, U AA, const rocblas_int shiftA, const rocblas_int lda, 
+                    const rocblas_stride strideA, rocblas_int* ipivA, const rocblas_int shiftP,
+                    const rocblas_stride strideP, rocblas_int* infoA, const rocblas_int batch_count, const int pivot)
+{
+    int ty = hipThreadIdx_y;
+    int myrow = hipThreadIdx_x;
+    int id = hipBlockIdx_x * hipBlockDim_y + ty;
+
+    if (id >= batch_count)
+        return;
+    
+    // batch instance
+    T* A = load_ptr_batch<T>(AA,id,shiftA,strideA);
+    rocblas_int *ipiv;
+    if (pivot) ipiv = load_ptr_batch<rocblas_int>(ipivA,id,shiftP,strideP);
+    rocblas_int *info = infoA + id;
+
+    // shared memory (for communication between threads in group)
+    // (SHUFFLES DO NOT IMPROVE PERFORMANCE IN THIS CASE)
+    extern __shared__ double lmem[];
+    T *common = (T*)lmem;
+    common += ty * WAVESIZE;
+
+    
+    // local variables
+    T pivot_value;
+    T test_value;
+    int pivot_index;
+    int mypiv = myrow + 1;  //to build ipiv
+    int myinfo = 0;         //to build info
+    T rA[DIM];              //to store this-row values
+       
+    // read corresponding row from global memory into local array
+    #pragma unroll DIM 
+    for (int j = 0; j < DIM; ++j)
+        rA[j] = A[myrow + j*lda];
+    
+    // for each pivot (main loop)
+    #pragma unroll DIM
+    for (int k = 0; k < DIM; ++k) { 
+        
+        // share current column
+        common[myrow] = rA[k];
+        __syncthreads();
+
+        // search pivot index 
+        pivot_index = k;
+        pivot_value = common[k];    
+        if (pivot) {        
+            for (int i = k+1; i < m; ++i) {
+                test_value = common[i];
+                if (std::abs(pivot_value) < std::abs(test_value)) {
+                    pivot_value = test_value;
+                    pivot_index = i;
+                }
+            }
+        }
+        
+        // check singularity and scale value for current column 
+        if (pivot_value != T(0.0))
+            pivot_value = 1.0 / pivot_value;
+        else if (myinfo == 0)
+            myinfo = k+1;
+
+        // swap rows (lazy swaping)
+        if (myrow == pivot_index) {
+            myrow = k;
+            //share pivot row
+            for (int j = k+1; j < DIM; ++j)
+                common[j] = rA[j];
+        }
+        else if (myrow == k) { 
+            myrow = pivot_index;
+            mypiv = pivot_index + 1;
+        }
+        __syncthreads();
+
+        // scale current column and update trailing matrix
+        if (myrow > k) {
+            rA[k] *= pivot_value;
+            for (int j = k+1; j < DIM; ++j) 
+                  rA[j] -= rA[k] * common[j];   
+        }
+    }
+
+    // write results to global memory 
+    if (myrow < DIM && pivot)
+        ipiv[myrow] = mypiv;
+    if (myrow == 0)
+        *info = myinfo; 
+    #pragma unroll DIM
+    for (int j = 0; j < DIM; ++j)
+        A[myrow + j*lda] = rA[j];
+}
+
+/*************************************************************
+    Launcher of LUfact_small kernels
+*************************************************************/
+template <typename T, typename U>
+rocblas_status LUfact_small(rocblas_handle handle, const rocblas_int m,
+                             const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
+                             const rocblas_stride strideA, rocblas_int *ipiv, const rocblas_int shiftP,
+                             const rocblas_stride strideP, rocblas_int* info, const rocblas_int batch_count,
+                             const rocblas_int pivot)
+{
+    #define RUN_LUFACT_SMALL(DIM)                                                               \
+        hipLaunchKernelGGL((LUfact_small_kernel<DIM,T>),grid,block,lmemsize,stream,             \
+                            m,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,batch_count,pivot)
+    
+    // determine sizes
+    std::vector<int> opval{GETF2_OPTIM_NGRP};
+    rocblas_int ngrp = (batch_count < 2 || m > 32) ? 1 : opval[m-1];
+    rocblas_int blocks = (batch_count - 1)/ngrp + 1;
+    rocblas_int nthds = m;
+    rocblas_int msize = (m <= 32) ? WAVESIZE : max(m,n);
+
+    //prepare kernel launch
+    dim3 grid(blocks,1,1);
+    dim3 block(nthds,ngrp,1);
+    size_t lmemsize = msize * ngrp * sizeof(T);
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    // instantiate cases to make number of columns n known at compile time
+    // this should allow loop unrolling.
+    // kernel launch
+    switch (n) {
+        case  1: RUN_LUFACT_SMALL( 1); break;
+        case  2: RUN_LUFACT_SMALL( 2); break;
+        case  3: RUN_LUFACT_SMALL( 3); break;
+        case  4: RUN_LUFACT_SMALL( 4); break;
+        case  5: RUN_LUFACT_SMALL( 5); break;
+        case  6: RUN_LUFACT_SMALL( 6); break;
+        case  7: RUN_LUFACT_SMALL( 7); break;
+        case  8: RUN_LUFACT_SMALL( 8); break;
+        case  9: RUN_LUFACT_SMALL( 9); break;
+        case 10: RUN_LUFACT_SMALL(10); break;
+        case 11: RUN_LUFACT_SMALL(11); break;
+        case 12: RUN_LUFACT_SMALL(12); break;
+        case 13: RUN_LUFACT_SMALL(13); break;
+        case 14: RUN_LUFACT_SMALL(14); break;
+        case 15: RUN_LUFACT_SMALL(15); break;
+        case 16: RUN_LUFACT_SMALL(16); break;
+        case 17: RUN_LUFACT_SMALL(17); break;
+        case 18: RUN_LUFACT_SMALL(18); break;
+        case 19: RUN_LUFACT_SMALL(19); break;
+        case 20: RUN_LUFACT_SMALL(20); break;
+        case 21: RUN_LUFACT_SMALL(21); break;
+        case 22: RUN_LUFACT_SMALL(22); break;
+        case 23: RUN_LUFACT_SMALL(23); break;
+        case 24: RUN_LUFACT_SMALL(24); break;
+        case 25: RUN_LUFACT_SMALL(25); break;
+        case 26: RUN_LUFACT_SMALL(26); break;
+        case 27: RUN_LUFACT_SMALL(27); break;
+        case 28: RUN_LUFACT_SMALL(28); break;
+        case 29: RUN_LUFACT_SMALL(29); break;
+        case 30: RUN_LUFACT_SMALL(30); break;
+        case 31: RUN_LUFACT_SMALL(31); break;
+        case 32: RUN_LUFACT_SMALL(32); break;
+        case 33: RUN_LUFACT_SMALL(33); break;
+        case 34: RUN_LUFACT_SMALL(34); break;
+        case 35: RUN_LUFACT_SMALL(35); break;
+        case 36: RUN_LUFACT_SMALL(36); break;
+        case 37: RUN_LUFACT_SMALL(37); break;
+        case 38: RUN_LUFACT_SMALL(38); break;
+        case 39: RUN_LUFACT_SMALL(39); break;
+        case 40: RUN_LUFACT_SMALL(40); break;
+        case 41: RUN_LUFACT_SMALL(41); break;
+        case 42: RUN_LUFACT_SMALL(42); break;
+        case 43: RUN_LUFACT_SMALL(43); break;
+        case 44: RUN_LUFACT_SMALL(44); break;
+        case 45: RUN_LUFACT_SMALL(45); break;
+        case 46: RUN_LUFACT_SMALL(46); break;
+        case 47: RUN_LUFACT_SMALL(47); break;
+        case 48: RUN_LUFACT_SMALL(48); break;
+        case 49: RUN_LUFACT_SMALL(49); break;
+        case 50: RUN_LUFACT_SMALL(50); break;
+        case 51: RUN_LUFACT_SMALL(51); break;
+        case 52: RUN_LUFACT_SMALL(52); break;
+        case 53: RUN_LUFACT_SMALL(53); break;
+        case 54: RUN_LUFACT_SMALL(54); break;
+        case 55: RUN_LUFACT_SMALL(55); break;
+        case 56: RUN_LUFACT_SMALL(56); break;
+        case 57: RUN_LUFACT_SMALL(57); break;
+        case 58: RUN_LUFACT_SMALL(58); break;
+        case 59: RUN_LUFACT_SMALL(59); break;
+        case 60: RUN_LUFACT_SMALL(60); break;
+        case 61: RUN_LUFACT_SMALL(61); break;
+        case 62: RUN_LUFACT_SMALL(62); break;
+        case 63: RUN_LUFACT_SMALL(63); break;
+        case 64: RUN_LUFACT_SMALL(64); break;
+        default: __builtin_unreachable(); 
+    }
+    
+    return rocblas_status_success;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//                      END OF OPTIMIZED KERNELS                                        //
+//////////////////////////////////////////////////////////////////////////////////////////                                                
+#endif //OPTIMAL
+
 
 template <typename T, typename U>
 __global__ void getf2_check_singularity(U AA, const rocblas_int shiftA, const rocblas_stride strideA,
@@ -48,260 +539,6 @@ __global__ void getf2_check_singularity(U AA, const rocblas_int shiftA, const ro
     else
         invpivot[id] = 1.0 / A[j * lda + ipiv[j] - 1];
 }
-
-#ifdef OPTIMAL
-template <rocblas_int DIM, typename T, typename U>
-__attribute__((amdgpu_flat_work_group_size(WaveSize,WaveSize)))
-__global__ void LUfact_kernel(const rocblas_int m, U AA, const rocblas_int shiftA, const rocblas_int lda, 
-                                          const rocblas_stride strideA, rocblas_int* ipivA, const rocblas_int shiftP,
-                                          const rocblas_stride strideP, rocblas_int* info, const rocblas_int pivot)
-{
-    int id = hipBlockIdx_x;
-    int myrow = hipThreadIdx_x;
-
-    if (myrow >= m)
-        return;
-    
-    // batch instance
-    T* A = load_ptr_batch<T>(AA,id,shiftA,strideA);
-    rocblas_int *ipiv = load_ptr_batch<rocblas_int>(ipivA,id,shiftP,strideP);
-       
-    // read corresponding row from global memory in local array
-    T rA[WaveSize];
-    #pragma unroll
-    for (int j = 0; j < DIM; ++j)
-        rA[j] = A[myrow + j*lda];
-
-    // shared memory (for communication between threads in group)
-    __shared__ T common[WaveSize];
-    T pivot_value;
-    T test_value;
-    int pivot_index;
-
-    // for each pivot
-    #pragma unroll
-    for (int k = 0; k < DIM; ++k) { 
-        // share current column
-        common[myrow] = rA[k];
-        __syncthreads();
-
-        // search pivot index 
-        pivot_index = k;
-        if (pivot) {
-            pivot_value = common[k];    
-            for (int i = k+1; i < m; ++i) {
-                test_value = common[i];
-                if (std::abs(pivot_value) < std::abs(test_value)) {
-                    pivot_value = test_value;
-                    pivot_index = i;
-                }
-            } 
-        }
-        if (myrow == k)
-            ipiv[k] = pivot_index + 1;
-
-        // swap rows (lazy swaping)
-        if (myrow == k || myrow == pivot_index)
-            myrow = (myrow == k) ? pivot_index : k;
-
-        // check singularity and scale current column 
-        if (pivot_value != T(0.0)) {
-            if (myrow > k)
-                rA[k] /= pivot_value;
-        } else {
-            if (myrow == k && info[id] == 0)
-                info[id] = k+1;
-        }
-
-        //share pivot row
-        if (myrow == k) {
-            for (int j = k+1; j < DIM; ++j)
-                common[j] = rA[j];
-        }
-        __syncthreads();
-            
-        // update trailing matrix
-        if (myrow > k) {
-            for (int j = k+1; j < DIM; ++j)
-                rA[j] -= rA[k] * common[j];   
-        }   
-    }
-
-    // write results to global memory from local array
-    #pragma unroll
-    for (int j = 0; j < DIM; ++j)
-        A[myrow + j*lda] = rA[j];
-}
-
-
-template <rocblas_int DIM, typename T, typename U>
-__attribute__((amdgpu_flat_work_group_size(WaveSize,WaveSize)))
-__global__ void LUfact_kernel_sq(U AA, const rocblas_int shiftA, const rocblas_int lda, 
-                                          const rocblas_stride strideA, rocblas_int* ipivA, const rocblas_int shiftP,
-                                          const rocblas_stride strideP, rocblas_int* info, const rocblas_int pivot)
-{
-    int id = hipBlockIdx_x;
-    int myrow = hipThreadIdx_x;
-
-    if (myrow >= DIM)
-        return;
-    
-    // batch instance
-    T* A = load_ptr_batch<T>(AA,id,shiftA,strideA);
-    rocblas_int *ipiv = load_ptr_batch<rocblas_int>(ipivA,id,shiftP,strideP);
-       
-    // read corresponding row from global memory in local array
-    T rA[DIM];
-    #pragma unroll
-    for (int j = 0; j < DIM; ++j)
-        rA[j] = A[myrow + j*lda];
-
-    // shared memory (for communication between threads in group)
-    __shared__ T common[DIM];
-    T pivot_value;
-    T test_value;
-    int pivot_index;
-
-    // for each pivot
-    #pragma unroll
-    for (int k = 0; k < DIM; ++k) { 
-        // share current column
-        common[myrow] = rA[k];
-        __syncthreads();
-
-        // search pivot index 
-        pivot_index = k;
-        if (pivot) {
-            pivot_value = common[k];    
-            for (int i = k+1; i < DIM; ++i) {
-                test_value = common[i];
-                if (std::abs(pivot_value) < std::abs(test_value)) {
-                    pivot_value = test_value;
-                    pivot_index = i;
-                }
-            }
-        } 
-        if (myrow == k)
-            ipiv[k] = pivot_index + 1;
-
-        // swap rows (lazy swaping)
-        if (myrow == k || myrow == pivot_index)
-            myrow = (myrow == k) ? pivot_index : k;
-
-        // check singularity and scale current column 
-        if (pivot_value != T(0.0)) {
-            if (myrow > k)
-                rA[k] /= pivot_value;
-        } else {
-            if (myrow == k && info[id] == 0)
-                info[id] = k+1;
-        }
-
-        //share pivot row
-        if (myrow == k) {
-            for (int j = k+1; j < DIM; ++j)
-                common[j] = rA[j];
-        }
-        __syncthreads();
-            
-        // update trailing matrix
-        if (myrow > k) {
-            for (int j = k+1; j < DIM; ++j)
-                rA[j] -= rA[k] * common[j];   
-        }   
-    }
-
-    // write results to global memory from local array
-    #pragma unroll
-    for (int j = 0; j < DIM; ++j)
-        A[myrow + j*lda] = rA[j];
-}
-
-template <typename T, typename U>
-rocblas_status LUfact_small_sizes(rocblas_handle handle, const rocblas_int m,
-                                  const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
-                                  const rocblas_stride strideA, rocblas_int *ipiv, const rocblas_int shiftP,
-                                  const rocblas_stride strideP, rocblas_int* info, const rocblas_int batch_count,
-                                  const rocblas_int pivot)
-{
-    dim3 grid(batch_count,1,1);
-    dim3 block(WaveSize,1,1);
-
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
-
-    // instantiate cases to make number of columns n known at compile time
-    // this should allow loop unrolling.
-    switch (n) {
-        case  1: runLUfactSmall( 1); break;
-        case  2: runLUfactSmall( 2); break;
-        case  3: runLUfactSmall( 3); break;
-        case  4: runLUfactSmall( 4); break;
-        case  5: runLUfactSmall( 5); break;
-        case  6: runLUfactSmall( 6); break;
-        case  7: runLUfactSmall( 7); break;
-        case  8: runLUfactSmall( 8); break;
-        case  9: runLUfactSmall( 9); break;
-        case 10: runLUfactSmall(10); break;
-        case 11: runLUfactSmall(11); break;
-        case 12: runLUfactSmall(12); break;
-        case 13: runLUfactSmall(13); break;
-        case 14: runLUfactSmall(14); break;
-        case 15: runLUfactSmall(15); break;
-        case 16: runLUfactSmall(16); break;
-        case 17: runLUfactSmall(17); break;
-        case 18: runLUfactSmall(18); break;
-        case 19: runLUfactSmall(19); break;
-        case 20: runLUfactSmall(20); break;
-        case 21: runLUfactSmall(21); break;
-        case 22: runLUfactSmall(22); break;
-        case 23: runLUfactSmall(23); break;
-        case 24: runLUfactSmall(24); break;
-        case 25: runLUfactSmall(25); break;
-        case 26: runLUfactSmall(26); break;
-        case 27: runLUfactSmall(27); break;
-        case 28: runLUfactSmall(28); break;
-        case 29: runLUfactSmall(29); break;
-        case 30: runLUfactSmall(30); break;
-        case 31: runLUfactSmall(31); break;
-        case 32: runLUfactSmall(32); break;
-        case 33: runLUfactSmall(33); break;
-        case 34: runLUfactSmall(34); break;
-        case 35: runLUfactSmall(35); break;
-        case 36: runLUfactSmall(36); break;
-        case 37: runLUfactSmall(37); break;
-        case 38: runLUfactSmall(38); break;
-        case 39: runLUfactSmall(39); break;
-        case 40: runLUfactSmall(40); break;
-        case 41: runLUfactSmall(41); break;
-        case 42: runLUfactSmall(42); break;
-        case 43: runLUfactSmall(43); break;
-        case 44: runLUfactSmall(44); break;
-        case 45: runLUfactSmall(45); break;
-        case 46: runLUfactSmall(46); break;
-        case 47: runLUfactSmall(47); break;
-        case 48: runLUfactSmall(48); break;
-        case 49: runLUfactSmall(49); break;
-        case 50: runLUfactSmall(50); break;
-        case 51: runLUfactSmall(51); break;
-        case 52: runLUfactSmall(52); break;
-        case 53: runLUfactSmall(53); break;
-        case 54: runLUfactSmall(54); break;
-        case 55: runLUfactSmall(55); break;
-        case 56: runLUfactSmall(56); break;
-        case 57: runLUfactSmall(57); break;
-        case 58: runLUfactSmall(58); break;
-        case 59: runLUfactSmall(59); break;
-        case 60: runLUfactSmall(60); break;
-        case 61: runLUfactSmall(61); break;
-        case 62: runLUfactSmall(62); break;
-        case 63: runLUfactSmall(63); break;
-        case 64: runLUfactSmall(64); break;
-    }
-    
-    return rocblas_status_success;
-}
-#endif //OPTIMAL
 
 template <typename T>
 void rocsolver_getf2_getMemorySize(const rocblas_int batch_count,
@@ -348,9 +585,9 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
     
-    rocblas_int blocksReset = (batch_count - 1) / GETF2_BLOCKSIZE + 1;
+    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
     dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(GETF2_BLOCKSIZE, 1, 1);
+    dim3 threads(BLOCKSIZE, 1, 1);
     rocblas_int dim = min(m, n);    //total number of pivots
     T* M;
     
@@ -362,10 +599,15 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
         return rocblas_status_success;
 
     #ifdef OPTIMAL
-    // if very small size, use optimized LU factorization
-    if (m <= WaveSize && n <= WaveSize)
-        return LUfact_small_sizes<T>(handle,m,n,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,batch_count,pivot);
-        
+    // Use optimized LU factorization for the right sizes
+    if (m <= GETF2_MAX_THDS) {
+        if (n <= WAVESIZE)
+            return LUfact_small<T>(handle,m,n,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,batch_count,pivot);
+    } 
+    else if (m <= GETF2_OPTIM_MAX_SIZE) {
+        if (n <= WAVESIZE)
+            return LUfact_panel<T>(handle,m,n,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,batch_count,pivot);
+    }
     #endif
 
     // everything must be executed with scalars on the device

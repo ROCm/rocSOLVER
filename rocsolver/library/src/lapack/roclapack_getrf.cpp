@@ -77,19 +77,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf(rocblas_handle handle, const ro
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                  double *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info) 
 {
-    return rocsolver_getrf_impl<double>(handle, m, n, A, lda, ipiv, info);
+//    return rocsolver_getrf_impl<double>(handle, m, n, A, lda, ipiv, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                  rocblas_float_complex *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info) 
 {
-    return rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info);
+//    return rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                  rocblas_double_complex *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info) 
 {
-    return rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info);
+//    return rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info);
 }
 
 } //extern C

@@ -79,10 +79,10 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
     T minone = -1;                //constant -1 in host
 
     rocblas_int blocksPivot;
-    rocblas_int blocksReset = (batch_count - 1) / GETF2_BLOCKSIZE + 1;
+    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
     dim3 gridPivot;
     dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(GETF2_BLOCKSIZE, 1, 1);
+    dim3 threads(BLOCKSIZE, 1, 1);
     rocblas_int dim = min(m, n);    //total number of pivots
     T* M;
     rocblas_int jb, sizePivot;
@@ -101,7 +101,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
         
         // adjust pivot indices and check singularity
         sizePivot = min(m - j, jb);     //number of pivots in the block
-        blocksPivot = (sizePivot - 1) / GETF2_BLOCKSIZE + 1; 
+        blocksPivot = (sizePivot - 1) / BLOCKSIZE + 1; 
         gridPivot = dim3(blocksPivot, batch_count, 1);
         hipLaunchKernelGGL(getrf_check_singularity<U>,gridPivot,threads,0,stream,
 			   sizePivot,j,ipiv,shiftP + j,strideP,iinfo,info);
