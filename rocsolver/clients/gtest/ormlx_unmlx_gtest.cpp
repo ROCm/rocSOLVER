@@ -178,37 +178,37 @@ TEST_P(UNMLQ, __double_complex) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, ORML2,
-                        Combine(ValuesIn(large_size_range),
-                                ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, ORML2,
+                         Combine(ValuesIn(large_size_range),
+                                 ValuesIn(op_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, ORML2,
-                        Combine(ValuesIn(size_range),
-                                ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORML2,
+                         Combine(ValuesIn(size_range),
+                                 ValuesIn(op_range)));
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, UNML2,
-                        Combine(ValuesIn(large_size_range),
-                                ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, UNML2,
+                         Combine(ValuesIn(large_size_range),
+                                 ValuesIn(op_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, UNML2,
-                        Combine(ValuesIn(size_range),
-                                ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNML2,
+                         Combine(ValuesIn(size_range),
+                                 ValuesIn(op_range)));
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, ORMLQ,
-                        Combine(ValuesIn(large_size_range),
-                                ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, ORMLQ,
+                         Combine(ValuesIn(large_size_range),
+                                 ValuesIn(op_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, ORMLQ,
-                        Combine(ValuesIn(size_range),
-                                ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORMLQ,
+                         Combine(ValuesIn(size_range),
+                                 ValuesIn(op_range)));
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, UNMLQ,
-                        Combine(ValuesIn(large_size_range),
-                                ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, UNMLQ,
+                         Combine(ValuesIn(large_size_range),
+                                 ValuesIn(op_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, UNMLQ,
-                        Combine(ValuesIn(size_range),
-                                ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNMLQ,
+                         Combine(ValuesIn(size_range),
+                                 ValuesIn(op_range)));
 
 
 

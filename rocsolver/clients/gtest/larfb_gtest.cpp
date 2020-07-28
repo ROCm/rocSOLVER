@@ -128,10 +128,10 @@ TEST_P(LARFB, __double_complex) {
 
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, LARFB,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(large_reflector_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, LARFB,
+                         Combine(ValuesIn(large_matrix_size_range),
+                                 ValuesIn(large_reflector_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, LARFB,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(reflector_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, LARFB,
+                         Combine(ValuesIn(matrix_size_range),
+                                 ValuesIn(reflector_size_range)));

@@ -167,35 +167,35 @@ TEST_P(UNGLQ, __double_complex) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, ORGL2,
-                        Combine(ValuesIn(large_m_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, ORGL2,
+                         Combine(ValuesIn(large_m_size_range),
+                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, ORGL2,
-                        Combine(ValuesIn(m_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORGL2,
+                         Combine(ValuesIn(m_size_range),
+                                 ValuesIn(n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, UNGL2,
-                        Combine(ValuesIn(large_m_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, UNGL2,
+                         Combine(ValuesIn(large_m_size_range),
+                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, UNGL2,
-                        Combine(ValuesIn(m_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNGL2,
+                         Combine(ValuesIn(m_size_range),
+                                 ValuesIn(n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, ORGLQ,
-                        Combine(ValuesIn(large_m_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, ORGLQ,
+                         Combine(ValuesIn(large_m_size_range),
+                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, ORGLQ,
-                        Combine(ValuesIn(m_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORGLQ,
+                         Combine(ValuesIn(m_size_range),
+                                 ValuesIn(n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, UNGLQ,
-                        Combine(ValuesIn(large_m_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, UNGLQ,
+                         Combine(ValuesIn(large_m_size_range),
+                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, UNGLQ,
-                        Combine(ValuesIn(m_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNGLQ,
+                         Combine(ValuesIn(m_size_range),
+                                 ValuesIn(n_size_range)));
 

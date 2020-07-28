@@ -329,20 +329,20 @@ TEST_P(GELQF, strided_batched__double_complex) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, GELQ2,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GELQ2,
+                         Combine(ValuesIn(large_matrix_size_range),
+                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, GELQ2,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GELQ2,
+                         Combine(ValuesIn(matrix_size_range),
+                                 ValuesIn(n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, GELQF,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GELQF,
+                         Combine(ValuesIn(large_matrix_size_range),
+                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, GELQF,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GELQF,
+                         Combine(ValuesIn(matrix_size_range),
+                                 ValuesIn(n_size_range)));
 
 

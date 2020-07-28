@@ -102,10 +102,10 @@ TEST_P(LASWP, __double_complex) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, LASWP,
-                        Combine(ValuesIn(large_range1),
-                                ValuesIn(large_range2)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, LASWP,
+                         Combine(ValuesIn(large_range1),
+                                 ValuesIn(large_range2)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, LASWP,
-                        Combine(ValuesIn(range1),
-                                ValuesIn(range2)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, LASWP,
+                         Combine(ValuesIn(range1),
+                                 ValuesIn(range2)));

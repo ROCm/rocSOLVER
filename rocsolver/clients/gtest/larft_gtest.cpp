@@ -116,10 +116,10 @@ TEST_P(LARFT, __double_complex) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, LARFT,
-                        Combine(ValuesIn(large_order_size_range),
-                                ValuesIn(large_reflector_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, LARFT,
+                         Combine(ValuesIn(large_order_size_range),
+                                 ValuesIn(large_reflector_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, LARFT,
-                        Combine(ValuesIn(order_size_range),
-                                ValuesIn(reflector_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, LARFT,
+                         Combine(ValuesIn(order_size_range),
+                                 ValuesIn(reflector_size_range)));

@@ -105,10 +105,10 @@ TEST_P(LARF, __double_complex) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, LARF,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(incx_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, LARF,
+                         Combine(ValuesIn(large_matrix_size_range),
+                                 ValuesIn(incx_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, LARF,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(incx_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, LARF,
+                         Combine(ValuesIn(matrix_size_range),
+                                 ValuesIn(incx_range)));

@@ -237,8 +237,8 @@ TEST_P(GETRI, outofplace_batched__double_complex) {
 
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, GETRI,
-                        ValuesIn(large_matrix_size_range));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GETRI,
+                         ValuesIn(large_matrix_size_range));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, GETRI,
-                        ValuesIn(matrix_size_range));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GETRI,
+                         ValuesIn(matrix_size_range));

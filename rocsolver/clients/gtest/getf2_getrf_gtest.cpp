@@ -333,18 +333,18 @@ TEST_P(GETRF, strided_batched__double_complex) {
 
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, GETF2,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GETF2,
+                         Combine(ValuesIn(large_matrix_size_range),
+                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, GETF2,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GETF2,
+                         Combine(ValuesIn(matrix_size_range),
+                                 ValuesIn(n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, GETRF,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GETRF,
+                         Combine(ValuesIn(large_matrix_size_range),
+                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, GETRF,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GETRF,
+                         Combine(ValuesIn(matrix_size_range),
+                                 ValuesIn(n_size_range)));

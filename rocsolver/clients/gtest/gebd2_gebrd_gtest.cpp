@@ -329,18 +329,18 @@ TEST_P(GEBRD, strided_batched__double_complex) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, GEBD2,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GEBD2,
+                         Combine(ValuesIn(large_matrix_size_range),
+                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, GEBD2,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GEBD2,
+                         Combine(ValuesIn(matrix_size_range),
+                                 ValuesIn(n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, GEBRD,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GEBRD,
+                         Combine(ValuesIn(large_matrix_size_range),
+                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, GEBRD,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GEBRD,
+                         Combine(ValuesIn(matrix_size_range),
+                                 ValuesIn(n_size_range)));

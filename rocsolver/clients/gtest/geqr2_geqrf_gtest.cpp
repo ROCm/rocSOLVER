@@ -372,20 +372,20 @@ TEST_P(GEQRF, ptr_batched__double_complex) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, GEQR2,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GEQR2,
+                         Combine(ValuesIn(large_matrix_size_range),
+                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, GEQR2,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GEQR2,
+                         Combine(ValuesIn(matrix_size_range),
+                                 ValuesIn(n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, GEQRF,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GEQRF,
+                         Combine(ValuesIn(large_matrix_size_range),
+                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, GEQRF,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GEQRF,
+                         Combine(ValuesIn(matrix_size_range),
+                                 ValuesIn(n_size_range)));
 
 

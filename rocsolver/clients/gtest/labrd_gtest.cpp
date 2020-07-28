@@ -113,10 +113,10 @@ TEST_P(LABRD, __double_complex) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, LABRD,
-                        Combine(ValuesIn(large_matrix_size_range),
-                                ValuesIn(large_n_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, LABRD,
+                         Combine(ValuesIn(large_matrix_size_range),
+                                 ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, LABRD,
-                        Combine(ValuesIn(matrix_size_range),
-                                ValuesIn(n_size_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, LABRD,
+                         Combine(ValuesIn(matrix_size_range),
+                                 ValuesIn(n_size_range)));

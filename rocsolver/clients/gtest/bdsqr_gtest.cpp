@@ -120,10 +120,10 @@ TEST_P(BDSQR, __double_complex) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(daily_lapack, BDSQR,
-                        Combine(ValuesIn(large_size_range),
-                                ValuesIn(large_opt_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, BDSQR,
+                         Combine(ValuesIn(large_size_range),
+                                 ValuesIn(large_opt_range)));
 
-INSTANTIATE_TEST_CASE_P(checkin_lapack, BDSQR,
-                        Combine(ValuesIn(size_range),
-                                ValuesIn(opt_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, BDSQR,
+                         Combine(ValuesIn(size_range),
+                                 ValuesIn(opt_range)));
