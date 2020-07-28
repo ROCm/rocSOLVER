@@ -11,8 +11,8 @@
 #define ROCLAPACK_GETRI_H
 
 #include "rocblas.hpp"
-#include "rocsolver.h"
-#include "roclapack_trtri.hpp"
+#include "rocblas_device_functions.hpp"
+#include "../auxiliary/rocauxiliary_trtri.hpp"
 
 #ifdef OPTIMAL
 template <rocblas_int DIM, typename T, typename U>
@@ -218,36 +218,6 @@ rocblas_status getri_small_sizes(rocblas_handle handle, const rocblas_int n, U A
 #endif //OPTIMAL
 
 template <typename T, typename U, typename V>
-__global__ void getri_trsm(const rocblas_int m, const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
-                           const rocblas_stride strideA, V B, const rocblas_int shiftB, const rocblas_int ldb,
-                            const rocblas_stride strideB, rocblas_int *info)
-{
-    // trsm kernel assuming no transpose, unit diagonal, lower triangular matrix from the right
-    int batch = hipBlockIdx_x;
-
-    T* a = load_ptr_batch<T>(A,batch,shiftA,strideA);
-    T* b = load_ptr_batch<T>(B,batch,shiftB,strideB);
-
-    if (info[batch] != 0)
-        return;
-
-    T bij;
-    for (int j = n - 1; j >= 0; j--)
-    {
-        for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
-        {
-            bij = b[i + j * ldb];
-
-            for (int k = j + 1; k < n; k++)
-                bij -= a[k + j * lda] * b[i + k * ldb];
-            
-            b[i + j * ldb] = bij;
-        }
-        __syncthreads();
-    }
-}
-
-template <typename T, typename U, typename V>
 __global__ void copy_and_zero(const rocblas_int m, const rocblas_int n,
                               U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
                               V W, const rocblas_int shiftw, const rocblas_int ldw, const rocblas_stride stridew,
@@ -420,11 +390,13 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
             hipLaunchKernelGGL(copy_and_zero<T>, dim3(batch_count,blocks,1), dim3(1,64,1), 0, stream,
                                n-j, 1, A, shiftA + idx2D(j,j,lda), lda, strideA, work, j, ldw, strideW, rocblas_fill_lower, info);
 
-            rocblasCall_gemv(handle, rocblas_operation_none, n, n-j-1,
-                             &minone, 0, A, shiftA + idx2D(0,j+1,lda), lda, strideA,
-                             work, j+1, 1, strideW,
-                             &one, 0, A, shiftA + idx2D(0,j,lda), 1, strideA,
-                             batch_count, workArr);
+            // rocblasCall_gemv(handle, rocblas_operation_none, n, n-j-1,
+            //                  &minone, 0, A, shiftA + idx2D(0,j+1,lda), lda, strideA,
+            //                  work, j+1, 1, strideW,
+            //                  &one, 0, A, shiftA + idx2D(0,j,lda), 1, strideA,
+            //                  batch_count, workArr);
+            hipLaunchKernelGGL(gemv_kernel<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
+                       n, n-j-1, scalars, A, shiftA + idx2D(0,j+1,lda), lda, strideA, work, j+1, 1, strideW, scalars+2, A, shiftA + idx2D(0,j,lda), 1, strideA);
         }
     }
     else
@@ -443,15 +415,17 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
                                n-j, jb, A, shiftA + idx2D(j,j,lda), lda, strideA, work, j, ldw, strideW, rocblas_fill_lower, info);
 
             if (j+jb < n)
-                rocblasCall_gemm<BATCHED,STRIDED>(handle, rocblas_operation_none, rocblas_operation_none,
-                                                  n, jb, n-j-jb,
-                                                  &minone, A, shiftA + idx2D(0,j+jb,lda), lda, strideA,
-                                                  work, j+jb, ldw, strideW,
-                                                  &one, A, shiftA + idx2D(0,j,lda), lda, strideA,
-                                                  batch_count, workArr);
+                // rocblasCall_gemm<BATCHED,STRIDED>(handle, rocblas_operation_none, rocblas_operation_none,
+                //                                   n, jb, n-j-jb,
+                //                                   &minone, A, shiftA + idx2D(0,j+jb,lda), lda, strideA,
+                //                                   work, j+jb, ldw, strideW,
+                //                                   &one, A, shiftA + idx2D(0,j,lda), lda, strideA,
+                //                                   batch_count, workArr);
+                hipLaunchKernelGGL(gemm_kernel<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
+                        n, jb, n-j-jb, scalars, A, shiftA + idx2D(0,j+jb,lda), lda, strideA, work, j+jb, ldw, strideW, scalars+2, A, shiftA + idx2D(0,j,lda), lda, strideA);
             
-            hipLaunchKernelGGL(getri_trsm<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
-                       n, jb, work, j, ldw, strideW, A, shiftA + idx2D(0,j,lda), lda, strideA, info);
+            hipLaunchKernelGGL(trsm_kernel_right_lower<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
+                       rocblas_diagonal_unit, n, jb, scalars+2, work, j, ldw, strideW, A, shiftA + idx2D(0,j,lda), lda, strideA);
         }
     }
     
