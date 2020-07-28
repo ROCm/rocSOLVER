@@ -9,7 +9,7 @@ template <typename T>
 struct rocblas_index_value_t;
 
 #include <rocblas.h>
-#include "rocblas-exported-proto.hpp"
+#include "internal/rocblas-exported-proto.hpp"
 #include "helpers.hpp"
 #include "common_device.hpp"
 
