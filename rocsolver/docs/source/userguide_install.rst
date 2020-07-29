@@ -17,10 +17,10 @@ rocSOLVER also requires a compatible version of rocBLAS installed on the system.
 For more information, see the `rocBLAS install guide <https://rocblas.readthedocs.io/en/master/install.html>`_.
 
 rocBLAS and rocSOLVER are both still under active development, and it is hard to define minimal
-compatibility versions. For now, a good rule of thumb is to always use rocSOLVER the matching
-rocBLAS version. For example, if you want to install rocSOLVER from ROCm 3.3 release, then be sure
-that ROCm 3.3 rocBLAS is also installed; if you are building the rocSOLVER branch tip, then you
-will need to build and install rocBLAS branch tip as well.
+compatibility versions. For now, a good rule of thumb is to always use rocSOLVER together with the
+matching rocBLAS version. For example, if you want to install rocSOLVER from ROCm 3.3 release, then
+be sure that ROCm 3.3 rocBLAS is also installed; if you are building the rocSOLVER branch tip, then
+you will need to build and install rocBLAS branch tip as well.
 
 
 Installing from pre-built packages
@@ -67,17 +67,12 @@ Next, some common use cases are listed:
     
     ./install.sh             
 
-This command build rocSOLVER and put the generated library
-files (headers and ``librocsolver.so``)     
-in the output directory:                    
-``rocSOLVER/build/release/rocsolver-install``.     
-Other output files from the configuration   
-and building process can also be found      
-at ``rocSOLVER/build`` and ``rocSOLVER/build/release`` directories.  
-It is assumed that all the library external
-dependencies have been installed.           
-It also assumes that rocBLAS library is     
-located at: ``/opt/rocm/rocblas``.          
+This command builds rocSOLVER and puts the generated library files, such as headers and
+``librocsolver.so``, in the output directory: ``rocSOLVER/build/release/rocsolver-install``.
+Other output files from the configuration and building process can also be found at
+``rocSOLVER/build`` and ``rocSOLVER/build/release`` directories. It is assumed that all
+external library dependencies have been installed. It also assumes that rocBLAS library
+is located at: ``/opt/rocm/rocblas``.
 
 .. code-block:: bash
     
@@ -208,7 +203,7 @@ Manual building and installation
 Manual installation of all the external dependencies is not an easy task. Get more information on
 how to install each dependency at their corresponding documentation sources:
 
-* `Cmake <https://cmake.org/>`_ (version >3.5 is required).
+* `CMake <https://cmake.org/>`_ (version >3.5 is required).
 * `Python <https://www.python.org/>`_ (version >2.7 is required. Python is installed by default in some systems like Ubuntu).
 * `Boost <https://www.boost.org/>`_ 
 * `LAPACK <https://github.com/Reference-LAPACK/lapack-release>`_ (which internally depends on a Fortran compiler), and

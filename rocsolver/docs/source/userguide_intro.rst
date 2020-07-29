@@ -18,8 +18,8 @@ an optimized for AMD’s latest discrete GPUs.
 Brief description and functionality
 ====================================
 
-rocSolver Library is in early stages of active development. New features and functionality is being
-continuously added. New functionality is documented at each release of the ROCm platform.
+The rocSolver library is in the early stages of active development. New features are being
+continuously added, with new functionality documented at each release of the ROCm platform.
 
 The following table summarizes the LAPACK functionality implemented in rocSOLVER's latest release.
 

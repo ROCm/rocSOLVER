@@ -33,6 +33,14 @@ rocsolver_handle
 Enums
 ------------
 
+rocblas_direct
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocblas_direct
+
+rocblas_storev
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocblas_storev
+
 rocsolver_operation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygentypedef:: rocsolver_operation
@@ -56,18 +64,6 @@ rocsolver_side
 .. doxygentypedef:: rocsolver_side
 .. deprecated:: 3.5
    Use :c:enum:`rocblas_side`.
-
-rocsolver_direction
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygentypedef:: rocsolver_direction
-.. deprecated:: 3.5
-   Use :c:enum:`rocblas_direction`.
-
-rocsolver_storev
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygentypedef:: rocsolver_storev
-.. deprecated:: 3.5
-   Use :c:enum:`rocblas_storev`.
 
 rocsolver_status
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

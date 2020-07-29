@@ -7,21 +7,21 @@ add_library( rocblas_module OBJECT
   "${ROCBLAS_INCLUDE_DIR}/rocblas_module.f90"
 )
 
-add_executable( example-simple
-  example_simple.cpp
+add_executable( example-basic
+  example_basic.cpp
 )
-add_executable( example-deprecated-aliases
-  example_deprecated_aliases.f90
+add_executable( example-fortran-basic
+  example_basic.f90
   $<TARGET_OBJECTS:rocblas_module>
 )
 
 set( c_samples
 )
 set( cpp_samples
-  example-simple
+  example-basic
 )
 set( fortran_samples
-  example-deprecated-aliases
+  example-fortran-basic
 )
 
 foreach( exe ${c_samples} ${cpp_samples} ${fortran_samples} )
