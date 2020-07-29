@@ -14,54 +14,56 @@
 #include "rocblas_device_functions.hpp"
 #include "rocsolver.h"
 
-template <typename T, typename U>
-__global__ void trtri_check_singularity(const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
-                            const rocblas_stride strideA, rocblas_int *info)
+template <typename T>
+__device__ void trtri_check_singularity(const rocblas_int n, T *a, const rocblas_int lda, rocblas_int *info)
 {
-    // unblocked trtri kernel assuming non-unit upper triangular matrix
+    // check for singularities
     int b = hipBlockIdx_x;
-    int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
 
-    T* a = load_ptr_batch<T>(A,b,shiftA,strideA);
-
+    __shared__ rocblas_int _info;
+    
     // compute info
-    if (i == 0)
-        info[b] = 0;
+    if (hipThreadIdx_y == 0)
+        _info = 0;
     __syncthreads();
-    if (i < n)
+    for (int i = hipThreadIdx_y; i < n; i += hipBlockDim_y)
     {
         if (a[i + i * lda] == 0)
         {
-            rocblas_int _info = info[b];
-            while (_info == 0 || _info > i + 1)
-                _info = atomicCAS(info + b, _info, i + 1);
+            rocblas_int _info_temp = _info;
+            while (_info_temp == 0 || _info_temp > i + 1)
+                _info_temp = atomicCAS(&_info, _info_temp, i + 1);
         }
     }
+    __syncthreads();
+
+    if (hipThreadIdx_y == 0)
+        info[b] = _info;
+    __syncthreads();
 }
 
-template <typename T, typename U, typename V>
-__global__ void trtri_kernel(const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
-                            const rocblas_stride strideA, V W, const rocblas_int shiftW, const rocblas_int ldw,
-                            const rocblas_stride strideW, rocblas_int *info)
+template <typename T>
+__device__ void trtri_unblk(const rocblas_diagonal diag, const rocblas_int n, T *a, const rocblas_int lda,
+                            rocblas_int *info, T *w)
 {
     // unblocked trtri kernel assuming non-unit upper triangular matrix
-    int b = hipBlockIdx_x;
     int i = hipThreadIdx_y;
-
-    T* a = load_ptr_batch<T>(A,b,shiftA,strideA);
-    T* w = load_ptr_batch<T>(W,b,shiftW,strideW);
-
-    if (info[b] != 0)
+    if (i >= n)
         return;
 
     // diagonal element
-    a[i + i * lda] = 1.0 / a[i + i * lda];
-    __syncthreads();
+    if (diag == rocblas_diagonal_non_unit)
+    {
+        a[i + i * lda] = 1.0 / a[i + i * lda];
+        __syncthreads();
+    }
     
     // compute element i of each column j
-    T aij;
+    T ajj, aij;
     for (rocblas_int j = 1; j < n; j++)
     {
+        ajj = (diag == rocblas_diagonal_non_unit ? a[j + j * lda] : 1);
+
         if (i < j)
             w[i] = a[i + j * lda];
         __syncthreads();
@@ -73,9 +75,46 @@ __global__ void trtri_kernel(const rocblas_int n, U A, const rocblas_int shiftA,
             for (rocblas_int ii = i; ii < j; ii++)
                 aij += a[i + ii * lda] * w[ii];
 
-            a[i + j * lda] = -a[j + j * lda] * aij;
+            a[i + j * lda] = -ajj * aij;
         }
         __syncthreads();
+    }
+}
+
+
+template <typename T, typename U, typename V>
+__global__ void trtri_kernel(const rocblas_diagonal diag, const rocblas_int n,
+                             U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
+                             rocblas_int *info, V work)
+{
+    int b = hipBlockIdx_x;
+
+    rocblas_stride strideW = (n <= TRTRI_SWITCHSIZE ? n : TRTRI_BLOCKSIZE);
+    T* a = load_ptr_batch<T>(A,b,shiftA,strideA);
+    T* w = load_ptr_batch<T>(work,b,0,strideW);
+
+    trtri_check_singularity(n, a, lda, info);
+    if (info[b] != 0)
+        return;
+
+    if (n <= TRTRI_SWITCHSIZE)
+        // use unblocked version
+        trtri_unblk(diag, n, a, lda, info, w);
+    else
+    {
+        // use blocked version
+        T minone = -1;
+        T one = 1;
+        rocblas_int jb, nb = TRTRI_BLOCKSIZE;
+        
+        for (rocblas_int j = 0; j < n; j += nb)
+        {
+            jb = min(n-j, nb);
+
+            trmm_kernel_left_upper(diag, j, jb, &one, a, lda, a + j*lda, lda, w);
+            trsm_kernel_right_upper(diag, j, jb, &minone, a + j+j*lda, lda, a + j*lda, lda);
+            trtri_unblk(diag, jb, a + j+j*lda, lda, info, w);
+        }
     }
 }
 
@@ -91,7 +130,9 @@ void rocsolver_trtri_getMemorySize(const rocblas_int n, const rocblas_int batch_
     if (n <= TRTRI_SWITCHSIZE)
         *size_2 = n;
     else
-        *size_2 = max(TRTRI_BLOCKSIZE, 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB);
+        *size_2 = TRTRI_BLOCKSIZE;
+    // else
+    //     *size_2 = max(TRTRI_BLOCKSIZE, 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB);
     *size_2 *= sizeof(T)*batch_count;
 
     // size of array of pointers to workspace
@@ -147,55 +188,38 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
     if (uplo != rocblas_fill_upper || diag != rocblas_diagonal_non_unit)
         return rocblas_status_not_implemented;
 
-    // everything must be executed with scalars on the host
-    rocblas_pointer_mode old_mode;
-    rocblas_get_pointer_mode(handle,&old_mode);
-    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_host);
+    // // everything must be executed with scalars on the host
+    // rocblas_pointer_mode old_mode;
+    // rocblas_get_pointer_mode(handle,&old_mode);
+    // rocblas_set_pointer_mode(handle,rocblas_pointer_mode_host);
 
-    T minone = -1;
-    T one = 1;
-    rocblas_int jb, nb = TRTRI_BLOCKSIZE;
-    rocblas_int ldw;
-    rocblas_stride strideW;
-
-    //check if matrices are singular
-    rocblas_int threads = min(n, 1024);
-    rocblas_int blocks = (n - 1)/32 + 1;
-    hipLaunchKernelGGL(trtri_check_singularity<T>, dim3(batch_count,blocks,1), dim3(1,32,1), 0, stream,
-                        n, A, shiftA, lda, strideA, info);
+    rocblas_int threads = min(((n - 1)/64 + 1) * 64, TRTRI_BLOCKSIZE);
     
-    if (n <= TRTRI_SWITCHSIZE)
-    {
-        //use unblocked version
-        ldw = n;
-        strideW = n;
-        hipLaunchKernelGGL(trtri_kernel<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
-                        n, A, shiftA, lda, strideA, work, 0, ldw, strideW, info);
-    }
-    else
-    {
-        //use blocked version
-        ldw = nb;
-        strideW = nb;
-        for (rocblas_int j = 0; j < n; j += nb)
-        {
-            threads = min(j, 1024);
-            jb = min(n-j, nb);
+    hipLaunchKernelGGL(trtri_kernel<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
+                    diag, n, A, shiftA, lda, strideA, info, work);
+    
+    // else
+    // {
+    //     //use blocked version
+    //     ldw = nb;
+    //     strideW = nb;
+    //     for (rocblas_int j = 0; j < n; j += nb)
+    //     {
+    //         threads = min(j, 1024);
+    //         jb = min(n-j, nb);
             
-            // rocblasCall_trmm<BATCHED,STRIDED,T>(handle, rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
-            //                                     diag, j, jb, &one, A, shiftA, lda, strideA,
-            //                                     A, shiftA + idx2D(0,j,lda), lda, strideA, batch_count, work, workArr);
-            hipLaunchKernelGGL(trmm_kernel_left_upper<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
-                       diag, j, jb, scalars+2, A, shiftA, lda, strideA, A, shiftA + idx2D(0,j,lda), lda, strideA);
-            hipLaunchKernelGGL(trsm_kernel_right_upper<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
-                       diag, j, jb, scalars, A, shiftA + idx2D(j,j,lda), lda, strideA, A, shiftA + idx2D(0,j,lda), lda, strideA);
+    //         rocblasCall_trmm<BATCHED,STRIDED,T>(handle, rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
+    //                                             diag, j, jb, &one, A, shiftA, lda, strideA,
+    //                                             A, shiftA + idx2D(0,j,lda), lda, strideA, batch_count, work, workArr);
+    //         hipLaunchKernelGGL(trsm_kernel_right_upper<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
+    //                    diag, j, jb, scalars, A, shiftA + idx2D(j,j,lda), lda, strideA, A, shiftA + idx2D(0,j,lda), lda, strideA);
 
-            hipLaunchKernelGGL(trtri_kernel<T>, dim3(batch_count,1,1), dim3(1,jb,1), 0, stream,
-                            jb, A, shiftA + idx2D(j,j,lda), lda, strideA, work, 0, ldw, strideW, info);
-        }
-    }
+    //         hipLaunchKernelGGL(trtri_kernel<T>, dim3(batch_count,1,1), dim3(1,jb,1), 0, stream,
+    //                         jb, j, A, shiftA + idx2D(j,j,lda), lda, strideA, work, 0, ldw, strideW, info);
+    //     }
+    // }
 
-    rocblas_set_pointer_mode(handle,old_mode);
+    // rocblas_set_pointer_mode(handle,old_mode);
     return rocblas_status_success;
 }
 

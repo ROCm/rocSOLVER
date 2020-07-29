@@ -8,48 +8,38 @@
 #include "common_device.hpp"
 
 
-template <typename T, typename U, typename V>
-__global__ void trmm_kernel_left_upper(const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, T* alpha,
-                                       U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
-                                       V B, const rocblas_int shiftB, const rocblas_int ldb, const rocblas_stride strideB)
+template <typename T>
+__device__ void trmm_kernel_left_upper(const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, T* alpha,
+                                       T *a, const rocblas_int lda, T *b, const rocblas_int ldb, T *w)
 {
     // trmm kernel assuming no transpose, upper triangular matrix from the left
-    int batch = hipBlockIdx_x;
-
-    T* a = load_ptr_batch<T>(A,batch,shiftA,strideA);
-    T* b = load_ptr_batch<T>(B,batch,shiftB,strideB);
-
-    T temp;
-    for (int j = hipThreadIdx_y; j < n; j += hipBlockDim_y)
+    // min dim for w is m
+    T bij;
+    for (int j = 0; j < n; j++)
     {
-        for (int k = 0; k < m; k++)
-        {
-            temp = *alpha * b[k + j * ldb];
-
-            for (int i = 0; i < k; i++)
-                b[i + j * ldb] += temp * a[i + k * lda];
-
-            if (diag == rocblas_diagonal_non_unit)
-                temp *= a[k + k * lda];
+        for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
+            w[i] = b[i + j * ldb];
+        __syncthreads();
             
-            b[k + j * ldb] = temp;
+        for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
+        {
+            bij = (diag == rocblas_diagonal_non_unit ? a[i + i * lda] : 1) * b[i + j * ldb];
+
+            for (int k = i + 1; k < m; k++)
+                bij += a[i + k * lda] * w[k];
+            
+            b[i + j * ldb] = *alpha * bij;
         }
         __syncthreads();
     }
 }
 
 
-template <typename T, typename U, typename V>
-__global__ void trsm_kernel_right_upper(const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, T* alpha,
-                                        U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
-                                        V B, const rocblas_int shiftB, const rocblas_int ldb, const rocblas_stride strideB)
+template <typename T>
+__device__ void trsm_kernel_right_upper(const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, T* alpha,
+                                        T *a, const rocblas_int lda, T *b, const rocblas_int ldb)
 {
     // trsm kernel assuming no transpose, upper triangular matrix from the right
-    int batch = hipBlockIdx_x;
-
-    T* a = load_ptr_batch<T>(A,batch,shiftA,strideA);
-    T* b = load_ptr_batch<T>(B,batch,shiftB,strideB);
-
     T ajj, bij;
     for (int j = 0; j < n; j++)
     {
