@@ -1,7 +1,7 @@
 // This file is for internal AMD use.
 // If you are interested in running your own Jenkins, please raise a github issue for assistance.
 
-def runCompileCommand(platform, project, jobName)
+def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
 {
     project.paths.construct_build_prefix()
 
@@ -22,7 +22,7 @@ def runCompileCommand(platform, project, jobName)
         }
     }
 
-    def getRocBLAS = auxiliary.getLibrary('rocBLAS-internal',platform.jenkinsLabel,'develop')
+    def getRocBLAS = auxiliary.getLibrary('rocBLAS-internal',platform.jenkinsLabel,'develop', sameOrg)
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}
