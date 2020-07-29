@@ -41,6 +41,18 @@ rocblas_storev
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenenum:: rocblas_storev
 
+rocsolver_direction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygentypedef:: rocsolver_direction
+.. deprecated:: 3.5
+   Use :c:enum:`rocblas_direct`.
+
+rocsolver_storev
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygentypedef:: rocsolver_storev
+.. deprecated:: 3.5
+   Use :c:enum:`rocblas_storev`.
+
 rocsolver_operation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygentypedef:: rocsolver_operation

@@ -80,6 +80,20 @@ typedef rocblas_status rocsolver_status
 typedef rocblas_layer_mode rocsolver_layer_mode
         __attribute__((deprecated("use rocblas_layer_mode")));
 
+
+//extras types only used in rocsolver
+
+/*! \deprecated Use \c rocblas_direct
+*/
+typedef rocblas_direct rocsolver_direction
+        __attribute__((deprecated("use rocblas_direct")));
+
+/*! \deprecated Use \c rocblas_storev.
+*/
+typedef rocblas_storev rocsolver_storev
+        __attribute__((deprecated("use rocblas_storev")));
+
+
 //auxiliaries
 #ifdef __cplusplus
 extern "C" {
