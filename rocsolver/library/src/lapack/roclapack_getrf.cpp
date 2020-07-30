@@ -7,7 +7,8 @@
 template <typename T, typename U>
 rocblas_status rocsolver_getrf_impl(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int lda,
-                                        rocblas_int *ipiv, rocblas_int* info) {
+                                        rocblas_int *ipiv, rocblas_int* info, const int pivot) 
+{
     if(!handle)
         return rocblas_status_invalid_handle;
     
@@ -48,7 +49,7 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle, const rocblas_int m,
                                                     lda,strideA,
                                                     ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)
                                                     strideP,
-                                                    info,batch_count,
+                                                    info,batch_count,pivot,
                                                     (T*)scalars,
                                                     (T*)pivotGPU,
                                                     (rocblas_int*)iinfo);
@@ -71,25 +72,53 @@ extern "C" {
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                  float *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info) 
 {
-    return rocsolver_getrf_impl<float>(handle, m, n, A, lda, ipiv, info);
+    return rocsolver_getrf_impl<float>(handle, m, n, A, lda, ipiv, info, 1);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                  double *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info) 
 {
-//    return rocsolver_getrf_impl<double>(handle, m, n, A, lda, ipiv, info);
+//    return rocsolver_getrf_impl<double>(handle, m, n, A, lda, ipiv, info, 1);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                  rocblas_float_complex *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info) 
 {
-//    return rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info);
+//    return rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, 1);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                  rocblas_double_complex *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info) 
 {
-//    return rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info);
+//    return rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, 1);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_npvt(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+                 float *A, const rocblas_int lda, rocblas_int* info) 
+{
+    rocblas_int *ipiv;
+    return rocsolver_getrf_impl<float>(handle, m, n, A, lda, ipiv, info, 0);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_npvt(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+                 double *A, const rocblas_int lda, rocblas_int* info) 
+{
+    rocblas_int *ipiv;
+//    return rocsolver_getrf_impl<double>(handle, m, n, A, lda, ipiv, info, 0);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_npvt(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+                 rocblas_float_complex *A, const rocblas_int lda, rocblas_int* info) 
+{
+    rocblas_int *ipiv;
+//    return rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, 0);
+}
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+                 rocblas_double_complex *A, const rocblas_int lda, rocblas_int* info) 
+{
+    rocblas_int *ipiv;
+//    return rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, 0);
 }
 
 } //extern C

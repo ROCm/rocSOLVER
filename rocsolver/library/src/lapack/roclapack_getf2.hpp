@@ -124,6 +124,7 @@ LUfact_panel_kernel(const rocblas_int m, const rocblas_int n, U AA, const rocbla
                       rA[i][j] -= rA[i][k] * common[j];   
             }
         }
+        __syncthreads();
     }
 
     // write results to global memory 
@@ -245,6 +246,7 @@ LUfact_panel_kernel_blk(const rocblas_int m, U AA, const rocblas_int shiftA, con
                       rA[i][j] -= rA[i][k] * common[j];   
             }
         }
+        __syncthreads();
     }
 
     // write results to global memory 
@@ -398,6 +400,7 @@ LUfact_small_kernel(const rocblas_int m, U AA, const rocblas_int shiftA, const r
             for (int j = k+1; j < DIM; ++j) 
                   rA[j] -= rA[k] * common[j];   
         }
+        __syncthreads();
     }
 
     // write results to global memory 

@@ -47,7 +47,7 @@ template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
                                         rocblas_int *ipiv, const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int *info, const rocblas_int batch_count,
-                                        T* scalars, T* pivotGPU, rocblas_int* iinfo)
+                                        const rocblas_int pivot, T* scalars, T* pivotGPU, rocblas_int* iinfo)
 {
     // quick return
     if (m == 0 || n == 0 || batch_count == 0) 
