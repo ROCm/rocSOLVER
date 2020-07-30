@@ -20,9 +20,10 @@ void get_example_matrix(std::vector<double>& hA,
   // note: rocsolver matrices must be stored in column major format,
   //       i.e. entry (i,j) should be accessed by hA[i + j*lda]
   hA.resize(size_t(lda) * N);
-  for (size_t i = 0, j = 0; j < N; ++j) {
-    for (size_t k = 0; k < lda; ++k, ++i) {
-      hA[i] = A[k][j]; // convert A (row-major) for hA (column-major)
+  for (size_t i = 0; i < M; ++i) {
+    for (size_t j = 0; j < N; ++j) {
+      // copy A (2D array) into hA (1D array, column-major)
+      hA[i + j*lda] = A[i][j];
     }
   }
 }
@@ -39,7 +40,7 @@ int main() {
 
   // let's print the input matrix, just to see it
   printf("A = [\n");
-  for (size_t i = 0; i < lda; ++i) {
+  for (size_t i = 0; i < M; ++i) {
     printf("  ");
     for (size_t j = 0; j < N; ++j) {
       printf("% .3f ", hA[i + j*lda]);
@@ -75,7 +76,7 @@ int main() {
   // the results are now in hA and hIpiv
   // we can print some of the results if we want to see them
   printf("R = [\n");
-  for (size_t i = 0; i < lda; ++i) {
+  for (size_t i = 0; i < M; ++i) {
     printf("  ");
     for (size_t j = 0; j < N; ++j) {
       printf("% .3f ", (i <= j) ? hA[i + j*lda] : 0);
