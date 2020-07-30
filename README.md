@@ -53,8 +53,8 @@ int main() {
 
   // here is where you would initialize M, N and lda with desired values
 
-  rocsolver_handle handle;
-  rocsolver_create_handle(&handle);
+  rocblas_handle handle;
+  rocblas_create_handle(&handle);
 
   size_t size_A = size_t(lda) * N;          // the size of the array for the matrix
   size_t size_piv = size_t(std::min(M, N)); // the size of array for the Householder scalars
@@ -82,7 +82,7 @@ int main() {
 
   hipFree(dA);                        // de-allocate GPU memory
   hipFree(dIpiv);
-  rocsolver_destroy_handle(handle);   // destroy handle
+  rocblas_destroy_handle(handle);     // destroy handle
 }
 ```
 

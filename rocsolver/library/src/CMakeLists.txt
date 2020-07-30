@@ -27,6 +27,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 set( rocsolver_auxiliary_source
+  auxiliary/rocauxiliary_aliases.cpp
   auxiliary/rocauxiliary_lacgv.cpp
   auxiliary/rocauxiliary_laswp.cpp
   auxiliary/rocauxiliary_larfg.cpp

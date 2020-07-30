@@ -2,8 +2,8 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef _EXTRAS_H_
-#define _EXTRAS_H_
+#ifndef ROCSOLVER_EXTRAS_H_
+#define ROCSOLVER_EXTRAS_H_
 
 /*! \brief Used to specify the order in which multiple elementary matrices are applied together 
  ********************************************************************************/ 

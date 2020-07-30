@@ -10,7 +10,7 @@ Introduction
 Overview
 ==================
 
-An implementation of `Lapack routines <http://www.netlib.org/lapack/explore-html/index.html>`_ 
+rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_
 on top of AMD’s Radeon Open Compute Platform runtime and toolchains (`ROCm <https://rocm.github.io>`_). 
 rocSOLVER is implemented in the `HIP programming language <https://github.com/ROCm-Developer-Tools/HIP>`_
 an optimized for AMD’s latest discrete GPUs.  
@@ -18,13 +18,13 @@ an optimized for AMD’s latest discrete GPUs.
 Brief description and functionality
 ====================================
 
-rocSolver Library is in early stages of active development. New features and functionality is being continuosly added. New 
-functionality is documented at each release of the ROCm platform. 
+The rocSolver library is in the early stages of active development. New features are being
+continuously added, with new functionality documented at each release of the ROCm platform.
 
 The following table summarizes the LAPACK functionality implemented in rocSOLVER's latest release.
 
 =============================== ====== ====== ============== ==============
-Lapack Auxiliary Function       single double single complex double complex
+LAPACK Auxiliary Function       single double single complex double complex
 =============================== ====== ====== ============== ==============
 **rocsolver_lacgv**                              x              x
 **rocsolver_laswp**             x      x         x              x
@@ -57,7 +57,7 @@ Lapack Auxiliary Function       single double single complex double complex
 =============================== ====== ====== ============== ==============
 
 =============================== ====== ====== ============== ==============
-Lapack Function                 single double single complex double complex
+LAPACK Function                 single double single complex double complex
 =============================== ====== ====== ============== ==============
 **rocsolver_potf2**             x      x          x             x
 rocsolver_potf2_batched         x      x          x             x

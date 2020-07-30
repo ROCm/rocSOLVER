@@ -162,7 +162,8 @@ option( BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON )
 # by default, clients are not built
 include( rocsolver/clients/cmake/build-options.cmake )
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
-message(STATUS "benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
+message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
+message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
 
 
 # force library install path to lib (CentOS 7 defaults to lib64)
@@ -185,7 +186,7 @@ set( AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific m
 add_subdirectory( rocsolver/library )
 
 # Build clients of the library
-if( BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS )
+if( BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES )
   add_subdirectory( rocsolver/clients )
 endif( )
 
