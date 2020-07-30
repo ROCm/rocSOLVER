@@ -104,26 +104,20 @@ __device__ void gemv_kernel(const rocblas_int m, const rocblas_int n, T* alpha,
                             T* beta, T *y, const rocblas_int incY)
 {
     // gemv kernel assuming no transpose
-    if (*beta != 1)
+    T yi;
+    for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
     {
-        for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
-            y[i * incY] *= *beta;
-        __syncthreads();
-    }
+        yi = 0;
 
-    if (*alpha == 0)
-        return;
-
-    T temp;
-    for (int j = 0; j < n; j++)
-    {
-        temp = *alpha * x[j * incX];
-
-        for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
-            y[i * incY] += temp * a[i + j * lda];
+        if (*alpha != 0)
+        {
+            for (int k = 0; k < n; k++)
+                yi += a[i + k * lda] * x[k * incX];
+        }
         
-        __syncthreads();
+        y[i * incY] = *alpha * yi + *beta * y[i * incY];
     }
+    __syncthreads();
 }
 
 
@@ -133,25 +127,22 @@ __device__ void gemm_kernel(const rocblas_int m, const rocblas_int n, const rocb
                             T* beta, T *c, const rocblas_int ldc)
 {
     // gemm kernel assuming no transpose
-    T temp;
+    T cij;
     for (int j = 0; j < n; j++)
     {
-        if (*beta != 1)
+        for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
         {
-            for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
-                c[i + j * lda] *= *beta;
-            __syncthreads();
-        }
+            cij = 0;
 
-        for (int l = 0; l < k; l++)
-        {
-            temp = *alpha * b[l + j * ldb];
+            if (*alpha != 0)
+            {
+                for (int l = 0; l < k; l++)
+                    cij += a[i + l * lda] * b[l + j * ldb];
+            }
 
-            for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
-                c[i + j * ldc] += temp * a[i + l * lda];
-                
-            __syncthreads();
+            c[i + j * ldc] = *alpha * cij + *beta * c[i + j * ldc];
         }
+        __syncthreads();
     }
 }
 
