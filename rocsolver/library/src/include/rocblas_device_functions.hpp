@@ -66,17 +66,11 @@ __device__ void trsm_kernel_right_upper(const rocblas_diagonal diag, const rocbl
     }
 }
 
-template <typename T, typename U, typename V>
-__global__ void trsm_kernel_right_lower(const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, T* alpha,
-                                        U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
-                                        V B, const rocblas_int shiftB, const rocblas_int ldb, const rocblas_stride strideB)
+template <typename T>
+__device__ void trsm_kernel_right_lower(const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, T* alpha,
+                                        T *a, const rocblas_int lda, T *b, const rocblas_int ldb)
 {
     // trsm kernel assuming no transpose, lower triangular matrix from the right
-    int batch = hipBlockIdx_x;
-
-    T* a = load_ptr_batch<T>(A,batch,shiftA,strideA);
-    T* b = load_ptr_batch<T>(B,batch,shiftB,strideB);
-
     T ajj, bij;
     for (int j = n - 1; j >= 0; j--)
     {
@@ -104,19 +98,12 @@ __global__ void trsm_kernel_right_lower(const rocblas_diagonal diag, const rocbl
 }
 
 
-template <typename T, typename U, typename V, typename W>
-__global__ void gemv_kernel(const rocblas_int m, const rocblas_int n, T* alpha,
-                            U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
-                            V X, const rocblas_int shiftX, const rocblas_int incX, const rocblas_stride strideX, T* beta,
-                            W Y, const rocblas_int shiftY, const rocblas_int incY, const rocblas_stride strideY)
+template <typename T>
+__device__ void gemv_kernel(const rocblas_int m, const rocblas_int n, T* alpha,
+                            T *a, const rocblas_int lda, T *x, const rocblas_int incX,
+                            T* beta, T *y, const rocblas_int incY)
 {
     // gemv kernel assuming no transpose
-    int batch = hipBlockIdx_x;
-
-    T* a = load_ptr_batch<T>(A,batch,shiftA,strideA);
-    T* x = load_ptr_batch<T>(X,batch,shiftX,strideX);
-    T* y = load_ptr_batch<T>(Y,batch,shiftY,strideY);
-    
     if (*beta != 1)
     {
         for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
@@ -140,19 +127,12 @@ __global__ void gemv_kernel(const rocblas_int m, const rocblas_int n, T* alpha,
 }
 
 
-template <typename T, typename U, typename V, typename W>
-__global__ void gemm_kernel(const rocblas_int m, const rocblas_int n, const rocblas_int k, T* alpha,
-                            U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
-                            V B, const rocblas_int shiftB, const rocblas_int ldb, const rocblas_stride strideB, T* beta,
-                            W C, const rocblas_int shiftC, const rocblas_int ldc, const rocblas_stride strideC)
+template <typename T>
+__device__ void gemm_kernel(const rocblas_int m, const rocblas_int n, const rocblas_int k, T* alpha,
+                            T *a, const rocblas_int lda, T *b, const rocblas_int ldb,
+                            T* beta, T *c, const rocblas_int ldc)
 {
     // gemm kernel assuming no transpose
-    int batch = hipBlockIdx_x;
-
-    T* a = load_ptr_batch<T>(A,batch,shiftA,strideA);
-    T* b = load_ptr_batch<T>(B,batch,shiftB,strideB);
-    T* c = load_ptr_batch<T>(C,batch,shiftC,strideC);
-    
     T temp;
     for (int j = 0; j < n; j++)
     {
