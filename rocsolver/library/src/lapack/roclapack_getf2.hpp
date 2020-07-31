@@ -526,32 +526,44 @@ __global__ void getf2_check_singularity(U AA, const rocblas_int shiftA, const ro
                                         rocblas_int* ipivA, const rocblas_int shiftP,
                                         const rocblas_stride strideP, const rocblas_int j,
                                         const rocblas_int lda,
-                                        T* invpivot, rocblas_int* info)
+                                        T* pivot_val, rocblas_int* pivot_idx, rocblas_int* info, const int pivot)
 {
     int id = hipBlockIdx_x;
+    rocblas_int idx;
 
     T* A = load_ptr_batch<T>(AA,id,shiftA,strideA);
-    rocblas_int *ipiv = ipivA + id*strideP + shiftP;
-
-    ipiv[j] += j;           //update the pivot index
-    if (A[j * lda + ipiv[j] - 1] == 0) {
-        invpivot[id] = 1.0;
+    rocblas_int *ipiv;
+    
+    if (pivot) { 
+        ipiv = ipivA + id*strideP + shiftP;
+        ipiv[j] = pivot_idx[id]+j;  //update pivot index
+        idx = j * lda + ipiv[j] - 1;
+    } else idx = j * lda + j;  
+    
+    if (A[idx] == 0) {
+        pivot_val[id] = 1.0;
         if (info[id] == 0)
            info[id] = j + 1;   //use Fortran 1-based indexing
     }
-    else
-        invpivot[id] = 1.0 / A[j * lda + ipiv[j] - 1];
+    else pivot_val[id] = 1.0 / A[idx];
 }
 
-template <typename T>
-void rocsolver_getf2_getMemorySize(const rocblas_int batch_count,
-                                  size_t *size_1, size_t *size_2)
+template <typename T, typename S>
+void rocsolver_getf2_getMemorySize(const rocblas_int m, const rocblas_int batch_count,
+                                  size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4)
 {
     // for scalars
     *size_1 = sizeof(T)*3;
 
-    // for pivots
+    // for pivot values
     *size_2 = sizeof(T)*batch_count;
+
+    // for pivot indices
+    *size_3 = sizeof(rocblas_int)*batch_count;
+
+    // for workspace
+    *size_4 = sizeof(rocblas_index_value_t<S>) * ((m - 1) / ROCBLAS_IAMAX_NB + 2) * batch_count;
+    
 }
 
 template <typename T>
@@ -574,12 +586,12 @@ rocblas_status rocsolver_getf2_getrf_argCheck(const rocblas_int m, const rocblas
     return rocblas_status_continue;
 }
 
-template <typename T, typename U>
+template <bool ISBATCHED, typename T, typename S, typename U>
 rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
                                         const rocblas_stride strideA, rocblas_int *ipiv, const rocblas_int shiftP, 
                                         const rocblas_stride strideP, rocblas_int* info, const rocblas_int batch_count, const rocblas_int pivot, 
-                                        T* scalars, T* pivotGPU)
+                                        T* scalars, T* pivot_val, rocblas_int* pivot_idx, rocblas_index_value_t<S> *work)
 {
     // quick return if zero instances in batch
     if (batch_count == 0)
@@ -600,53 +612,38 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
     // quick return if no dimensions
     if (m == 0 || n == 0) 
         return rocblas_status_success;
-
+/*
     #ifdef OPTIMAL
     // Use optimized LU factorization for the right sizes
-    if (m <= GETF2_MAX_THDS) {
-        if (n <= WAVESIZE)
+    if (n <= WAVESIZE) {
+        if (m <= GETF2_MAX_THDS) 
             return LUfact_small<T>(handle,m,n,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,batch_count,pivot);
-    } 
-    else if (m <= GETF2_OPTIM_MAX_SIZE) {
-        if (n <= WAVESIZE)
+        else if (m <= GETF2_OPTIM_MAX_SIZE) 
             return LUfact_panel<T>(handle,m,n,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,batch_count,pivot);
     }
     #endif
-
+*/
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);
     rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);    
 
-    // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-    //      IAMAX_BATCH FUNCTIONALITY IS ENABLED. ****
-    #ifdef batched
-        T* AA[batch_count];
-        hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
-    #else
-        T* AA = A;
-    #endif
-
-    // **** IAMAX_BATCH IS EXECUTED IN A FOR-LOOP UNTIL 
-    //      FUNCITONALITY IS ENABLED. ****
-
     for (rocblas_int j = 0; j < dim; ++j) {
-        // find pivot. Use Fortran 1-based indexing for the ipiv array as iamax does that as well!
-        for (int b=0;b<batch_count;++b) {
-            M = load_ptr_batch<T>(AA,b,shiftA,strideA);
-            rocblas_iamax(handle, m - j, (M + idx2D(j, j, lda)), 1, 
-                        (ipiv + shiftP + b*strideP + j));
-        }
-
+        
+        if (pivot) 
+            // find pivot. Use Fortran 1-based indexing for the ipiv array as iamax does that as well!
+            rocblasCall_iamax<ISBATCHED,T,S>(handle, m-j, A, shiftA + idx2D(j,j,lda), 1, strideA, batch_count, pivot_idx, work); 
+        
         // adjust pivot indices and check singularity
         hipLaunchKernelGGL(getf2_check_singularity<T>, dim3(batch_count), dim3(1), 0, stream,
-                  A, shiftA, strideA, ipiv, shiftP, strideP, j, lda, pivotGPU, info);
+                  A, shiftA, strideA, ipiv, shiftP, strideP, j, lda, pivot_val, pivot_idx, info, pivot);
 
-        // Swap pivot row and j-th row 
-        rocsolver_laswp_template<T>(handle, n, A, shiftA, lda, strideA, j+1, j+1, ipiv, shiftP, strideP, 1, batch_count);
+        if (pivot) 
+            // Swap pivot row and j-th row 
+            rocsolver_laswp_template<T>(handle, n, A, shiftA, lda, strideA, j+1, j+1, ipiv, shiftP, strideP, 1, batch_count);
 
         // Compute elements J+1:M of J'th column
-        rocblasCall_scal<T>(handle, m-j-1, pivotGPU, 1, A, shiftA+idx2D(j+1, j, lda), 1, strideA, batch_count);
+        rocblasCall_scal<T>(handle, m-j-1, pivot_val, 1, A, shiftA+idx2D(j+1, j, lda), 1, strideA, batch_count);
 
         // update trailing submatrix
         if (j < min(m, n) - 1) {

@@ -13,6 +13,21 @@ struct rocblas_index_value_t;
 #include "helpers.hpp"
 #include "common_device.hpp"
 
+// iamax
+template <bool ISBATCHED, typename T, typename S, typename U>
+rocblas_status rocblasCall_iamax(rocblas_handle             handle,
+                                 rocblas_int                n,
+                                 U                          x,
+                                 rocblas_int                shiftx,
+                                 rocblas_int                incx,
+                                 rocblas_stride             stridex,
+                                 rocblas_int                batch_count,
+                                 rocblas_int*               result,
+                                 rocblas_index_value_t<S>*  workspace)
+{
+    return rocblas_iamax_template<ROCBLAS_IAMAX_NB,ISBATCHED>(handle,n,cast2constType<T>(x),shiftx,incx,stridex,batch_count,result,workspace);
+}
+
 // scal
 template <typename T, typename U, typename V>
 rocblas_status rocblasCall_scal(rocblas_handle handle, 
@@ -550,6 +565,51 @@ rocblas_status rocblasCall_herk(rocblas_handle    handle,
 }
 
 
+// trsm
+template <rocblas_int BLOCK, bool BATCHED, typename T, typename U>
+rocblas_status rocblas_trsm_template_mem(rocblas_handle handle,
+                                                                 rocblas_side   side,
+                                                                 rocblas_int    m,
+                                                                 rocblas_int    n,
+                                                                 rocblas_int    batch_count,
+                                                                 void*&         mem_x_temp,
+                                                                 void*&         mem_x_temp_arr,
+                                                                 void*&         mem_invA,
+                                                                 void*&         mem_invA_arr,
+                                                                 U supplied_invA = nullptr,
+                                                                 rocblas_int supplied_invA_size = 0);
+
+template <rocblas_int BLOCK, bool BATCHED, typename T, typename U, typename V>
+rocblas_status rocblas_trsm_template(rocblas_handle    handle,
+                                                             rocblas_side      side,
+                                                             rocblas_fill      uplo,
+                                                             rocblas_operation transA,
+                                                             rocblas_diagonal  diag,
+                                                             rocblas_int       m,
+                                                             rocblas_int       n,
+                                                             const T*          alpha,
+                                                             U                 A,
+                                                             rocblas_int       offset_A,
+                                                             rocblas_int       lda,
+                                                             rocblas_stride    stride_A,
+                                                             V                 B,
+                                                             rocblas_int       offset_B,
+                                                             rocblas_int       ldb,
+                                                             rocblas_stride    stride_B,
+                                                             rocblas_int       batch_count,
+                                                             bool              optimal_mem,
+                                                             void*             x_temp,
+                                                             void*             x_temparr,
+                                                             void*             invA       = nullptr,
+                                                             void*             invAarr    = nullptr,
+                                                             U              supplied_invA = nullptr,
+                                                             rocblas_int    supplied_invA_size = 0,
+                                                             rocblas_int    offset_invA        = 0,
+                                                             rocblas_stride stride_invA        = 0);
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 // THESE SHOULD BE SUBTITUTED BY THEIR CORRESPONDING 
@@ -573,9 +633,9 @@ rocblas_status rocblas_nrm2(rocblas_handle handle, rocblas_int n,
 }*/
 
 // iamax
-template <typename T>
-rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n, const T *x,
-                             rocblas_int incx, rocblas_int *result);
+//template <typename T>
+//rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n, const T *x,
+//                             rocblas_int incx, rocblas_int *result);
 /*template <>
 rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n,
                              const float *x, rocblas_int incx,

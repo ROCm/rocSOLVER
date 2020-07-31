@@ -23,17 +23,22 @@ rocblas_status rocsolver_getrf_batched_impl(rocblas_handle handle, rocblas_int m
     rocblas_stride strideA = 0;
 
     // memory managment
+    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
     size_t size_1;  //size of constants
     size_t size_2;
     size_t size_3;
-    rocsolver_getrf_getMemorySize<T>(m,n,batch_count,&size_1,&size_2,&size_3);
+    size_t size_4;
+    size_t size_5;
+    rocsolver_getrf_getMemorySize<T,S>(m,n,batch_count,&size_1,&size_2,&size_3,&size_4,&size_5);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-    void *scalars, *pivotGPU, *iinfo;
+    void *scalars, *pivot_val, *pivot_idx, *iinfo, *work;
     hipMalloc(&scalars,size_1);
-    hipMalloc(&pivotGPU,size_2);
-    hipMalloc(&iinfo,size_3);
-    if (!scalars || (size_2 && !pivotGPU) || (size_3 && !iinfo))
+    hipMalloc(&pivot_val,size_2);
+    hipMalloc(&pivot_idx,size_3);
+    hipMalloc(&iinfo,size_4);
+    hipMalloc(&work,size_5);
+    if (!scalars || (size_2 && !pivot_val) || (size_3 && !pivot_idx) || (size_4 && !iinfo) || (size_5 && !work))
         return rocblas_status_memory_error;
 
     // scalar constants for rocblas functions calls
@@ -43,19 +48,23 @@ rocblas_status rocsolver_getrf_batched_impl(rocblas_handle handle, rocblas_int m
 
     // execution
     rocblas_status status =
-           rocsolver_getrf_template<true,false,T>(handle,m,n,
+           rocsolver_getrf_template<true,false,T,S>(handle,m,n,
                                                     A,0,    //The matrix is shifted 0 entries (will work on the entire matrix)
                                                     lda,strideA,
                                                     ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)
                                                     strideP,
                                                     info,batch_count,pivot,
                                                     (T*)scalars,
-                                                    (T*)pivotGPU,
-                                                    (rocblas_int*)iinfo);
+                                                    (T*)pivot_val,
+                                                    (rocblas_int*)pivot_idx,
+                                                    (rocblas_int*)iinfo,
+                                                    (rocblas_index_value_t<S>*)work);
 
     hipFree(scalars);
-    hipFree(pivotGPU);
+    hipFree(pivot_val);
+    hipFree(pivot_idx);
     hipFree(iinfo);
+    hipFree(work);
     return status;
 }
 

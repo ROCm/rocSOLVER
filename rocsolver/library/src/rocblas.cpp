@@ -15,7 +15,7 @@ rocblas_status rocblas_nrm2(rocblas_handle handle, rocblas_int n,
   return rocblas_dnrm2(handle, n, x, incx, result);
 }
 
-template <>
+/*template <>
 rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n,
                              const float *x, rocblas_int incx,
                              rocblas_int *result) {
@@ -38,9 +38,9 @@ rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n,
                              const rocblas_double_complex *x, rocblas_int incx,
                              rocblas_int *result) {
   return rocblas_izamax(handle, n, x, incx, result);
-}
+}*/
 
-template <>
+/*template <>
 rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
                             rocblas_fill uplo, rocblas_operation transA,
                             rocblas_diagonal diag, rocblas_int m, rocblas_int n,
@@ -71,7 +71,7 @@ rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
                             const rocblas_double_complex *alpha, rocblas_double_complex *A, rocblas_int lda,
                             rocblas_double_complex *B, rocblas_int ldb) {
     return rocblas_ztrsm(handle, side, uplo, transA, diag, m, n, alpha, A, lda, B, ldb);
-}
+}*/
 
 template <>
 rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side, rocblas_fill uplo,
