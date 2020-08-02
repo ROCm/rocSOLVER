@@ -584,7 +584,7 @@ rocblas_status rocblasCall_trsm_mem(rocblas_handle handle,
 }
 
 // trsm non batched
-template <bool BATCHED, typename T, typename U, std::enable_if_t<!BATCHED, int> = 0>
+template <bool BATCHED, typename T, typename U>//, std::enable_if_t<!BATCHED, int> = 0>
 rocblas_status rocblasCall_trsm(rocblas_handle    handle,
                                      rocblas_side      side,
                                      rocblas_fill      uplo,
@@ -611,13 +611,13 @@ rocblas_status rocblasCall_trsm(rocblas_handle    handle,
     U supplied_invA = nullptr;
     return rocblas_trsm_template<ROCBLAS_TRSM_BLOCK,BATCHED,T>(handle,side,uplo,transA,diag,m,n,alpha,
                                                                cast2constType(A),offset_A,lda,stride_A,
-                                                               B,offset_B,ldb,stride_B,
+                                                               cast2nonConstPointer(B),offset_B,ldb,stride_B,
                                                                batch_count, optimal_mem,
                                                                x_temp,x_temp_arr,invA,invA_arr,
                                                                cast2constType(supplied_invA),0);
 }
 
-// trsm batched
+/*// trsm batched
 template <bool BATCHED, typename T, typename U, std::enable_if_t<BATCHED, int> = 0>
 rocblas_status rocblasCall_trsm(rocblas_handle    handle,
                                      rocblas_side      side,
@@ -649,15 +649,17 @@ rocblas_status rocblasCall_trsm(rocblas_handle    handle,
                                                                batch_count, optimal_mem,
                                                                x_temp,x_temp_arr,invA,invA_arr,
                                                                cast2constType(supplied_invA),0);
-}
+}*/
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 // THESE SHOULD BE SUBTITUTED BY THEIR CORRESPONDING 
 // ROCBLAS TEMPLATE FUNCTIONS ONCE THEY ARE EXPORTED
-// ROCBLAS.CPP CAN BE ELIMINATED THEN
+// (ROCBLAS.CPP CAN BE ELIMINATED THEN)
 
- 
 // nrm2
 template <typename T1, typename T2>
 rocblas_status rocblas_nrm2(rocblas_handle handle, rocblas_int n, const T1 *x,
@@ -703,6 +705,7 @@ rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n,
 }*/
 
 // trsm
+// (Do not remove yet, some functions still use it)
 template <typename T>
 rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
                             rocblas_fill uplo, rocblas_operation transA,

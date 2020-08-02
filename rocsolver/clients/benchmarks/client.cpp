@@ -185,11 +185,6 @@ try
          po::value<rocblas_int>(&argus.perf)->default_value(0),
          "If equal 1, only GPU timing results are collected and printed (default is 0)")
 
-//        ("pivot",
-//         po::value<rocblas_int>(&argus.pivot)->default_value(1),
-//         "If equal 0, no pivoting -row interchange- is executed (default is 1)."
-//         "Only applicable to LU factotization")
-        
         ("device",
          po::value<rocblas_int>(&device_id)->default_value(0),
          "Set default device to be used for subsequent program runs");
@@ -203,11 +198,6 @@ try
         rocblas_cout << desc << std::endl;
         return 0;
     }
-
-    // disabling pivoting cancels norm check as computations without
-    // pivoting are numerically unstable
-    //if (!argus.pivot)
-    //    argus.norm_check = 0;
 
     // catch invalid arguments for:
 

@@ -60,7 +60,7 @@ inline double machine_precision()
     return static_cast<double>(2.22e-16); 
 }
 
-/*template <typename T>
+template <typename T>
 T * cast2nonConstPointer(T *array)
 {
     T *R = array;
@@ -70,9 +70,9 @@ T * cast2nonConstPointer(T *array)
 template <typename T>
 T ** cast2nonConstPointer(T *const *array)
 {
-    T *R[] = array;
+    T **R = (T**)array;
     return R;
-}*/
+}
 
 
 template <typename T>
