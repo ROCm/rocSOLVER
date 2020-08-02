@@ -15,9 +15,6 @@ Types
 Most rocSOLVER types are aliases of rocBLAS types. 
 See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/api.html#types>`_.
 
-Definitions
-----------------
-
 rocsolver_int
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygentypedef:: rocsolver_int
@@ -29,9 +26,6 @@ rocsolver_handle
 .. doxygentypedef:: rocsolver_handle
 .. deprecated:: 3.5
    Use :c:type:`rocblas_handle`.
-
-Enums
-------------
 
 rocblas_direct
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -604,9 +598,6 @@ Auxiliaries
 rocSOLVER auxiliary functions are aliases of rocBLAS auxiliary functions.
 See the `rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/api.html#auxiliary>`_.
 
-rocSOLVER handle auxiliaries
-------------------------------
-
 rocsolver_create_handle()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_create_handle
@@ -630,9 +621,6 @@ rocsolver_get_stream()
 .. doxygenfunction:: rocsolver_get_stream
 .. deprecated:: 3.5
    Use :c:func:`rocblas_get_stream`.
-
-Other auxiliaries
-------------------------
 
 rocsolver_set_vector()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
