@@ -2252,7 +2252,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
     \details
     (This is the unblocked Level-2-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls 
     could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tunning rocSOLVER performance" on the User's guide).
+    section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization has the form
 
@@ -2323,7 +2323,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
     \details
     (This is the unblocked Level-2-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
     could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tunning rocSOLVER performance" on the User's guide).
+    section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization of matrix A_i in the batch has the form
 
@@ -2401,7 +2401,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_batched(rocblas_handle han
     \details
     (This is the unblocked Level-2-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
     could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tunning rocSOLVER performance" on the User's guide).
+    section "tuning rocSOLVER performance" on the User's guide).
     
     The factorization of matrix A_i in the batch has the form
 
@@ -2487,7 +2487,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_strided_batched(rocblas_ha
     \details
     (This is the blocked Level-3-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
     could be executed with mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tunning rocSOLVER performance" on the User's guide).
+    section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization has the form
 
@@ -2558,7 +2558,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
     \details
     (This is the blocked Level-3-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
     could be executed with mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tunning rocSOLVER performance" on the User's guide).
+    section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization of matrix A_i in the batch has the form
 
@@ -2636,7 +2636,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_batched(rocblas_handle han
     \details
     (This is the blocked Level-3-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
     could be executed with mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tunning rocSOLVER performance" on the User's guide).
+    section "tuning rocSOLVER performance" on the User's guide).
     
     The factorization of matrix A_i in the batch has the form
 
@@ -2722,7 +2722,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_strided_batched(rocblas_ha
     \details
     (This is the unblocked Level-2-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls 
     could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tunning rocSOLVER performance" on the User's guide).
+    section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization has the form
 
@@ -2799,7 +2799,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2(rocblas_handle handle,
     \details
     (This is the unblocked Level-2-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
     could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tunning rocSOLVER performance" on the User's guide).
+    section "tuning rocSOLVER performance" on the User's guide).
 
 
     The factorization of matrix A_i in the batch has the form
@@ -2894,7 +2894,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(rocblas_handle handle,
     \details
     (This is the unblocked Level-2-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
     could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tunning rocSOLVER performance" on the User's guide).
+    section "tuning rocSOLVER performance" on the User's guide).
 
     
     The factorization of matrix A_i in the batch has the form
@@ -2997,7 +2997,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(rocblas_handle 
     \details
     (This is the blocked Level-3-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
     could be executed with mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tunning rocSOLVER performance" on the User's guide).
+    section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization has the form
 
@@ -3074,7 +3074,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf(rocblas_handle handle,
     \details
     (This is the blocked Level-3-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
     could be executed with mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tunning rocSOLVER performance" on the User's guide).
+    section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization of matrix A_i in the batch has the form
 
@@ -3168,7 +3168,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_batched(rocblas_handle handle,
     \details
     (This is the blocked Level-3-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
     could be executed with mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tunning rocSOLVER performance" on the User's guide).
+    section "tuning rocSOLVER performance" on the User's guide).
     
     The factorization of matrix A_i in the batch has the form
 

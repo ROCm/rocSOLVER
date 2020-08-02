@@ -546,6 +546,57 @@ rocsolver_<type>getrs_strided_batched()
 .. doxygenfunction:: rocsolver_sgetrs_strided_batched
 
 
+Lapack-like Functions
+========================
+
+Other Lapack-like routines provided by rocSOLVER.
+
+General Matrix Factorizations
+---------------------------------
+
+rocsolver_<type>getf2_npvt()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetf2_npvt
+.. doxygenfunction:: rocsolver_cgetf2_npvt
+.. doxygenfunction:: rocsolver_dgetf2_npvt
+.. doxygenfunction:: rocsolver_sgetf2_npvt
+
+rocsolver_<type>getf2_npvt_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetf2_npvt_batched
+.. doxygenfunction:: rocsolver_cgetf2_npvt_batched
+.. doxygenfunction:: rocsolver_dgetf2_npvt_batched
+.. doxygenfunction:: rocsolver_sgetf2_npvt_batched
+
+rocsolver_<type>getf2_npvt_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetf2_npvt_strided_batched
+.. doxygenfunction:: rocsolver_cgetf2_npvt_strided_batched
+.. doxygenfunction:: rocsolver_dgetf2_npvt_strided_batched
+.. doxygenfunction:: rocsolver_sgetf2_npvt_strided_batched
+
+rocsolver_<type>getrf_npvt()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetrf_npvt
+.. doxygenfunction:: rocsolver_cgetrf_npvt
+.. doxygenfunction:: rocsolver_dgetrf_npvt
+.. doxygenfunction:: rocsolver_sgetrf_npvt
+
+rocsolver_<type>getrf_npvt_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetrf_npvt_batched
+.. doxygenfunction:: rocsolver_cgetrf_npvt_batched
+.. doxygenfunction:: rocsolver_dgetrf_npvt_batched
+.. doxygenfunction:: rocsolver_sgetrf_npvt_batched
+
+rocsolver_<type>getrf_npvt_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetrf_npvt_strided_batched
+.. doxygenfunction:: rocsolver_cgetrf_npvt_strided_batched
+.. doxygenfunction:: rocsolver_dgetrf_npvt_strided_batched
+.. doxygenfunction:: rocsolver_sgetrf_npvt_strided_batched
+
+
 
 Auxiliaries
 =========================

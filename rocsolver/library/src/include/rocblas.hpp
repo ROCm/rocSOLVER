@@ -565,7 +565,7 @@ rocblas_status rocblasCall_herk(rocblas_handle    handle,
 }
 
 
-// trsm
+// trsm memory allocator
 template <bool BATCHED, typename T, typename U>
 rocblas_status rocblasCall_trsm_mem(rocblas_handle handle,
                                          rocblas_side   side,
@@ -583,6 +583,7 @@ rocblas_status rocblasCall_trsm_mem(rocblas_handle handle,
                                                                    cast2constType(supplied_invA),0);
 }
 
+// trsm non batched
 template <bool BATCHED, typename T, typename U, std::enable_if_t<!BATCHED, int> = 0>
 rocblas_status rocblasCall_trsm(rocblas_handle    handle,
                                      rocblas_side      side,
@@ -616,6 +617,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle    handle,
                                                                cast2constType(supplied_invA),0);
 }
 
+// trsm batched
 template <bool BATCHED, typename T, typename U, std::enable_if_t<BATCHED, int> = 0>
 rocblas_status rocblasCall_trsm(rocblas_handle    handle,
                                      rocblas_side      side,
