@@ -114,10 +114,11 @@ void getf2_getrf_initData(const rocblas_handle handle,
 {
     if (CPU)
     {
+        T tmp;
         rocblas_init<T>(hA, true);
 
-        // scale A to avoid singularities 
         for (rocblas_int b = 0; b < bc; ++b) {
+            // scale A to avoid singularities 
             for (rocblas_int i = 0; i < m; i++) {
                 for (rocblas_int j = 0; j < n; j++) {
                     if (i == j)
@@ -126,6 +127,18 @@ void getf2_getrf_initData(const rocblas_handle handle,
                         hA[b][i + j * lda] -= 4;
                 }
             }
+    
+            // shuffle rows to test pivoting
+            // always the same permuation for debugging purposes
+            for (rocblas_int i = 0; i < m/2; i++) {
+                for (rocblas_int j = 0; j < n; j++) {
+                    tmp = hA[b][i+j*lda];
+                    hA[b][i+j*lda] = hA[b][m-1-i+j*lda];
+                    hA[b][m-1-i+j*lda] = tmp;
+                }
+            }
+    
+            // (TODO: add some singular matrices)  
         }
     }
 
@@ -151,53 +164,20 @@ void getf2_getrf_getError(const rocblas_handle handle,
                         Th &hA, 
                         Th &hARes, 
                         Uh &hIpiv, 
+                        Uh &hIpivRes,
                         Uh &hinfo,
                         double *max_err)
 {
     // input data initialization 
     getf2_getrf_initData<true,true,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, 
                                      hA, hIpiv, hinfo);
-
-/*rocblas_cout<<"\n original\n";
-for (int i=0;i<m;++i) {
-    for (int j=0;j<n;++j) 
-        rocblas_cout<<hA[0][i+j*lda]<<" ";
-    rocblas_cout<<std::endl;
-}
-//rocblas_cout<<std::endl;
-for (int i=0;i<m;++i) {
-    for (int j=0;j<n;++j) 
-        rocblas_cout<<hA[1][i+j*lda]<<" ";
-    rocblas_cout<<std::endl;
-}*/
-
+    
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_getf2_getrf(STRIDED,GETRF,handle, m, n, dA.data(), lda, stA, dIpiv.data(), stP, dinfo.data(), bc));
     CHECK_HIP_ERROR(hARes.transfer_from(dA));
+    CHECK_HIP_ERROR(hIpivRes.transfer_from(dIpiv));
     
-/*CHECK_HIP_ERROR(hIpiv.transfer_from(dIpiv));
-rocblas_cout<<"\n GPU results\n";
-for (int i=m-5;i<m;++i) {
-    for (int j=0;j<n;++j) 
-        rocblas_cout<<hARes[0][i+j*lda]<<" ";
-    rocblas_cout<<std::endl;
-}
-rocblas_cout<<std::endl;
-for (int j=0;j<min(m,n);++j) 
-    rocblas_cout<<hIpiv[0][j]<<" ";
-rocblas_cout<<std::endl;
-rocblas_cout<<std::endl;
-for (int i=0;i<m;++i) {
-    for (int j=0;j<n;++j) 
-        rocblas_cout<<hARes[1][i+j*lda]<<" ";
-    rocblas_cout<<std::endl;
-}
-rocblas_cout<<std::endl;
-for (int j=0;j<min(m,n);++j) 
-    rocblas_cout<<hIpiv[1][j]<<" ";
-rocblas_cout<<std::endl;*/
-
     // CPU lapack
     for (rocblas_int b = 0; b < bc; ++b) {
         GETRF ?
@@ -205,27 +185,6 @@ rocblas_cout<<std::endl;*/
             cblas_getf2<T>(m, n, hA[b], lda, hIpiv[b], hinfo[b]);
     }
 
-/*rocblas_cout<<"\n CPU results\n";
-for (int i=m-5;i<m;++i) {
-    for (int j=0;j<n;++j) 
-        rocblas_cout<<hA[0][i+j*lda]<<" ";
-    rocblas_cout<<std::endl;
-}
-rocblas_cout<<std::endl;
-for (int j=0;j<min(m,n);++j) 
-    rocblas_cout<<hIpiv[0][j]<<" ";
-rocblas_cout<<std::endl;
-rocblas_cout<<std::endl;
-for (int i=0;i<m;++i) {
-    for (int j=0;j<n;++j) 
-        rocblas_cout<<hA[1][i+j*lda]<<" ";
-    rocblas_cout<<std::endl;
-}
-rocblas_cout<<std::endl;
-for (int j=0;j<min(m,n);++j) 
-    rocblas_cout<<hIpiv[1][j]<<" ";
-rocblas_cout<<std::endl;
-*/
     // expecting original matrix to be non-singular
     // error is ||hA - hARes|| / ||hA|| (ideally ||LU - Lres Ures|| / ||LU||) 
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
@@ -236,6 +195,14 @@ rocblas_cout<<std::endl;
     for (rocblas_int b = 0; b < bc; ++b) {
         err = norm_error('F',m,n,lda,hA[b],hARes[b]);
         *max_err = err > *max_err ? err : *max_err;
+    
+        // also check pivoting (count the number of incorrect pivots)
+        err = 0;
+        for (rocblas_int i = 0; i < min(m,n); ++i)
+            if (hIpiv[b][i] != hIpivRes[b][i]) err++; 
+        *max_err = err > *max_err ? err : *max_err;
+    
+        // (TODO: check info for singularities)
     }
 }
 
@@ -260,7 +227,7 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
                         const bool perf)
 {
     if (!perf) {
-        // cpu-lapack performance
+        // cpu-lapack performance (only if not in perf mode)
         getf2_getrf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, 
                                      hA, hIpiv, hinfo);
         *cpu_time_used = get_time_us();
@@ -313,6 +280,7 @@ void testing_getf2_getrf(Arguments argus)
     rocblas_int hot_calls = argus.iters;
 
     rocblas_stride stARes = argus.unit_check || argus.norm_check ? stA : 0;
+    rocblas_stride stPRes = argus.unit_check || argus.norm_check ? stP : 0;
 
     // check non-supported values 
     // N/A
@@ -323,6 +291,7 @@ void testing_getf2_getrf(Arguments argus)
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_ARes = argus.unit_check || argus.norm_check ? size_A : 0;
+    size_t size_PRes = argus.unit_check || argus.norm_check ? size_P : 0;
 
     // check invalid sizes 
     bool invalid_size = (m < 0 || n < 0 || lda < m || bc < 0);
@@ -345,6 +314,7 @@ void testing_getf2_getrf(Arguments argus)
         host_batch_vector<T> hA(size_A,1,bc);
         host_batch_vector<T> hARes(size_ARes,1,bc);
         host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,stP,bc);
+        host_strided_batch_vector<rocblas_int> hIpivRes(size_PRes,1,stPRes,bc);
         host_strided_batch_vector<rocblas_int> hinfo(1,1,1,bc);
         device_batch_vector<T> dA(size_A,1,bc);
         device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,stP,bc);
@@ -366,7 +336,7 @@ void testing_getf2_getrf(Arguments argus)
         // check computations
         if (argus.unit_check || argus.norm_check) 
             getf2_getrf_getError<STRIDED,GETRF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, 
-                                          hA, hARes, hIpiv, hinfo, &max_error);
+                                          hA, hARes, hIpiv, hIpivRes, hinfo, &max_error);
 
         // collect performance data
         if (argus.timing) 
@@ -379,6 +349,7 @@ void testing_getf2_getrf(Arguments argus)
         host_strided_batch_vector<T> hA(size_A,1,stA,bc);
         host_strided_batch_vector<T> hARes(size_ARes,1,stARes,bc);
         host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,stP,bc);
+        host_strided_batch_vector<rocblas_int> hIpivRes(size_PRes,1,stPRes,bc);
         host_strided_batch_vector<rocblas_int> hinfo(1,1,1,bc);
         device_strided_batch_vector<T> dA(size_A,1,stA,bc);
         device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,stP,bc);
@@ -400,7 +371,7 @@ void testing_getf2_getrf(Arguments argus)
         // check computations
         if (argus.unit_check || argus.norm_check) 
             getf2_getrf_getError<STRIDED,GETRF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, 
-                                          hA, hARes, hIpiv, hinfo, &max_error);
+                                          hA, hARes, hIpiv, hIpivRes, hinfo, &max_error);
 
         // collect performance data
         if (argus.timing) 

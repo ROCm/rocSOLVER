@@ -102,7 +102,7 @@ void getf2_getrf_npvt_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
 
         // scale A to avoid singularities 
-        // leave matrix as diagonal dominant so that pivoting is not required
+        // leaving matrix as diagonal dominant so that pivoting is not required
         for (rocblas_int b = 0; b < bc; ++b) {
             for (rocblas_int i = 0; i < m; i++) {
                 for (rocblas_int j = 0; j < n; j++) {
@@ -142,46 +142,11 @@ void getf2_getrf_npvt_getError(const rocblas_handle handle,
     getf2_getrf_npvt_initData<true,true,T>(handle, m, n, dA, lda, stA, dinfo, bc, 
                                      hA, hinfo);
 
-/*rocblas_cout<<"\n original\n";
-for (int i=0;i<m;++i) {
-    for (int j=0;j<n;++j) 
-        rocblas_cout<<hA[0][i+j*lda]<<" ";
-    rocblas_cout<<std::endl;
-}
-rocblas_cout<<std::endl;
-for (int i=0;i<m;++i) {
-    for (int j=0;j<n;++j) 
-        rocblas_cout<<hA[1][i+j*lda]<<" ";
-    rocblas_cout<<std::endl;
-}*/
-
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_getf2_getrf_npvt(STRIDED,GETRF,handle, m, n, dA.data(), lda, stA,  dinfo.data(), bc));
     CHECK_HIP_ERROR(hARes.transfer_from(dA));
     
-//CHECK_HIP_ERROR(hIpiv.transfer_from(dIpiv));
-/*rocblas_cout<<"\n GPU results\n";
-for (int i=0;i<m;++i) {
-    for (int j=0;j<n;++j) 
-        rocblas_cout<<hARes[0][i+j*lda]<<" ";
-    rocblas_cout<<std::endl;
-}
-rocblas_cout<<std::endl;
-for (int j=0;j<min(m,n);++j) 
-    rocblas_cout<<hIpiv[0][j]<<" ";
-rocblas_cout<<std::endl;
-rocblas_cout<<std::endl;
-for (int i=0;i<m;++i) {
-    for (int j=0;j<n;++j) 
-        rocblas_cout<<hARes[1][i+j*lda]<<" ";
-    rocblas_cout<<std::endl;
-}
-rocblas_cout<<std::endl;
-for (int j=0;j<min(m,n);++j) 
-    rocblas_cout<<hIpiv[1][j]<<" ";
-rocblas_cout<<std::endl;*/
-
     // CPU lapack
     for (rocblas_int b = 0; b < bc; ++b) {
         GETRF ?
@@ -189,27 +154,6 @@ rocblas_cout<<std::endl;*/
             cblas_getf2<T>(m, n, hA[b], lda, hIpiv[b], hinfo[b]);
     }
 
-/*rocblas_cout<<"\n CPU results\n";
-for (int i=0;i<m;++i) {
-    for (int j=0;j<n;++j) 
-        rocblas_cout<<hA[0][i+j*lda]<<" ";
-    rocblas_cout<<std::endl;
-}
-rocblas_cout<<std::endl;
-for (int j=0;j<min(m,n);++j) 
-    rocblas_cout<<hIpiv[0][j]<<" ";
-rocblas_cout<<std::endl;
-rocblas_cout<<std::endl;
-for (int i=0;i<m;++i) {
-    for (int j=0;j<n;++j) 
-        rocblas_cout<<hA[1][i+j*lda]<<" ";
-    rocblas_cout<<std::endl;
-}
-rocblas_cout<<std::endl;
-for (int j=0;j<min(m,n);++j) 
-    rocblas_cout<<hIpiv[1][j]<<" ";
-rocblas_cout<<std::endl;
-*/
     // expecting original matrix to be non-singular
     // error is ||hA - hARes|| / ||hA|| (ideally ||LU - Lres Ures|| / ||LU||) 
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
@@ -242,7 +186,7 @@ void getf2_getrf_npvt_getPerfData(const rocblas_handle handle,
                         const bool perf)
 {
     if (!perf) {
-        // cpu-lapack performance
+        // cpu-lapack performance (only if no perf mode)
         getf2_getrf_npvt_initData<true,false,T>(handle, m, n, dA, lda, stA, dinfo, bc, 
                                      hA, hinfo);
         *cpu_time_used = get_time_us();
@@ -387,9 +331,9 @@ void testing_getf2_getrf_npvt(Arguments argus)
     }
 
     // validate results for rocsolver-test
-    // using max(m,n) * machine_precision as tolerance
+    // using min(m,n) * machine_precision as tolerance
     if (argus.unit_check) 
-        rocsolver_test_check<T>(max_error,max(m,n));     
+        rocsolver_test_check<T>(max_error,min(m,n));     
 
     // output results for rocsolver-bench
     if (argus.timing) {
