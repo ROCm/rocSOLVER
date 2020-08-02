@@ -582,7 +582,7 @@ rocblas_status rocsolver_getf2_getrf_argCheck(const rocblas_int m, const rocblas
     // 3. invalid pointers
     if ((m*n && !A) || (m*n && !ipiv) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
-
+    
     return rocblas_status_continue;
 }
 
@@ -612,17 +612,17 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle, const rocblas_int
     // quick return if no dimensions
     if (m == 0 || n == 0) 
         return rocblas_status_success;
-/*
+
     #ifdef OPTIMAL
     // Use optimized LU factorization for the right sizes
     if (n <= WAVESIZE) {
         if (m <= GETF2_MAX_THDS) 
             return LUfact_small<T>(handle,m,n,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,batch_count,pivot);
-        else if (m <= GETF2_OPTIM_MAX_SIZE) 
+        else if ((m <= GETF2_OPTIM_MAX_SIZE && !ISBATCHED) || (m <= GETF2_BATCH_OPTIM_MAX_SIZE && ISBATCHED)) 
             return LUfact_panel<T>(handle,m,n,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,batch_count,pivot);
     }
     #endif
-*/
+
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);

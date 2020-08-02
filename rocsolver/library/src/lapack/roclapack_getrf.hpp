@@ -48,7 +48,8 @@ template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
                                         rocblas_int *ipiv, const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int *info, const rocblas_int batch_count,
-                                        const rocblas_int pivot, T* scalars, T* pivot_val, rocblas_int* pivot_idx, rocblas_int* iinfo, rocblas_index_value_t<S> *work)
+                                        const rocblas_int pivot, T* scalars, T* pivot_val, rocblas_int* pivot_idx, rocblas_int* iinfo, rocblas_index_value_t<S> *work,
+                                        void* x_temp, void* x_temp_arr, void* invA, void* invA_arr, bool optim_mem)
 {
     // quick return
     if (m == 0 || n == 0 || batch_count == 0) 
@@ -56,7 +57,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
 
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
-    // if the matrix is small, use the unblocked (BLAS-levelII) variant of the algorithm
+    // if the matrix is small, use the unblocked (level-2-blas) variant of the algorithm
     if (m < GETRF_GETF2_SWITCHSIZE || n < GETRF_GETF2_SWITCHSIZE) 
         return rocsolver_getf2_template<ISBATCHED,T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count, pivot, scalars, pivot_val, pivot_idx, work);
     
@@ -68,15 +69,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
     rocblas_get_pointer_mode(handle,&old_mode);
     rocblas_set_pointer_mode(handle,rocblas_pointer_mode_host);
 
-    // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-    //      TRSM_BATCH FUNCTIONALITY IS ENABLED. ****
-    #ifdef batched
-        T* AA[batch_count];
-        hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
-    #else
-        T* AA = A;
-    #endif
-    
     //constants to use when calling rocablas functions
     T one = 1;                    //constant 1 in host
     T minone = -1;                //constant -1 in host
@@ -92,9 +84,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
 
     //info=0 (starting with a nonsingular matrix)
     hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count,0);
-
-    // **** TRSM_BATCH IS EXECUTED IN A FOR-LOOP UNTIL 
-    //      FUNCITONALITY IS ENABLED. ****
 
     for (rocblas_int j = 0; j < dim; j += GETRF_GETF2_SWITCHSIZE) {
         // Factor diagonal and subdiagonal blocks 
@@ -122,13 +111,12 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
             }
 
             // compute block row of U
-            for (int b=0;b<batch_count;++b) {
-                M = load_ptr_batch<T>(AA,b,shiftA,strideA);
-                rocblas_trsm(handle, rocblas_side_left, rocblas_fill_lower, rocblas_operation_none,
-                             rocblas_diagonal_unit, jb, (n - j - jb), &one,
-                             (M + idx2D(j, j, lda)), lda, (M + idx2D(j, j + jb, lda)), lda);
-            }
-
+            rocblasCall_trsm<BATCHED,T>(handle, rocblas_side_left, rocblas_fill_lower, rocblas_operation_none, rocblas_diagonal_unit,
+                                        jb, (n - j - jb), &one,
+                                        A, shiftA + idx2D(j, j, lda), lda, strideA, 
+                                        A, shiftA + idx2D(j, j+jb, lda), lda, strideA, batch_count, optim_mem, 
+                                        x_temp, x_temp_arr, invA, invA_arr);    
+    
             // update trailing submatrix
             if (j + jb < m) {
                 rocblasCall_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, rocblas_operation_none,

@@ -566,49 +566,88 @@ rocblas_status rocblasCall_herk(rocblas_handle    handle,
 
 
 // trsm
-template <rocblas_int BLOCK, bool BATCHED, typename T, typename U>
-rocblas_status rocblas_trsm_template_mem(rocblas_handle handle,
-                                                                 rocblas_side   side,
-                                                                 rocblas_int    m,
-                                                                 rocblas_int    n,
-                                                                 rocblas_int    batch_count,
-                                                                 void*&         mem_x_temp,
-                                                                 void*&         mem_x_temp_arr,
-                                                                 void*&         mem_invA,
-                                                                 void*&         mem_invA_arr,
-                                                                 U supplied_invA = nullptr,
-                                                                 rocblas_int supplied_invA_size = 0);
+template <bool BATCHED, typename T, typename U>
+rocblas_status rocblasCall_trsm_mem(rocblas_handle handle,
+                                         rocblas_side   side,
+                                         rocblas_int    m,
+                                         rocblas_int    n,
+                                         rocblas_int    batch_count,
+                                         void*&         x_temp,
+                                         void*&         x_temp_arr,
+                                         void*&         invA,
+                                         void*&         invA_arr)
+{
+    U supplied_invA = nullptr;
+    return rocblas_trsm_template_mem<ROCBLAS_TRSM_BLOCK,BATCHED,T>(handle,side,m,n,batch_count,
+                                                                   x_temp,x_temp_arr,invA,invA_arr,
+                                                                   cast2constType(supplied_invA),0);
+}
 
-template <rocblas_int BLOCK, bool BATCHED, typename T, typename U, typename V>
-rocblas_status rocblas_trsm_template(rocblas_handle    handle,
-                                                             rocblas_side      side,
-                                                             rocblas_fill      uplo,
-                                                             rocblas_operation transA,
-                                                             rocblas_diagonal  diag,
-                                                             rocblas_int       m,
-                                                             rocblas_int       n,
-                                                             const T*          alpha,
-                                                             U                 A,
-                                                             rocblas_int       offset_A,
-                                                             rocblas_int       lda,
-                                                             rocblas_stride    stride_A,
-                                                             V                 B,
-                                                             rocblas_int       offset_B,
-                                                             rocblas_int       ldb,
-                                                             rocblas_stride    stride_B,
-                                                             rocblas_int       batch_count,
-                                                             bool              optimal_mem,
-                                                             void*             x_temp,
-                                                             void*             x_temparr,
-                                                             void*             invA       = nullptr,
-                                                             void*             invAarr    = nullptr,
-                                                             U              supplied_invA = nullptr,
-                                                             rocblas_int    supplied_invA_size = 0,
-                                                             rocblas_int    offset_invA        = 0,
-                                                             rocblas_stride stride_invA        = 0);
+template <bool BATCHED, typename T, typename U, std::enable_if_t<!BATCHED, int> = 0>
+rocblas_status rocblasCall_trsm(rocblas_handle    handle,
+                                     rocblas_side      side,
+                                     rocblas_fill      uplo,
+                                     rocblas_operation transA,
+                                     rocblas_diagonal  diag,
+                                     rocblas_int       m,
+                                     rocblas_int       n,
+                                     const T*          alpha,
+                                     U                 A,
+                                     rocblas_int       offset_A,
+                                     rocblas_int       lda,
+                                     rocblas_stride    stride_A,
+                                     U                 B,
+                                     rocblas_int       offset_B,
+                                     rocblas_int       ldb,
+                                     rocblas_stride    stride_B,
+                                     rocblas_int       batch_count,
+                                     bool              optimal_mem,
+                                     void*             x_temp,
+                                     void*             x_temp_arr,
+                                     void*             invA,
+                                     void*             invA_arr)
+{
+    U supplied_invA = nullptr;
+    return rocblas_trsm_template<ROCBLAS_TRSM_BLOCK,BATCHED,T>(handle,side,uplo,transA,diag,m,n,alpha,
+                                                               cast2constType(A),offset_A,lda,stride_A,
+                                                               B,offset_B,ldb,stride_B,
+                                                               batch_count, optimal_mem,
+                                                               x_temp,x_temp_arr,invA,invA_arr,
+                                                               cast2constType(supplied_invA),0);
+}
 
-
-
+template <bool BATCHED, typename T, typename U, std::enable_if_t<BATCHED, int> = 0>
+rocblas_status rocblasCall_trsm(rocblas_handle    handle,
+                                     rocblas_side      side,
+                                     rocblas_fill      uplo,
+                                     rocblas_operation transA,
+                                     rocblas_diagonal  diag,
+                                     rocblas_int       m,
+                                     rocblas_int       n,
+                                     const T*          alpha,
+                                     U                 A,
+                                     rocblas_int       offset_A,
+                                     rocblas_int       lda,
+                                     rocblas_stride    stride_A,
+                                     U                 B,
+                                     rocblas_int       offset_B,
+                                     rocblas_int       ldb,
+                                     rocblas_stride    stride_B,
+                                     rocblas_int       batch_count,
+                                     bool              optimal_mem,
+                                     void*             x_temp,
+                                     void*             x_temp_arr,
+                                     void*             invA,
+                                     void*             invA_arr)
+{
+    U supplied_invA = nullptr;
+    return rocblas_trsm_template<ROCBLAS_TRSM_BLOCK,BATCHED,T>(handle,side,uplo,transA,diag,m,n,alpha,
+                                                               cast2constType(A),offset_A,lda,stride_A,
+                                                               (T**)B,offset_B,ldb,stride_B,
+                                                               batch_count, optimal_mem,
+                                                               x_temp,x_temp_arr,invA,invA_arr,
+                                                               cast2constType(supplied_invA),0);
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -43,9 +43,6 @@ void getf2_getrf_npvt_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_success);
     EXPECT_ROCBLAS_STATUS(rocsolver_getf2_getrf_npvt(STRIDED,GETRF,handle,m,0,(T)nullptr,lda,stA,dinfo,bc), 
                           rocblas_status_success);
-    if (STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_getf2_getrf_npvt(STRIDED,GETRF,handle,m,n,dA,lda,stA,(U)nullptr,0),
-                              rocblas_status_success);
     
     // quick return with zero batch_count if applicable
     if (STRIDED)

@@ -13,7 +13,7 @@ rocblas_status rocsolver_getrf_batched_impl(rocblas_handle handle, rocblas_int m
     if(!handle)
         return rocblas_status_invalid_handle;
     
-    //logging is missing ???    
+    //logging is missing ???   
 
     // argument checking
     rocblas_status st = rocsolver_getf2_getrf_argCheck(m,n,lda,A,ipiv,info,batch_count);
@@ -32,7 +32,7 @@ rocblas_status rocsolver_getrf_batched_impl(rocblas_handle handle, rocblas_int m
     rocsolver_getrf_getMemorySize<T,S>(m,n,batch_count,&size_1,&size_2,&size_3,&size_4,&size_5);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-    void *scalars, *pivot_val, *pivot_idx, *iinfo, *work;
+    void *scalars, *pivot_val, *pivot_idx, *iinfo, *work, *x_temp, *x_temp_arr, *invA, *invA_arr;
     hipMalloc(&scalars,size_1);
     hipMalloc(&pivot_val,size_2);
     hipMalloc(&pivot_idx,size_3);
@@ -40,6 +40,12 @@ rocblas_status rocsolver_getrf_batched_impl(rocblas_handle handle, rocblas_int m
     hipMalloc(&work,size_5);
     if (!scalars || (size_2 && !pivot_val) || (size_3 && !pivot_idx) || (size_4 && !iinfo) || (size_5 && !work))
         return rocblas_status_memory_error;
+
+    // (CAUTION: THIS PART IS ACTUALLY ALLOCATED IN THE ROBLAS HANDLE)
+    rocblas_status perf_status = rocblasCall_trsm_mem<true,T,U>(handle,rocblas_side_left,m,n,batch_count,x_temp,x_temp_arr,invA,invA_arr);    
+    if (perf_status != rocblas_status_success && perf_status != rocblas_status_perf_degraded)
+        return perf_status;
+    bool optim_mem = perf_status == rocblas_status_success;
 
     // scalar constants for rocblas functions calls
     // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
@@ -58,7 +64,12 @@ rocblas_status rocsolver_getrf_batched_impl(rocblas_handle handle, rocblas_int m
                                                     (T*)pivot_val,
                                                     (rocblas_int*)pivot_idx,
                                                     (rocblas_int*)iinfo,
-                                                    (rocblas_index_value_t<S>*)work);
+                                                    (rocblas_index_value_t<S>*)work,
+                                                    x_temp,
+                                                    x_temp_arr,
+                                                    invA,
+                                                    invA_arr,
+                                                    optim_mem);
 
     hipFree(scalars);
     hipFree(pivot_val);
@@ -103,7 +114,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_batched(rocblas_handle handle, 
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_npvt_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                  float *const A[], const rocblas_int lda, rocblas_int* info, const rocblas_int batch_count) 
-{ 
+{
     rocblas_int *ipiv; 
     return rocsolver_getrf_batched_impl<float>(handle, m, n, A, lda, ipiv, 0, info, batch_count, 0);
 }
