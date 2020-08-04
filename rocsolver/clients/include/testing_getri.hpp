@@ -135,8 +135,8 @@ void getri_initData(const rocblas_handle handle,
         for (rocblas_int b = 0; b < bc; ++b)
         {
             if (n > 4 + b)
-                hIpiv[b][3 + b] = 1;
-                hIpiv[b][4 + b] = 1;
+                hIpiv[b][2 + b] = 4 + b;
+                hIpiv[b][3 + b] = 4 + b;
         }
     }
     

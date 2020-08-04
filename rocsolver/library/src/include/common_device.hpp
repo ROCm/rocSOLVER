@@ -48,7 +48,7 @@ __device__ void swapvect(const rocblas_int n, T *a, const rocblas_int inca,
 // **********************************************************
 
 
-template<typename T, typename U>
+template <typename T, typename U>
 __global__ void reset_info(T *info, const rocblas_int n, U val) {
     int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -56,7 +56,7 @@ __global__ void reset_info(T *info, const rocblas_int n, U val) {
         info[idx] = T(val);
 }
 
-template<typename T, typename S, typename U>
+template <typename T, typename S, typename U>
 __global__ void reset_batch_info(U info, const rocblas_stride stride, const rocblas_int n, S val) {
     int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     int b = hipBlockIdx_y;
@@ -66,13 +66,22 @@ __global__ void reset_batch_info(U info, const rocblas_stride stride, const rocb
         inf[idx] = T(val);
 }
 
-template<typename T>
+template <typename T>
 __global__ void get_array(T** out, T* in, rocblas_stride stride, rocblas_int batch) 
 {
     int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     
     if (b < batch)
         out[b] = in + b*stride;
+}
+
+template <typename T, typename U>
+__global__ void shift_array(T** out, U in, rocblas_int shift, rocblas_int batch) 
+{
+    int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    
+    if (b < batch)
+        out[b] = in[b] + shift;
 }
 
 template <typename T, typename U>

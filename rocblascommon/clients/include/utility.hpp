@@ -101,7 +101,7 @@ std::string rocblas_exepath();
 /*! \brief  Debugging purpose, print out CPU and GPU result matrix, not valid in complex number  */
 template <typename T>
 inline void rocblas_print_matrix(
-    std::vector<T> CPU_result, std::vector<T> GPU_result, size_t m, size_t n, size_t lda)
+    T* CPU_result, T* GPU_result, size_t m, size_t n, size_t lda)
 {
     for(size_t i = 0; i < m; i++)
         for(size_t j = 0; j < n; j++)
