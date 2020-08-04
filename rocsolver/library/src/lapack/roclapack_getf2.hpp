@@ -305,7 +305,7 @@ rocblas_status LUfact_panel(rocblas_handle handle, const rocblas_int m,
         case  6: RUN_LUFACT_PANEL( 6); break;
         case  7: RUN_LUFACT_PANEL( 7); break;
         case  8: RUN_LUFACT_PANEL( 8); break;
-        default: __builtin_unreachable();
+        default: ROCSOLVER_UNREACHABLE();
     }
 
     return rocblas_status_success;
@@ -509,7 +509,7 @@ rocblas_status LUfact_small(rocblas_handle handle, const rocblas_int m,
         case 62: RUN_LUFACT_SMALL(62); break;
         case 63: RUN_LUFACT_SMALL(63); break;
         case 64: RUN_LUFACT_SMALL(64); break;
-        default: __builtin_unreachable(); 
+        default: ROCSOLVER_UNREACHABLE();
     }
     
     return rocblas_status_success;

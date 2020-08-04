@@ -25,6 +25,7 @@ macro( add_armor_flags target level )
     target_compile_definitions( ${target} PRIVATE
       _FORTIFY_SOURCE=1 # requires optimizations to work
       _GLIBCXX_ASSERTIONS
+      ROCSOLVER_VERIFY_ASSUMPTIONS
     )
   endif( )
 endmacro( )
