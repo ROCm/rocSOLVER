@@ -20,7 +20,8 @@ rocblas_status rocsolver_getrf_strided_batched_impl(rocblas_handle handle, const
         return st;
 
     // memory managment
-    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
+//    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
+    using S = decltype(std::real(T{}));
     size_t size_1;  //size of constants
     size_t size_2;
     size_t size_3;
@@ -39,7 +40,7 @@ rocblas_status rocsolver_getrf_strided_batched_impl(rocblas_handle handle, const
         return rocblas_status_memory_error;
     
     // (CAUTION: THIS PART IS ACTUALLY ALLOCATED IN THE ROBLAS HANDLE)
-    rocblas_status perf_status = rocblasCall_trsm_mem<false,T,U>(handle,rocblas_side_left,m,n,batch_count,x_temp,x_temp_arr,invA,invA_arr);    
+    rocblas_status perf_status = rocblasCall_trsm_mem<false,T,U>(handle,rocblas_side_left,GETRF_GETF2_SWITCHSIZE,n,batch_count,x_temp,x_temp_arr,invA,invA_arr);    
     if (perf_status != rocblas_status_success && perf_status != rocblas_status_perf_degraded)
         return perf_status;
     bool optim_mem = perf_status == rocblas_status_success;

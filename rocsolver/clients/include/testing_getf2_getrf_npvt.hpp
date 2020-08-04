@@ -238,7 +238,7 @@ void testing_getf2_getrf_npvt(Arguments argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stARes = argus.unit_check || argus.norm_check ? stA : 0;
+    rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
 
     // check non-supported values 
     // N/A
@@ -248,7 +248,7 @@ void testing_getf2_getrf_npvt(Arguments argus)
     size_t size_P = size_t(min(m,n));
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_ARes = argus.unit_check || argus.norm_check ? size_A : 0;
+    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
     // check invalid sizes 
     bool invalid_size = (m < 0 || n < 0 || lda < m || bc < 0);

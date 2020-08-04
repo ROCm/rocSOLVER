@@ -19,17 +19,17 @@ template<typename U>
 __global__ void getrf_check_singularity(const rocblas_int n, const rocblas_int j, rocblas_int *ipivA, const rocblas_int shiftP,
                                 const rocblas_stride strideP, const rocblas_int *iinfo, rocblas_int *info, const int pivot) {
     int id = hipBlockIdx_y;
-
     rocblas_int *ipiv;
-    if (pivot) ipiv = ipivA + id*strideP + shiftP;
 
     if (info[id] == 0 && iinfo[id] > 0)
         info[id] = iinfo[id] + j;
 
     int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
-    if (tid < n && pivot)
+    if (tid < n && pivot) {
+        ipiv = ipivA + id*strideP + shiftP;
         ipiv[tid] += j;
+    }
 }
 
 template <typename T, typename S>

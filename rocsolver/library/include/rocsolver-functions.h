@@ -688,7 +688,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
                 The number of rows of the matrix Q. 
     @param[in]
     n           rocblas_int. 0 <= n <= m.\n
-                The number of colums of the matrix Q.
+                The number of columns of the matrix Q.
     @param[in]
     k           rocblas_int. 0 <= k <= n.\n
                 The number of Householder reflectors.
@@ -742,7 +742,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2r(rocblas_handle handle,
                 The number of rows of the matrix Q. 
     @param[in]
     n           rocblas_int. 0 <= n <= m.\n
-                The number of colums of the matrix Q.
+                The number of columns of the matrix Q.
     @param[in]
     k           rocblas_int. 0 <= k <= n.\n
                 The number of Householder reflectors.
@@ -796,7 +796,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zung2r(rocblas_handle handle,
                 The number of rows of the matrix Q. 
     @param[in]
     n           rocblas_int. 0 <= n <= m.\n
-                The number of colums of the matrix Q.
+                The number of columns of the matrix Q.
     @param[in]
     k           rocblas_int. 0 <= k <= n.\n
                 The number of Householder reflectors.
@@ -850,7 +850,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgqr(rocblas_handle handle,
                 The number of rows of the matrix Q. 
     @param[in]
     n           rocblas_int. 0 <= n <= m.\n
-                The number of colums of the matrix Q.
+                The number of columns of the matrix Q.
     @param[in]
     k           rocblas_int. 0 <= k <= n.\n
                 The number of Householder reflectors.
@@ -904,7 +904,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungqr(rocblas_handle handle,
                 The number of rows of the matrix Q. 
     @param[in]
     n           rocblas_int. n >= 0.\n
-                The number of colums of the matrix Q.
+                The number of columns of the matrix Q.
     @param[in]
     k           rocblas_int. 0 <= k <= m.\n
                 The number of Householder reflectors.
@@ -958,7 +958,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgl2(rocblas_handle handle,
                 The number of rows of the matrix Q. 
     @param[in]
     n           rocblas_int. n >= 0.\n
-                The number of colums of the matrix Q.
+                The number of columns of the matrix Q.
     @param[in]
     k           rocblas_int. 0 <= k <= m.\n
                 The number of Householder reflectors.
@@ -1013,7 +1013,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungl2(rocblas_handle handle,
                 The number of rows of the matrix Q. 
     @param[in]
     n           rocblas_int. n >= 0.\n
-                The number of colums of the matrix Q.
+                The number of columns of the matrix Q.
     @param[in]
     k           rocblas_int. 0 <= k <= m.\n
                 The number of Householder reflectors.
@@ -1068,7 +1068,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorglq(rocblas_handle handle,
                 The number of rows of the matrix Q. 
     @param[in]
     n           rocblas_int. n >= 0.\n
-                The number of colums of the matrix Q.
+                The number of columns of the matrix Q.
     @param[in]
     k           rocblas_int. 0 <= k <= m.\n
                 The number of Householder reflectors.
@@ -1137,7 +1137,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunglq(rocblas_handle handle,
                 If row-wise, then min(n,k) <= m <= n.
     @param[in]
     n           rocblas_int. n >= 0.\n
-                The number of colums of the matrix Q. 
+                The number of columns of the matrix Q. 
                 If column-wise, then min(m,k) <= n <= m. 
     @param[in]
     k           rocblas_int. k >= 0.\n
@@ -1210,7 +1210,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgbr(rocblas_handle handle,
                 If row-wise, then min(n,k) <= m <= n.
     @param[in]
     n           rocblas_int. n >= 0.\n
-                The number of colums of the matrix Q. 
+                The number of columns of the matrix Q. 
                 If column-wise, then min(m,k) <= n <= m. 
     @param[in]
     k           rocblas_int. k >= 0.\n
@@ -2272,7 +2272,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
               The number of rows of the matrix A. 
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of the matrix A. 
+              The number of columns of the matrix A. 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix A to be factored.
@@ -2283,7 +2283,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
               Specifies the leading dimension of A. 
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, succesful exit. 
+              If info = 0, successful exit. 
               If info = i > 0, U is singular. U(i,i) is the first zero element in the diagonal. The factorization from 
               this point might be incomplete.
             
@@ -2343,7 +2343,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
               The number of rows of all matrices A_i in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all matrices A_i in the batch.
+              The number of columns of all matrices A_i in the batch.
     @param[inout]
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrices A_i to be factored.
@@ -2354,7 +2354,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
               Specifies the leading dimension of matrices A_i.
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, succesful exit for factorization of A_i. 
+              If info_i = 0, successful exit for factorization of A_i. 
               If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero element in the diagonal. The factorization from
               this point might be incomplete.
     @param[in]
@@ -2421,10 +2421,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_batched(rocblas_handle han
               The number of rows of all matrices A_i in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all matrices A_i in the batch.
+              The number of columns of all matrices A_i in the batch.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, in contains the m-by-n matrices A_i to be factored.
+              On entry, the m-by-n matrices A_i to be factored.
               On exit, the factors L_i and U_i from the factorization.
               The unit diagonal elements of L_i are not stored.
     @param[in]
@@ -2436,7 +2436,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_batched(rocblas_handle han
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, succesful exit for factorization of A_i. 
+              If info_i = 0, successful exit for factorization of A_i. 
               If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero element in the diagonal. The factorization from
               this point might be incomplete. 
     @param[in]
@@ -2507,7 +2507,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_strided_batched(rocblas_ha
               The number of rows of the matrix A. 
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of the matrix A. 
+              The number of columns of the matrix A. 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix A to be factored.
@@ -2518,7 +2518,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_strided_batched(rocblas_ha
               Specifies the leading dimension of A. 
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, succesful exit. 
+              If info = 0, successful exit. 
               If info = i > 0, U is singular. U(i,i) is the first zero element in the diagonal. The factorization from
               this point might be incomplete. 
             
@@ -2578,7 +2578,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
               The number of rows of all matrices A_i in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all matrices A_i in the batch.
+              The number of columns of all matrices A_i in the batch.
     @param[inout]
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrices A_i to be factored.
@@ -2589,7 +2589,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
               Specifies the leading dimension of matrices A_i.
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, succesful exit for factorization of A_i. 
+              If info_i = 0, successful exit for factorization of A_i. 
               If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero element in the diagonal. The factorization from
               this point might be incomplete.
     @param[in]
@@ -2656,10 +2656,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_batched(rocblas_handle han
               The number of rows of all matrices A_i in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all matrices A_i in the batch.
+              The number of columns of all matrices A_i in the batch.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, in contains the m-by-n matrices A_i to be factored.
+              On entry, the m-by-n matrices A_i to be factored.
               On exit, the factors L_i and U_i from the factorization.
               The unit diagonal elements of L_i are not stored.
     @param[in]
@@ -2671,7 +2671,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_batched(rocblas_handle han
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, succesful exit for factorization of A_i. 
+              If info_i = 0, successful exit for factorization of A_i. 
               If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero element in the diagonal. The factorization from
               this point might be incomplete.
     @param[in]
@@ -2739,7 +2739,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_strided_batched(rocblas_ha
               The number of rows of the matrix A. 
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of the matrix A. 
+              The number of columns of the matrix A. 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix A to be factored.
@@ -2756,7 +2756,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_strided_batched(rocblas_ha
               Matrix P of the factorization can be derived from ipiv.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, succesful exit. 
+              If info = 0, successful exit. 
               If info = i > 0, U is singular. U(i,i) is the first zero pivot.
             
     ********************************************************************/
@@ -2817,7 +2817,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2(rocblas_handle handle,
               The number of rows of all matrices A_i in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all matrices A_i in the batch.
+              The number of columns of all matrices A_i in the batch.
     @param[inout]
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrices A_i to be factored.
@@ -2840,7 +2840,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2(rocblas_handle handle,
               There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, succesful exit for factorization of A_i. 
+              If info_i = 0, successful exit for factorization of A_i. 
               If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
@@ -2912,10 +2912,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(rocblas_handle handle,
               The number of rows of all matrices A_i in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all matrices A_i in the batch.
+              The number of columns of all matrices A_i in the batch.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, in contains the m-by-n matrices A_i to be factored.
+              On entry, the m-by-n matrices A_i to be factored.
               On exit, the factors L_i and U_i from the factorization.
               The unit diagonal elements of L_i are not stored.
     @param[in]
@@ -2939,7 +2939,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(rocblas_handle handle,
               There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, succesful exit for factorization of A_i. 
+              If info_i = 0, successful exit for factorization of A_i. 
               If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
@@ -3014,7 +3014,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(rocblas_handle 
               The number of rows of the matrix A. 
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of the matrix A. 
+              The number of columns of the matrix A. 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix A to be factored.
@@ -3031,7 +3031,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(rocblas_handle 
               Matrix P of the factorization can be derived from ipiv.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, succesful exit. 
+              If info = 0, successful exit. 
               If info = i > 0, U is singular. U(i,i) is the first zero pivot.
             
     ********************************************************************/
@@ -3091,7 +3091,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf(rocblas_handle handle,
               The number of rows of all matrices A_i in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all matrices A_i in the batch.
+              The number of columns of all matrices A_i in the batch.
     @param[inout]
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrices A_i to be factored.
@@ -3114,7 +3114,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf(rocblas_handle handle,
               There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, succesful exit for factorization of A_i. 
+              If info_i = 0, successful exit for factorization of A_i. 
               If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
@@ -3185,10 +3185,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_batched(rocblas_handle handle,
               The number of rows of all matrices A_i in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all matrices A_i in the batch.
+              The number of columns of all matrices A_i in the batch.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, in contains the m-by-n matrices A_i to be factored.
+              On entry, the m-by-n matrices A_i to be factored.
               On exit, the factors L_i and U_i from the factorization.
               The unit diagonal elements of L_i are not stored.
     @param[in]
@@ -3212,7 +3212,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_batched(rocblas_handle handle,
               There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, succesful exit for factorization of A_i. 
+              If info_i = 0, successful exit for factorization of A_i. 
               If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
@@ -3292,7 +3292,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_strided_batched(rocblas_handle 
               The number of rows of the matrix A.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of the matrix A.
+              The number of columns of the matrix A.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix to be factored.
@@ -3364,7 +3364,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2(rocblas_handle handle,
               The number of rows of all the matrices A_j in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all the matrices A_j in the batch.
+              The number of columns of all the matrices A_j in the batch.
     @param[inout]
     A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrices A_j to be factored.
@@ -3453,7 +3453,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_batched(rocblas_handle handle,
               The number of rows of all the matrices A_j in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all the matrices A_j in the batch.
+              The number of columns of all the matrices A_j in the batch.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
               On entry, the m-by-n matrices A_j to be factored.
@@ -3549,7 +3549,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched(rocblas_handle 
               The number of rows of the matrix A.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of the matrix A.
+              The number of columns of the matrix A.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix to be factored.
@@ -3620,7 +3620,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2(rocblas_handle handle,
               The number of rows of all the matrices A_j in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all the matrices A_j in the batch.
+              The number of columns of all the matrices A_j in the batch.
     @param[inout]
     A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrices A_j to be factored.
@@ -3708,7 +3708,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_batched(rocblas_handle handle,
               The number of rows of all the matrices A_j in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all the matrices A_j in the batch.
+              The number of columns of all the matrices A_j in the batch.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
               On entry, the m-by-n matrices A_j to be factored.
@@ -3806,7 +3806,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_strided_batched(rocblas_handle 
               The number of rows of the matrix A.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of the matrix A.
+              The number of columns of the matrix A.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix to be factored.
@@ -3878,7 +3878,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
               The number of rows of all the matrices A_j in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all the matrices A_j in the batch.
+              The number of columns of all the matrices A_j in the batch.
     @param[inout]
     A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrices A_j to be factored.
@@ -3967,7 +3967,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched(rocblas_handle handle,
               The number of rows of all the matrices A_j in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all the matrices A_j in the batch.
+              The number of columns of all the matrices A_j in the batch.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
               On entry, the m-by-n matrices A_j to be factored.
@@ -4063,7 +4063,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(rocblas_handle 
               The number of rows of the matrix A.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of the matrix A.
+              The number of columns of the matrix A.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix to be factored.
@@ -4134,7 +4134,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf(rocblas_handle handle,
               The number of rows of all the matrices A_j in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all the matrices A_j in the batch.
+              The number of columns of all the matrices A_j in the batch.
     @param[inout]
     A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrices A_j to be factored.
@@ -4222,7 +4222,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_batched(rocblas_handle handle,
               The number of rows of all the matrices A_j in the batch.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of colums of all the matrices A_j in the batch.
+              The number of columns of all the matrices A_j in the batch.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
               On entry, the m-by-n matrices A_j to be factored.
@@ -5413,7 +5413,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(rocblas_handle 
               The pivot indices returned by GETRF.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, succesful exit. 
+              If info = 0, successful exit. 
               If info = i > 0, U is singular. U(i,i) is the first zero pivot.
             
     ********************************************************************/
@@ -5638,7 +5638,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
               specifies the leading dimension of A.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, succesful factorization of matrix A. 
+              If info = 0, successful factorization of matrix A. 
               If info = i > 0, the leading minor of order i of A is not positive definite. 
               The factorization stopped at this point.
 
@@ -5703,7 +5703,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2(rocblas_handle handle,
               specifies the leading dimension of A_i.
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, succesful factorization of matrix A_i. 
+              If info_i = 0, successful factorization of matrix A_i. 
               If info_i = j > 0, the leading minor of order j of A_i is not positive definite. 
               The i-th factorization stopped at this point.
     @param[in]
@@ -5778,7 +5778,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_batched(rocblas_handle handle,
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, succesful factorization of matrix A_i. 
+              If info_i = 0, successful factorization of matrix A_i. 
               If info_i = j > 0, the leading minor of order j of A_i is not positive definite. 
               The i-th factorization stopped at this point.
     @param[in]
@@ -5853,7 +5853,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_strided_batched(rocblas_handle 
               specifies the leading dimension of A.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, succesful factorization of matrix A. 
+              If info = 0, successful factorization of matrix A. 
               If info = i > 0, the leading minor of order i of A is not positive definite. 
               The factorization stopped at this point.
 
@@ -5918,7 +5918,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf(rocblas_handle handle,
               specifies the leading dimension of A_i.
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, succesful factorization of matrix A_i. 
+              If info_i = 0, successful factorization of matrix A_i. 
               If info_i = j > 0, the leading minor of order j of A_i is not positive definite. 
               The i-th factorization stopped at this point.
     @param[in]
@@ -5993,7 +5993,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_batched(rocblas_handle handle,
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, succesful factorization of matrix A_i. 
+              If info_i = 0, successful factorization of matrix A_i. 
               If info_i = j > 0, the leading minor of order j of A_i is not positive definite. 
               The i-th factorization stopped at this point.
     @param[in]
