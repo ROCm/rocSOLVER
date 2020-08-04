@@ -6,6 +6,8 @@
 #define HELPERS_H
 
 #include <hip/hip_runtime.h>
+#include <cassert>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <limits>
@@ -144,5 +146,13 @@ void print_device_matrix(const std::string name, const rocblas_int m, const rocb
     }
 }
 
+// ROCSOLVER_UNREACHABLE is an alternative to __builtin_unreachable
+// that verifies that the path is actually unreachable if
+// ROCSOLVER_VERIFY_ASSUMPTIONS is defined.
+#ifdef ROCSOLVER_VERIFY_ASSUMPTIONS
+# define ROCSOLVER_UNREACHABLE std::abort
+#else
+# define ROCSOLVER_UNREACHABLE __builtin_unreachable
+#endif
 
 #endif /* HELPERS_H */

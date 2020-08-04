@@ -210,7 +210,7 @@ rocblas_status getri_run_small(rocblas_handle handle, const rocblas_int n, U A, 
         case 62: RUN_GETRI_SMALL(62); break;
         case 63: RUN_GETRI_SMALL(63); break;
         case 64: RUN_GETRI_SMALL(64); break;
-        default: __builtin_unreachable();
+        default: ROCSOLVER_UNREACHABLE();
     }
     
     return rocblas_status_success;
