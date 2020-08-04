@@ -20,7 +20,6 @@ rocblas_status rocsolver_getrf_strided_batched_impl(rocblas_handle handle, const
         return st;
 
     // memory managment
-//    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
     using S = decltype(std::real(T{}));
     size_t size_1;  //size of constants
     size_t size_2;
@@ -31,6 +30,12 @@ rocblas_status rocsolver_getrf_strided_batched_impl(rocblas_handle handle, const
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
     void *scalars, *pivot_val, *pivot_idx, *iinfo, *work, *x_temp, *x_temp_arr, *invA, *invA_arr;
+    // (CAUTION: THIS PART IS ACTUALLY ALLOCATED IN THE ROBLAS HANDLE)
+    rocblas_status perf_status = rocblasCall_trsm_mem<false,T,U>(handle,rocblas_side_left,GETRF_GETF2_SWITCHSIZE,n,batch_count,x_temp,x_temp_arr,invA,invA_arr);    
+    if (perf_status != rocblas_status_success && perf_status != rocblas_status_perf_degraded)
+        return perf_status;
+    bool optim_mem = perf_status == rocblas_status_success;
+    
     hipMalloc(&scalars,size_1);
     hipMalloc(&pivot_val,size_2);
     hipMalloc(&pivot_idx,size_3);
@@ -39,12 +44,6 @@ rocblas_status rocsolver_getrf_strided_batched_impl(rocblas_handle handle, const
     if (!scalars || (size_2 && !pivot_val) || (size_3 && !pivot_idx) || (size_4 && !iinfo) || (size_5 && !work))
         return rocblas_status_memory_error;
     
-    // (CAUTION: THIS PART IS ACTUALLY ALLOCATED IN THE ROBLAS HANDLE)
-    rocblas_status perf_status = rocblasCall_trsm_mem<false,T,U>(handle,rocblas_side_left,GETRF_GETF2_SWITCHSIZE,n,batch_count,x_temp,x_temp_arr,invA,invA_arr);    
-    if (perf_status != rocblas_status_success && perf_status != rocblas_status_perf_degraded)
-        return perf_status;
-    bool optim_mem = perf_status == rocblas_status_success;
-
     // scalar constants for rocblas functions calls
     // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
     T sca[] = { -1, 0, 1 };

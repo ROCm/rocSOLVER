@@ -24,7 +24,6 @@ rocblas_status rocsolver_getf2_impl(rocblas_handle handle, const rocblas_int m,
     rocblas_int batch_count = 1;
 
     // memory managment
-//    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
     using S = decltype(std::real(T{}));
     size_t size_1;  //size of constants
     size_t size_2;  //pivot values
