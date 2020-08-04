@@ -155,8 +155,6 @@ __global__ void trtri_kernel_large(const rocblas_diagonal diag, const rocblas_in
     }
     else
     {
-        T minone = -1;
-        trsm_kernel_right_upper(diag, j, jb, &minone, a + j+j*lda, lda, a + j*lda, lda);
         trtri_unblk(diag, jb, a + j+j*lda, lda, info, w);
     }
 }
@@ -207,7 +205,8 @@ template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fill uplo, const rocblas_diagonal diag,
                                         const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
                                         const rocblas_stride strideA, rocblas_int *info,
-                                        const rocblas_int batch_count, T* scalars, T* work, T** workArr)
+                                        const rocblas_int batch_count, T* scalars, T* work, T** workArr,
+                                        void* x_temp, void* x_temp_arr, void* invA, void* invA_arr, bool optim_mem)
 {
     // quick return if zero instances in batch
     if (batch_count == 0) 
@@ -243,6 +242,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
         rocblas_get_pointer_mode(handle,&old_mode);
         rocblas_set_pointer_mode(handle,rocblas_pointer_mode_host);
 
+        T minone = -1;
         T one = 1;
         rocblas_int jb, nb = TRTRI_BLOCKSIZE;
         rocblas_int shiftW = batch_count * n * TRTRI_BLOCKSIZE;
@@ -251,9 +251,18 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
         {
             jb = min(n-j, nb);
             
-            rocblasCall_trmm<BATCHED,STRIDED,T>(handle, rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
-                                                diag, j, jb, &one, A, shiftA, lda, strideA,
-                                                A, shiftA + idx2D(0,j,lda), lda, strideA, batch_count, work + shiftW, workArr);
+            if (j > 0)
+            {
+                rocblasCall_trmm<BATCHED,STRIDED,T>(handle, rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
+                                                    diag, j, jb, &one, A, shiftA, lda, strideA,
+                                                    A, shiftA + idx2D(0,j,lda), lda, strideA, batch_count, work + shiftW, workArr);
+
+                rocblasCall_trsm<BATCHED,T>(handle, rocblas_side_right, rocblas_fill_upper, rocblas_operation_none, diag,
+                                            j, jb, &minone,
+                                            A, shiftA + idx2D(j,j,lda), lda, strideA,
+                                            A, shiftA + idx2D(0,j,lda), lda, strideA, batch_count, optim_mem,
+                                            x_temp, x_temp_arr, invA, invA_arr, workArr);
+            }
 
             hipLaunchKernelGGL(trtri_kernel_large<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
                             diag, n, j, jb, A, shiftA, lda, strideA, info, work);

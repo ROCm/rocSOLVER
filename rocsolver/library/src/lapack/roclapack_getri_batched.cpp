@@ -26,14 +26,25 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle, const rocblas
     size_t size_1;  //size of constants
     size_t size_2;  //size of workspace 
     size_t size_3;  //size of array of pointers to workspace
-    rocsolver_getri_getMemorySize<true,T>(n,batch_count,&size_1,&size_2,&size_3);
+    size_t size_4;  //for TRSM x_temp
+    size_t size_5;  //for TRSM x_temp_arr
+    size_t size_6;  //for TRSM invA
+    size_t size_7;  //for TRSM invA_arr
+    rocsolver_getri_getMemorySize<true,T>(n,batch_count,&size_1,&size_2,&size_3,&size_4,&size_5,&size_6,&size_7);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-    void *scalars, *work, *workArr;
+    void *scalars, *work, *workArr, *x_temp, *x_temp_arr, *invA, *invA_arr;
+    bool optim_mem = true;
+
     hipMalloc(&scalars,size_1);
     hipMalloc(&work,size_2);
     hipMalloc(&workArr,size_3);
-    if (!scalars || (size_2 && !work) || (size_3 && !workArr))
+    hipMalloc(&x_temp,size_4);
+    hipMalloc(&x_temp_arr,size_5);
+    hipMalloc(&invA,size_6);
+    hipMalloc(&invA_arr,size_7);
+    if (!scalars || (size_2 && !work) || (size_3 && !workArr) ||
+        (size_4 && !x_temp) || (size_5 && !x_temp_arr) || (size_6 && !invA) || (size_7 && !invA_arr))
         return rocblas_status_memory_error;
 
     // scalar constants for rocblas functions calls
@@ -52,11 +63,20 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle, const rocblas
                                                   batch_count,
                                                   (T*)scalars,
                                                   (T*)work,
-                                                  (T**)workArr);
+                                                  (T**)workArr,
+                                                  x_temp,
+                                                  x_temp_arr,
+                                                  invA,
+                                                  invA_arr,
+                                                  optim_mem);
 
     hipFree(scalars);
     hipFree(work);
     hipFree(workArr);
+    hipFree(x_temp);
+    hipFree(x_temp_arr);
+    hipFree(invA);
+    hipFree(invA_arr);
     return status;
 }
 
