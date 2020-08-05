@@ -5,6 +5,7 @@
 #include <boost/program_options.hpp>
 #include "testing_gebd2_gebrd.hpp"
 #include "testing_getf2_getrf.hpp"
+#include "testing_getf2_getrf_npvt.hpp"
 #include "testing_geqr2_geqrf.hpp"
 #include "testing_gelq2_gelqf.hpp"
 #include "testing_getri.hpp"
@@ -182,13 +183,8 @@ try
         
         ("perf",
          po::value<rocblas_int>(&argus.perf)->default_value(0),
-         "If equal 1, only GPU timing results are printed (default is 0)")
+         "If equal 1, only GPU timing results are collected and printed (default is 0)")
 
-        ("pivot",
-         po::value<rocblas_int>(&argus.pivot)->default_value(1),
-         "If equal 0, no pivoting -row interchange- is executed (default is 1)."
-         "Only applicable to LU factotization")
-        
         ("device",
          po::value<rocblas_int>(&device_id)->default_value(0),
          "Set default device to be used for subsequent program runs");
@@ -202,11 +198,6 @@ try
         rocblas_cout << desc << std::endl;
         return 0;
     }
-
-    // disabling pivoting cancels norm check as computations without
-    // pivoting are numerically unstable
-    if (!argus.pivot)
-        argus.norm_check = 0;
 
     // catch invalid arguments for:
 
@@ -324,6 +315,66 @@ try
         else if (precision == 'z')
             testing_potf2_potrf<false,true,1,rocblas_double_complex>(argus);
     } 
+    else if (function == "getf2_npvt") {
+        if (precision == 's')
+            testing_getf2_getrf_npvt<false,false,0,float>(argus);
+        else if (precision == 'd')
+            testing_getf2_getrf_npvt<false,false,0,double>(argus);
+        else if (precision == 'c')
+            testing_getf2_getrf_npvt<false,false,0,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_getf2_getrf_npvt<false,false,0,rocblas_double_complex>(argus);
+    } 
+    else if (function == "getf2_npvt_batched") {
+        if (precision == 's')
+            testing_getf2_getrf_npvt<true,true,0,float>(argus);
+        else if (precision == 'd')
+            testing_getf2_getrf_npvt<true,true,0,double>(argus);
+        else if (precision == 'c')
+            testing_getf2_getrf_npvt<true,true,0,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_getf2_getrf_npvt<true,true,0,rocblas_double_complex>(argus);
+    } 
+    else if (function == "getf2_npvt_strided_batched") {
+        if (precision == 's')
+            testing_getf2_getrf_npvt<false,true,0,float>(argus);
+        else if (precision == 'd')
+            testing_getf2_getrf_npvt<false,true,0,double>(argus);
+        else if (precision == 'c')
+            testing_getf2_getrf_npvt<false,true,0,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_getf2_getrf_npvt<false,true,0,rocblas_double_complex>(argus);
+    } 
+    else if (function == "getrf_npvt") {
+        if (precision == 's')
+            testing_getf2_getrf_npvt<false,false,1,float>(argus);
+        else if (precision == 'd')
+            testing_getf2_getrf_npvt<false,false,1,double>(argus);
+        else if (precision == 'c')
+            testing_getf2_getrf_npvt<false,false,1,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_getf2_getrf_npvt<false,false,1,rocblas_double_complex>(argus);
+    } 
+    else if (function == "getrf_npvt_batched") {
+        if (precision == 's')
+            testing_getf2_getrf_npvt<true,true,1,float>(argus);
+        else if (precision == 'd')
+            testing_getf2_getrf_npvt<true,true,1,double>(argus);
+        else if (precision == 'c')
+            testing_getf2_getrf_npvt<true,true,1,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_getf2_getrf_npvt<true,true,1,rocblas_double_complex>(argus);
+    } 
+    else if (function == "getrf_npvt_strided_batched") {
+        if (precision == 's')
+            testing_getf2_getrf_npvt<false,true,1,float>(argus);
+        else if (precision == 'd')
+            testing_getf2_getrf_npvt<false,true,1,double>(argus);
+        else if (precision == 'c')
+            testing_getf2_getrf_npvt<false,true,1,rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_getf2_getrf_npvt<false,true,1,rocblas_double_complex>(argus);
+    }
     else if (function == "getf2") {
         if (precision == 's')
             testing_getf2_getrf<false,false,0,float>(argus);

@@ -10,5 +10,6 @@ User guide
    userguide_intro
    userguide_install
    userguide_examples
+   userguide_tuning
    userguide_api 
    

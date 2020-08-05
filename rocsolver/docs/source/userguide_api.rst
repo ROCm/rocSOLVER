@@ -15,9 +15,6 @@ Types
 Most rocSOLVER types are aliases of rocBLAS types. 
 See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/api.html#types>`_.
 
-Definitions
-----------------
-
 rocsolver_int
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygentypedef:: rocsolver_int
@@ -29,9 +26,6 @@ rocsolver_handle
 .. doxygentypedef:: rocsolver_handle
 .. deprecated:: 3.5
    Use :c:type:`rocblas_handle`.
-
-Enums
-------------
 
 rocblas_direct
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -546,15 +540,63 @@ rocsolver_<type>getrs_strided_batched()
 .. doxygenfunction:: rocsolver_sgetrs_strided_batched
 
 
+Lapack-like Functions
+========================
+
+Other Lapack-like routines provided by rocSOLVER.
+
+General Matrix Factorizations
+---------------------------------
+
+rocsolver_<type>getf2_npvt()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetf2_npvt
+.. doxygenfunction:: rocsolver_cgetf2_npvt
+.. doxygenfunction:: rocsolver_dgetf2_npvt
+.. doxygenfunction:: rocsolver_sgetf2_npvt
+
+rocsolver_<type>getf2_npvt_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetf2_npvt_batched
+.. doxygenfunction:: rocsolver_cgetf2_npvt_batched
+.. doxygenfunction:: rocsolver_dgetf2_npvt_batched
+.. doxygenfunction:: rocsolver_sgetf2_npvt_batched
+
+rocsolver_<type>getf2_npvt_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetf2_npvt_strided_batched
+.. doxygenfunction:: rocsolver_cgetf2_npvt_strided_batched
+.. doxygenfunction:: rocsolver_dgetf2_npvt_strided_batched
+.. doxygenfunction:: rocsolver_sgetf2_npvt_strided_batched
+
+rocsolver_<type>getrf_npvt()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetrf_npvt
+.. doxygenfunction:: rocsolver_cgetrf_npvt
+.. doxygenfunction:: rocsolver_dgetrf_npvt
+.. doxygenfunction:: rocsolver_sgetrf_npvt
+
+rocsolver_<type>getrf_npvt_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetrf_npvt_batched
+.. doxygenfunction:: rocsolver_cgetrf_npvt_batched
+.. doxygenfunction:: rocsolver_dgetrf_npvt_batched
+.. doxygenfunction:: rocsolver_sgetrf_npvt_batched
+
+rocsolver_<type>getrf_npvt_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetrf_npvt_strided_batched
+.. doxygenfunction:: rocsolver_cgetrf_npvt_strided_batched
+.. doxygenfunction:: rocsolver_dgetrf_npvt_strided_batched
+.. doxygenfunction:: rocsolver_sgetrf_npvt_strided_batched
+
+
 
 Auxiliaries
 =========================
 
 rocSOLVER auxiliary functions are aliases of rocBLAS auxiliary functions.
 See the `rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/api.html#auxiliary>`_.
-
-rocSOLVER handle auxiliaries
-------------------------------
 
 rocsolver_create_handle()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -579,9 +621,6 @@ rocsolver_get_stream()
 .. doxygenfunction:: rocsolver_get_stream
 .. deprecated:: 3.5
    Use :c:func:`rocblas_get_stream`.
-
-Other auxiliaries
-------------------------
 
 rocsolver_set_vector()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -16,9 +16,9 @@
 
 #ifdef OPTIMAL
 template <rocblas_int DIM, typename T, typename U>
-__attribute__((amdgpu_flat_work_group_size(WaveSize,WaveSize)))
-__global__ void getri_kernel_small(U AA, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
-                                   rocblas_int* ipivA, const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int* info)
+__global__ void __launch_bounds__(WAVESIZE)
+getri_kernel_small(U AA, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
+                   rocblas_int* ipivA, const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int* info)
 {
     int b = hipBlockIdx_x;
     int i = hipThreadIdx_x;
@@ -138,7 +138,7 @@ rocblas_status getri_run_small(rocblas_handle handle, const rocblas_int n, U A, 
                            A, shiftA, lda, strideA, ipiv, shiftP, strideP, info)
     
     dim3 grid(batch_count,1,1);
-    dim3 block(WaveSize,1,1);
+    dim3 block(WAVESIZE,1,1);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -368,7 +368,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n, const rocblas_int batch_
     
     #ifdef OPTIMAL
     // if very small size, no workspace needed
-    if (n <= WaveSize)
+    if (n <= WAVESIZE)
     {
         *size_2 = 0;
         return;
@@ -445,7 +445,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
     
     #ifdef OPTIMAL
     // if very small size, use optimized inversion kernel
-    if (n <= WaveSize)
+    if (n <= WAVESIZE)
         return getri_run_small<T>(handle,n,A,shiftA,lda,strideA,ipiv,shiftP,strideP,info,batch_count);
 
     #endif
