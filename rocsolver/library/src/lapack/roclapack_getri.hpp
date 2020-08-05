@@ -450,7 +450,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
 
     #endif
 
-    rocblas_int threads = min(((n - 1)/64 + 1) * 64, GETRI_BLOCKSIZE);
+    rocblas_int threads = min(((n - 1)/64 + 1) * 64, BLOCKSIZE);
 
     // compute inv(U)
     rocsolver_trtri_template<BATCHED,STRIDED,T>(handle, rocblas_fill_upper, rocblas_diagonal_non_unit, n,
