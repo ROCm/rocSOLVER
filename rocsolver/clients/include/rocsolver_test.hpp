@@ -55,7 +55,7 @@ template <typename T, typename... Ts>
 inline void rocsolver_bench_output(T arg, Ts... args)
 {
     using boost::format;
-    format f("%|-10|");    
+    format f("%|-15|");    
 
     rocblas_cout << f % arg;
     rocsolver_bench_output(args...);

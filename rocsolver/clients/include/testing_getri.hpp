@@ -112,10 +112,11 @@ void getri_initData(const rocblas_handle handle,
 {
     if (CPU)
     {
+        T tmp;
         rocblas_init<T>(hA, true);
 
-        // scale A to avoid singularities 
         for (rocblas_int b = 0; b < bc; ++b) {
+            // scale A to avoid singularities 
             for (rocblas_int i = 0; i < n; i++) {
                 for (rocblas_int j = 0; j < n; j++) {
                     if (i == j)
@@ -124,19 +125,21 @@ void getri_initData(const rocblas_handle handle,
                         hA[b][i + j * lda] -= 4;
                 }
             }
-        }
 
-        // do the LU decomposition of matrix A w/ the reference LAPACK routine
-        for (rocblas_int b = 0; b < bc; ++b) {
+            // shuffle rows to test pivoting
+            // always the same permuation for debugging purposes
+            for (rocblas_int i = 0; i < n/2; i++) {
+                for (rocblas_int j = 0; j < n; j++) {
+                    tmp = hA[b][i+j*lda];
+                    hA[b][i+j*lda] = hA[b][n-1-i+j*lda];
+                    hA[b][n-1-i+j*lda] = tmp;
+                }
+            }
+
+            // do the LU decomposition of matrix A w/ the reference LAPACK routine
             cblas_getrf<T>(n, n, hA[b], lda, hIpiv[b], hInfo[b]);
-        }
 
-        // introduce artificial pivots for correctness testing
-        for (rocblas_int b = 0; b < bc; ++b)
-        {
-            if (n > 4 + b)
-                hIpiv[b][2 + b] = 4 + b;
-                hIpiv[b][3 + b] = 4 + b;
+            // (TODO: add some singular matrices)
         }
     }
     
@@ -218,19 +221,23 @@ void getri_getPerfData(const rocblas_handle handle,
                         Uh &hInfo, 
                         double *gpu_time_used,
                         double *cpu_time_used,
-                        const rocblas_int hot_calls)
+                        const rocblas_int hot_calls,
+                        const bool perf)
 {
-    rocblas_int sizeW = n;
-    std::vector<T> hW(sizeW);
+    if (!perf) {
+        rocblas_int sizeW = n;
+        std::vector<T> hW(sizeW);
 
-    // cpu-lapack performance
-    getri_initData<true,false,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
+        // cpu-lapack performance (only if not in perf mode)
+        getri_initData<true,false,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
                                       hA1, hA, hIpiv, hInfo);
-    *cpu_time_used = get_time_us();
-    for (rocblas_int b = 0; b < bc; ++b) {
-        cblas_getri<T>(n, hA[b], lda, hIpiv[b], hW.data(), &sizeW);
+        *cpu_time_used = get_time_us();
+        for (rocblas_int b = 0; b < bc; ++b) {
+            cblas_getri<T>(n, hA[b], lda, hIpiv[b], hW.data(), &sizeW);
+        }
+        *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+
     getri_initData<true,false,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
                                       hA1, hA, hIpiv, hInfo);
 
@@ -330,7 +337,7 @@ void testing_getri(Arguments argus)
         // collect performance data
         if (argus.timing) 
             getri_getPerfData<STRIDED,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
-                                              hA1, hA, hIpiv, hInfo, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA1, hA, hIpiv, hInfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     } 
     
     else if (BATCHED) {
@@ -367,7 +374,7 @@ void testing_getri(Arguments argus)
         // collect performance data
         if (argus.timing) 
             getri_getPerfData<STRIDED,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
-                                              hA1, hA, hIpiv, hInfo, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA1, hA, hIpiv, hInfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     } 
 
     else {
@@ -402,7 +409,7 @@ void testing_getri(Arguments argus)
         // collect performance data
         if (argus.timing) 
             getri_getPerfData<STRIDED,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
-                                              hA1, hA, hIpiv, hInfo, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA1, hA, hIpiv, hInfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     // validate results for rocsolver-test
@@ -412,33 +419,39 @@ void testing_getri(Arguments argus)
 
     // output results for rocsolver-bench
     if (argus.timing) {
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Arguments:\n";
-        rocblas_cout << "============================================\n";
-        if (BATCHED) {
-            rocsolver_bench_output("n", "lda", "strideP", "batch_c");
-            rocsolver_bench_output(n, lda, stP, bc);
-        }
-        else if (STRIDED) {
-            rocsolver_bench_output("n", "lda", "strideA", "strideP", "batch_c");
-            rocsolver_bench_output(n, lda, stA, stP, bc);
+        if (!argus.perf) {
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Arguments:\n";
+            rocblas_cout << "============================================\n";
+            if (BATCHED) {
+                rocsolver_bench_output("n", "lda", "strideP", "batch_c");
+                rocsolver_bench_output(n, lda, stP, bc);
+            }
+            else if (STRIDED) {
+                rocsolver_bench_output("n", "lda", "strideA", "strideP", "batch_c");
+                rocsolver_bench_output(n, lda, stA, stP, bc);
+            }
+            else {
+                rocsolver_bench_output("n", "lda");
+                rocsolver_bench_output(n, lda);
+            }
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Results:\n";
+            rocblas_cout << "============================================\n";
+            if (argus.norm_check) {
+                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            }
+            else {
+                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            }
+            rocblas_cout << std::endl;
         }
         else {
-            rocsolver_bench_output("n", "lda");
-            rocsolver_bench_output(n, lda);
+            if (argus.norm_check) rocsolver_bench_output(gpu_time_used,max_error);
+            else rocsolver_bench_output(gpu_time_used);
         }
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Results:\n";
-        rocblas_cout << "============================================\n";
-        if (argus.norm_check) {
-            rocsolver_bench_output("cpu_time", "gpu_time", "error");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
-        }
-        else {
-            rocsolver_bench_output("cpu_time", "gpu_time");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used);
-        }
-        rocblas_cout << std::endl;
     }
 }
   

@@ -97,5 +97,15 @@ rocsolver_gebrd_batched         x      x          x             x
 rocsolver_gebrd_strided_batched x      x          x             x
 =============================== ====== ====== ============== ==============
 
+==================================== ====== ====== ============== ==============
+Lapack-like Function                 single double single complex double complex
+==================================== ====== ====== ============== ==============
+**rocsolver_getf2_npvt**             x      x          x             x
+rocsolver_getf2_npvt_batched         x      x          x             x
+rocsolver_getf2_npvt_strided_batched x      x          x             x
+**rocsolver_getrf_npvt**             x      x          x             x 
+rocsolver_getrf_npvt_batched         x      x          x             x
+rocsolver_getrf_npvt_strided_batched x      x          x             x
+==================================== ====== ====== ============== ==============
 
  
