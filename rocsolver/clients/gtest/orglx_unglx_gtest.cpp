@@ -64,7 +64,6 @@ Arguments setup_arguments_orglq(orglq_tuple tup)
 class ORGL2 : public ::TestWithParam<orglq_tuple> {
 protected:
     ORGL2() {}
-    virtual ~ORGL2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -72,7 +71,6 @@ protected:
 class UNGL2 : public ::TestWithParam<orglq_tuple> {
 protected:
     UNGL2() {}
-    virtual ~UNGL2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -80,7 +78,6 @@ protected:
 class ORGLQ : public ::TestWithParam<orglq_tuple> {
 protected:
     ORGLQ() {}
-    virtual ~ORGLQ() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -88,7 +85,6 @@ protected:
 class UNGLQ : public ::TestWithParam<orglq_tuple> {
 protected:
     UNGLQ() {}
-    virtual ~UNGLQ() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

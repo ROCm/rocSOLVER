@@ -76,7 +76,6 @@ Arguments setup_arguments_ormlq(ormlq_tuple tup)
 class ORML2 : public ::TestWithParam<ormlq_tuple> {
 protected:
     ORML2() {}
-    virtual ~ORML2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -84,7 +83,6 @@ protected:
 class UNML2 : public ::TestWithParam<ormlq_tuple> {
 protected:
     UNML2() {}
-    virtual ~UNML2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -92,7 +90,6 @@ protected:
 class ORMLQ : public ::TestWithParam<ormlq_tuple> {
 protected:
     ORMLQ() {}
-    virtual ~ORMLQ() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -100,7 +97,6 @@ protected:
 class UNMLQ : public ::TestWithParam<ormlq_tuple> {
 protected:
     UNMLQ() {}
-    virtual ~UNMLQ() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

@@ -44,7 +44,6 @@ Arguments lacgv_setup_arguments(wpTuple tup) {
 class LACGV : public ::TestWithParam<wpTuple> {
 protected:
   LACGV() {}
-  virtual ~LACGV() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };

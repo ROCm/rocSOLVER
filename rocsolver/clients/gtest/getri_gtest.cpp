@@ -53,7 +53,6 @@ Arguments setup_arguments(getri_tuple tup) {
 class GETRI : public ::TestWithParam<getri_tuple> {
 protected:
     GETRI() {}
-    virtual ~GETRI() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

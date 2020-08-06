@@ -66,7 +66,6 @@ Arguments setup_arguments_lq(geqr_tuple tup)
 class GELQ2 : public ::TestWithParam<geqr_tuple> {
 protected:
     GELQ2() {}
-    virtual ~GELQ2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -74,7 +73,6 @@ protected:
 class GELQF : public ::TestWithParam<geqr_tuple> {
 protected:
     GELQF() {}
-    virtual ~GELQF() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

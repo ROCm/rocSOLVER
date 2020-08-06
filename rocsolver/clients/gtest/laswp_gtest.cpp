@@ -60,7 +60,6 @@ Arguments laswp_setup_arguments(wpTuple tup) {
 class LASWP : public ::TestWithParam<wpTuple> {
 protected:
     LASWP() {}
-    virtual ~LASWP() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

@@ -52,7 +52,6 @@ Arguments setup_arguments(mtuple tup) {
 class LARFG : public ::TestWithParam<mtuple> {
 protected:
   LARFG() {}
-  virtual ~LARFG() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };

@@ -61,7 +61,6 @@ Arguments setup_chol_arguments(chol_tuple tup)
 class POTF2 : public ::TestWithParam<chol_tuple> {
 protected:
     POTF2() {}
-    virtual ~POTF2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -69,7 +68,6 @@ protected:
 class POTRF : public ::TestWithParam<chol_tuple> {
 protected:
     POTRF() {}
-    virtual ~POTRF() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

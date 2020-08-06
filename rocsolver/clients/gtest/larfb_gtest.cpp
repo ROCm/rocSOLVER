@@ -85,7 +85,6 @@ Arguments larfb_setup_arguments(bTuple tup) {
 class LARFB : public ::TestWithParam<bTuple> {
 protected:
   LARFB() {}
-  virtual ~LARFB() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };

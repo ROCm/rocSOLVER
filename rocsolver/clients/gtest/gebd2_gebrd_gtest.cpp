@@ -68,7 +68,6 @@ Arguments setup_arguments_bd(gebd_tuple tup)
 class GEBD2 : public ::TestWithParam<gebd_tuple> {
 protected:
     GEBD2() {}
-    virtual ~GEBD2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -76,7 +75,6 @@ protected:
 class GEBRD : public ::TestWithParam<gebd_tuple> {
 protected:
     GEBRD() {}
-    virtual ~GEBRD() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

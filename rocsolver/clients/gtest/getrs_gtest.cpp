@@ -77,7 +77,6 @@ Arguments setup_getrs_arguments(getrs_tuple tup) {
 class GETRS : public ::TestWithParam<getrs_tuple> {
 protected:
     GETRS() {}
-    virtual ~GETRS() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

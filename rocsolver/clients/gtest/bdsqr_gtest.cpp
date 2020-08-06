@@ -77,7 +77,6 @@ Arguments setup_arguments_bdsqr(bdsqr_tuple tup)
 class BDSQR : public ::TestWithParam<bdsqr_tuple> {
 protected:
     BDSQR() {}
-    virtual ~BDSQR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

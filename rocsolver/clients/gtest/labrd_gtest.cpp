@@ -66,7 +66,6 @@ Arguments setup_arguments_bd(labrd_tuple tup)
 class LABRD : public ::TestWithParam<labrd_tuple> {
 protected:
     LABRD() {}
-    virtual ~LABRD() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

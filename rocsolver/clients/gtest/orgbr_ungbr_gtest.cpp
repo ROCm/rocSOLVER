@@ -72,7 +72,6 @@ Arguments setup_arguments_orgbr(orgbr_tuple tup)
 class ORGBR : public ::TestWithParam<orgbr_tuple> {
 protected:
     ORGBR() {}
-    virtual ~ORGBR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -80,7 +79,6 @@ protected:
 class UNGBR : public ::TestWithParam<orgbr_tuple> {
 protected:
     UNGBR() {}
-    virtual ~UNGBR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

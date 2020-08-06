@@ -66,7 +66,6 @@ Arguments setup_arguments_org(orgqr_tuple tup)
 class ORG2R : public ::TestWithParam<orgqr_tuple> {
 protected:
     ORG2R() {}
-    virtual ~ORG2R() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -74,7 +73,6 @@ protected:
 class UNG2R : public ::TestWithParam<orgqr_tuple> {
 protected:
     UNG2R() {}
-    virtual ~UNG2R() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -82,7 +80,6 @@ protected:
 class ORGQR : public ::TestWithParam<orgqr_tuple> {
 protected:
     ORGQR() {}
-    virtual ~ORGQR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -90,7 +87,6 @@ protected:
 class UNGQR : public ::TestWithParam<orgqr_tuple> {
 protected:
     UNGQR() {}
-    virtual ~UNGQR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

@@ -73,7 +73,6 @@ Arguments larft_setup_arguments(mTuple tup) {
 class LARFT : public ::TestWithParam<mTuple> {
 protected:
   LARFT() {}
-  virtual ~LARFT() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };

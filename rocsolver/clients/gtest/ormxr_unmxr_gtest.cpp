@@ -82,7 +82,6 @@ Arguments setup_arguments_orm(ormqr_tuple tup)
 class ORM2R : public ::TestWithParam<ormqr_tuple> {
 protected:
     ORM2R() {}
-    virtual ~ORM2R() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -90,7 +89,6 @@ protected:
 class UNM2R : public ::TestWithParam<ormqr_tuple> {
 protected:
     UNM2R() {}
-    virtual ~UNM2R() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -98,7 +96,6 @@ protected:
 class ORMQR : public ::TestWithParam<ormqr_tuple> {
 protected:
     ORMQR() {}
-    virtual ~ORMQR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -106,7 +103,6 @@ protected:
 class UNMQR : public ::TestWithParam<ormqr_tuple> {
 protected:
     UNMQR() {}
-    virtual ~UNMQR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

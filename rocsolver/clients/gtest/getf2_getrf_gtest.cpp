@@ -68,7 +68,6 @@ Arguments setup_arguments(getf2_getrf_tuple tup) {
 class GETF2 : public ::TestWithParam<getf2_getrf_tuple> {
 protected:
     GETF2() {}
-    virtual ~GETF2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -76,7 +75,6 @@ protected:
 class GETRF : public ::TestWithParam<getf2_getrf_tuple> {
 protected:
     GETRF() {}
-    virtual ~GETRF() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -84,7 +82,6 @@ protected:
 class GETF2_NPVT : public ::TestWithParam<getf2_getrf_tuple> {
 protected:
     GETF2_NPVT() {}
-    virtual ~GETF2_NPVT() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -92,7 +89,6 @@ protected:
 class GETRF_NPVT : public ::TestWithParam<getf2_getrf_tuple> {
 protected:
     GETRF_NPVT() {}
-    virtual ~GETRF_NPVT() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

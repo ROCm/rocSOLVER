@@ -99,7 +99,6 @@ Arguments setup_arguments_ormbr(ormbr_tuple tup)
 class ORMBR : public ::TestWithParam<ormbr_tuple> {
 protected:
     ORMBR() {}
-    virtual ~ORMBR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -107,7 +106,6 @@ protected:
 class UNMBR : public ::TestWithParam<ormbr_tuple> {
 protected:
     UNMBR() {}
-    virtual ~UNMBR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

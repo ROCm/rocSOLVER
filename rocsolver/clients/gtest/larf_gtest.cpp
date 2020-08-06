@@ -63,7 +63,6 @@ Arguments larf_setup_arguments(mtuple tup) {
 class LARF : public ::TestWithParam<mtuple> {
 protected:
   LARF() {}
-  virtual ~LARF() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };
