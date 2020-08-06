@@ -39,7 +39,9 @@ int main(int argc, char **argv)
     }
     set_device(device_id);
 
+    // Initialize gtest and rocBLAS
     ::testing::InitGoogleTest(&argc, argv);
+    rocblas_initialize();
 
     int status = RUN_ALL_TESTS();
     print_version_info(); // redundant, but convenient when tests fail
