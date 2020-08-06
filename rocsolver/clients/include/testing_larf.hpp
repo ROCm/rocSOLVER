@@ -67,6 +67,49 @@ void testing_larf_bad_arg()
 }   
 
 
+template <bool CPU, bool GPU, typename T, typename Td, typename Th> 
+void larf_initData(const rocblas_handle handle,
+                         const rocblas_side side,
+                         const rocblas_int m,
+                         const rocblas_int n,
+                         Td &dx,
+                         const rocblas_int inc,
+                         Td &dt,
+                         Td &dA,
+                         const rocblas_int lda,
+                         Th &xx,
+                         Th &hx,
+                         Th &ht,
+                         Th &hA)
+{
+    if (CPU)
+    {
+        rocblas_int order = xx.n();
+
+        rocblas_init<T>(hA, true);
+        rocblas_init<T>(xx, true);
+
+        //compute householder reflector
+        cblas_larfg<T>(order, xx[0], xx[0]+abs(inc), abs(inc), ht[0]);
+        xx[0][0] = 1;
+        for (rocblas_int i = 0; i < order; i++) {
+            if (inc < 0)
+                hx[0][i*abs(inc)] = xx[0][(order-1-i)*abs(inc)];
+            else
+                hx[0][i*inc] = xx[0][i*inc];
+        }
+    }
+
+    if (GPU)
+    {
+        // copy data from CPU to device
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+        CHECK_HIP_ERROR(dx.transfer_from(hx));
+        CHECK_HIP_ERROR(dt.transfer_from(ht));
+    }
+}
+
+
 template <typename T, typename Td, typename Th> 
 void larf_getError(const rocblas_handle handle,
                          const rocblas_side side,
@@ -86,26 +129,10 @@ void larf_getError(const rocblas_handle handle,
 {
     size_t size_w = (side == rocblas_side_left) ? size_t(n) : size_t(m);
     std::vector<T> hw(size_w);
-    rocblas_int order = xx.n();
 
-    //initialize data 
-    rocblas_init<T>(hA, true);
-    rocblas_init<T>(xx, true);
-
-    //compute householder reflector
-    cblas_larfg<T>(order, xx[0], xx[0]+abs(inc), abs(inc), ht[0]);
-    xx[0][0] = 1;
-    for (rocblas_int i = 0; i < order; i++) {
-        if (inc < 0)
-            hx[0][i*abs(inc)] = xx[0][(order-1-i)*abs(inc)];
-        else
-            hx[0][i*inc] = xx[0][i*inc];
-    } 
-
-    // copy data from CPU to device
-    CHECK_HIP_ERROR(dA.transfer_from(hA));
-    CHECK_HIP_ERROR(dx.transfer_from(hx));
-    CHECK_HIP_ERROR(dt.transfer_from(ht));
+    //initialize data
+    larf_initData<true,true,T>(handle, side, m, n, dx, inc, dt, dA, lda,
+                     xx, hx, ht, hA);
 
     // execute computations
     //GPU lapack
@@ -133,6 +160,7 @@ void larf_getPerfData(const rocblas_handle handle,
                          Td &dt,
                          Td &dA,
                          const rocblas_int lda,
+                         Th &xx,
                          Th &hx,
                          Th &ht,
                          Th &hA,
@@ -141,26 +169,44 @@ void larf_getPerfData(const rocblas_handle handle,
                          const rocblas_int hot_calls,
                          const bool perf)
 {
+    size_t size_w = (side == rocblas_side_left) ? size_t(n) : size_t(m);
+    std::vector<T> hw(size_w);
+
     if (!perf)
     {
-        size_t size_w = (side == rocblas_side_left) ? size_t(n) : size_t(m);
-        std::vector<T> hw(size_w);
+        larf_initData<true,false,T>(handle, side, m, n, dx, inc, dt, dA, lda,
+                        xx, hx, ht, hA);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         cblas_larf<T>(side,m,n,hx[0],inc,ht[0],hA[0],lda,hw.data());
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
+    
+    larf_initData<true,false,T>(handle, side, m, n, dx, inc, dt, dA, lda,
+                     xx, hx, ht, hA);
         
     // cold calls    
     for(int iter = 0; iter < 2; iter++)
+    {
+        larf_initData<false,true,T>(handle, side, m, n, dx, inc, dt, dA, lda,
+                        xx, hx, ht, hA);
+
         CHECK_ROCBLAS_ERROR(rocsolver_larf(handle,side,m,n,dx.data(),inc,dt.data(),dA.data(),lda));
+    }
 
     // gpu-lapack performance
-    *gpu_time_used = get_time_us();
+    double start;
     for(int iter = 0; iter < hot_calls; iter++)
+    {
+        larf_initData<false,true,T>(handle, side, m, n, dx, inc, dt, dA, lda,
+                        xx, hx, ht, hA);
+
+        start = get_time_us();
         rocsolver_larf(handle,side,m,n,dx.data(),inc,dt.data(),dA.data(),lda);
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;       
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
 
@@ -241,7 +287,7 @@ void testing_larf(Arguments argus)
     // collect performance data 
     if (argus.timing) 
         larf_getPerfData<T>(handle, side, m, n, dx, inc, dt, dA, lda,
-                          hx, ht, hA, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
+                          xx, hx, ht, hA, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
         
     // validate results for rocsolver-test
     // using size_x * machine_precision as tolerance

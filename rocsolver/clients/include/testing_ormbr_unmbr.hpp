@@ -85,6 +85,80 @@ void testing_ormbr_unmbr_bad_arg()
 }   
 
 
+template <bool CPU, bool GPU, typename T, typename Td, typename Th> 
+void ormbr_unmbr_initData(const rocblas_handle handle,
+                         const rocblas_storev storev,
+                         const rocblas_side side,
+                         const rocblas_operation trans,
+                         const rocblas_int m,
+                         const rocblas_int n, 
+                         const rocblas_int k, 
+                         Td &dA, 
+                         const rocblas_int lda,
+                         Td &dIpiv,
+                         Td &dC,
+                         const rocblas_int ldc,
+                         Th &hA,
+                         Th &hIpiv,
+                         Th &hC,
+                         std::vector<T> &hW,
+                         size_t size_W)
+{
+    if (CPU)
+    {
+        typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
+        size_t s = max(hIpiv.n(),2);
+        std::vector<S> E(s-1);
+        std::vector<S> D(s);
+        std::vector<T> P(s);
+        rocblas_int nq = (side == rocblas_side_left) ? m : n;
+
+        rocblas_init<T>(hA, true);
+        rocblas_init<T>(hIpiv, true);
+        rocblas_init<T>(hC, true);
+
+        // scale to avoid singularities
+        // and compute gebrd
+        if (storev == rocblas_column_wise)
+        {
+            for (int i=0;i<nq;++i)
+            {
+                for (int j=0;j<s;++j)
+                {
+                    if (i == j)
+                        hA[0][i+j*lda] += 400;
+                    else
+                        hA[0][i+j*lda] -= 4;
+                }
+            }
+            cblas_gebrd<S,T>(nq, s, hA[0], lda, D.data(), E.data(), hIpiv[0], P.data(), hW.data(), size_W);
+        }
+        else
+        {
+            for (int i=0;i<s;++i)
+            {
+                for (int j=0;j<nq;++j)
+                {
+                    if (i == j)
+                        hA[0][i+j*lda] += 400;
+                    else
+                        hA[0][i+j*lda] -= 4;
+                }
+            }
+            cblas_gebrd<S,T>(s, nq, hA[0], lda, D.data(), E.data(), P.data(), hIpiv[0], hW.data(), size_W);
+        }
+    }
+
+    if (GPU)
+    {
+        // copy data from CPU to device
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+        CHECK_HIP_ERROR(dIpiv.transfer_from(hIpiv));
+        CHECK_HIP_ERROR(dC.transfer_from(hC));
+    }
+}
+
+
 template <typename T, typename Td, typename Th> 
 void ormbr_unmbr_getError(const rocblas_handle handle,
                          const rocblas_storev storev,
@@ -104,49 +178,12 @@ void ormbr_unmbr_getError(const rocblas_handle handle,
                          Th &hCr,
                          double *max_err)
 {
-    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
-
     size_t size_W = max(max(m,n),k);
     std::vector<T> hW(size_W);
-    size_t s = max(hIpiv.n(),2);
-    std::vector<S> E(s-1);
-    std::vector<S> D(s);
-    std::vector<T> P(s);
-    rocblas_int nq = (side == rocblas_side_left) ? m : n;
     
-    //initialize data 
-    rocblas_init<T>(hA, true);
-    rocblas_init<T>(hIpiv, true);
-    rocblas_init<T>(hC, true);
-
-    // scale to avoid singularities
-    // and compute geberd
-    if (storev == rocblas_column_wise) {
-        for (int i=0;i<nq;++i) {
-            for (int j=0;j<s;++j) {
-                if (i == j)
-                    hA[0][i+j*lda] += 400;
-                else
-                    hA[0][i+j*lda] -= 4;
-            }
-        }
-        cblas_gebrd<S,T>(nq, s, hA[0], lda, D.data(), E.data(), hIpiv[0], P.data(), hW.data(), size_W);
-    } else {
-        for (int i=0;i<s;++i) {
-            for (int j=0;j<nq;++j) {
-                if (i == j)
-                    hA[0][i+j*lda] += 400;
-                else
-                    hA[0][i+j*lda] -= 4;
-            }
-        }
-        cblas_gebrd<S,T>(s, nq, hA[0], lda, D.data(), E.data(), P.data(), hIpiv[0], hW.data(), size_W);
-    }     
-
-    // copy data from CPU to device
-    CHECK_HIP_ERROR(dA.transfer_from(hA));
-    CHECK_HIP_ERROR(dIpiv.transfer_from(hIpiv));
-    CHECK_HIP_ERROR(dC.transfer_from(hC));
+    //initialize data
+    ormbr_unmbr_initData<true,true,T>(handle, storev, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
+                     hA, hIpiv, hC, hW, size_W); 
 
     // execute computations
     //GPU lapack
@@ -185,26 +222,44 @@ void ormbr_unmbr_getPerfData(const rocblas_handle handle,
                          const rocblas_int hot_calls,
                          const bool perf)
 {
+    size_t size_W = max(max(m,n),k);
+    std::vector<T> hW(size_W);
+
     if (!perf)
     {
-        size_t size_W = max(max(m,n),k);
-        std::vector<T> hW(size_W);
+        ormbr_unmbr_initData<true,false,T>(handle, storev, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
+                        hA, hIpiv, hC, hW, size_W); 
         
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         cblas_ormbr_unmbr<T>(storev,side,trans,m,n,k,hA[0],lda,hIpiv[0],hC[0],ldc,hW.data(),size_W);
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
+    
+    ormbr_unmbr_initData<true,false,T>(handle, storev, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
+                     hA, hIpiv, hC, hW, size_W); 
         
     // cold calls    
     for(int iter = 0; iter < 2; iter++)
+    {
+        ormbr_unmbr_initData<false,true,T>(handle, storev, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
+                        hA, hIpiv, hC, hW, size_W); 
+
         CHECK_ROCBLAS_ERROR(rocsolver_ormbr_unmbr(handle,storev,side,trans,m,n,k,dA.data(),lda,dIpiv.data(),dC.data(),ldc));
+    }
 
     // gpu-lapack performance
-    *gpu_time_used = get_time_us();
+    double start;
     for(int iter = 0; iter < hot_calls; iter++)
+    {
+        ormbr_unmbr_initData<false,true,T>(handle, storev, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
+                        hA, hIpiv, hC, hW, size_W); 
+        
+        start = get_time_us();
         rocsolver_ormbr_unmbr(handle,storev,side,trans,m,n,k,dA.data(),lda,dIpiv.data(),dC.data(),ldc);
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;       
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls; 
 }
 
 

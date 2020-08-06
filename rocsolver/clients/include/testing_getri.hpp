@@ -224,14 +224,15 @@ void getri_getPerfData(const rocblas_handle handle,
                         const rocblas_int hot_calls,
                         const bool perf)
 {
+    rocblas_int sizeW = n;
+    std::vector<T> hW(sizeW);
+
     if (!perf)
     {
-        rocblas_int sizeW = n;
-        std::vector<T> hW(sizeW);
-
-        // cpu-lapack performance (only if not in perf mode)
         getri_initData<true,false,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
                                       hA1, hA, hIpiv, hInfo);
+
+        // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         for (rocblas_int b = 0; b < bc; ++b) {
             cblas_getri<T>(n, hA[b], lda, hIpiv[b], hW.data(), &sizeW);

@@ -187,9 +187,10 @@ void getf2_getrf_npvt_getPerfData(const rocblas_handle handle,
 {
     if (!perf)
     {
-        // cpu-lapack performance (only if no perf mode)
         getf2_getrf_npvt_initData<true,false,T>(handle, m, n, dA, lda, stA, dinfo, bc, 
                                      hA, hinfo);
+
+        // cpu-lapack performance (only if no perf mode)
         *cpu_time_used = get_time_us();
         for (rocblas_int b = 0; b < bc; ++b) {
             GETRF ?

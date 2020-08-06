@@ -224,9 +224,10 @@ void getrs_getPerfData(const rocblas_handle handle,
 {
     if (!perf)
     {
-        // cpu-lapack performance (only if not in perf mode)
         getrs_initData<true,false,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
                                         hA, hIpiv, hB);
+        
+        // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         for (rocblas_int b = 0; b < bc; ++b) {
             cblas_getrs<T>(trans, m, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);

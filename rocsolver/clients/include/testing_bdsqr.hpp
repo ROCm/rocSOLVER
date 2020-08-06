@@ -90,6 +90,81 @@ void testing_bdsqr_bad_arg()
 }
 
 
+template <bool CPU, bool GPU, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
+void bdsqr_initData(const rocblas_handle handle, 
+                        const rocblas_fill uplo,
+                        const rocblas_int n, 
+                        const rocblas_int nv, 
+                        const rocblas_int nu, 
+                        const rocblas_int nc, 
+                        Sd &dD,
+                        Sd &dE,
+                        Td &dV,
+                        const rocblas_int ldv,
+                        Td &dU, 
+                        const rocblas_int ldu,
+                        Td &dC, 
+                        const rocblas_int ldc,
+                        Ud &dinfo,
+                        Sh &hD,
+                        Sh &hE,
+                        Th &hV,
+                        Th &hU,
+                        Th &hC,
+                        Uh &hinfo,
+                        std::vector<S> &D,
+                        std::vector<S> &E)
+{
+    if (CPU)
+    {
+        rocblas_init<S>(hD, true);
+        rocblas_init<S>(hE, false);
+
+        // adding possible gaps to fully test the algorithm
+        for (rocblas_int i = 0; i < n-1; ++i) {
+            hE[0][i] -= 5;
+            hD[0][i] -= 4;
+        }
+        hD[0][n-1] -= 4;
+
+        // make copy of original data to test vectors if required
+        if (nv || nu || nc) {
+            for (rocblas_int i = 0; i < nv-1; ++i) {
+                E[i] = hE[0][i];
+                D[i] = hD[0][i];
+            }
+            D[nv-1] = hD[0][nv-1];
+        }
+
+        // make V,U and C identities so that results are actually singular vectors of B
+        if (nv > 0) {
+            memset(hV[0], 0, ldv * nv * sizeof(T));
+            for (rocblas_int i = 0; i < min(n,nv); ++i) 
+                hV[0][i + i*ldv] = T(1.0);
+        }            
+        if (nu > 0) {
+            memset(hU[0], 0, ldu * n * sizeof(T));
+            for (rocblas_int i = 0; i < min(n,nu); ++i) 
+                hU[0][i + i*ldu] = T(1.0);
+        }            
+        if (nc > 0) {
+            memset(hC[0], 0, ldc * nc * sizeof(T));
+            for (rocblas_int i = 0; i < min(n,nc); ++i) 
+                hC[0][i + i*ldc] = T(1.0);
+        }
+    }
+    
+    if (GPU)
+    {
+        // now copy to the GPU
+        CHECK_HIP_ERROR(dD.transfer_from(hD));
+        CHECK_HIP_ERROR(dE.transfer_from(hE));
+        if (nv > 0) CHECK_HIP_ERROR(dV.transfer_from(hV));
+        if (nu > 0) CHECK_HIP_ERROR(dU.transfer_from(hU));
+        if (nc > 0) CHECK_HIP_ERROR(dC.transfer_from(hC));
+    }
+}
+
 template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void bdsqr_getError(const rocblas_handle handle, 
                         const rocblas_fill uplo,
@@ -121,48 +196,9 @@ void bdsqr_getError(const rocblas_handle handle,
     std::vector<S> D(nv);
     std::vector<S> E(nv);
     
-    // input data initialization 
-    rocblas_init<S>(hD, true);
-    rocblas_init<S>(hE, false);
-    // adding possible gaps to fully test the algorithm
-    for (rocblas_int i = 0; i < n-1; ++i) {
-        hE[0][i] -= 5;
-        hD[0][i] -= 4;
-    }
-    hD[0][n-1] -= 4;
-
-    // make copy of original data to test vectors if required
-    if (nv || nu || nc) {
-        for (rocblas_int i = 0; i < nv-1; ++i) {
-            E[i] = hE[0][i];
-            D[i] = hD[0][i];
-        }
-        D[nv-1] = hD[0][nv-1];
-    }
-
-    // make V,U and C identities so that results are actually singular vectors of B
-    if (nv > 0) {
-        memset(hV[0], 0, ldv * nv * sizeof(T));
-        for (rocblas_int i = 0; i < min(n,nv); ++i) 
-            hV[0][i + i*ldv] = T(1.0);
-    }            
-    if (nu > 0) {
-        memset(hU[0], 0, ldu * n * sizeof(T));
-        for (rocblas_int i = 0; i < min(n,nu); ++i) 
-            hU[0][i + i*ldu] = T(1.0);
-    }            
-    if (nc > 0) {
-        memset(hC[0], 0, ldc * nc * sizeof(T));
-        for (rocblas_int i = 0; i < min(n,nc); ++i) 
-            hC[0][i + i*ldc] = T(1.0);
-    }            
-    
-    // now copy to the GPU
-    CHECK_HIP_ERROR(dD.transfer_from(hD));
-    CHECK_HIP_ERROR(dE.transfer_from(hE));
-    if (nv > 0) CHECK_HIP_ERROR(dV.transfer_from(hV));
-    if (nu > 0) CHECK_HIP_ERROR(dU.transfer_from(hU));
-    if (nc > 0) CHECK_HIP_ERROR(dC.transfer_from(hC));
+    // input data initialization
+    bdsqr_initData<true,true,S,T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc, dinfo,
+                      hD, hE, hV, hU, hC, hinfo, D, E);
 
     // execute computations
     // CPU lapack
@@ -265,26 +301,46 @@ void bdsqr_getPerfData(const rocblas_handle handle,
                         const rocblas_int hot_calls,
                         const bool perf)
 {
+    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
+    std::vector<S> hW(4*n);
+    std::vector<S> D(nv);
+    std::vector<S> E(nv);
+
     if (!perf)
     {
-        typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
-        std::vector<S> hW(4*n);
+        bdsqr_initData<true,false,S,T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc, dinfo,
+                        hD, hE, hV, hU, hC, hinfo, D, E);
         
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         cblas_bdsqr<T>(uplo,n,nv,nu,nc,hD[0],hE[0],hV[0],ldv,hU[0],ldu,hC[0],ldc,hW.data(),hinfo[0]);
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
+    
+    bdsqr_initData<true,false,S,T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc, dinfo,
+                      hD, hE, hV, hU, hC, hinfo, D, E);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
+    {
+        bdsqr_initData<false,true,S,T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc, dinfo,
+                        hD, hE, hV, hU, hC, hinfo, D, E);
+
         CHECK_ROCBLAS_ERROR(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(), dV.data(), ldv, dU.data(), ldu, dC.data(), ldc, dinfo.data()));
-        
+    }
+
     // gpu-lapack performance
-    *gpu_time_used = get_time_us(); 
+    double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    {
+        bdsqr_initData<false,true,S,T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc, dinfo,
+                        hD, hE, hV, hU, hC, hinfo, D, E);
+
+        start = get_time_us();
         rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(), dV.data(), ldv, dU.data(), ldu, dC.data(), ldc, dinfo.data());
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
 

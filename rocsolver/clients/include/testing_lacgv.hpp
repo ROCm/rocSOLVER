@@ -48,6 +48,26 @@ void testing_lacgv_bad_arg()
 }   
 
 
+template <bool CPU, bool GPU, typename T, typename Td, typename Th> 
+void lacgv_initData(const rocblas_handle handle,
+                         const rocblas_int n,
+                         Td &dA,
+                         const rocblas_int inc,
+                         Th &hA)
+{
+    if (CPU)
+    {
+        rocblas_init<T>(hA, true);
+    }
+
+    if (GPU)
+    {
+        // copy data from CPU to device
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+    }
+}
+
+
 template <typename T, typename Td, typename Th> 
 void lacgv_getError(const rocblas_handle handle,
                          const rocblas_int n,
@@ -57,11 +77,9 @@ void lacgv_getError(const rocblas_handle handle,
                          Th &hAr,
                          double *max_err)
 {
-    //initialize data 
-    rocblas_init<T>(hA, true);
-
-    // copy data from CPU to device
-    CHECK_HIP_ERROR(dA.transfer_from(hA));
+    //initialize data
+    lacgv_initData<true,true,T>(handle, n, dA, inc, 
+                      hA);
 
     // execute computations
     //GPU lapack
@@ -94,21 +112,39 @@ void lacgv_getPerfData(const rocblas_handle handle,
 {
     if (!perf)
     {
+        lacgv_initData<true,false,T>(handle, n, dA, inc, 
+                        hA);
+
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         cblas_lacgv<T>(n,hA[0],inc);
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
+    
+    lacgv_initData<true,false,T>(handle, n, dA, inc, 
+                      hA);
         
     // cold calls    
     for(int iter = 0; iter < 2; iter++)
+    {
+        lacgv_initData<false,true,T>(handle, n, dA, inc, 
+                        hA);
+
         CHECK_ROCBLAS_ERROR(rocsolver_lacgv(handle,n,dA.data(),inc));
+    }
 
     // gpu-lapack performance
-    *gpu_time_used = get_time_us();
+    double start;
     for(int iter = 0; iter < hot_calls; iter++)
+    {
+        lacgv_initData<false,true,T>(handle, n, dA, inc, 
+                        hA);
+
+        start = get_time_us();
         rocsolver_lacgv(handle,n,dA.data(),inc);
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;       
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;   
 }
 
 

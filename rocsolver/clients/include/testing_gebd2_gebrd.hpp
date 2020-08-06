@@ -116,6 +116,55 @@ void testing_gebd2_gebrd_bad_arg()
 }
 
 
+template <bool CPU, bool GPU, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
+void gebd2_gebrd_initData(const rocblas_handle handle, 
+                        const rocblas_int m, 
+                        const rocblas_int n, 
+                        Td &dA, 
+                        const rocblas_int lda, 
+                        const rocblas_stride stA, 
+                        Sd &dD, 
+                        const rocblas_stride stD, 
+                        Sd &dE, 
+                        const rocblas_stride stE, 
+                        Ud &dTauq, 
+                        const rocblas_stride stQ, 
+                        Ud &dTaup, 
+                        const rocblas_stride stP, 
+                        const rocblas_int bc,
+                        Th &hA,
+                        Sh &hD,
+                        Sh &hE,
+                        Uh &hTauq,
+                        Uh &hTaup)
+{
+    if (CPU)
+    {
+        rocblas_init<T>(hA, true);
+
+        // scale A to avoid singularities 
+        for (rocblas_int b = 0; b < bc; ++b) {
+            for (rocblas_int i = 0; i < m; i++) {
+                for (rocblas_int j = 0; j < n; j++) {
+                    if (i == j ||
+                        (m >= n && j == i+1) ||
+                        (m < n && i == j+1))
+                        hA[b][i + j * lda] += 400;
+                    else
+                        hA[b][i + j * lda] -= 4;
+                }
+            }
+        }
+    }
+
+    if (GPU)
+    {
+        // now copy to the GPU
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+    }
+}
+
+
 template <bool STRIDED, bool GEBRD, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void gebd2_gebrd_getError(const rocblas_handle handle, 
                         const rocblas_int m, 
@@ -142,25 +191,9 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
 {
     std::vector<T> hW(max(m,n));
 
-    // input data initialization 
-    rocblas_init<T>(hA, true);
-
-    // scale A to avoid singularities 
-    for (rocblas_int b = 0; b < bc; ++b) {
-        for (rocblas_int i = 0; i < m; i++) {
-            for (rocblas_int j = 0; j < n; j++) {
-                if (i == j ||
-                    (m >= n && j == i+1) ||
-                    (m < n && i == j+1))
-                    hA[b][i + j * lda] += 400;
-                else
-                    hA[b][i + j * lda] -= 4;
-            }
-        }
-    }
-
-    // now copy to the GPU
-    CHECK_HIP_ERROR(dA.transfer_from(hA));
+    // input data initialization
+    gebd2_gebrd_initData<true,true,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+                                  hA, hD, hE, hTauq, hTaup);
 
     // execute computations
     // GPU lapack
@@ -214,9 +247,12 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
                             const rocblas_int hot_calls,
                             const bool perf)
 {
+    std::vector<T> hW(max(m,n));
+
     if (!perf)
     {
-        std::vector<T> hW(max(m,n));
+        gebd2_gebrd_initData<true,false,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+                                    hA, hD, hE, hTauq, hTaup);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
@@ -227,16 +263,31 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
         }
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
+    
+    gebd2_gebrd_initData<true,false,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+                                  hA, hD, hE, hTauq, hTaup);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
+    {
+        gebd2_gebrd_initData<false,true,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+                                    hA, hD, hE, hTauq, hTaup);
+
         CHECK_ROCBLAS_ERROR(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle, m, n, dA.data(), lda, stA, dD.data(), stD, dE.data(), stE, dTauq.data(), stQ, dTaup.data(), stP, bc));
-        
+    }
+
     // gpu-lapack performance
-    *gpu_time_used = get_time_us(); 
+    double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    {
+        gebd2_gebrd_initData<false,true,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+                                    hA, hD, hE, hTauq, hTaup);
+
+        start = get_time_us();
         rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle, m, n, dA.data(), lda, stA, dD.data(), stD, dE.data(), stE, dTauq.data(), stQ, dTaup.data(), stP, bc);
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
 

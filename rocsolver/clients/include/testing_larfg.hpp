@@ -58,6 +58,32 @@ void testing_larfg_bad_arg()
 }   
 
 
+template <bool CPU, bool GPU, typename T, typename Td, typename Th> 
+void larfg_initData(const rocblas_handle handle,
+                         const rocblas_int n,
+                         Td &da,
+                         Td &dx,
+                         const rocblas_int inc,
+                         Td &dt,
+                         Th &ha,
+                         Th &hx,
+                         Th &ht)
+{
+    if (CPU)
+    {
+        rocblas_init<T>(ha, true);
+        rocblas_init<T>(hx, true);
+    }
+
+    if (GPU)
+    {
+        // copy data from CPU to device
+        CHECK_HIP_ERROR(da.transfer_from(ha));
+        CHECK_HIP_ERROR(dx.transfer_from(hx));
+    }
+}
+
+
 template <typename T, typename Td, typename Th> 
 void larfg_getError(const rocblas_handle handle,
                          const rocblas_int n,
@@ -71,13 +97,9 @@ void larfg_getError(const rocblas_handle handle,
                          Th &ht,
                          double *max_err)
 {
-    //initialize data 
-    rocblas_init<T>(ha, true);
-    rocblas_init<T>(hx, true);
-
-    // copy data from CPU to device
-    CHECK_HIP_ERROR(da.transfer_from(ha));
-    CHECK_HIP_ERROR(dx.transfer_from(hx));
+    //initialize data
+    larfg_initData<true,true,T>(handle, n, da, dx, inc, dt, 
+                      ha, hx, ht);
 
     // execute computations
     //GPU lapack
@@ -112,21 +134,39 @@ void larfg_getPerfData(const rocblas_handle handle,
 {
     if (!perf)
     {
+        larfg_initData<true,false,T>(handle, n, da, dx, inc, dt, 
+                        ha, hx, ht);
+
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         cblas_larfg<T>(n,ha[0],hx[0],inc,ht[0]);
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
+    
+    larfg_initData<true,false,T>(handle, n, da, dx, inc, dt, 
+                      ha, hx, ht);
         
     // cold calls    
     for(int iter = 0; iter < 2; iter++)
+    {
+        larfg_initData<false,true,T>(handle, n, da, dx, inc, dt, 
+                        ha, hx, ht);
+
         CHECK_ROCBLAS_ERROR(rocsolver_larfg(handle,n,da.data(),dx.data(),inc,dt.data()));
+    }
 
     // gpu-lapack performance
-    *gpu_time_used = get_time_us();
+    double start;
     for(int iter = 0; iter < hot_calls; iter++)
+    {
+        larfg_initData<false,true,T>(handle, n, da, dx, inc, dt, 
+                        ha, hx, ht);
+        
+        start = get_time_us();
         rocsolver_larfg(handle,n,da.data(),dx.data(),inc,dt.data());
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;       
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
 

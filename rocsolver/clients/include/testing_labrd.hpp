@@ -94,6 +94,60 @@ void testing_labrd_bad_arg()
 }
 
 
+template <bool CPU, bool GPU, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
+void labrd_initData(const rocblas_handle handle, 
+                        const rocblas_int m, 
+                        const rocblas_int n, 
+                        const rocblas_int nb, 
+                        Td &dA, 
+                        const rocblas_int lda,
+                        Sd &dD,
+                        Sd &dE,
+                        Ud &dTauq,
+                        Ud &dTaup,
+                        Td &dX, 
+                        const rocblas_int ldx,
+                        Td &dY, 
+                        const rocblas_int ldy,
+                        Th &hA,
+                        Sh &hD, 
+                        Sh &hE, 
+                        Uh &hTauq, 
+                        Uh &hTaup, 
+                        Th &hX,
+                        Th &hY)
+{
+    if (CPU)
+    {
+        rocblas_init<T>(hA, true);
+
+        // scale A to avoid singularities
+        for (rocblas_int i = 0; i < m; i++) {
+            for (rocblas_int j = 0; j < n; j++) {
+                if (i == j ||
+                    (m >= n && j == i+1) ||
+                    (m < n && i == j+1))
+                    hA[0][i + j * lda] += 400;
+                else    
+                    hA[0][i + j * lda] -= 4;
+            }
+        }
+
+        // zero X and Y
+        memset(hX[0], 0, ldx * nb * sizeof(T));
+        memset(hY[0], 0, ldy * nb * sizeof(T));
+    }
+
+    if (GPU)
+    {
+        // now copy to the GPU
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+        CHECK_HIP_ERROR(dX.transfer_from(hX));
+        CHECK_HIP_ERROR(dY.transfer_from(hY));
+    }
+}
+
+
 template <typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void labrd_getError(const rocblas_handle handle, 
                         const rocblas_int m, 
@@ -121,29 +175,9 @@ void labrd_getError(const rocblas_handle handle,
                         Th &hYRes,
                         double *max_err)
 {
-    // input data initialization 
-    rocblas_init<T>(hA, true);
-
-    // scale A to avoid singularities
-    for (rocblas_int i = 0; i < m; i++) {
-        for (rocblas_int j = 0; j < n; j++) {
-            if (i == j ||
-                (m >= n && j == i+1) ||
-                (m < n && i == j+1))
-                hA[0][i + j * lda] += 400;
-            else    
-                hA[0][i + j * lda] -= 4;
-        }
-    }
-
-    // zero X and Y
-    memset(hX[0], 0, ldx * nb * sizeof(T));
-    memset(hY[0], 0, ldy * nb * sizeof(T));
-
-    // now copy to the GPU
-    CHECK_HIP_ERROR(dA.transfer_from(hA));
-    CHECK_HIP_ERROR(dX.transfer_from(hX));
-    CHECK_HIP_ERROR(dY.transfer_from(hY));
+    // input data initialization
+    labrd_initData<true,true,S,T>(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy,
+                        hA, hD, hE, hTauq, hTaup, hX, hY);
 
     // execute computations
     // GPU lapack
@@ -199,21 +233,39 @@ void labrd_getPerfData(const rocblas_handle handle,
 {
     if (!perf)
     {
+        labrd_initData<true,false,S,T>(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy,
+                            hA, hD, hE, hTauq, hTaup, hX, hY);
+
         // cpu-lapack performance
         *cpu_time_used = get_time_us();
         cblas_labrd<S,T>(m, n, nb, hA[0], lda, hD[0], hE[0], hTauq[0], hTaup[0], hX[0], ldx, hY[0], ldy);
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
+    
+    labrd_initData<true,false,S,T>(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy,
+                        hA, hD, hE, hTauq, hTaup, hX, hY);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
+    {
+        labrd_initData<false,true,S,T>(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy,
+                            hA, hD, hE, hTauq, hTaup, hX, hY);
+
         CHECK_ROCBLAS_ERROR(rocsolver_labrd(handle, m, n, nb, dA.data(), lda, dD.data(), dE.data(), dTauq.data(), dTaup.data(), dX.data(), ldx, dY.data(), ldy));
-        
+    }
+
     // gpu-lapack performance
-    *gpu_time_used = get_time_us(); 
+    double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    {
+        labrd_initData<false,true,S,T>(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy,
+                            hA, hD, hE, hTauq, hTaup, hX, hY);
+
+        start = get_time_us();
         rocsolver_labrd(handle, m, n, nb, dA.data(), lda, dD.data(), dE.data(), dTauq.data(), dTaup.data(), dX.data(), ldx, dY.data(), ldy);
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
 
