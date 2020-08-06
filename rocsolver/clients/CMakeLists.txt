@@ -12,7 +12,7 @@ if( NOT DEFINED CMAKE_CONFIGURATION_TYPES AND NOT DEFINED CMAKE_BUILD_TYPE )
 endif()
 
 # This project may compile dependencies for clients
-project( rocsolver-clients LANGUAGES CXX Fortran )
+project( rocsolver-clients LANGUAGES C CXX Fortran )
 
 if(OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread")

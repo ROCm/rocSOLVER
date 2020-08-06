@@ -36,9 +36,9 @@ For a full description of the used rocSOLVER routine, see the API documentation 
                             rocblas_int& N,
                             rocblas_int& lda) {
       // a *very* small example input; not a very efficient use of the API
-      double A[3][3] = { {  12, -51,   4},
-                         {   6, 167, -68},
-                         {  -4,  24, -41} };
+      const double A[3][3] = { {  12, -51,   4},
+                               {   6, 167, -68},
+                               {  -4,  24, -41} };
       M = 3;
       N = 3;
       lda = 3;
