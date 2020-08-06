@@ -224,7 +224,8 @@ void getri_getPerfData(const rocblas_handle handle,
                         const rocblas_int hot_calls,
                         const bool perf)
 {
-    if (!perf) {
+    if (!perf)
+    {
         rocblas_int sizeW = n;
         std::vector<T> hW(sizeW);
 

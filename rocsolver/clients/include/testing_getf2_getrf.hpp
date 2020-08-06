@@ -226,7 +226,8 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
                         const rocblas_int hot_calls,
                         const bool perf)
 {
-    if (!perf) {
+    if (!perf)
+    {
         // cpu-lapack performance (only if not in perf mode)
         getf2_getrf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, 
                                      hA, hIpiv, hinfo);

@@ -262,15 +262,19 @@ void bdsqr_getPerfData(const rocblas_handle handle,
                         Uh &hinfo,
                         double *gpu_time_used,
                         double *cpu_time_used,
-                        const rocblas_int hot_calls)
+                        const rocblas_int hot_calls,
+                        const bool perf)
 {
-    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
-    std::vector<S> hW(4*n);
-    
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    cblas_bdsqr<T>(uplo,n,nv,nu,nc,hD[0],hE[0],hV[0],ldv,hU[0],ldu,hC[0],ldc,hW.data(),hinfo[0]);
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+    if (!perf)
+    {
+        typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
+        std::vector<S> hW(4*n);
+        
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        cblas_bdsqr<T>(uplo,n,nv,nu,nc,hD[0],hE[0],hV[0],ldv,hU[0],ldu,hC[0],ldc,hW.data(),hinfo[0]);
+        *cpu_time_used = get_time_us() - *cpu_time_used;
+    }
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
@@ -402,7 +406,7 @@ void testing_bdsqr(Arguments argus)
         if (size_C) CHECK_HIP_ERROR(dC.memcheck());
          
         bdsqr_getPerfData<T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc, dinfo,
-                            hD, hE, hV, hU, hC, hinfo, &gpu_time_used, &cpu_time_used, hot_calls);
+                            hD, hE, hV, hU, hC, hinfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     // validate results for rocsolver-test

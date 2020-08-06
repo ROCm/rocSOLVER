@@ -211,18 +211,22 @@ void larfb_getPerfData(const rocblas_handle handle,
                          Th &hA,
                          double *gpu_time_used,
                          double *cpu_time_used,
-                         const rocblas_int hot_calls)
+                         const rocblas_int hot_calls,
+                         const bool perf)
 {
-    bool left = (side == rocblas_side_left);
-    rocblas_int ldw = left ? n : m;
-    size_t sizeW = size_t(ldw)*k;
-    std::vector<T> hW(sizeW);
-    
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    cblas_larfb<T>(side,trans,direct,storev,m,n,k,hV[0],ldv,hT[0],ldt,hA[0],lda,hW.data(),ldw);
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+    if (!perf)
+    {
+        bool left = (side == rocblas_side_left);
+        rocblas_int ldw = left ? n : m;
+        size_t sizeW = size_t(ldw)*k;
+        std::vector<T> hW(sizeW);
         
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        cblas_larfb<T>(side,trans,direct,storev,m,n,k,hV[0],ldv,hT[0],ldt,hA[0],lda,hW.data(),ldw);
+        *cpu_time_used = get_time_us() - *cpu_time_used;
+    }
+    
     // cold calls    
     for(int iter = 0; iter < 2; iter++)
         CHECK_ROCBLAS_ERROR(rocsolver_larfb(handle,side,trans,direct,storev,m,n,k,dV.data(),ldv,dT.data(),ldt,dA.data(),lda));
@@ -325,7 +329,7 @@ void testing_larfb(Arguments argus)
     // collect performance data 
     if (argus.timing) 
         larfb_getPerfData<T>(handle, side, trans, direct, storev, m, n, k, dV, ldv, dT, ldt, dA, lda,
-                          hV, hT, hA, &gpu_time_used, &cpu_time_used, hot_calls); 
+                          hV, hT, hA, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
         
     // validate results for rocsolver-test
     // using s * machine_precision as tolerance

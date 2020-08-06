@@ -211,18 +211,22 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
                             Uh &hTaup, 
                             double *gpu_time_used,
                             double *cpu_time_used,
-                            const rocblas_int hot_calls)
+                            const rocblas_int hot_calls,
+                            const bool perf)
 {
-    std::vector<T> hW(max(m,n));
+    if (!perf)
+    {
+        std::vector<T> hW(max(m,n));
 
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    for (rocblas_int b = 0; b < bc; ++b) {
-        GEBRD ?
-            cblas_gebrd<S,T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(), max(m,n)):
-            cblas_gebd2<S,T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        for (rocblas_int b = 0; b < bc; ++b) {
+            GEBRD ?
+                cblas_gebrd<S,T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(), max(m,n)):
+                cblas_gebd2<S,T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
+        }
+        *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    *cpu_time_used = get_time_us() - *cpu_time_used;
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
@@ -322,7 +326,7 @@ void testing_gebd2_gebrd(Arguments argus)
         // collect performance data
         if (argus.timing) 
             gebd2_gebrd_getPerfData<STRIDED,GEBRD,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
-                                              hA, hD, hE, hTauq, hTaup, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hD, hE, hTauq, hTaup, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     } 
 
     else {
@@ -362,7 +366,7 @@ void testing_gebd2_gebrd(Arguments argus)
         // collect performance data
         if (argus.timing) 
             gebd2_gebrd_getPerfData<STRIDED,GEBRD,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
-                                              hA, hD, hE, hTauq, hTaup, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hD, hE, hTauq, hTaup, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     // validate results for rocsolver-test

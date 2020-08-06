@@ -182,15 +182,19 @@ void ormbr_unmbr_getPerfData(const rocblas_handle handle,
                          Th &hC,
                          double *gpu_time_used,
                          double *cpu_time_used,
-                         const rocblas_int hot_calls)
+                         const rocblas_int hot_calls,
+                         const bool perf)
 {
-    size_t size_W = max(max(m,n),k);
-    std::vector<T> hW(size_W);
-    
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    cblas_ormbr_unmbr<T>(storev,side,trans,m,n,k,hA[0],lda,hIpiv[0],hC[0],ldc,hW.data(),size_W);
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+    if (!perf)
+    {
+        size_t size_W = max(max(m,n),k);
+        std::vector<T> hW(size_W);
+        
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        cblas_ormbr_unmbr<T>(storev,side,trans,m,n,k,hA[0],lda,hIpiv[0],hC[0],ldc,hW.data(),size_W);
+        *cpu_time_used = get_time_us() - *cpu_time_used;
+    }
         
     // cold calls    
     for(int iter = 0; iter < 2; iter++)
@@ -291,7 +295,7 @@ void testing_ormbr_unmbr(Arguments argus)
     // collect performance data 
     if (argus.timing) 
         ormbr_unmbr_getPerfData<T>(handle, storev, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
-                          hA, hIpiv, hC, &gpu_time_used, &cpu_time_used, hot_calls); 
+                          hA, hIpiv, hC, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
         
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance

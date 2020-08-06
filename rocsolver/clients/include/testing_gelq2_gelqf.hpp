@@ -161,18 +161,22 @@ void gelq2_gelqf_getPerfData(const rocblas_handle handle,
                             Uh &hIpiv, 
                             double *gpu_time_used,
                             double *cpu_time_used,
-                            const rocblas_int hot_calls)
+                            const rocblas_int hot_calls,
+                            const bool perf)
 {
-    std::vector<T> hW(m);
+    if (!perf)
+    {
+        std::vector<T> hW(m);
 
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    for (rocblas_int b = 0; b < bc; ++b) {
-        GELQF ?
-            cblas_gelqf<T>(m, n, hA[b], lda, hIpiv[b], hW.data(), m):
-            cblas_gelq2<T>(m, n, hA[b], lda, hIpiv[b], hW.data());
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        for (rocblas_int b = 0; b < bc; ++b) {
+            GELQF ?
+                cblas_gelqf<T>(m, n, hA[b], lda, hIpiv[b], hW.data(), m):
+                cblas_gelq2<T>(m, n, hA[b], lda, hIpiv[b], hW.data());
+        }
+        *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    *cpu_time_used = get_time_us() - *cpu_time_used;
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
@@ -255,7 +259,7 @@ void testing_gelq2_gelqf(Arguments argus)
         // collect performance data
         if (argus.timing) 
             gelq2_gelqf_getPerfData<STRIDED,GELQF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
-                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     } 
 
     else {
@@ -286,7 +290,7 @@ void testing_gelq2_gelqf(Arguments argus)
         // collect performance data
         if (argus.timing) 
             gelq2_gelqf_getPerfData<STRIDED,GELQF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
-                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     // validate results for rocsolver-test

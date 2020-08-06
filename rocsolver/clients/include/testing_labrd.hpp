@@ -194,12 +194,16 @@ void labrd_getPerfData(const rocblas_handle handle,
                             Th &hY,
                             double *gpu_time_used,
                             double *cpu_time_used,
-                            const rocblas_int hot_calls)
+                            const rocblas_int hot_calls,
+                            const bool perf)
 {
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    cblas_labrd<S,T>(m, n, nb, hA[0], lda, hD[0], hE[0], hTauq[0], hTaup[0], hX[0], ldx, hY[0], ldy);
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+    if (!perf)
+    {
+        // cpu-lapack performance
+        *cpu_time_used = get_time_us();
+        cblas_labrd<S,T>(m, n, nb, hA[0], lda, hD[0], hE[0], hTauq[0], hTaup[0], hX[0], ldx, hY[0], ldy);
+        *cpu_time_used = get_time_us() - *cpu_time_used;
+    }
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
@@ -301,7 +305,7 @@ void testing_labrd(Arguments argus)
     // collect performance data
     if (argus.timing) 
         labrd_getPerfData<S,T>(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy,
-                               hA, hD, hE, hTauq, hTaup, hX, hY, &gpu_time_used, &cpu_time_used, hot_calls);
+                               hA, hD, hE, hTauq, hTaup, hX, hY, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
 
     // validate results for rocsolver-test
     // using nb * max(m,n) * machine_precision as tolerance

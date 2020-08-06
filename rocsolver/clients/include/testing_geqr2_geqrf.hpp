@@ -185,20 +185,25 @@ void geqr2_geqrf_getPerfData(const rocblas_handle handle,
                             Uh &hIpiv, 
                             double *gpu_time_used,
                             double *cpu_time_used,
-                            const rocblas_int hot_calls)
+                            const rocblas_int hot_calls,
+                            const bool perf)
 {
-    std::vector<T> hW(n);
+    if (!perf)
+    {
+        std::vector<T> hW(n);
 
-    // cpu-lapack performance
-    geqr2_geqrf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
-                                  hA, hIpiv);
-    *cpu_time_used = get_time_us();
-    for (rocblas_int b = 0; b < bc; ++b) {
-        GEQRF ?
-            cblas_geqrf<T>(m, n, hA[b], lda, hIpiv[b], hW.data(), n):
-            cblas_geqr2<T>(m, n, hA[b], lda, hIpiv[b], hW.data());
+        // cpu-lapack performance (only if not in perf mode)
+        geqr2_geqrf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+                                    hA, hIpiv);
+        *cpu_time_used = get_time_us();
+        for (rocblas_int b = 0; b < bc; ++b) {
+            GEQRF ?
+                cblas_geqrf<T>(m, n, hA[b], lda, hIpiv[b], hW.data(), n):
+                cblas_geqr2<T>(m, n, hA[b], lda, hIpiv[b], hW.data());
+        }
+        *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+
     geqr2_geqrf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
                                   hA, hIpiv);
 
@@ -295,7 +300,7 @@ void testing_geqr2_geqrf(Arguments argus)
         // collect performance data
         if (argus.timing) 
             geqr2_geqrf_getPerfData<STRIDED,GEQRF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
-                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     } 
 
     else if (BATCHED) {
@@ -326,7 +331,7 @@ void testing_geqr2_geqrf(Arguments argus)
         // collect performance data
         if (argus.timing) 
             geqr2_geqrf_getPerfData<STRIDED,GEQRF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
-                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     } 
 
     else {
@@ -357,7 +362,7 @@ void testing_geqr2_geqrf(Arguments argus)
         // collect performance data
         if (argus.timing) 
             geqr2_geqrf_getPerfData<STRIDED,GEQRF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
-                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     // validate results for rocsolver-test

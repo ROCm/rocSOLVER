@@ -89,12 +89,16 @@ void lacgv_getPerfData(const rocblas_handle handle,
                          Th &hA,
                          double *gpu_time_used,
                          double *cpu_time_used,
-                         const rocblas_int hot_calls)
+                         const rocblas_int hot_calls,
+                         const bool perf)
 {
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    cblas_lacgv<T>(n,hA[0],inc);
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+    if (!perf)
+    {
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        cblas_lacgv<T>(n,hA[0],inc);
+        *cpu_time_used = get_time_us() - *cpu_time_used;
+    }
         
     // cold calls    
     for(int iter = 0; iter < 2; iter++)
@@ -163,7 +167,7 @@ void testing_lacgv(Arguments argus)
     // collect performance data 
     if (argus.timing) 
         lacgv_getPerfData<T>(handle, n, dA, inc, 
-                          hA, &gpu_time_used, &cpu_time_used, hot_calls); 
+                          hA, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
         
     // validate results for rocsolver-test
     // no tolerance

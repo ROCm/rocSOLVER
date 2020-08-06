@@ -138,15 +138,19 @@ void larf_getPerfData(const rocblas_handle handle,
                          Th &hA,
                          double *gpu_time_used,
                          double *cpu_time_used,
-                         const rocblas_int hot_calls)
+                         const rocblas_int hot_calls,
+                         const bool perf)
 {
-    size_t size_w = (side == rocblas_side_left) ? size_t(n) : size_t(m);
-    std::vector<T> hw(size_w);
+    if (!perf)
+    {
+        size_t size_w = (side == rocblas_side_left) ? size_t(n) : size_t(m);
+        std::vector<T> hw(size_w);
 
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    cblas_larf<T>(side,m,n,hx[0],inc,ht[0],hA[0],lda,hw.data());
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        cblas_larf<T>(side,m,n,hx[0],inc,ht[0],hA[0],lda,hw.data());
+        *cpu_time_used = get_time_us() - *cpu_time_used;
+    }
         
     // cold calls    
     for(int iter = 0; iter < 2; iter++)
@@ -237,7 +241,7 @@ void testing_larf(Arguments argus)
     // collect performance data 
     if (argus.timing) 
         larf_getPerfData<T>(handle, side, m, n, dx, inc, dt, dA, lda,
-                          hx, ht, hA, &gpu_time_used, &cpu_time_used, hot_calls); 
+                          hx, ht, hA, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
         
     // validate results for rocsolver-test
     // using size_x * machine_precision as tolerance

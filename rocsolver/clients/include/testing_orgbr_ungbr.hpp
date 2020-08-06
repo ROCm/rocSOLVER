@@ -146,15 +146,19 @@ void orgbr_ungbr_getPerfData(const rocblas_handle handle,
                          Th &hIpiv,
                          double *gpu_time_used,
                          double *cpu_time_used,
-                         const rocblas_int hot_calls)
+                         const rocblas_int hot_calls,
+                         const bool perf)
 {
-    size_t size_W = max(max(m,n),k);
-    std::vector<T> hW(size_W);
+    if (!perf)
+    {
+        size_t size_W = max(max(m,n),k);
+        std::vector<T> hW(size_W);
 
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    cblas_orgbr_ungbr<T>(storev,m,n,k,hA[0],lda,hIpiv[0],hW.data(),size_W);
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        cblas_orgbr_ungbr<T>(storev,m,n,k,hA[0],lda,hIpiv[0],hW.data(),size_W);
+        *cpu_time_used = get_time_us() - *cpu_time_used;
+    }
         
     // cold calls    
     for(int iter = 0; iter < 2; iter++)
@@ -234,7 +238,7 @@ void testing_orgbr_ungbr(Arguments argus)
     // collect performance data 
     if (argus.timing) 
         orgbr_ungbr_getPerfData<T>(handle, storev, m, n, k, dA, lda, dIpiv,
-                          hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls); 
+                          hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
         
     // validate results for rocsolver-test
     // using s * machine_precision as tolerance

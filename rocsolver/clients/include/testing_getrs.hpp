@@ -219,16 +219,21 @@ void getrs_getPerfData(const rocblas_handle handle,
                             Th &hB, 
                             double *gpu_time_used,
                             double *cpu_time_used,
-                            const rocblas_int hot_calls)
+                            const rocblas_int hot_calls,
+                            const bool perf)
 {
-    // cpu-lapack performance
-    getrs_initData<true,false,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                      hA, hIpiv, hB);
-    *cpu_time_used = get_time_us();
-    for (rocblas_int b = 0; b < bc; ++b) {
-        cblas_getrs<T>(trans, m, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
+    if (!perf)
+    {
+        // cpu-lapack performance (only if not in perf mode)
+        getrs_initData<true,false,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
+                                        hA, hIpiv, hB);
+        *cpu_time_used = get_time_us();
+        for (rocblas_int b = 0; b < bc; ++b) {
+            cblas_getrs<T>(trans, m, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
+        }
+        *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+
     getrs_initData<true,false,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
                                       hA, hIpiv, hB);
 
@@ -333,7 +338,7 @@ void testing_getrs(Arguments argus)
         // collect performance data
         if (argus.timing) 
             getrs_getPerfData<STRIDED,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                              hA, hIpiv, hB, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hIpiv, hB, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     } 
 
     else {
@@ -367,7 +372,7 @@ void testing_getrs(Arguments argus)
         // collect performance data
         if (argus.timing) 
             getrs_getPerfData<STRIDED,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                              hA, hIpiv, hB, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hIpiv, hB, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     // validate results for rocsolver-test
