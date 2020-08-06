@@ -89,7 +89,7 @@ __global__ void trtri_kernel(const rocblas_diagonal diag, const rocblas_int n,
 {
     int b = hipBlockIdx_x;
 
-    rocblas_stride strideW = (n <= TRTRI_SWITCHSIZE_MID ? n : TRTRI_BLOCKSIZE);
+    rocblas_stride strideW = n;
     T* a = load_ptr_batch<T>(A,b,shiftA,strideA);
     T* w = load_ptr_batch<T>(work,b,0,strideW);
 
@@ -170,10 +170,8 @@ void rocsolver_trtri_getMemorySize(const rocblas_int n, const rocblas_int batch_
     *size_1 = sizeof(T)*3;
 
     // for workspace
-    if (n <= TRTRI_SWITCHSIZE_MID)
+    if (n <= TRTRI_SWITCHSIZE_LARGE)
         *size_2 = n;
-    else if (n <= TRTRI_SWITCHSIZE_LARGE)
-        *size_2 = TRTRI_BLOCKSIZE;
     else
         *size_2 = n * TRTRI_BLOCKSIZE + 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
     *size_2 *= sizeof(T)*batch_count;
@@ -267,4 +265,4 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
     return rocblas_status_success;
 }
 
-#endif /* ROCLAPACK_GETRI_H */
+#endif /* ROCLAPACK_TRTRI_H */
