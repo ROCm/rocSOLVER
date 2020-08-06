@@ -143,8 +143,8 @@ void testing_larfg(Arguments argus)
     size_t stx = size_x * inc;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_xr = argus.unit_check || argus.norm_check ? size_x : 0;
-    size_t stxr = argus.unit_check || argus.norm_check ? stx : 0;
+    size_t size_xr = (argus.unit_check || argus.norm_check) ? size_x : 0;
+    size_t stxr = (argus.unit_check || argus.norm_check) ? stx : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || inc < 1);
@@ -218,5 +218,3 @@ void testing_larfg(Arguments argus)
         rocblas_cout << std::endl;
     }
 }
-
-#undef ERROR_EPS_MULTIPLIER

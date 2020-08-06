@@ -190,7 +190,7 @@ void testing_potf2_potrf(Arguments argus)
     char uploC = argus.uplo_option;
     rocblas_fill uplo = char2rocblas_fill(uploC);
 
-    size_t stARes = argus.unit_check || argus.norm_check ? stA : 0;
+    size_t stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
 
     // check non-supported values 
     if (uplo != rocblas_fill_upper && uplo != rocblas_fill_lower) {
@@ -211,7 +211,7 @@ void testing_potf2_potrf(Arguments argus)
     size_t size_A = size_t(lda) * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_ARes = argus.unit_check || argus.norm_check ? size_A : 0;
+    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
     // check invalid sizes 
     bool invalid_size = (n < 0 || lda < n || bc < 0);
@@ -327,6 +327,3 @@ void testing_potf2_potrf(Arguments argus)
         rocblas_cout << std::endl;
     }
 }
-  
-
-#undef POTRF_ERROR_EPS_MULTIPLIER

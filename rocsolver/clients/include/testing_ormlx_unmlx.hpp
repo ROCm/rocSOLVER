@@ -220,7 +220,7 @@ void testing_ormlx_unmlx(Arguments argus)
     size_t size_C = size_t(ldc)*n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_Cr = argus.unit_check || argus.norm_check ? size_C : 0;
+    size_t size_Cr = (argus.unit_check || argus.norm_check) ? size_C : 0;
 
     // check invalid sizes
     bool invalid_size = ((m < 0 || n < 0 || k < 0 || ldc < m || lda < k) || 
@@ -296,5 +296,3 @@ void testing_ormlx_unmlx(Arguments argus)
         rocblas_cout << std::endl;
     }
 }
-
-#undef ERROR_EPS_MULTIPLIER

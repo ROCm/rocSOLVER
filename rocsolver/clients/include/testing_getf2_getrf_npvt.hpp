@@ -372,6 +372,3 @@ void testing_getf2_getrf_npvt(Arguments argus)
         }
     }
 }
-  
-
-#undef GETRF_ERROR_EPS_MULTIPLIER

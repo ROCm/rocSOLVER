@@ -190,7 +190,7 @@ void testing_orgbr_ungbr(Arguments argus)
     size_t size_P = row ? size_t(min(n,k)) : size_t(min(m,k));
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_Ar = argus.unit_check || argus.norm_check ? size_A : 0;
+    size_t size_Ar = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = ((m < 0 || n < 0 || k < 0 || lda < m) || 
@@ -264,5 +264,3 @@ void testing_orgbr_ungbr(Arguments argus)
         rocblas_cout << std::endl;
     }
 }
-
-#undef ERROR_EPS_MULTIPLIER

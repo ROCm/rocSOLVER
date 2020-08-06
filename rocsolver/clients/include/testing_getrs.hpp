@@ -273,7 +273,7 @@ void testing_getrs(Arguments argus)
     rocblas_operation trans = char2rocblas_operation(transC);
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stBRes = argus.unit_check || argus.norm_check ? stB : 0;
+    rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
 
     // check non-supported values 
     // N/A
@@ -284,7 +284,7 @@ void testing_getrs(Arguments argus)
     size_t size_P = size_t(m);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_BRes = argus.unit_check || argus.norm_check ? size_B : 0;
+    size_t size_BRes = (argus.unit_check || argus.norm_check) ? size_B : 0;
 
     // check invalid sizes 
     bool invalid_size = (m < 0 || nrhs < 0 || lda < m || ldb < m || bc < 0);
@@ -406,6 +406,3 @@ void testing_getrs(Arguments argus)
         rocblas_cout << std::endl;
     }
 }
-  
-
-#undef GETRF_ERROR_EPS_MULTIPLIER

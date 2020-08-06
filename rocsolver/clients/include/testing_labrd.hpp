@@ -241,9 +241,9 @@ void testing_labrd(Arguments argus)
     size_t size_Y = ldy * nb;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0 ;
 
-    size_t size_ARes = argus.unit_check || argus.norm_check ? size_A : 0;
-    size_t size_XRes = argus.unit_check || argus.norm_check ? size_X : 0;
-    size_t size_YRes = argus.unit_check || argus.norm_check ? size_Y : 0;
+    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
+    size_t size_XRes = (argus.unit_check || argus.norm_check) ? size_X : 0;
+    size_t size_YRes = (argus.unit_check || argus.norm_check) ? size_Y : 0;
 
     // check invalid sizes 
     bool invalid_size = (m < 0 || n < 0 || nb < 0 || nb > min(m,n) || lda < m || ldx < m || ldy < n);
@@ -329,6 +329,3 @@ void testing_labrd(Arguments argus)
         rocblas_cout << std::endl;
     }
 }
-  
-
-#undef GETRF_ERROR_EPS_MULTIPLIER

@@ -435,5 +435,3 @@ void testing_bdsqr(Arguments argus)
         rocblas_cout << std::endl;
     }
 }
-  
-

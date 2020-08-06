@@ -198,7 +198,7 @@ void testing_larft(Arguments argus)
     size_t size_V = row ? size_t(ldv)*n : size_t(ldv)*k;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_Tr = argus.unit_check || argus.norm_check ? size_T : 0;
+    size_t size_Tr = (argus.unit_check || argus.norm_check) ? size_T : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || k < 1 || ldt < k || (row && ldv < k) || (!row && ldv < n));
@@ -272,5 +272,3 @@ void testing_larft(Arguments argus)
         rocblas_cout << std::endl;
     }
 }
-
-#undef ERROR_EPS_MULTIPLIER

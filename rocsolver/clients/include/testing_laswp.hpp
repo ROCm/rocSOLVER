@@ -159,7 +159,7 @@ void testing_laswp(Arguments argus)
     size_t size_P = k1 + size_t(k2-k1)*abs(inc);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_Ar = argus.unit_check || argus.norm_check ? size_A : 0;
+    size_t size_Ar = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < 1 || !inc || k1 < 1 || k2 < 1 || k2 < k1);
@@ -230,5 +230,3 @@ void testing_laswp(Arguments argus)
         rocblas_cout << std::endl;
     }
 }
-
-#undef ERROR_EPS_MULTIPLIER

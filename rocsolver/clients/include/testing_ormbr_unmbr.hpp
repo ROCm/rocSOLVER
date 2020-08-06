@@ -245,7 +245,7 @@ void testing_ormbr_unmbr(Arguments argus)
     size_t size_A = row ? size_t(lda)*nq : size_t(lda)*size_P;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_Cr = argus.unit_check || argus.norm_check ? size_C : 0;
+    size_t size_Cr = (argus.unit_check || argus.norm_check) ? size_C : 0;
 
     // check invalid sizes
     bool invalid_size = ((m < 0 || n < 0 || k < 0 || ldc < m) || 
@@ -321,5 +321,3 @@ void testing_ormbr_unmbr(Arguments argus)
         rocblas_cout << std::endl;
     }
 }
-
-#undef ERROR_EPS_MULTIPLIER

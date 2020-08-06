@@ -168,7 +168,7 @@ void testing_orglx_unglx(Arguments argus)
     size_t size_P = size_t(m);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_Ar = argus.unit_check || argus.norm_check ? size_A : 0;
+    size_t size_Ar = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = (m < 0 || n < 0 || k < 0 || lda < m || n < m || k > m);
@@ -239,5 +239,3 @@ void testing_orglx_unglx(Arguments argus)
         rocblas_cout << std::endl;
     }
 }
-
-#undef ERROR_EPS_MULTIPLIER
