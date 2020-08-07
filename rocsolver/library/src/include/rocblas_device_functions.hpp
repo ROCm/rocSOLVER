@@ -20,12 +20,38 @@ __device__ void trmm_kernel_left_upper(const rocblas_diagonal diag, const rocbla
         for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
             w[i] = b[i + j * ldb];
         __syncthreads();
-            
+        
         for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
         {
-            bij = (diag == rocblas_diagonal_non_unit ? a[i + i * lda] : 1) * b[i + j * ldb];
+            bij = (diag == rocblas_diagonal_non_unit ? a[i + i * lda] : 1) * w[i];
 
             for (int k = i + 1; k < m; k++)
+                bij += a[i + k * lda] * w[k];
+            
+            b[i + j * ldb] = *alpha * bij;
+        }
+        __syncthreads();
+    }
+}
+
+template <typename T>
+__device__ void trmm_kernel_left_lower(const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, T* alpha,
+                                       T *a, const rocblas_int lda, T *b, const rocblas_int ldb, T *w)
+{
+    // trmm kernel assuming no transpose, lower triangular matrix from the left
+    // min dim for w is m
+    T bij;
+    for (int j = 0; j < n; j++)
+    {
+        for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
+            w[i] = b[i + j * ldb];
+        __syncthreads();
+        
+        for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
+        {
+            bij = (diag == rocblas_diagonal_non_unit ? a[i + i * lda] : 1) * w[i];
+
+            for (int k = 0; k < i; k++)
                 bij += a[i + k * lda] * w[k];
             
             b[i + j * ldb] = *alpha * bij;
@@ -45,24 +71,15 @@ __device__ void trsm_kernel_right_upper(const rocblas_diagonal diag, const rocbl
     {
         for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
         {
+            ajj = (diag == rocblas_diagonal_non_unit ? 1.0 / a[j + j * lda] : 1);
             bij = *alpha * b[i + j * ldb];
 
             for (int k = 0; k < j; k++)
                 bij -= a[k + j * lda] * b[i + k * ldb];
             
-            b[i + j * ldb] = bij;
+            b[i + j * ldb] = ajj * bij;
         }
         __syncthreads();
-
-        if (diag == rocblas_diagonal_non_unit)
-        {
-            ajj = 1.0 / a[j + j * lda];
-            __syncthreads();
-
-            for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
-                b[i + j * ldb] *= ajj;
-            __syncthreads();
-        }
     }
 }
 
@@ -76,24 +93,15 @@ __device__ void trsm_kernel_right_lower(const rocblas_diagonal diag, const rocbl
     {
         for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
         {
+            ajj = (diag == rocblas_diagonal_non_unit ? 1.0 / a[j + j * lda] : 1);
             bij = *alpha * b[i + j * ldb];
 
             for (int k = j + 1; k < n; k++)
                 bij -= a[k + j * lda] * b[i + k * ldb];
             
-            b[i + j * ldb] = bij;
+            b[i + j * ldb] = ajj * bij;
         }
         __syncthreads();
-
-        if (diag == rocblas_diagonal_non_unit)
-        {
-            ajj = 1.0 / a[j + j * lda];
-            __syncthreads();
-
-            for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
-                b[i + j * ldb] *= ajj;
-            __syncthreads();
-        }
     }
 }
 
