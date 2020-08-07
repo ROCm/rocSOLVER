@@ -103,7 +103,7 @@ rocsolver_<type>laswp()
 .. doxygenfunction:: rocsolver_dlaswp
 .. doxygenfunction:: rocsolver_slaswp
 
-Householder reflexions
+Householder reflections
 --------------------------
 
 rocsolver_<type>larfg()
@@ -257,6 +257,16 @@ rocsolver_<type>unmbr()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_zunmbr
 .. doxygenfunction:: rocsolver_cunmbr
+
+Triangular matrix inversion
+--------------------------
+
+rocsolver_<type>trtri()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_ztrtri
+.. doxygenfunction:: rocsolver_ctrtri
+.. doxygenfunction:: rocsolver_dtrtri
+.. doxygenfunction:: rocsolver_strtri
 
 
 

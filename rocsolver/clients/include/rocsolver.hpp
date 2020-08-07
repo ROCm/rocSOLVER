@@ -430,6 +430,30 @@ inline rocblas_status rocsolver_ormbr_unmbr(rocblas_handle handle, rocblas_store
 
 
 
+/******************** TRTRI ********************/
+inline rocblas_status rocsolver_trtri(rocblas_handle handle, rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n,
+                                      float *A, rocblas_int lda, rocblas_int *info) {
+  return rocsolver_strtri(handle, uplo, diag, n, A, lda, info);
+}
+
+inline rocblas_status rocsolver_trtri(rocblas_handle handle, rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n,
+                                      double *A, rocblas_int lda, rocblas_int *info) {
+  return rocsolver_dtrtri(handle, uplo, diag, n, A, lda, info);
+}
+
+inline rocblas_status rocsolver_trtri(rocblas_handle handle, rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n,
+                                      rocblas_float_complex *A, rocblas_int lda, rocblas_int *info) {
+  return rocsolver_ctrtri(handle, uplo, diag, n, A, lda, info);
+}
+
+inline rocblas_status rocsolver_trtri(rocblas_handle handle, rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n,
+                                      rocblas_double_complex *A, rocblas_int lda, rocblas_int *info) {
+  return rocsolver_ztrtri(handle, uplo, diag, n, A, lda, info);
+}
+/***************************************************************/
+
+
+
 /******************** POTF2_POTRF ********************/
 // normal and strided_batched
 inline rocblas_status rocsolver_potf2_potrf(bool STRIDED, bool POTRF, rocblas_handle handle, rocblas_fill uplo,

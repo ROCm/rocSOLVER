@@ -184,13 +184,16 @@ void rocsolver_trtri_getMemorySize(const rocblas_int n, const rocblas_int batch_
 }
 
 template <typename T>
-rocblas_status rocsolver_trtri_argCheck(const rocblas_int n, const rocblas_int lda, T A, rocblas_int *info,
-                                        const rocblas_int batch_count = 1)
+rocblas_status rocsolver_trtri_argCheck(const rocblas_fill uplo, const rocblas_diagonal diag, const rocblas_int n,
+                                        const rocblas_int lda, T A, rocblas_int *info, const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
 
     // 1. invalid/non-supported values
-    // N/A
+    if (uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
+        return rocblas_status_invalid_value;
+    if (diag != rocblas_diagonal_non_unit && diag != rocblas_diagonal_unit)
+        return rocblas_status_invalid_value;
     
     // 2. invalid size
     if (n < 0 || lda < n || batch_count < 0)

@@ -94,11 +94,11 @@ template <typename T>
 void cblas_getf2(rocblas_int m, rocblas_int n, T *A, rocblas_int lda,
                         rocblas_int *ipiv, rocblas_int *info);
 
-/*
-template <typename T>
-rocblas_int cblas_trtri(char uplo, char diag, rocblas_int n, T *A,
-                        rocblas_int lda);
 
+template <typename T>
+void cblas_trtri(rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n, T *A,
+                        rocblas_int lda);
+/*
 template <typename T>
 void cblas_trmm(rocblas_side side, rocblas_fill uplo, rocblas_operation transA,
                 rocblas_diagonal diag, rocblas_int m, rocblas_int n, T alpha,

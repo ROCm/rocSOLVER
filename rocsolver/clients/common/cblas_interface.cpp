@@ -1356,30 +1356,53 @@ void cblas_getf2(rocblas_int m, rocblas_int n, rocblas_double_complex *A,
   zgetf2_(&m, &n, A, &lda, ipiv, info);
 }
 
-/*
+
 // trtri
 template <>
-rocblas_int cblas_trtri<float>(char uplo, char diag, rocblas_int n, float *A,
-                               rocblas_int lda) {
-  // just directly cast, since transA, transB are integers in the enum
-  // printf("transA: rocblas =%d, cblas=%d\n", transA, (CBLAS_TRANSPOSE)transA
-  // );
+void cblas_trtri<float>(rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n, float *A,
+                        rocblas_int lda)
+{
+  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+  char diagC = (diag == rocblas_diagonal_unit) ? 'U' : 'N';
+
   rocblas_int info;
-  strtri_(&uplo, &diag, &n, A, &lda, &info);
-  return info;
+  strtri_(&uploC, &diagC, &n, A, &lda, &info);
 }
 
 template <>
-rocblas_int cblas_trtri<double>(char uplo, char diag, rocblas_int n, double *A,
-                                rocblas_int lda) {
-  // just directly cast, since transA, transB are integers in the enum
-  // printf("transA: rocblas =%d, cblas=%d\n", transA, (CBLAS_TRANSPOSE)transA
-  // );
+void cblas_trtri<double>(rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n, double *A,
+                         rocblas_int lda)
+{
+  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+  char diagC = (diag == rocblas_diagonal_unit) ? 'U' : 'N';
+
   rocblas_int info;
-  dtrtri_(&uplo, &diag, &n, A, &lda, &info);
-  return info;
+  dtrtri_(&uploC, &diagC, &n, A, &lda, &info);
 }
 
+template <>
+void cblas_trtri<rocblas_float_complex>(rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n, rocblas_float_complex *A,
+                         rocblas_int lda)
+{
+  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+  char diagC = (diag == rocblas_diagonal_unit) ? 'U' : 'N';
+
+  rocblas_int info;
+  ctrtri_(&uploC, &diagC, &n, A, &lda, &info);
+}
+
+template <>
+void cblas_trtri<rocblas_double_complex>(rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n, rocblas_double_complex *A,
+                         rocblas_int lda)
+{
+  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
+  char diagC = (diag == rocblas_diagonal_unit) ? 'U' : 'N';
+
+  rocblas_int info;
+  ztrtri_(&uploC, &diagC, &n, A, &lda, &info);
+}
+
+/*
 // trmm
 template <>
 void cblas_trmm<float>(rocblas_side side, rocblas_fill uplo,

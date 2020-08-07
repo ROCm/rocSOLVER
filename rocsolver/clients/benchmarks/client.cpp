@@ -25,6 +25,7 @@
 #include "testing_ormlx_unmlx.hpp"
 #include "testing_orgbr_ungbr.hpp"
 #include "testing_ormbr_unmbr.hpp"
+#include "testing_trtri.hpp"
 
 namespace po = boost::program_options;
 
@@ -933,6 +934,16 @@ try
         else if (precision == 'z')
             testing_bdsqr<rocblas_double_complex>(argus);
     } 
+    else if (function == "trtri") {
+        if (precision == 's')
+            testing_trtri<float>(argus);
+        else if (precision == 'd')
+            testing_trtri<double>(argus);
+        else if (precision == 'c')
+            testing_trtri<rocblas_float_complex>(argus);
+        else if (precision == 'z')
+            testing_trtri<rocblas_double_complex>(argus);
+    }
     else 
         throw std::invalid_argument("Invalid value for --function");
 

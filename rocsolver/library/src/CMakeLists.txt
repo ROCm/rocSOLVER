@@ -46,6 +46,7 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_ormlq_unmlq.cpp
   auxiliary/rocauxiliary_ormbr_unmbr.cpp
   auxiliary/rocauxiliary_bdsqr.cpp
+  auxiliary/rocauxiliary_trtri.cpp
 )
 
 set( rocsolver_lapack_source

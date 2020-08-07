@@ -2236,6 +2236,70 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
                                                  const rocblas_int ldc,
                                                  rocblas_int *info);
 
+/*! \brief TRTRI inverts an upper or lower triangular n-by-n matrix A.
+
+    \details
+    (This is the blocked Level-3-BLAS version of the algorithm).
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the matrix is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    diag      rocblas_diagonal.\n
+              Specifies whether the diagonal entries of the matrix are assumed to be 1.
+              If diag indicates unit diagonal entries, then the diagonal entries of A are not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of the matrix A. 
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the upper or lower triangular matrix to be inverted.
+              On exit, the inverse of A if info = 0; otherwise undefined.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A.
+    @param[out]
+    info      pointer to a rocblas_int on the GPU.\n
+              If info = 0, successful exit. 
+              If info = i > 0, U is singular. U(i,i) is the first zero pivot.
+            
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_strtri(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_diagonal diag,
+                                                 const rocblas_int n, 
+                                                 float *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int *info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dtrtri(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_diagonal diag,
+                                                 const rocblas_int n, 
+                                                 double *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int *info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ctrtri(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_diagonal diag,
+                                                 const rocblas_int n, 
+                                                 rocblas_float_complex *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int *info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ztrtri(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_diagonal diag,
+                                                 const rocblas_int n, 
+                                                 rocblas_double_complex *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int *info);
+
 
 
 
