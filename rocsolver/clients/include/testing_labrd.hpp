@@ -62,7 +62,7 @@ void labrd_checkBadArgs(const rocblas_handle handle,
 template <typename T>
 void testing_labrd_bad_arg()
 {
-    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
+    using S = decltype(std::real(T{}));
 
     // safe arguments
     rocblas_local_handle handle;
@@ -272,7 +272,7 @@ void labrd_getPerfData(const rocblas_handle handle,
 template <typename T> 
 void testing_labrd(Arguments argus) 
 {
-    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
+    using S = decltype(std::real(T{}));
     
     // get arguments 
     rocblas_local_handle handle;

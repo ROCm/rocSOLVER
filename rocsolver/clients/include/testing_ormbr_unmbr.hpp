@@ -106,7 +106,7 @@ void ormbr_unmbr_initData(const rocblas_handle handle,
 {
     if (CPU)
     {
-        typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
+        using S = decltype(std::real(T{}));
         size_t s = max(hIpiv.n(),2);
         std::vector<S> E(s-1);
         std::vector<S> D(s);

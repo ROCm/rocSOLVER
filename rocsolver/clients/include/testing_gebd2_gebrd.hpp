@@ -67,7 +67,7 @@ void gebd2_gebrd_checkBadArgs(const rocblas_handle handle,
 template <bool BATCHED, bool STRIDED, bool GEBRD, typename T>
 void testing_gebd2_gebrd_bad_arg()
 {
-    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
+    using S = decltype(std::real(T{}));
 
     // safe arguments
     rocblas_local_handle handle;
@@ -294,7 +294,7 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
 template <bool BATCHED, bool STRIDED, bool GEBRD, typename T> 
 void testing_gebd2_gebrd(Arguments argus) 
 {
-    typedef typename std::conditional<!is_complex<T>, T, decltype(std::real(T{}))>::type S;
+    using S = decltype(std::real(T{}));
     
     // get arguments 
     rocblas_local_handle handle;
