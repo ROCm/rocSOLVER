@@ -15,10 +15,19 @@
 #include "rocsolver.h"
 
 template <typename T>
-__device__ void trtri_check_singularity(const rocblas_int n, T *a, const rocblas_int lda, rocblas_int *info)
+__device__ void trtri_check_singularity(const rocblas_diagonal diag, const rocblas_int n, T *a,
+                                        const rocblas_int lda, rocblas_int *info)
 {
     // check for singularities
     int b = hipBlockIdx_x;
+
+    if (diag == rocblas_diagonal_unit)
+    {
+        if (hipThreadIdx_x == 0)
+            info[b] = 0;
+        __syncthreads();
+        return;
+    }
 
     __shared__ rocblas_int _info;
     
@@ -46,7 +55,7 @@ template <typename T>
 __device__ void trtri_unblk(const rocblas_diagonal diag, const rocblas_int n, T *a, const rocblas_int lda,
                             rocblas_int *info, T *w)
 {
-    // unblocked trtri kernel assuming non-unit upper triangular matrix
+    // unblocked trtri kernel assuming upper triangular matrix
     int i = hipThreadIdx_y;
     if (i >= n)
         return;
@@ -70,9 +79,9 @@ __device__ void trtri_unblk(const rocblas_diagonal diag, const rocblas_int n, T 
         
         if (i < j)
         {
-            aij = 0;
+            aij = (diag == rocblas_diagonal_non_unit ? a[i + i * lda] : 1) * w[i];
 
-            for (rocblas_int ii = i; ii < j; ii++)
+            for (rocblas_int ii = i+1; ii < j; ii++)
                 aij += a[i + ii * lda] * w[ii];
 
             a[i + j * lda] = -ajj * aij;
@@ -93,7 +102,7 @@ __global__ void trtri_kernel(const rocblas_diagonal diag, const rocblas_int n,
     T* a = load_ptr_batch<T>(A,b,shiftA,strideA);
     T* w = load_ptr_batch<T>(work,b,0,strideW);
 
-    trtri_check_singularity(n, a, lda, info);
+    trtri_check_singularity(diag, n, a, lda, info);
     if (info[b] != 0)
         return;
 
@@ -130,7 +139,7 @@ __global__ void trtri_kernel_large(const rocblas_diagonal diag, const rocblas_in
     T* w = load_ptr_batch<T>(work,b,0,strideW);
 
     if (j == 0)
-        trtri_check_singularity(n, a, lda, info);
+        trtri_check_singularity(diag, n, a, lda, info);
     
     if (info[b] != 0)
     {
@@ -229,7 +238,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
     }
 
     // only non-unit upper triangular matrices currently supported
-    if (uplo != rocblas_fill_upper || diag != rocblas_diagonal_non_unit)
+    if (uplo != rocblas_fill_upper)
         return rocblas_status_not_implemented;
 
     rocblas_int threads = min(((n - 1)/64 + 1) * 64, TRTRI_BLOCKSIZE);
