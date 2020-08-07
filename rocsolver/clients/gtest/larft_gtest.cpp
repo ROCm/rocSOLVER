@@ -12,7 +12,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 
-typedef std::tuple<vector<int>, vector<int>> mTuple;
+typedef std::tuple<vector<int>, vector<int>> larft_tuple;
 
 // each order_size_range vector is {N,ldv,s}
 //if s = 0, then storev = 'C'
@@ -49,7 +49,7 @@ const vector<vector<int>> large_reflector_size_range = {
 
 
 
-Arguments larft_setup_arguments(mTuple tup) {
+Arguments larft_setup_arguments(larft_tuple tup) {
 
   vector<int> order_size = std::get<0>(tup);
   vector<int> reflector_size = std::get<1>(tup);
@@ -70,7 +70,7 @@ Arguments larft_setup_arguments(mTuple tup) {
 }
 
 
-class LARFT : public ::TestWithParam<mTuple> {
+class LARFT : public ::TestWithParam<larft_tuple> {
 protected:
   LARFT() {}
   virtual void SetUp() {}

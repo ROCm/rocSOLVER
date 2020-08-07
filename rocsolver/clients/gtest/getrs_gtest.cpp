@@ -45,7 +45,7 @@ const vector<vector<int>> large_matrix_sizeB_range = {
 };
 
 
-Arguments setup_getrs_arguments(getrs_tuple tup) {
+Arguments getrs_setup_arguments(getrs_tuple tup) {
     vector<int> matrix_sizeA = std::get<0>(tup);
     vector<int> matrix_sizeB = std::get<1>(tup);
 
@@ -85,7 +85,7 @@ protected:
 // non-batch tests
 
 TEST_P(GETRS, __float) {
-    Arguments arg = setup_getrs_arguments(GetParam());
+    Arguments arg = getrs_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,false,float>();
@@ -95,7 +95,7 @@ TEST_P(GETRS, __float) {
 }
 
 TEST_P(GETRS, __double) {
-    Arguments arg = setup_getrs_arguments(GetParam());
+    Arguments arg = getrs_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,false,double>();
@@ -105,7 +105,7 @@ TEST_P(GETRS, __double) {
 }
 
 TEST_P(GETRS, __float_complex) {
-    Arguments arg = setup_getrs_arguments(GetParam());
+    Arguments arg = getrs_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,false,rocblas_float_complex>();
@@ -115,7 +115,7 @@ TEST_P(GETRS, __float_complex) {
 }
 
 TEST_P(GETRS, __double_complex) {
-    Arguments arg = setup_getrs_arguments(GetParam());
+    Arguments arg = getrs_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,false,rocblas_double_complex>();
@@ -129,7 +129,7 @@ TEST_P(GETRS, __double_complex) {
 // batched tests
 
 TEST_P(GETRS, batched__float) {
-    Arguments arg = setup_getrs_arguments(GetParam());
+    Arguments arg = getrs_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<true,true,float>();
@@ -139,7 +139,7 @@ TEST_P(GETRS, batched__float) {
 }
 
 TEST_P(GETRS, batched__double) {
-    Arguments arg = setup_getrs_arguments(GetParam());
+    Arguments arg = getrs_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<true,true,double>();
@@ -149,7 +149,7 @@ TEST_P(GETRS, batched__double) {
 }
 
 TEST_P(GETRS, batched__float_complex) {
-    Arguments arg = setup_getrs_arguments(GetParam());
+    Arguments arg = getrs_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<true,true,rocblas_float_complex>();
@@ -159,7 +159,7 @@ TEST_P(GETRS, batched__float_complex) {
 }
 
 TEST_P(GETRS, batched__double_complex) {
-    Arguments arg = setup_getrs_arguments(GetParam());
+    Arguments arg = getrs_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<true,true,rocblas_double_complex>();
@@ -173,7 +173,7 @@ TEST_P(GETRS, batched__double_complex) {
 // strided_batched tests
 
 TEST_P(GETRS, strided_batched__float) {
-    Arguments arg = setup_getrs_arguments(GetParam());
+    Arguments arg = getrs_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,true,float>();
@@ -183,7 +183,7 @@ TEST_P(GETRS, strided_batched__float) {
 }
 
 TEST_P(GETRS, strided_batched__double) {
-    Arguments arg = setup_getrs_arguments(GetParam());
+    Arguments arg = getrs_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,true,double>();
@@ -193,7 +193,7 @@ TEST_P(GETRS, strided_batched__double) {
 }
 
 TEST_P(GETRS, strided_batched__float_complex) {
-    Arguments arg = setup_getrs_arguments(GetParam());
+    Arguments arg = getrs_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,true,rocblas_float_complex>();
@@ -203,7 +203,7 @@ TEST_P(GETRS, strided_batched__float_complex) {
 }
 
 TEST_P(GETRS, strided_batched__double_complex) {
-    Arguments arg = setup_getrs_arguments(GetParam());
+    Arguments arg = getrs_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,true,rocblas_double_complex>();

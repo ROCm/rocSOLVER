@@ -12,7 +12,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 
-typedef std::tuple<int, int> mtuple;
+typedef std::tuple<int, int> larfg_tuple;
 
 // case when n = 0 and incx = 0 also execute the bad arguments test
 // (null handle, null pointers and invalid values)
@@ -35,7 +35,7 @@ const vector<int> large_n_size_range = {
 };
 
 
-Arguments setup_arguments(mtuple tup) {
+Arguments larfg_setup_arguments(larfg_tuple tup) {
     int n_size = std::get<0>(tup);
     int inc = std::get<1>(tup);
 
@@ -49,7 +49,7 @@ Arguments setup_arguments(mtuple tup) {
     return arg;
 }
 
-class LARFG : public ::TestWithParam<mtuple> {
+class LARFG : public ::TestWithParam<larfg_tuple> {
 protected:
   LARFG() {}
   virtual void SetUp() {}
@@ -57,7 +57,7 @@ protected:
 };
 
 TEST_P(LARFG, __float) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = larfg_setup_arguments(GetParam());
     
     if (arg.N == 0 && arg.incx == 0)
         testing_larfg_bad_arg<float>();
@@ -66,7 +66,7 @@ TEST_P(LARFG, __float) {
 }
 
 TEST_P(LARFG, __double) {
-  Arguments arg = setup_arguments(GetParam());
+  Arguments arg = larfg_setup_arguments(GetParam());
     
     if (arg.N == 0 && arg.incx == 0)
         testing_larfg_bad_arg<double>();
@@ -75,7 +75,7 @@ TEST_P(LARFG, __double) {
 }
 
 TEST_P(LARFG, __float_complex) {
-  Arguments arg = setup_arguments(GetParam());
+  Arguments arg = larfg_setup_arguments(GetParam());
     
     if (arg.N == 0 && arg.incx == 0)
         testing_larfg_bad_arg<rocblas_float_complex>();
@@ -84,7 +84,7 @@ TEST_P(LARFG, __float_complex) {
 }
 
 TEST_P(LARFG, __double_complex) {
-  Arguments arg = setup_arguments(GetParam());
+  Arguments arg = larfg_setup_arguments(GetParam());
     
     if (arg.N == 0 && arg.incx == 0)
         testing_larfg_bad_arg<rocblas_double_complex>();

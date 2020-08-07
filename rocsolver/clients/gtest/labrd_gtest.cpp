@@ -44,7 +44,7 @@ const vector<vector<int>> large_n_size_range = {
 };
 
 
-Arguments setup_arguments_bd(labrd_tuple tup) 
+Arguments labrd_setup_arguments(labrd_tuple tup) 
 {
     vector<int> matrix_size = std::get<0>(tup);
     vector<int> n_size = std::get<1>(tup);
@@ -72,7 +72,7 @@ protected:
 
 
 TEST_P(LABRD, __float) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = labrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_labrd_bad_arg<float>();
@@ -82,7 +82,7 @@ TEST_P(LABRD, __float) {
 }
 
 TEST_P(LABRD, __double) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = labrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_labrd_bad_arg<double>();
@@ -92,7 +92,7 @@ TEST_P(LABRD, __double) {
 }
 
 TEST_P(LABRD, __float_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = labrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_labrd_bad_arg<rocblas_float_complex>();
@@ -102,7 +102,7 @@ TEST_P(LABRD, __float_complex) {
 }
 
 TEST_P(LABRD, __double_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = labrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_labrd_bad_arg<rocblas_double_complex>();

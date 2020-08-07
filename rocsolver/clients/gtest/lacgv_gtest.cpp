@@ -12,7 +12,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 
-typedef vector<int> wpTuple;
+typedef vector<int> lacgv_tuple;
 
 // each range is a {n,inc}
 
@@ -32,7 +32,7 @@ const vector<vector<int>> large_range = {
 };
 
 
-Arguments lacgv_setup_arguments(wpTuple tup) {
+Arguments lacgv_setup_arguments(lacgv_tuple tup) {
     Arguments arg;
 
     arg.N = tup[0];
@@ -41,7 +41,7 @@ Arguments lacgv_setup_arguments(wpTuple tup) {
     return arg;
 }
 
-class LACGV : public ::TestWithParam<wpTuple> {
+class LACGV : public ::TestWithParam<lacgv_tuple> {
 protected:
   LACGV() {}
   virtual void SetUp() {}

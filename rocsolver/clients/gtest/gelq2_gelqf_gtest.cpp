@@ -12,7 +12,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 
-typedef std::tuple<vector<int>, int> geqr_tuple;
+typedef std::tuple<vector<int>, int> gelqf_tuple;
 
 // each matrix_size_range is a {m, lda}
 
@@ -42,7 +42,7 @@ const vector<int> large_n_size_range = {
 };
 
 
-Arguments setup_arguments_lq(geqr_tuple tup) 
+Arguments gelqf_setup_arguments(gelqf_tuple tup) 
 {
     vector<int> matrix_size = std::get<0>(tup);
     int n_size = std::get<1>(tup);
@@ -63,14 +63,14 @@ Arguments setup_arguments_lq(geqr_tuple tup)
     return arg;
 }
 
-class GELQ2 : public ::TestWithParam<geqr_tuple> {
+class GELQ2 : public ::TestWithParam<gelqf_tuple> {
 protected:
     GELQ2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
-class GELQF : public ::TestWithParam<geqr_tuple> {
+class GELQF : public ::TestWithParam<gelqf_tuple> {
 protected:
     GELQF() {}
     virtual void SetUp() {}
@@ -81,7 +81,7 @@ protected:
 // non-batch tests
 
 TEST_P(GELQ2, __float) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,false,0,float>();
@@ -91,7 +91,7 @@ TEST_P(GELQ2, __float) {
 }
 
 TEST_P(GELQ2, __double) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,false,0,double>();
@@ -101,7 +101,7 @@ TEST_P(GELQ2, __double) {
 }
 
 TEST_P(GELQ2, __float_complex) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,false,0,rocblas_float_complex>();
@@ -111,7 +111,7 @@ TEST_P(GELQ2, __float_complex) {
 }
 
 TEST_P(GELQ2, __double_complex) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,false,0,rocblas_double_complex>();
@@ -121,7 +121,7 @@ TEST_P(GELQ2, __double_complex) {
 }
 
 TEST_P(GELQF, __float) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,false,1,float>();
@@ -131,7 +131,7 @@ TEST_P(GELQF, __float) {
 }
 
 TEST_P(GELQF, __double) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,false,1,double>();
@@ -141,7 +141,7 @@ TEST_P(GELQF, __double) {
 }
 
 TEST_P(GELQF, __float_complex) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,false,1,rocblas_float_complex>();
@@ -151,7 +151,7 @@ TEST_P(GELQF, __float_complex) {
 }
 
 TEST_P(GELQF, __double_complex) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,false,1,rocblas_double_complex>();
@@ -164,7 +164,7 @@ TEST_P(GELQF, __double_complex) {
 // batched tests
 
 TEST_P(GELQ2, batched__float) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<true,true,0,float>();
@@ -174,7 +174,7 @@ TEST_P(GELQ2, batched__float) {
 }
 
 TEST_P(GELQ2, batched__double) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<true,true,0,double>();
@@ -184,7 +184,7 @@ TEST_P(GELQ2, batched__double) {
 }
 
 TEST_P(GELQ2, batched__float_complex) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<true,true,0,rocblas_float_complex>();
@@ -194,7 +194,7 @@ TEST_P(GELQ2, batched__float_complex) {
 }
 
 TEST_P(GELQ2, batched__double_complex) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<true,true,0,rocblas_double_complex>();
@@ -204,7 +204,7 @@ TEST_P(GELQ2, batched__double_complex) {
 }
 
 TEST_P(GELQF, batched__float) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<true,true,1,float>();
@@ -214,7 +214,7 @@ TEST_P(GELQF, batched__float) {
 }
 
 TEST_P(GELQF, batched__double) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<true,true,1,double>();
@@ -224,7 +224,7 @@ TEST_P(GELQF, batched__double) {
 }
 
 TEST_P(GELQF, batched__float_complex) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<true,true,1,rocblas_float_complex>();
@@ -234,7 +234,7 @@ TEST_P(GELQF, batched__float_complex) {
 }
 
 TEST_P(GELQF, batched__double_complex) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<true,true,1,rocblas_double_complex>();
@@ -247,7 +247,7 @@ TEST_P(GELQF, batched__double_complex) {
 // strided_batched cases
 
 TEST_P(GELQ2, strided_batched__float) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,true,0,float>();
@@ -257,7 +257,7 @@ TEST_P(GELQ2, strided_batched__float) {
 }
 
 TEST_P(GELQ2, strided_batched__double) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,true,0,double>();
@@ -267,7 +267,7 @@ TEST_P(GELQ2, strided_batched__double) {
 }
 
 TEST_P(GELQ2, strided_batched__float_complex) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,true,0,rocblas_float_complex>();
@@ -277,7 +277,7 @@ TEST_P(GELQ2, strided_batched__float_complex) {
 }
 
 TEST_P(GELQ2, strided_batched__double_complex) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,true,0,rocblas_double_complex>();
@@ -287,7 +287,7 @@ TEST_P(GELQ2, strided_batched__double_complex) {
 }
 
 TEST_P(GELQF, strided_batched__float) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,true,1,float>();
@@ -297,7 +297,7 @@ TEST_P(GELQF, strided_batched__float) {
 }
 
 TEST_P(GELQF, strided_batched__double) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,true,1,double>();
@@ -307,7 +307,7 @@ TEST_P(GELQF, strided_batched__double) {
 }
 
 TEST_P(GELQF, strided_batched__float_complex) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,true,1,rocblas_float_complex>();
@@ -317,7 +317,7 @@ TEST_P(GELQF, strided_batched__float_complex) {
 }
 
 TEST_P(GELQF, strided_batched__double_complex) {
-    Arguments arg = setup_arguments_lq(GetParam());
+    Arguments arg = gelqf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gelq2_gelqf_bad_arg<false,true,1,rocblas_double_complex>();

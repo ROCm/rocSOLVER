@@ -44,7 +44,7 @@ const vector<int> large_n_size_range = {
 };
 
 
-Arguments setup_arguments_orglq(orglq_tuple tup) 
+Arguments orglq_setup_arguments(orglq_tuple tup) 
 {
     vector<int> m_size = std::get<0>(tup);
     int n_size = std::get<1>(tup);
@@ -91,7 +91,7 @@ protected:
 
 
 TEST_P(ORGL2, __float) {
-    Arguments arg = setup_arguments_orglq(GetParam());
+    Arguments arg = orglq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orglx_unglx_bad_arg<float,0>();
@@ -100,7 +100,7 @@ TEST_P(ORGL2, __float) {
 }
 
 TEST_P(ORGL2, __double) {
-    Arguments arg = setup_arguments_orglq(GetParam());
+    Arguments arg = orglq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orglx_unglx_bad_arg<double,0>();
@@ -109,7 +109,7 @@ TEST_P(ORGL2, __double) {
 }
 
 TEST_P(UNGL2, __float_complex) {
-    Arguments arg = setup_arguments_orglq(GetParam());
+    Arguments arg = orglq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orglx_unglx_bad_arg<rocblas_float_complex,0>();
@@ -118,7 +118,7 @@ TEST_P(UNGL2, __float_complex) {
 }
 
 TEST_P(UNGL2, __double_complex) {
-    Arguments arg = setup_arguments_orglq(GetParam());
+    Arguments arg = orglq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orglx_unglx_bad_arg<rocblas_double_complex,0>();
@@ -127,7 +127,7 @@ TEST_P(UNGL2, __double_complex) {
 }
 
 TEST_P(ORGLQ, __float) {
-    Arguments arg = setup_arguments_orglq(GetParam());
+    Arguments arg = orglq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orglx_unglx_bad_arg<float,1>();
@@ -136,7 +136,7 @@ TEST_P(ORGLQ, __float) {
 }
 
 TEST_P(ORGLQ, __double) {
-    Arguments arg = setup_arguments_orglq(GetParam());
+    Arguments arg = orglq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orglx_unglx_bad_arg<double,1>();
@@ -145,7 +145,7 @@ TEST_P(ORGLQ, __double) {
 }
 
 TEST_P(UNGLQ, __float_complex) {
-    Arguments arg = setup_arguments_orglq(GetParam());
+    Arguments arg = orglq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orglx_unglx_bad_arg<rocblas_float_complex,1>();
@@ -154,7 +154,7 @@ TEST_P(UNGLQ, __float_complex) {
 }
 
 TEST_P(UNGLQ, __double_complex) {
-    Arguments arg = setup_arguments_orglq(GetParam());
+    Arguments arg = orglq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orglx_unglx_bad_arg<rocblas_double_complex,1>();
