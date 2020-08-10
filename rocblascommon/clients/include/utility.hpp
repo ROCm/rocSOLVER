@@ -38,6 +38,7 @@
 #pragma GCC poison cout cerr clog stdout stderr gets puts putchar fputs fprintf printf sprintf    \
     vfprintf vprintf vsprintf perror strerror strtok gmtime ctime asctime localtime tmpnam putenv \
         clearenv fcloseall ecvt fcvt
+#define BOOST_ASSERT_MSG_OSTREAM rocblas_cerr
 #endif
 
 static constexpr char LIMITED_MEMORY_STRING[]
