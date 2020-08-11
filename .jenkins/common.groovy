@@ -10,6 +10,7 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
     String sles = platform.jenkinsLabel.contains('sles') ? '/usr/bin/sudo --preserve-env' : ''
     String debug = project.buildName.contains('Debug') ? '-g' : ''   
     String centos = platform.jenkinsLabel.contains('centos') ? 'source scl_source enable devtoolset-7' : ''
+    String noOptimizations = ''
 
     if (env.BRANCH_NAME ==~ /PR-\d+/)
     {
@@ -17,7 +18,7 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
         {
             if (it == "noOptimizations")
             {
-                project.paths.build_command = "./install.sh -cn"
+                noOptimizations = "-n"
             }
         }
     }
@@ -29,7 +30,7 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
                 ${getRocBLAS}
                 ${auxiliary.exitIfNotSuccess()}
                 ${centos}
-                ${sles} ${project.paths.build_command} ${hipClang} ${debug}
+                ${sles} ${project.paths.build_command} ${hipClang} ${debug} ${noOptimizations}
                 ${auxiliary.exitIfNotSuccess()}
                 """
     platform.runCommand(this, command)
