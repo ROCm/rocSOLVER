@@ -57,8 +57,9 @@ Options:
 
   -r | --relocatable          Pass this to add RUNPATH(based on ROCM_RPATH) and remove ldconf entry.
 
-  -n | --no-optimizations     Pass this flag to disable optimizations for small sizes
+  -n | --no-optimizations     Pass this flag to disable optimizations for small sizes.
 
+  --docs                      Pass this flag to build the documentation.
 EOF
 }
 
@@ -306,6 +307,7 @@ rocblas_dir=/opt/rocm/rocblas
 build_dir=./build
 build_type=Release
 build_relocatable=false
+build_docs=false
 optimal=true
 
 rocm_path=/opt/rocm
@@ -320,7 +322,7 @@ fi
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,hcc,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static,relocatable,no-optimizations --options hipcdgsrn -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,hcc,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static,relocatable,no-optimizations,docs --options hipcdgsrn -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -379,6 +381,9 @@ while true; do
     --rocblas_dir)
         rocblas_dir=${2}
         shift 2 ;;
+    --docs)
+        build_docs=true
+        shift ;;
     -r|--relocatable)
         build_relocatable=true
         shift ;;
@@ -442,6 +447,17 @@ fi
 pushd .
 cmake_common_options=""
 cmake_client_options=""
+
+# build documentation
+if [[ "${build_docs}" == true ]]; then
+  mkdir -p "$build_dir"
+  container_name="build$(head -c 10 /dev/urandom | base32)"
+  docs_build_command='cp -r /mnt/rocsolver /home/docs/ && cd /home/docs/rocsolver/rocsolver/docs && ./run_doc.sh'
+  docker build -t rocsolver-docs:latest -f docker/dockerfile-docs .
+  docker run -v "$main:/mnt/rocsolver:ro" --name "$container_name" rocsolver-docs:latest /bin/bash -c "$docs_build_command"
+  docker cp "$container_name:/home/docs/rocsolver/rocsolver/docs/build" "$build_dir/docs"
+  exit
+fi
 
 mkdir -p "${build_dir}" && cd "${build_dir}"
 
