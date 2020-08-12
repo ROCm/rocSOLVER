@@ -15,78 +15,17 @@
 #include "../auxiliary/rocauxiliary_trtri.hpp"
 
 #ifdef OPTIMAL
-template <rocblas_int DIM, typename T, typename U>
-__global__ void __launch_bounds__(WAVESIZE)
-getri_kernel_small(U AA, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
-                   rocblas_int* ipivA, const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int* info)
+template <rocblas_int DIM, typename T>
+__device__ rocblas_int getri_impl_small(T *rA, T *common, T *common_diag, rocblas_int* ipiv, rocblas_int* info)
 {
-    int b = hipBlockIdx_x;
     int i = hipThreadIdx_x;
 
-    if (i >= DIM)
-        return;
-    
-    // batch instance
-    T* A = load_ptr_batch<T>(AA,b,shiftA,strideA);
-    rocblas_int *ipiv = load_ptr_batch<rocblas_int>(ipivA,b,shiftP,strideP);
-       
-    // read corresponding row from global memory in local array
-    T rA[DIM];
-    #pragma unroll
-    for (int j = 0; j < DIM; ++j)
-        rA[j] = A[i + j*lda];
-
-    // shared memory (for communication between threads in group)
-    __shared__ T common[DIM];
-    __shared__ T diag[DIM];
-    __shared__ rocblas_int _info;
     T temp;
     rocblas_int jp;
     
-    // compute info
-    if (i == 0)
-        _info = 0;
-    __syncthreads();
-    if (rA[i] == 0)
-    {
-        rocblas_int _info_temp = _info;
-        while (_info_temp == 0 || _info_temp > i + 1)
-            _info_temp = atomicCAS(&_info, _info_temp, i + 1);
-    }
-    __syncthreads();
-
-    if (i == 0)
-        info[b] = _info;
+    rocblas_int _info = trtri_impl_small_upper<DIM,T>(rocblas_diagonal_non_unit, rA, common, common_diag, info);
     if (_info != 0)
-        return;
-    
-    //--- TRTRI ---
-
-    // diagonal element
-    rA[i] = 1.0 / rA[i];
-    
-    // compute element i of each column j
-    #pragma unroll
-    for (rocblas_int j = 1; j < DIM; j++)
-    {
-        // share current column and diagonal
-        common[i] = rA[j];
-        diag[i] = rA[i];
-        __syncthreads();
-        
-        if (i < j)
-        {
-            temp = 0;
-
-            for (rocblas_int ii = i; ii < j; ii++)
-                temp += rA[ii] * common[ii];
-
-            rA[j] = -diag[j] * temp;
-        }
-        __syncthreads();
-    }
-
-    //--- GETRI ---
+        return _info;
     
     #pragma unroll
     for (rocblas_int j = DIM-2; j >= 0; j--)
@@ -121,6 +60,37 @@ getri_kernel_small(U AA, const rocblas_int shiftA, const rocblas_int lda, const 
             rA[jp] = temp;
         }
     }
+
+    return _info;
+}
+
+template <rocblas_int DIM, typename T, typename U>
+__global__ void __launch_bounds__(WAVESIZE)
+getri_kernel_small(U AA, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
+                   rocblas_int* ipivA, const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int* info)
+{
+    int b = hipBlockIdx_x;
+    int i = hipThreadIdx_x;
+
+    if (i >= DIM)
+        return;
+    
+    // batch instance
+    T* A = load_ptr_batch<T>(AA,b,shiftA,strideA);
+    rocblas_int *ipiv = load_ptr_batch<rocblas_int>(ipivA,b,shiftP,strideP);
+       
+    // read corresponding row from global memory in local array
+    T rA[DIM];
+    #pragma unroll
+    for (int j = 0; j < DIM; ++j)
+        rA[j] = A[i + j*lda];
+
+    // shared memory (for communication between threads in group)
+    __shared__ T common[DIM];
+    __shared__ T common_diag[DIM];
+    
+    if (getri_impl_small<DIM,T>(rA, common, common_diag, ipiv, info) != 0)
+        return;
 
     // write results to global memory from local array
     #pragma unroll

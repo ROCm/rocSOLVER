@@ -2239,7 +2239,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
 /*! \brief TRTRI inverts an upper or lower triangular n-by-n matrix A.
 
     \details
-    (This is the blocked Level-3-BLAS version of the algorithm).
+    (This is the blocked Level-3-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls 
+    could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details see the
+    section "tuning rocSOLVER performance" on the User's guide).
 
     @param[in]
     handle    rocblas_handle.
