@@ -254,27 +254,23 @@ __device__ void trtri_check_singularity(const rocblas_diagonal diag, const rocbl
     // check for singularities
     int b = hipBlockIdx_x;
 
-    if (diag == rocblas_diagonal_unit)
-    {
-        if (hipThreadIdx_x == 0)
-            info[b] = 0;
-        __syncthreads();
-        return;
-    }
-
     __shared__ rocblas_int _info;
     
     // compute info
     if (hipThreadIdx_y == 0)
         _info = 0;
     __syncthreads();
-    for (int i = hipThreadIdx_y; i < n; i += hipBlockDim_y)
+    
+    if (diag == rocblas_diagonal_non_unit)
     {
-        if (a[i + i * lda] == 0)
+        for (int i = hipThreadIdx_y; i < n; i += hipBlockDim_y)
         {
-            rocblas_int _info_temp = _info;
-            while (_info_temp == 0 || _info_temp > i + 1)
-                _info_temp = atomicCAS(&_info, _info_temp, i + 1);
+            if (a[i + i * lda] == 0)
+            {
+                rocblas_int _info_temp = _info;
+                while (_info_temp == 0 || _info_temp > i + 1)
+                    _info_temp = atomicCAS(&_info, _info_temp, i + 1);
+            }
         }
     }
     __syncthreads();
@@ -290,28 +286,23 @@ __device__ void trtri_unblk_upper(const rocblas_diagonal diag, const rocblas_int
 {
     // unblocked trtri kernel assuming upper triangular matrix
     int i = hipThreadIdx_y;
-    if (i >= n)
-        return;
 
     // diagonal element
-    if (diag == rocblas_diagonal_non_unit)
-    {
+    if (diag == rocblas_diagonal_non_unit && i < n)
         a[i + i * lda] = 1.0 / a[i + i * lda];
-        __syncthreads();
-    }
+    __syncthreads();
     
     // compute element i of each column j
     T ajj, aij;
     for (rocblas_int j = 1; j < n; j++)
     {
-        ajj = (diag == rocblas_diagonal_non_unit ? a[j + j * lda] : 1);
-
-        if (i < j)
+        if (i < j && i < n)
             w[i] = a[i + j * lda];
         __syncthreads();
         
-        if (i < j)
+        if (i < j && i < n)
         {
+            ajj = (diag == rocblas_diagonal_non_unit ? a[j + j * lda] : 1);
             aij = (diag == rocblas_diagonal_non_unit ? a[i + i * lda] : 1) * w[i];
 
             for (rocblas_int ii = i+1; ii < j; ii++)
@@ -329,28 +320,23 @@ __device__ void trtri_unblk_lower(const rocblas_diagonal diag, const rocblas_int
 {
     // unblocked trtri kernel assuming lower triangular matrix
     int i = hipThreadIdx_y;
-    if (i >= n)
-        return;
 
     // diagonal element
-    if (diag == rocblas_diagonal_non_unit)
-    {
+    if (diag == rocblas_diagonal_non_unit && i < n)
         a[i + i * lda] = 1.0 / a[i + i * lda];
-        __syncthreads();
-    }
+    __syncthreads();
     
     // compute element i of each column j
     T ajj, aij;
     for (rocblas_int j = n-2; j >= 0; j--)
     {
-        ajj = (diag == rocblas_diagonal_non_unit ? a[j + j * lda] : 1);
-
-        if (i > j)
+        if (i > j && i < n)
             w[i] = a[i + j * lda];
         __syncthreads();
         
-        if (i > j)
+        if (i > j && i < n)
         {
+            ajj = (diag == rocblas_diagonal_non_unit ? a[j + j * lda] : 1);
             aij = (diag == rocblas_diagonal_non_unit ? a[i + i * lda] : 1) * w[i];
 
             for (rocblas_int ii = i-1; ii > j; ii--)

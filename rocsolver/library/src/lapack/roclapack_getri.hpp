@@ -202,6 +202,7 @@ __device__ void copy_and_zero(const rocblas_int m, const rocblas_int n,
             a[i + j*lda] = 0;
         }
     }
+    __syncthreads();
 }
 
 template <typename T>
@@ -215,6 +216,7 @@ __device__ void zero_work(const rocblas_int m, const rocblas_int n,
         j = k / m;
         w[i + j*ldw] = 0;
     }
+    __syncthreads();
 }
 
 template <typename T>
