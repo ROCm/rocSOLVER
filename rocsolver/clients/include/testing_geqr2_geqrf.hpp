@@ -374,32 +374,38 @@ void testing_geqr2_geqrf(Arguments argus)
 
     // output results for rocsolver-bench
     if (argus.timing) {
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Arguments:\n";
-        rocblas_cout << "============================================\n";
-        if (BATCHED) {
-            rocsolver_bench_output("m", "n", "lda", "strideP", "batch_c");
-            rocsolver_bench_output(m, n, lda, stP, bc);
-        }
-        else if (STRIDED) {
-            rocsolver_bench_output("m", "n", "lda", "strideA", "strideP", "batch_c");
-            rocsolver_bench_output(m, n, lda, stA, stP, bc);
+        if (!argus.perf) {
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Arguments:\n";
+            rocblas_cout << "============================================\n";
+            if (BATCHED) {
+                rocsolver_bench_output("m", "n", "lda", "strideP", "batch_c");
+                rocsolver_bench_output(m, n, lda, stP, bc);
+            }
+            else if (STRIDED) {
+                rocsolver_bench_output("m", "n", "lda", "strideA", "strideP", "batch_c");
+                rocsolver_bench_output(m, n, lda, stA, stP, bc);
+            }
+            else {
+                rocsolver_bench_output("m", "n", "lda");
+                rocsolver_bench_output(m, n, lda);
+            }
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Results:\n";
+            rocblas_cout << "============================================\n";
+            if (argus.norm_check) {
+                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            }
+            else {
+                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            }
+            rocblas_cout << std::endl;
         }
         else {
-            rocsolver_bench_output("m", "n", "lda");
-            rocsolver_bench_output(m, n, lda);
+            if (argus.norm_check) rocsolver_bench_output(gpu_time_used,max_error);
+            else rocsolver_bench_output(gpu_time_used);
         }
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Results:\n";
-        rocblas_cout << "============================================\n";
-        if (argus.norm_check) {
-            rocsolver_bench_output("cpu_time", "gpu_time", "error");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
-        }
-        else {
-            rocsolver_bench_output("cpu_time", "gpu_time");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used);
-        }
-        rocblas_cout << std::endl;
     }
 }

@@ -475,23 +475,29 @@ void testing_bdsqr(Arguments argus)
 
     // output results for rocsolver-bench
     if (argus.timing) {
-        if (nv || nu || nc) max_error = (max_error >= max_errorv) ? max_error : max_errorv;
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Arguments:\n";
-        rocblas_cout << "============================================\n";
-        rocsolver_bench_output("uplo", "n", "nv", "nu", "nc",  "ldv", "ldu", "ldc");
-        rocsolver_bench_output(uploC, n, nv, nu, nc, ldv, ldu, ldc);
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Results:\n";
-        rocblas_cout << "============================================\n";
-        if (argus.norm_check) {
-            rocsolver_bench_output("cpu_time", "gpu_time", "error");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+        if (!argus.perf) {
+            if (nv || nu || nc) max_error = (max_error >= max_errorv) ? max_error : max_errorv;
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Arguments:\n";
+            rocblas_cout << "============================================\n";
+            rocsolver_bench_output("uplo", "n", "nv", "nu", "nc",  "ldv", "ldu", "ldc");
+            rocsolver_bench_output(uploC, n, nv, nu, nc, ldv, ldu, ldc);
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Results:\n";
+            rocblas_cout << "============================================\n";
+            if (argus.norm_check) {
+                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            }
+            else {
+                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            }
+            rocblas_cout << std::endl;
         }
         else {
-            rocsolver_bench_output("cpu_time", "gpu_time");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            if (argus.norm_check) rocsolver_bench_output(gpu_time_used,max_error);
+            else rocsolver_bench_output(gpu_time_used);
         }
-        rocblas_cout << std::endl;
     }
 }
