@@ -37,10 +37,6 @@ const vector<vector<int>> large_matrix_size_range = {
     {192, 192}, {500, 600}, {640, 640}, {1000, 1024}, {1200, 1230} 
 };
 
-const vector<vector<int>> large_triangle_range = {
-    {0, 0}, {1, 0}, {0, 1}, {1, 1}
-};
-
 
 Arguments trtri_setup_arguments(trtri_tuple tup)
 {
@@ -70,7 +66,7 @@ protected:
 TEST_P(TRTRI, __float) {
     Arguments arg = trtri_setup_arguments(GetParam());
 
-    if (arg.N == 0) 
+    if (arg.N == 0 && arg.uplo_option == 'U') 
         testing_trtri_bad_arg<float>();
 
     testing_trtri<float>(arg);
@@ -79,7 +75,7 @@ TEST_P(TRTRI, __float) {
 TEST_P(TRTRI, __double) {
     Arguments arg = trtri_setup_arguments(GetParam());
 
-    if (arg.N == 0) 
+    if (arg.N == 0 && arg.uplo_option == 'U') 
         testing_trtri_bad_arg<double>();
 
     testing_trtri<double>(arg);
@@ -88,7 +84,7 @@ TEST_P(TRTRI, __double) {
 TEST_P(TRTRI, __float_complex) {
     Arguments arg = trtri_setup_arguments(GetParam());
 
-    if (arg.N == 0)
+    if (arg.N == 0 && arg.uplo_option == 'U')
         testing_trtri_bad_arg<rocblas_float_complex>();
 
     testing_trtri<rocblas_float_complex>(arg);
@@ -97,7 +93,7 @@ TEST_P(TRTRI, __float_complex) {
 TEST_P(TRTRI, __double_complex) {
     Arguments arg = trtri_setup_arguments(GetParam());
 
-    if (arg.N == 0)
+    if (arg.N == 0 && arg.uplo_option == 'U')
         testing_trtri_bad_arg<rocblas_double_complex>();
 
     testing_trtri<rocblas_double_complex>(arg);
@@ -106,7 +102,7 @@ TEST_P(TRTRI, __double_complex) {
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, TRTRI,
                          Combine(ValuesIn(large_matrix_size_range),
-                                 ValuesIn(large_triangle_range)));
+                                 ValuesIn(triangle_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, TRTRI,
                          Combine(ValuesIn(matrix_size_range),

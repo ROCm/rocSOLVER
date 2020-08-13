@@ -1362,8 +1362,8 @@ template <>
 void cblas_trtri<float>(rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n, float *A,
                         rocblas_int lda)
 {
-  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
-  char diagC = (diag == rocblas_diagonal_unit) ? 'U' : 'N';
+  char uploC = rocblas2char_fill(uplo);
+  char diagC = rocblas2char_diagonal(diag);
 
   rocblas_int info;
   strtri_(&uploC, &diagC, &n, A, &lda, &info);
@@ -1373,8 +1373,8 @@ template <>
 void cblas_trtri<double>(rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n, double *A,
                          rocblas_int lda)
 {
-  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
-  char diagC = (diag == rocblas_diagonal_unit) ? 'U' : 'N';
+  char uploC = rocblas2char_fill(uplo);
+  char diagC = rocblas2char_diagonal(diag);
 
   rocblas_int info;
   dtrtri_(&uploC, &diagC, &n, A, &lda, &info);
@@ -1384,8 +1384,8 @@ template <>
 void cblas_trtri<rocblas_float_complex>(rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n, rocblas_float_complex *A,
                          rocblas_int lda)
 {
-  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
-  char diagC = (diag == rocblas_diagonal_unit) ? 'U' : 'N';
+  char uploC = rocblas2char_fill(uplo);
+  char diagC = rocblas2char_diagonal(diag);
 
   rocblas_int info;
   ctrtri_(&uploC, &diagC, &n, A, &lda, &info);
@@ -1395,8 +1395,8 @@ template <>
 void cblas_trtri<rocblas_double_complex>(rocblas_fill uplo, rocblas_diagonal diag, rocblas_int n, rocblas_double_complex *A,
                          rocblas_int lda)
 {
-  char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
-  char diagC = (diag == rocblas_diagonal_unit) ? 'U' : 'N';
+  char uploC = rocblas2char_fill(uplo);
+  char diagC = rocblas2char_diagonal(diag);
 
   rocblas_int info;
   ztrtri_(&uploC, &diagC, &n, A, &lda, &info);

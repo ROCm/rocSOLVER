@@ -44,7 +44,10 @@ __device__ rocblas_int trtri_impl_small_upper(const rocblas_diagonal diag, T *rA
         return _info;
     
     // diagonal element
-    common_diag[i] = (diag == rocblas_diagonal_non_unit ? (rA[i] = 1.0 / rA[i]) : 1);
+    if (diag == rocblas_diagonal_non_unit)
+        common_diag[i] = rA[i] = T(1) / rA[i];
+    else
+        common_diag[i] = T(1);
     
     // compute element i of each column j
     #pragma unroll
@@ -97,7 +100,10 @@ __device__ rocblas_int trtri_impl_small_lower(const rocblas_diagonal diag, T *rA
         return _info;
     
     // diagonal element
-    common_diag[i] = (diag == rocblas_diagonal_non_unit ? (rA[i] = 1.0 / rA[i]) : 1);
+    if (diag == rocblas_diagonal_non_unit)
+        common_diag[i] = rA[i] = T(1) / rA[i];
+    else
+        common_diag[i] = T(1);
     
     // compute element i of each column j
     #pragma unroll
