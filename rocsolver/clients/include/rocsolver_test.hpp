@@ -23,18 +23,11 @@
         rocblas_cout << "No computations to verify." << std::endl;          \
     } while(0)
 
-
-
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T>
 constexpr double get_epsilon()
 {
-    return std::numeric_limits<T>::epsilon();
-}
-
-template <typename T, std::enable_if_t<+is_complex<T>, int> = 0>
-constexpr auto get_epsilon()
-{
-    return get_epsilon<decltype(std::real(T{}))>();
+    using S = decltype(std::real(T{}));
+    return std::numeric_limits<S>::epsilon();
 }
 
 template <typename T>
@@ -48,7 +41,7 @@ inline void rocsolver_test_check(double max_error, int tol)
 inline void rocsolver_bench_output()
 {
     // empty version
-    rocblas_cout << std::endl << std::flush;
+    rocblas_cout << std::endl;
 }
 
 template <typename T, typename... Ts>
