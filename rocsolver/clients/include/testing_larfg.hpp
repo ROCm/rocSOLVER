@@ -58,6 +58,32 @@ void testing_larfg_bad_arg()
 }   
 
 
+template <bool CPU, bool GPU, typename T, typename Td, typename Th> 
+void larfg_initData(const rocblas_handle handle,
+                         const rocblas_int n,
+                         Td &da,
+                         Td &dx,
+                         const rocblas_int inc,
+                         Td &dt,
+                         Th &ha,
+                         Th &hx,
+                         Th &ht)
+{
+    if (CPU)
+    {
+        rocblas_init<T>(ha, true);
+        rocblas_init<T>(hx, true);
+    }
+
+    if (GPU)
+    {
+        // copy data from CPU to device
+        CHECK_HIP_ERROR(da.transfer_from(ha));
+        CHECK_HIP_ERROR(dx.transfer_from(hx));
+    }
+}
+
+
 template <typename T, typename Td, typename Th> 
 void larfg_getError(const rocblas_handle handle,
                          const rocblas_int n,
@@ -71,13 +97,9 @@ void larfg_getError(const rocblas_handle handle,
                          Th &ht,
                          double *max_err)
 {
-    //initialize data 
-    rocblas_init<T>(ha, true);
-    rocblas_init<T>(hx, true);
-
-    // copy data from CPU to device
-    CHECK_HIP_ERROR(da.transfer_from(ha));
-    CHECK_HIP_ERROR(dx.transfer_from(hx));
+    //initialize data
+    larfg_initData<true,true,T>(handle, n, da, dx, inc, dt, 
+                      ha, hx, ht);
 
     // execute computations
     //GPU lapack
@@ -107,22 +129,44 @@ void larfg_getPerfData(const rocblas_handle handle,
                          Th &ht,
                          double *gpu_time_used,
                          double *cpu_time_used,
-                         const rocblas_int hot_calls)
+                         const rocblas_int hot_calls,
+                         const bool perf)
 {
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    cblas_larfg<T>(n,ha[0],hx[0],inc,ht[0]);
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+    if (!perf)
+    {
+        larfg_initData<true,false,T>(handle, n, da, dx, inc, dt, 
+                        ha, hx, ht);
+
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        cblas_larfg<T>(n,ha[0],hx[0],inc,ht[0]);
+        *cpu_time_used = get_time_us() - *cpu_time_used;
+    }
+    
+    larfg_initData<true,false,T>(handle, n, da, dx, inc, dt, 
+                      ha, hx, ht);
         
     // cold calls    
     for(int iter = 0; iter < 2; iter++)
+    {
+        larfg_initData<false,true,T>(handle, n, da, dx, inc, dt, 
+                        ha, hx, ht);
+
         CHECK_ROCBLAS_ERROR(rocsolver_larfg(handle,n,da.data(),dx.data(),inc,dt.data()));
+    }
 
     // gpu-lapack performance
-    *gpu_time_used = get_time_us();
+    double start;
     for(int iter = 0; iter < hot_calls; iter++)
+    {
+        larfg_initData<false,true,T>(handle, n, da, dx, inc, dt, 
+                        ha, hx, ht);
+        
+        start = get_time_us();
         rocsolver_larfg(handle,n,da.data(),dx.data(),inc,dt.data());
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;       
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
 
@@ -143,8 +187,8 @@ void testing_larfg(Arguments argus)
     size_t stx = size_x * inc;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_xr = argus.unit_check || argus.norm_check ? size_x : 0;
-    size_t stxr = argus.unit_check || argus.norm_check ? stx : 0;
+    size_t size_xr = (argus.unit_check || argus.norm_check) ? size_x : 0;
+    size_t stxr = (argus.unit_check || argus.norm_check) ? stx : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || inc < 1);
@@ -189,7 +233,7 @@ void testing_larfg(Arguments argus)
     // collect performance data 
     if (argus.timing) 
         larfg_getPerfData<T>(handle, n, da, dx, inc, dt,
-                          ha, hx, ht, &gpu_time_used, &cpu_time_used, hot_calls); 
+                          ha, hx, ht, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
         
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
@@ -198,25 +242,29 @@ void testing_larfg(Arguments argus)
 
     // output results for rocsolver-bench
     if (argus.timing) {
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Arguments:\n";
-        rocblas_cout << "============================================\n";
-        rocsolver_bench_output("n", "inc");
-        rocsolver_bench_output(n, inc);
+        if (!argus.perf) {
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Arguments:\n";
+            rocblas_cout << "============================================\n";
+            rocsolver_bench_output("n", "inc");
+            rocsolver_bench_output(n, inc);
 
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Results:\n";
-        rocblas_cout << "============================================\n";
-        if (argus.norm_check) {
-            rocsolver_bench_output("cpu_time", "gpu_time", "error");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Results:\n";
+            rocblas_cout << "============================================\n";
+            if (argus.norm_check) {
+                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            }
+            else {
+                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            }
+            rocblas_cout << std::endl;
         }
         else {
-            rocsolver_bench_output("cpu_time", "gpu_time");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            if (argus.norm_check) rocsolver_bench_output(gpu_time_used,max_error);
+            else rocsolver_bench_output(gpu_time_used);
         }
-        rocblas_cout << std::endl;
     }
 }
-
-#undef ERROR_EPS_MULTIPLIER

@@ -219,16 +219,22 @@ void getrs_getPerfData(const rocblas_handle handle,
                             Th &hB, 
                             double *gpu_time_used,
                             double *cpu_time_used,
-                            const rocblas_int hot_calls)
+                            const rocblas_int hot_calls,
+                            const bool perf)
 {
-    // cpu-lapack performance
-    getrs_initData<true,false,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                      hA, hIpiv, hB);
-    *cpu_time_used = get_time_us();
-    for (rocblas_int b = 0; b < bc; ++b) {
-        cblas_getrs<T>(trans, m, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
+    if (!perf)
+    {
+        getrs_initData<true,false,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
+                                        hA, hIpiv, hB);
+        
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        for (rocblas_int b = 0; b < bc; ++b) {
+            cblas_getrs<T>(trans, m, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
+        }
+        *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+
     getrs_initData<true,false,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
                                       hA, hIpiv, hB);
 
@@ -273,7 +279,7 @@ void testing_getrs(Arguments argus)
     rocblas_operation trans = char2rocblas_operation(transC);
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stBRes = argus.unit_check || argus.norm_check ? stB : 0;
+    rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
 
     // check non-supported values 
     // N/A
@@ -284,7 +290,7 @@ void testing_getrs(Arguments argus)
     size_t size_P = size_t(m);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_BRes = argus.unit_check || argus.norm_check ? size_B : 0;
+    size_t size_BRes = (argus.unit_check || argus.norm_check) ? size_B : 0;
 
     // check invalid sizes 
     bool invalid_size = (m < 0 || nrhs < 0 || lda < m || ldb < m || bc < 0);
@@ -333,7 +339,7 @@ void testing_getrs(Arguments argus)
         // collect performance data
         if (argus.timing) 
             getrs_getPerfData<STRIDED,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                              hA, hIpiv, hB, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hIpiv, hB, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     } 
 
     else {
@@ -367,7 +373,7 @@ void testing_getrs(Arguments argus)
         // collect performance data
         if (argus.timing) 
             getrs_getPerfData<STRIDED,T>(handle, trans, m, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc, 
-                                              hA, hIpiv, hB, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hIpiv, hB, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     // validate results for rocsolver-test
@@ -377,35 +383,38 @@ void testing_getrs(Arguments argus)
 
     // output results for rocsolver-bench
     if (argus.timing) {
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Arguments:\n";
-        rocblas_cout << "============================================\n";
-        if (BATCHED) {
-            rocsolver_bench_output("trans", "m", "nrhs", "lda", "ldb", "strideP", "batch_c");
-            rocsolver_bench_output(transC, m, nrhs, lda, ldb, stP, bc);
-        }
-        else if (STRIDED) {
-            rocsolver_bench_output("trans", "m", "nrhs", "lda", "ldb", "strideA", "strideP", "strideB", "batch_c");
-            rocsolver_bench_output(transC, m, nrhs, lda, ldb, stA, stP, stB, bc);
+        if (!argus.perf) {
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Arguments:\n";
+            rocblas_cout << "============================================\n";
+            if (BATCHED) {
+                rocsolver_bench_output("trans", "m", "nrhs", "lda", "ldb", "strideP", "batch_c");
+                rocsolver_bench_output(transC, m, nrhs, lda, ldb, stP, bc);
+            }
+            else if (STRIDED) {
+                rocsolver_bench_output("trans", "m", "nrhs", "lda", "ldb", "strideA", "strideP", "strideB", "batch_c");
+                rocsolver_bench_output(transC, m, nrhs, lda, ldb, stA, stP, stB, bc);
+            }
+            else {
+                rocsolver_bench_output("trans", "m", "nrhs", "lda", "ldb");
+                rocsolver_bench_output(transC, m, nrhs, lda, ldb);
+            }
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Results:\n";
+            rocblas_cout << "============================================\n";
+            if (argus.norm_check) {
+                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            }
+            else {
+                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            }
+            rocblas_cout << std::endl;
         }
         else {
-            rocsolver_bench_output("trans", "m", "nrhs", "lda", "ldb");
-            rocsolver_bench_output(transC, m, nrhs, lda, ldb);
+            if (argus.norm_check) rocsolver_bench_output(gpu_time_used,max_error);
+            else rocsolver_bench_output(gpu_time_used);
         }
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Results:\n";
-        rocblas_cout << "============================================\n";
-        if (argus.norm_check) {
-            rocsolver_bench_output("cpu_time", "gpu_time", "error");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
-        }
-        else {
-            rocsolver_bench_output("cpu_time", "gpu_time");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used);
-        }
-        rocblas_cout << std::endl;
     }
 }
-  
-
-#undef GETRF_ERROR_EPS_MULTIPLIER

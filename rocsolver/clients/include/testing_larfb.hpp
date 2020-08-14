@@ -83,6 +83,115 @@ void testing_larfb_bad_arg()
 }   
 
 
+template <bool CPU, bool GPU, typename T, typename Td, typename Th> 
+void larfb_initData(const rocblas_handle handle,
+                         const rocblas_side side,
+                         const rocblas_operation trans,
+                         const rocblas_direct direct,
+                         const rocblas_storev storev,
+                         const rocblas_int m, 
+                         const rocblas_int n, 
+                         const rocblas_int k, 
+                         Td &dV, 
+                         const rocblas_int ldv,
+                         Td &dT,
+                         const rocblas_int ldt,
+                         Td &dA,
+                         const rocblas_int lda,
+                         Th &hV,
+                         Th &hT,
+                         Th &hA,
+                         std::vector<T> &hW,
+                         size_t sizeW)
+{
+    if (CPU)
+    {
+        bool left = (side == rocblas_side_left);
+        bool column = (storev == rocblas_column_wise);
+        std::vector<T> htau(k);
+        
+        rocblas_init<T>(hV, true);
+        rocblas_init<T>(hA, true);
+        rocblas_init<T>(hT, true);
+
+        // scale to avoid singularities
+        // create householder reflectors and triangular factor
+        if (left)
+        {
+            if (column)
+            { 
+                for (int i=0; i<m; ++i)
+                {
+                    for (int j=0; j<k; ++j)
+                    {
+                        if (i == j)
+                            hV[0][i+j*ldv] += 400;
+                        else
+                            hV[0][i+j*ldv] -= 4;
+                    }
+                }
+                cblas_geqrf<T>(m, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
+            }
+            else
+            {
+                for (int i=0; i<k; ++i)
+                {
+                    for (int j=0; j<m; ++j)
+                    {
+                        if (i == j)
+                            hV[0][i+j*ldv] += 400;
+                        else
+                            hV[0][i+j*ldv] -= 4;
+                    }
+                }
+                cblas_gelqf<T>(k, m, hV[0], ldv, htau.data(), hW.data(), sizeW);
+            } 
+            cblas_larft<T>(direct, storev, m, k, hV[0], ldv, htau.data(), hT[0], ldt);
+        }
+        else
+        {
+            if (column)
+            {
+                for (int i=0; i<n; ++i)
+                {
+                    for (int j=0; j<k; ++j)
+                    {
+                        if (i == j)
+                            hV[0][i+j*ldv] += 400;
+                        else
+                            hV[0][i+j*ldv] -= 4;
+                    }
+                } 
+                cblas_geqrf<T>(n, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
+            }
+            else 
+            {
+                for (int i=0; i<k; ++i)
+                {
+                    for (int j=0; j<n; ++j)
+                    {
+                        if(i == j)
+                            hV[0][i+j*ldv] += 400;
+                        else
+                            hV[0][i+j*ldv] -= 4;
+                    }
+                } 
+                cblas_gelqf<T>(k, n, hV[0], ldv, htau.data(), hW.data(), sizeW);
+            }
+            cblas_larft<T>(direct, storev, n, k, hV[0], ldv, htau.data(), hT[0], ldt);
+        }
+    }
+    
+    if (GPU)
+    {
+        // copy data from CPU to device
+        CHECK_HIP_ERROR(dV.transfer_from(hV));
+        CHECK_HIP_ERROR(dT.transfer_from(hT));
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+    }
+}
+
+
 template <typename T, typename Td, typename Th> 
 void larfb_getError(const rocblas_handle handle,
                          const rocblas_side side,
@@ -108,72 +217,10 @@ void larfb_getError(const rocblas_handle handle,
     rocblas_int ldw = left ? n : m;
     size_t sizeW = size_t(ldw)*k;
     std::vector<T> hW(sizeW);
-    std::vector<T> htau(k);
 
-    //initialize data 
-    rocblas_init<T>(hV, true);
-    rocblas_init<T>(hA, true);
-    rocblas_init<T>(hT, true);
-
-    // scale to avoid singularities
-    // create householder reflectors and triangular factor
-    bool column = (storev == rocblas_column_wise);
-    if (left) {
-        if (column) { 
-            for (int i=0; i<m; ++i) {
-                for (int j=0; j<k; ++j) {
-                    if (i == j)
-                        hV[0][i+j*ldv] += 400;
-                    else
-                        hV[0][i+j*ldv] -= 4;
-                }
-            }
-            cblas_geqrf<T>(m, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
-        }
-        else
-        {
-            for (int i=0; i<k; ++i) {
-                for (int j=0; j<m; ++j) {
-                    if (i == j)
-                        hV[0][i+j*ldv] += 400;
-                    else
-                        hV[0][i+j*ldv] -= 4;
-                }
-            }
-            cblas_gelqf<T>(k, m, hV[0], ldv, htau.data(), hW.data(), sizeW);
-        } 
-        cblas_larft<T>(direct, storev, m, k, hV[0], ldv, htau.data(), hT[0], ldt);
-    } else {
-        if (column) {
-            for (int i=0; i<n; ++i) {
-                for (int j=0; j<k; ++j) {
-                    if (i == j)
-                        hV[0][i+j*ldv] += 400;
-                    else
-                        hV[0][i+j*ldv] -= 4;
-                }
-            } 
-            cblas_geqrf<T>(n, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
-        }
-        else 
-        {
-            for (int i=0; i<k; ++i) {
-                for (int j=0; j<n; ++j) {
-                    if(i == j)
-                        hV[0][i+j*ldv] += 400;
-                    else
-                        hV[0][i+j*ldv] -= 4;
-                }
-            } 
-            cblas_gelqf<T>(k, n, hV[0], ldv, htau.data(), hW.data(), sizeW);
-        }
-        cblas_larft<T>(direct, storev, n, k, hV[0], ldv, htau.data(), hT[0], ldt);
-    }   
-    
-    // copy data from CPU to device
-    CHECK_HIP_ERROR(dV.transfer_from(hV));
-    CHECK_HIP_ERROR(dT.transfer_from(hT));
-    CHECK_HIP_ERROR(dA.transfer_from(hA));
+    //initialize data
+    larfb_initData<true,true,T>(handle, side, trans, direct, storev, m, n, k, dV, ldv, dT, ldt, dA, lda,
+                     hV, hT, hA, hW, sizeW);
 
     // execute computations
     //GPU lapack
@@ -211,27 +258,49 @@ void larfb_getPerfData(const rocblas_handle handle,
                          Th &hA,
                          double *gpu_time_used,
                          double *cpu_time_used,
-                         const rocblas_int hot_calls)
+                         const rocblas_int hot_calls,
+                         const bool perf)
 {
     bool left = (side == rocblas_side_left);
     rocblas_int ldw = left ? n : m;
     size_t sizeW = size_t(ldw)*k;
     std::vector<T> hW(sizeW);
-    
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    cblas_larfb<T>(side,trans,direct,storev,m,n,k,hV[0],ldv,hT[0],ldt,hA[0],lda,hW.data(),ldw);
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+
+    if (!perf)
+    {
+        larfb_initData<true,false,T>(handle, side, trans, direct, storev, m, n, k, dV, ldv, dT, ldt, dA, lda,
+                        hV, hT, hA, hW, sizeW);
         
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        cblas_larfb<T>(side,trans,direct,storev,m,n,k,hV[0],ldv,hT[0],ldt,hA[0],lda,hW.data(),ldw);
+        *cpu_time_used = get_time_us() - *cpu_time_used;
+    }
+    
+    larfb_initData<true,false,T>(handle, side, trans, direct, storev, m, n, k, dV, ldv, dT, ldt, dA, lda,
+                     hV, hT, hA, hW, sizeW);
+    
     // cold calls    
     for(int iter = 0; iter < 2; iter++)
+    {
+        larfb_initData<false,true,T>(handle, side, trans, direct, storev, m, n, k, dV, ldv, dT, ldt, dA, lda,
+                        hV, hT, hA, hW, sizeW);
+
         CHECK_ROCBLAS_ERROR(rocsolver_larfb(handle,side,trans,direct,storev,m,n,k,dV.data(),ldv,dT.data(),ldt,dA.data(),lda));
+    }
 
     // gpu-lapack performance
-    *gpu_time_used = get_time_us();
+    double start;
     for(int iter = 0; iter < hot_calls; iter++)
+    {
+        larfb_initData<false,true,T>(handle, side, trans, direct, storev, m, n, k, dV, ldv, dT, ldt, dA, lda,
+                        hV, hT, hA, hW, sizeW);
+
+        start = get_time_us();
         rocsolver_larfb(handle,side,trans,direct,storev,m,n,k,dV.data(),ldv,dT.data(),ldt,dA.data(),lda);
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;       
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
 
@@ -279,7 +348,7 @@ void testing_larfb(Arguments argus)
     size_t size_A = size_t(lda) * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_Ar = argus.unit_check || argus.norm_check ? size_A : 0;
+    size_t size_Ar = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = (m < 0 || n < 0 || k < 1 || ldt < k || lda < m ||
@@ -325,7 +394,7 @@ void testing_larfb(Arguments argus)
     // collect performance data 
     if (argus.timing) 
         larfb_getPerfData<T>(handle, side, trans, direct, storev, m, n, k, dV, ldv, dT, ldt, dA, lda,
-                          hV, hT, hA, &gpu_time_used, &cpu_time_used, hot_calls); 
+                          hV, hT, hA, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
         
     // validate results for rocsolver-test
     // using s * machine_precision as tolerance
@@ -335,25 +404,29 @@ void testing_larfb(Arguments argus)
 
     // output results for rocsolver-bench
     if (argus.timing) {
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Arguments:\n";
-        rocblas_cout << "============================================\n";
-        rocsolver_bench_output("side", "trans", "direct", "storev", "m", "n", "k", "ldv", "ldt", "lda");
-        rocsolver_bench_output(sideC, transC, directC, storevC, m, n, k, ldv, ldt, lda);
+        if (!argus.perf) {
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Arguments:\n";
+            rocblas_cout << "============================================\n";
+            rocsolver_bench_output("side", "trans", "direct", "storev", "m", "n", "k", "ldv", "ldt", "lda");
+            rocsolver_bench_output(sideC, transC, directC, storevC, m, n, k, ldv, ldt, lda);
 
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Results:\n";
-        rocblas_cout << "============================================\n";
-        if (argus.norm_check) {
-            rocsolver_bench_output("cpu_time", "gpu_time", "error");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Results:\n";
+            rocblas_cout << "============================================\n";
+            if (argus.norm_check) {
+                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            }
+            else {
+                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            }
+            rocblas_cout << std::endl;
         }
         else {
-            rocsolver_bench_output("cpu_time", "gpu_time");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            if (argus.norm_check) rocsolver_bench_output(gpu_time_used,max_error);
+            else rocsolver_bench_output(gpu_time_used);
         }
-        rocblas_cout << std::endl;
     }
 }
-
-#undef ERROR_EPS_MULTIPLIER

@@ -46,7 +46,7 @@ const vector<vector<int>> large_n_size_range = {
 };
 
 
-Arguments setup_arguments_org(orgqr_tuple tup) 
+Arguments orgqr_setup_arguments(orgqr_tuple tup) 
 {
     vector<int> m_size = std::get<0>(tup);
     vector<int> n_size = std::get<1>(tup);
@@ -66,7 +66,6 @@ Arguments setup_arguments_org(orgqr_tuple tup)
 class ORG2R : public ::TestWithParam<orgqr_tuple> {
 protected:
     ORG2R() {}
-    virtual ~ORG2R() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -74,7 +73,6 @@ protected:
 class UNG2R : public ::TestWithParam<orgqr_tuple> {
 protected:
     UNG2R() {}
-    virtual ~UNG2R() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -82,7 +80,6 @@ protected:
 class ORGQR : public ::TestWithParam<orgqr_tuple> {
 protected:
     ORGQR() {}
-    virtual ~ORGQR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -90,13 +87,12 @@ protected:
 class UNGQR : public ::TestWithParam<orgqr_tuple> {
 protected:
     UNGQR() {}
-    virtual ~UNGQR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
 TEST_P(ORG2R, __float) {
-    Arguments arg = setup_arguments_org(GetParam());
+    Arguments arg = orgqr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<float,0>();
@@ -105,7 +101,7 @@ TEST_P(ORG2R, __float) {
 }
 
 TEST_P(ORG2R, __double) {
-    Arguments arg = setup_arguments_org(GetParam());
+    Arguments arg = orgqr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<double,0>();
@@ -114,7 +110,7 @@ TEST_P(ORG2R, __double) {
 }
 
 TEST_P(UNG2R, __float_complex) {
-    Arguments arg = setup_arguments_org(GetParam());
+    Arguments arg = orgqr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<rocblas_float_complex,0>();
@@ -123,7 +119,7 @@ TEST_P(UNG2R, __float_complex) {
 }
 
 TEST_P(UNG2R, __double_complex) {
-    Arguments arg = setup_arguments_org(GetParam());
+    Arguments arg = orgqr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<rocblas_double_complex,0>();
@@ -132,7 +128,7 @@ TEST_P(UNG2R, __double_complex) {
 }
 
 TEST_P(ORGQR, __float) {
-    Arguments arg = setup_arguments_org(GetParam());
+    Arguments arg = orgqr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<float,1>();
@@ -141,7 +137,7 @@ TEST_P(ORGQR, __float) {
 }
 
 TEST_P(ORGQR, __double) {
-    Arguments arg = setup_arguments_org(GetParam());
+    Arguments arg = orgqr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<double,1>();
@@ -150,7 +146,7 @@ TEST_P(ORGQR, __double) {
 }
 
 TEST_P(UNGQR, __float_complex) {
-    Arguments arg = setup_arguments_org(GetParam());
+    Arguments arg = orgqr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<rocblas_float_complex,1>();
@@ -159,7 +155,7 @@ TEST_P(UNGQR, __float_complex) {
 }
 
 TEST_P(UNGQR, __double_complex) {
-    Arguments arg = setup_arguments_org(GetParam());
+    Arguments arg = orgqr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<rocblas_double_complex,1>();

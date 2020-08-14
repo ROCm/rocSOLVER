@@ -12,7 +12,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 
-typedef std::tuple<vector<int>, vector<int>> bTuple;
+typedef std::tuple<vector<int>, vector<int>> larfb_tuple;
 
 // each matrix_size vector is a {M,N,lda,s,ldv,st}
 //if s = 0, then side = 'L'
@@ -56,7 +56,7 @@ const vector<vector<int>> large_reflector_size_range = {
 };
 
 
-Arguments larfb_setup_arguments(bTuple tup) {
+Arguments larfb_setup_arguments(larfb_tuple tup) {
 
   vector<int> order_size = std::get<0>(tup);
   vector<int> reflector_size = std::get<1>(tup);
@@ -82,10 +82,9 @@ Arguments larfb_setup_arguments(bTuple tup) {
   return arg;
 }
 
-class LARFB : public ::TestWithParam<bTuple> {
+class LARFB : public ::TestWithParam<larfb_tuple> {
 protected:
   LARFB() {}
-  virtual ~LARFB() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };

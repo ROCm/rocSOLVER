@@ -12,7 +12,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 
-typedef std::tuple<vector<int>, int> geqr_tuple;
+typedef std::tuple<vector<int>, int> geqrf_tuple;
 
 // each matrix_size_range is a {m, lda}
 
@@ -42,7 +42,7 @@ const vector<int> large_n_size_range = {
 };
 
 
-Arguments setup_arguments_qr(geqr_tuple tup) 
+Arguments geqrf_setup_arguments(geqrf_tuple tup) 
 {
     vector<int> matrix_size = std::get<0>(tup);
     int n_size = std::get<1>(tup);
@@ -63,18 +63,16 @@ Arguments setup_arguments_qr(geqr_tuple tup)
     return arg;
 }
 
-class GEQR2 : public ::TestWithParam<geqr_tuple> {
+class GEQR2 : public ::TestWithParam<geqrf_tuple> {
 protected:
     GEQR2() {}
-    virtual ~GEQR2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
-class GEQRF : public ::TestWithParam<geqr_tuple> {
+class GEQRF : public ::TestWithParam<geqrf_tuple> {
 protected:
     GEQRF() {}
-    virtual ~GEQRF() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -83,7 +81,7 @@ protected:
 // non-batch tests
 
 TEST_P(GEQR2, __float) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,false,0,float>();
@@ -93,7 +91,7 @@ TEST_P(GEQR2, __float) {
 }
 
 TEST_P(GEQR2, __double) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,false,0,double>();
@@ -103,7 +101,7 @@ TEST_P(GEQR2, __double) {
 }
 
 TEST_P(GEQR2, __float_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,false,0,rocblas_float_complex>();
@@ -113,7 +111,7 @@ TEST_P(GEQR2, __float_complex) {
 }
 
 TEST_P(GEQR2, __double_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,false,0,rocblas_double_complex>();
@@ -123,7 +121,7 @@ TEST_P(GEQR2, __double_complex) {
 }
 
 TEST_P(GEQRF, __float) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,false,1,float>();
@@ -133,7 +131,7 @@ TEST_P(GEQRF, __float) {
 }
 
 TEST_P(GEQRF, __double) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,false,1,double>();
@@ -143,7 +141,7 @@ TEST_P(GEQRF, __double) {
 }
 
 TEST_P(GEQRF, __float_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,false,1,rocblas_float_complex>();
@@ -153,7 +151,7 @@ TEST_P(GEQRF, __float_complex) {
 }
 
 TEST_P(GEQRF, __double_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,false,1,rocblas_double_complex>();
@@ -166,7 +164,7 @@ TEST_P(GEQRF, __double_complex) {
 // batched tests
 
 TEST_P(GEQR2, batched__float) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<true,true,0,float>();
@@ -176,7 +174,7 @@ TEST_P(GEQR2, batched__float) {
 }
 
 TEST_P(GEQR2, batched__double) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<true,true,0,double>();
@@ -186,7 +184,7 @@ TEST_P(GEQR2, batched__double) {
 }
 
 TEST_P(GEQR2, batched__float_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<true,true,0,rocblas_float_complex>();
@@ -196,7 +194,7 @@ TEST_P(GEQR2, batched__float_complex) {
 }
 
 TEST_P(GEQR2, batched__double_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<true,true,0,rocblas_double_complex>();
@@ -206,7 +204,7 @@ TEST_P(GEQR2, batched__double_complex) {
 }
 
 TEST_P(GEQRF, batched__float) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<true,true,1,float>();
@@ -216,7 +214,7 @@ TEST_P(GEQRF, batched__float) {
 }
 
 TEST_P(GEQRF, batched__double) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<true,true,1,double>();
@@ -226,7 +224,7 @@ TEST_P(GEQRF, batched__double) {
 }
 
 TEST_P(GEQRF, batched__float_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<true,true,1,rocblas_float_complex>();
@@ -236,7 +234,7 @@ TEST_P(GEQRF, batched__float_complex) {
 }
 
 TEST_P(GEQRF, batched__double_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<true,true,1,rocblas_double_complex>();
@@ -249,7 +247,7 @@ TEST_P(GEQRF, batched__double_complex) {
 // strided_batched cases
 
 TEST_P(GEQR2, strided_batched__float) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,true,0,float>();
@@ -259,7 +257,7 @@ TEST_P(GEQR2, strided_batched__float) {
 }
 
 TEST_P(GEQR2, strided_batched__double) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,true,0,double>();
@@ -269,7 +267,7 @@ TEST_P(GEQR2, strided_batched__double) {
 }
 
 TEST_P(GEQR2, strided_batched__float_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,true,0,rocblas_float_complex>();
@@ -279,7 +277,7 @@ TEST_P(GEQR2, strided_batched__float_complex) {
 }
 
 TEST_P(GEQR2, strided_batched__double_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,true,0,rocblas_double_complex>();
@@ -289,7 +287,7 @@ TEST_P(GEQR2, strided_batched__double_complex) {
 }
 
 TEST_P(GEQRF, strided_batched__float) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,true,1,float>();
@@ -299,7 +297,7 @@ TEST_P(GEQRF, strided_batched__float) {
 }
 
 TEST_P(GEQRF, strided_batched__double) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,true,1,double>();
@@ -309,7 +307,7 @@ TEST_P(GEQRF, strided_batched__double) {
 }
 
 TEST_P(GEQRF, strided_batched__float_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,true,1,rocblas_float_complex>();
@@ -319,7 +317,7 @@ TEST_P(GEQRF, strided_batched__float_complex) {
 }
 
 TEST_P(GEQRF, strided_batched__double_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<false,true,1,rocblas_double_complex>();
@@ -332,7 +330,7 @@ TEST_P(GEQRF, strided_batched__double_complex) {
 // ptr_batched tests
 
 TEST_P(GEQRF, ptr_batched__float) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<true,false,1,float>();
@@ -342,7 +340,7 @@ TEST_P(GEQRF, ptr_batched__float) {
 }
 
 TEST_P(GEQRF, ptr_batched__double) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<true,false,1,double>();
@@ -352,7 +350,7 @@ TEST_P(GEQRF, ptr_batched__double) {
 }
 
 TEST_P(GEQRF, ptr_batched__float_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<true,false,1,rocblas_float_complex>();
@@ -362,7 +360,7 @@ TEST_P(GEQRF, ptr_batched__float_complex) {
 }
 
 TEST_P(GEQRF, ptr_batched__double_complex) {
-    Arguments arg = setup_arguments_qr(GetParam());
+    Arguments arg = geqrf_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_geqr2_geqrf_bad_arg<true,false,1,rocblas_double_complex>();

@@ -59,6 +59,47 @@ void testing_orglx_unglx_bad_arg()
 }   
 
 
+template <bool CPU, bool GPU, typename T, typename Td, typename Th> 
+void orglx_unglx_initData(const rocblas_handle handle,
+                         const rocblas_int m,
+                         const rocblas_int n, 
+                         const rocblas_int k, 
+                         Td &dA, 
+                         const rocblas_int lda,
+                         Td &dIpiv,
+                         Th &hA,
+                         Th &hIpiv,
+                         std::vector<T> &hW,
+                         size_t size_W)
+{
+    if (CPU)
+    {
+        rocblas_init<T>(hA, true);
+        rocblas_init<T>(hIpiv, true);
+
+        // scale to avoid singularities
+        for (int i=0;i<m;++i) {
+            for (int j=0;j<k;++j) {
+                if (i == j)
+                    hA[0][i+j*lda] += 400;
+                else
+                    hA[0][i+j*lda] -= 4;
+            }
+        }
+        
+        // compute LQ factorization
+        cblas_gelqf<T>(m, n, hA[0], lda, hIpiv[0], hW.data(), size_W);
+    }
+
+    if (GPU)
+    {
+        // copy data from CPU to device
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+        CHECK_HIP_ERROR(dIpiv.transfer_from(hIpiv));
+    }
+}
+
+
 template <bool GLQ, typename T, typename Td, typename Th> 
 void orglx_unglx_getError(const rocblas_handle handle,
                          const rocblas_int m,
@@ -76,24 +117,8 @@ void orglx_unglx_getError(const rocblas_handle handle,
     std::vector<T> hW(size_W);
 
     //initialize data
-    rocblas_init<T>(hA, true);
-    rocblas_init<T>(hIpiv, true);
-
-    // scale to avoid singularities
-    // and compute qr factorization
-    for (int i=0;i<m;++i) {
-        for (int j=0;j<k;++j) {
-            if (i == j)
-                hA[0][i+j*lda] += 400;
-            else
-                hA[0][i+j*lda] -= 4;
-        }
-    }
-    cblas_gelqf<T>(m, n, hA[0], lda, hIpiv[0], hW.data(), size_W);
-
-    // copy data from CPU to device
-    CHECK_HIP_ERROR(dA.transfer_from(hA));
-    CHECK_HIP_ERROR(dIpiv.transfer_from(hIpiv));
+    orglx_unglx_initData<true,true,T>(handle, m, n, k, dA, lda, dIpiv, 
+                     hA, hIpiv, hW, size_W);
 
     // execute computations
     //GPU lapack
@@ -125,27 +150,49 @@ void orglx_unglx_getPerfData(const rocblas_handle handle,
                          Th &hIpiv,
                          double *gpu_time_used,
                          double *cpu_time_used,
-                         const rocblas_int hot_calls)
+                         const rocblas_int hot_calls,
+                         const bool perf)
 {
     size_t size_W = size_t(m);
     std::vector<T> hW(size_W);
 
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    GLQ ?
-        cblas_orglq_unglq<T>(m,n,k,hA[0],lda,hIpiv[0],hW.data(),size_W):
-        cblas_orgl2_ungl2<T>(m,n,k,hA[0],lda,hIpiv[0],hW.data());
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+    if (!perf)
+    {
+        orglx_unglx_initData<true,false,T>(handle, m, n, k, dA, lda, dIpiv, 
+                        hA, hIpiv, hW, size_W);
+
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        GLQ ?
+            cblas_orglq_unglq<T>(m,n,k,hA[0],lda,hIpiv[0],hW.data(),size_W):
+            cblas_orgl2_ungl2<T>(m,n,k,hA[0],lda,hIpiv[0],hW.data());
+        *cpu_time_used = get_time_us() - *cpu_time_used;
+    }
+    
+    orglx_unglx_initData<true,false,T>(handle, m, n, k, dA, lda, dIpiv, 
+                     hA, hIpiv, hW, size_W);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
+    {
+        orglx_unglx_initData<false,true,T>(handle, m, n, k, dA, lda, dIpiv, 
+                        hA, hIpiv, hW, size_W);
+
         CHECK_ROCBLAS_ERROR(rocsolver_orglx_unglx(GLQ,handle,m,n,k,dA.data(),lda,dIpiv.data()));
+    }
 
     // gpu-lapack performance
-    *gpu_time_used = get_time_us();
+    double start;
     for(int iter = 0; iter < hot_calls; iter++)
+    {
+        orglx_unglx_initData<false,true,T>(handle, m, n, k, dA, lda, dIpiv, 
+                        hA, hIpiv, hW, size_W);
+
+        start = get_time_us();
         rocsolver_orglx_unglx(GLQ,handle,m,n,k,dA.data(),lda,dIpiv.data());
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
 
@@ -168,7 +215,7 @@ void testing_orglx_unglx(Arguments argus)
     size_t size_P = size_t(m);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_Ar = argus.unit_check || argus.norm_check ? size_A : 0;
+    size_t size_Ar = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = (m < 0 || n < 0 || k < 0 || lda < m || n < m || k > m);
@@ -210,7 +257,7 @@ void testing_orglx_unglx(Arguments argus)
     // collect performance data 
     if (argus.timing) 
         orglx_unglx_getPerfData<GLQ,T>(handle, m, n, k, dA, lda, dIpiv,
-                          hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls); 
+                          hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
         
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
@@ -219,25 +266,29 @@ void testing_orglx_unglx(Arguments argus)
 
     // output results for rocsolver-bench
     if (argus.timing) {
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Arguments:\n";
-        rocblas_cout << "============================================\n";
-        rocsolver_bench_output("m", "n", "k", "lda");
-        rocsolver_bench_output(m, n, k, lda);
+        if (!argus.perf) {
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Arguments:\n";
+            rocblas_cout << "============================================\n";
+            rocsolver_bench_output("m", "n", "k", "lda");
+            rocsolver_bench_output(m, n, k, lda);
 
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Results:\n";
-        rocblas_cout << "============================================\n";
-        if (argus.norm_check) {
-            rocsolver_bench_output("cpu_time", "gpu_time", "error");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Results:\n";
+            rocblas_cout << "============================================\n";
+            if (argus.norm_check) {
+                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            }
+            else {
+                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            }
+            rocblas_cout << std::endl;
         }
         else {
-            rocsolver_bench_output("cpu_time", "gpu_time");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            if (argus.norm_check) rocsolver_bench_output(gpu_time_used,max_error);
+            else rocsolver_bench_output(gpu_time_used);
         }
-        rocblas_cout << std::endl;
     }
 }
-
-#undef ERROR_EPS_MULTIPLIER

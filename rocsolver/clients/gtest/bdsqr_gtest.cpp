@@ -48,7 +48,7 @@ const vector<vector<int>> large_opt_range = {
 };
 
 
-Arguments setup_arguments_bdsqr(bdsqr_tuple tup) 
+Arguments bdsqr_setup_arguments(bdsqr_tuple tup) 
 {
     vector<int> size = std::get<0>(tup);
     vector<int> opt = std::get<1>(tup);
@@ -77,14 +77,13 @@ Arguments setup_arguments_bdsqr(bdsqr_tuple tup)
 class BDSQR : public ::TestWithParam<bdsqr_tuple> {
 protected:
     BDSQR() {}
-    virtual ~BDSQR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
 
 TEST_P(BDSQR, __float) {
-    Arguments arg = setup_arguments_bdsqr(GetParam());
+    Arguments arg = bdsqr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.uplo_option == 'L')
         testing_bdsqr_bad_arg<float>();
@@ -93,7 +92,7 @@ TEST_P(BDSQR, __float) {
 }
 
 TEST_P(BDSQR, __double) {
-    Arguments arg = setup_arguments_bdsqr(GetParam());
+    Arguments arg = bdsqr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.uplo_option == 'L')
         testing_bdsqr_bad_arg<double>();
@@ -102,7 +101,7 @@ TEST_P(BDSQR, __double) {
 }
 
 TEST_P(BDSQR, __float_complex) {
-    Arguments arg = setup_arguments_bdsqr(GetParam());
+    Arguments arg = bdsqr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.uplo_option == 'L')
         testing_bdsqr_bad_arg<rocblas_float_complex>();
@@ -111,7 +110,7 @@ TEST_P(BDSQR, __float_complex) {
 }
 
 TEST_P(BDSQR, __double_complex) {
-    Arguments arg = setup_arguments_bdsqr(GetParam());
+    Arguments arg = bdsqr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.uplo_option == 'L')
         testing_bdsqr_bad_arg<rocblas_double_complex>();

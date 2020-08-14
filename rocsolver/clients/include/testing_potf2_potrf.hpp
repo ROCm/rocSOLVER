@@ -87,6 +87,41 @@ void testing_potf2_potrf_bad_arg()
 }
 
 
+template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
+void potf2_potrf_initData(const rocblas_handle handle, 
+                        const rocblas_fill uplo, 
+                        const rocblas_int n, 
+                        Td &dA, 
+                        const rocblas_int lda, 
+                        const rocblas_stride stA, 
+                        Ud &dinfo,
+                        const rocblas_int bc,
+                        Th &hA,
+                        Th &hATmp,
+                        Uh &hinfo)
+{
+    if (CPU)
+    {
+        rocblas_init<T>(hATmp, true);
+
+        // make A hermitian and scale to ensure positive definiteness  
+        for (rocblas_int b = 0; b < bc; ++b) {
+            cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, n, n,
+                    (T)1.0, hATmp[b], lda, hATmp[b], lda, (T)0.0, hA[b], lda);
+            
+            for (rocblas_int i = 0; i < n; i++) 
+                        hA[b][i + i * lda] += 400;
+        }
+    }
+    
+    if (GPU)
+    {
+        // now copy data to the GPU
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+    }
+}
+
+
 template <bool STRIDED, bool POTRF, typename T, typename Td, typename Ud, typename Th, typename Uh>
 void potf2_potrf_getError(const rocblas_handle handle, 
                         const rocblas_fill uplo, 
@@ -102,19 +137,8 @@ void potf2_potrf_getError(const rocblas_handle handle,
                         double *max_err)
 {
     // input data initialization 
-    rocblas_init<T>(hARes, true);
-
-    // make A hermitian and scale to ensure positive definiteness  
-    for (rocblas_int b = 0; b < bc; ++b) {
-        cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, n, n,
-                   (T)1.0, hARes[b], lda, hARes[b], lda, (T)0.0, hA[b], lda);
-        
-        for (rocblas_int i = 0; i < n; i++) 
-                    hA[b][i + i * lda] += 400;
-    }
-    
-    // now copy data to the GPU
-    CHECK_HIP_ERROR(dA.transfer_from(hA));
+    potf2_potrf_initData<true,true,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+                                  hA, hARes, hinfo);
 
     // execute computations
     // GPU lapack
@@ -150,30 +174,53 @@ void potf2_potrf_getPerfData(const rocblas_handle handle,
                         const rocblas_stride stA, 
                         Ud &dinfo,
                         const rocblas_int bc,
-                        Th &hA, 
+                        Th &hA,
+                        Th &hATmp,
                         Uh &hinfo,
                         double *gpu_time_used,
                         double *cpu_time_used,
-                        const rocblas_int hot_calls)
+                        const rocblas_int hot_calls,
+                        const bool perf)
 {
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    for (rocblas_int b = 0; b < bc; ++b) {
-        POTRF ?
-            cblas_potrf<T>(uplo, n, hA[b], lda, hinfo[b]):
-            cblas_potf2<T>(uplo, n, hA[b], lda, hinfo[b]);
+    if (!perf)
+    {
+        potf2_potrf_initData<true,false,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+                                    hA, hATmp, hinfo);
+        
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        for (rocblas_int b = 0; b < bc; ++b) {
+            POTRF ?
+                cblas_potrf<T>(uplo, n, hA[b], lda, hinfo[b]):
+                cblas_potf2<T>(uplo, n, hA[b], lda, hinfo[b]);
+        }
+        *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+
+    potf2_potrf_initData<true,false,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+                                  hA, hATmp, hinfo);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
+    {
+        potf2_potrf_initData<false,true,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+                                    hA, hATmp, hinfo);
+
         CHECK_ROCBLAS_ERROR(rocsolver_potf2_potrf(STRIDED,POTRF,handle, uplo, n, dA.data(), lda, stA, dinfo.data(), bc));
+    }
         
     // gpu-lapack performance
-    *gpu_time_used = get_time_us(); 
+    double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    {
+        potf2_potrf_initData<false,true,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+                                    hA, hATmp, hinfo);
+
+        start = get_time_us();
         rocsolver_potf2_potrf(STRIDED,POTRF,handle, uplo, n, dA.data(), lda, stA, dinfo.data(), bc);
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
 
@@ -190,7 +237,7 @@ void testing_potf2_potrf(Arguments argus)
     char uploC = argus.uplo_option;
     rocblas_fill uplo = char2rocblas_fill(uploC);
 
-    size_t stARes = argus.unit_check || argus.norm_check ? stA : 0;
+    size_t stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
 
     // check non-supported values 
     if (uplo != rocblas_fill_upper && uplo != rocblas_fill_lower) {
@@ -211,7 +258,7 @@ void testing_potf2_potrf(Arguments argus)
     size_t size_A = size_t(lda) * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_ARes = argus.unit_check || argus.norm_check ? size_A : 0;
+    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
     // check invalid sizes 
     bool invalid_size = (n < 0 || lda < n || bc < 0);
@@ -257,7 +304,7 @@ void testing_potf2_potrf(Arguments argus)
         // collect performance data
         if (argus.timing) 
             potf2_potrf_getPerfData<STRIDED,POTRF,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
-                                              hA, hinfo, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hARes, hinfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     } 
 
     else {
@@ -288,7 +335,7 @@ void testing_potf2_potrf(Arguments argus)
         // collect performance data
         if (argus.timing) 
             potf2_potrf_getPerfData<STRIDED,POTRF,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
-                                              hA, hinfo, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hARes, hinfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     // validate results for rocsolver-test
@@ -298,35 +345,38 @@ void testing_potf2_potrf(Arguments argus)
 
     // output results for rocsolver-bench
     if (argus.timing) {
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Arguments:\n";
-        rocblas_cout << "============================================\n";
-        if (BATCHED) {
-            rocsolver_bench_output("uplo", "n", "lda", "batch_c");
-            rocsolver_bench_output(uploC, n, lda, bc);
-        }
-        else if (STRIDED) {
-            rocsolver_bench_output("uplo", "n", "lda", "strideA", "batch_c");
-            rocsolver_bench_output(uploC, n, lda, stA, bc);
+        if (!argus.perf) {
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Arguments:\n";
+            rocblas_cout << "============================================\n";
+            if (BATCHED) {
+                rocsolver_bench_output("uplo", "n", "lda", "batch_c");
+                rocsolver_bench_output(uploC, n, lda, bc);
+            }
+            else if (STRIDED) {
+                rocsolver_bench_output("uplo", "n", "lda", "strideA", "batch_c");
+                rocsolver_bench_output(uploC, n, lda, stA, bc);
+            }
+            else {
+                rocsolver_bench_output("uplo", "n", "lda");
+                rocsolver_bench_output(uploC, n, lda);
+            }
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Results:\n";
+            rocblas_cout << "============================================\n";
+            if (argus.norm_check) {
+                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            }
+            else {
+                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            }
+            rocblas_cout << std::endl;
         }
         else {
-            rocsolver_bench_output("uplo", "n", "lda");
-            rocsolver_bench_output(uploC, n, lda);
+            if (argus.norm_check) rocsolver_bench_output(gpu_time_used,max_error);
+            else rocsolver_bench_output(gpu_time_used);
         }
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Results:\n";
-        rocblas_cout << "============================================\n";
-        if (argus.norm_check) {
-            rocsolver_bench_output("cpu_time", "gpu_time", "error");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
-        }
-        else {
-            rocsolver_bench_output("cpu_time", "gpu_time");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used);
-        }
-        rocblas_cout << std::endl;
     }
 }
-  
-
-#undef POTRF_ERROR_EPS_MULTIPLIER

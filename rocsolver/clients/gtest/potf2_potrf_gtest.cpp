@@ -12,7 +12,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 
-typedef std::tuple<vector<int>, char> chol_tuple;
+typedef std::tuple<vector<int>, char> potrf_tuple;
 
 // each size_range vector is a {N, lda}
 
@@ -36,7 +36,7 @@ const vector<vector<int>> large_matrix_size_range = {
 };
 
 
-Arguments setup_chol_arguments(chol_tuple tup) 
+Arguments potrf_setup_arguments(potrf_tuple tup) 
 {
     vector<int> matrix_size = std::get<0>(tup);
     char uplo = std::get<1>(tup);
@@ -58,18 +58,16 @@ Arguments setup_chol_arguments(chol_tuple tup)
 }
 
 
-class POTF2 : public ::TestWithParam<chol_tuple> {
+class POTF2 : public ::TestWithParam<potrf_tuple> {
 protected:
     POTF2() {}
-    virtual ~POTF2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
-class POTRF : public ::TestWithParam<chol_tuple> {
+class POTRF : public ::TestWithParam<potrf_tuple> {
 protected:
     POTRF() {}
-    virtual ~POTRF() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -78,7 +76,7 @@ protected:
 // non-batch tests
 
 TEST_P(POTF2, __float) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,false,0,float>();
@@ -88,7 +86,7 @@ TEST_P(POTF2, __float) {
 }
 
 TEST_P(POTF2, __double) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,false,0,double>();
@@ -98,7 +96,7 @@ TEST_P(POTF2, __double) {
 }
 
 TEST_P(POTF2, __float_complex) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,false,0,rocblas_float_complex>();
@@ -108,7 +106,7 @@ TEST_P(POTF2, __float_complex) {
 }
 
 TEST_P(POTF2, __double_complex) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,false,0,rocblas_double_complex>();
@@ -118,7 +116,7 @@ TEST_P(POTF2, __double_complex) {
 }
 
 TEST_P(POTRF, __float) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,false,1,float>();
@@ -128,7 +126,7 @@ TEST_P(POTRF, __float) {
 }
 
 TEST_P(POTRF, __double) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,false,1,double>();
@@ -138,7 +136,7 @@ TEST_P(POTRF, __double) {
 }
 
 TEST_P(POTRF, __float_complex) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,false,1,rocblas_float_complex>();
@@ -148,7 +146,7 @@ TEST_P(POTRF, __float_complex) {
 }
 
 TEST_P(POTRF, __double_complex) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,false,1,rocblas_double_complex>();
@@ -161,7 +159,7 @@ TEST_P(POTRF, __double_complex) {
 // batched tests
 
 TEST_P(POTF2, batched__float) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true,true,0,float>();
@@ -171,7 +169,7 @@ TEST_P(POTF2, batched__float) {
 }
 
 TEST_P(POTF2, batched__double) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true,true,0,double>();
@@ -181,7 +179,7 @@ TEST_P(POTF2, batched__double) {
 }
 
 TEST_P(POTF2, batched__float_complex) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true,true,0,rocblas_float_complex>();
@@ -191,7 +189,7 @@ TEST_P(POTF2, batched__float_complex) {
 }
 
 TEST_P(POTF2, batched__double_complex) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true,true,0,rocblas_double_complex>();
@@ -201,7 +199,7 @@ TEST_P(POTF2, batched__double_complex) {
 }
 
 TEST_P(POTRF, batched__float) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true,true,1,float>();
@@ -211,7 +209,7 @@ TEST_P(POTRF, batched__float) {
 }
 
 TEST_P(POTRF, batched__double) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true,true,1,double>();
@@ -221,7 +219,7 @@ TEST_P(POTRF, batched__double) {
 }
 
 TEST_P(POTRF, batched__float_complex) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true,true,1,rocblas_float_complex>();
@@ -231,7 +229,7 @@ TEST_P(POTRF, batched__float_complex) {
 }
 
 TEST_P(POTRF, batched__double_complex) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true,true,1,rocblas_double_complex>();
@@ -244,7 +242,7 @@ TEST_P(POTRF, batched__double_complex) {
 // strided_batched cases
 
 TEST_P(POTF2, strided_batched__float) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,true,0,float>();
@@ -254,7 +252,7 @@ TEST_P(POTF2, strided_batched__float) {
 }
 
 TEST_P(POTF2, strided_batched__double) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,true,0,double>();
@@ -264,7 +262,7 @@ TEST_P(POTF2, strided_batched__double) {
 }
 
 TEST_P(POTF2, strided_batched__float_complex) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,true,0,rocblas_float_complex>();
@@ -274,7 +272,7 @@ TEST_P(POTF2, strided_batched__float_complex) {
 }
 
 TEST_P(POTF2, strided_batched__double_complex) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,true,0,rocblas_double_complex>();
@@ -284,7 +282,7 @@ TEST_P(POTF2, strided_batched__double_complex) {
 }
 
 TEST_P(POTRF, strided_batched__float) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,true,1,float>();
@@ -294,7 +292,7 @@ TEST_P(POTRF, strided_batched__float) {
 }
 
 TEST_P(POTRF, strided_batched__double) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,true,1,double>();
@@ -304,7 +302,7 @@ TEST_P(POTRF, strided_batched__double) {
 }
 
 TEST_P(POTRF, strided_batched__float_complex) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,true,1,rocblas_float_complex>();
@@ -314,7 +312,7 @@ TEST_P(POTRF, strided_batched__float_complex) {
 }
 
 TEST_P(POTRF, strided_batched__double_complex) {
-    Arguments arg = setup_chol_arguments(GetParam());
+    Arguments arg = potrf_setup_arguments(GetParam());
 
     if (arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false,true,1,rocblas_double_complex>();

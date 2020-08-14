@@ -48,6 +48,26 @@ void testing_lacgv_bad_arg()
 }   
 
 
+template <bool CPU, bool GPU, typename T, typename Td, typename Th> 
+void lacgv_initData(const rocblas_handle handle,
+                         const rocblas_int n,
+                         Td &dA,
+                         const rocblas_int inc,
+                         Th &hA)
+{
+    if (CPU)
+    {
+        rocblas_init<T>(hA, true);
+    }
+
+    if (GPU)
+    {
+        // copy data from CPU to device
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+    }
+}
+
+
 template <typename T, typename Td, typename Th> 
 void lacgv_getError(const rocblas_handle handle,
                          const rocblas_int n,
@@ -57,11 +77,9 @@ void lacgv_getError(const rocblas_handle handle,
                          Th &hAr,
                          double *max_err)
 {
-    //initialize data 
-    rocblas_init<T>(hA, true);
-
-    // copy data from CPU to device
-    CHECK_HIP_ERROR(dA.transfer_from(hA));
+    //initialize data
+    lacgv_initData<true,true,T>(handle, n, dA, inc, 
+                      hA);
 
     // execute computations
     //GPU lapack
@@ -89,22 +107,44 @@ void lacgv_getPerfData(const rocblas_handle handle,
                          Th &hA,
                          double *gpu_time_used,
                          double *cpu_time_used,
-                         const rocblas_int hot_calls)
+                         const rocblas_int hot_calls,
+                         const bool perf)
 {
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    cblas_lacgv<T>(n,hA[0],inc);
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+    if (!perf)
+    {
+        lacgv_initData<true,false,T>(handle, n, dA, inc, 
+                        hA);
+
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        cblas_lacgv<T>(n,hA[0],inc);
+        *cpu_time_used = get_time_us() - *cpu_time_used;
+    }
+    
+    lacgv_initData<true,false,T>(handle, n, dA, inc, 
+                      hA);
         
     // cold calls    
     for(int iter = 0; iter < 2; iter++)
+    {
+        lacgv_initData<false,true,T>(handle, n, dA, inc, 
+                        hA);
+
         CHECK_ROCBLAS_ERROR(rocsolver_lacgv(handle,n,dA.data(),inc));
+    }
 
     // gpu-lapack performance
-    *gpu_time_used = get_time_us();
+    double start;
     for(int iter = 0; iter < hot_calls; iter++)
+    {
+        lacgv_initData<false,true,T>(handle, n, dA, inc, 
+                        hA);
+
+        start = get_time_us();
         rocsolver_lacgv(handle,n,dA.data(),inc);
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;       
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;   
 }
 
 
@@ -124,7 +164,7 @@ void testing_lacgv(Arguments argus)
     size_t size_A = size_t(n) * abs(inc);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_Ar = argus.unit_check || argus.norm_check ? size_A : 0;
+    size_t size_Ar = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || !inc);
@@ -163,7 +203,7 @@ void testing_lacgv(Arguments argus)
     // collect performance data 
     if (argus.timing) 
         lacgv_getPerfData<T>(handle, n, dA, inc, 
-                          hA, &gpu_time_used, &cpu_time_used, hot_calls); 
+                          hA, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
         
     // validate results for rocsolver-test
     // no tolerance
@@ -172,25 +212,29 @@ void testing_lacgv(Arguments argus)
 
     // output results for rocsolver-bench
     if (argus.timing) {
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Arguments:\n";
-        rocblas_cout << "============================================\n";
-        rocsolver_bench_output("n", "inc");
-        rocsolver_bench_output(n, inc);
+        if (!argus.perf) {
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Arguments:\n";
+            rocblas_cout << "============================================\n";
+            rocsolver_bench_output("n", "inc");
+            rocsolver_bench_output(n, inc);
 
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Results:\n";
-        rocblas_cout << "============================================\n";
-        if (argus.norm_check) {
-            rocsolver_bench_output("cpu_time", "gpu_time", "error");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Results:\n";
+            rocblas_cout << "============================================\n";
+            if (argus.norm_check) {
+                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            }
+            else {
+                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            }
+            rocblas_cout << std::endl;
         }
         else {
-            rocsolver_bench_output("cpu_time", "gpu_time");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            if (argus.norm_check) rocsolver_bench_output(gpu_time_used,max_error);
+            else rocsolver_bench_output(gpu_time_used);
         }
-        rocblas_cout << std::endl;
     }
 }
-
-#undef ERROR_EPS_MULTIPLIER

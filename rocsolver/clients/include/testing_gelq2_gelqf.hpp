@@ -87,6 +87,44 @@ void testing_gelq2_gelqf_bad_arg()
 }
 
 
+template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
+void gelq2_gelqf_initData(const rocblas_handle handle, 
+                        const rocblas_int m, 
+                        const rocblas_int n, 
+                        Td &dA, 
+                        const rocblas_int lda, 
+                        const rocblas_stride stA, 
+                        Ud &dIpiv, 
+                        const rocblas_stride stP, 
+                        const rocblas_int bc,
+                        Th &hA,
+                        Uh &hIpiv)
+{
+    if (CPU)
+    {
+        rocblas_init<T>(hA, true);
+
+        // scale A to avoid singularities 
+        for (rocblas_int b = 0; b < bc; ++b) {
+            for (rocblas_int i = 0; i < m; i++) {
+                for (rocblas_int j = 0; j < n; j++) {
+                    if (i == j)
+                        hA[b][i + j * lda] += 400;
+                    else    
+                        hA[b][i + j * lda] -= 4;
+                }
+            }
+        }
+    }
+
+    if (GPU)
+    {
+        // now copy to the GPU
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+    }
+}
+
+
 template <bool STRIDED, bool GELQF, typename T, typename Td, typename Ud, typename Th, typename Uh>
 void gelq2_gelqf_getError(const rocblas_handle handle, 
                         const rocblas_int m, 
@@ -104,23 +142,9 @@ void gelq2_gelqf_getError(const rocblas_handle handle,
 {
     std::vector<T> hW(m);
 
-    // input data initialization 
-    rocblas_init<T>(hA, true);
-
-    // scale A to avoid singularities 
-    for (rocblas_int b = 0; b < bc; ++b) {
-        for (rocblas_int i = 0; i < m; i++) {
-            for (rocblas_int j = 0; j < n; j++) {
-                if (i == j)
-                    hA[b][i + j * lda] += 400;
-                else    
-                    hA[b][i + j * lda] -= 4;
-            }
-        }
-    }
-
-    // now copy to the GPU
-    CHECK_HIP_ERROR(dA.transfer_from(hA));
+    // input data initialization
+    gelq2_gelqf_initData<true,true,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+                                  hA, hIpiv);
 
     // execute computations
     // GPU lapack
@@ -161,28 +185,50 @@ void gelq2_gelqf_getPerfData(const rocblas_handle handle,
                             Uh &hIpiv, 
                             double *gpu_time_used,
                             double *cpu_time_used,
-                            const rocblas_int hot_calls)
+                            const rocblas_int hot_calls,
+                            const bool perf)
 {
     std::vector<T> hW(m);
 
-    // cpu-lapack performance
-    *cpu_time_used = get_time_us();
-    for (rocblas_int b = 0; b < bc; ++b) {
-        GELQF ?
-            cblas_gelqf<T>(m, n, hA[b], lda, hIpiv[b], hW.data(), m):
-            cblas_gelq2<T>(m, n, hA[b], lda, hIpiv[b], hW.data());
+    if (!perf)
+    {
+        gelq2_gelqf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+                                    hA, hIpiv);
+
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        for (rocblas_int b = 0; b < bc; ++b) {
+            GELQF ?
+                cblas_gelqf<T>(m, n, hA[b], lda, hIpiv[b], hW.data(), m):
+                cblas_gelq2<T>(m, n, hA[b], lda, hIpiv[b], hW.data());
+        }
+        *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    *cpu_time_used = get_time_us() - *cpu_time_used;
+    
+    gelq2_gelqf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+                                  hA, hIpiv);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
+    {
+        gelq2_gelqf_initData<false,true,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+                                    hA, hIpiv);
+
         CHECK_ROCBLAS_ERROR(rocsolver_gelq2_gelqf(STRIDED,GELQF,handle, m, n, dA.data(), lda, stA, dIpiv.data(), stP, bc));
-        
+    }
+
     // gpu-lapack performance
-    *gpu_time_used = get_time_us(); 
+    double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    {
+        gelq2_gelqf_initData<false,true,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+                                    hA, hIpiv);
+
+        start = get_time_us();
         rocsolver_gelq2_gelqf(STRIDED,GELQF,handle, m, n, dA.data(), lda, stA, dIpiv.data(), stP, bc);
-    *gpu_time_used = (get_time_us() - *gpu_time_used) / hot_calls;
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
 
@@ -199,7 +245,7 @@ void testing_gelq2_gelqf(Arguments argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
     
-    rocblas_stride stARes = argus.unit_check || argus.norm_check ? stA : 0;
+    rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
     
     // check non-supported values 
     // N/A
@@ -209,7 +255,7 @@ void testing_gelq2_gelqf(Arguments argus)
     size_t size_P = size_t(min(m,n));
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0 ;
 
-    size_t size_ARes = argus.unit_check || argus.norm_check ? size_A : 0;
+    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
     // check invalid sizes 
     bool invalid_size = (m < 0 || n < 0 || lda < m || bc < 0);
@@ -255,7 +301,7 @@ void testing_gelq2_gelqf(Arguments argus)
         // collect performance data
         if (argus.timing) 
             gelq2_gelqf_getPerfData<STRIDED,GELQF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
-                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     } 
 
     else {
@@ -286,7 +332,7 @@ void testing_gelq2_gelqf(Arguments argus)
         // collect performance data
         if (argus.timing) 
             gelq2_gelqf_getPerfData<STRIDED,GELQF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
-                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls);
+                                              hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     // validate results for rocsolver-test
@@ -297,35 +343,38 @@ void testing_gelq2_gelqf(Arguments argus)
 
     // output results for rocsolver-bench
     if (argus.timing) {
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Arguments:\n";
-        rocblas_cout << "============================================\n";
-        if (BATCHED) {
-            rocsolver_bench_output("m", "n", "lda", "strideP", "batch_c");
-            rocsolver_bench_output(m, n, lda, stP, bc);
-        }
-        else if (STRIDED) {
-            rocsolver_bench_output("m", "n", "lda", "strideA", "strideP", "batch_c");
-            rocsolver_bench_output(m, n, lda, stA, stP, bc);
+        if (!argus.perf) {
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Arguments:\n";
+            rocblas_cout << "============================================\n";
+            if (BATCHED) {
+                rocsolver_bench_output("m", "n", "lda", "strideP", "batch_c");
+                rocsolver_bench_output(m, n, lda, stP, bc);
+            }
+            else if (STRIDED) {
+                rocsolver_bench_output("m", "n", "lda", "strideA", "strideP", "batch_c");
+                rocsolver_bench_output(m, n, lda, stA, stP, bc);
+            }
+            else {
+                rocsolver_bench_output("m", "n", "lda");
+                rocsolver_bench_output(m, n, lda);
+            }
+            rocblas_cout << "\n============================================\n";
+            rocblas_cout << "Results:\n";
+            rocblas_cout << "============================================\n";
+            if (argus.norm_check) {
+                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+            }
+            else {
+                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output(cpu_time_used, gpu_time_used);
+            }
+            rocblas_cout << std::endl;
         }
         else {
-            rocsolver_bench_output("m", "n", "lda");
-            rocsolver_bench_output(m, n, lda);
+            if (argus.norm_check) rocsolver_bench_output(gpu_time_used,max_error);
+            else rocsolver_bench_output(gpu_time_used);
         }
-        rocblas_cout << "\n============================================\n";
-        rocblas_cout << "Results:\n";
-        rocblas_cout << "============================================\n";
-        if (argus.norm_check) {
-            rocsolver_bench_output("cpu_time", "gpu_time", "error");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
-        }
-        else {
-            rocsolver_bench_output("cpu_time", "gpu_time");
-            rocsolver_bench_output(cpu_time_used, gpu_time_used);
-        }
-        rocblas_cout << std::endl;
     }
 }
-  
-
-#undef GETRF_ERROR_EPS_MULTIPLIER

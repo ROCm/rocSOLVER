@@ -49,7 +49,7 @@ const vector<vector<int>> large_size_range = {
 };
 
 
-Arguments setup_arguments_orgbr(orgbr_tuple tup) 
+Arguments orgbr_setup_arguments(orgbr_tuple tup) 
 {
     vector<int> size = std::get<0>(tup);
     vector<int> store = std::get<1>(tup);
@@ -72,7 +72,6 @@ Arguments setup_arguments_orgbr(orgbr_tuple tup)
 class ORGBR : public ::TestWithParam<orgbr_tuple> {
 protected:
     ORGBR() {}
-    virtual ~ORGBR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -80,13 +79,12 @@ protected:
 class UNGBR : public ::TestWithParam<orgbr_tuple> {
 protected:
     UNGBR() {}
-    virtual ~UNGBR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
 TEST_P(ORGBR, __float) {
-    Arguments arg = setup_arguments_orgbr(GetParam());
+    Arguments arg = orgbr_setup_arguments(GetParam());
     
     if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
         testing_orgbr_ungbr_bad_arg<float>();
@@ -95,7 +93,7 @@ TEST_P(ORGBR, __float) {
 }
 
 TEST_P(ORGBR, __double) {
-    Arguments arg = setup_arguments_orgbr(GetParam());
+    Arguments arg = orgbr_setup_arguments(GetParam());
     
     if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
         testing_orgbr_ungbr_bad_arg<double>();
@@ -104,7 +102,7 @@ TEST_P(ORGBR, __double) {
 }
 
 TEST_P(UNGBR, __float_complex) {
-    Arguments arg = setup_arguments_orgbr(GetParam());
+    Arguments arg = orgbr_setup_arguments(GetParam());
     
     if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
         testing_orgbr_ungbr_bad_arg<rocblas_float_complex>();
@@ -113,7 +111,7 @@ TEST_P(UNGBR, __float_complex) {
 }
 
 TEST_P(UNGBR, __double_complex) {
-    Arguments arg = setup_arguments_orgbr(GetParam());
+    Arguments arg = orgbr_setup_arguments(GetParam());
     
     if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
         testing_orgbr_ungbr_bad_arg<rocblas_double_complex>();

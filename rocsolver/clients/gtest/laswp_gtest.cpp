@@ -12,7 +12,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 
-typedef std::tuple<vector<int>, vector<int>> wpTuple;
+typedef std::tuple<vector<int>, vector<int>> laswp_tuple;
 
 // each range1 vector is a {n,lda}
 
@@ -41,7 +41,7 @@ const vector<vector<int>> large_range2 = {
 };
 
 
-Arguments laswp_setup_arguments(wpTuple tup) {
+Arguments laswp_setup_arguments(laswp_tuple tup) {
     vector<int> matrix_size = std::get<0>(tup);
     vector<int> pivots = std::get<1>(tup);
       
@@ -57,10 +57,9 @@ Arguments laswp_setup_arguments(wpTuple tup) {
     return arg;
 }
 
-class LASWP : public ::TestWithParam<wpTuple> {
+class LASWP : public ::TestWithParam<laswp_tuple> {
 protected:
     LASWP() {}
-    virtual ~LASWP() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };

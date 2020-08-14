@@ -31,6 +31,8 @@ namespace po = boost::program_options;
 int main(int argc, char *argv[]) 
 try
 {
+    rocblas_initialize();
+
     Arguments argus;
   
     //disable unit_check in client benchmark, it is only

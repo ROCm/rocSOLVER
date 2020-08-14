@@ -12,7 +12,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 
-typedef std::tuple<vector<int>, vector<int>> mtuple;
+typedef std::tuple<vector<int>, vector<int>> larf_tuple;
 
 // each size_range vector is a {M,N,lda}
 
@@ -41,7 +41,7 @@ const vector<vector<int>> large_matrix_size_range = {
 };
 
 
-Arguments larf_setup_arguments(mtuple tup) {
+Arguments larf_setup_arguments(larf_tuple tup) {
 
   vector<int> matrix_size = std::get<0>(tup);
   vector<int> inc = std::get<1>(tup);
@@ -60,10 +60,9 @@ Arguments larf_setup_arguments(mtuple tup) {
   return arg;
 }
 
-class LARF : public ::TestWithParam<mtuple> {
+class LARF : public ::TestWithParam<larf_tuple> {
 protected:
   LARF() {}
-  virtual ~LARF() {}
   virtual void SetUp() {}
   virtual void TearDown() {}
 };

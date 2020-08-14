@@ -12,7 +12,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 
-typedef std::tuple<vector<int>, int> gebd_tuple;
+typedef std::tuple<vector<int>, int> gebrd_tuple;
 
 // each matrix_size_range is a {m, lda}
 
@@ -44,7 +44,7 @@ const vector<int> large_n_size_range = {
 };
 
 
-Arguments setup_arguments_bd(gebd_tuple tup) 
+Arguments gebrd_setup_arguments(gebrd_tuple tup) 
 {
     vector<int> matrix_size = std::get<0>(tup);
     int n_size = std::get<1>(tup);
@@ -65,18 +65,16 @@ Arguments setup_arguments_bd(gebd_tuple tup)
     return arg;
 }
 
-class GEBD2 : public ::TestWithParam<gebd_tuple> {
+class GEBD2 : public ::TestWithParam<gebrd_tuple> {
 protected:
     GEBD2() {}
-    virtual ~GEBD2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
-class GEBRD : public ::TestWithParam<gebd_tuple> {
+class GEBRD : public ::TestWithParam<gebrd_tuple> {
 protected:
     GEBRD() {}
-    virtual ~GEBRD() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -85,7 +83,7 @@ protected:
 // non-batch tests
 
 TEST_P(GEBD2, __float) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,false,0,float>();
@@ -95,7 +93,7 @@ TEST_P(GEBD2, __float) {
 }
 
 TEST_P(GEBD2, __double) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,false,0,double>();
@@ -105,7 +103,7 @@ TEST_P(GEBD2, __double) {
 }
 
 TEST_P(GEBD2, __float_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,false,0,rocblas_float_complex>();
@@ -115,7 +113,7 @@ TEST_P(GEBD2, __float_complex) {
 }
 
 TEST_P(GEBD2, __double_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,false,0,rocblas_double_complex>();
@@ -125,7 +123,7 @@ TEST_P(GEBD2, __double_complex) {
 }
 
 TEST_P(GEBRD, __float) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,false,1,float>();
@@ -135,7 +133,7 @@ TEST_P(GEBRD, __float) {
 }
 
 TEST_P(GEBRD, __double) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,false,1,double>();
@@ -145,7 +143,7 @@ TEST_P(GEBRD, __double) {
 }
 
 TEST_P(GEBRD, __float_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,false,1,rocblas_float_complex>();
@@ -155,7 +153,7 @@ TEST_P(GEBRD, __float_complex) {
 }
 
 TEST_P(GEBRD, __double_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,false,1,rocblas_double_complex>();
@@ -168,7 +166,7 @@ TEST_P(GEBRD, __double_complex) {
 // batched tests
 
 TEST_P(GEBD2, batched__float) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<true,true,0,float>();
@@ -178,7 +176,7 @@ TEST_P(GEBD2, batched__float) {
 }
 
 TEST_P(GEBD2, batched__double) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<true,true,0,double>();
@@ -188,7 +186,7 @@ TEST_P(GEBD2, batched__double) {
 }
 
 TEST_P(GEBD2, batched__float_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<true,true,0,rocblas_float_complex>();
@@ -198,7 +196,7 @@ TEST_P(GEBD2, batched__float_complex) {
 }
 
 TEST_P(GEBD2, batched__double_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<true,true,0,rocblas_double_complex>();
@@ -208,7 +206,7 @@ TEST_P(GEBD2, batched__double_complex) {
 }
 
 TEST_P(GEBRD, batched__float) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<true,true,1,float>();
@@ -218,7 +216,7 @@ TEST_P(GEBRD, batched__float) {
 }
 
 TEST_P(GEBRD, batched__double) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<true,true,1,double>();
@@ -228,7 +226,7 @@ TEST_P(GEBRD, batched__double) {
 }
 
 TEST_P(GEBRD, batched__float_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<true,true,1,rocblas_float_complex>();
@@ -238,7 +236,7 @@ TEST_P(GEBRD, batched__float_complex) {
 }
 
 TEST_P(GEBRD, batched__double_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<true,true,1,rocblas_double_complex>();
@@ -251,7 +249,7 @@ TEST_P(GEBRD, batched__double_complex) {
 // strided_batched cases
 
 TEST_P(GEBD2, strided_batched__float) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,true,0,float>();
@@ -261,7 +259,7 @@ TEST_P(GEBD2, strided_batched__float) {
 }
 
 TEST_P(GEBD2, strided_batched__double) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,true,0,double>();
@@ -271,7 +269,7 @@ TEST_P(GEBD2, strided_batched__double) {
 }
 
 TEST_P(GEBD2, strided_batched__float_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,true,0,rocblas_float_complex>();
@@ -281,7 +279,7 @@ TEST_P(GEBD2, strided_batched__float_complex) {
 }
 
 TEST_P(GEBD2, strided_batched__double_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,true,0,rocblas_double_complex>();
@@ -291,7 +289,7 @@ TEST_P(GEBD2, strided_batched__double_complex) {
 }
 
 TEST_P(GEBRD, strided_batched__float) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,true,1,float>();
@@ -301,7 +299,7 @@ TEST_P(GEBRD, strided_batched__float) {
 }
 
 TEST_P(GEBRD, strided_batched__double) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,true,1,double>();
@@ -311,7 +309,7 @@ TEST_P(GEBRD, strided_batched__double) {
 }
 
 TEST_P(GEBRD, strided_batched__float_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,true,1,rocblas_float_complex>();
@@ -321,7 +319,7 @@ TEST_P(GEBRD, strided_batched__float_complex) {
 }
 
 TEST_P(GEBRD, strided_batched__double_complex) {
-    Arguments arg = setup_arguments_bd(GetParam());
+    Arguments arg = gebrd_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 0)
         testing_gebd2_gebrd_bad_arg<false,true,1,rocblas_double_complex>();
