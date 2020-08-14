@@ -149,6 +149,8 @@ if(OPTIMAL)
   target_compile_definitions(rocsolver PUBLIC OPTIMAL)
 endif( )
 
+add_armor_flags( rocsolver "${ARMOR_LEVEL}" )
+
 ############################################################
 # Installation
 
