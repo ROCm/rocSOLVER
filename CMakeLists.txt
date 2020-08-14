@@ -156,6 +156,14 @@ list( APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hcc ${ROCM_PATH}/hip /opt/rocm/hcc /
 
 option( BUILD_VERBOSE "Output additional build information" OFF )
 
+if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
+  set( DEFAULT_ARMOR_LEVEL 1 )
+else( )
+  set( DEFAULT_ARMOR_LEVEL 0 )
+endif( )
+set( ARMOR_LEVEL "${DEFAULT_ARMOR_LEVEL}" CACHE STRING "Enables increasingly expensive runtime correctness checks" )
+include( armor-config )
+
 # BUILD_SHARED_LIBS is a cmake built-in; we make it an explicit option such that it shows in cmake-gui
 option( BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON )
 
