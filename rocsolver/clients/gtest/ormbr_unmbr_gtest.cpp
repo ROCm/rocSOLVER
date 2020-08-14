@@ -65,7 +65,7 @@ const vector<vector<int>> large_size_range = {
 };
 
 
-Arguments setup_arguments_ormbr(ormbr_tuple tup) 
+Arguments ormbr_setup_arguments(ormbr_tuple tup) 
 {
     vector<int> size = std::get<0>(tup);
     vector<int> store = std::get<1>(tup);
@@ -99,7 +99,6 @@ Arguments setup_arguments_ormbr(ormbr_tuple tup)
 class ORMBR : public ::TestWithParam<ormbr_tuple> {
 protected:
     ORMBR() {}
-    virtual ~ORMBR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -107,13 +106,12 @@ protected:
 class UNMBR : public ::TestWithParam<ormbr_tuple> {
 protected:
     UNMBR() {}
-    virtual ~UNMBR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
 TEST_P(ORMBR, __float) {
-    Arguments arg = setup_arguments_ormbr(GetParam());
+    Arguments arg = ormbr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T' && arg.storev == 'C')
         testing_ormbr_unmbr_bad_arg<float>();
@@ -122,7 +120,7 @@ TEST_P(ORMBR, __float) {
 }
 
 TEST_P(ORMBR, __double) {
-    Arguments arg = setup_arguments_ormbr(GetParam());
+    Arguments arg = ormbr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T' && arg.storev == 'C')
         testing_ormbr_unmbr_bad_arg<double>();
@@ -131,7 +129,7 @@ TEST_P(ORMBR, __double) {
 }
 
 TEST_P(UNMBR, __float_complex) {
-    Arguments arg = setup_arguments_ormbr(GetParam());
+    Arguments arg = ormbr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T' && arg.storev == 'C')
         testing_ormbr_unmbr_bad_arg<rocblas_float_complex>();
@@ -140,7 +138,7 @@ TEST_P(UNMBR, __float_complex) {
 }
 
 TEST_P(UNMBR, __double_complex) {
-    Arguments arg = setup_arguments_ormbr(GetParam());
+    Arguments arg = ormbr_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T' && arg.storev == 'C')
         testing_ormbr_unmbr_bad_arg<rocblas_double_complex>();

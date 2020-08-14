@@ -32,7 +32,7 @@ const vector<vector<int>> large_matrix_size_range = {
 };
 
 
-Arguments setup_arguments(getri_tuple tup) {
+Arguments getri_setup_arguments(getri_tuple tup) {
     //vector<int> matrix_size = std::get<0>(tup);
 
     Arguments arg;
@@ -53,7 +53,6 @@ Arguments setup_arguments(getri_tuple tup) {
 class GETRI : public ::TestWithParam<getri_tuple> {
 protected:
     GETRI() {}
-    virtual ~GETRI() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -62,7 +61,7 @@ protected:
 // non-batch tests
 
 TEST_P(GETRI, __float) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0) 
         testing_getri_bad_arg<false,false,float>();
@@ -72,7 +71,7 @@ TEST_P(GETRI, __float) {
 }
 
 TEST_P(GETRI, __double) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0) 
         testing_getri_bad_arg<false,false,double>();
@@ -82,7 +81,7 @@ TEST_P(GETRI, __double) {
 }
 
 TEST_P(GETRI, __float_complex) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<false,false,rocblas_float_complex>();
@@ -92,7 +91,7 @@ TEST_P(GETRI, __float_complex) {
 }
 
 TEST_P(GETRI, __double_complex) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<false,false,rocblas_double_complex>();
@@ -106,7 +105,7 @@ TEST_P(GETRI, __double_complex) {
 // batched tests
 
 TEST_P(GETRI, batched__float) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<true,true,float>();
@@ -116,7 +115,7 @@ TEST_P(GETRI, batched__float) {
 }
 
 TEST_P(GETRI, batched__double) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<true,true,double>();
@@ -126,7 +125,7 @@ TEST_P(GETRI, batched__double) {
 }
 
 TEST_P(GETRI, batched__float_complex) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<true,true,rocblas_float_complex>();
@@ -136,7 +135,7 @@ TEST_P(GETRI, batched__float_complex) {
 }
 
 TEST_P(GETRI, batched__double_complex) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<true,true,rocblas_double_complex>();
@@ -150,7 +149,7 @@ TEST_P(GETRI, batched__double_complex) {
 // strided_batched tests
 
 TEST_P(GETRI, strided_batched__float) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<false,true,float>();
@@ -160,7 +159,7 @@ TEST_P(GETRI, strided_batched__float) {
 }
 
 TEST_P(GETRI, strided_batched__double) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<false,true,double>();
@@ -170,7 +169,7 @@ TEST_P(GETRI, strided_batched__double) {
 }
 
 TEST_P(GETRI, strided_batched__float_complex) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<false,true,rocblas_float_complex>();
@@ -180,7 +179,7 @@ TEST_P(GETRI, strided_batched__float_complex) {
 }
 
 TEST_P(GETRI, strided_batched__double_complex) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<false,true,rocblas_double_complex>();
@@ -194,7 +193,7 @@ TEST_P(GETRI, strided_batched__double_complex) {
 // outofplace_batched tests
 
 TEST_P(GETRI, outofplace_batched__float) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<true,false,float>();
@@ -204,7 +203,7 @@ TEST_P(GETRI, outofplace_batched__float) {
 }
 
 TEST_P(GETRI, outofplace_batched__double) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<true,false,double>();
@@ -214,7 +213,7 @@ TEST_P(GETRI, outofplace_batched__double) {
 }
 
 TEST_P(GETRI, outofplace_batched__float_complex) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<true,false,rocblas_float_complex>();
@@ -224,7 +223,7 @@ TEST_P(GETRI, outofplace_batched__float_complex) {
 }
 
 TEST_P(GETRI, outofplace_batched__double_complex) {
-    Arguments arg = setup_arguments(GetParam());
+    Arguments arg = getri_setup_arguments(GetParam());
 
     if (arg.N == 0)
         testing_getri_bad_arg<true,false,rocblas_double_complex>();

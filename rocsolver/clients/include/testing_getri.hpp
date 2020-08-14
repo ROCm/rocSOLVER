@@ -224,13 +224,15 @@ void getri_getPerfData(const rocblas_handle handle,
                         const rocblas_int hot_calls,
                         const bool perf)
 {
-    if (!perf) {
-        rocblas_int sizeW = n;
-        std::vector<T> hW(sizeW);
+    rocblas_int sizeW = n;
+    std::vector<T> hW(sizeW);
 
-        // cpu-lapack performance (only if not in perf mode)
+    if (!perf)
+    {
         getri_initData<true,false,T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, 
                                       hA1, hA, hIpiv, hInfo);
+
+        // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         for (rocblas_int b = 0; b < bc; ++b) {
             cblas_getri<T>(n, hA[b], lda, hIpiv[b], hW.data(), &sizeW);
@@ -277,7 +279,7 @@ void testing_getri(Arguments argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stARes = argus.unit_check || argus.norm_check ? stA : 0;
+    rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
 
     // check non-supported values 
     // N/A
@@ -287,7 +289,7 @@ void testing_getri(Arguments argus)
     size_t size_P = size_t(n);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_ARes = argus.unit_check || argus.norm_check ? size_A : 0;
+    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
     // check invalid sizes 
     bool invalid_size = (n < 0 || lda < n || bc < 0);
@@ -454,6 +456,3 @@ void testing_getri(Arguments argus)
         }
     }
 }
-  
-
-#undef GETRF_ERROR_EPS_MULTIPLIER

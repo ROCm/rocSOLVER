@@ -52,7 +52,7 @@ const vector<vector<int>> large_size_range = {
 };
 
 
-Arguments setup_arguments_ormlq(ormlq_tuple tup) 
+Arguments ormlq_setup_arguments(ormlq_tuple tup) 
 {
     vector<int> size = std::get<0>(tup);
     vector<int> op = std::get<1>(tup);
@@ -76,7 +76,6 @@ Arguments setup_arguments_ormlq(ormlq_tuple tup)
 class ORML2 : public ::TestWithParam<ormlq_tuple> {
 protected:
     ORML2() {}
-    virtual ~ORML2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -84,7 +83,6 @@ protected:
 class UNML2 : public ::TestWithParam<ormlq_tuple> {
 protected:
     UNML2() {}
-    virtual ~UNML2() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -92,7 +90,6 @@ protected:
 class ORMLQ : public ::TestWithParam<ormlq_tuple> {
 protected:
     ORMLQ() {}
-    virtual ~ORMLQ() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
@@ -100,13 +97,12 @@ protected:
 class UNMLQ : public ::TestWithParam<ormlq_tuple> {
 protected:
     UNMLQ() {}
-    virtual ~UNMLQ() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 };
 
 TEST_P(ORML2, __float) {
-    Arguments arg = setup_arguments_ormlq(GetParam());
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
         testing_ormlx_unmlx_bad_arg<float,0>();
@@ -115,7 +111,7 @@ TEST_P(ORML2, __float) {
 }
 
 TEST_P(ORML2, __double) {
-    Arguments arg = setup_arguments_ormlq(GetParam());
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
         testing_ormlx_unmlx_bad_arg<double,0>();
@@ -124,7 +120,7 @@ TEST_P(ORML2, __double) {
 }
 
 TEST_P(UNML2, __float_complex) {
-    Arguments arg = setup_arguments_ormlq(GetParam());
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
         testing_ormlx_unmlx_bad_arg<rocblas_float_complex,0>();
@@ -133,7 +129,7 @@ TEST_P(UNML2, __float_complex) {
 }
 
 TEST_P(UNML2, __double_complex) {
-    Arguments arg = setup_arguments_ormlq(GetParam());
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
         testing_ormlx_unmlx_bad_arg<rocblas_double_complex,0>();
@@ -142,7 +138,7 @@ TEST_P(UNML2, __double_complex) {
 }
 
 TEST_P(ORMLQ, __float) {
-    Arguments arg = setup_arguments_ormlq(GetParam());
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
         testing_ormlx_unmlx_bad_arg<float,1>();
@@ -151,7 +147,7 @@ TEST_P(ORMLQ, __float) {
 }
 
 TEST_P(ORMLQ, __double) {
-    Arguments arg = setup_arguments_ormlq(GetParam());
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
         testing_ormlx_unmlx_bad_arg<double,1>();
@@ -160,7 +156,7 @@ TEST_P(ORMLQ, __double) {
 }
 
 TEST_P(UNMLQ, __float_complex) {
-    Arguments arg = setup_arguments_ormlq(GetParam());
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
         testing_ormlx_unmlx_bad_arg<rocblas_float_complex,1>();
@@ -169,7 +165,7 @@ TEST_P(UNMLQ, __float_complex) {
 }
 
 TEST_P(UNMLQ, __double_complex) {
-    Arguments arg = setup_arguments_ormlq(GetParam());
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
     if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
         testing_ormlx_unmlx_bad_arg<rocblas_double_complex,1>();

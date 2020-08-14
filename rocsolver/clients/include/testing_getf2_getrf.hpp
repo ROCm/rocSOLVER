@@ -226,10 +226,12 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
                         const rocblas_int hot_calls,
                         const bool perf)
 {
-    if (!perf) {
-        // cpu-lapack performance (only if not in perf mode)
+    if (!perf)
+    {
         getf2_getrf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, dinfo, bc, 
                                      hA, hIpiv, hinfo);
+        
+        // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         for (rocblas_int b = 0; b < bc; ++b) {
             GETRF ?
@@ -421,6 +423,3 @@ void testing_getf2_getrf(Arguments argus)
         }
     }
 }
-  
-
-#undef GETRF_ERROR_EPS_MULTIPLIER
