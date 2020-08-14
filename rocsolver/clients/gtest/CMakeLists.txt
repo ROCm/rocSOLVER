@@ -80,7 +80,8 @@ set( rocsolver_benchmark_common
     )
 
 add_executable( rocsolver-test ${roclapack_test_source} ${rocsolver_test_source} ${rocsolver_benchmark_common} )
-#target_compile_features( rocsolver-test PRIVATE cxx_static_assert cxx_nullptr cxx_auto_type )
+
+add_armor_flags( rocsolver-test "${ARMOR_LEVEL}" )
 
 target_compile_definitions( rocsolver-test PRIVATE BUILD_WITH_TENSILE=0 GOOGLE_TEST )
 
