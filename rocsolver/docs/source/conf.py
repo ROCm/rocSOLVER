@@ -34,8 +34,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'rocSOLVER'
-copyright = u'2020, Advanced Mirco Devices'
-author = u'Advanced Mirco Devices'
+copyright = u'2020, Advanced Micro Devices'
+author = u'Advanced Micro Devices'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -134,7 +134,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'rocSOLVER.tex', u'rocSOLVER Documentation',
-     u'Advanced Mirco Devices', 'manual'),
+     u'Advanced Micro Devices', 'manual'),
 ]
 
 
