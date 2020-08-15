@@ -12,6 +12,9 @@ This section provides details of the rocSOLVER library API as in last ROCm relea
 Types
 =====
 
+rocSOLVER Types
+-----------------
+
 Most rocSOLVER types are aliases of rocBLAS types. 
 See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/api.html#types>`_.
 
@@ -594,6 +597,9 @@ rocsolver_<type>getrf_npvt_strided_batched()
 
 Auxiliaries
 =========================
+
+Auxiliary Functions
+---------------------
 
 rocSOLVER auxiliary functions are aliases of rocBLAS auxiliary functions.
 See the `rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/api.html#auxiliary>`_.
