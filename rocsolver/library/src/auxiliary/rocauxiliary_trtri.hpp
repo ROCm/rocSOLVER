@@ -30,7 +30,7 @@ __device__ rocblas_int trtri_impl_small_upper(const rocblas_diagonal diag, T *rA
     if (i == 0)
         _info = 0;
     __syncthreads();
-    if (rA[i] == 0)
+    if (rA[i] == 0 && diag == rocblas_diagonal_non_unit)
     {
         rocblas_int _info_temp = _info;
         while (_info_temp == 0 || _info_temp > i + 1)
@@ -86,7 +86,7 @@ __device__ rocblas_int trtri_impl_small_lower(const rocblas_diagonal diag, T *rA
     if (i == 0)
         _info = 0;
     __syncthreads();
-    if (rA[i] == 0)
+    if (rA[i] == 0 && diag == rocblas_diagonal_non_unit)
     {
         rocblas_int _info_temp = _info;
         while (_info_temp == 0 || _info_temp > i + 1)
@@ -482,7 +482,7 @@ __global__ void trtri_kernel_large_lower(const rocblas_diagonal diag, const rocb
     T* a = load_ptr_batch<T>(A,b,shiftA,strideA);
     T* w = load_ptr_batch<T>(work,b,0,strideW);
 
-    if (j == 0)
+    if (j+jb == n)
         trtri_check_singularity(diag, n, a, lda, info);
     
     if (info[b] != 0)
