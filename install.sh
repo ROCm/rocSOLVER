@@ -61,7 +61,7 @@ Options:
 
   --docs                      (experimental) Pass this flag to build the documentation from source.
                               Official documentation is available online at https://rocsolver.readthedocs.io/
-                              Building locally with flag will require docker on your machine. If you are
+                              Building locally with this flag will require docker on your machine. If you are
                               familiar with doxygen, sphinx and documentation tools, you can alternatively
                               use the scripts provided in rocsolver/docs.
 EOF
