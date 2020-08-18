@@ -59,7 +59,11 @@ Options:
 
   -n | --no-optimizations     Pass this flag to disable optimizations for small sizes.
 
-  --docs                      Pass this flag to build the documentation. (experimental)
+  --docs                      (experimental) Pass this flag to build the documentation from source.
+                              Official documentation is available online at https://rocsolver.readthedocs.io/
+                              Building locally with flag will require docker on your machine. If you are
+                              familiar with doxygen, sphinx and documentation tools, you can alternatively
+                              use the scripts provided in rocsolver/docs.
 EOF
 }
 
@@ -402,7 +406,13 @@ printf "\033[32mCreating project build directory in: \033[33m${build_dir}\033[0m
 # prep
 # #################################################
 # ensure a clean build environment
-rm -rf "${build_dir}"
+if [[ "${build_docs}" == true ]]; then
+  rm -rf -- "${build_dir}/docs"
+elif [[ "${build_release}" == true ]]; then
+  rm -rf -- "${build_dir}/release"
+else
+  rm -rf -- "${build_dir}/debug"
+fi
 
 # Default cmake executable is called cmake
 cmake_executable=cmake
@@ -413,7 +423,7 @@ case "${ID}" in
   ;;
 esac
 
-main=$(pwd)
+main=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 # #################################################
 # dependencies
@@ -436,9 +446,9 @@ fi
 # We append customary rocm path; if user provides custom rocm path in ${path}, our
 # hard-coded path has lesser priority
 if [[ "${build_hcc}" == false ]]; then
-  export PATH=${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}
+  export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}"
 else
-  export PATH=${PATH}:${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/hcc/bin
+  export PATH="${PATH}:${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/hcc/bin"
 fi
 
 # #################################################
@@ -503,7 +513,7 @@ case "${ID}" in
     ;;
 esac
 
-CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" ${main}
+CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
 check_exit_code "$?"
 
 make -j$(nproc) install

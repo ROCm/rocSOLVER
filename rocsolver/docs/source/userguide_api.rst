@@ -30,14 +30,6 @@ rocsolver_handle
 .. deprecated:: 3.5
    Use :c:type:`rocblas_handle`.
 
-rocblas_direct
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygenenum:: rocblas_direct
-
-rocblas_storev
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygenenum:: rocblas_storev
-
 rocsolver_direction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygentypedef:: rocsolver_direction
@@ -81,6 +73,16 @@ rocsolver_status
    Use :c:enum:`rocblas_status`.
 
 
+Additional Types
+-------------------
+
+rocblas_direct
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocblas_direct
+
+rocblas_storev
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocblas_storev
 
 
 LAPACK Auxiliary Functions
