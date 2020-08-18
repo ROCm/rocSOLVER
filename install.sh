@@ -59,7 +59,7 @@ Options:
 
   -n | --no-optimizations     Pass this flag to disable optimizations for small sizes.
 
-  --docs                      Pass this flag to build the documentation.
+  --docs                      Pass this flag to build the documentation. (experimental)
 EOF
 }
 
@@ -451,10 +451,10 @@ cmake_client_options=""
 # build documentation
 if [[ "${build_docs}" == true ]]; then
   mkdir -p "$build_dir"
-  container_name="build$(head -c 10 /dev/urandom | base32)"
+  container_name="build_$(head -c 10 /dev/urandom | base32)"
   docs_build_command='cp -r /mnt/rocsolver /home/docs/ && cd /home/docs/rocsolver/rocsolver/docs && ./run_doc.sh'
-  docker build -t rocsolver-docs:latest -f docker/dockerfile-docs .
-  docker run -v "$main:/mnt/rocsolver:ro" --name "$container_name" rocsolver-docs:latest /bin/bash -c "$docs_build_command"
+  docker build -t rocsolver:docs -f docker/dockerfile-docs .
+  docker run -v "$main:/mnt/rocsolver:ro" --name "$container_name" rocsolver:docs /bin/sh -c "$docs_build_command"
   docker cp "$container_name:/home/docs/rocsolver/rocsolver/docs/build" "$build_dir/docs"
   exit
 fi
