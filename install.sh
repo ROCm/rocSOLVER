@@ -408,7 +408,7 @@ printf "\033[32mCreating project build directory in: \033[33m${build_dir}\033[0m
 # ensure a clean build environment
 if [[ "${build_docs}" == true ]]; then
   rm -rf -- "${build_dir}/docs"
-elif [[ "${build_release}" == true ]]; then
+elif [[ "${build_type}" == Release ]]; then
   rm -rf -- "${build_dir}/release"
 else
   rm -rf -- "${build_dir}/debug"
@@ -458,9 +458,10 @@ pushd .
 cmake_common_options=""
 cmake_client_options=""
 
+mkdir -p "$build_dir"
+
 # build documentation
 if [[ "${build_docs}" == true ]]; then
-  mkdir -p "$build_dir"
   container_name="build_$(head -c 10 /dev/urandom | base32)"
   docs_build_command='cp -r /mnt/rocsolver /home/docs/ && cd /home/docs/rocsolver/rocsolver/docs && ./run_doc.sh'
   docker build -t rocsolver:docs -f docker/dockerfile-docs .
@@ -469,7 +470,7 @@ if [[ "${build_docs}" == true ]]; then
   exit
 fi
 
-mkdir -p "${build_dir}" && cd "${build_dir}"
+cd "$build_dir"
 
 if [[ "${build_type}" == Debug ]]; then
   mkdir -p debug && cd debug
