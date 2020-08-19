@@ -104,7 +104,11 @@ void larft_initData(const rocblas_handle handle,
                         hV[0][i+j*ldv] -= 4;
                 }
             }
-            cblas_geqrf<T>(n, k, hV[0], ldv, ht[0], hw.data(), k);
+
+            if (direct == rocblas_forward_direction)
+                cblas_geqrf<T>(n, k, hV[0], ldv, ht[0], hw.data(), k);
+            else
+                cblas_geqlf<T>(n, k, hV[0], ldv, ht[0], hw.data(), k);
         }
         else
         {
@@ -118,7 +122,11 @@ void larft_initData(const rocblas_handle handle,
                         hV[0][i+j*ldv] -= 4;
                 }
             }
-            cblas_gelqf<T>(k, n, hV[0], ldv, ht[0], hw.data(), k);
+
+            if (direct == rocblas_forward_direction)
+                cblas_gelqf<T>(k, n, hV[0], ldv, ht[0], hw.data(), k);
+            else
+                cblas_gerqf<T>(k, n, hV[0], ldv, ht[0], hw.data(), k);
         }
     }
     

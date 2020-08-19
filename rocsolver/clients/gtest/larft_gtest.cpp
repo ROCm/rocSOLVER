@@ -21,7 +21,6 @@ typedef std::tuple<vector<int>, vector<int>> larft_tuple;
 // each reflector_size_range is {K,ldt,d}
 //if d = 0, then direct = 'F'
 //if d = 1, then direct = 'B'
-//FOR NOW ONLY FORWARD DIRECTION HAS BEEN IMPLEMENTED
 
 // case when n == 0 and k == 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
@@ -35,7 +34,7 @@ const vector<vector<int>> order_size_range = {
 
 const vector<vector<int>> reflector_size_range = {
     {0,1,0}, {5,1,0},               //invalid
-    {5,5,0}, {10,20,0}, {15,15,0}
+    {5,5,0}, {10,20,1}, {15,15,0}
 };
 
 // for daily_lapack tests
@@ -44,7 +43,7 @@ const vector<vector<int>> large_order_size_range = {
 };
 
 const vector<vector<int>> large_reflector_size_range = {
-    {15,15,0}, {25,40,0}, {45,45,0}, {60,70,0}, {75,75,0}
+    {15,15,0}, {25,40,1}, {45,45,0}, {60,70,1}, {75,75,0}
 };
 
 
