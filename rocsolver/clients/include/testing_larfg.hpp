@@ -183,7 +183,9 @@ void testing_larfg(Arguments argus)
     // N/A
 
     // determine sizes
-    size_t size_x = n > 1 ? size_t(n-1) : 0;
+    // size_x could be zero in test cases that are not quick-return or invalid cases
+    // setting it to one to avoid possible memory access errors in the rest of the unit test
+    size_t size_x = n > 1 ? size_t(n - 1) : 1;
     size_t stx = size_x * inc;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
