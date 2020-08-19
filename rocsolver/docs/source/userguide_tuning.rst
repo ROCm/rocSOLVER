@@ -1,4 +1,4 @@
-.. _batch_label:
+.. _tuning_label:
 
 *******************************
 Tuning rocSOLVER Performance
