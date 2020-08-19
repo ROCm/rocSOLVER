@@ -41,7 +41,7 @@ const vector<vector<int>> matrix_size_range = {
 
 const vector<vector<int>> reflector_size_range = {
     {0,1,0,0}, {5,1,0,0},   //invalid
-    {7,7,0,1}, {10,10,0,1}, {12,70,0,2}, {15,15,0,2}
+    {7,7,0,1}, {10,10,1,1}, {12,70,0,2}, {15,15,1,2}
 };
 
 // for daily_lapack tests
@@ -52,7 +52,7 @@ const vector<vector<int>> large_matrix_size_range = {
 };
 
 const vector<vector<int>> large_reflector_size_range = {
-    {35,35,0,1}, {50,70,0,0}, {85,85,0,1}, {100,150,0,0}, {100,150,0,2}
+    {35,35,0,1}, {50,70,0,0}, {85,85,1,1}, {100,150,1,0}, {100,150,0,2}, {100,150,1,2}
 };
 
 
