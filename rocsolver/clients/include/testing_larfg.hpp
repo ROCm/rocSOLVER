@@ -183,7 +183,7 @@ void testing_larfg(Arguments argus)
     // N/A
 
     // determine sizes
-    size_t size_x = size_t(n-1);
+    size_t size_x = n > 1 ? size_t(n-1) : 0;
     size_t stx = size_x * inc;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
