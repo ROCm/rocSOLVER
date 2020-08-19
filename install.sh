@@ -57,8 +57,13 @@ Options:
 
   -r | --relocatable          Pass this to add RUNPATH(based on ROCM_RPATH) and remove ldconf entry.
 
-  -n | --no-optimizations     Pass this flag to disable optimizations for small sizes
+  -n | --no-optimizations     Pass this flag to disable optimizations for small sizes.
 
+  --docs                      (experimental) Pass this flag to build the documentation from source.
+                              Official documentation is available online at https://rocsolver.readthedocs.io/
+                              Building locally with this flag will require docker on your machine. If you are
+                              familiar with doxygen, sphinx and documentation tools, you can alternatively
+                              use the scripts provided in rocsolver/docs.
 EOF
 }
 
@@ -306,6 +311,7 @@ rocblas_dir=/opt/rocm/rocblas
 build_dir=./build
 build_type=Release
 build_relocatable=false
+build_docs=false
 optimal=true
 
 rocm_path=/opt/rocm
@@ -320,7 +326,7 @@ fi
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,hcc,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static,relocatable,no-optimizations --options hipcdgsrn -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,hcc,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static,relocatable,no-optimizations,docs --options hipcdgsrn -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -379,6 +385,9 @@ while true; do
     --rocblas_dir)
         rocblas_dir=${2}
         shift 2 ;;
+    --docs)
+        build_docs=true
+        shift ;;
     -r|--relocatable)
         build_relocatable=true
         shift ;;
@@ -397,7 +406,13 @@ printf "\033[32mCreating project build directory in: \033[33m${build_dir}\033[0m
 # prep
 # #################################################
 # ensure a clean build environment
-rm -rf "${build_dir}"
+if [[ "${build_docs}" == true ]]; then
+  rm -rf -- "${build_dir}/docs"
+elif [[ "${build_type}" == Release ]]; then
+  rm -rf -- "${build_dir}/release"
+else
+  rm -rf -- "${build_dir}/debug"
+fi
 
 # Default cmake executable is called cmake
 cmake_executable=cmake
@@ -408,7 +423,7 @@ case "${ID}" in
   ;;
 esac
 
-main=$(pwd)
+main=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 # #################################################
 # dependencies
@@ -431,9 +446,9 @@ fi
 # We append customary rocm path; if user provides custom rocm path in ${path}, our
 # hard-coded path has lesser priority
 if [[ "${build_hcc}" == false ]]; then
-  export PATH=${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}
+  export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}"
 else
-  export PATH=${PATH}:${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/hcc/bin
+  export PATH="${PATH}:${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/hcc/bin"
 fi
 
 # #################################################
@@ -443,7 +458,19 @@ pushd .
 cmake_common_options=""
 cmake_client_options=""
 
-mkdir -p "${build_dir}" && cd "${build_dir}"
+mkdir -p "$build_dir"
+
+# build documentation
+if [[ "${build_docs}" == true ]]; then
+  container_name="build_$(head -c 10 /dev/urandom | base32)"
+  docs_build_command='cp -r /mnt/rocsolver /home/docs/ && cd /home/docs/rocsolver/rocsolver/docs && ./run_doc.sh'
+  docker build -t rocsolver:docs -f docker/dockerfile-docs .
+  docker run -v "$main:/mnt/rocsolver:ro" --name "$container_name" rocsolver:docs /bin/sh -c "$docs_build_command"
+  docker cp "$container_name:/home/docs/rocsolver/rocsolver/docs/build" "$build_dir/docs"
+  exit
+fi
+
+cd "$build_dir"
 
 if [[ "${build_type}" == Debug ]]; then
   mkdir -p debug && cd debug
@@ -487,7 +514,7 @@ case "${ID}" in
     ;;
 esac
 
-CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" ${main}
+CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
 check_exit_code "$?"
 
 make -j$(nproc) install

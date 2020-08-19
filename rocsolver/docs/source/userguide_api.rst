@@ -12,6 +12,9 @@ This section provides details of the rocSOLVER library API as in last ROCm relea
 Types
 =====
 
+rocSOLVER Types
+-----------------
+
 Most rocSOLVER types are aliases of rocBLAS types. 
 See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/api.html#types>`_.
 
@@ -26,14 +29,6 @@ rocsolver_handle
 .. doxygentypedef:: rocsolver_handle
 .. deprecated:: 3.5
    Use :c:type:`rocblas_handle`.
-
-rocblas_direct
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygenenum:: rocblas_direct
-
-rocblas_storev
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygenenum:: rocblas_storev
 
 rocsolver_direction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -78,6 +73,16 @@ rocsolver_status
    Use :c:enum:`rocblas_status`.
 
 
+Additional Types
+-------------------
+
+rocblas_direct
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocblas_direct
+
+rocblas_storev
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocblas_storev
 
 
 LAPACK Auxiliary Functions
@@ -594,6 +599,9 @@ rocsolver_<type>getrf_npvt_strided_batched()
 
 Auxiliaries
 =========================
+
+Auxiliary Functions
+---------------------
 
 rocSOLVER auxiliary functions are aliases of rocBLAS auxiliary functions.
 See the `rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/api.html#auxiliary>`_.
