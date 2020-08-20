@@ -387,14 +387,16 @@ void testing_bdsqr(Arguments argus)
         lduT = nT;
         ldvT = n;
     }
-    size_t size_D = n;
-    size_t size_E = n - 1;
-    size_t size_V = size_t(ldv)*nv;
-    size_t size_U = size_t(ldu)*n;
-    size_t size_C = size_t(ldc)*nc;
-    size_t size_VT = size_t(ldvT)*nvT;
-    size_t size_UT = size_t(lduT)*n;
-    size_t size_CT = size_t(ldcT)*ncT;
+    // E, V, U, and C could have size zero in cases that are not quick-return or invalid cases
+    // setting the size to one to avoid possible memory-access errors in the rest of the unit test
+    size_t size_D = size_t(n);
+    size_t size_E = n > 1 ? size_t(n - 1) : 1;
+    size_t size_V = max(size_t(ldv)*nv, 1);
+    size_t size_U = max(size_t(ldu)*n, 1);
+    size_t size_C = max(size_t(ldc)*nc, 1);
+    size_t size_VT = max(size_t(ldvT)*nvT, 1);
+    size_t size_UT = max(size_t(lduT)*n, 1);
+    size_t size_CT = max(size_t(ldcT)*ncT, 1);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0, max_errorv = 0 ;
 
     // check invalid sizes 
