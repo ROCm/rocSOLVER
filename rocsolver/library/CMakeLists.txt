@@ -128,7 +128,8 @@ add_subdirectory( src )
 # endif( )
 
 # Package specific CPACK vars
-if( HIP_RUNTIME STREQUAL "ROCclr")
+# Remove ROCclr when name stabilizes to rocclr
+if( HIP_RUNTIME STREQUAL "ROCclr" OR HIP_RUNTIME STREQUAL "rocclr" )
   set( RPM_REQUIREMENTS "hip-rocclr >= 3.5.0" )
   set( CPACK_DEBIAN_PACKAGE_DEPENDS "hip-rocclr (>= 3.5.0)" )
 elseif( HIP_RUNTIME STREQUAL "cuda")
