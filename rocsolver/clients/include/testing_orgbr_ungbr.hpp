@@ -239,9 +239,12 @@ void testing_orgbr_ungbr(Arguments argus)
     // N/A
 
     // determine sizes
+    // size_P could be zero in test cases that are not quick-return or invalid cases
+    // setting it to one to avoid possible memory access errors in the rest of the unit test
     bool row = (storev == rocblas_row_wise);
     size_t size_A = row ? size_t(lda)*n : size_t(lda)*max(n,k);
-    size_t size_P = row ? size_t(min(n,k)) : size_t(min(m,k));
+    size_t size_P = row ? max(size_t(min(n,k)), 1) : max(size_t(min(m,k)), 1);
+
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_Ar = (argus.unit_check || argus.norm_check) ? size_A : 0;
