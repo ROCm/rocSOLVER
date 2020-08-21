@@ -27,7 +27,7 @@ rocblas_status rocsolver_gelq2_impl(rocblas_handle handle, const rocblas_int m,
     size_t size_1;  //size of constants
     size_t size_2;  //size of workspace
     size_t size_3;  //size of array of pointers to workspace
-    size_t size_4;
+    size_t size_4;  //size of diagonal entry cache
     rocsolver_gelq2_getMemorySize<T,false>(m,n,batch_count,&size_1,&size_2,&size_3,&size_4);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE

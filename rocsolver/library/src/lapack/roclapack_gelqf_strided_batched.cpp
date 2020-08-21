@@ -22,9 +22,9 @@ rocblas_status rocsolver_gelqf_strided_batched_impl(rocblas_handle handle, const
     // memory managment
     size_t size_1;  //size of constants
     size_t size_2;  //size of workspace
-    size_t size_3;
-    size_t size_4;
-    size_t size_5;
+    size_t size_3;  //size of array of pointers to workspace
+    size_t size_4;  //size of diagonal entry cache
+    size_t size_5;  //size of triangular factor for block reflector
     rocsolver_gelqf_getMemorySize<T,false>(m,n,batch_count,&size_1,&size_2,&size_3,&size_4,&size_5);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
