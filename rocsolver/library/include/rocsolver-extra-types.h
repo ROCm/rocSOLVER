@@ -25,4 +25,17 @@ typedef enum rocblas_storev_ {
       182, /**< Householder vectors are stored in the rows of a matrix. */
 } rocblas_storev;
 
+/*! \brief Used to specify how the singular vectors are to be computed and stored 
+ ********************************************************************************/ 
+typedef enum rocblas_svect_
+{
+    rocblas_svect_all = 191, /**< The entire associated orthogonal/unitary matrix is computed. */
+    rocblas_svect_singular = 192, /**< Only the singular vectors are computed and stored in output array. */
+    rocblas_svect_overwrite = 193, /**< Only the singular vectors are computed and overwrite the input matrix. */
+    rocblas_svect_none = 194, /**< No singular vectors are computed. */
+} rocblas_svect;
+
+
+
+
 #endif

@@ -42,6 +42,8 @@ public:
   char diag_option = 'N';
   char direct_option = 'F';
   char storev = 'C';
+  char left_svect = 'N';  
+  char right_svect = 'N';  
 
   rocblas_int apiCallCount = 1;
   rocblas_int batch_count = 5;
@@ -51,7 +53,8 @@ public:
   rocblas_int bsb =
       128 * 128; //  bsb > transB_option == 'N' ? ldb * N : ldb * K
   rocblas_int bsc = 128 * 128; //  bsc >= ldc * N
-  rocblas_int bsp = 128;       //  bsp >= min(M,N)
+  rocblas_int bsp = 128;  //  bsp >= min(M,N)
+  rocblas_int bs5 = 128;
 
   rocblas_int norm_check = 0;
   rocblas_int unit_check = 1;
@@ -94,6 +97,8 @@ public:
     diag_option = rhs.diag_option;
     direct_option = rhs.direct_option;
     storev = rhs.storev;
+    left_svect = rhs.left_svect;
+    right_svect = rhs.right_svect;
 
     apiCallCount = rhs.apiCallCount;
     batch_count = rhs.batch_count;
@@ -102,7 +107,8 @@ public:
     bsb = rhs.bsb;
     bsc = rhs.bsc;
     bsp = rhs.bsp;
-
+    bs5 = rhs.bs5;
+    
     norm_check = rhs.norm_check;
     unit_check = rhs.unit_check;
     timing = rhs.timing;

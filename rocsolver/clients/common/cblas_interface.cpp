@@ -231,159 +231,72 @@ void clacgv_(int *n, rocblas_float_complex *x, int *incx);
 void zlacgv_(int *n, rocblas_double_complex *x, int *incx);
 
 void slaswp_(int *n, float *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
-void dlaswp_(int *n, double *A, int *lda, int *k1, int *k2, int *ipiv,
-             int *inc);
-void claswp_(int *n, rocblas_float_complex *A, int *lda, int *k1, int *k2,
-             int *ipiv, int *inc);
-void zlaswp_(int *n, rocblas_double_complex *A, int *lda, int *k1, int *k2,
-             int *ipiv, int *inc);
+void dlaswp_(int *n, double *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
+void claswp_(int *n, rocblas_float_complex *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
+void zlaswp_(int *n, rocblas_double_complex *A, int *lda, int *k1, int *k2, int *ipiv, int *inc);
 
-void sorg2r_(int *m, int *n, int *k, float *A, int *lda, float *ipiv,
-             float *work, int *info);
-void dorg2r_(int *m, int *n, int *k, double *A, int *lda, double *ipiv,
-             double *work, int *info);
-void cung2r_(int *m, int *n, int *k, rocblas_float_complex *A, int *lda,
-             rocblas_float_complex *ipiv, rocblas_float_complex *work,
-             int *info);
-void zung2r_(int *m, int *n, int *k, rocblas_double_complex *A, int *lda,
-             rocblas_double_complex *ipiv, rocblas_double_complex *work,
-             int *info);
-void sorgqr_(int *m, int *n, int *k, float *A, int *lda, float *ipiv,
-             float *work, int *lwork, int *info);
-void dorgqr_(int *m, int *n, int *k, double *A, int *lda, double *ipiv,
-             double *work, int *lwork, int *info);
-void cungqr_(int *m, int *n, int *k, rocblas_float_complex *A, int *lda,
-             rocblas_float_complex *ipiv, rocblas_float_complex *work,
-             int *lwork, int *info);
-void zungqr_(int *m, int *n, int *k, rocblas_double_complex *A, int *lda,
-             rocblas_double_complex *ipiv, rocblas_double_complex *work,
-             int *lwork, int *info);
+void sorg2r_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *info);
+void dorg2r_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *info);
+void cung2r_(int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *info);
+void zung2r_(int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *info);
+void sorgqr_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
+void dorgqr_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
+void cungqr_(int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *lwork, int *info);
+void zungqr_(int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *lwork, int *info);
 
-void sorm2r_(char *side, char *trans, int *m, int *n, int *k, float *A,
-             int *lda, float *ipiv, float *C, int *ldc, float *work, int *info);
-void dorm2r_(char *side, char *trans, int *m, int *n, int *k, double *A,
-             int *lda, double *ipiv, double *C, int *ldc, double *work,
-             int *info);
-void cunm2r_(char *side, char *trans, int *m, int *n, int *k,
-             rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv,
-             rocblas_float_complex *C, int *ldc, rocblas_float_complex *work,
-             int *info);
-void zunm2r_(char *side, char *trans, int *m, int *n, int *k,
-             rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv,
-             rocblas_double_complex *C, int *ldc, rocblas_double_complex *work,
-             int *info);
-void sormqr_(char *side, char *trans, int *m, int *n, int *k, float *A,
-             int *lda, float *ipiv, float *C, int *ldc, float *work, int *sizeW,
-             int *info);
-void dormqr_(char *side, char *trans, int *m, int *n, int *k, double *A,
-             int *lda, double *ipiv, double *C, int *ldc, double *work,
-             int *sizeW, int *info);
-void cunmqr_(char *side, char *trans, int *m, int *n, int *k,
-             rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv,
-             rocblas_float_complex *C, int *ldc, rocblas_float_complex *work,
-             int *sizeW, int *info);
-void zunmqr_(char *side, char *trans, int *m, int *n, int *k,
-             rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv,
-             rocblas_double_complex *C, int *ldc, rocblas_double_complex *work,
-             int *sizeW, int *info);
+void sorm2r_(char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *info);
+void dorm2r_(char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *info);
+void cunm2r_(char *side, char *trans, int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *C, int *ldc, rocblas_float_complex *work, int *info);
+void zunm2r_(char *side, char *trans, int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *C, int *ldc, rocblas_double_complex *work, int *info);
+void sormqr_(char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *sizeW, int *info);
+void dormqr_(char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *sizeW, int *info);
+void cunmqr_(char *side, char *trans, int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *C, int *ldc, rocblas_float_complex *work, int *sizeW, int *info);
+void zunmqr_(char *side, char *trans, int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *C, int *ldc, rocblas_double_complex *work, int *sizeW, int *info);
 
-void sorml2_(char *side, char *trans, int *m, int *n, int *k, float *A,
-             int *lda, float *ipiv, float *C, int *ldc, float *work, int *info);
-void dorml2_(char *side, char *trans, int *m, int *n, int *k, double *A,
-             int *lda, double *ipiv, double *C, int *ldc, double *work,
-             int *info);
-void cunml2_(char *side, char *trans, int *m, int *n, int *k,
-             rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv,
-             rocblas_float_complex *C, int *ldc, rocblas_float_complex *work,
-             int *info);
-void zunml2_(char *side, char *trans, int *m, int *n, int *k,
-             rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv,
-             rocblas_double_complex *C, int *ldc, rocblas_double_complex *work,
-             int *info);
-void sormlq_(char *side, char *trans, int *m, int *n, int *k, float *A,
-             int *lda, float *ipiv, float *C, int *ldc, float *work, int *sizeW,
-             int *info);
-void dormlq_(char *side, char *trans, int *m, int *n, int *k, double *A,
-             int *lda, double *ipiv, double *C, int *ldc, double *work,
-             int *sizeW, int *info);
-void cunmlq_(char *side, char *trans, int *m, int *n, int *k,
-             rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv,
-             rocblas_float_complex *C, int *ldc, rocblas_float_complex *work,
-             int *sizeW, int *info);
-void zunmlq_(char *side, char *trans, int *m, int *n, int *k,
-             rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv,
-             rocblas_double_complex *C, int *ldc, rocblas_double_complex *work,
-             int *sizeW, int *info);
+void sorml2_(char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *info);
+void dorml2_(char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *info);
+void cunml2_(char *side, char *trans, int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *C, int *ldc, rocblas_float_complex *work, int *info);
+void zunml2_(char *side, char *trans, int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *C, int *ldc, rocblas_double_complex *work, int *info);
+void sormlq_(char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *sizeW, int *info);
+void dormlq_(char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *sizeW, int *info);
+void cunmlq_(char *side, char *trans, int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *C, int *ldc, rocblas_float_complex *work, int *sizeW, int *info);
+void zunmlq_(char *side, char *trans, int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *C, int *ldc, rocblas_double_complex *work, int *sizeW, int *info);
 
-void sorgl2_(int *m, int *n, int *k, float *A, int *lda, float *ipiv,
-             float *work, int *info);
-void dorgl2_(int *m, int *n, int *k, double *A, int *lda, double *ipiv,
-             double *work, int *info);
-void cungl2_(int *m, int *n, int *k, rocblas_float_complex *A, int *lda,
-             rocblas_float_complex *ipiv, rocblas_float_complex *work,
-             int *info);
-void zungl2_(int *m, int *n, int *k, rocblas_double_complex *A, int *lda,
-             rocblas_double_complex *ipiv, rocblas_double_complex *work,
-             int *info);
-void sorglq_(int *m, int *n, int *k, float *A, int *lda, float *ipiv,
-             float *work, int *lwork, int *info);
-void dorglq_(int *m, int *n, int *k, double *A, int *lda, double *ipiv,
-             double *work, int *lwork, int *info);
-void cunglq_(int *m, int *n, int *k, rocblas_float_complex *A, int *lda,
-             rocblas_float_complex *ipiv, rocblas_float_complex *work,
-             int *lwork, int *info);
-void zunglq_(int *m, int *n, int *k, rocblas_double_complex *A, int *lda,
-             rocblas_double_complex *ipiv, rocblas_double_complex *work,
-             int *lwork, int *info);
+void sorgl2_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *info);
+void dorgl2_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *info);
+void cungl2_(int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *info);
+void zungl2_(int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *info);
+void sorglq_(int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *work, int *lwork, int *info);
+void dorglq_(int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *work, int *lwork, int *info);
+void cunglq_(int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *work, int *lwork, int *info);
+void zunglq_(int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *work, int *lwork, int *info);
 
-void sorgbr_(char *vect, int *m, int *n, int *k, float *A, int *lda,
-             float *Ipiv, float *work, int *size_w, int *info);
-void dorgbr_(char *vect, int *m, int *n, int *k, double *A, int *lda,
-             double *Ipiv, double *work, int *size_w, int *info);
-void cungbr_(char *vect, int *m, int *n, int *k, rocblas_float_complex *A,
-             int *lda, rocblas_float_complex *Ipiv, rocblas_float_complex *work,
-             int *size_w, int *info);
-void zungbr_(char *vect, int *m, int *n, int *k, rocblas_double_complex *A,
-             int *lda, rocblas_double_complex *Ipiv,
-             rocblas_double_complex *work, int *size_w, int *info);
-void sormbr_(char *vect, char *side, char *trans, int *m, int *n, int *k,
-             float *A, int *lda, float *ipiv, float *C, int *ldc, float *work,
-             int *sizeW, int *info);
-void dormbr_(char *vect, char *side, char *trans, int *m, int *n, int *k,
-             double *A, int *lda, double *ipiv, double *C, int *ldc,
-             double *work, int *sizeW, int *info);
-void cunmbr_(char *vect, char *side, char *trans, int *m, int *n, int *k,
-             rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv,
-             rocblas_float_complex *C, int *ldc, rocblas_float_complex *work,
-             int *sizeW, int *info);
-void zunmbr_(char *vect, char *side, char *trans, int *m, int *n, int *k,
-             rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv,
-             rocblas_double_complex *C, int *ldc, rocblas_double_complex *work,
-             int *sizeW, int *info);
+void sorgbr_(char *vect, int *m, int *n, int *k, float *A, int *lda, float *Ipiv, float *work, int *size_w, int *info);
+void dorgbr_(char *vect, int *m, int *n, int *k, double *A, int *lda, double *Ipiv, double *work, int *size_w, int *info);
+void cungbr_(char *vect, int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *Ipiv, rocblas_float_complex *work, int *size_w, int *info);
+void zungbr_(char *vect, int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *Ipiv, rocblas_double_complex *work, int *size_w, int *info);
+void sormbr_(char *vect, char *side, char *trans, int *m, int *n, int *k, float *A, int *lda, float *ipiv, float *C, int *ldc, float *work, int *sizeW, int *info);
+void dormbr_(char *vect, char *side, char *trans, int *m, int *n, int *k, double *A, int *lda, double *ipiv, double *C, int *ldc, double *work, int *sizeW, int *info);
+void cunmbr_(char *vect, char *side, char *trans, int *m, int *n, int *k, rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv, rocblas_float_complex *C, int *ldc, rocblas_float_complex *work, int *sizeW, int *info);
+void zunmbr_(char *vect, char *side, char *trans, int *m, int *n, int *k, rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv, rocblas_double_complex *C, int *ldc, rocblas_double_complex *work, int *sizeW, int *info);
 
-void sgebd2_(int *m, int *n, float *A, int *lda, float *D, float *E,
-             float *tauq, float *taup, float *work, int *info);
-void dgebd2_(int *m, int *n, double *A, int *lda, double *D, double *E,
-             double *tauq, double *taup, double *work, int *info);
-void cgebd2_(int *m, int *n, rocblas_float_complex *A, int *lda, float *D,
-             float *E, rocblas_float_complex *tauq, rocblas_float_complex *taup,
-             rocblas_float_complex *work, int *info);
-void zgebd2_(int *m, int *n, rocblas_double_complex *A, int *lda, double *D,
-             double *E, rocblas_double_complex *tauq,
-             rocblas_double_complex *taup, rocblas_double_complex *work,
-             int *info);
+void sgebd2_(int *m, int *n, float *A, int *lda, float *D, float *E, float *tauq, float *taup, float *work, int *info);
+void dgebd2_(int *m, int *n, double *A, int *lda, double *D, double *E, double *tauq, double *taup, double *work, int *info);
+void cgebd2_(int *m, int *n, rocblas_float_complex *A, int *lda, float *D, float *E, rocblas_float_complex *tauq, rocblas_float_complex *taup, rocblas_float_complex *work, int *info);
+void zgebd2_(int *m, int *n, rocblas_double_complex *A, int *lda, double *D, double *E, rocblas_double_complex *tauq, rocblas_double_complex *taup, rocblas_double_complex *work, int *info);
 
-void sgebrd_(int *m, int *n, float *A, int *lda, float *D, float *E,
-             float *tauq, float *taup, float *work, int *size_w, int *info);
-void dgebrd_(int *m, int *n, double *A, int *lda, double *D, double *E,
-             double *tauq, double *taup, double *work, int *size_w, int *info);
-void cgebrd_(int *m, int *n, rocblas_float_complex *A, int *lda, float *D,
-             float *E, rocblas_float_complex *tauq, rocblas_float_complex *taup,
-             rocblas_float_complex *work, int *size_w, int *info);
-void zgebrd_(int *m, int *n, rocblas_double_complex *A, int *lda, double *D,
-             double *E, rocblas_double_complex *tauq,
-             rocblas_double_complex *taup, rocblas_double_complex *work,
-             int *size_w, int *info);
+void sgebrd_(int *m, int *n, float *A, int *lda, float *D, float *E, float *tauq, float *taup, float *work, int *size_w, int *info);
+void dgebrd_(int *m, int *n, double *A, int *lda, double *D, double *E, double *tauq, double *taup, double *work, int *size_w, int *info);
+void cgebrd_(int *m, int *n, rocblas_float_complex *A, int *lda, float *D, float *E, rocblas_float_complex *tauq, rocblas_float_complex *taup, rocblas_float_complex *work, int *size_w, int *info);
+void zgebrd_(int *m, int *n, rocblas_double_complex *A, int *lda, double *D, double *E, rocblas_double_complex *tauq, rocblas_double_complex *taup, rocblas_double_complex *work, int *size_w, int *info);
+
+void sgesvd_(char *jobu, char *jobv, int *m, int *n, float *A, int *lda, float *S, float *U, int *ldu, float *V, int *ldv, float *work, int *lwork, float *E, int *info); 
+void dgesvd_(char *jobu, char *jobv, int *m, int *n, double *A, int *lda, double *S, double *U, int *ldu, double *V, int *ldv, double *work, int *lwork, double *E, int *info); 
+void cgesvd_(char *jobu, char *jobv, int *m, int *n, rocblas_float_complex *A, int *lda, float *S, rocblas_float_complex *U, 
+            int *ldu, rocblas_float_complex *V, int *ldv, rocblas_float_complex *work, int *lwork, float *E, int *info); 
+void zgesvd_(char *jobu, char *jobv, int *m, int *n, rocblas_double_complex *A, int *lda, double *S, rocblas_double_complex *U, 
+            int *ldu, rocblas_double_complex *V, int *ldv, rocblas_double_complex *work, int *lwork, double *E, int *info); 
+>>>>>>> add empty gesvd and unit test
 
 #ifdef __cplusplus
 }
@@ -651,7 +564,47 @@ void cblas_bdsqr(rocblas_fill uplo, rocblas_int n, rocblas_int nv,
           info);
 }
 
-// labrd
+
+//gesvd
+template <>
+void cblas_gesvd(rocblas_svect leftv, rocblas_svect rightv, rocblas_int m, rocblas_int n, float* A, rocblas_int lda, 
+                float* S, float* U, rocblas_int ldu, float* V, rocblas_int ldv, float* work, rocblas_int lwork, float* E, rocblas_int* info)
+{
+    char jobu = rocblas2char_svect(leftv);
+    char jobv = rocblas2char_svect(rightv);
+    sgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, E, info); 
+}
+
+template <>
+void cblas_gesvd(rocblas_svect leftv, rocblas_svect rightv, rocblas_int m, rocblas_int n, double* A, rocblas_int lda, 
+                double* S, double* U, rocblas_int ldu, double* V, rocblas_int ldv, double* work, rocblas_int lwork, double* E, rocblas_int* info)
+{
+    char jobu = rocblas2char_svect(leftv);
+    char jobv = rocblas2char_svect(rightv);
+    dgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, E, info); 
+}
+
+template <>
+void cblas_gesvd(rocblas_svect leftv, rocblas_svect rightv, rocblas_int m, rocblas_int n, rocblas_float_complex* A, rocblas_int lda, 
+                float* S, rocblas_float_complex* U, rocblas_int ldu, rocblas_float_complex* V, rocblas_int ldv, rocblas_float_complex* work, rocblas_int lwork, float* E, rocblas_int* info)
+{
+    char jobu = rocblas2char_svect(leftv);
+    char jobv = rocblas2char_svect(rightv);
+    cgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, E, info); 
+}
+
+template <>
+void cblas_gesvd(rocblas_svect leftv, rocblas_svect rightv, rocblas_int m, rocblas_int n, rocblas_double_complex* A, rocblas_int lda, 
+                double* S, rocblas_double_complex* U, rocblas_int ldu, rocblas_double_complex* V, rocblas_int ldv, rocblas_double_complex* work, rocblas_int lwork, double* E, rocblas_int* info)
+{
+    char jobu = rocblas2char_svect(leftv);
+    char jobv = rocblas2char_svect(rightv);
+    zgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, E, info); 
+}
+
+
+
+//labrd
 template <>
 void cblas_labrd<float, float>(rocblas_int m, rocblas_int n, rocblas_int nb,
                                float *A, rocblas_int lda, float *D, float *E,
