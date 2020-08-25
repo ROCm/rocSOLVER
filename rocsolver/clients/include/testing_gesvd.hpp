@@ -84,16 +84,16 @@ void testing_gesvd_bad_arg()
     rocblas_local_handle handle;
     rocblas_svect left_svect = rocblas_svect_all;
     rocblas_svect right_svect = rocblas_svect_all;
-    rocblas_int m = 1;
-    rocblas_int n = 1;
-    rocblas_int lda = 1;
-    rocblas_int ldu = 1;
-    rocblas_int ldv = 1;
-    rocblas_stride stA = 1;
-    rocblas_stride stS = 1;
-    rocblas_stride stU = 1;
-    rocblas_stride stV = 1;
-    rocblas_stride stE = 1;
+    rocblas_int m = 2;
+    rocblas_int n = 2;
+    rocblas_int lda = 2;
+    rocblas_int ldu = 2;
+    rocblas_int ldv = 2;
+    rocblas_stride stA = 2;
+    rocblas_stride stS = 2;
+    rocblas_stride stU = 2;
+    rocblas_stride stV = 2;
+    rocblas_stride stE = 2;
     rocblas_int bc = 1;
 
     if (BATCHED) {
@@ -210,21 +210,33 @@ void gesvd_getError(const rocblas_handle handle,
                         Th &hERes,
                         Ih &hinfo,
                         double *max_err, double *max_errv)
-{   
-    std::vector<T> hWork(3*max(m,n));
+{  
+    rocblas_int lwork = 5 * max(m,n); 
+    std::vector<T> hWork(lwork);
     std::vector<T> A(lda*n*bc);
     
     // input data initialization
     gesvd_initData<true,true,T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A);
+/*rocblas_cout<<std::endl;
+for (int i=0;i<m;++i) {
+    for (int j=0;j<n;++j)
+        rocblas_cout << hA[0][i+j*lda] << " ";
+    rocblas_cout<<std::endl;
+}
+rocblas_cout<<std::endl;
+for (int i=0;i<m;++i) {
+    for (int j=0;j<n;++j)
+        rocblas_cout << A[i+j*lda] << " ";
+    rocblas_cout<<std::endl;
+}*/
 
     // execute computations
     // CPU lapack
     for (rocblas_int b = 0; b < bc; ++b) 
-        cblas_gesvd<T>(left_svect,right_svect,m,n,hA[b],lda,hS[b],hU[b],ldu,hV[b],ldv,hWork.data(),3*max(m,n),hE[b],hinfo[b]);
+        cblas_gesvd<T>(left_svect,right_svect,m,n,hA[b],lda,hS[b],hU[b],ldu,hV[b],ldv,hWork.data(),lwork,hE[b],hinfo[b]);
     
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_gesvd(STRIDED,handle,left_svect,right_svect,m,n,dA.data(),lda,stA,dS.data(),stS,dU.data(),ldu,stU,dV.data(),ldv,stV,dE.data(),stE,dinfo.data(),bc));
-    
     CHECK_HIP_ERROR(hSRes.transfer_from(dS));
     CHECK_HIP_ERROR(hERes.transfer_from(dE));
     CHECK_HIP_ERROR(hV.transfer_from(dV));
@@ -244,10 +256,26 @@ void gesvd_getError(const rocblas_handle handle,
         for (rocblas_int b = 0; b < bc; ++b) {
             for (rocblas_int i = 0; i < min(m,n); i++) {
                 for (rocblas_int j = 0; j < n; j++)
-                    hV[b][i+j*ldu] = hA[b][i+j*lda]; 
+                    hV[b][i+j*ldv] = hA[b][i+j*lda]; 
             }
         }
     }
+/*rocblas_cout<<std::endl;
+for (int i=0;i<min(m,n);++i) {
+    rocblas_cout << hS[0][i] << " ";
+}
+rocblas_cout<<std::endl;
+for (int i=0;i<m;++i) {
+    for (int j=0;j<m;++j)
+        rocblas_cout << hU[0][i+j*ldu] << " ";
+    rocblas_cout<<std::endl;
+}
+rocblas_cout<<std::endl;
+for (int i=0;i<n;++i) {
+    for (int j=0;j<n;++j)
+        rocblas_cout << hV[0][i+j*ldv] << " ";
+    rocblas_cout<<std::endl;
+}*/
 
     double err;
     T tmp;
@@ -270,20 +298,29 @@ void gesvd_getError(const rocblas_handle handle,
     
         else if (left_svect != rocblas_svect_none || right_svect != rocblas_svect_none) {
             err = 0;
+            
             // check singular vectors implicitely (A*v_k = s_k*u_k) 
             for (rocblas_int k = 0; k < min(m,n); ++k) {
                 for (rocblas_int i = 0; i < m; ++i) {
                     tmp = 0;
-                    for (rocblas_int j = 0; j < n; ++j)
-                        tmp += A[b*lda*n + i + j*lda] * hV[b][k + j*ldv];                        
+                    for (rocblas_int j = 0; j < n; ++j) 
+                        tmp += A[b*lda*n + i + j*lda] * sconj(hV[b][k + j*ldv]);
                     tmp -= hSRes[b][k] * hU[b][i + k*ldu];
                     err += std::abs(tmp) * std::abs(tmp);              
                 }
             }
-            err = std::sqrt(err);
+            err = std::sqrt(err) / double(snorm('F', m, n, A.data()+b*lda*n, lda));
             *max_errv = err > *max_errv ? err : *max_errv;
         }
-    } 
+    }
+ 
+/*rocblas_cout<<std::endl;
+for (int i=0;i<n;++i) {
+    for (int j=0;j<n;++j)
+        rocblas_cout << hA[0][i+j*lda] << " ";
+    rocblas_cout<<std::endl;
+}*/
+
 }
 
 template <bool STRIDED, typename T, typename Wd, typename Td, typename Ud, typename Id, typename Wh, typename Th, typename Uh, typename Ih>
@@ -318,7 +355,8 @@ void gesvd_getPerfData(const rocblas_handle handle,
                         const rocblas_int hot_calls,
                         const bool perf)
 {
-    std::vector<T> hWork(3*max(m,n));
+    rocblas_int lwork = 5 * max(m,n);
+    std::vector<T> hWork(lwork);
     std::vector<T> A;
 
     if (!perf)
@@ -328,7 +366,7 @@ void gesvd_getPerfData(const rocblas_handle handle,
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         for (rocblas_int b = 0; b < bc; ++b) 
-            cblas_gesvd<T>(left_svect,right_svect,m,n,hA[b],lda,hS[b],hU[b],ldu,hV[b],ldv,hWork.data(),3*max(m,n),hE[b],hinfo[b]);
+            cblas_gesvd<T>(left_svect,right_svect,m,n,hA[b],lda,hS[b],hU[b],ldu,hV[b],ldv,hWork.data(),lwork,hE[b],hinfo[b]);
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
     
@@ -395,7 +433,7 @@ void testing_gesvd(Arguments argus)
 
         return;
     }
-
+    
     // determine sizes
     // (TESTING OF SINGULAR VECTORS IS DONE IMPLICITLY (NOT EXPLICITLY COMPARING WITH LAPACK)
     //  SO, WE ALWAYS NEED TO COMPUTE THE SAME NUMBER OF ELEMENTS OF THE RIGHT AND LEFT VECTORS)
@@ -410,7 +448,9 @@ void testing_gesvd(Arguments argus)
     }
     size_t size_A = size_t(lda) * n;
     size_t size_S = size_t(min(m,n));
+////////////////////////////////////
     size_t size_E = 5*size_S;
+////////////////////////////////////////
     size_t size_V = size_t(ldv)*n;
     size_t size_U = size_t(ldu)*m;
     size_t size_VT = size_t(ldvT)*n;
@@ -438,7 +478,7 @@ void testing_gesvd(Arguments argus)
 
         return;
     }
-
+    
     if (BATCHED) {
         // memory allocations
         host_batch_vector<T> hA(size_A,1,bc);
@@ -519,7 +559,7 @@ void testing_gesvd(Arguments argus)
     
             return;
         }
-    
+        
         // check computations
         if (argus.unit_check || argus.norm_check) {
             host_strided_batch_vector<S> hSRes(size_S,1,stS,bc);
@@ -535,7 +575,7 @@ void testing_gesvd(Arguments argus)
                                       dV,ldvT,stVT,dE,stE,dinfo,bc,hA,hS,hSRes,hU,hV,hE,hERes,hinfo, 
                                       &max_error, &max_errorv);
         }
-    
+        
         // collect performance data
         if (argus.timing) {
             host_strided_batch_vector<T> hV(size_V,1,stV,bc);
@@ -552,12 +592,10 @@ void testing_gesvd(Arguments argus)
     }
 
     // validate results for rocsolver-test
-    // using min(m,n) * machine_precision as tolerance for the singular values
-    // and min(m,n)^2 * machine_precision for the singular vectors
+    // using min(m,n) * machine_precision as tolerance
     if (argus.unit_check) {
-        rocblas_int k = min(m,n);
-        rocsolver_test_check<T>(max_error,k);     
-        if (svects) rocsolver_test_check<T>(max_errorv,k*k);
+        rocsolver_test_check<T>(max_error,min(m,n));     
+        if (svects) rocsolver_test_check<T>(max_errorv,min(m,n));
     }
 
     // output results for rocsolver-bench

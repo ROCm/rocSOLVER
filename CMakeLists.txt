@@ -25,6 +25,9 @@ if ( NOT DEFINED CMAKE_Fortran_COMPILER AND NOT DEFINED ENV{FC} )
   set( CMAKE_Fortran_COMPILER  "gfortran" )
 endif()
 
+unset(ENV{ROCM_BUILD_ID})
+add_compile_options( -Wno-unused-command-line-argument )
+
 project( rocsolver LANGUAGES CXX )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

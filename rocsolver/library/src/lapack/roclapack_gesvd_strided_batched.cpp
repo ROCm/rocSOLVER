@@ -32,7 +32,7 @@ rocblas_status rocsolver_gesvd_strided_batched_impl(rocblas_handle handle,
     //logging is missing ???    
     
     // argument checking
-    rocblas_status st = rocsolver_gesvd_argCheck(left_svect,right_svect,m,n,A,lda,S,U,ldu,V,ldv,E,info);
+    rocblas_status st = rocsolver_gesvd_argCheck(left_svect,right_svect,m,n,A,lda,S,U,ldu,V,ldv,E,info,batch_count);
     if (st != rocblas_status_continue)
         return st;
 

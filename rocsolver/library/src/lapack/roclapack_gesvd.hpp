@@ -49,7 +49,8 @@ rocblas_status rocsolver_gesvd_argCheck(const rocblas_svect left_svect,
 
     // 1. invalid/non-supported values
     if ((left_svect != rocblas_svect_all && left_svect != rocblas_svect_singular && left_svect != rocblas_svect_overwrite && left_svect != rocblas_svect_none) ||
-       (right_svect != rocblas_svect_all && right_svect != rocblas_svect_singular && right_svect != rocblas_svect_overwrite && right_svect != rocblas_svect_none))
+       (right_svect != rocblas_svect_all && right_svect != rocblas_svect_singular && right_svect != rocblas_svect_overwrite && right_svect != rocblas_svect_none) ||
+       (left_svect == rocblas_svect_overwrite && right_svect == rocblas_svect_overwrite))
         return rocblas_status_invalid_value;
 
     // 2. invalid size
