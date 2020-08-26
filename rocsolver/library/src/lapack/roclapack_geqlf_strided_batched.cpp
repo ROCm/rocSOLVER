@@ -2,10 +2,10 @@
  * Copyright 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "roclapack_geqrf.hpp"
+#include "roclapack_geqlf.hpp"
 
 template <typename T, typename U>
-rocblas_status rocsolver_geqrf_strided_batched_impl(rocblas_handle handle, const rocblas_int m,
+rocblas_status rocsolver_geqlf_strided_batched_impl(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int lda, const rocblas_stride strideA,
                                         T* ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
 { 
@@ -15,7 +15,7 @@ rocblas_status rocsolver_geqrf_strided_batched_impl(rocblas_handle handle, const
     //logging is missing ???    
     
     // argument checking
-    rocblas_status st = rocsolver_geqr2_geqrf_argCheck(m,n,lda,A,ipiv,batch_count);
+    rocblas_status st = rocsolver_geql2_geqlf_argCheck(m,n,lda,A,ipiv,batch_count);
     if (st != rocblas_status_continue)
         return st;
 
@@ -25,7 +25,7 @@ rocblas_status rocsolver_geqrf_strided_batched_impl(rocblas_handle handle, const
     size_t size_3;  //size of array of pointers to workspace
     size_t size_4;  //size of diagonal entry cache
     size_t size_5;  //size of triangular factor for block reflector
-    rocsolver_geqrf_getMemorySize<T,false>(m,n,batch_count,&size_1,&size_2,&size_3,&size_4,&size_5);
+    rocsolver_geqlf_getMemorySize<T,false>(m,n,batch_count,&size_1,&size_2,&size_3,&size_4,&size_5);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
     void *scalars, *work, *workArr, *diag, *trfact;
@@ -44,7 +44,7 @@ rocblas_status rocsolver_geqrf_strided_batched_impl(rocblas_handle handle, const
 
     // execution
     rocblas_status status =
-           rocsolver_geqrf_template<false,true,T>(handle,m,n,
+           rocsolver_geqlf_template<false,true,T>(handle,m,n,
                                                 A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
                                                 lda,strideA,
                                                 ipiv,
@@ -73,28 +73,28 @@ rocblas_status rocsolver_geqrf_strided_batched_impl(rocblas_handle handle, const
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf_strided_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqlf_strided_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
                  const rocblas_int lda, const rocblas_stride strideA, float *ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
 {
-    return rocsolver_geqrf_strided_batched_impl<float>(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
+    return rocsolver_geqlf_strided_batched_impl<float>(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf_strided_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqlf_strided_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
                  const rocblas_int lda, const rocblas_stride strideA, double *ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
 {
-    return rocsolver_geqrf_strided_batched_impl<double>(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
+    return rocsolver_geqlf_strided_batched_impl<double>(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf_strided_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_float_complex *A,
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqlf_strided_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_float_complex *A,
                  const rocblas_int lda, const rocblas_stride strideA, rocblas_float_complex *ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
 {
-    return rocsolver_geqrf_strided_batched_impl<rocblas_float_complex>(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
+    return rocsolver_geqlf_strided_batched_impl<rocblas_float_complex>(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_double_complex *A,
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_strided_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_double_complex *A,
                  const rocblas_int lda, const rocblas_stride strideA, rocblas_double_complex *ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
 {
-    return rocsolver_geqrf_strided_batched_impl<rocblas_double_complex>(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
+    return rocsolver_geqlf_strided_batched_impl<rocblas_double_complex>(handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
 }
 
 } //extern C

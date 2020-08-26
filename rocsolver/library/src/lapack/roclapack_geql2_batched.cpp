@@ -3,10 +3,10 @@
  * ************************************************************************ */
 
 #define batched
-#include "roclapack_geqr2.hpp"
+#include "roclapack_geql2.hpp"
 
 template <typename T, typename U>
-rocblas_status rocsolver_geqr2_batched_impl(rocblas_handle handle, const rocblas_int m,
+rocblas_status rocsolver_geql2_batched_impl(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int lda,
                                         T* ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
 { 
@@ -16,7 +16,7 @@ rocblas_status rocsolver_geqr2_batched_impl(rocblas_handle handle, const rocblas
     //logging is missing ???    
     
     // argument checking
-    rocblas_status st = rocsolver_geqr2_geqrf_argCheck(m,n,lda,A,ipiv,batch_count);
+    rocblas_status st = rocsolver_geql2_geqlf_argCheck(m,n,lda,A,ipiv,batch_count);
     if (st != rocblas_status_continue)
         return st;
 
@@ -27,7 +27,7 @@ rocblas_status rocsolver_geqr2_batched_impl(rocblas_handle handle, const rocblas
     size_t size_2;  //size of workspace
     size_t size_3;  //size of array of pointers to workspace
     size_t size_4;  //size of diagonal entry cache
-    rocsolver_geqr2_getMemorySize<T,true>(m,n,batch_count,&size_1,&size_2,&size_3,&size_4);
+    rocsolver_geql2_getMemorySize<T,true>(m,n,batch_count,&size_1,&size_2,&size_3,&size_4);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
     void *scalars, *work, *workArr, *diag;
@@ -45,7 +45,7 @@ rocblas_status rocsolver_geqr2_batched_impl(rocblas_handle handle, const rocblas
 
     // execution
     rocblas_status status =
-           rocsolver_geqr2_template<T>(handle,m,n,
+           rocsolver_geql2_template<T>(handle,m,n,
                                     A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
                                     lda,strideA,
                                     ipiv,
@@ -72,28 +72,28 @@ rocblas_status rocsolver_geqr2_batched_impl(rocblas_handle handle, const rocblas
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqr2_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *const A[],
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeql2_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *const A[],
                  const rocblas_int lda, float *ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
 {
-    return rocsolver_geqr2_batched_impl<float>(handle, m, n, A, lda, ipiv, stridep, batch_count);
+    return rocsolver_geql2_batched_impl<float>(handle, m, n, A, lda, ipiv, stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqr2_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *const A[],
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeql2_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *const A[],
                  const rocblas_int lda, double *ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
 {
-    return rocsolver_geqr2_batched_impl<double>(handle, m, n, A, lda, ipiv, stridep, batch_count);
+    return rocsolver_geql2_batched_impl<double>(handle, m, n, A, lda, ipiv, stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqr2_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_float_complex *const A[],
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeql2_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_float_complex *const A[],
                  const rocblas_int lda, rocblas_float_complex *ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
 {
-    return rocsolver_geqr2_batched_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, stridep, batch_count);
+    return rocsolver_geql2_batched_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_double_complex *const A[],
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_batched(rocblas_handle handle, const rocblas_int m, const rocblas_int n, rocblas_double_complex *const A[],
                  const rocblas_int lda, rocblas_double_complex *ipiv, const rocblas_stride stridep, const rocblas_int batch_count) 
 {
-    return rocsolver_geqr2_batched_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, stridep, batch_count);
+    return rocsolver_geql2_batched_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, stridep, batch_count);
 }
 
 } //extern C

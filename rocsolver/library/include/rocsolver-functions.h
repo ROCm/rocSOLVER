@@ -3275,7 +3275,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_strided_batched(rocblas_handle 
                  [ 0 ]
 
     where R is upper triangular (upper trapezoidal if m < n), and Q is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q = H(1) * H(2) * ... * H(k), with k = min(m,n)
 
@@ -3347,7 +3347,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2(rocblas_handle handle,
                      [  0  ]
 
     where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
@@ -3436,7 +3436,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_batched(rocblas_handle handle,
                      [  0  ] 
 
     where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
@@ -3522,6 +3522,267 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched(rocblas_handle 
                                                                  const rocblas_stride strideP, 
                                                                  const rocblas_int batch_count);
 
+/*! \brief GEQL2 computes a QL factorization of a general m-by-n matrix A.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The factorization has the form
+
+        A =  Q * [ 0 ]
+                 [ L ]
+
+    where L is lower triangular (lower trapezoidal if m < n), and Q is 
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+
+        Q = H(k) * ... * H(2) * H(1), with k = min(m,n)
+
+    Each Householder matrix H(i), for i = 1,2,...,k, is given by
+
+        H(i) = I - ipiv[i-1] * v(i) * v(i)'
+    
+    where the last m-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    m         rocblas_int. m >= 0.\n
+              The number of rows of the matrix A.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of columns of the matrix A.
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the m-by-n matrix to be factored.
+              On exit, the elements on and below the (m-n)th subdiagonal (when
+              m >= n) or the (n-m)th superdiagonal (when n > m) contain the 
+              factor L; the elements above the sub/superdiagonal are the i - 1
+              elements of vector v(i) for i = 1,2,...,min(m,n).
+    @param[in]
+    lda       rocblas_int. lda >= m.\n
+              Specifies the leading dimension of A. 
+    @param[out]
+    ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
+              The scalar factors of the Householder matrices H(i).
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeql2(rocblas_handle handle, 
+                                                 const rocblas_int m, 
+                                                 const rocblas_int n, 
+                                                 float *A,
+                                                 const rocblas_int lda, 
+                                                 float *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeql2(rocblas_handle handle, 
+                                                 const rocblas_int m, 
+                                                 const rocblas_int n, 
+                                                 double *A,
+                                                 const rocblas_int lda, 
+                                                 double *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeql2(rocblas_handle handle, 
+                                                 const rocblas_int m, 
+                                                 const rocblas_int n, 
+                                                 rocblas_float_complex *A,
+                                                 const rocblas_int lda, 
+                                                 rocblas_float_complex *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2(rocblas_handle handle, 
+                                                 const rocblas_int m, 
+                                                 const rocblas_int n, 
+                                                 rocblas_double_complex *A,
+                                                 const rocblas_int lda, 
+                                                 rocblas_double_complex *ipiv);
+
+/*! \brief GEQL2_BATCHED computes the QL factorization of a batch of general m-by-n matrices.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The factorization of matrix A_j in the batch has the form
+
+        A_j =  Q_j * [  0  ]
+                     [ L_j ]
+
+    where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is 
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+
+        Q_j = H_j(k) * ... * H_j(2) * H_j(1), with k = min(m,n)
+
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+
+        H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
+
+    where the last m-i elements of Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    m         rocblas_int. m >= 0.\n
+              The number of rows of all the matrices A_j in the batch.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of columns of all the matrices A_j in the batch.
+    @param[inout]
+    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+              On entry, the m-by-n matrices A_j to be factored.
+              On exit, the elements on and below the (m-n)th subdiagonal (when
+              m >= n) or the (n-m)th superdiagonal (when n > m) contain the 
+              factor L_j; the elements above the sub/superdiagonal are the i - 1
+              elements of vector v_j(i) for i = 1,2,...,min(m,n).
+    @param[in]
+    lda       rocblas_int. lda >= m.\n
+              Specifies the leading dimension of matrices A_j. 
+    @param[out]
+    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+              Contains the vectors ipiv_j of scalar factors of the 
+              Householder matrices H_j(i).
+    @param[in]
+    strideP   rocblas_stride.\n
+              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
+              There is no restriction for the value
+              of strideP. Normal use is strideP >= min(m,n).
+    @param[in]
+    batch_count  rocblas_int. batch_count >= 0.\n
+                 Number of matrices in the batch.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeql2_batched(rocblas_handle handle, 
+                                                         const rocblas_int m, 
+                                                         const rocblas_int n, 
+                                                         float *const A[],
+                                                         const rocblas_int lda, 
+                                                         float *ipiv, 
+                                                         const rocblas_stride strideP, 
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeql2_batched(rocblas_handle handle, 
+                                                         const rocblas_int m, 
+                                                         const rocblas_int n, 
+                                                         double *const A[],
+                                                         const rocblas_int lda, 
+                                                         double *ipiv, 
+                                                         const rocblas_stride strideP, 
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeql2_batched(rocblas_handle handle, 
+                                                         const rocblas_int m, 
+                                                         const rocblas_int n, 
+                                                         rocblas_float_complex *const A[],
+                                                         const rocblas_int lda, 
+                                                         rocblas_float_complex *ipiv, 
+                                                         const rocblas_stride strideP, 
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_batched(rocblas_handle handle, 
+                                                         const rocblas_int m, 
+                                                         const rocblas_int n, 
+                                                         rocblas_double_complex *const A[],
+                                                         const rocblas_int lda, 
+                                                         rocblas_double_complex *ipiv, 
+                                                         const rocblas_stride strideP, 
+                                                         const rocblas_int batch_count);
+
+/*! \brief GEQL2_STRIDED_BATCHED computes the QL factorization of a batch of general m-by-n matrices.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The factorization of matrix A_j in the batch has the form
+
+        A_j =  Q_j * [  0  ]
+                     [ L_j ] 
+
+    where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is 
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+
+        Q_j = H_j(k) * ... * H_j(2) * H_j(1), with k = min(m,n)
+
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+
+        H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
+
+    where the last m-i elements of Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    m         rocblas_int. m >= 0.\n
+              The number of rows of all the matrices A_j in the batch.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of columns of all the matrices A_j in the batch.
+    @param[inout]
+    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+              On entry, the m-by-n matrices A_j to be factored.
+              On exit, the elements on and below the (m-n)th subdiagonal (when
+              m >= n) or the (n-m)th superdiagonal (when n > m) contain the 
+              factor L_j; the elements above the sub/superdiagonal are the i - 1
+              elements of vector v_j(i) for i = 1,2,...,min(m,n).
+    @param[in]
+    lda       rocblas_int. lda >= m.\n
+              Specifies the leading dimension of matrices A_j. 
+    @param[in]
+    strideA   rocblas_stride.\n   
+              Stride from the start of one matrix A_j and the next one A_(j+1). 
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[out]
+    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+              Contains the vectors ipiv_j of scalar factors of the 
+              Householder matrices H_j(i).
+    @param[in]
+    strideP   rocblas_stride.\n
+              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
+              There is no restriction for the value
+              of strideP. Normal use is strideP >= min(m,n).
+    @param[in]
+    batch_count  rocblas_int. batch_count >= 0.\n
+                 Number of matrices in the batch.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeql2_strided_batched(rocblas_handle handle, 
+                                                                 const rocblas_int m, 
+                                                                 const rocblas_int n, 
+                                                                 float *A,
+                                                                 const rocblas_int lda, 
+                                                                 const rocblas_stride strideA, 
+                                                                 float *ipiv, 
+                                                                 const rocblas_stride strideP, 
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeql2_strided_batched(rocblas_handle handle, 
+                                                                 const rocblas_int m, 
+                                                                 const rocblas_int n, 
+                                                                 double *A,
+                                                                 const rocblas_int lda, 
+                                                                 const rocblas_stride strideA, 
+                                                                 double *ipiv, 
+                                                                 const rocblas_stride strideP, 
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeql2_strided_batched(rocblas_handle handle, 
+                                                                 const rocblas_int m, 
+                                                                 const rocblas_int n, 
+                                                                 rocblas_float_complex *A,
+                                                                 const rocblas_int lda, 
+                                                                 const rocblas_stride strideA, 
+                                                                 rocblas_float_complex *ipiv, 
+                                                                 const rocblas_stride strideP, 
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_strided_batched(rocblas_handle handle, 
+                                                                 const rocblas_int m, 
+                                                                 const rocblas_int n, 
+                                                                 rocblas_double_complex *A,
+                                                                 const rocblas_int lda, 
+                                                                 const rocblas_stride strideA, 
+                                                                 rocblas_double_complex *ipiv, 
+                                                                 const rocblas_stride strideP, 
+                                                                 const rocblas_int batch_count);
+
 /*! \brief GELQ2 computes a LQ factorization of a general m-by-n matrix A.
 
     \details
@@ -3532,7 +3793,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched(rocblas_handle 
         A = [ L 0 ] * Q
  
     where L is lower triangular (lower trapezoidal if m > n), and Q is 
-    a n-by-n orthogonal matrix represented as the product of Householder matrices
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q = H(k) * H(k-1) * ... * H(1), with k = min(m,n)
 
@@ -3603,7 +3864,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2(rocblas_handle handle,
         A_j = [ L_j 0 ] * Q_j 
 
     where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is 
-    a n-by-n orthogonal matrix represented as the product of Householder matrices
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(k) * H_j(k-1) * ... * H_j(1), with k = min(m,n)
 
@@ -3691,7 +3952,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_batched(rocblas_handle handle,
         A_j = [ L_j 0 ] * Q_j 
 
     where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is 
-    a n-by-n orthogonal matrix represented as the product of Householder matrices
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(k) * H_j(k-1) * ... * H_j(1), with k = min(m,n)
 
@@ -3789,7 +4050,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_strided_batched(rocblas_handle 
                  [ 0 ]
  
     where R is upper triangular (upper trapezoidal if m < n), and Q is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q = H(1) * H(2) * ... * H(k), with k = min(m,n)
 
@@ -3861,7 +4122,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
                      [  0  ] 
 
     where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
@@ -3950,7 +4211,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched(rocblas_handle handle,
                      [  0  ] 
 
     where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal matrix represented as the product of Householder matrices
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
@@ -4036,6 +4297,267 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(rocblas_handle 
                                                                  const rocblas_stride strideP, 
                                                                  const rocblas_int batch_count);
 
+/*! \brief GEQLF computes a QL factorization of a general m-by-n matrix A.
+
+    \details
+    (This is the blocked version of the algorithm).
+
+    The factorization has the form
+
+        A =  Q * [ 0 ]
+                 [ L ]
+ 
+    where L is lower triangular (lower trapezoidal if m < n), and Q is 
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+
+        Q = H(k) * ... * H(2) * H(1), with k = min(m,n)
+
+    Each Householder matrix H(i), for i = 1,2,...,k, is given by
+
+        H(i) = I - ipiv[i-1] * v(i) * v(i)'
+    
+    where the last m-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    m         rocblas_int. m >= 0.\n
+              The number of rows of the matrix A.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of columns of the matrix A.
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the m-by-n matrix to be factored.
+              On exit, the elements on and below the (m-n)th subdiagonal (when
+              m >= n) or the (n-m)th superdiagonal (when n > m) contain the 
+              factor L; the elements above the sub/superdiagonal are the i - 1
+              elements of vector v(i) for i = 1,2,...,min(m,n).
+    @param[in]
+    lda       rocblas_int. lda >= m.\n
+              Specifies the leading dimension of A. 
+    @param[out]
+    ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
+              The scalar factors of the Householder matrices H(i).
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqlf(rocblas_handle handle, 
+                                                 const rocblas_int m, 
+                                                 const rocblas_int n, 
+                                                 float *A,
+                                                 const rocblas_int lda, 
+                                                 float *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqlf(rocblas_handle handle, 
+                                                 const rocblas_int m, 
+                                                 const rocblas_int n, 
+                                                 double *A,
+                                                 const rocblas_int lda, 
+                                                 double *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqlf(rocblas_handle handle, 
+                                                 const rocblas_int m, 
+                                                 const rocblas_int n, 
+                                                 rocblas_float_complex *A,
+                                                 const rocblas_int lda, 
+                                                 rocblas_float_complex *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf(rocblas_handle handle, 
+                                                 const rocblas_int m, 
+                                                 const rocblas_int n, 
+                                                 rocblas_double_complex *A,
+                                                 const rocblas_int lda, 
+                                                 rocblas_double_complex *ipiv);
+
+/*! \brief GEQLF_BATCHED computes the QL factorization of a batch of general m-by-n matrices.
+
+    \details
+    (This is the blocked version of the algorithm).
+
+    The factorization of matrix A_j in the batch has the form
+
+        A_j =  Q_j * [  0  ]
+                     [ L_j ] 
+
+    where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is 
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+
+        Q_j = H_j(k) * ... * H_j(2) * H_j(1), with k = min(m,n)
+
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+
+        H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
+
+    where the last m-i elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    m         rocblas_int. m >= 0.\n
+              The number of rows of all the matrices A_j in the batch.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of columns of all the matrices A_j in the batch.
+    @param[inout]
+    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+              On entry, the m-by-n matrices A_j to be factored.
+              On exit, the elements on and below the (m-n)th subdiagonal (when
+              m >= n) or the (n-m)th superdiagonal (when n > m) contain the 
+              factor L_j; the elements above the sub/superdiagonal are the i - 1
+              elements of vector v_j(i) for i = 1,2,...,min(m,n).
+    @param[in]
+    lda       rocblas_int. lda >= m.\n
+              Specifies the leading dimension of matrices A_j. 
+    @param[out]
+    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+              Contains the vectors ipiv_j of scalar factors of the 
+              Householder matrices H_j(i).
+    @param[in]
+    strideP   rocblas_stride.\n
+              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
+              There is no restriction for the value
+              of strideP. Normal use is strideP >= min(m,n).
+    @param[in]
+    batch_count  rocblas_int. batch_count >= 0.\n
+                 Number of matrices in the batch.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqlf_batched(rocblas_handle handle, 
+                                                         const rocblas_int m, 
+                                                         const rocblas_int n, 
+                                                         float *const A[],
+                                                         const rocblas_int lda, 
+                                                         float *ipiv, 
+                                                         const rocblas_stride strideP, 
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqlf_batched(rocblas_handle handle, 
+                                                         const rocblas_int m, 
+                                                         const rocblas_int n, 
+                                                         double *const A[],
+                                                         const rocblas_int lda, 
+                                                         double *ipiv, 
+                                                         const rocblas_stride strideP, 
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqlf_batched(rocblas_handle handle, 
+                                                         const rocblas_int m, 
+                                                         const rocblas_int n, 
+                                                         rocblas_float_complex *const A[],
+                                                         const rocblas_int lda, 
+                                                         rocblas_float_complex *ipiv, 
+                                                         const rocblas_stride strideP, 
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_batched(rocblas_handle handle, 
+                                                         const rocblas_int m, 
+                                                         const rocblas_int n, 
+                                                         rocblas_double_complex *const A[],
+                                                         const rocblas_int lda, 
+                                                         rocblas_double_complex *ipiv, 
+                                                         const rocblas_stride strideP, 
+                                                         const rocblas_int batch_count);
+
+/*! \brief GEQLF_STRIDED_BATCHED computes the QL factorization of a batch of general m-by-n matrices.
+
+    \details
+    (This is the blocked version of the algorithm).
+
+    The factorization of matrix A_j in the batch has the form
+
+        A_j =  Q_j * [  0  ]
+                     [ L_j ] 
+
+    where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is 
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+
+        Q_j = H_j(k) * ... * H_j(2) * H_j(1), with k = min(m,n)
+
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+
+        H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
+
+    where the last m-i elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    m         rocblas_int. m >= 0.\n
+              The number of rows of all the matrices A_j in the batch.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of columns of all the matrices A_j in the batch.
+    @param[inout]
+    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+              On entry, the m-by-n matrices A_j to be factored.
+              On exit, the elements on and below the (m-n)th subdiagonal (when
+              m >= n) or the (n-m)th superdiagonal (when n > m) contain the 
+              factor L_j; the elements above the sub/superdiagonal are the i - 1
+              elements of vector v_j(i) for i = 1,2,...,min(m,n).
+    @param[in]
+    lda       rocblas_int. lda >= m.\n
+              Specifies the leading dimension of matrices A_j. 
+    @param[in]
+    strideA   rocblas_stride.\n   
+              Stride from the start of one matrix A_j and the next one A_(j+1). 
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[out]
+    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+              Contains the vectors ipiv_j of scalar factors of the 
+              Householder matrices H_j(i).
+    @param[in]
+    strideP   rocblas_stride.\n
+              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
+              There is no restriction for the value
+              of strideP. Normal use is strideP >= min(m,n).
+    @param[in]
+    batch_count  rocblas_int. batch_count >= 0.\n
+                 Number of matrices in the batch.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqlf_strided_batched(rocblas_handle handle, 
+                                                                 const rocblas_int m, 
+                                                                 const rocblas_int n, 
+                                                                 float *A,
+                                                                 const rocblas_int lda, 
+                                                                 const rocblas_stride strideA, 
+                                                                 float *ipiv, 
+                                                                 const rocblas_stride strideP, 
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqlf_strided_batched(rocblas_handle handle, 
+                                                                 const rocblas_int m, 
+                                                                 const rocblas_int n, 
+                                                                 double *A,
+                                                                 const rocblas_int lda, 
+                                                                 const rocblas_stride strideA, 
+                                                                 double *ipiv, 
+                                                                 const rocblas_stride strideP, 
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqlf_strided_batched(rocblas_handle handle, 
+                                                                 const rocblas_int m, 
+                                                                 const rocblas_int n, 
+                                                                 rocblas_float_complex *A,
+                                                                 const rocblas_int lda, 
+                                                                 const rocblas_stride strideA, 
+                                                                 rocblas_float_complex *ipiv, 
+                                                                 const rocblas_stride strideP, 
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_strided_batched(rocblas_handle handle, 
+                                                                 const rocblas_int m, 
+                                                                 const rocblas_int n, 
+                                                                 rocblas_double_complex *A,
+                                                                 const rocblas_int lda, 
+                                                                 const rocblas_stride strideA, 
+                                                                 rocblas_double_complex *ipiv, 
+                                                                 const rocblas_stride strideP, 
+                                                                 const rocblas_int batch_count);
+
 /*! \brief GELQF computes a LQ factorization of a general m-by-n matrix A.
 
     \details
@@ -4046,7 +4568,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(rocblas_handle 
         A = [ L 0 ] * Q
  
     where L is lower triangular (lower trapezoidal if m > n), and Q is 
-    a n-by-n orthogonal matrix represented as the product of Householder matrices
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q = H(k) * H(k-1) * ... * H(1), with k = min(m,n)
 
@@ -4117,7 +4639,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf(rocblas_handle handle,
         A_j = [ L_j 0 ] * Q_j 
 
     where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is 
-    a n-by-n orthogonal matrix represented as the product of Householder matrices
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(k) * H_j(k-1) * ... * H_j(1), with k = min(m,n)
 
@@ -4205,7 +4727,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_batched(rocblas_handle handle,
         A_j = [ L_j 0 ] * Q_j 
 
     where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is 
-    a n-by-n orthogonal matrix represented as the product of Householder matrices
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
 
         Q_j = H_j(k) * H_j(k-1) * ... * H_j(1), with k = min(m,n)
 
