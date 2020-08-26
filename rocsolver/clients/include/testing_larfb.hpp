@@ -107,6 +107,7 @@ void larfb_initData(const rocblas_handle handle,
     if (CPU)
     {
         bool left = (side == rocblas_side_left);
+        bool forward = (direct == rocblas_forward_direction);
         bool column = (storev == rocblas_column_wise);
         std::vector<T> htau(k);
         
@@ -130,7 +131,11 @@ void larfb_initData(const rocblas_handle handle,
                             hV[0][i+j*ldv] -= 4;
                     }
                 }
-                cblas_geqrf<T>(m, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
+
+                if (forward)
+                    cblas_geqrf<T>(m, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                else
+                    cblas_geqlf<T>(m, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
             }
             else
             {
@@ -144,8 +149,13 @@ void larfb_initData(const rocblas_handle handle,
                             hV[0][i+j*ldv] -= 4;
                     }
                 }
-                cblas_gelqf<T>(k, m, hV[0], ldv, htau.data(), hW.data(), sizeW);
+
+                if (forward)
+                    cblas_gelqf<T>(k, m, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                else
+                    cblas_gerqf<T>(k, m, hV[0], ldv, htau.data(), hW.data(), sizeW);
             } 
+
             cblas_larft<T>(direct, storev, m, k, hV[0], ldv, htau.data(), hT[0], ldt);
         }
         else
@@ -161,8 +171,12 @@ void larfb_initData(const rocblas_handle handle,
                         else
                             hV[0][i+j*ldv] -= 4;
                     }
-                } 
-                cblas_geqrf<T>(n, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                }
+
+                if (forward)
+                    cblas_geqrf<T>(n, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                else
+                    cblas_geqlf<T>(n, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
             }
             else 
             {
@@ -175,9 +189,14 @@ void larfb_initData(const rocblas_handle handle,
                         else
                             hV[0][i+j*ldv] -= 4;
                     }
-                } 
-                cblas_gelqf<T>(k, n, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                }
+
+                if (forward)
+                    cblas_gelqf<T>(k, n, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                else
+                    cblas_gerqf<T>(k, n, hV[0], ldv, htau.data(), hW.data(), sizeW);
             }
+
             cblas_larft<T>(direct, storev, n, k, hV[0], ldv, htau.data(), hT[0], ldt);
         }
     }

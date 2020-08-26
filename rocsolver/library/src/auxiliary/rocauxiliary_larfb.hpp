@@ -128,7 +128,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
                                         const rocblas_int batch_count, T* work, T** workArr)
 {
     // quick return
-    if (!m || !n || !batch_count)
+    if (m == 0 || n == 0 || batch_count == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
@@ -156,40 +156,83 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     //determine the side, size of workspace
     //and whether V is trapezoidal
     bool trap;
-    bool colwise = (storev == rocblas_column_wise); 
+    bool colwise = (storev == rocblas_column_wise);
+    bool forward = (direct == rocblas_forward_direction);
     bool leftside = (side == rocblas_side_left);
     rocblas_operation transt = (leftside && trans == rocblas_operation_transpose ?
                                 rocblas_operation_conjugate_transpose : trans);
     rocblas_operation transp; 
-    rocblas_fill uploV;
+    rocblas_fill uploV, uploT;
     rocblas_int order, ldw;
-    size_t offsetV;
+    rocblas_int shift1, shift2;
+    size_t offsetA1, offsetA2;
+    size_t offsetV1, offsetV2;
     
-    if (leftside) {
+    if (leftside)
+    {
         order = n;
         ldw = k;
         trap = (m > k);
-    } else {
+
+        if (forward) {
+            offsetA1 = shiftA;
+            offsetA2 = shiftA + idx2D(k,0,lda);
+        } else {
+            offsetA1 = shiftA + idx2D(m-k,0,lda);
+            offsetA2 = shiftA;
+        }
+    }
+    else
+    {
         order = k;
         ldw = m;
         trap = (n > k);
+
+        if (forward) {
+            offsetA1 = shiftA;
+            offsetA2 = shiftA + idx2D(0,k,lda);
+        } else {
+            offsetA1 = shiftA + idx2D(0,n-k,lda);
+            offsetA2 = shiftA;
+        }
     }
-    if (colwise) {
-        uploV = rocblas_fill_lower;
-        offsetV = idx2D(k,0,ldv);
-        if (leftside) 
+
+    if (colwise)
+    {
+        if (leftside)
             transp = rocblas_operation_conjugate_transpose;
-        else 
+        else
             transp = rocblas_operation_none;
-    } else {
-        uploV = rocblas_fill_upper;
-        offsetV = idx2D(0,k,ldv);
-        if (leftside) 
+        
+        if (forward) {
+            uploV = rocblas_fill_lower;
+            offsetV1 = shiftV;
+            offsetV2 = shiftV + idx2D(k,0,ldv);
+        } else {
+            uploV = rocblas_fill_upper;
+            offsetV1 = shiftV + idx2D((leftside ? m-k : n-k),0,ldv);
+            offsetV2 = shiftV;
+        }
+    }
+    else
+    {
+        if (leftside)
             transp = rocblas_operation_none;
-        else 
+        else
             transp = rocblas_operation_conjugate_transpose;
+        
+        if (forward) {
+            uploV = rocblas_fill_upper;
+            offsetV1 = shiftV;
+            offsetV2 = shiftV + idx2D(0,k,ldv);
+        } else {
+            uploV = rocblas_fill_lower;
+            offsetV1 = shiftV + idx2D(0,(leftside ? m-k : n-k),ldv);
+            offsetV2 = shiftV;
+        }
     }
     rocblas_stride strideW = rocblas_stride(ldw)*order;
+    uploT = (forward ? rocblas_fill_upper : rocblas_fill_lower);
 
     // **** TRMM_BATCH IS EXECUTED IN A FOR-LOOP UNTIL 
     //      FUNCITONALITY IS ENABLED ****
@@ -197,90 +240,73 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     //copy A1 to work
     rocblas_int blocksx = (order - 1)/32 + 1;
     rocblas_int blocksy = (ldw - 1)/32 + 1;
-    hipLaunchKernelGGL(copymatA1,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,ldw,order,A,shiftA,lda,strideA,work);
+    hipLaunchKernelGGL(copymatA1,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,ldw,order,A,offsetA1,lda,strideA,work);
     
-    // BACKWARD DIRECTION TO BE IMPLEMENTED...
-    rocblas_fill uploT = rocblas_fill_upper;
-    if (direct == rocblas_backward_direction)
-        return rocblas_status_not_implemented;
-    
-    //compute:
-    // V1' * A1, or
-    //   or 
-    // A1 * V1
+    //compute: V1' * A1
+    //   or    A1 * V1
     for (int b=0;b<batch_count;++b) {
-        Vp = load_ptr_batch<T>(VV,b,shiftV,strideV);
+        Vp = load_ptr_batch<T>(VV,b,offsetV1,strideV);
         rocblas_trmm(handle,side,uploV,transp,rocblas_diagonal_unit,ldw,order,&one,Vp,ldv,(work + b*strideW),ldw);
     }
 
-    // compute:
-    // V1' * A1 + V2' * A2 
-    //        or 
-    // A1 * V1 + A2 * V2
-    if (trap) { 
-        if (leftside) { 
+    // compute: V1' * A1 + V2' * A2
+    //    or    A1 * V1 + A2 * V2
+    if (trap)
+    {
+        if (leftside)
             rocblasCall_gemm<BATCHED,STRIDED,T>(handle, transp, rocblas_operation_none,
                                             ldw, order, m-k, &one,
-                                            V, shiftV+offsetV, ldv, strideV,
-                                            A, shiftA+idx2D(k,0,lda), lda, strideA, &one,
-                                            work, 0, ldw, strideW, batch_count, workArr);   
-        } else {
+                                            V, offsetV2, ldv, strideV,
+                                            A, offsetA2, lda, strideA, &one,
+                                            work, 0, ldw, strideW, batch_count, workArr);
+        else
             rocblasCall_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, transp,
                                             ldw, order, n-k, &one,
-                                            A, shiftA+idx2D(0,k,lda), lda, strideA, 
-                                            V, shiftV+offsetV, ldv, strideV, &one,
-                                            work, 0, ldw, strideW, batch_count, workArr);   
-        }
+                                            A, offsetA2, lda, strideA,
+                                            V, offsetV2, ldv, strideV, &one,
+                                            work, 0, ldw, strideW, batch_count, workArr);
     }
 
-    // compute: 
-    // trans(T) * (V1' * A1 + V2' * A2)
-    //              or
-    // (A1 * V1 + A2 * V2) * trans(T)    
+    // compute: trans(T) * (V1' * A1 + V2' * A2)
+    //    or    (A1 * V1 + A2 * V2) * trans(T)
     for (int b=0;b<batch_count;++b) {
         Fp = load_ptr_batch<T>(F,b,shiftF,strideF);
         rocblas_trmm(handle,side,uploT,transt,rocblas_diagonal_non_unit,ldw,order,&one,Fp,ldf,(work + b*strideW),ldw);
     }
 
-    // compute:
-    // A2 - V2 * trans(T) * (V1' * A1 + V2' * A2)
-    //              or
-    // A2 - (A1 * V1 + A2 * V2) * trans(T) * V2'    
+    // compute: A2 - V2 * trans(T) * (V1' * A1 + V2' * A2)
+    //    or    A2 - (A1 * V1 + A2 * V2) * trans(T) * V2'
     if (transp == rocblas_operation_none)
         transp = rocblas_operation_conjugate_transpose;
     else
         transp = rocblas_operation_none;
 
-    if (trap) {
-        if (leftside) { 
-            rocblasCall_gemm<BATCHED,STRIDED,T>(handle, transp, rocblas_operation_none, 
+    if (trap)
+    {
+        if (leftside)
+            rocblasCall_gemm<BATCHED,STRIDED,T>(handle, transp, rocblas_operation_none,
                                             m-k, order, ldw, &minone,
-                                            V, shiftV+offsetV, ldv, strideV, 
-                                            work, 0, ldw, strideW, &one,   
-                                            A, shiftA+idx2D(k,0,lda), lda, strideA, batch_count, workArr); 
-        } else {
+                                            V, offsetV2, ldv, strideV,
+                                            work, 0, ldw, strideW, &one,
+                                            A, offsetA2, lda, strideA, batch_count, workArr);
+        else
             rocblasCall_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, transp,
                                             ldw, n-k, order, &minone,
-                                            work, 0, ldw, strideW,    
-                                            V, shiftV+offsetV, ldv, strideV, &one,
-                                            A, shiftA+idx2D(0,k,lda), lda, strideA, batch_count, workArr); 
-        }
+                                            work, 0, ldw, strideW,
+                                            V, offsetV2, ldv, strideV, &one,
+                                            A, offsetA2, lda, strideA, batch_count, workArr);
     }
         
-    // compute:
-    // V1 * trans(T) * (V1' * A1 + V2' * A2)
-    //              or
-    // (A1 * V1 + A2 * V2) * trans(T) * V1'    
+    // compute: V1 * trans(T) * (V1' * A1 + V2' * A2)
+    //    or    (A1 * V1 + A2 * V2) * trans(T) * V1'
     for (int b=0;b<batch_count;++b) {
-        Vp = load_ptr_batch<T>(VV,b,shiftV,strideV);
+        Vp = load_ptr_batch<T>(VV,b,offsetV1,strideV);
         rocblas_trmm(handle,side,uploV,transp,rocblas_diagonal_unit,ldw,order,&one,Vp,ldv,(work + b*strideW),ldw);
     }
     
-    // compute:
-    // A1 - V1 * trans(T) * (V1' * A1 + V2' * A2)
-    //              or
-    // A1 - (A1 * V1 + A2 * V2) * trans(T) * V1'
-    hipLaunchKernelGGL(addmatA1,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,ldw,order,A,shiftA,lda,strideA,work);
+    // compute: A1 - V1 * trans(T) * (V1' * A1 + V2' * A2)
+    //    or    A1 - (A1 * V1 + A2 * V2) * trans(T) * V1'
+    hipLaunchKernelGGL(addmatA1,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,ldw,order,A,offsetA1,lda,strideA,work);
    
     rocblas_set_pointer_mode(handle,old_mode);
     return rocblas_status_success;
