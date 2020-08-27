@@ -540,7 +540,7 @@ rocblas_status rocsolver_bdsqr_template(
   S minshift = std::max(eps,
                         tol / S(100)) /
                (n * tol); //(minimum accepted shift to not ruin relative
-                          //accuracy) / (max singular value)
+                          // accuracy) / (max singular value)
 
   rocblas_stride strideW = 4 * n;
 
