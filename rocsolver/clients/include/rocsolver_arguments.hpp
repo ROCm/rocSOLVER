@@ -51,7 +51,7 @@ public:
   rocblas_int bsb =
       128 * 128; //  bsb > transB_option == 'N' ? ldb * N : ldb * K
   rocblas_int bsc = 128 * 128; //  bsc >= ldc * N
-  rocblas_int bsp = 128;  //  bsp >= min(M,N)
+  rocblas_int bsp = 128;       //  bsp >= min(M,N)
 
   rocblas_int norm_check = 0;
   rocblas_int unit_check = 1;
