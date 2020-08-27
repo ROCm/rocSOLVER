@@ -32,9 +32,10 @@ __global__ void getrf_check_singularity(const rocblas_int n, const rocblas_int j
     }
 }
 
-template <typename T, typename S>
-void rocsolver_getrf_getMemorySize(const rocblas_int n, const rocblas_int m, const rocblas_int batch_count,
-                                  size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4, size_t *size_5)
+template <bool BATCHED, typename T, typename S>
+void rocsolver_getrf_getMemorySize(const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+                                  size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4, size_t *size_5,
+                                  size_t *size_6, size_t *size_7, size_t *size_8, size_t *size_9)
 {
     rocsolver_getf2_getMemorySize<T,S>(m,batch_count,size_1,size_2,size_3,size_5);
     if (m < GETRF_GETF2_SWITCHSIZE || n < GETRF_GETF2_SWITCHSIZE) {
@@ -42,6 +43,8 @@ void rocsolver_getrf_getMemorySize(const rocblas_int n, const rocblas_int m, con
     } else {
         *size_4 = sizeof(rocblas_int)*batch_count;
     }
+
+    rocblasCall_trsm_mem<BATCHED,T>(rocblas_side_left,m,n,batch_count,size_6,size_7,size_8,size_9);    
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
