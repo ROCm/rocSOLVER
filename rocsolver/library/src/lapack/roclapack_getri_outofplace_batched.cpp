@@ -13,22 +13,6 @@
  * ===========================================================================
  */
 
-template <typename T, typename U, typename V>
-__global__ void copy_batch(const rocblas_int m, const rocblas_int n,
-                           U A, const rocblas_int shifta, const rocblas_int lda, const rocblas_stride stridea,
-                           V W, const rocblas_int shiftw, const rocblas_int ldw, const rocblas_stride stridew)
-{
-    int b = hipBlockIdx_x;
-    int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
-    int j = hipBlockIdx_z * hipBlockDim_z + hipThreadIdx_z;
-
-    T* a = load_ptr_batch<T>(A,b,shifta,stridea);
-    T* w = load_ptr_batch<T>(W,b,shiftw,stridew);
-
-    if (i < m && j < n)
-        w[i + j*ldw] = a[i + j*lda];
-}
-
 template <typename T, typename U>
 rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle, const rocblas_int n, U A,
                                         const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP,
@@ -44,15 +28,11 @@ rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle, co
     if (st != rocblas_status_continue)
         return st;
 
+    rocblas_stride strideA = 0;
     rocblas_stride strideC = 0;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-
-    // copy A into C for out-of-place inversion
-    rocblas_int blocks = (n - 1)/32 + 1;
-    hipLaunchKernelGGL(copy_batch<T>, dim3(batch_count,blocks,blocks), dim3(1,32,32), 0, stream,
-                       n, n, A, 0, lda, 0, C, 0, ldc, 0);
 
     // memory managment
     size_t size_1;  //size of constants
@@ -62,7 +42,7 @@ rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle, co
     size_t size_5;  //for TRSM x_temp_arr
     size_t size_6;  //for TRSM invA
     size_t size_7;  //for TRSM invA_arr
-    rocsolver_getri_getMemorySize<true,T>(n,batch_count,&size_1,&size_2,&size_3,&size_4,&size_5,&size_6,&size_7);
+    rocsolver_getri_getMemorySize<true,false,T>(n,batch_count,&size_1,&size_2,&size_3,&size_4,&size_5,&size_6,&size_7);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
     void *scalars, *work, *workArr, *x_temp, *x_temp_arr, *invA, *invA_arr;
@@ -87,6 +67,8 @@ rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle, co
     // execution
     rocblas_status status =
            rocsolver_getri_template<true,false,T>(handle,n,
+                                                  A,0,
+                                                  lda, strideA,
                                                   C,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
                                                   ldc, strideC,
                                                   ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)

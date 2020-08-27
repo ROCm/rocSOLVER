@@ -27,7 +27,7 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle, const
     size_t size_5;  //for TRSM x_temp_arr
     size_t size_6;  //for TRSM invA
     size_t size_7;  //for TRSM invA_arr
-    rocsolver_getri_getMemorySize<false,T>(n,batch_count,&size_1,&size_2,&size_3,&size_4,&size_5,&size_6,&size_7);
+    rocsolver_getri_getMemorySize<false,true,T>(n,batch_count,&size_1,&size_2,&size_3,&size_4,&size_5,&size_6,&size_7);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
     void *scalars, *work, *workArr, *x_temp, *x_temp_arr, *invA, *invA_arr;
@@ -52,6 +52,8 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle, const
     // execution
     rocblas_status status = 
            rocsolver_getri_template<false,true,T>(handle,n,
+                                                  (U)nullptr,0,
+                                                  0,0,
                                                   A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
                                                   lda,strideA,
                                                   ipiv,0, //the vector is shifted 0 entries (will work on the entire vector)
