@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -52,7 +52,7 @@ const vector<vector<int>> large_size_range = {
 };
 
 
-Arguments ormlq_setup_arguments(ormlq_tuple tup) 
+Arguments ormlq_setup_arguments(ormlq_tuple tup)
 {
     vector<int> size = std::get<0>(tup);
     vector<int> op = std::get<1>(tup);

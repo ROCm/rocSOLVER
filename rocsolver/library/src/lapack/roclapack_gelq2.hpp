@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2019
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_GELQ2_H
@@ -48,19 +48,19 @@ rocblas_status rocsolver_gelq2_gelqf_argCheck(const rocblas_int m, const rocblas
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int m,
-                                        const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
-                                        const rocblas_stride strideA, T* ipiv,  
+                                        const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
+                                        const rocblas_stride strideA, T* ipiv,
                                         const rocblas_stride strideP, const rocblas_int batch_count,
                                         T* scalars, T* work, T** workArr, T* diag)
 {
     // quick return
-    if (m == 0 || n == 0 || batch_count == 0) 
+    if (m == 0 || n == 0 || batch_count == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int dim = min(m, n);    //total number of pivots    
+    rocblas_int dim = min(m, n);    //total number of pivots
     rocblas_int blocks = (n - 1)/1024 + 1;
 
     for (rocblas_int j = 0; j < dim; ++j) {
@@ -73,18 +73,18 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int
                                  n - j,                                 //order of reflector
                                  A, shiftA + idx2D(j,j,lda),            //value of alpha
                                  A, shiftA + idx2D(j,min(j+1,n-1),lda), //vector x to work on
-                                 lda, strideA,                          //inc of x    
+                                 lda, strideA,                          //inc of x
                                  (ipiv + j), strideP,                   //tau
                                  batch_count, diag, work);
 
-        // insert one in A(j,j) tobuild/apply the householder matrix 
+        // insert one in A(j,j) tobuild/apply the householder matrix
         hipLaunchKernelGGL(set_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(j,j,lda),lda,strideA,1,true);
 
-        // Apply Householder reflector to the rest of matrix from the right 
+        // Apply Householder reflector to the rest of matrix from the right
         if (j < m - 1) {
             rocsolver_larf_template(handle,rocblas_side_right,          //side
                                     m - j - 1,                          //number of rows of matrix to modify
-                                    n - j,                              //number of columns of matrix to modify    
+                                    n - j,                              //number of columns of matrix to modify
                                     A, shiftA + idx2D(j,j,lda),         //householder vector x
                                     lda, strideA,                       //inc of x
                                     (ipiv + j), strideP,                //householder scalar (alpha)

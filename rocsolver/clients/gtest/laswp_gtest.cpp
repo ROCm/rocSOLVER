@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -24,11 +24,11 @@ typedef std::tuple<vector<int>, vector<int>> laswp_tuple;
 // for checkin_lapack tests
 const vector<vector<int>> range1 = {
     {0,1},                          //quick return
-    {-1,1}, {10,0},                 //invalid 
-    {10,100}, {20,100}, {30,100}    
+    {-1,1}, {10,0},                 //invalid
+    {10,100}, {20,100}, {30,100}
 };
 const vector<vector<int>> range2 = {
-    {0,1,1}, {1,0,1}, {1,2,0}, {2,1,1},     //invalid 
+    {0,1,1}, {1,0,1}, {1,2,0}, {2,1,1},     //invalid
     {1,3,1}, {3,5,2}, {5,10,-1}, {3,12,-2}
 };
 
@@ -44,7 +44,7 @@ const vector<vector<int>> large_range2 = {
 Arguments laswp_setup_arguments(laswp_tuple tup) {
     vector<int> matrix_size = std::get<0>(tup);
     vector<int> pivots = std::get<1>(tup);
-      
+
     Arguments arg;
 
     arg.N = matrix_size[0];

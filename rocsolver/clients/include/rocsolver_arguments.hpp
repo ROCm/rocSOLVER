@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef _ARGUMENTS_H_
@@ -102,7 +102,7 @@ public:
     bsb = rhs.bsb;
     bsc = rhs.bsc;
     bsp = rhs.bsp;
-    
+
     norm_check = rhs.norm_check;
     unit_check = rhs.unit_check;
     timing = rhs.timing;

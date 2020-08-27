@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef IDEAL_SIZES_HPP
@@ -11,7 +11,7 @@
 // These are used by different common kernels
 //(TODO: identify functions and name accordingly)
 #define BLOCKSIZE 256
-#define BS 32  
+#define BS 32
 
 // laswp
 #define LASWP_BLOCKSIZE 256

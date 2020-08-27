@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "norm.hpp"
@@ -11,20 +11,20 @@
 
 template <bool GLQ, typename T>
 void orglx_unglx_checkBadArgs(const rocblas_handle handle,
-                         const rocblas_int m, 
-                         const rocblas_int n, 
-                         const rocblas_int k, 
-                         T dA, 
+                         const rocblas_int m,
+                         const rocblas_int n,
+                         const rocblas_int k,
+                         T dA,
                          const rocblas_int lda,
                          T dIpiv)
 {
     // handle
     EXPECT_ROCBLAS_STATUS(rocsolver_orglx_unglx(GLQ,nullptr,m,n,k,dA,lda,dIpiv),
-                          rocblas_status_invalid_handle); 
+                          rocblas_status_invalid_handle);
 
     // values
     // N/A
- 
+
     // pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_orglx_unglx(GLQ,handle,m,n,k,(T)nullptr,lda,dIpiv),
                           rocblas_status_invalid_pointer);
@@ -42,7 +42,7 @@ template <typename T, bool GLQ>
 void testing_orglx_unglx_bad_arg()
 {
     // safe arguments
-    rocblas_local_handle handle;  
+    rocblas_local_handle handle;
     rocblas_int k = 1;
     rocblas_int m = 1;
     rocblas_int n = 1;
@@ -56,15 +56,15 @@ void testing_orglx_unglx_bad_arg()
 
     // check bad arguments
     orglx_unglx_checkBadArgs<GLQ>(handle,m,n,k,dA.data(),lda,dIpiv.data());
-}   
+}
 
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th> 
+template <bool CPU, bool GPU, typename T, typename Td, typename Th>
 void orglx_unglx_initData(const rocblas_handle handle,
                          const rocblas_int m,
-                         const rocblas_int n, 
-                         const rocblas_int k, 
-                         Td &dA, 
+                         const rocblas_int n,
+                         const rocblas_int k,
+                         Td &dA,
                          const rocblas_int lda,
                          Td &dIpiv,
                          Th &hA,
@@ -86,7 +86,7 @@ void orglx_unglx_initData(const rocblas_handle handle,
                     hA[0][i+j*lda] -= 4;
             }
         }
-        
+
         // compute LQ factorization
         cblas_gelqf<T>(m, n, hA[0], lda, hIpiv[0], hW.data(), size_W);
     }
@@ -100,12 +100,12 @@ void orglx_unglx_initData(const rocblas_handle handle,
 }
 
 
-template <bool GLQ, typename T, typename Td, typename Th> 
+template <bool GLQ, typename T, typename Td, typename Th>
 void orglx_unglx_getError(const rocblas_handle handle,
                          const rocblas_int m,
-                         const rocblas_int n, 
-                         const rocblas_int k, 
-                         Td &dA, 
+                         const rocblas_int n,
+                         const rocblas_int k,
+                         Td &dA,
                          const rocblas_int lda,
                          Td &dIpiv,
                          Th &hA,
@@ -117,7 +117,7 @@ void orglx_unglx_getError(const rocblas_handle handle,
     std::vector<T> hW(size_W);
 
     //initialize data
-    orglx_unglx_initData<true,true,T>(handle, m, n, k, dA, lda, dIpiv, 
+    orglx_unglx_initData<true,true,T>(handle, m, n, k, dA, lda, dIpiv,
                      hA, hIpiv, hW, size_W);
 
     // execute computations
@@ -138,12 +138,12 @@ void orglx_unglx_getError(const rocblas_handle handle,
 }
 
 
-template <bool GLQ, typename T, typename Td, typename Th> 
+template <bool GLQ, typename T, typename Td, typename Th>
 void orglx_unglx_getPerfData(const rocblas_handle handle,
-                         const rocblas_int m,                        
-                         const rocblas_int n, 
-                         const rocblas_int k, 
-                         Td &dA, 
+                         const rocblas_int m,
+                         const rocblas_int n,
+                         const rocblas_int k,
+                         Td &dA,
                          const rocblas_int lda,
                          Td &dIpiv,
                          Th &hA,
@@ -158,7 +158,7 @@ void orglx_unglx_getPerfData(const rocblas_handle handle,
 
     if (!perf)
     {
-        orglx_unglx_initData<true,false,T>(handle, m, n, k, dA, lda, dIpiv, 
+        orglx_unglx_initData<true,false,T>(handle, m, n, k, dA, lda, dIpiv,
                         hA, hIpiv, hW, size_W);
 
         // cpu-lapack performance (only if not in perf mode)
@@ -168,14 +168,14 @@ void orglx_unglx_getPerfData(const rocblas_handle handle,
             cblas_orgl2_ungl2<T>(m,n,k,hA[0],lda,hIpiv[0],hW.data());
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    
-    orglx_unglx_initData<true,false,T>(handle, m, n, k, dA, lda, dIpiv, 
+
+    orglx_unglx_initData<true,false,T>(handle, m, n, k, dA, lda, dIpiv,
                      hA, hIpiv, hW, size_W);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        orglx_unglx_initData<false,true,T>(handle, m, n, k, dA, lda, dIpiv, 
+        orglx_unglx_initData<false,true,T>(handle, m, n, k, dA, lda, dIpiv,
                         hA, hIpiv, hW, size_W);
 
         CHECK_ROCBLAS_ERROR(rocsolver_orglx_unglx(GLQ,handle,m,n,k,dA.data(),lda,dIpiv.data()));
@@ -185,7 +185,7 @@ void orglx_unglx_getPerfData(const rocblas_handle handle,
     double start;
     for(int iter = 0; iter < hot_calls; iter++)
     {
-        orglx_unglx_initData<false,true,T>(handle, m, n, k, dA, lda, dIpiv, 
+        orglx_unglx_initData<false,true,T>(handle, m, n, k, dA, lda, dIpiv,
                         hA, hIpiv, hW, size_W);
 
         start = get_time_us();
@@ -196,18 +196,18 @@ void orglx_unglx_getPerfData(const rocblas_handle handle,
 }
 
 
-template <typename T, bool GLQ> 
-void testing_orglx_unglx(Arguments argus) 
+template <typename T, bool GLQ>
+void testing_orglx_unglx(Arguments argus)
 {
-    // get arguments 
-    rocblas_local_handle handle;  
+    // get arguments
+    rocblas_local_handle handle;
     rocblas_int k = argus.K;
     rocblas_int m = argus.M;
     rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda; 
+    rocblas_int lda = argus.lda;
     rocblas_int hot_calls = argus.iters;
 
-    // check non-supported values 
+    // check non-supported values
     // N/A
 
     // determine sizes
@@ -223,11 +223,11 @@ void testing_orglx_unglx(Arguments argus)
         EXPECT_ROCBLAS_STATUS(rocsolver_orglx_unglx(GLQ,handle,m,n,k,(T*)nullptr,lda,(T*)nullptr),
                               rocblas_status_invalid_size);
 
-        if (argus.timing)  
+        if (argus.timing)
             ROCSOLVER_BENCH_INFORM(1);
 
         return;
-    }             
+    }
 
     // memory allocations
     host_strided_batch_vector<T> hA(size_A,1,size_A,1);
@@ -237,32 +237,32 @@ void testing_orglx_unglx(Arguments argus)
     device_strided_batch_vector<T> dIpiv(size_P,1,size_P,1);
     if (size_A) CHECK_HIP_ERROR(dA.memcheck());
     if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
-    
+
     // check quick return
     if (n == 0 || m == 0) {
         EXPECT_ROCBLAS_STATUS(rocsolver_orglx_unglx(GLQ,handle,m,n,k,dA.data(),lda,dIpiv.data()),
                               rocblas_status_success);
 
-        if (argus.timing)  
+        if (argus.timing)
             ROCSOLVER_BENCH_INFORM(0);
-        
+
         return;
     }
 
     // check computations
     if (argus.unit_check || argus.norm_check)
-        orglx_unglx_getError<GLQ,T>(handle, m, n, k, dA, lda, dIpiv, 
-                         hA, hAr, hIpiv, &max_error); 
+        orglx_unglx_getError<GLQ,T>(handle, m, n, k, dA, lda, dIpiv,
+                         hA, hAr, hIpiv, &max_error);
 
-    // collect performance data 
-    if (argus.timing) 
+    // collect performance data
+    if (argus.timing)
         orglx_unglx_getPerfData<GLQ,T>(handle, m, n, k, dA, lda, dIpiv,
-                          hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
-        
+                          hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
+
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
-    if (argus.unit_check) 
-        rocsolver_test_check<T>(max_error,n);     
+    if (argus.unit_check)
+        rocsolver_test_check<T>(max_error,n);
 
     // output results for rocsolver-bench
     if (argus.timing) {

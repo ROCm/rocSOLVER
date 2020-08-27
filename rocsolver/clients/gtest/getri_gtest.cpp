@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -28,7 +28,7 @@ const vector<vector<int>> matrix_size_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
-    {192, 192}, {500, 600}, {640, 640}, {1000, 1024}, {1200, 1230} 
+    {192, 192}, {500, 600}, {640, 640}, {1000, 1024}, {1200, 1230}
 };
 
 
@@ -63,7 +63,7 @@ protected:
 TEST_P(GETRI, __float) {
     Arguments arg = getri_setup_arguments(GetParam());
 
-    if (arg.N == 0) 
+    if (arg.N == 0)
         testing_getri_bad_arg<false,false,float>();
 
     arg.batch_count = 1;
@@ -73,7 +73,7 @@ TEST_P(GETRI, __float) {
 TEST_P(GETRI, __double) {
     Arguments arg = getri_setup_arguments(GetParam());
 
-    if (arg.N == 0) 
+    if (arg.N == 0)
         testing_getri_bad_arg<false,false,double>();
 
     arg.batch_count = 1;
@@ -153,7 +153,7 @@ TEST_P(GETRI, strided_batched__float) {
 
     if (arg.N == 0)
         testing_getri_bad_arg<false,true,float>();
-    
+
     arg.batch_count = 3;
     testing_getri<false,true,float>(arg);
 }
@@ -197,7 +197,7 @@ TEST_P(GETRI, outofplace_batched__float) {
 
     if (arg.N == 0)
         testing_getri_bad_arg<true,false,float>();
-    
+
     arg.batch_count = 3;
     testing_getri<true,false,float>(arg);
 }

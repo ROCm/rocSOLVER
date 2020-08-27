@@ -1,11 +1,11 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_orgl2_ungl2.hpp"
 
 template <typename T>
-rocblas_status rocsolver_orgl2_ungl2_impl(rocblas_handle handle, const rocblas_int m, const rocblas_int n, 
+rocblas_status rocsolver_orgl2_ungl2_impl(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                                           const rocblas_int k, T* A, const rocblas_int lda, T* ipiv)
 {
     if(!handle)

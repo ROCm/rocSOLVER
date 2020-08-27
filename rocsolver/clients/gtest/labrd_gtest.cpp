@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -36,7 +36,7 @@ const vector<vector<int>> n_size_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
-    {152, 152, 152}, {640, 640, 656}, {1000, 1024, 1000}, 
+    {152, 152, 152}, {640, 640, 656}, {1000, 1024, 1000},
 };
 
 const vector<vector<int>> large_n_size_range = {
@@ -44,7 +44,7 @@ const vector<vector<int>> large_n_size_range = {
 };
 
 
-Arguments labrd_setup_arguments(labrd_tuple tup) 
+Arguments labrd_setup_arguments(labrd_tuple tup)
 {
     vector<int> matrix_size = std::get<0>(tup);
     vector<int> n_size = std::get<1>(tup);

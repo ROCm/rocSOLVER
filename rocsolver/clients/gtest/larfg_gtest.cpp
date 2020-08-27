@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -26,7 +26,7 @@ const vector<int> incx_range = {
 const vector<int> n_size_range = {
     0,  //quick return
     -1, //invalid
-    1, 12, 20, 35,  
+    1, 12, 20, 35,
 };
 
 // for daily_lapack tests
@@ -58,7 +58,7 @@ protected:
 
 TEST_P(LARFG, __float) {
     Arguments arg = larfg_setup_arguments(GetParam());
-    
+
     if (arg.N == 0 && arg.incx == 0)
         testing_larfg_bad_arg<float>();
 
@@ -67,7 +67,7 @@ TEST_P(LARFG, __float) {
 
 TEST_P(LARFG, __double) {
   Arguments arg = larfg_setup_arguments(GetParam());
-    
+
     if (arg.N == 0 && arg.incx == 0)
         testing_larfg_bad_arg<double>();
 
@@ -76,7 +76,7 @@ TEST_P(LARFG, __double) {
 
 TEST_P(LARFG, __float_complex) {
   Arguments arg = larfg_setup_arguments(GetParam());
-    
+
     if (arg.N == 0 && arg.incx == 0)
         testing_larfg_bad_arg<rocblas_float_complex>();
 
@@ -85,7 +85,7 @@ TEST_P(LARFG, __float_complex) {
 
 TEST_P(LARFG, __double_complex) {
   Arguments arg = larfg_setup_arguments(GetParam());
-    
+
     if (arg.N == 0 && arg.incx == 0)
         testing_larfg_bad_arg<rocblas_double_complex>();
 

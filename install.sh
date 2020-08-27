@@ -16,20 +16,20 @@ Usage:
 Options:
   --help                      Print this help message.
 
-  --build_dir <builddir>      Specify path to the configure & build process output directory. 
+  --build_dir <builddir>      Specify path to the configure & build process output directory.
                               Relative paths are relative to the current directory.
                               (Default is ./build)
 
-  --lib_dir <libdir>          Specify path to the directory where the library generated files 
-                              will be located. Relative paths are relative to builddir/release 
-                              or builddir/debug, depending on the build type. 
+  --lib_dir <libdir>          Specify path to the directory where the library generated files
+                              will be located. Relative paths are relative to builddir/release
+                              or builddir/debug, depending on the build type.
                               (Default is builddir/release/rocsolver-install)
 
-  --install_dir <installdir>  Specify path to the directory where the library package 
-                              (when generated) will be installed. Use only absolute paths. 
+  --install_dir <installdir>  Specify path to the directory where the library package
+                              (when generated) will be installed. Use only absolute paths.
                               (Default is /opt/rocm)
 
-  --rocblas_dir <blasdir>     Specify path to the companion rocBLAS-library root directory. 
+  --rocblas_dir <blasdir>     Specify path to the companion rocBLAS-library root directory.
                               Use only absolute paths.
                               (Default is /opt/rocm/rocblas)
 
@@ -53,7 +53,7 @@ Options:
                               (This is the default building option).
 
   -s | --static               Pass this flag to build rocsolver as a static library.
-                              (rocsolver must be built statically when the used companion rocblas is also static). 
+                              (rocsolver must be built statically when the used companion rocblas is also static).
 
   -r | --relocatable          Pass this to add RUNPATH(based on ROCM_RPATH) and remove ldconf entry.
 
@@ -392,7 +392,7 @@ while true; do
         build_relocatable=true
         shift ;;
     --) shift ; break ;;
-    *)  
+    *)
         echo "Unexpected command line parameter received; aborting";
         exit 1
         ;;
@@ -478,7 +478,7 @@ else
   mkdir -p release && cd release
 fi
 
-cmake_common_options="${cmake_common_options} -DROCM_PATH=${rocm_path} -Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${lib_dir} -DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir} -DCMAKE_BUILD_TYPE=${build_type}" 
+cmake_common_options="${cmake_common_options} -DROCM_PATH=${rocm_path} -Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${lib_dir} -DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir} -DCMAKE_BUILD_TYPE=${build_type}"
 
 if [[ "${static_lib}" == true ]]; then
   cmake_common_options="${cmake_common_options} -DBUILD_SHARED_LIBS=OFF"

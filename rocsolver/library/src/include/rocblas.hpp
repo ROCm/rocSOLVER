@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 #pragma once
 #ifndef _ROCBLAS_HPP_
@@ -30,8 +30,8 @@ rocblas_status rocblasCall_iamax(rocblas_handle             handle,
 
 // scal
 template <typename T, typename U, typename V>
-rocblas_status rocblasCall_scal(rocblas_handle handle, 
-                            rocblas_int    n, 
+rocblas_status rocblasCall_scal(rocblas_handle handle,
+                            rocblas_int    n,
                             U              alpha,
                             rocblas_stride stridea,
                             V              x,
@@ -41,7 +41,7 @@ rocblas_status rocblasCall_scal(rocblas_handle handle,
                             rocblas_int    batch_count)
 {
     return rocblas_scal_template<ROCBLAS_SCAL_NB,T>(handle,n,alpha,stridea,x,offsetx,incx,stridex,batch_count);
-} 
+}
 
 // dot
 template <bool CONJ, typename T, typename U>
@@ -61,25 +61,25 @@ rocblas_status rocblasCall_dot(rocblas_handle handle,
 {
     return rocblas_dot_template<ROCBLAS_DOT_NB,CONJ,T>(handle,n,cast2constType<T>(x),offsetx,incx,stridex,
                                                        cast2constType<T>(y),offsety,incy,stridey,
-                                                       batch_count,results,workspace);                         
+                                                       batch_count,results,workspace);
 }
 
 // ger
 template <bool CONJ, typename T, typename U, typename V>
-rocblas_status rocblasCall_ger(rocblas_handle handle, 
-                           rocblas_int    m, 
+rocblas_status rocblasCall_ger(rocblas_handle handle,
+                           rocblas_int    m,
                            rocblas_int    n,
-                           U              alpha, 
+                           U              alpha,
                            rocblas_stride stridea,
                            V              x,
                            rocblas_int    offsetx,
                            rocblas_int    incx,
                            rocblas_stride stridex,
-                           V              y, 
+                           V              y,
                            rocblas_int    offsety,
-                           rocblas_int    incy, 
-                           rocblas_stride stridey,   
-                           V              A, 
+                           rocblas_int    incy,
+                           rocblas_stride stridey,
+                           V              A,
                            rocblas_int    offsetA,
                            rocblas_int    lda,
                            rocblas_stride strideA,
@@ -92,20 +92,20 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
 
 // ger overload
 template <bool CONJ, typename T, typename U>
-rocblas_status rocblasCall_ger(rocblas_handle handle, 
-                           rocblas_int    m, 
+rocblas_status rocblasCall_ger(rocblas_handle handle,
+                           rocblas_int    m,
                            rocblas_int    n,
-                           U              alpha, 
+                           U              alpha,
                            rocblas_stride stridea,
                            T *const       x[],
                            rocblas_int    offsetx,
                            rocblas_int    incx,
                            rocblas_stride stridex,
-                           T*             y, 
+                           T*             y,
                            rocblas_int    offsety,
-                           rocblas_int    incy, 
-                           rocblas_stride stridey,   
-                           T *const       A[], 
+                           rocblas_int    incy,
+                           rocblas_stride stridey,
+                           T *const       A[],
                            rocblas_int    offsetA,
                            rocblas_int    lda,
                            rocblas_stride strideA,
@@ -117,27 +117,27 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
 
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,y,stridey,batch_count);
- 
+
     return rocblas_ger_template<CONJ,T>(handle,m,n,alpha,stridea,cast2constType<T>(x),offsetx,incx,stridex,
                                           cast2constType<T>(work),offsety,incy,stridey,A,offsetA,lda,strideA,batch_count);
 }
 
 // ger overload
 template <bool CONJ, typename T, typename U>
-rocblas_status rocblasCall_ger(rocblas_handle handle, 
-                           rocblas_int    m, 
+rocblas_status rocblasCall_ger(rocblas_handle handle,
+                           rocblas_int    m,
                            rocblas_int    n,
-                           U              alpha, 
+                           U              alpha,
                            rocblas_stride stridea,
                            T*             x,
                            rocblas_int    offsetx,
                            rocblas_int    incx,
                            rocblas_stride stridex,
-                           T *const       y[], 
+                           T *const       y[],
                            rocblas_int    offsety,
-                           rocblas_int    incy, 
-                           rocblas_stride stridey,   
-                           T *const       A[], 
+                           rocblas_int    incy,
+                           rocblas_stride stridey,
+                           T *const       A[],
                            rocblas_int    offsetA,
                            rocblas_int    lda,
                            rocblas_stride strideA,
@@ -149,7 +149,7 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
 
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,x,stridex,batch_count);
- 
+
     return rocblas_ger_template<CONJ,T>(handle,m,n,alpha,stridea,cast2constType<T>(work),offsetx,incx,stridex,
                                           cast2constType<T>(y),offsety,incy,stridey,A,offsetA,lda,strideA,batch_count);
 }
@@ -216,7 +216,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle    handle,
 
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,x,stridex,batch_count);
- 
+
     return rocblas_gemv_template<T>(handle,transA,m,n,alpha,stride_alpha,
                                       cast2constType<T>(A),offseta,lda,strideA,
                                       cast2constType<T>(work),offsetx,incx,stridex,beta,stride_beta,
@@ -253,7 +253,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle    handle,
 
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,y,stridey,batch_count);
- 
+
     return rocblas_gemv_template<T>(handle,transA,m,n,alpha,stride_alpha,
                                       cast2constType<T>(A),offseta,lda,strideA,
                                       cast2constType<T>(x),offsetx,incx,stridex,beta,stride_beta,
@@ -344,7 +344,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle    handle,
 
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,A,stride_a,batch_count);
- 
+
     return rocblas_gemm_template<BATCHED,T>(handle,trans_a,trans_b,m,n,k,alpha,
                                             cast2constType<T>(work),offset_a,ld_a,stride_a,
                                             cast2constType<T>(B),offset_b,ld_b,stride_b,beta,
@@ -381,7 +381,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle    handle,
 
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,B,stride_b,batch_count);
- 
+
     return rocblas_gemm_template<BATCHED,T>(handle,trans_a,trans_b,m,n,k,alpha,
                                             cast2constType<T>(A),offset_a,ld_a,stride_a,
                                             cast2constType<T>(work),offset_b,ld_b,stride_b,beta,
@@ -418,7 +418,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle    handle,
 
     rocblas_int blocks =  (batch_count - 1)/256 + 1;
     hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,work,C,stride_c,batch_count);
- 
+
     return rocblas_gemm_template<BATCHED,T>(handle,trans_a,trans_b,m,n,k,alpha,
                                             cast2constType<T>(A),offset_a,ld_a,stride_a,
                                             cast2constType<T>(B),offset_b,ld_b,stride_b,beta,
@@ -482,7 +482,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle    handle,
     // since trmm doesn't have offset arguments, we need to manually offset A and B (and store in workArr)
     V AA = (V)workArr + batch_count;
     V BB = (V)workArr + 2*batch_count;
-    
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -586,7 +586,7 @@ void rocblasCall_trsm_mem(rocblas_side   side,
 
     size_t arrBytes       = BATCHED ? sizeof(T*) * batch_count : 0;
     size_t xarrBytes      = BATCHED ? sizeof(T*) * batch_count : 0;
-    
+
     if(!exact_blocks)
     {
         // TODO: Make this more accurate -- right now it's much larger than necessary
@@ -627,7 +627,7 @@ void rocblasCall_trsm_mem(rocblas_side   side,
     *x_temp = x_c_temp_bytes;
     *x_temp_arr = xarrBytes;
     *invA = invA_bytes;
-    *invA_arr = arrBytes;    
+    *invA_arr = arrBytes;
 }
 
 // trsm
@@ -667,7 +667,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle    handle,
 
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
-// THESE SHOULD BE SUBTITUTED BY THEIR CORRESPONDING 
+// THESE SHOULD BE SUBTITUTED BY THEIR CORRESPONDING
 // ROCBLAS TEMPLATE FUNCTIONS ONCE THEY ARE EXPORTED
 // (ROCBLAS.CPP CAN BE ELIMINATED THEN)
 

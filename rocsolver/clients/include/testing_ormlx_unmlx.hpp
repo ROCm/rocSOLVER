@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "norm.hpp"
@@ -13,10 +13,10 @@ template <bool MLQ, bool COMPLEX, typename T>
 void ormlx_unmlx_checkBadArgs(const rocblas_handle handle,
                          const rocblas_side side,
                          const rocblas_operation trans,
-                         const rocblas_int m, 
-                         const rocblas_int n, 
-                         const rocblas_int k, 
-                         T dA, 
+                         const rocblas_int m,
+                         const rocblas_int n,
+                         const rocblas_int k,
+                         T dA,
                          const rocblas_int lda,
                          T dIpiv,
                          T dC,
@@ -24,20 +24,20 @@ void ormlx_unmlx_checkBadArgs(const rocblas_handle handle,
 {
     // handle
     EXPECT_ROCBLAS_STATUS(rocsolver_ormlx_unmlx(MLQ,nullptr,side,trans,m,n,k,dA,lda,dIpiv,dC,ldc),
-                          rocblas_status_invalid_handle); 
+                          rocblas_status_invalid_handle);
 
     // values
     EXPECT_ROCBLAS_STATUS(rocsolver_ormlx_unmlx(MLQ,handle,rocblas_side(-1),trans,m,n,k,dA,lda,dIpiv,dC,ldc),
                           rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(rocsolver_ormlx_unmlx(MLQ,handle,side,rocblas_operation(-1),m,n,k,dA,lda,dIpiv,dC,ldc),
-                          rocblas_status_invalid_value); 
+                          rocblas_status_invalid_value);
     if (COMPLEX)
         EXPECT_ROCBLAS_STATUS(rocsolver_ormlx_unmlx(MLQ,handle,side,rocblas_operation_transpose,m,n,k,dA,lda,dIpiv,dC,ldc),
-                              rocblas_status_invalid_value); 
+                              rocblas_status_invalid_value);
     else
         EXPECT_ROCBLAS_STATUS(rocsolver_ormlx_unmlx(MLQ,handle,side,rocblas_operation_conjugate_transpose,m,n,k,dA,lda,dIpiv,dC,ldc),
-                              rocblas_status_invalid_value); 
-    
+                              rocblas_status_invalid_value);
+
     // pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_ormlx_unmlx(MLQ,handle,side,trans,m,n,k,(T)nullptr,lda,dIpiv,dC,ldc),
                           rocblas_status_invalid_pointer);
@@ -59,7 +59,7 @@ template <typename T, bool MLQ, bool COMPLEX = is_complex<T>>
 void testing_ormlx_unmlx_bad_arg()
 {
     // safe arguments
-    rocblas_local_handle handle;  
+    rocblas_local_handle handle;
     rocblas_side side = rocblas_side_left;
     rocblas_operation trans = rocblas_operation_none;
     rocblas_int k = 1;
@@ -78,17 +78,17 @@ void testing_ormlx_unmlx_bad_arg()
 
     // check bad arguments
     ormlx_unmlx_checkBadArgs<MLQ,COMPLEX>(handle,side,trans,m,n,k,dA.data(),lda,dIpiv.data(),dC.data(),ldc);
-}   
+}
 
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th> 
+template <bool CPU, bool GPU, typename T, typename Td, typename Th>
 void ormlx_unmlx_initData(const rocblas_handle handle,
                          const rocblas_side side,
                          const rocblas_operation trans,
                          const rocblas_int m,
-                         const rocblas_int n, 
-                         const rocblas_int k, 
-                         Td &dA, 
+                         const rocblas_int n,
+                         const rocblas_int k,
+                         Td &dA,
                          const rocblas_int lda,
                          Td &dIpiv,
                          Td &dC,
@@ -131,14 +131,14 @@ void ormlx_unmlx_initData(const rocblas_handle handle,
 }
 
 
-template <bool MLQ, typename T, typename Td, typename Th> 
+template <bool MLQ, typename T, typename Td, typename Th>
 void ormlx_unmlx_getError(const rocblas_handle handle,
                          const rocblas_side side,
                          const rocblas_operation trans,
                          const rocblas_int m,
-                         const rocblas_int n, 
-                         const rocblas_int k, 
-                         Td &dA, 
+                         const rocblas_int n,
+                         const rocblas_int k,
+                         Td &dA,
                          const rocblas_int lda,
                          Td &dIpiv,
                          Td &dC,
@@ -151,7 +151,7 @@ void ormlx_unmlx_getError(const rocblas_handle handle,
 {
     size_t size_W = max(max(m,n),k);
     std::vector<T> hW(size_W);
-    
+
     //initialize data
     ormlx_unmlx_initData<true,true,T>(handle, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
                      hA, hIpiv, hC, hW, size_W);
@@ -166,22 +166,22 @@ void ormlx_unmlx_getError(const rocblas_handle handle,
         cblas_ormlq_unmlq<T>(side,trans,m,n,k,hA[0],lda,hIpiv[0],hC[0],ldc,hW.data(),size_W):
         cblas_orml2_unml2<T>(side,trans,m,n,k,hA[0],lda,hIpiv[0],hC[0],ldc,hW.data());
 
-    // error is ||hC - hCr|| / ||hC|| 
-    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
+    // error is ||hC - hCr|| / ||hC||
+    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
-    // using frobenius norm 
+    // using frobenius norm
     *max_err = norm_error('F',m,n,ldc,hC[0],hCr[0]);
 }
 
 
-template <bool MLQ, typename T, typename Td, typename Th> 
+template <bool MLQ, typename T, typename Td, typename Th>
 void ormlx_unmlx_getPerfData(const rocblas_handle handle,
                          const rocblas_side side,
                          const rocblas_operation trans,
-                         const rocblas_int m,                        
-                         const rocblas_int n, 
-                         const rocblas_int k, 
-                         Td &dA, 
+                         const rocblas_int m,
+                         const rocblas_int n,
+                         const rocblas_int k,
+                         Td &dA,
                          const rocblas_int lda,
                          Td &dIpiv,
                          Td &dC,
@@ -201,7 +201,7 @@ void ormlx_unmlx_getPerfData(const rocblas_handle handle,
     {
         ormlx_unmlx_initData<true,false,T>(handle, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
                         hA, hIpiv, hC, hW, size_W);
-        
+
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         MLQ ?
@@ -209,11 +209,11 @@ void ormlx_unmlx_getPerfData(const rocblas_handle handle,
             cblas_orml2_unml2<T>(side,trans,m,n,k,hA[0],lda,hIpiv[0],hC[0],ldc,hW.data());
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    
+
     ormlx_unmlx_initData<true,false,T>(handle, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
                      hA, hIpiv, hC, hW, size_W);
-        
-    // cold calls    
+
+    // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         ormlx_unmlx_initData<false,true,T>(handle, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
@@ -228,7 +228,7 @@ void ormlx_unmlx_getPerfData(const rocblas_handle handle,
     {
         ormlx_unmlx_initData<false,true,T>(handle, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
                         hA, hIpiv, hC, hW, size_W);
-        
+
         start = get_time_us();
         rocsolver_ormlx_unmlx(MLQ,handle,side,trans,m,n,k,dA.data(),lda,dIpiv.data(),dC.data(),ldc);
         *gpu_time_used += get_time_us() - start;
@@ -237,24 +237,24 @@ void ormlx_unmlx_getPerfData(const rocblas_handle handle,
 }
 
 
-template <typename T, bool MLQ, bool COMPLEX = is_complex<T>> 
-void testing_ormlx_unmlx(Arguments argus) 
+template <typename T, bool MLQ, bool COMPLEX = is_complex<T>>
+void testing_ormlx_unmlx(Arguments argus)
 {
-    // get arguments 
-    rocblas_local_handle handle;  
+    // get arguments
+    rocblas_local_handle handle;
     rocblas_int k = argus.K;
     rocblas_int m = argus.M;
     rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda; 
-    rocblas_int ldc = argus.ldc; 
+    rocblas_int lda = argus.lda;
+    rocblas_int ldc = argus.ldc;
     rocblas_int hot_calls = argus.iters;
     char sideC = argus.side_option;
     char transC = argus.transA_option;
     rocblas_side side = char2rocblas_side(sideC);
     rocblas_operation trans = char2rocblas_operation(transC);
 
-    // check non-supported values 
-    bool invalid_value = (side == rocblas_side_both || 
+    // check non-supported values
+    bool invalid_value = (side == rocblas_side_both ||
                           (COMPLEX && trans == rocblas_operation_transpose) || (!COMPLEX && trans == rocblas_operation_conjugate_transpose));
     if (invalid_value) {
         EXPECT_ROCBLAS_STATUS(rocsolver_ormlx_unmlx(MLQ, handle, side, trans, m, n, k, (T*)nullptr, lda, (T*)nullptr, (T*)nullptr, ldc),
@@ -276,17 +276,17 @@ void testing_ormlx_unmlx(Arguments argus)
     size_t size_Cr = (argus.unit_check || argus.norm_check) ? size_C : 0;
 
     // check invalid sizes
-    bool invalid_size = ((m < 0 || n < 0 || k < 0 || ldc < m || lda < k) || 
+    bool invalid_size = ((m < 0 || n < 0 || k < 0 || ldc < m || lda < k) ||
                          (left && k > m) || (!left && k > n));
     if (invalid_size) {
         EXPECT_ROCBLAS_STATUS(rocsolver_ormlx_unmlx(MLQ,handle,side,trans,m,n,k,(T*)nullptr,lda,(T*)nullptr,(T*)nullptr,ldc),
                               rocblas_status_invalid_size);
 
-        if (argus.timing)  
+        if (argus.timing)
             ROCSOLVER_BENCH_INFORM(1);
 
         return;
-    }             
+    }
 
     // memory allocations
     host_strided_batch_vector<T> hC(size_C,1,size_C,1);
@@ -299,33 +299,33 @@ void testing_ormlx_unmlx(Arguments argus)
     if (size_A) CHECK_HIP_ERROR(dA.memcheck());
     if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
     if (size_C) CHECK_HIP_ERROR(dC.memcheck());
-    
+
     // check quick return
     if (n == 0 || m == 0 || k == 0) {
         EXPECT_ROCBLAS_STATUS(rocsolver_ormlx_unmlx(MLQ,handle,side,trans,m,n,k,dA.data(),lda,dIpiv.data(),dC.data(),ldc),
                               rocblas_status_success);
 
-        if (argus.timing)  
+        if (argus.timing)
             ROCSOLVER_BENCH_INFORM(0);
-        
+
         return;
     }
 
     // check computations
     if (argus.unit_check || argus.norm_check)
         ormlx_unmlx_getError<MLQ,T>(handle, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
-                         hA, hIpiv, hC, hCr, &max_error); 
+                         hA, hIpiv, hC, hCr, &max_error);
 
-    // collect performance data 
-    if (argus.timing) 
+    // collect performance data
+    if (argus.timing)
         ormlx_unmlx_getPerfData<MLQ,T>(handle, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
-                          hA, hIpiv, hC, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
-        
+                          hA, hIpiv, hC, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
+
     // validate results for rocsolver-test
     // using s * machine_precision as tolerance
     rocblas_int s = left ? m : n;
-    if (argus.unit_check) 
-        rocsolver_test_check<T>(max_error,s);     
+    if (argus.unit_check)
+        rocsolver_test_check<T>(max_error,s);
 
     // output results for rocsolver-bench
     if (argus.timing) {

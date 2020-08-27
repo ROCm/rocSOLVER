@@ -1,12 +1,12 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_laswp.hpp"
 
 template <typename T, typename U>
 rocblas_status rocsolver_laswp_impl(rocblas_handle handle, const rocblas_int n, U A, const rocblas_int lda,
-                                    const rocblas_int k1, const rocblas_int k2, const rocblas_int *ipiv, const rocblas_int incx) 
+                                    const rocblas_int k1, const rocblas_int k2, const rocblas_int *ipiv, const rocblas_int incx)
 {
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -21,12 +21,12 @@ rocblas_status rocsolver_laswp_impl(rocblas_handle handle, const rocblas_int n, 
     rocblas_stride strideA = 0;
     rocblas_stride strideP = 0;
     rocblas_int batch_count=1;
-    
+
     // memory managment
     // this function does not requiere memory work space
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
 
-    // execution 
+    // execution
     return rocsolver_laswp_template<T>(handle,n,
                                         A,0,    //The matrix is shifted 0 entries (will work on the entire matrix)
                                         lda,strideA,
@@ -58,14 +58,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dlaswp(rocblas_handle handle, const ro
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_claswp(rocblas_handle handle, const rocblas_int n,
-                 rocblas_float_complex *A, const rocblas_int lda, const rocblas_int k1, const rocblas_int k2, 
+                 rocblas_float_complex *A, const rocblas_int lda, const rocblas_int k1, const rocblas_int k2,
                  const rocblas_int *ipiv, const rocblas_int incx)
 {
     return rocsolver_laswp_impl<rocblas_float_complex>(handle, n, A, lda, k1, k2, ipiv, incx);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zlaswp(rocblas_handle handle, const rocblas_int n,
-                 rocblas_double_complex *A, const rocblas_int lda, const rocblas_int k1, const rocblas_int k2, 
+                 rocblas_double_complex *A, const rocblas_int lda, const rocblas_int k1, const rocblas_int k2,
                  const rocblas_int *ipiv, const rocblas_int incx)
 {
     return rocsolver_laswp_impl<rocblas_double_complex>(handle, n, A, lda, k1, k2, ipiv, incx);

@@ -1,18 +1,18 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_potrf.hpp"
 
 template <typename S, typename T, typename U>
-rocblas_status rocsolver_potrf_impl(rocblas_handle handle, const rocblas_fill uplo,    
-                                    const rocblas_int n, U A, const rocblas_int lda, rocblas_int* info) 
-{ 
+rocblas_status rocsolver_potrf_impl(rocblas_handle handle, const rocblas_fill uplo,
+                                    const rocblas_int n, U A, const rocblas_int lda, rocblas_int* info)
+{
     if(!handle)
         return rocblas_status_invalid_handle;
-    
-    //logging is missing ???    
-    
+
+    //logging is missing ???
+
     // argument checking
     rocblas_status st = rocsolver_potf2_potrf_argCheck(uplo,n,lda,A,info);
     if (st != rocblas_status_continue)
@@ -24,8 +24,8 @@ rocblas_status rocsolver_potrf_impl(rocblas_handle handle, const rocblas_fill up
     // memory managment
     size_t size_1;  //size of constants
     size_t size_2;  //size of workspace
-    size_t size_3;  
-    size_t size_4;  
+    size_t size_3;
+    size_t size_4;
     rocsolver_potrf_getMemorySize<T>(n,batch_count,&size_1,&size_2,&size_3,&size_4);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE

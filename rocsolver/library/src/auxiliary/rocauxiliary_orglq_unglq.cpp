@@ -1,11 +1,11 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_orglq_unglq.hpp"
 
 template <typename T>
-rocblas_status rocsolver_orglq_unglq_impl(rocblas_handle handle, const rocblas_int m, const rocblas_int n, 
+rocblas_status rocsolver_orglq_unglq_impl(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                                           const rocblas_int k, T* A, const rocblas_int lda, T* ipiv)
 {
     if(!handle)
@@ -42,9 +42,9 @@ rocblas_status rocsolver_orglq_unglq_impl(rocblas_handle handle, const rocblas_i
     // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
     T sca[] = { -1, 0, 1 };
     RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
-    
+
     // execution
-    rocblas_status status = 
+    rocblas_status status =
            rocsolver_orglq_unglq_template<false,false,T>(handle,
                                                          m,n,k,
                                                          A,0,    //shifted 0 entries

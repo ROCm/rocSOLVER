@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2017
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_GEBRD_H
@@ -59,7 +59,7 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle, const rocblas_int
                                         const rocblas_int batch_count, T* scalars, T* work, T** workArr, T* diag)
 {
     // quick return
-    if (m == 0 || n == 0 || batch_count == 0) 
+    if (m == 0 || n == 0 || batch_count == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
@@ -68,8 +68,8 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle, const rocblas_int
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);
-    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_host); 
-    
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_host);
+
     T minone = -1;
     T one = 1;
     rocblas_int k = GEBRD_GEBD2_SWITCHSIZE;
@@ -82,8 +82,8 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle, const rocblas_int
     {
         rocsolver_gebd2_template<S,T>(handle, m, n, A, shiftA, lda, strideA, D, strideD, E, strideE,
                                       tauq, strideQ, taup, strideP, batch_count, scalars, work, workArr, diag);
-        
-        rocblas_set_pointer_mode(handle,old_mode);  
+
+        rocblas_set_pointer_mode(handle,old_mode);
         return rocblas_status_success;
     }
 
@@ -94,7 +94,7 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle, const rocblas_int
     blocks = (ldy*k - 1)/64 + 1;
     hipLaunchKernelGGL(reset_batch_info<T>, dim3(blocks,batch_count,1), dim3(64,1,1), 0, stream,
         Y + shiftY, strideY, ldy*k, 0);
-    
+
     while (j < dim - k) {
         // Reduce block to bidiagonal form
         jb = min(dim - j, k);  //number of rows and columns in the block
@@ -140,7 +140,7 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle, const rocblas_int
         rocsolver_gebd2_template<S,T>(handle, m-j, n-j, A, shiftA + idx2D(j,j,lda), lda, strideA, D + j, strideD, E + j, strideE,
                                       tauq + j, strideQ, taup + j, strideP, batch_count, scalars, work, workArr, diag);
 
-    rocblas_set_pointer_mode(handle,old_mode);  
+    rocblas_set_pointer_mode(handle,old_mode);
     return rocblas_status_success;
 }
 

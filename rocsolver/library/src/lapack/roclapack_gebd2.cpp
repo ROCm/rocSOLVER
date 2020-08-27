@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_gebd2.hpp"
@@ -7,12 +7,12 @@
 template <typename S, typename T, typename U>
 rocblas_status rocsolver_gebd2_impl(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                                     U A, const rocblas_int lda, S* D, S* E, T* tauq, T* taup)
-{ 
+{
     if(!handle)
         return rocblas_status_invalid_handle;
-    
-    //logging is missing ???    
-    
+
+    //logging is missing ???
+
     // argument checking
     rocblas_status st = rocsolver_gebd2_gebrd_argCheck(m,n,lda,A,D,E,tauq,taup);
     if (st != rocblas_status_continue)

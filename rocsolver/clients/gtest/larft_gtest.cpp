@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -29,7 +29,7 @@ typedef std::tuple<vector<int>, vector<int>> larft_tuple;
 const vector<vector<int>> order_size_range = {
     {0,1,0},                        //quick return
     {-1,1,0}, {10,5,0}, {10,3,1},   //invalid
-    {15,15,0}, {20,20,1}, {35,50,0}  
+    {15,15,0}, {20,20,1}, {35,50,0}
 };
 
 const vector<vector<int>> reflector_size_range = {
@@ -81,7 +81,7 @@ TEST_P(LARFT, __float) {
     Arguments arg = larft_setup_arguments(GetParam());
 
     if (arg.N == 0 && arg.K == 0)
-        testing_larft_bad_arg<float>();    
+        testing_larft_bad_arg<float>();
 
     testing_larft<float>(arg);
 }
@@ -90,7 +90,7 @@ TEST_P(LARFT, __double) {
     Arguments arg = larft_setup_arguments(GetParam());
 
     if (arg.N == 0 && arg.K == 0)
-        testing_larft_bad_arg<double>();    
+        testing_larft_bad_arg<double>();
 
     testing_larft<double>(arg);
 }
@@ -99,7 +99,7 @@ TEST_P(LARFT, __float_complex) {
   Arguments arg = larft_setup_arguments(GetParam());
 
     if (arg.N == 0 && arg.K == 0)
-        testing_larft_bad_arg<rocblas_float_complex>();    
+        testing_larft_bad_arg<rocblas_float_complex>();
 
     testing_larft<rocblas_float_complex>(arg);
 }
@@ -108,7 +108,7 @@ TEST_P(LARFT, __double_complex) {
   Arguments arg = larft_setup_arguments(GetParam());
 
     if (arg.N == 0 && arg.K == 0)
-        testing_larft_bad_arg<rocblas_double_complex>();    
+        testing_larft_bad_arg<rocblas_double_complex>();
 
     testing_larft<rocblas_double_complex>(arg);
 }

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_getf2.hpp"
@@ -7,13 +7,13 @@
 template <typename T, typename U>
 rocblas_status rocsolver_getf2_impl(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int lda,
-                                        rocblas_int *ipiv, rocblas_int* info, const int pivot) 
-{ 
+                                        rocblas_int *ipiv, rocblas_int* info, const int pivot)
+{
     if(!handle)
         return rocblas_status_invalid_handle;
-    
-    //logging is missing ???    
-    
+
+    //logging is missing ???
+
     // argument checking
     rocblas_status st = rocsolver_getf2_getrf_argCheck(m,n,lda,A,ipiv,info);
     if (st != rocblas_status_continue)
@@ -62,7 +62,7 @@ rocblas_status rocsolver_getf2_impl(rocblas_handle handle, const rocblas_int m,
     hipFree(pivot_val);
     hipFree(pivot_idx);
     hipFree(work);
-    return status;    
+    return status;
 }
 
 

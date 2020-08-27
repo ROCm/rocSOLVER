@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -32,7 +32,7 @@ const vector<vector<int>> incx_range = {
 const vector<vector<int>> matrix_size_range = {
     {0,10,1}, {10,0,10},                //quick return
     {-1,10,1}, {10,-1,10}, {10,10,5},   //invalid
-    {12,20,12}, {20,15,20}, {35,35,50}  
+    {12,20,12}, {20,15,20}, {35,35,50}
 };
 
 // for daily_lapack tests

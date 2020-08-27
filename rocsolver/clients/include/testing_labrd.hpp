@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "norm.hpp"
@@ -11,11 +11,11 @@
 
 
 template <typename S, typename T, typename U>
-void labrd_checkBadArgs(const rocblas_handle handle, 
-                         const rocblas_int m, 
-                         const rocblas_int n, 
+void labrd_checkBadArgs(const rocblas_handle handle,
+                         const rocblas_int m,
+                         const rocblas_int n,
                          const rocblas_int nb,
-                         T dA, 
+                         T dA,
                          const rocblas_int lda,
                          S dD,
                          S dE,
@@ -27,32 +27,32 @@ void labrd_checkBadArgs(const rocblas_handle handle,
                          const rocblas_int ldy)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(nullptr,m,n,nb,dA,lda,dD,dE,dTauq,dTaup,dX,ldx,dY,ldy), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(nullptr,m,n,nb,dA,lda,dD,dE,dTauq,dTaup,dX,ldx,dY,ldy),
                           rocblas_status_invalid_handle);
-    
+
     // values
     // N/A
-    
+
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,(T)nullptr,lda,dD,dE,dTauq,dTaup,dX,ldx,dY,ldy), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,(T)nullptr,lda,dD,dE,dTauq,dTaup,dX,ldx,dY,ldy),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,dA,lda,(S)nullptr,dE,dTauq,dTaup,dX,ldx,dY,ldy), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,dA,lda,(S)nullptr,dE,dTauq,dTaup,dX,ldx,dY,ldy),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,dA,lda,dD,(S)nullptr,dTauq,dTaup,dX,ldx,dY,ldy), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,dA,lda,dD,(S)nullptr,dTauq,dTaup,dX,ldx,dY,ldy),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,dA,lda,dD,dE,(U)nullptr,dTaup,dX,ldx,dY,ldy), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,dA,lda,dD,dE,(U)nullptr,dTaup,dX,ldx,dY,ldy),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,dA,lda,dD,dE,dTauq,(U)nullptr,dX,ldx,dY,ldy), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,dA,lda,dD,dE,dTauq,(U)nullptr,dX,ldx,dY,ldy),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,dA,lda,dD,dE,dTauq,dTaup,(T)nullptr,ldx,dY,ldy), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,dA,lda,dD,dE,dTauq,dTaup,(T)nullptr,ldx,dY,ldy),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,dA,lda,dD,dE,dTauq,dTaup,dX,ldx,(T)nullptr,ldy), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,nb,dA,lda,dD,dE,dTauq,dTaup,dX,ldx,(T)nullptr,ldy),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,0,n,0,(T)nullptr,lda,dD,dE,dTauq,dTaup,(T)nullptr,ldx,dY,ldy), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,0,n,0,(T)nullptr,lda,dD,dE,dTauq,dTaup,(T)nullptr,ldx,dY,ldy),
                           rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,0,0,(T)nullptr,lda,dD,dE,dTauq,dTaup,dX,ldx,(T)nullptr,ldy), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,0,0,(T)nullptr,lda,dD,dE,dTauq,dTaup,dX,ldx,(T)nullptr,ldy),
                           rocblas_status_success);
     EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle,m,n,0,dA,lda,(S)nullptr,(S)nullptr,(U)nullptr,(U)nullptr,(T)nullptr,ldx,(T)nullptr,ldy),
                           rocblas_status_success);
@@ -88,32 +88,32 @@ void testing_labrd_bad_arg()
     CHECK_HIP_ERROR(dTaup.memcheck());
     CHECK_HIP_ERROR(dX.memcheck());
     CHECK_HIP_ERROR(dY.memcheck());
-    
+
     // check bad arguments
     labrd_checkBadArgs(handle,m,n,nb,dA.data(),lda,dD.data(),dE.data(),dTauq.data(),dTaup.data(),dX.data(),ldx,dY.data(),ldy);
 }
 
 
 template <bool CPU, bool GPU, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
-void labrd_initData(const rocblas_handle handle, 
-                        const rocblas_int m, 
-                        const rocblas_int n, 
-                        const rocblas_int nb, 
-                        Td &dA, 
+void labrd_initData(const rocblas_handle handle,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        const rocblas_int nb,
+                        Td &dA,
                         const rocblas_int lda,
                         Sd &dD,
                         Sd &dE,
                         Ud &dTauq,
                         Ud &dTaup,
-                        Td &dX, 
+                        Td &dX,
                         const rocblas_int ldx,
-                        Td &dY, 
+                        Td &dY,
                         const rocblas_int ldy,
                         Th &hA,
-                        Sh &hD, 
-                        Sh &hE, 
-                        Uh &hTauq, 
-                        Uh &hTaup, 
+                        Sh &hD,
+                        Sh &hE,
+                        Uh &hTauq,
+                        Uh &hTaup,
                         Th &hX,
                         Th &hY)
 {
@@ -128,7 +128,7 @@ void labrd_initData(const rocblas_handle handle,
                     (m >= n && j == i+1) ||
                     (m < n && i == j+1))
                     hA[0][i + j * lda] += 400;
-                else    
+                else
                     hA[0][i + j * lda] -= 4;
             }
         }
@@ -149,26 +149,26 @@ void labrd_initData(const rocblas_handle handle,
 
 
 template <typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
-void labrd_getError(const rocblas_handle handle, 
-                        const rocblas_int m, 
-                        const rocblas_int n, 
-                        const rocblas_int nb, 
-                        Td &dA, 
+void labrd_getError(const rocblas_handle handle,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        const rocblas_int nb,
+                        Td &dA,
                         const rocblas_int lda,
                         Sd &dD,
                         Sd &dE,
                         Ud &dTauq,
                         Ud &dTaup,
-                        Td &dX, 
+                        Td &dX,
                         const rocblas_int ldx,
-                        Td &dY, 
+                        Td &dY,
                         const rocblas_int ldy,
                         Th &hA,
                         Th &hARes,
-                        Sh &hD, 
-                        Sh &hE, 
-                        Uh &hTauq, 
-                        Uh &hTaup, 
+                        Sh &hD,
+                        Sh &hE,
+                        Uh &hTauq,
+                        Uh &hTaup,
                         Th &hX,
                         Th &hXRes,
                         Th &hY,
@@ -188,9 +188,9 @@ void labrd_getError(const rocblas_handle handle,
 
     // CPU lapack
     cblas_labrd<S,T>(m, n, nb, hA[0], lda, hD[0], hE[0], hTauq[0], hTaup[0], hX[0], ldx, hY[0], ldy);
-   
+
     // error is max(||hA - hARes|| / ||hA||, ||hX - hXRes|| / ||hX||, ||hY - hYRes|| / ||hY||)
-    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
+    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
     double err;
@@ -205,25 +205,25 @@ void labrd_getError(const rocblas_handle handle,
 
 
 template <typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
-void labrd_getPerfData(const rocblas_handle handle, 
-                            const rocblas_int m, 
-                            const rocblas_int n, 
-                            const rocblas_int nb, 
-                            Td &dA, 
-                            const rocblas_int lda, 
-                            Sd &dD, 
-                            Sd &dE, 
-                            Ud &dTauq, 
-                            Ud &dTaup, 
-                            Td &dX, 
+void labrd_getPerfData(const rocblas_handle handle,
+                            const rocblas_int m,
+                            const rocblas_int n,
+                            const rocblas_int nb,
+                            Td &dA,
+                            const rocblas_int lda,
+                            Sd &dD,
+                            Sd &dE,
+                            Ud &dTauq,
+                            Ud &dTaup,
+                            Td &dX,
                             const rocblas_int ldx,
-                            Td &dY, 
+                            Td &dY,
                             const rocblas_int ldy,
                             Th &hA,
-                            Sh &hD, 
-                            Sh &hE, 
-                            Uh &hTauq, 
-                            Uh &hTaup, 
+                            Sh &hD,
+                            Sh &hE,
+                            Uh &hTauq,
+                            Uh &hTaup,
                             Th &hX,
                             Th &hY,
                             double *gpu_time_used,
@@ -241,7 +241,7 @@ void labrd_getPerfData(const rocblas_handle handle,
         cblas_labrd<S,T>(m, n, nb, hA[0], lda, hD[0], hE[0], hTauq[0], hTaup[0], hX[0], ldx, hY[0], ldy);
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    
+
     labrd_initData<true,false,S,T>(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy,
                         hA, hD, hE, hTauq, hTaup, hX, hY);
 
@@ -269,12 +269,12 @@ void labrd_getPerfData(const rocblas_handle handle,
 }
 
 
-template <typename T> 
-void testing_labrd(Arguments argus) 
+template <typename T>
+void testing_labrd(Arguments argus)
 {
     using S = decltype(std::real(T{}));
-    
-    // get arguments 
+
+    // get arguments
     rocblas_local_handle handle;
     rocblas_int m = argus.M;
     rocblas_int n = argus.N;
@@ -283,8 +283,8 @@ void testing_labrd(Arguments argus)
     rocblas_int ldx = argus.ldb;
     rocblas_int ldy = argus.ldc;
     rocblas_int hot_calls = argus.iters;
-    
-    // check non-supported values 
+
+    // check non-supported values
     // N/A
 
     // determine sizes
@@ -301,13 +301,13 @@ void testing_labrd(Arguments argus)
     size_t size_XRes = (argus.unit_check || argus.norm_check) ? size_X : 0;
     size_t size_YRes = (argus.unit_check || argus.norm_check) ? size_Y : 0;
 
-    // check invalid sizes 
+    // check invalid sizes
     bool invalid_size = (m < 0 || n < 0 || nb < 0 || nb > min(m,n) || lda < m || ldx < m || ldy < n);
     if (invalid_size) {
         EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle, m, n, nb, (T*)nullptr, lda, (S*)nullptr, (S*)nullptr, (T*)nullptr, (T*)nullptr, (T*)nullptr, ldx, (T*)nullptr, ldy),
                               rocblas_status_invalid_size);
 
-        if (argus.timing) 
+        if (argus.timing)
              ROCSOLVER_BENCH_INFORM(1);
 
         return;
@@ -350,19 +350,19 @@ void testing_labrd(Arguments argus)
     }
 
     // check computations
-    if (argus.unit_check || argus.norm_check) 
+    if (argus.unit_check || argus.norm_check)
         labrd_getError<S,T>(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy,
                             hA, hARes, hD, hE, hTauq, hTaup, hX, hXRes, hY, hYRes, &max_error);
 
     // collect performance data
-    if (argus.timing) 
+    if (argus.timing)
         labrd_getPerfData<S,T>(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy,
                                hA, hD, hE, hTauq, hTaup, hX, hY, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
 
     // validate results for rocsolver-test
     // using nb * max(m,n) * machine_precision as tolerance
-    if (argus.unit_check) 
-        rocsolver_test_check<T>(max_error,nb*max(m,n));     
+    if (argus.unit_check)
+        rocsolver_test_check<T>(max_error,nb*max(m,n));
 
     // output results for rocsolver-bench
     if (argus.timing) {

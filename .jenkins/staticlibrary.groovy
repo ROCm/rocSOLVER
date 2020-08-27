@@ -10,7 +10,7 @@ import com.amd.docker.*
 import java.nio.file.Path
 
 
-def runCI = 
+def runCI =
 {
     nodeDetails, jobName->
 
@@ -35,7 +35,7 @@ def runCI =
     {
         platform, project->
 
-        def gfilter = '*checkin_lapack*'  
+        def gfilter = '*checkin_lapack*'
         commonGroovy.runTestCommand(platform, project, gfilter)
     }
 

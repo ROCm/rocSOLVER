@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_POTF2_HPP
@@ -14,9 +14,9 @@
 #include "rocsolver.h"
 #include "../auxiliary/rocauxiliary_lacgv.hpp"
 
-template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0> 
-__global__ void sqrtDiagOnward(U A, const rocblas_int shiftA, const rocblas_int strideA, const size_t loc, 
-                               const rocblas_int j, T *res, rocblas_int *info) 
+template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+__global__ void sqrtDiagOnward(U A, const rocblas_int shiftA, const rocblas_int strideA, const size_t loc,
+                               const rocblas_int j, T *res, rocblas_int *info)
 {
     int id = hipBlockIdx_x;
 
@@ -36,9 +36,9 @@ __global__ void sqrtDiagOnward(U A, const rocblas_int shiftA, const rocblas_int 
     }
 }
 
-template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0> 
-__global__ void sqrtDiagOnward(U A, const rocblas_int shiftA, const rocblas_int strideA, const size_t loc, 
-                               const rocblas_int j, T *res, rocblas_int *info) 
+template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+__global__ void sqrtDiagOnward(U A, const rocblas_int shiftA, const rocblas_int strideA, const size_t loc,
+                               const rocblas_int j, T *res, rocblas_int *info)
 {
     int id = hipBlockIdx_x;
 
@@ -100,7 +100,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         const rocblas_int shiftA,
                                         const rocblas_int lda, const rocblas_stride strideA,
                                         rocblas_int *info, const rocblas_int batch_count,
-                                        T*scalars, T* work, T* pivotGPU) 
+                                        T*scalars, T* work, T* pivotGPU)
 {
     // quick return if zero instances in batch
     if (batch_count == 0)
@@ -108,18 +108,18 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-    
+
     rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(BLOCKSIZE, 1, 1);
 
     //info=0 (starting with a positive definite matrix)
     hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count,0);
-        
+
     // quick return if no dimensions
-    if (n == 0) 
+    if (n == 0)
         return rocblas_status_success;
-    
+
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);
@@ -131,7 +131,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
             rocblasCall_dot<COMPLEX,T>(handle, j, A, shiftA + idx2D(0, j, lda), 1, strideA,
                                  A, shiftA + idx2D(0, j, lda), 1, strideA, batch_count, pivotGPU, work);
 
-            hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, 
+            hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream,
                                A, shiftA, strideA, idx2D(j, j, lda), j, pivotGPU, info);
 
             // Compute elements J+1:N of row J
@@ -143,10 +143,10 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                 A, shiftA + idx2D(0, j+1, lda), lda, strideA,
                                 A, shiftA + idx2D(0, j, lda), 1, strideA, scalars+2, 0,
                                 A, shiftA + idx2D(j, j+1, lda), lda, strideA, batch_count, nullptr);
-                
+
                 if (COMPLEX)
                     rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(0,j,lda), 1, strideA, batch_count);
-                                    
+
                 rocblasCall_scal<T>(handle, n-j-1, pivotGPU, 1, A, shiftA + idx2D(j, j+1, lda), lda, strideA, batch_count);
             }
         }
@@ -157,19 +157,19 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
             rocblasCall_dot<COMPLEX,T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda, strideA,
                                  A, shiftA + idx2D(j, 0, lda), lda, strideA, batch_count, pivotGPU, work);
 
-            hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, 
+            hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream,
                                A, shiftA, strideA, idx2D(j, j, lda), j, pivotGPU, info);
 
             // Compute elements J+1:N of row J
             if (j < n - 1) {
                 if (COMPLEX)
                     rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(j,0,lda), lda, strideA, batch_count);
-                
+
                 rocblasCall_gemv<T>(handle, rocblas_operation_none, n-j-1, j, scalars, 0,
                                 A, shiftA + idx2D(j+1, 0, lda), lda, strideA,
                                 A, shiftA + idx2D(j, 0, lda), lda, strideA, scalars+2, 0,
                                 A, shiftA + idx2D(j+1, j, lda), 1, strideA, batch_count, nullptr);
-                
+
                 if (COMPLEX)
                     rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(j,0,lda), lda, strideA, batch_count);
 

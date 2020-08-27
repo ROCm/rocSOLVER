@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -36,7 +36,7 @@ const vector<vector<int>> large_matrix_size_range = {
 };
 
 
-Arguments potrf_setup_arguments(potrf_tuple tup) 
+Arguments potrf_setup_arguments(potrf_tuple tup)
 {
     vector<int> matrix_size = std::get<0>(tup);
     char uplo = std::get<1>(tup);

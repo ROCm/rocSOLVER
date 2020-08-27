@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2013
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_LARFB_HPP
@@ -14,7 +14,7 @@
 #include "rocsolver.h"
 
 template <typename T, typename U>
-__global__ void copymatA1(const rocblas_int ldw, const rocblas_int order, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, T* work) 
+__global__ void copymatA1(const rocblas_int ldw, const rocblas_int order, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, T* work)
 {
     const auto blocksizex = hipBlockDim_x;
     const auto blocksizey = hipBlockDim_y;
@@ -33,7 +33,7 @@ __global__ void copymatA1(const rocblas_int ldw, const rocblas_int order, U A, c
 }
 
 template <typename T, typename U>
-__global__ void addmatA1(const rocblas_int ldw, const rocblas_int order, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, T* work) 
+__global__ void addmatA1(const rocblas_int ldw, const rocblas_int order, U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, T* work)
 {
     const auto blocksizex = hipBlockDim_x;
     const auto blocksizey = hipBlockDim_y;
@@ -47,7 +47,7 @@ __global__ void addmatA1(const rocblas_int ldw, const rocblas_int order, U A, co
         Wp = work + b*strideW;
         Ap = load_ptr_batch<T>(A,b,shiftA,strideA);
 
-        Ap[i + j*lda] -= Wp[i + j*ldw];    
+        Ap[i + j*lda] -= Wp[i + j*ldw];
     }
 }
 
@@ -99,7 +99,7 @@ rocblas_status rocsolver_larfb_argCheck(const rocblas_side side, const rocblas_o
         return rocblas_status_invalid_value;
     bool row = (storev == rocblas_row_wise);
     bool left = (side == rocblas_side_left);
-    
+
     // 2. invalid size
     if (m < 0 || n < 0 || k < 1 || lda < m || ldf < k)
         return rocblas_status_invalid_size;
@@ -117,13 +117,13 @@ rocblas_status rocsolver_larfb_argCheck(const rocblas_side side, const rocblas_o
 
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_side side, 
-                                        const rocblas_operation trans, const rocblas_direct direct, 
+rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_side side,
+                                        const rocblas_operation trans, const rocblas_direct direct,
                                         const rocblas_storev storev,
                                         const rocblas_int m, const rocblas_int n,
-                                        const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv, 
+                                        const rocblas_int k, U V, const rocblas_int shiftV, const rocblas_int ldv,
                                         const rocblas_stride strideV, T *F, const rocblas_int shiftF,
-                                        const rocblas_int ldf, const rocblas_stride strideF, 
+                                        const rocblas_int ldf, const rocblas_stride strideF,
                                         U A, const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
                                         const rocblas_int batch_count, T* work, T** workArr)
 {
@@ -141,8 +141,8 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     rocblas_set_pointer_mode(handle,rocblas_pointer_mode_host);
 
     //constants to use when calling rocablas functions
-    T minone = -1;               
-    T one = 1;               
+    T minone = -1;
+    T one = 1;
 
     // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
     //      TRMM_BATCH FUNCTIONALITY IS ENABLED. ****
@@ -161,13 +161,13 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     bool leftside = (side == rocblas_side_left);
     rocblas_operation transt = (leftside && trans == rocblas_operation_transpose ?
                                 rocblas_operation_conjugate_transpose : trans);
-    rocblas_operation transp; 
+    rocblas_operation transp;
     rocblas_fill uploV, uploT;
     rocblas_int order, ldw;
     rocblas_int shift1, shift2;
     size_t offsetA1, offsetA2;
     size_t offsetV1, offsetV2;
-    
+
     if (leftside)
     {
         order = n;
@@ -203,7 +203,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
             transp = rocblas_operation_conjugate_transpose;
         else
             transp = rocblas_operation_none;
-        
+
         if (forward) {
             uploV = rocblas_fill_lower;
             offsetV1 = shiftV;
@@ -220,7 +220,7 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
             transp = rocblas_operation_none;
         else
             transp = rocblas_operation_conjugate_transpose;
-        
+
         if (forward) {
             uploV = rocblas_fill_upper;
             offsetV1 = shiftV;
@@ -234,14 +234,14 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
     rocblas_stride strideW = rocblas_stride(ldw)*order;
     uploT = (forward ? rocblas_fill_upper : rocblas_fill_lower);
 
-    // **** TRMM_BATCH IS EXECUTED IN A FOR-LOOP UNTIL 
+    // **** TRMM_BATCH IS EXECUTED IN A FOR-LOOP UNTIL
     //      FUNCITONALITY IS ENABLED ****
 
     //copy A1 to work
     rocblas_int blocksx = (order - 1)/32 + 1;
     rocblas_int blocksy = (ldw - 1)/32 + 1;
     hipLaunchKernelGGL(copymatA1,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,ldw,order,A,offsetA1,lda,strideA,work);
-    
+
     //compute: V1' * A1
     //   or    A1 * V1
     for (int b=0;b<batch_count;++b) {
@@ -296,18 +296,18 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle, const rocblas_sid
                                             V, offsetV2, ldv, strideV, &one,
                                             A, offsetA2, lda, strideA, batch_count, workArr);
     }
-        
+
     // compute: V1 * trans(T) * (V1' * A1 + V2' * A2)
     //    or    (A1 * V1 + A2 * V2) * trans(T) * V1'
     for (int b=0;b<batch_count;++b) {
         Vp = load_ptr_batch<T>(VV,b,offsetV1,strideV);
         rocblas_trmm(handle,side,uploV,transp,rocblas_diagonal_unit,ldw,order,&one,Vp,ldv,(work + b*strideW),ldw);
     }
-    
+
     // compute: A1 - V1 * trans(T) * (V1' * A1 + V2' * A2)
     //    or    A1 - (A1 * V1 + A2 * V2) * trans(T) * V1'
     hipLaunchKernelGGL(addmatA1,dim3(blocksx,blocksy,batch_count),dim3(32,32),0,stream,ldw,order,A,offsetA1,lda,strideA,work);
-   
+
     rocblas_set_pointer_mode(handle,old_mode);
     return rocblas_status_success;
 }

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_bdsqr.hpp"
@@ -7,12 +7,12 @@
 template <typename T, typename S, typename W>
 rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
                                      const rocblas_fill uplo,
-                                     const rocblas_int n, 
-                                     const rocblas_int nv, 
-                                     const rocblas_int nu, 
+                                     const rocblas_int n,
+                                     const rocblas_int nv,
+                                     const rocblas_int nu,
                                      const rocblas_int nc,
                                      S*   D,
-                                     S*   E, 
+                                     S*   E,
                                      W    V,
                                      const rocblas_int ldv,
                                      W    U,
@@ -20,12 +20,12 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
                                      W    C,
                                      const rocblas_int ldc,
                                      rocblas_int *info)
-{ 
+{
     if(!handle)
         return rocblas_status_invalid_handle;
-    
-    //logging is missing ???    
-    
+
+    //logging is missing ???
+
     // argument checking
     rocblas_status st = rocsolver_bdsqr_argCheck(uplo,n,nv,nu,nc,ldv,ldu,ldc,D,E,V,U,C,info);
     if (st != rocblas_status_continue)
@@ -63,7 +63,7 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
                                          batch_count,
                                          (S*)work);
     hipFree(work);
-    
+
     return status;
 }
 
@@ -78,12 +78,12 @@ extern "C" {
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sbdsqr(rocblas_handle handle,
                                                  const rocblas_fill uplo,
-                                                 const rocblas_int n, 
-                                                 const rocblas_int nv, 
-                                                 const rocblas_int nu, 
+                                                 const rocblas_int n,
+                                                 const rocblas_int nv,
+                                                 const rocblas_int nu,
                                                  const rocblas_int nc,
                                                  float* D,
-                                                 float* E, 
+                                                 float* E,
                                                  float* V,
                                                  const rocblas_int ldv,
                                                  float* U,

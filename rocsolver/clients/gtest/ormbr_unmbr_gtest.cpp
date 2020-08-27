@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -37,7 +37,7 @@ typedef std::tuple<vector<int>, vector<int>> ormbr_tuple;
 
 const vector<vector<int>> store = {
     {-1, 0, 0, 0, 0}, {0, -1, 0, 0, 0}, //invalid
-    {1, 1, 0, 0, 0}, {1, 1, 0, 0, 1}, 
+    {1, 1, 0, 0, 0}, {1, 1, 0, 0, 1},
     {0, 0, 0, 0, 0},
     {0, 0, 0, 0, 1},
     {0, 0, 0, 1, 0},
@@ -54,18 +54,18 @@ const vector<vector<int>> store = {
 
 // for checkin_lapack tests
 const vector<vector<int>> size_range = {
-    {0,1,1}, {1,0,1}, {1,1,0},      //quick return  
+    {0,1,1}, {1,0,1}, {1,1,0},      //quick return
     {-1,1,1}, {1,-1,1}, {1,1,-1},   //invalid
-    {10,30,5}, {20,5,10}, {20,20,25}, {50,50,30}, {70,40,40}, 
+    {10,30,5}, {20,5,10}, {20,20,25}, {50,50,30}, {70,40,40},
 };
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range = {
-    {200,150,100}, {270,270,270}, {400,400,405}, {800,500,300}, {1500,1000,300},  
+    {200,150,100}, {270,270,270}, {400,400,405}, {800,500,300}, {1500,1000,300},
 };
 
 
-Arguments ormbr_setup_arguments(ormbr_tuple tup) 
+Arguments ormbr_setup_arguments(ormbr_tuple tup)
 {
     vector<int> size = std::get<0>(tup);
     vector<int> store = std::get<1>(tup);

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -27,12 +27,12 @@ typedef std::tuple<vector<int>, vector<int>> getrs_tuple;
 // for checkin_lapack tests
 const vector<vector<int>> matrix_sizeA_range = {
     {0, 1, 1},                              //quick return
-    {-1, 1, 1}, {10, 2, 10}, {10, 10, 2},   //invalid 
+    {-1, 1, 1}, {10, 2, 10}, {10, 10, 2},   //invalid
     {20, 20, 20}, {30, 50, 30}, {30, 30, 50}, {50, 60, 60}
 };
 const vector<vector<int>> matrix_sizeB_range = {
     {0, 0},     //quick return
-    {-1, 0},    //invalid 
+    {-1, 0},    //invalid
     {10, 0}, {20, 1}, {30, 2},
 };
 
@@ -64,10 +64,10 @@ Arguments getrs_setup_arguments(getrs_tuple tup) {
         arg.transA_option = 'C';
 
     arg.timing = 0;
-        
-    // only testing standard use case for strides 
+
+    // only testing standard use case for strides
     // strides are ignored in normal and batched tests
-    arg.bsp = arg.M;  
+    arg.bsp = arg.M;
     arg.bsa = arg.lda * arg.M;
     arg.bsb = arg.ldb * arg.N;
 
@@ -177,7 +177,7 @@ TEST_P(GETRS, strided_batched__float) {
 
     if (arg.M == 0 && arg.N == 0)
         testing_getrs_bad_arg<false,true,float>();
-    
+
     arg.batch_count = 3;
     testing_getrs<false,true,float>(arg);
 }

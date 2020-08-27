@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_labrd.hpp"
@@ -8,12 +8,12 @@ template <typename S, typename T, typename U>
 rocblas_status rocsolver_labrd_impl(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                                     const rocblas_int k, U A, const rocblas_int lda, S* D, S* E, T* tauq, T* taup,
                                     U X, const rocblas_int ldx, U Y, const rocblas_int ldy)
-{ 
+{
     if(!handle)
         return rocblas_status_invalid_handle;
-    
-    //logging is missing ???    
-    
+
+    //logging is missing ???
+
     // argument checking
     rocblas_status st = rocsolver_labrd_argCheck(m,n,k,lda,ldx,ldy,A,D,E,tauq,taup,X,Y);
     if (st != rocblas_status_continue)

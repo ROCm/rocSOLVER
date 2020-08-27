@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_ORM2R_UNM2R_HPP
@@ -39,7 +39,7 @@ rocblas_status rocsolver_orm2r_ormqr_argCheck(const rocblas_side side, const roc
         return rocblas_status_invalid_value;
     if ((COMPLEX && trans == rocblas_operation_transpose) || (!COMPLEX && trans == rocblas_operation_conjugate_transpose))
         return rocblas_status_invalid_value;
-    bool left = (side == rocblas_side_left);    
+    bool left = (side == rocblas_side_left);
 
     // 2. invalid size
     if (m < 0 || n < 0 ||  k < 0 || ldc < m)
@@ -47,7 +47,7 @@ rocblas_status rocsolver_orm2r_ormqr_argCheck(const rocblas_side side, const roc
     if (left && (k > m || lda < m))
         return rocblas_status_invalid_size;
     if (!left && (k > n || lda < n))
-        return rocblas_status_invalid_size;    
+        return rocblas_status_invalid_size;
 
     // 3. invalid pointers
     if ((m*n && !C) || (k && !ipiv) || (left && m*k && !A) || (!left && n*k && !A))
@@ -57,10 +57,10 @@ rocblas_status rocsolver_orm2r_ormqr_argCheck(const rocblas_side side, const roc
 }
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
-rocblas_status rocsolver_orm2r_unm2r_template(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans, 
-                                   const rocblas_int m, const rocblas_int n, 
-                                   const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda, 
-                                   const rocblas_stride strideA, T* ipiv, 
+rocblas_status rocsolver_orm2r_unm2r_template(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans,
+                                   const rocblas_int m, const rocblas_int n,
+                                   const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda,
+                                   const rocblas_stride strideA, T* ipiv,
                                    const rocblas_stride strideP, U C, const rocblas_int shiftC, const rocblas_int ldc,
                                    const rocblas_stride strideC, const rocblas_int batch_count,
                                    T* scalars, T* work, T** workArr, T* diag)
@@ -112,14 +112,14 @@ rocblas_status rocsolver_orm2r_unm2r_template(rocblas_handle handle, const rocbl
             ncol = n - i;
             jc = i;
         }
-    
-        // insert one in A(i,i) tobuild/apply the householder matrix 
+
+        // insert one in A(i,i) tobuild/apply the householder matrix
         hipLaunchKernelGGL(set_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(i,i,lda),lda,strideA,1,true);
 
-        // Apply current Householder reflector 
+        // Apply current Householder reflector
         rocsolver_larf_template(handle,side,                        //side
                                 nrow,                               //number of rows of matrix to modify
-                                ncol,                               //number of columns of matrix to modify    
+                                ncol,                               //number of columns of matrix to modify
                                 A, shiftA + idx2D(i,i,lda),         //householder vector x
                                 1, strideA,                         //inc of x
                                 (ipiv + i), strideP,                //householder scalar (alpha)

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2016 Advanced Micro Devices, Inc.
+ * Copyright (c) 2016-2020 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
 #include "cblas_interface.h"
@@ -82,9 +82,9 @@ void zlarft_(char *direct, char *storev, int *n, int *k, rocblas_double_complex 
 
 void sbdsqr_(char *uplo, int *n, int *nv, int *nu, int *nc, float *D, float *E, float *V, int *ldv, float *U, int *ldu, float *C, int *ldc, float *W, int *info);
 void dbdsqr_(char *uplo, int *n, int *nv, int *nu, int *nc, double *D, double *E, double *V, int *ldv, double *U, int *ldu, double *C, int *ldc, double *W, int *info);
-void cbdsqr_(char *uplo, int *n, int *nv, int *nu, int *nc, float *D, float *E, rocblas_float_complex *V, int *ldv, rocblas_float_complex *U, int *ldu, rocblas_float_complex *C, 
+void cbdsqr_(char *uplo, int *n, int *nv, int *nu, int *nc, float *D, float *E, rocblas_float_complex *V, int *ldv, rocblas_float_complex *U, int *ldu, rocblas_float_complex *C,
              int *ldc, float *W, int *info);
-void zbdsqr_(char *uplo, int *n, int *nv, int *nu, int *nc, double *D, double *E, rocblas_double_complex *V, int *ldv, rocblas_double_complex *U, int *ldu, rocblas_double_complex *C, 
+void zbdsqr_(char *uplo, int *n, int *nv, int *nu, int *nc, double *D, double *E, rocblas_double_complex *V, int *ldv, rocblas_double_complex *U, int *ldu, rocblas_double_complex *C,
              int *ldc, double *W, int *info);
 
 void slarfb_(char *side, char *trans, char *direct, char *storev, int *m, int *n, int *k, float *V, int *ldv, float *T, int *ldt, float *A, int *lda, float *W, int *ldw);
@@ -320,7 +320,7 @@ void cblas_larft<rocblas_double_complex>(rocblas_direct directR, rocblas_storev 
 //larfb
 
 template <>
-void cblas_larfb<float>(rocblas_side sideR, rocblas_operation transR, rocblas_direct directR, rocblas_storev storevR, rocblas_int m, rocblas_int n, rocblas_int k, 
+void cblas_larfb<float>(rocblas_side sideR, rocblas_operation transR, rocblas_direct directR, rocblas_storev storevR, rocblas_int m, rocblas_int n, rocblas_int k,
                         float *V, rocblas_int ldv, float *T, rocblas_int ldt, float *A, rocblas_int lda, float *W, rocblas_int ldw) {
     char side = rocblas2char_side(sideR);
     char trans = rocblas2char_operation(transR);
@@ -330,7 +330,7 @@ void cblas_larfb<float>(rocblas_side sideR, rocblas_operation transR, rocblas_di
 }
 
 template <>
-void cblas_larfb<double>(rocblas_side sideR, rocblas_operation transR, rocblas_direct directR, rocblas_storev storevR, rocblas_int m, rocblas_int n, rocblas_int k, 
+void cblas_larfb<double>(rocblas_side sideR, rocblas_operation transR, rocblas_direct directR, rocblas_storev storevR, rocblas_int m, rocblas_int n, rocblas_int k,
                          double *V, rocblas_int ldv, double *T, rocblas_int ldt, double *A, rocblas_int lda, double *W, rocblas_int ldw) {
     char side = rocblas2char_side(sideR);
     char trans = rocblas2char_operation(transR);
@@ -340,7 +340,7 @@ void cblas_larfb<double>(rocblas_side sideR, rocblas_operation transR, rocblas_d
 }
 
 template <>
-void cblas_larfb<rocblas_float_complex>(rocblas_side sideR, rocblas_operation transR, rocblas_direct directR, rocblas_storev storevR, rocblas_int m, rocblas_int n, rocblas_int k, 
+void cblas_larfb<rocblas_float_complex>(rocblas_side sideR, rocblas_operation transR, rocblas_direct directR, rocblas_storev storevR, rocblas_int m, rocblas_int n, rocblas_int k,
                         rocblas_float_complex *V, rocblas_int ldv, rocblas_float_complex *T, rocblas_int ldt, rocblas_float_complex *A, rocblas_int lda,
                         rocblas_float_complex *W, rocblas_int ldw) {
     char side = rocblas2char_side(sideR);
@@ -351,7 +351,7 @@ void cblas_larfb<rocblas_float_complex>(rocblas_side sideR, rocblas_operation tr
 }
 
 template <>
-void cblas_larfb<rocblas_double_complex>(rocblas_side sideR, rocblas_operation transR, rocblas_direct directR, rocblas_storev storevR, rocblas_int m, rocblas_int n, rocblas_int k, 
+void cblas_larfb<rocblas_double_complex>(rocblas_side sideR, rocblas_operation transR, rocblas_direct directR, rocblas_storev storevR, rocblas_int m, rocblas_int n, rocblas_int k,
                          rocblas_double_complex *V, rocblas_int ldv, rocblas_double_complex *T, rocblas_int ldt, rocblas_double_complex *A, rocblas_int lda,
                          rocblas_double_complex *W, rocblas_int ldw) {
     char side = rocblas2char_side(sideR);
@@ -1481,10 +1481,10 @@ void cblas_getrf<rocblas_double_complex>(rocblas_int m, rocblas_int n,
 template <>
 void cblas_getrs<float>(rocblas_operation trans, rocblas_int n, rocblas_int nrhs,
                                float *A, rocblas_int lda, rocblas_int *ipiv,
-                               float *B, rocblas_int ldb) 
+                               float *B, rocblas_int ldb)
 {
   rocblas_int info;
-  char transC = rocblas2char_operation(trans);   
+  char transC = rocblas2char_operation(trans);
   sgetrs_(&transC, &n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
 }
 
@@ -1493,7 +1493,7 @@ void cblas_getrs<double>(rocblas_operation trans, rocblas_int n, rocblas_int nrh
                                 double *A, rocblas_int lda, rocblas_int *ipiv,
                                 double *B, rocblas_int ldb) {
   rocblas_int info;
-  char transC = rocblas2char_operation(trans);   
+  char transC = rocblas2char_operation(trans);
   dgetrs_(&transC, &n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
 }
 
@@ -1501,10 +1501,10 @@ template <>
 void cblas_getrs<rocblas_float_complex>(rocblas_operation trans, rocblas_int n, rocblas_int nrhs,
                                    rocblas_float_complex *A, rocblas_int lda,
                                    rocblas_int *ipiv, rocblas_float_complex *B,
-                                   rocblas_int ldb) 
+                                   rocblas_int ldb)
 {
   rocblas_int info;
-  char transC = rocblas2char_operation(trans);   
+  char transC = rocblas2char_operation(trans);
   cgetrs_(&transC, &n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
 }
 
@@ -1512,10 +1512,10 @@ template <>
 void cblas_getrs<rocblas_double_complex>(
     rocblas_operation trans, rocblas_int n, rocblas_int nrhs, rocblas_double_complex *A,
     rocblas_int lda, rocblas_int *ipiv, rocblas_double_complex *B,
-    rocblas_int ldb) 
+    rocblas_int ldb)
 {
   rocblas_int info;
-  char transC = rocblas2char_operation(trans);   
+  char transC = rocblas2char_operation(trans);
   zgetrs_(&transC, &n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
 }
 

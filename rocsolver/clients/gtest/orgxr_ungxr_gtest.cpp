@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -32,13 +32,13 @@ const vector<vector<int>> m_size_range = {
 const vector<vector<int>> n_size_range = {
     {0, 1},                     //quick return
     {-1, 1}, {1, -1}, {10, 20}, //always invalid
-    {55, 55},                   //invalid for case *            
+    {55, 55},                   //invalid for case *
     {10, 0}, {20, 20}, {35, 25}
 };
 
 // for daily_lapack tests
 const vector<vector<int>> large_m_size_range = {
-    {400, 410}, {640, 640}, {1000, 1024}, {2000, 2000} 
+    {400, 410}, {640, 640}, {1000, 1024}, {2000, 2000}
 };
 
 const vector<vector<int>> large_n_size_range = {
@@ -46,7 +46,7 @@ const vector<vector<int>> large_n_size_range = {
 };
 
 
-Arguments orgqr_setup_arguments(orgqr_tuple tup) 
+Arguments orgqr_setup_arguments(orgqr_tuple tup)
 {
     vector<int> m_size = std::get<0>(tup);
     vector<int> n_size = std::get<1>(tup);
@@ -96,7 +96,7 @@ TEST_P(ORG2R, __float) {
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<float,0>();
- 
+
     testing_orgxr_ungxr<float,0>(arg);
 }
 
@@ -105,7 +105,7 @@ TEST_P(ORG2R, __double) {
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<double,0>();
- 
+
     testing_orgxr_ungxr<double,0>(arg);
 }
 
@@ -114,7 +114,7 @@ TEST_P(UNG2R, __float_complex) {
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<rocblas_float_complex,0>();
- 
+
     testing_orgxr_ungxr<rocblas_float_complex,0>(arg);
 }
 
@@ -123,7 +123,7 @@ TEST_P(UNG2R, __double_complex) {
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<rocblas_double_complex,0>();
- 
+
     testing_orgxr_ungxr<rocblas_double_complex,0>(arg);
 }
 
@@ -132,7 +132,7 @@ TEST_P(ORGQR, __float) {
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<float,1>();
- 
+
     testing_orgxr_ungxr<float,1>(arg);
 }
 
@@ -141,7 +141,7 @@ TEST_P(ORGQR, __double) {
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<double,1>();
- 
+
     testing_orgxr_ungxr<double,1>(arg);
 }
 
@@ -150,7 +150,7 @@ TEST_P(UNGQR, __float_complex) {
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<rocblas_float_complex,1>();
- 
+
     testing_orgxr_ungxr<rocblas_float_complex,1>(arg);
 }
 
@@ -159,7 +159,7 @@ TEST_P(UNGQR, __double_complex) {
 
     if (arg.M == 0 && arg.N == 0)
         testing_orgxr_ungxr_bad_arg<rocblas_double_complex,1>();
- 
+
     testing_orgxr_ungxr<rocblas_double_complex,1>(arg);
 }
 

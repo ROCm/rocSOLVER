@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_LABRD_H
@@ -64,7 +64,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle, const rocblas_int
                                         const rocblas_int batch_count, T* scalars, T* work, T** workArr, T* norms)
 {
     // quick return
-    if (m == 0 || n == 0 || k == 0 || batch_count == 0) 
+    if (m == 0 || n == 0 || k == 0 || batch_count == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
@@ -73,7 +73,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle, const rocblas_int
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);
-    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device); 
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);
 
     if (m >= n)
     {
@@ -95,13 +95,13 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle, const rocblas_int
                                 A, shiftA + idx2D(0,j,lda), 1, strideA,
                                 cast2constType<T>(scalars+2), 0, A, shiftA + idx2D(j,j,lda), 1, strideA,
                                 batch_count, workArr);
-            
+
             // generate Householder reflector to work on column j
             rocsolver_larfg_template(handle,
                                     m - j,                                 //order of reflector
                                     A, shiftA + idx2D(j,j,lda),            //value of alpha
                                     A, shiftA + idx2D(min(j+1,m-1),j,lda), //vector x to work on
-                                    1, strideA,                            //inc of x    
+                                    1, strideA,                            //inc of x
                                     (tauq + j), strideQ,                   //tau
                                     batch_count, norms, work);
             hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
@@ -137,7 +137,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle, const rocblas_int
                                     batch_count, workArr);
                 rocblasCall_scal<T>(handle, n-j-1, (tauq + j), strideQ,
                                     Y, shiftY + idx2D(j+1,j,ldy), 1, strideY, batch_count);
-                
+
                 // update row j of A
                 if (COMPLEX)
                     rocsolver_lacgv_template<T>(handle, n, A, shiftA + idx2D(j,0,lda), lda, strideA, batch_count);
@@ -164,7 +164,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle, const rocblas_int
                                         n - j - 1,                             //order of reflector
                                         A, shiftA + idx2D(j,j+1,lda),          //value of alpha
                                         A, shiftA + idx2D(j,min(j+2,n-1),lda), //vector x to work on
-                                        lda, strideA,                          //inc of x    
+                                        lda, strideA,                          //inc of x
                                         (taup + j), strideP,                   //tau
                                         batch_count, norms, work);
                 hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
@@ -234,12 +234,12 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle, const rocblas_int
                                     n - j,                                 //order of reflector
                                     A, shiftA + idx2D(j,j,lda),            //value of alpha
                                     A, shiftA + idx2D(j,min(j+1,n-1),lda), //vector x to work on
-                                    lda, strideA,                          //inc of x    
+                                    lda, strideA,                          //inc of x
                                     (taup + j), strideP,                   //tau
                                     batch_count, norms, work);
             hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
                 D, j, strideD, A, shiftA + idx2D(j,j,lda), lda, strideA, 1, j < m-1);
-            
+
             if (j < m - 1)
             {
                 // compute column j of X
@@ -272,7 +272,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle, const rocblas_int
                                     X, shiftX + idx2D(j+1,j,ldx), 1, strideX, batch_count);
                 if (COMPLEX)
                     rocsolver_lacgv_template<T>(handle, n-j, A, shiftA + idx2D(j,j,lda), lda, strideA, batch_count);
-                    
+
                 // update column j of A
                 if (COMPLEX)
                     rocsolver_lacgv_template<T>(handle, j, Y, shiftY + idx2D(j,0,ldy), ldy, strideY, batch_count);
@@ -288,18 +288,18 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle, const rocblas_int
                                     A, shiftA + idx2D(0,j,lda), 1, strideA,
                                     cast2constType<T>(scalars+2), 0, A, shiftA + idx2D(j+1,j,lda), 1, strideA,
                                     batch_count, workArr);
-                
+
                 // generate Householder reflector to work on column j
                 rocsolver_larfg_template(handle,
                                         m - j - 1,                             //order of reflector
                                         A, shiftA + idx2D(j+1,j,lda),          //value of alpha
                                         A, shiftA + idx2D(min(j+2,m-1),j,lda), //vector x to work on
-                                        1, strideA,                            //inc of x    
+                                        1, strideA,                            //inc of x
                                         (tauq + j), strideQ,                   //tau
                                         batch_count, norms, work);
                 hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
                     E, j, strideE, A, shiftA + idx2D(j+1,j,lda), lda, strideA, 1, true);
-                
+
                 // compute column j of Y
                 rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, m-j-1, n-j-1,
                                     cast2constType<T>(scalars+2), 0, A, shiftA + idx2D(j+1,j+1,lda), lda, strideA,
@@ -337,7 +337,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle, const rocblas_int
         }
     }
 
-    rocblas_set_pointer_mode(handle,old_mode);  
+    rocblas_set_pointer_mode(handle,old_mode);
     return rocblas_status_success;
 }
 

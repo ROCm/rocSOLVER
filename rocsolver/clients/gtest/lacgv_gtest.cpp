@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -22,7 +22,7 @@ typedef vector<int> lacgv_tuple;
 // for checkin_lapack tests
 const vector<vector<int>> range = {
     {0,1},                          //quick return
-    {-1,1}, {1,0},                  //error 
+    {-1,1}, {1,0},                  //error
     {10,1}, {10,-1}, {20,2}, {30,3}, {30,-3}
 };
 
@@ -50,7 +50,7 @@ protected:
 
 TEST_P(LACGV, __float_complex) {
     Arguments arg = lacgv_setup_arguments(GetParam());
-    
+
     if (arg.N == 0)
         testing_lacgv_bad_arg<rocblas_float_complex>();
 
@@ -59,7 +59,7 @@ TEST_P(LACGV, __float_complex) {
 
 TEST_P(LACGV, __double_complex) {
   Arguments arg = lacgv_setup_arguments(GetParam());
-    
+
     if (arg.N == 0)
         testing_lacgv_bad_arg<rocblas_double_complex>();
 

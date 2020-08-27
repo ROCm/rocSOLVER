@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_GEBD2_H
@@ -56,7 +56,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
                                         const rocblas_int batch_count, T* scalars, T* work, T** workArr, T* diag)
 {
     // quick return
-    if (m == 0 || n == 0 || batch_count == 0) 
+    if (m == 0 || n == 0 || batch_count == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
@@ -74,11 +74,11 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
                                     m - j,                                 //order of reflector
                                     A, shiftA + idx2D(j,j,lda),            //value of alpha
                                     A, shiftA + idx2D(min(j+1,m-1),j,lda), //vector x to work on
-                                    1, strideA,                            //inc of x    
+                                    1, strideA,                            //inc of x
                                     (tauq + j), strideQ,                   //tau
                                     batch_count, diag, work);
 
-            // copy A(j,j) to D and insert one to build/apply the householder matrix 
+            // copy A(j,j) to D and insert one to build/apply the householder matrix
             hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
                 D, j, strideD, A, shiftA + idx2D(j,j,lda), lda, strideA, 1, true);
 
@@ -88,26 +88,26 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
                 // conjugate tauq
                 if (COMPLEX)
                     rocsolver_lacgv_template<T>(handle, 1, tauq, j, 1, strideQ, batch_count);
-                
+
                 rocsolver_larf_template(handle,rocblas_side_left,           //side
                                         m - j,                              //number of rows of matrix to modify
-                                        n - j - 1,                          //number of columns of matrix to modify    
+                                        n - j - 1,                          //number of columns of matrix to modify
                                         A, shiftA + idx2D(j,j,lda),         //householder vector x
                                         1, strideA,                         //inc of x
                                         (tauq + j), strideQ,                //householder scalar (alpha)
                                         A, shiftA + idx2D(j,j+1,lda),       //matrix to work on
                                         lda, strideA,                       //leading dimension
                                         batch_count, scalars, work, workArr);
-                
+
                 // restore tauq
                 if (COMPLEX)
                     rocsolver_lacgv_template<T>(handle, 1, tauq, j, 1, strideQ, batch_count);
             }
-            
+
             // restore original value of A(j,j)
             hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
                 D, j, strideD, A, shiftA + idx2D(j,j,lda), lda, strideA, 1);
-            
+
             if (j < n - 1)
             {
                 if (COMPLEX)
@@ -118,25 +118,25 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
                                         n - j - 1,                             //order of reflector
                                         A, shiftA + idx2D(j,j+1,lda),          //value of alpha
                                         A, shiftA + idx2D(j,min(j+2,n-1),lda), //vector x to work on
-                                        lda, strideA,                          //inc of x    
+                                        lda, strideA,                          //inc of x
                                         (taup + j), strideP,                   //tau
                                         batch_count, diag, work);
 
-                // copy A(j,j+1) to E and insert one to build/apply the householder matrix 
+                // copy A(j,j+1) to E and insert one to build/apply the householder matrix
                 hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
                     E, j, strideE, A, shiftA + idx2D(j,j+1,lda), lda, strideA, 1, true);
-                
+
                 // Apply Householder reflector G(j)
                 rocsolver_larf_template(handle,rocblas_side_right,          //side
                                         m - j - 1,                          //number of rows of matrix to modify
-                                        n - j - 1,                          //number of columns of matrix to modify    
+                                        n - j - 1,                          //number of columns of matrix to modify
                                         A, shiftA + idx2D(j,j+1,lda),       //householder vector x
                                         lda, strideA,                       //inc of x
                                         (taup + j), strideP,                //householder scalar (alpha)
                                         A, shiftA + idx2D(j+1,j+1,lda),     //matrix to work on
                                         lda, strideA,                       //leading dimension
                                         batch_count, scalars, work, workArr);
-                
+
                 if (COMPLEX)
                     rocsolver_lacgv_template<T>(handle, n-j-1, A, shiftA + idx2D(j,j+1,lda), lda, strideA, batch_count);
 
@@ -164,11 +164,11 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
                                     n - j,                                 //order of reflector
                                     A, shiftA + idx2D(j,j,lda),            //value of alpha
                                     A, shiftA + idx2D(j,min(j+1,n-1),lda), //vector x to work on
-                                    lda, strideA,                          //inc of x    
+                                    lda, strideA,                          //inc of x
                                     (taup + j), strideP,                   //tau
                                     batch_count, diag, work);
-            
-            // copy A(j,j) to D and insert one to build/apply the householder matrix 
+
+            // copy A(j,j) to D and insert one to build/apply the householder matrix
             hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
                 D, j, strideD, A, shiftA + idx2D(j,j,lda), lda, strideA, 1, true);
 
@@ -177,7 +177,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
             {
                 rocsolver_larf_template(handle,rocblas_side_right,          //side
                                         m - j - 1,                          //number of rows of matrix to modify
-                                        n - j,                              //number of columns of matrix to modify    
+                                        n - j,                              //number of columns of matrix to modify
                                         A, shiftA + idx2D(j,j,lda),         //householder vector x
                                         lda, strideA,                       //inc of x
                                         (taup + j), strideP,                //householder scalar (alpha)
@@ -185,14 +185,14 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
                                         lda, strideA,                       //leading dimension
                                         batch_count, scalars, work, workArr);
             }
-            
+
             if (COMPLEX)
                 rocsolver_lacgv_template<T>(handle, n-j, A, shiftA + idx2D(j,j,lda), lda, strideA, batch_count);
-            
+
             // restore original value of A(j,j)
             hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
                 D, j, strideD, A, shiftA + idx2D(j,j,lda), lda, strideA, 1);
-            
+
             if (j < m - 1)
             {
                 // generate Householder reflector H(j)
@@ -200,29 +200,29 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle, const rocblas_int
                                         m - j - 1,                             //order of reflector
                                         A, shiftA + idx2D(j+1,j,lda),          //value of alpha
                                         A, shiftA + idx2D(min(j+2,m-1),j,lda), //vector x to work on
-                                        1, strideA,                            //inc of x    
+                                        1, strideA,                            //inc of x
                                         (tauq + j), strideQ,                   //tau
                                         batch_count, diag, work);
 
-                // copy A(j+1,j) to D and insert one to build/apply the householder matrix 
+                // copy A(j+1,j) to D and insert one to build/apply the householder matrix
                 hipLaunchKernelGGL(set_diag<T>, dim3(batch_count,1,1), dim3(1,1,1), 0, stream,
                     E, j, strideE, A, shiftA + idx2D(j+1,j,lda), lda, strideA, 1, true);
-                
+
                 // conjugate tauq
                 if (COMPLEX)
                     rocsolver_lacgv_template<T>(handle, 1, tauq, j, 1, strideQ, batch_count);
-                
+
                 // Apply Householder reflector H(j)
                 rocsolver_larf_template(handle,rocblas_side_left,           //side
                                         m - j - 1,                          //number of rows of matrix to modify
-                                        n - j - 1,                          //number of columns of matrix to modify    
+                                        n - j - 1,                          //number of columns of matrix to modify
                                         A, shiftA + idx2D(j+1,j,lda),       //householder vector x
                                         1, strideA,                         //inc of x
                                         (tauq + j), strideQ,                //householder scalar (alpha)
                                         A, shiftA + idx2D(j+1,j+1,lda),     //matrix to work on
                                         lda, strideA,                       //leading dimension
                                         batch_count, scalars, work, workArr);
-                
+
                 // restore tauq
                 if (COMPLEX)
                     rocsolver_lacgv_template<T>(handle, 1, tauq, j, 1, strideQ, batch_count);

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_ORMLQ_UNMLQ_HPP
@@ -38,10 +38,10 @@ void rocsolver_ormlq_unmlq_getMemorySize(const rocblas_side side, const rocblas_
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U, bool COMPLEX = is_complex<T>>
-rocblas_status rocsolver_ormlq_unmlq_template(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans, 
-                                   const rocblas_int m, const rocblas_int n, 
-                                   const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda, 
-                                   const rocblas_stride strideA, T* ipiv, 
+rocblas_status rocsolver_ormlq_unmlq_template(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans,
+                                   const rocblas_int m, const rocblas_int n,
+                                   const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda,
+                                   const rocblas_stride strideA, T* ipiv,
                                    const rocblas_stride strideP, U C, const rocblas_int shiftC, const rocblas_int ldc,
                                    const rocblas_stride strideC, const rocblas_int batch_count,
                                    T* scalars, T* work, T** workArr, T* trfact)
@@ -52,9 +52,9 @@ rocblas_status rocsolver_ormlq_unmlq_template(rocblas_handle handle, const rocbl
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-    
+
     // if the matrix is small, use the unblocked variant of the algorithm
-    if (k <= ORMLQ_ORML2_BLOCKSIZE) 
+    if (k <= ORMLQ_ORML2_BLOCKSIZE)
         return rocsolver_orml2_unml2_template<T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C, shiftC, ldc, strideC, batch_count,
                                                  scalars, work, workArr, trfact);
 

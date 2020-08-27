@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -34,7 +34,7 @@ typedef std::tuple<vector<int>, vector<int>> ormqr_tuple;
 
 const vector<vector<int>> op_range = {
     {-1,0,0,0}, {0,-1,0,0},     //invalid
-    {0,0,0,0}, {0,0,0,1}, {0,0,0,2}, {0,0,1,0}, {0,0,1,1}, {0,0,1,2}, {1,1,0,0}   
+    {0,0,0,0}, {0,0,0,1}, {0,0,0,2}, {0,0,1,0}, {0,0,1,1}, {0,0,1,2}, {1,1,0,0}
 };
 
 // for checkin_lapack tests
@@ -43,7 +43,7 @@ const vector<vector<int>> size_range = {
     {-1,1,1}, {1,-1,1}, {1,1,-1},   //always invalid
     {20,10,20},                     //invalid for side = 'R'
     {15,25,25},                     //invalid for side = 'L'
-    {40,40,40}, {45,40,30}, {50,50,20}   
+    {40,40,40}, {45,40,30}, {50,50,20}
 };
 
 // for daily_lapack tests
@@ -52,7 +52,7 @@ const vector<vector<int>> large_size_range = {
 };
 
 
-Arguments ormqr_setup_arguments(ormqr_tuple tup) 
+Arguments ormqr_setup_arguments(ormqr_tuple tup)
 {
     vector<int> size = std::get<0>(tup);
     vector<int> op = std::get<1>(tup);

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "norm.hpp"
@@ -11,41 +11,41 @@
 
 
 template <bool STRIDED, bool POTRF, typename T, typename U>
-void potf2_potrf_checkBadArgs(const rocblas_handle handle, 
-                         const rocblas_fill uplo, 
-                         const rocblas_int n, 
-                         T dA, 
-                         const rocblas_int lda, 
+void potf2_potrf_checkBadArgs(const rocblas_handle handle,
+                         const rocblas_fill uplo,
+                         const rocblas_int n,
+                         T dA,
+                         const rocblas_int lda,
                          const rocblas_stride stA,
                          U dinfo,
                          const rocblas_int bc)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED,POTRF,nullptr,uplo,n,dA,lda,stA,dinfo,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED,POTRF,nullptr,uplo,n,dA,lda,stA,dinfo,bc),
                           rocblas_status_invalid_handle);
-    
+
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED,POTRF,handle,rocblas_fill_full,n,dA,lda,stA,dinfo,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED,POTRF,handle,rocblas_fill_full,n,dA,lda,stA,dinfo,bc),
                           rocblas_status_invalid_value);
 
     // sizes (only check batch_count if applicable)
     if (STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED,POTRF,handle,uplo,n,dA,lda,stA,dinfo,-1), 
+        EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED,POTRF,handle,uplo,n,dA,lda,stA,dinfo,-1),
                               rocblas_status_invalid_size);
-        
+
     // pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED,POTRF,handle,uplo,n,(T)nullptr,lda,stA,dinfo,bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED,POTRF,handle,uplo,n,dA,lda,stA,(U)nullptr,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED,POTRF,handle,uplo,n,dA,lda,stA,(U)nullptr,bc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED,POTRF,handle,uplo,0,(T)nullptr,lda,stA,dinfo,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED,POTRF,handle,uplo,0,(T)nullptr,lda,stA,dinfo,bc),
                           rocblas_status_success);
     if (STRIDED)
         EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED,POTRF,handle,uplo,n,dA,lda,stA,(U)nullptr,0),
                               rocblas_status_success);
-    
+
     // quick return with zero batch_count if applicable
     if (STRIDED)
         EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED,POTRF,handle,uplo,n,dA,lda,stA,dinfo,0),
@@ -70,7 +70,7 @@ void testing_potf2_potrf_bad_arg()
         device_strided_batch_vector<rocblas_int> dinfo(1,1,1,1);
         CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dinfo.memcheck());
-        
+
         // check bad arguments
         potf2_potrf_checkBadArgs<STRIDED,POTRF>(handle,uplo,n,dA.data(),lda,stA,dinfo.data(),bc);
 
@@ -88,12 +88,12 @@ void testing_potf2_potrf_bad_arg()
 
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
-void potf2_potrf_initData(const rocblas_handle handle, 
-                        const rocblas_fill uplo, 
-                        const rocblas_int n, 
-                        Td &dA, 
-                        const rocblas_int lda, 
-                        const rocblas_stride stA, 
+void potf2_potrf_initData(const rocblas_handle handle,
+                        const rocblas_fill uplo,
+                        const rocblas_int n,
+                        Td &dA,
+                        const rocblas_int lda,
+                        const rocblas_stride stA,
                         Ud &dinfo,
                         const rocblas_int bc,
                         Th &hA,
@@ -104,16 +104,16 @@ void potf2_potrf_initData(const rocblas_handle handle,
     {
         rocblas_init<T>(hATmp, true);
 
-        // make A hermitian and scale to ensure positive definiteness  
+        // make A hermitian and scale to ensure positive definiteness
         for (rocblas_int b = 0; b < bc; ++b) {
             cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, n, n,
                     (T)1.0, hATmp[b], lda, hATmp[b], lda, (T)0.0, hA[b], lda);
-            
-            for (rocblas_int i = 0; i < n; i++) 
+
+            for (rocblas_int i = 0; i < n; i++)
                         hA[b][i + i * lda] += 400;
         }
     }
-    
+
     if (GPU)
     {
         // now copy data to the GPU
@@ -123,21 +123,21 @@ void potf2_potrf_initData(const rocblas_handle handle,
 
 
 template <bool STRIDED, bool POTRF, typename T, typename Td, typename Ud, typename Th, typename Uh>
-void potf2_potrf_getError(const rocblas_handle handle, 
-                        const rocblas_fill uplo, 
-                        const rocblas_int n, 
-                        Td &dA, 
-                        const rocblas_int lda, 
-                        const rocblas_stride stA, 
+void potf2_potrf_getError(const rocblas_handle handle,
+                        const rocblas_fill uplo,
+                        const rocblas_int n,
+                        Td &dA,
+                        const rocblas_int lda,
+                        const rocblas_stride stA,
                         Ud &dinfo,
                         const rocblas_int bc,
-                        Th &hA, 
-                        Th &hARes, 
+                        Th &hA,
+                        Th &hARes,
                         Uh &hinfo,
                         double *max_err)
 {
-    // input data initialization 
-    potf2_potrf_initData<true,true,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+    // input data initialization
+    potf2_potrf_initData<true,true,T>(handle, uplo, n, dA, lda, stA, dinfo, bc,
                                   hA, hARes, hinfo);
 
     // execute computations
@@ -151,9 +151,9 @@ void potf2_potrf_getError(const rocblas_handle handle,
             cblas_potrf<T>(uplo, n, hA[b], lda, hinfo[b]):
             cblas_potf2<T>(uplo, n, hA[b], lda, hinfo[b]);
     }
-   
-    // error is ||hA - hARes|| / ||hA|| (ideally ||LL' - Lres Lres'|| / ||LL'||) 
-    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
+
+    // error is ||hA - hARes|| / ||hA|| (ideally ||LL' - Lres Lres'|| / ||LL'||)
+    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
     double err;
@@ -166,12 +166,12 @@ void potf2_potrf_getError(const rocblas_handle handle,
 
 
 template <bool STRIDED, bool POTRF, typename T, typename Td, typename Ud, typename Th, typename Uh>
-void potf2_potrf_getPerfData(const rocblas_handle handle, 
-                        const rocblas_fill uplo, 
-                        const rocblas_int n, 
-                        Td &dA, 
-                        const rocblas_int lda, 
-                        const rocblas_stride stA, 
+void potf2_potrf_getPerfData(const rocblas_handle handle,
+                        const rocblas_fill uplo,
+                        const rocblas_int n,
+                        Td &dA,
+                        const rocblas_int lda,
+                        const rocblas_stride stA,
                         Ud &dinfo,
                         const rocblas_int bc,
                         Th &hA,
@@ -184,9 +184,9 @@ void potf2_potrf_getPerfData(const rocblas_handle handle,
 {
     if (!perf)
     {
-        potf2_potrf_initData<true,false,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+        potf2_potrf_initData<true,false,T>(handle, uplo, n, dA, lda, stA, dinfo, bc,
                                     hA, hATmp, hinfo);
-        
+
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         for (rocblas_int b = 0; b < bc; ++b) {
@@ -197,23 +197,23 @@ void potf2_potrf_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
 
-    potf2_potrf_initData<true,false,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+    potf2_potrf_initData<true,false,T>(handle, uplo, n, dA, lda, stA, dinfo, bc,
                                   hA, hATmp, hinfo);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        potf2_potrf_initData<false,true,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+        potf2_potrf_initData<false,true,T>(handle, uplo, n, dA, lda, stA, dinfo, bc,
                                     hA, hATmp, hinfo);
 
         CHECK_ROCBLAS_ERROR(rocsolver_potf2_potrf(STRIDED,POTRF,handle, uplo, n, dA.data(), lda, stA, dinfo.data(), bc));
     }
-        
+
     // gpu-lapack performance
     double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        potf2_potrf_initData<false,true,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+        potf2_potrf_initData<false,true,T>(handle, uplo, n, dA, lda, stA, dinfo, bc,
                                     hA, hATmp, hinfo);
 
         start = get_time_us();
@@ -224,10 +224,10 @@ void potf2_potrf_getPerfData(const rocblas_handle handle,
 }
 
 
-template <bool BATCHED, bool STRIDED, bool POTRF, typename T> 
-void testing_potf2_potrf(Arguments argus) 
+template <bool BATCHED, bool STRIDED, bool POTRF, typename T>
+void testing_potf2_potrf(Arguments argus)
 {
-    // get arguments 
+    // get arguments
     rocblas_local_handle handle;
     rocblas_int n = argus.N;
     rocblas_int lda = argus.lda;
@@ -239,7 +239,7 @@ void testing_potf2_potrf(Arguments argus)
 
     size_t stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
 
-    // check non-supported values 
+    // check non-supported values
     if (uplo != rocblas_fill_upper && uplo != rocblas_fill_lower) {
         if (BATCHED)
             EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED, POTRF, handle, uplo, n, (T *const *)nullptr, lda, stA, (rocblas_int *)nullptr, bc),
@@ -248,7 +248,7 @@ void testing_potf2_potrf(Arguments argus)
             EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED, POTRF, handle, uplo, n, (T *)nullptr, lda, stA, (rocblas_int *)nullptr, bc),
                                   rocblas_status_invalid_value);
 
-        if (argus.timing) 
+        if (argus.timing)
              ROCSOLVER_BENCH_INFORM(2);
 
         return;
@@ -260,7 +260,7 @@ void testing_potf2_potrf(Arguments argus)
 
     size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
-    // check invalid sizes 
+    // check invalid sizes
     bool invalid_size = (n < 0 || lda < n || bc < 0);
     if (invalid_size) {
         if (BATCHED)
@@ -270,7 +270,7 @@ void testing_potf2_potrf(Arguments argus)
             EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED, POTRF, handle, uplo, n, (T *)nullptr, lda, stA, (rocblas_int *)nullptr, bc),
                                   rocblas_status_invalid_size);
 
-        if (argus.timing) 
+        if (argus.timing)
              ROCSOLVER_BENCH_INFORM(1);
 
         return;
@@ -297,15 +297,15 @@ void testing_potf2_potrf(Arguments argus)
         }
 
         // check computations
-        if (argus.unit_check || argus.norm_check) 
-            potf2_potrf_getError<STRIDED,POTRF,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+        if (argus.unit_check || argus.norm_check)
+            potf2_potrf_getError<STRIDED,POTRF,T>(handle, uplo, n, dA, lda, stA, dinfo, bc,
                                           hA, hARes, hinfo, &max_error);
 
         // collect performance data
-        if (argus.timing) 
-            potf2_potrf_getPerfData<STRIDED,POTRF,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+        if (argus.timing)
+            potf2_potrf_getPerfData<STRIDED,POTRF,T>(handle, uplo, n, dA, lda, stA, dinfo, bc,
                                               hA, hARes, hinfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
-    } 
+    }
 
     else {
         // memory allocations
@@ -328,20 +328,20 @@ void testing_potf2_potrf(Arguments argus)
         }
 
         // check computations
-        if (argus.unit_check || argus.norm_check) 
-            potf2_potrf_getError<STRIDED,POTRF,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+        if (argus.unit_check || argus.norm_check)
+            potf2_potrf_getError<STRIDED,POTRF,T>(handle, uplo, n, dA, lda, stA, dinfo, bc,
                                           hA, hARes, hinfo, &max_error);
 
         // collect performance data
-        if (argus.timing) 
-            potf2_potrf_getPerfData<STRIDED,POTRF,T>(handle, uplo, n, dA, lda, stA, dinfo, bc, 
+        if (argus.timing)
+            potf2_potrf_getPerfData<STRIDED,POTRF,T>(handle, uplo, n, dA, lda, stA, dinfo, bc,
                                               hA, hARes, hinfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
-    if (argus.unit_check) 
-        rocsolver_test_check<T>(max_error,n);     
+    if (argus.unit_check)
+        rocsolver_test_check<T>(max_error,n);
 
     // output results for rocsolver-bench
     if (argus.timing) {

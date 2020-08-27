@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "norm.hpp"
@@ -10,22 +10,22 @@
 #include "clientcommon.hpp"
 
 template <typename T, typename U>
-void laswp_checkBadArgs(const rocblas_handle handle, 
-                         const rocblas_int n, 
-                         T dA, 
+void laswp_checkBadArgs(const rocblas_handle handle,
+                         const rocblas_int n,
+                         T dA,
                          const rocblas_int lda,
                          const rocblas_int k1,
                          const rocblas_int k2,
-                         U dIpiv, 
+                         U dIpiv,
                          const rocblas_int inc)
 {
     // handle
     EXPECT_ROCBLAS_STATUS(rocsolver_laswp(nullptr,n,dA,lda,k1,k2,dIpiv,inc),
-                          rocblas_status_invalid_handle); 
+                          rocblas_status_invalid_handle);
 
     // values
     // N/A
-    
+
     // pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_laswp(handle,n,(T)nullptr,lda,k1,k2,dIpiv,inc),
                           rocblas_status_invalid_pointer);
@@ -41,7 +41,7 @@ template <typename T>
 void testing_laswp_bad_arg()
 {
     // safe arguments
-    rocblas_local_handle handle;  
+    rocblas_local_handle handle;
     rocblas_int n = 1;
     rocblas_int lda = 1;
     rocblas_int k1 = 1;
@@ -56,10 +56,10 @@ void testing_laswp_bad_arg()
 
     // check bad arguments
     laswp_checkBadArgs(handle,n,dA.data(),lda,k1,k2,dIpiv.data(),inc);
-}   
+}
 
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh> 
+template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
 void laswp_initData(const rocblas_handle handle,
                          const rocblas_int n,
                          Td &dA,
@@ -79,10 +79,10 @@ void laswp_initData(const rocblas_handle handle,
 
         //put indices in range [1, x]
         //for simplicity, consider x = lda as this is the number of rows
-        for (rocblas_int i = 0; i < hIpiv.n(); ++i) 
+        for (rocblas_int i = 0; i < hIpiv.n(); ++i)
             hIpiv[0][i] *= lda/10;
     }
- 
+
     if (GPU)
     {
         // copy data from CPU to device
@@ -92,7 +92,7 @@ void laswp_initData(const rocblas_handle handle,
 }
 
 
-template <typename T, typename Td, typename Ud, typename Th, typename Uh> 
+template <typename T, typename Td, typename Ud, typename Th, typename Uh>
 void laswp_getError(const rocblas_handle handle,
                          const rocblas_int n,
                          Td &dA,
@@ -107,7 +107,7 @@ void laswp_getError(const rocblas_handle handle,
                          double *max_err)
 {
     //initialize data
-    laswp_initData<true,true,T>(handle, n, dA, lda, k1, k2, dIpiv, inc, 
+    laswp_initData<true,true,T>(handle, n, dA, lda, k1, k2, dIpiv, inc,
                       hA, hIpiv);
 
     // execute computations
@@ -118,7 +118,7 @@ void laswp_getError(const rocblas_handle handle,
     //CPU lapack
     cblas_laswp<T>(n,hA[0],lda,k1,k2,hIpiv[0],inc);
 
-    // error |hA - hAr| (elements must be identical) 
+    // error |hA - hAr| (elements must be identical)
     *max_err = 0;
     double diff;
     for (int i = 0; i < lda; i++) {
@@ -130,7 +130,7 @@ void laswp_getError(const rocblas_handle handle,
 }
 
 
-template <typename T, typename Td, typename Ud, typename Th, typename Uh> 
+template <typename T, typename Td, typename Ud, typename Th, typename Uh>
 void laswp_getPerfData(const rocblas_handle handle,
                          const rocblas_int n,
                          Td &dA,
@@ -148,7 +148,7 @@ void laswp_getPerfData(const rocblas_handle handle,
 {
     if (!perf)
     {
-        laswp_initData<true,false,T>(handle, n, dA, lda, k1, k2, dIpiv, inc, 
+        laswp_initData<true,false,T>(handle, n, dA, lda, k1, k2, dIpiv, inc,
                         hA, hIpiv);
 
         // cpu-lapack performance (only if not in perf mode)
@@ -156,14 +156,14 @@ void laswp_getPerfData(const rocblas_handle handle,
         cblas_laswp<T>(n,hA[0],lda,k1,k2,hIpiv[0],inc);
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    
-    laswp_initData<true,false,T>(handle, n, dA, lda, k1, k2, dIpiv, inc, 
+
+    laswp_initData<true,false,T>(handle, n, dA, lda, k1, k2, dIpiv, inc,
                       hA, hIpiv);
-        
-    // cold calls    
+
+    // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        laswp_initData<false,true,T>(handle, n, dA, lda, k1, k2, dIpiv, inc, 
+        laswp_initData<false,true,T>(handle, n, dA, lda, k1, k2, dIpiv, inc,
                         hA, hIpiv);
 
         CHECK_ROCBLAS_ERROR(rocsolver_laswp(handle,n,dA.data(),lda,k1,k2,dIpiv.data(),inc));
@@ -173,9 +173,9 @@ void laswp_getPerfData(const rocblas_handle handle,
     double start;
     for(int iter = 0; iter < hot_calls; iter++)
     {
-        laswp_initData<false,true,T>(handle, n, dA, lda, k1, k2, dIpiv, inc, 
+        laswp_initData<false,true,T>(handle, n, dA, lda, k1, k2, dIpiv, inc,
                         hA, hIpiv);
-        
+
         start = get_time_us();
         rocsolver_laswp(handle,n,dA.data(),lda,k1,k2,dIpiv.data(),inc);
         *gpu_time_used += get_time_us() - start;
@@ -184,19 +184,19 @@ void laswp_getPerfData(const rocblas_handle handle,
 }
 
 
-template <typename T> 
-void testing_laswp(Arguments argus) 
+template <typename T>
+void testing_laswp(Arguments argus)
 {
-    // get arguments 
-    rocblas_local_handle handle;  
+    // get arguments
+    rocblas_local_handle handle;
     rocblas_int n = argus.N;
     rocblas_int lda = argus.lda;
     rocblas_int k1 = argus.k1;
     rocblas_int k2 = argus.k2;
     rocblas_int inc = argus.incx;
     rocblas_int hot_calls = argus.iters;
-    
-    // check non-supported values 
+
+    // check non-supported values
     // N/A
 
     // determine sizes
@@ -212,46 +212,46 @@ void testing_laswp(Arguments argus)
         EXPECT_ROCBLAS_STATUS(rocsolver_laswp(handle,n,(T*)nullptr,lda,k1,k2,(rocblas_int*)nullptr,inc),
                               rocblas_status_invalid_size);
 
-        if (argus.timing)  
+        if (argus.timing)
             ROCSOLVER_BENCH_INFORM(1);
 
         return;
-    }             
+    }
 
     // memory allocations
     host_strided_batch_vector<T> hA(size_A,1,size_A,1);
     host_strided_batch_vector<T> hAr(size_Ar,1,size_Ar,1);
-    host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,size_P,1); 
+    host_strided_batch_vector<rocblas_int> hIpiv(size_P,1,size_P,1);
     device_strided_batch_vector<T> dA(size_A,1,size_A,1);
     device_strided_batch_vector<rocblas_int> dIpiv(size_P,1,size_P,1);
     if (size_A) CHECK_HIP_ERROR(dA.memcheck());
     if (size_P) CHECK_HIP_ERROR(dIpiv.memcheck());
-    
+
     // check quick return
     if (n == 0) {
         EXPECT_ROCBLAS_STATUS(rocsolver_laswp(handle,n,dA.data(),lda,k1,k2,dIpiv.data(),inc),
                               rocblas_status_success);
 
-        if (argus.timing)  
+        if (argus.timing)
             ROCSOLVER_BENCH_INFORM(0);
-        
+
         return;
     }
 
     // check computations
     if (argus.unit_check || argus.norm_check)
-        laswp_getError<T>(handle, n, dA, lda, k1, k2, dIpiv, inc, 
-                          hA, hAr, hIpiv, &max_error); 
+        laswp_getError<T>(handle, n, dA, lda, k1, k2, dIpiv, inc,
+                          hA, hAr, hIpiv, &max_error);
 
-    // collect performance data 
-    if (argus.timing) 
-        laswp_getPerfData<T>(handle, n, dA, lda, k1, k2, dIpiv, inc, 
-                          hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf); 
-        
+    // collect performance data
+    if (argus.timing)
+        laswp_getPerfData<T>(handle, n, dA, lda, k1, k2, dIpiv, inc,
+                          hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
+
     // validate results for rocsolver-test
     // no tolerance
-    if (argus.unit_check) 
-        rocsolver_test_check<T>(max_error,0);     
+    if (argus.unit_check)
+        rocsolver_test_check<T>(max_error,0);
 
     // output results for rocsolver-bench
     if (argus.timing) {

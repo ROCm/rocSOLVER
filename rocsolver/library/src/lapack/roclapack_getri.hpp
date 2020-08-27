@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_GETRI_H
@@ -25,11 +25,11 @@ getri_kernel_small(U AA, const rocblas_int shiftA, const rocblas_int lda, const 
 
     if (i >= DIM)
         return;
-    
+
     // batch instance
     T* A = load_ptr_batch<T>(AA,b,shiftA,strideA);
     rocblas_int *ipiv = load_ptr_batch<rocblas_int>(ipivA,b,shiftP,strideP);
-       
+
     // read corresponding row from global memory in local array
     T rA[DIM];
     #pragma unroll
@@ -42,7 +42,7 @@ getri_kernel_small(U AA, const rocblas_int shiftA, const rocblas_int lda, const 
     __shared__ rocblas_int _info;
     T temp;
     rocblas_int jp;
-    
+
     // compute info
     if (i == 0)
         _info = 0;
@@ -59,12 +59,12 @@ getri_kernel_small(U AA, const rocblas_int shiftA, const rocblas_int lda, const 
         info[b] = _info;
     if (_info != 0)
         return;
-    
+
     //--- TRTRI ---
 
     // diagonal element
     rA[i] = 1.0 / rA[i];
-    
+
     // compute element i of each column j
     #pragma unroll
     for (rocblas_int j = 1; j < DIM; j++)
@@ -73,7 +73,7 @@ getri_kernel_small(U AA, const rocblas_int shiftA, const rocblas_int lda, const 
         common[i] = rA[j];
         diag[i] = rA[i];
         __syncthreads();
-        
+
         if (i < j)
         {
             temp = 0;
@@ -87,7 +87,7 @@ getri_kernel_small(U AA, const rocblas_int shiftA, const rocblas_int lda, const 
     }
 
     //--- GETRI ---
-    
+
     #pragma unroll
     for (rocblas_int j = DIM-2; j >= 0; j--)
     {
@@ -101,7 +101,7 @@ getri_kernel_small(U AA, const rocblas_int shiftA, const rocblas_int lda, const 
 
         // update column j (gemv)
         temp = 0;
-        
+
         for (rocblas_int ii = j+1; ii < DIM; ii++)
             temp += rA[ii] * common[ii];
 
@@ -136,7 +136,7 @@ rocblas_status getri_run_small(rocblas_handle handle, const rocblas_int n, U A, 
     #define RUN_GETRI_SMALL(DIM)                                                         \
         hipLaunchKernelGGL((getri_kernel_small<DIM,T>), grid, block, 0, stream,          \
                            A, shiftA, lda, strideA, ipiv, shiftP, strideP, info)
-    
+
     dim3 grid(batch_count,1,1);
     dim3 block(WAVESIZE,1,1);
 
@@ -212,7 +212,7 @@ rocblas_status getri_run_small(rocblas_handle handle, const rocblas_int n, U A, 
         case 64: RUN_GETRI_SMALL(64); break;
         default: ROCSOLVER_UNREACHABLE();
     }
-    
+
     return rocblas_status_success;
 }
 #endif //OPTIMAL
@@ -309,7 +309,7 @@ __global__ void getri_kernel(const rocblas_int n,
 
             if (j+jb < n)
                 gemm_kernel(n, jb, n-j-jb, &minone, a + (j+jb)*lda, lda, w + j+jb, n, &one, a + j*lda, lda);
-            
+
             trsm_kernel_right_lower(rocblas_diagonal_unit, n, jb, &one, w + j, n, a + j*lda, lda);
         }
     }
@@ -365,7 +365,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n, const rocblas_int batch_
                                   size_t *size_1, size_t *size_2, size_t *size_3)
 {
     rocsolver_trtri_getMemorySize<BATCHED,T>(n,batch_count,size_1,size_2,size_3);
-    
+
     #ifdef OPTIMAL
     // if very small size, no workspace needed
     if (n <= WAVESIZE)
@@ -389,7 +389,7 @@ rocblas_status rocsolver_getri_argCheck(const rocblas_int n, const rocblas_int l
 
     // 1. invalid/non-supported values
     // N/A
-    
+
     // 2. invalid size
     if (n < 0 || lda < n || batch_count < 0)
         return rocblas_status_invalid_size;
@@ -409,7 +409,7 @@ rocblas_status rocsolver_getri_argCheck(const rocblas_int n, const rocblas_int l
 
     // 1. invalid/non-supported values
     // N/A
-    
+
     // 2. invalid size
     if (n < 0 || lda < n || ldc < n || batch_count < 0)
         return rocblas_status_invalid_size;
@@ -428,7 +428,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
                                         const rocblas_int batch_count, T* scalars, T* work, T** workArr)
 {
     // quick return if zero instances in batch
-    if (batch_count == 0) 
+    if (batch_count == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
@@ -442,7 +442,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
                            info, batch_count, 0);
         return rocblas_status_success;
     }
-    
+
     #ifdef OPTIMAL
     // if very small size, use optimized inversion kernel
     if (n <= WAVESIZE)
@@ -468,7 +468,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
         rocblas_pointer_mode old_mode;
         rocblas_get_pointer_mode(handle,&old_mode);
         rocblas_set_pointer_mode(handle,rocblas_pointer_mode_host);
-        
+
         T minone = -1;
         T one = 1;
         rocblas_int jb, nb = GETRI_BLOCKSIZE;

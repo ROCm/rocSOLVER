@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_gebrd.hpp"
@@ -10,17 +10,17 @@ rocblas_status rocsolver_gebrd_strided_batched_impl(rocblas_handle handle, const
                                         S* D, const rocblas_stride strideD, S* E, const rocblas_stride strideE,
                                         T* tauq, const rocblas_stride strideQ, T* taup, const rocblas_stride strideP,
                                         const rocblas_int batch_count)
-{ 
+{
     if(!handle)
         return rocblas_status_invalid_handle;
-    
-    //logging is missing ???    
-    
+
+    //logging is missing ???
+
     // argument checking
     rocblas_status st = rocsolver_gebd2_gebrd_argCheck(m,n,lda,A,D,E,tauq,taup,batch_count);
     if (st != rocblas_status_continue)
         return st;
-    
+
     rocblas_stride strideX = m * GEBRD_GEBD2_SWITCHSIZE;
     rocblas_stride strideY = n * GEBRD_GEBD2_SWITCHSIZE;
 

@@ -1,12 +1,12 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_larft.hpp"
 
 template <typename T>
-rocblas_status rocsolver_larft_impl(rocblas_handle handle, const rocblas_direct direct, 
-                                   const rocblas_storev storev, const rocblas_int n, 
+rocblas_status rocsolver_larft_impl(rocblas_handle handle, const rocblas_direct direct,
+                                   const rocblas_storev storev, const rocblas_int n,
                                    const rocblas_int k, T* V, const rocblas_int ldv, T* tau,
                                    T* F, const rocblas_int ldf)
 {
@@ -45,7 +45,7 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle, const rocblas_direct 
     RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
 
     // execution
-    rocblas_status status = 
+    rocblas_status status =
            rocsolver_larft_template<T>(handle,direct,storev,
                                       n,k,
                                       V,0,    //shifted 0 entries
@@ -55,7 +55,7 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle, const rocblas_direct 
                                       stridet,
                                       F,
                                       ldf,
-                                      stridef, 
+                                      stridef,
                                       batch_count,
                                       (T*)scalars,
                                       (T*)work,

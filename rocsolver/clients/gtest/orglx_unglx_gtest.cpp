@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -22,9 +22,9 @@ typedef std::tuple<vector<int>, int> orglq_tuple;
 // for checkin_lapack tests
 const vector<vector<int>> m_size_range = {
     {0, 1, 0},                              //quick return
-    {-1, 1, 1}, {20, 5, 1}, {10, 10, 20},   //always invalid 
+    {-1, 1, 1}, {20, 5, 1}, {10, 10, 20},   //always invalid
     {30, 30, 25},                           //invalid for case *
-    {10, 10, 10}, {20, 50, 20}, 
+    {10, 10, 10}, {20, 50, 20},
 };
 
 const vector<int> n_size_range = {
@@ -36,7 +36,7 @@ const vector<int> n_size_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_m_size_range = {
-    {164, 164, 130}, {198, 640, 198}, {130, 130, 130}, {220, 220, 140}, {400, 400, 200} 
+    {164, 164, 130}, {198, 640, 198}, {130, 130, 130}, {220, 220, 140}, {400, 400, 200}
 };
 
 const vector<int> large_n_size_range = {
@@ -44,7 +44,7 @@ const vector<int> large_n_size_range = {
 };
 
 
-Arguments orglq_setup_arguments(orglq_tuple tup) 
+Arguments orglq_setup_arguments(orglq_tuple tup)
 {
     vector<int> m_size = std::get<0>(tup);
     int n_size = std::get<1>(tup);

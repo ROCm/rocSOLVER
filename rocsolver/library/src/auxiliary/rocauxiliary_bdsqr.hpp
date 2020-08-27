@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_BDSQR_H
@@ -15,14 +15,14 @@
 #include "common_device.hpp"
 
 
-// (TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS 
+// (TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS
 //  FOR THE BATCHED VERSIONS (A DIFFERENT THREAD WORKS ON EACH INSTANCE OF THE BATCH).
-//  MORE PARALLELISM CAN BE INTRODUCED IN THE FUTURE IN AT LEAST TWO WAYS: 
+//  MORE PARALLELISM CAN BE INTRODUCED IN THE FUTURE IN AT LEAST TWO WAYS:
 //  1. the splitted diagonal blocks can be worked in parallel as they are independent
-//  2. for each block, multiple threads can accelerate some of the reductions and vector operations 
+//  2. for each block, multiple threads can accelerate some of the reductions and vector operations
 
 
-/** LARTG device function computes the sine (s) and cosine (c) values 
+/** LARTG device function computes the sine (s) and cosine (c) values
     to create a givens rotation such that:
     [  c s ]' * [ f ] = [ r ]
     [ -s c ]    [ g ]   [ 0 ] **/
@@ -45,15 +45,15 @@ __device__ void lartg(T &f, T &g, T &c, T &s, T &r)
         }
     }
     r = c*f - s*g;
-} 
+}
 
 
-/** LASR device function applies a sequence of rotations P(i) i=1,2,...z 
+/** LASR device function applies a sequence of rotations P(i) i=1,2,...z
     to a m-by-n matrix A from either the left (P*A with z=m) or the right (A*P' with z=n).
-    P = P(z-1)*...*P(1) if forward direction, 
+    P = P(z-1)*...*P(1) if forward direction,
     P = P(1)*...*P(z-1) if backward direction. **/
 template <typename T, typename W>
-__device__ void lasr(const rocblas_side side, 
+__device__ void lasr(const rocblas_side side,
                      const rocblas_direct direc,
                      const rocblas_int m,
                      const rocblas_int n,
@@ -116,7 +116,7 @@ __device__ void lasr(const rocblas_side side,
 
 
 /** ESTIMATE device function computes an estimate of the smallest
-    singular value of a n-by-n upper bidiagonal matrix given by D and E 
+    singular value of a n-by-n upper bidiagonal matrix given by D and E
     It also applies convergence test if conver = 1 **/
 template <typename T>
 __device__ T estimate(const rocblas_int n, T* D, T* E, int t2b, T tol, int conver)
@@ -136,13 +136,13 @@ __device__ T estimate(const rocblas_int n, T* D, T* E, int t2b, T tol, int conve
         }
         t = std::abs(D[jd])*t / (t + std::abs(E[je]));
         smin = (t < smin) ? t : smin;
-    } 
+    }
 
     return smin;
-}      
+}
 
 
-/** MAXVAL device function extracts the maximum absolute value  
+/** MAXVAL device function extracts the maximum absolute value
     element of all the n elements of vector V **/
 template <typename T>
 __device__ T maxval(const rocblas_int n, T* V)
@@ -151,7 +151,7 @@ __device__ T maxval(const rocblas_int n, T* V)
     for (rocblas_int i = 1; i < n; ++i)
         maxv = (std::abs(V[i]) > maxv) ? std::abs(V[i]) : maxv;
 
-    return maxv; 
+    return maxv;
 }
 
 
@@ -174,21 +174,21 @@ __device__ void t2bQRstep(const rocblas_int n,
                           const rocblas_int nv,
                           const rocblas_int nu,
                           const rocblas_int nc,
-                          S* D, S* E, 
-                          W* V, const rocblas_int ldv, 
-                          W* U, const rocblas_int ldu, 
-                          W* C, const rocblas_int ldc, 
+                          S* D, S* E,
+                          W* V, const rocblas_int ldv,
+                          W* U, const rocblas_int ldu,
+                          W* C, const rocblas_int ldc,
                           const S sh, S* rots)
 {
     S f, g, c, s, r;
     rocblas_int nr = nv ? 2*(n-1) : 0;
 
-    int sgn = (S(0) < D[0]) - (D[0] < S(0)); 
+    int sgn = (S(0) < D[0]) - (D[0] < S(0));
     if (D[0] == 0) f = 0;
-    else f = (std::abs(D[0]) - sh) * (S(sgn) + sh/D[0]); 
+    else f = (std::abs(D[0]) - sh) * (S(sgn) + sh/D[0]);
     g = E[0];
 
-    for (rocblas_int k = 0; k < n-1; ++k) { 
+    for (rocblas_int k = 0; k < n-1; ++k) {
         // first apply rotation by columns
         lartg(f,g,c,s,r);
         if (k > 0) E[k-1] = r;
@@ -210,13 +210,13 @@ __device__ void t2bQRstep(const rocblas_int n,
         if (k < n-2) {
             g = -s*E[k+1];
             E[k+1] = c*E[k+1];
-        }    
+        }
         // save rotations to update singular vectors
         if (nu || nc) {
             rots[k+nr] = c;
             rots[k+nr+n-1] = -s;
         }
-    } 
+    }
     E[n-2] = f;
 
     // update singular vectors
@@ -237,10 +237,10 @@ __device__ void b2tQRstep(const rocblas_int n,
                           const rocblas_int nv,
                           const rocblas_int nu,
                           const rocblas_int nc,
-                          S* D, S* E, 
-                          W* V, const rocblas_int ldv, 
-                          W* U, const rocblas_int ldu, 
-                          W* C, const rocblas_int ldc, 
+                          S* D, S* E,
+                          W* V, const rocblas_int ldv,
+                          W* U, const rocblas_int ldu,
+                          W* C, const rocblas_int ldc,
                           const S sh, S* rots)
 {
     S f, g, c, s, r;
@@ -281,7 +281,7 @@ __device__ void b2tQRstep(const rocblas_int n,
         }
     }
     E[0] = f;
-    
+
     // update singular vectors
     if (nv)
         lasr(rocblas_side_left, rocblas_backward_direction, n, nv, rots, rots+n-1, V, ldv);
@@ -292,7 +292,7 @@ __device__ void b2tQRstep(const rocblas_int n,
 }
 
 
-/** BDSQRKERNEL implements the main loop of the bdsqr algorithm 
+/** BDSQRKERNEL implements the main loop of the bdsqr algorithm
     to compute the SVD of an upper bidiagonal matrix given by D and E **/
 template <typename T, typename S, typename W>
 __global__ void bdsqrKernel(const rocblas_int n,
@@ -307,7 +307,7 @@ __global__ void bdsqrKernel(const rocblas_int n,
                             const rocblas_int ldu, const rocblas_stride strideU,
                             W CC, const rocblas_int shiftC,
                             const rocblas_int ldc, const rocblas_stride strideC,
-                            rocblas_int *info, const rocblas_int maxiter, 
+                            rocblas_int *info, const rocblas_int maxiter,
                             const S eps, const S sfm, const S tol, const S minshift,
                             S* workA, const rocblas_stride strideW)
 {
@@ -323,11 +323,11 @@ __global__ void bdsqrKernel(const rocblas_int n,
 
     // calculate threshold for zeroing elements (convergence threshold)
     int t2b = (D[0] >= D[n-1]) ? 1 : 0;                 //direction
-    S smin = estimate<S>(n,D,E,t2b,tol,0);            //estimate of the smallest singular value 
+    S smin = estimate<S>(n,D,E,t2b,tol,0);            //estimate of the smallest singular value
     S thresh = std::max(tol*smin/S(std::sqrt(n)),
                 S(maxiter)*sfm);                       //threshold
 
-    rocblas_int k = n-1;    //k is the last element of last unconverged diagonal block 
+    rocblas_int k = n-1;    //k is the last element of last unconverged diagonal block
     rocblas_int iter = 0;   //iter is the number of iterations (QR steps) applied
     rocblas_int i;
     S sh, smax;
@@ -340,12 +340,12 @@ __global__ void bdsqrKernel(const rocblas_int n,
             if (i >= 0 && std::abs(E[i]) < thresh) {
                 E[i] = 0;
                 break;
-            }                
+            }
         }
 
-        // check if last singular value converged, 
+        // check if last singular value converged,
         // if not, continue with the QR step
-        //(TODO: splitted blocks can be analyzed in parallel) 
+        //(TODO: splitted blocks can be analyzed in parallel)
         if (i == k-1) k--;
         else {
 
@@ -359,20 +359,20 @@ __global__ void bdsqrKernel(const rocblas_int n,
             } else {
                 t2b = 0;
                 sh = std::abs(D[k]);
-            } 
+            }
             smin = estimate<S>(k-i+1,D+i,E+i,t2b,tol,1);   //shift
-            smax = std::max(maxval<S>(k-i+1,D+i), 
+            smax = std::max(maxval<S>(k-i+1,D+i),
                             maxval<S>(k-i,E+i));           //estimate of the largest singular value in the block
 
             // check for gaps, if none then continue
-            if (smin >=0) {                             
-                if (smin/smax <= minshift) smin = 0;        //shift set to zero if less than accepted value 
+            if (smin >=0) {
+                if (smin/smax <= minshift) smin = 0;        //shift set to zero if less than accepted value
                 else if (sh > 0) {
                     if (smin*smin/sh/sh < eps) smin = 0;    //shift set to zero if negligible
                 }
 
                 // apply QR step
-                iter += k-i;    
+                iter += k-i;
                 if (t2b) t2bQRstep(k-i+1, nv, nu, nc, D+i, E+i, V+i, ldv,
                                    U+i*ldu, ldu, C+i, ldc, smin, rots);
                 else b2tQRstep(k-i+1, nv, nu, nc, D+i, E+i, V+i, ldv,
@@ -380,7 +380,7 @@ __global__ void bdsqrKernel(const rocblas_int n,
             }
         }
     }
-    
+
     // re-arange singular values/vectors if algorithm converged
     if (k == 0) {
         // all positive
@@ -389,7 +389,7 @@ __global__ void bdsqrKernel(const rocblas_int n,
                 D[ii] = -D[ii];
                 if (nv) negvect(nv, V+ii, ldv);
             }
-        }    
+        }
 
         // in drecreasing order
         rocblas_int idx;
@@ -462,11 +462,11 @@ __global__ void lower2upper(const rocblas_int n,
             rots[i] = c;
             rots[i+n-1] = -s;
         }
-    }       
-    D[n-1] = f; 
+    }
+    D[n-1] = f;
 
     // update singular vectors
-    if (nu) 
+    if (nu)
         lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots, rots+n-1, U, ldu);
     if (nc)
         lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots, rots+n-1, C, ldc);
@@ -474,14 +474,14 @@ __global__ void lower2upper(const rocblas_int n,
 
 
 template <typename T>
-void rocsolver_bdsqr_getMemorySize(const rocblas_int n, const rocblas_int nv, const rocblas_int nu, const rocblas_int nc, 
+void rocsolver_bdsqr_getMemorySize(const rocblas_int n, const rocblas_int nv, const rocblas_int nu, const rocblas_int nc,
                                    const rocblas_int batch_count, size_t *size)
 {
     // size of workspace
     *size = 0;
     if (nv) *size += 2;
     if (nu || nc) *size += 2;
-    
+
     *size *= sizeof(T)*(n-1)*batch_count;
 }
 
@@ -540,7 +540,7 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                                            const rocblas_int batch_count, S* work)
 {
     // quick return
-    if (n == 0 || batch_count == 0) 
+    if (n == 0 || batch_count == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
@@ -548,33 +548,33 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
 
     // set tolerance and max number of iterations
     S eps = get_epsilon<S>() / 2;         //machine precision (considering rounding strategy)
-    S sfm = get_safemin<S>();             //safest minimum value such that 1/sfm does not overflow 
+    S sfm = get_safemin<S>();             //safest minimum value such that 1/sfm does not overflow
     rocblas_int maxiter = 6*n*n;            //max number of iterations (QR steps) before declaring not convergence
     S tol = std::max(S(10.0),
              std::min(S(100.0),
-             S(pow(eps,-0.125)))) * eps;   //relative accuracy tolerance  
+             S(pow(eps,-0.125)))) * eps;   //relative accuracy tolerance
     S minshift = std::max(eps,
                   tol/S(100)) / (n*tol);   //(minimum accepted shift to not ruin relative accuracy) / (max singular value)
 
     rocblas_stride strideW = 4*n;
 
-    // rotate to upper bidiagonal if necessary 
+    // rotate to upper bidiagonal if necessary
     if (uplo == rocblas_fill_lower) {
        hipLaunchKernelGGL((lower2upper<T>),dim3(batch_count),dim3(1),0,stream,
-                          n, nu, nc, D, strideD, E, strideE, 
+                          n, nu, nc, D, strideD, E, strideE,
                           U, shiftU, ldu, strideU,
                           C, shiftC, ldc, strideC, work, strideW);
-    }                             
+    }
 
     // main computation of SVD
     hipLaunchKernelGGL((bdsqrKernel<T>),dim3(batch_count),dim3(1),0,stream,
-                       n, nv, nu, nc, D, strideD, E, strideE, 
+                       n, nv, nu, nc, D, strideD, E, strideE,
                        V, shiftV, ldv, strideV,
                        U, shiftU, ldu, strideU,
-                       C, shiftC, ldc, strideC, 
+                       C, shiftC, ldc, strideC,
                        info, maxiter,
                        eps, sfm, tol, minshift, work, strideW);
-    
+
     return rocblas_status_success;
 }
 

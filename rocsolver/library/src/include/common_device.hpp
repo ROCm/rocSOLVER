@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef COMMON_DEVICE_H
@@ -67,25 +67,25 @@ __global__ void reset_batch_info(U info, const rocblas_stride stride, const rocb
 }
 
 template <typename T>
-__global__ void get_array(T** out, T* in, rocblas_stride stride, rocblas_int batch) 
+__global__ void get_array(T** out, T* in, rocblas_stride stride, rocblas_int batch)
 {
     int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-    
+
     if (b < batch)
         out[b] = in + b*stride;
 }
 
 template <typename T, typename U>
-__global__ void shift_array(T** out, U in, rocblas_int shift, rocblas_int batch) 
+__global__ void shift_array(T** out, U in, rocblas_int shift, rocblas_int batch)
 {
     int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-    
+
     if (b < batch)
         out[b] = in[b] + shift;
 }
 
 template <typename T, typename U>
-__global__ void setdiag(const rocblas_int j, U A, 
+__global__ void setdiag(const rocblas_int j, U A,
                         const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,
                         T *ipiv, const rocblas_stride strideP)
 {
@@ -94,7 +94,7 @@ __global__ void setdiag(const rocblas_int j, U A,
     T *tau = ipiv + b*strideP;
 
     T t = -tau[j];
-    tau[j] = t; 
+    tau[j] = t;
     Ap[j + j*lda] = 1.0 + t;
 }
 

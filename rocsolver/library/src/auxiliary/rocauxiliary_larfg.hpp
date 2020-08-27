@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2017
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_LARFG_HPP
@@ -100,7 +100,7 @@ rocblas_status rocsolver_larfg_argCheck(const rocblas_int n, const rocblas_int i
 
     // 1. invalid/non-supported values
     // N/A
-    
+
     // 2. invalid size
     if (n < 0 || incx < 1)
         return rocblas_status_invalid_size;
@@ -113,7 +113,7 @@ rocblas_status rocsolver_larfg_argCheck(const rocblas_int n, const rocblas_int i
 }
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
-rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int n, U alpha, const rocblas_int shifta, 
+rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int n, U alpha, const rocblas_int shifta,
                                         U x, const rocblas_int shiftx, const rocblas_int incx, const rocblas_stride stridex,
                                         T *tau, const rocblas_stride strideP, const rocblas_int batch_count, T* norms, T* work)
 {
@@ -123,29 +123,29 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle, const rocblas_int
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-    
+
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);
-    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);  
-  
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);
+
     //if n==1 return tau=0
     dim3 gridReset(1, batch_count, 1);
-    dim3 threads(1, 1, 1); 
+    dim3 threads(1, 1, 1);
     if (n == 1 && !COMPLEX) {
         hipLaunchKernelGGL(reset_batch_info<T>,gridReset,threads,0,stream,tau,strideP,1,0);
         rocblas_set_pointer_mode(handle,old_mode);
-        return rocblas_status_success;    
+        return rocblas_status_success;
     }
-    
+
     //compute squared norm of x
     rocblasCall_dot<COMPLEX,T>(handle, n-1, x, shiftx, incx, stridex,
                                x, shiftx, incx, stridex, batch_count, norms, work);
 
     //set value of tau and beta and scalling factor for vector x
-    //alpha <- beta, norms <- scaling   
+    //alpha <- beta, norms <- scaling
     hipLaunchKernelGGL(set_taubeta<T>,dim3(batch_count),dim3(1),0,stream,tau,strideP,norms,alpha,shifta,stridex);
-     
+
     //compute vector v=x*norms
     rocblasCall_scal<T>(handle, n-1, norms, 1, x, shiftx, incx, stridex, batch_count);
 

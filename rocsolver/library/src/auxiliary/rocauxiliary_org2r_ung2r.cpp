@@ -1,11 +1,11 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_org2r_ung2r.hpp"
 
 template <typename T>
-rocblas_status rocsolver_org2r_ung2r_impl(rocblas_handle handle, const rocblas_int m, const rocblas_int n, 
+rocblas_status rocsolver_org2r_ung2r_impl(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                                    const rocblas_int k, T* A, const rocblas_int lda, T* ipiv)
 {
     if(!handle)
@@ -13,7 +13,7 @@ rocblas_status rocsolver_org2r_ung2r_impl(rocblas_handle handle, const rocblas_i
 
     //logging is missing ???
 
-    // argument checking    
+    // argument checking
     rocblas_status st = rocsolver_org2r_orgqr_argCheck(m,n,k,lda,A,ipiv);
     if (st != rocblas_status_continue)
         return st;
@@ -42,7 +42,7 @@ rocblas_status rocsolver_org2r_ung2r_impl(rocblas_handle handle, const rocblas_i
     RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
 
     // execution
-    rocblas_status status =    
+    rocblas_status status =
           rocsolver_org2r_ung2r_template<T>(handle,
                                             m,n,k,
                                             A,0,    //shifted 0 entries

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_LARF_HPP
@@ -18,7 +18,7 @@ void rocsolver_larf_getMemorySize(const rocblas_int m, const rocblas_int n, cons
                                   size_t *size_1, size_t *size_2, size_t *size_3)
 {
     // size of scalars (constants)
-    *size_1 = sizeof(T)*3;        
+    *size_1 = sizeof(T)*3;
 
     // size of workspace
     *size_2 = max(m,n);
@@ -36,7 +36,7 @@ void rocsolver_larf_getMemorySize(const rocblas_side side, const rocblas_int m, 
                                   size_t *size_1, size_t *size_2, size_t *size_3)
 {
     // size of scalars (constants)
-    *size_1 = sizeof(T)*3;        
+    *size_1 = sizeof(T)*3;
 
     // size of workspace
     if (side == rocblas_side_left)
@@ -65,7 +65,7 @@ void rocsolver_larf_getMemorySize(const rocblas_side side, const rocblas_int m, 
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_larf_argCheck(const rocblas_side side, const rocblas_int m, const rocblas_int n, 
+rocblas_status rocsolver_larf_argCheck(const rocblas_side side, const rocblas_int m, const rocblas_int n,
                                        const rocblas_int lda, const rocblas_int incx, T x, T A, U alpha)
 {
     // order is important for unit tests:
@@ -74,7 +74,7 @@ rocblas_status rocsolver_larf_argCheck(const rocblas_side side, const rocblas_in
     if (side != rocblas_side_left && side != rocblas_side_right)
         return rocblas_status_invalid_value;
     bool left = (side == rocblas_side_left);
-    
+
     // 2. invalid size
     if (n < 0 || m < 0 || lda < m || !incx)
         return rocblas_status_invalid_size;
@@ -88,8 +88,8 @@ rocblas_status rocsolver_larf_argCheck(const rocblas_side side, const rocblas_in
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side side, const rocblas_int m,
-                                        const rocblas_int n, U x, const rocblas_int shiftx, const rocblas_int incx, 
-                                        const rocblas_stride stridex, const T* alpha, const rocblas_stride stridep, U A, const rocblas_int shiftA, 
+                                        const rocblas_int n, U x, const rocblas_int shiftx, const rocblas_int incx,
+                                        const rocblas_stride stridex, const T* alpha, const rocblas_stride stridep, U A, const rocblas_int shiftA,
                                         const rocblas_int lda, const rocblas_stride stridea, const rocblas_int batch_count, T* scalars, T* work, T** workArr)
 {
     // quick return
@@ -102,7 +102,7 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);
-    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);  
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);
 
     //determine side and order of H
     bool leftside = (side == rocblas_side_left);
@@ -113,15 +113,15 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side
                        rocblas_operation_transpose;
         order = n;
     }
-    
+
     // **** FOR NOW, IT DOES NOT DETERMINE "NON-ZERO" DIMENSIONS
     //      OF A AND X, AS THIS WOULD REQUIRE SYNCHRONIZATION WITH GPU.
     //      IT WILL WORK ON THE ENTIRE MATRIX/VECTOR REGARDLESS OF
     //      ZERO ENTRIES ****
- 
+
     //compute the matrix vector product  (W=-A'*X or W=-A*X)
-    rocblasCall_gemv<T>(handle, trans, m, n, cast2constType<T>(scalars), 0, A, shiftA, lda, stridea, 
-                        x, shiftx, incx, stridex, cast2constType<T>(scalars+1), 0, 
+    rocblasCall_gemv<T>(handle, trans, m, n, cast2constType<T>(scalars), 0, A, shiftA, lda, stridea,
+                        x, shiftx, incx, stridex, cast2constType<T>(scalars+1), 0,
                         work, 0, 1, order, batch_count, workArr);
 
     //compute the rank-1 update  (A + tau*V*W'  or A + tau*W*V')
@@ -129,11 +129,11 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle, const rocblas_side
         rocblasCall_ger<COMPLEX,T>(handle, m, n, alpha, stridep, x, shiftx, incx, stridex,
                                    work, 0, 1, order, A, shiftA, lda, stridea, batch_count, workArr);
     } else {
-        rocblasCall_ger<COMPLEX,T>(handle, m, n, alpha, stridep, work, 0, 1, order, 
+        rocblasCall_ger<COMPLEX,T>(handle, m, n, alpha, stridep, work, 0, 1, order,
                                    x, shiftx, incx, stridex, A, shiftA, lda, stridea, batch_count, workArr);
     }
 
-    rocblas_set_pointer_mode(handle,old_mode);  
+    rocblas_set_pointer_mode(handle,old_mode);
     return rocblas_status_success;
 }
 

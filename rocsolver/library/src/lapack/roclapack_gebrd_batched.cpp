@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #define batched
@@ -9,13 +9,13 @@ template <typename S, typename T, typename U>
 rocblas_status rocsolver_gebrd_batched_impl(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
                                         U A, const rocblas_int lda, S* D, const rocblas_stride strideD,
                                         S* E, const rocblas_stride strideE, T* tauq, const rocblas_stride strideQ,
-                                        T* taup, const rocblas_stride strideP, const rocblas_int batch_count) 
-{ 
+                                        T* taup, const rocblas_stride strideP, const rocblas_int batch_count)
+{
     if(!handle)
         return rocblas_status_invalid_handle;
-    
-    //logging is missing ???    
-    
+
+    //logging is missing ???
+
     // argument checking
     rocblas_status st = rocsolver_gebd2_gebrd_argCheck(m,n,lda,A,D,E,tauq,taup,batch_count);
     if (st != rocblas_status_continue)
@@ -47,7 +47,7 @@ rocblas_status rocsolver_gebrd_batched_impl(rocblas_handle handle, const rocblas
     hipMalloc(&Y,size_6);
     if (!scalars || (size_2 && !work) || (size_3 && !workArr) || (size_4 && !diag) || (size_5 && !X) || (size_6 && !Y))
         return rocblas_status_memory_error;
-    
+
     rocblas_int blocks = (batch_count - 1)/32 + 1;
     hipMalloc(&XArr, sizeof(T*) * batch_count);
     hipMalloc(&YArr, sizeof(T*) * batch_count);

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_LACGV_HPP
@@ -43,7 +43,7 @@ rocblas_status rocsolver_lacgv_argCheck(const rocblas_int n, const rocblas_int i
 
     // 1. invalid/non-supported values
     // N/A
-    
+
     // 2. invalid size
     if (n < 0 || !incx)
         return rocblas_status_invalid_size;

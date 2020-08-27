@@ -1,11 +1,11 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_larfg.hpp"
 
 template <typename T>
-rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n, T *alpha, T *x, const rocblas_int incx, T *tau) 
+rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n, T *alpha, T *x, const rocblas_int incx, T *tau)
 {
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -30,7 +30,7 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n, 
     void *norms, *work;
     hipMalloc(&norms,size_1);
     hipMalloc(&work, size_2);
-    if (!norms || (size_2 && !work)) 
+    if (!norms || (size_2 && !work))
         return rocblas_status_memory_error;
 
     // execution
@@ -41,7 +41,7 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n, 
                                       incx,
                                       stridex,
                                       tau,
-                                      strideP, 
+                                      strideP,
                                       batch_count,
                                       (T*)norms,
                                       (T*)work);

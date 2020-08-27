@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2019
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_GEQRF_H
@@ -31,27 +31,27 @@ void rocsolver_geqrf_getMemorySize(const rocblas_int m, const rocblas_int n, con
         rocsolver_larfb_getMemorySize<T>(rocblas_side_left,m,n-jb,jb,batch_count,&s3);
         *size_2 = max(s1,max(s2,s3));
         *size_5 = sizeof(T)*jb*jb*batch_count;
-    }        
+    }
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int m,
-                                        const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
-                                        const rocblas_stride strideA, T* ipiv,  
+                                        const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
+                                        const rocblas_stride strideA, T* ipiv,
                                         const rocblas_stride strideP, const rocblas_int batch_count,
                                         T* scalars, T* work, T** workArr, T* diag, T* trfact)
 {
     // quick return
-    if (m == 0 || n == 0 || batch_count == 0) 
+    if (m == 0 || n == 0 || batch_count == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the algorithm
-    if (m <= GEQRF_GEQR2_SWITCHSIZE || n <= GEQRF_GEQR2_SWITCHSIZE) 
+    if (m <= GEQRF_GEQR2_SWITCHSIZE || n <= GEQRF_GEQR2_SWITCHSIZE)
         return rocsolver_geqr2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, strideP, batch_count, scalars, work, workArr, diag);
-    
+
     rocblas_int dim = min(m, n);    //total number of pivots
     rocblas_int jb, j = 0;
 
@@ -59,17 +59,17 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int
     rocblas_stride strideW = rocblas_stride(ldw) *ldw;
 
     while (j < dim - GEQRF_GEQR2_SWITCHSIZE) {
-        // Factor diagonal and subdiagonal blocks 
+        // Factor diagonal and subdiagonal blocks
         jb = min(dim - j, GEQRF_GEQR2_BLOCKSIZE);  //number of columns in the block
         rocsolver_geqr2_template<T>(handle, m-j, jb, A, shiftA + idx2D(j,j,lda), lda, strideA, (ipiv + j), strideP, batch_count, scalars, work, workArr, diag);
 
         //apply transformation to the rest of the matrix
         if (j + jb < n) {
-            
+
             //compute block reflector
-            rocsolver_larft_template<T>(handle, rocblas_forward_direction, 
-                                        rocblas_column_wise, m-j, jb, 
-                                        A, shiftA + idx2D(j,j,lda), lda, strideA, 
+            rocsolver_larft_template<T>(handle, rocblas_forward_direction,
+                                        rocblas_column_wise, m-j, jb,
+                                        A, shiftA + idx2D(j,j,lda), lda, strideA,
                                         (ipiv + j), strideP,
                                         trfact, ldw, strideW, batch_count, scalars, work, workArr);
 
@@ -85,9 +85,9 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int
     }
 
     //factor last block
-    if (j < dim) 
+    if (j < dim)
         rocsolver_geqr2_template<T>(handle, m-j, n-j, A, shiftA + idx2D(j,j,lda), lda, strideA, (ipiv + j), strideP, batch_count, scalars, work, workArr, diag);
-        
+
     return rocblas_status_success;
 }
 

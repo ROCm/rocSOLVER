@@ -1,14 +1,14 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_larfb.hpp"
 
 template <typename T>
-rocblas_status rocsolver_larfb_impl(rocblas_handle handle, const rocblas_side side, 
-                                    const rocblas_operation trans, const rocblas_direct direct, 
+rocblas_status rocsolver_larfb_impl(rocblas_handle handle, const rocblas_side side,
+                                    const rocblas_operation trans, const rocblas_direct direct,
                                     const rocblas_storev storev,
-                                    const rocblas_int m, const rocblas_int n, 
+                                    const rocblas_int m, const rocblas_int n,
                                     const rocblas_int k, T* V, const rocblas_int ldv, T* F, const rocblas_int ldf,
                                     T* A, const rocblas_int lda)
 {
@@ -40,8 +40,8 @@ rocblas_status rocsolver_larfb_impl(rocblas_handle handle, const rocblas_side si
         return rocblas_status_memory_error;
 
     //  execution
-    rocblas_status status = 
-            rocsolver_larfb_template<false,false,T>(handle,side,trans,direct,storev, 
+    rocblas_status status =
+            rocsolver_larfb_template<false,false,T>(handle,side,trans,direct,storev,
                                                   m,n,k,
                                                   V,0,      //shifted 0 entries
                                                   ldv,
@@ -51,7 +51,7 @@ rocblas_status rocsolver_larfb_impl(rocblas_handle handle, const rocblas_side si
                                                   stridef,
                                                   A,0,      //shifted 0 entries
                                                   lda,
-                                                  stridea, 
+                                                  stridea,
                                                   batch_count,
                                                   (T*)work,
                                                   (T**)workArr);

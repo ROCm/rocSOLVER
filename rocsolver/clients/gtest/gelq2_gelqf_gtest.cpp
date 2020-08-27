@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -21,7 +21,7 @@ typedef std::tuple<vector<int>, int> gelqf_tuple;
 
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
-    {0, 1},             //quick return 
+    {0, 1},             //quick return
     {-1, 1}, {20, 5},   //invalid
     {50, 50}, {70, 100}, {130, 130}, {150, 200}
 };
@@ -34,7 +34,7 @@ const vector<int> n_size_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
-    {152, 152}, {640, 640}, {1000, 1024}, 
+    {152, 152}, {640, 640}, {1000, 1024},
 };
 
 const vector<int> large_n_size_range = {
@@ -42,7 +42,7 @@ const vector<int> large_n_size_range = {
 };
 
 
-Arguments gelqf_setup_arguments(gelqf_tuple tup) 
+Arguments gelqf_setup_arguments(gelqf_tuple tup)
 {
     vector<int> matrix_size = std::get<0>(tup);
     int n_size = std::get<1>(tup);

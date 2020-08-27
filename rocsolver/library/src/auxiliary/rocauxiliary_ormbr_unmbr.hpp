@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_ORMBR_UNMBR_HPP
@@ -41,7 +41,7 @@ rocblas_status rocsolver_ormbr_argCheck(const rocblas_storev storev, const rocbl
     if ((COMPLEX && trans == rocblas_operation_transpose) || (!COMPLEX && trans == rocblas_operation_conjugate_transpose))
         return rocblas_status_invalid_value;
     if (storev != rocblas_column_wise && storev != rocblas_row_wise)
-        return rocblas_status_invalid_value;    
+        return rocblas_status_invalid_value;
     bool left = (side == rocblas_side_left);
     bool row = (storev == rocblas_row_wise);
 
@@ -62,10 +62,10 @@ rocblas_status rocsolver_ormbr_argCheck(const rocblas_storev storev, const rocbl
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U, bool COMPLEX = is_complex<T>>
-rocblas_status rocsolver_ormbr_unmbr_template(rocblas_handle handle, const rocblas_storev storev, const rocblas_side side, const rocblas_operation trans, 
-                                   const rocblas_int m, const rocblas_int n, 
-                                   const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda, 
-                                   const rocblas_stride strideA, T* ipiv, 
+rocblas_status rocsolver_ormbr_unmbr_template(rocblas_handle handle, const rocblas_storev storev, const rocblas_side side, const rocblas_operation trans,
+                                   const rocblas_int m, const rocblas_int n,
+                                   const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda,
+                                   const rocblas_stride strideA, T* ipiv,
                                    const rocblas_stride strideP, U C, const rocblas_int shiftC, const rocblas_int ldc,
                                    const rocblas_stride strideC, const rocblas_int batch_count,
                                    T* scalars, T* work, T** workArr, T* trfact)
@@ -90,17 +90,17 @@ rocblas_status rocsolver_ormbr_unmbr_template(rocblas_handle handle, const rocbl
         rowC = 0;
         colC = 1;
     }
-    
+
     // if column-wise, apply the orthogonal matrix Q generated in the bi-diagonalization
     // gebrd to a general matrix C
     if (storev == rocblas_column_wise) {
         if (nq >= k) {
-            rocsolver_ormqr_unmqr_template<BATCHED,STRIDED,T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, 
+            rocsolver_ormqr_unmqr_template<BATCHED,STRIDED,T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP,
                                         C, shiftC, ldc, strideC, batch_count, scalars, work, workArr, trfact);
         } else {
             // shift the householder vectors provided by gebrd as they come below the first subdiagonal
-            rocsolver_ormqr_unmqr_template<BATCHED,STRIDED,T>(handle, side, trans, rows, cols, nq-1, 
-                                        A, shiftA + idx2D(1,0,lda), lda, strideA, ipiv, strideP, 
+            rocsolver_ormqr_unmqr_template<BATCHED,STRIDED,T>(handle, side, trans, rows, cols, nq-1,
+                                        A, shiftA + idx2D(1,0,lda), lda, strideA, ipiv, strideP,
                                         C, shiftC + idx2D(rowC,colC,ldc), ldc, strideC, batch_count, scalars, work, workArr, trfact);
         }
     }
@@ -114,17 +114,17 @@ rocblas_status rocsolver_ormbr_unmbr_template(rocblas_handle handle, const rocbl
         else
             transP = rocblas_operation_none;
         if (nq > k) {
-            rocsolver_ormlq_unmlq_template<BATCHED,STRIDED,T>(handle, side, transP, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, 
+            rocsolver_ormlq_unmlq_template<BATCHED,STRIDED,T>(handle, side, transP, m, n, k, A, shiftA, lda, strideA, ipiv, strideP,
                                         C, shiftC, ldc, strideC, batch_count, scalars, work, workArr, trfact);
         } else {
             // shift the householder vectors provided by gebrd as they come above the first superdiagonal
-            rocsolver_ormlq_unmlq_template<BATCHED,STRIDED,T>(handle, side, transP, rows, cols, nq-1, 
-                                        A, shiftA + idx2D(0,1,lda), lda, strideA, ipiv, strideP, 
+            rocsolver_ormlq_unmlq_template<BATCHED,STRIDED,T>(handle, side, transP, rows, cols, nq-1,
+                                        A, shiftA + idx2D(0,1,lda), lda, strideA, ipiv, strideP,
                                         C, shiftC + idx2D(rowC,colC,ldc), ldc, strideC, batch_count, scalars, work, workArr, trfact);
         }
     }
 
- 
+
     return rocblas_status_success;
 }
 

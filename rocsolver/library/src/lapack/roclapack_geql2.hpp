@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2019
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_GEQL2_H
@@ -27,7 +27,7 @@ void rocsolver_geql2_getMemorySize(const rocblas_int m, const rocblas_int n, con
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_geql2_geqlf_argCheck(const rocblas_int m, const rocblas_int n, const rocblas_int lda, 
+rocblas_status rocsolver_geql2_geqlf_argCheck(const rocblas_int m, const rocblas_int n, const rocblas_int lda,
                                               T A, U ipiv, const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
@@ -48,19 +48,19 @@ rocblas_status rocsolver_geql2_geqlf_argCheck(const rocblas_int m, const rocblas
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_geql2_template(rocblas_handle handle, const rocblas_int m,
-                                        const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda, 
-                                        const rocblas_stride strideA, T* ipiv,  
+                                        const rocblas_int n, U A, const rocblas_int shiftA, const rocblas_int lda,
+                                        const rocblas_stride strideA, T* ipiv,
                                         const rocblas_stride strideP, const rocblas_int batch_count,
                                         T* scalars, T* work, T** workArr, T* diag)
 {
     // quick return
-    if (m == 0 || n == 0 || batch_count == 0) 
+    if (m == 0 || n == 0 || batch_count == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int dim = min(m, n);    //total number of pivots    
+    rocblas_int dim = min(m, n);    //total number of pivots
 
     for (rocblas_int j = 0; j < dim; j++) {
         // generate Householder reflector to work on column j
@@ -68,21 +68,21 @@ rocblas_status rocsolver_geql2_template(rocblas_handle handle, const rocblas_int
                                  m - j,                                 //order of reflector
                                  A, shiftA + idx2D(m-j-1,n-j-1,lda),    //value of alpha
                                  A, shiftA + idx2D(0,n-j-1,lda),        //vector x to work on
-                                 1, strideA,                            //inc of x    
+                                 1, strideA,                            //inc of x
                                  (ipiv + dim-j-1), strideP,             //tau
                                  batch_count, diag, work);
 
-        // insert one in A(m-j-1,n-j-1) tobuild/apply the householder matrix 
+        // insert one in A(m-j-1,n-j-1) tobuild/apply the householder matrix
         hipLaunchKernelGGL(set_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(m-j-1,n-j-1,lda),lda,strideA,1,true);
-        
+
         // conjugate tau
         if (COMPLEX)
             rocsolver_lacgv_template<T>(handle, 1, ipiv, dim-j-1, 1, strideP, batch_count);
 
-        // Apply Householder reflector to the rest of matrix from the left 
+        // Apply Householder reflector to the rest of matrix from the left
         rocsolver_larf_template(handle,rocblas_side_left,           //side
                                 m - j,                              //number of rows of matrix to modify
-                                n - j - 1,                          //number of columns of matrix to modify    
+                                n - j - 1,                          //number of columns of matrix to modify
                                 A, shiftA + idx2D(0,n-j-1,lda),     //householder vector x
                                 1, strideA,                         //inc of x
                                 (ipiv + dim-j-1), strideP,          //householder scalar (alpha)
@@ -92,7 +92,7 @@ rocblas_status rocsolver_geql2_template(rocblas_handle handle, const rocblas_int
 
         // restore original value of A(m-j-1,n-j-1)
         hipLaunchKernelGGL(restore_diag<T>,dim3(batch_count,1,1),dim3(1,1,1),0,stream,diag,0,1,A,shiftA+idx2D(m-j-1,n-j-1,lda),lda,strideA,1);
-        
+
         // restore tau
         if (COMPLEX)
             rocsolver_lacgv_template<T>(handle, 1, ipiv, dim-j-1, 1, strideP, batch_count);

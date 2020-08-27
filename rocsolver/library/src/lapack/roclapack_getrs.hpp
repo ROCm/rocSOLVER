@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_GETRS_HPP
@@ -41,7 +41,7 @@ template <typename T, typename U>
 rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_operation trans,
                          const rocblas_int n, const rocblas_int nrhs, U A, const rocblas_int shiftA,
                          const rocblas_int lda, const rocblas_stride strideA, const rocblas_int *ipiv, const rocblas_stride strideP, U B,
-                         const rocblas_int shiftB, const rocblas_int ldb, const rocblas_stride strideB, const rocblas_int batch_count) 
+                         const rocblas_int shiftB, const rocblas_int ldb, const rocblas_stride strideB, const rocblas_int batch_count)
 {
     // quick return
     if (n == 0 || nrhs == 0 || batch_count == 0) {
@@ -50,7 +50,7 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_ope
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-    
+
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);
@@ -84,7 +84,7 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_ope
         for (int b = 0; b < batch_count; ++b) {
             Ap = load_ptr_batch<T>(AA,b,shiftA,strideA);
             Bp = load_ptr_batch<T>(BB,b,shiftB,strideB);
-            
+
             // solve L*X = B, overwriting B with X
             rocblas_trsm<T>(handle, rocblas_side_left, rocblas_fill_lower,
                     trans, rocblas_diagonal_unit, n, nrhs,
@@ -95,13 +95,13 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle, const rocblas_ope
                     trans, rocblas_diagonal_non_unit, n, nrhs,
                     &one, Ap, lda, Bp, ldb);
         }
-    
+
     } else {
 
         for (int b = 0; b < batch_count; ++b) {
             Ap = load_ptr_batch<T>(AA,b,shiftA,strideA);
             Bp = load_ptr_batch<T>(BB,b,shiftB,strideB);
-            
+
             // solve U**T *X = B or U**H *X = B, overwriting B with X
             rocblas_trsm<T>(handle, rocblas_side_left, rocblas_fill_upper, trans,
                     rocblas_diagonal_non_unit, n, nrhs,

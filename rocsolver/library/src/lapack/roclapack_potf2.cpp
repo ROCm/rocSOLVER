@@ -1,22 +1,22 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_potf2.hpp"
 
 template <typename T, typename U>
-rocblas_status rocsolver_potf2_impl(rocblas_handle handle, const rocblas_fill uplo,    
-                                    const rocblas_int n, U A, const rocblas_int lda, rocblas_int* info) 
-{ 
+rocblas_status rocsolver_potf2_impl(rocblas_handle handle, const rocblas_fill uplo,
+                                    const rocblas_int n, U A, const rocblas_int lda, rocblas_int* info)
+{
     if(!handle)
         return rocblas_status_invalid_handle;
-    
-    //logging is missing ???    
-    
+
+    //logging is missing ???
+
     // argument checking
     rocblas_status st = rocsolver_potf2_potrf_argCheck(uplo,n,lda,A,info);
     if (st != rocblas_status_continue)
-        return st;  
+        return st;
 
     rocblas_stride strideA = 0;
     rocblas_int batch_count = 1;
@@ -41,7 +41,7 @@ rocblas_status rocsolver_potf2_impl(rocblas_handle handle, const rocblas_fill up
     RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
 
     // execution
-    rocblas_status status = 
+    rocblas_status status =
              rocsolver_potf2_template<T>(handle,uplo,n,
                                         A,0,    //the matrix is shifted 0 entries (will work on the entire matrix)
                                         lda,strideA,

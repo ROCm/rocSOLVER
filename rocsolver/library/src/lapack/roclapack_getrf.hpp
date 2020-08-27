@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_GETRF_HPP
@@ -44,7 +44,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m, const rocblas_int n, con
         *size_4 = sizeof(rocblas_int)*batch_count;
     }
 
-    rocblasCall_trsm_mem<BATCHED,T>(rocblas_side_left,m,n,batch_count,size_6,size_7,size_8,size_9);    
+    rocblasCall_trsm_mem<BATCHED,T>(rocblas_side_left,m,n,batch_count,size_6,size_7,size_8,size_9);
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
@@ -55,15 +55,15 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
                                         void* x_temp, void* x_temp_arr, void* invA, void* invA_arr, bool optim_mem)
 {
     // quick return
-    if (m == 0 || n == 0 || batch_count == 0) 
+    if (m == 0 || n == 0 || batch_count == 0)
         return rocblas_status_success;
 
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
     // if the matrix is small, use the unblocked (level-2-blas) variant of the algorithm
-    if (m < GETRF_GETF2_SWITCHSIZE || n < GETRF_GETF2_SWITCHSIZE) 
+    if (m < GETRF_GETF2_SWITCHSIZE || n < GETRF_GETF2_SWITCHSIZE)
         return rocsolver_getf2_template<ISBATCHED,T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count, pivot, scalars, pivot_val, pivot_idx, work);
-    
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -89,15 +89,15 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
     hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,info,batch_count,0);
 
     for (rocblas_int j = 0; j < dim; j += GETRF_GETF2_SWITCHSIZE) {
-        // Factor diagonal and subdiagonal blocks 
+        // Factor diagonal and subdiagonal blocks
         jb = min(dim - j, GETRF_GETF2_SWITCHSIZE);  //number of columns in the block
         hipLaunchKernelGGL(reset_info,gridReset,threads,0,stream,iinfo,batch_count,0);
-        rocsolver_getf2_template<ISBATCHED,T>(handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, ipiv, shiftP + j, strideP, iinfo, 
+        rocsolver_getf2_template<ISBATCHED,T>(handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, ipiv, shiftP + j, strideP, iinfo,
                                               batch_count, pivot, scalars, pivot_val, pivot_idx, work);
-        
+
         // adjust pivot indices and check singularity
         sizePivot = min(m - j, jb);     //number of pivots in the block
-        blocksPivot = (sizePivot - 1) / BLOCKSIZE + 1; 
+        blocksPivot = (sizePivot - 1) / BLOCKSIZE + 1;
         gridPivot = dim3(blocksPivot, batch_count, 1);
         hipLaunchKernelGGL(getrf_check_singularity<U>,gridPivot,threads,0,stream,
 			   sizePivot,j,ipiv,shiftP + j,strideP,iinfo,info,pivot);
@@ -116,10 +116,10 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
             // compute block row of U
             rocblasCall_trsm<BATCHED,T>(handle, rocblas_side_left, rocblas_fill_lower, rocblas_operation_none, rocblas_diagonal_unit,
                                         jb, (n - j - jb), &one,
-                                        A, shiftA + idx2D(j, j, lda), lda, strideA, 
-                                        A, shiftA + idx2D(j, j+jb, lda), lda, strideA, batch_count, optim_mem, 
-                                        x_temp, x_temp_arr, invA, invA_arr);    
-    
+                                        A, shiftA + idx2D(j, j, lda), lda, strideA,
+                                        A, shiftA + idx2D(j, j+jb, lda), lda, strideA, batch_count, optim_mem,
+                                        x_temp, x_temp_arr, invA, invA_arr);
+
             // update trailing submatrix
             if (j + jb < m) {
                 rocblasCall_gemm<BATCHED,STRIDED,T>(handle, rocblas_operation_none, rocblas_operation_none,
@@ -128,7 +128,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle, const rocblas_int
                                                 A, shiftA+idx2D(j, j + jb, lda), lda, strideA, &one,
                                                 A, shiftA+idx2D(j + jb, j + jb, lda), lda, strideA, batch_count, nullptr);
             }
-        } 
+        }
     }
 
     rocblas_set_pointer_mode(handle,old_mode);

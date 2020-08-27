@@ -1,12 +1,12 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_orml2_unml2.hpp"
 
 template <typename T, bool COMPLEX = is_complex<T>>
-rocblas_status rocsolver_orml2_unml2_impl(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans, 
-                                          const rocblas_int m, const rocblas_int n, 
+rocblas_status rocsolver_orml2_unml2_impl(rocblas_handle handle, const rocblas_side side, const rocblas_operation trans,
+                                          const rocblas_int m, const rocblas_int n,
                                           const rocblas_int k, T* A, const rocblas_int lda, T* ipiv, T *C, const rocblas_int ldc)
 {
     if(!handle)
@@ -46,7 +46,7 @@ rocblas_status rocsolver_orml2_unml2_impl(rocblas_handle handle, const rocblas_s
     RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
 
     // execution
-    rocblas_status status = 
+    rocblas_status status =
            rocsolver_orml2_unml2_template<T>(handle,side,trans,
                                              m,n,k,
                                              A,0,    //shifted 0 entries
@@ -54,7 +54,7 @@ rocblas_status rocsolver_orml2_unml2_impl(rocblas_handle handle, const rocblas_s
                                              strideA,
                                              ipiv,
                                              strideP,
-                                             C,0,  
+                                             C,0,
                                              ldc,
                                              strideC,
                                              batch_count,

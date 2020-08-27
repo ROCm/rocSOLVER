@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_getrf.hpp"
@@ -7,12 +7,12 @@
 template <typename T, typename U>
 rocblas_status rocsolver_getrf_impl(rocblas_handle handle, const rocblas_int m,
                                         const rocblas_int n, U A, const rocblas_int lda,
-                                        rocblas_int *ipiv, rocblas_int* info, const int pivot) 
+                                        rocblas_int *ipiv, rocblas_int* info, const int pivot)
 {
     if(!handle)
         return rocblas_status_invalid_handle;
-    
-    //logging is missing ???    
+
+    //logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_getf2_getrf_argCheck(m,n,lda,A,ipiv,info);
@@ -39,7 +39,7 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle, const rocblas_int m,
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
     void *scalars, *pivot_val, *pivot_idx, *iinfo, *work, *x_temp, *x_temp_arr, *invA, *invA_arr;
     bool optim_mem = true; //always allocate all required memory for TRSM optimal performance
-    
+
     hipMalloc(&scalars,size_1);
     hipMalloc(&pivot_val,size_2);
     hipMalloc(&pivot_idx,size_3);
@@ -59,7 +59,7 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle, const rocblas_int m,
     RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
 
     // execution
-    rocblas_status status = 
+    rocblas_status status =
            rocsolver_getrf_template<false,false,T,S>(handle,m,n,
                                                     A,0,    //The matrix is shifted 0 entries (will work on the entire matrix)
                                                     lda,strideA,
@@ -68,7 +68,7 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle, const rocblas_int m,
                                                     info,batch_count,pivot,
                                                     (T*)scalars,
                                                     (T*)pivot_val,
-                                                    (rocblas_int*)pivot_idx,    
+                                                    (rocblas_int*)pivot_idx,
                                                     (rocblas_int*)iinfo,
                                                     (rocblas_index_value_t<S>*)work,
                                                     x_temp,
@@ -99,52 +99,52 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle, const rocblas_int m,
 extern "C" {
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-                 float *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info) 
+                 float *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info)
 {
     return rocsolver_getrf_impl<float>(handle, m, n, A, lda, ipiv, info, 1);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-                 double *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info) 
+                 double *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info)
 {
     return rocsolver_getrf_impl<double>(handle, m, n, A, lda, ipiv, info, 1);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-                 rocblas_float_complex *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info) 
+                 rocblas_float_complex *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info)
 {
     return rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, 1);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-                 rocblas_double_complex *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info) 
+                 rocblas_double_complex *A, const rocblas_int lda, rocblas_int *ipiv, rocblas_int* info)
 {
     return rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, 1);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_npvt(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-                 float *A, const rocblas_int lda, rocblas_int* info) 
+                 float *A, const rocblas_int lda, rocblas_int* info)
 {
     rocblas_int *ipiv;
     return rocsolver_getrf_impl<float>(handle, m, n, A, lda, ipiv, info, 0);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_npvt(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-                 double *A, const rocblas_int lda, rocblas_int* info) 
+                 double *A, const rocblas_int lda, rocblas_int* info)
 {
     rocblas_int *ipiv;
     return rocsolver_getrf_impl<double>(handle, m, n, A, lda, ipiv, info, 0);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_npvt(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-                 rocblas_float_complex *A, const rocblas_int lda, rocblas_int* info) 
+                 rocblas_float_complex *A, const rocblas_int lda, rocblas_int* info)
 {
     rocblas_int *ipiv;
     return rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, 0);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-                 rocblas_double_complex *A, const rocblas_int lda, rocblas_int* info) 
+                 rocblas_double_complex *A, const rocblas_int lda, rocblas_int* info)
 {
     rocblas_int *ipiv;
     return rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, 0);

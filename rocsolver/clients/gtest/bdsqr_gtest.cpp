@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -28,7 +28,7 @@ typedef std::tuple<vector<int>, vector<int>> bdsqr_tuple;
 
 // for checkin_lapack tests
 const vector<vector<int>> size_range = {
-    {0, 1, 1, 1},                                               //quick return 
+    {0, 1, 1, 1},                                               //quick return
     {-1, 1, 1, 1}, {1, -1, 1, 1}, {1, 1, -1, 1}, {1, 1, 1, -1}, //invalid
     {15, 10, 10, 10}, {20, 0, 0, 15}, {30, 30, 50, 0}, {50, 60, 20, 0}, {70, 0, 0, 0}
 };
@@ -40,7 +40,7 @@ const vector<vector<int>> opt_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range = {
-    {152, 152, 152, 152}, {640, 640, 656, 700}, {1000, 1024, 1000, 80}, {2000, 0, 0, 0} 
+    {152, 152, 152, 152}, {640, 640, 656, 700}, {1000, 1024, 1000, 80}, {2000, 0, 0, 0}
 };
 
 const vector<vector<int>> large_opt_range = {
@@ -48,7 +48,7 @@ const vector<vector<int>> large_opt_range = {
 };
 
 
-Arguments bdsqr_setup_arguments(bdsqr_tuple tup) 
+Arguments bdsqr_setup_arguments(bdsqr_tuple tup)
 {
     vector<int> size = std::get<0>(tup);
     vector<int> opt = std::get<1>(tup);
@@ -64,8 +64,8 @@ Arguments bdsqr_setup_arguments(bdsqr_tuple tup)
 
     arg.lda = (arg.N > 0) ? arg.M : 1;  //ldv
     arg.lda += opt[1]*10;
-    arg.ldb = (arg.K > 0) ? arg.K : 1;  //ldu 
-    arg.ldb += opt[2]*10;        
+    arg.ldb = (arg.K > 0) ? arg.K : 1;  //ldu
+    arg.ldb += opt[2]*10;
     arg.ldc = (arg.S4 > 0) ? arg.M : 1; //ldc
     arg.ldc += opt[3]*10;
 

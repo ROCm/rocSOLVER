@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef ROCLAPACK_LASWP_HPP
@@ -39,7 +39,7 @@ rocblas_status rocsolver_laswp_argCheck(const rocblas_int n, const rocblas_int l
 
     // 1. invalid/non-supported values
     // N/A
-    
+
     // 2. invalid size
     if (n < 0 || lda < 1 || !incx || k1 < 1 || k2 < 1 || k2 < k1)
         return rocblas_status_invalid_size;
@@ -55,10 +55,10 @@ rocblas_status rocsolver_laswp_argCheck(const rocblas_int n, const rocblas_int l
 template <typename T, typename U>
 rocblas_status rocsolver_laswp_template(rocblas_handle handle, const rocblas_int n, U A, const rocblas_int shiftA,
                               const rocblas_int lda, const rocblas_stride strideA, const rocblas_int k1, const rocblas_int k2,
-                              const rocblas_int *ipiv, const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int incx, 
+                              const rocblas_int *ipiv, const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int incx,
                               const rocblas_int batch_count) {
     // quick return
-    if (n == 0 || batch_count == 0) 
+    if (n == 0 || batch_count == 0)
         return rocblas_status_success;
 
     rocblas_int start, end, inc;
@@ -67,7 +67,7 @@ rocblas_status rocsolver_laswp_template(rocblas_handle handle, const rocblas_int
         end = k1 - 1;
         inc = -1;
         incx = -incx;
-    } 
+    }
     else {
         start = k1;
         end = k2 + 1;

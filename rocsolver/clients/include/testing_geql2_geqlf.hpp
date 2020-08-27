@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "norm.hpp"
@@ -11,40 +11,40 @@
 
 
 template <bool STRIDED, bool GEQLF, typename T, typename U>
-void geql2_geqlf_checkBadArgs(const rocblas_handle handle, 
-                         const rocblas_int m, 
-                         const rocblas_int n, 
-                         T dA, 
-                         const rocblas_int lda, 
+void geql2_geqlf_checkBadArgs(const rocblas_handle handle,
+                         const rocblas_int m,
+                         const rocblas_int n,
+                         T dA,
+                         const rocblas_int lda,
                          const rocblas_stride stA,
-                         U dIpiv, 
+                         U dIpiv,
                          const rocblas_stride stP,
                          const rocblas_int bc)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_geql2_geqlf(STRIDED,GEQLF,nullptr,m,n,dA,lda,stA,dIpiv,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_geql2_geqlf(STRIDED,GEQLF,nullptr,m,n,dA,lda,stA,dIpiv,stP,bc),
                           rocblas_status_invalid_handle);
-    
+
     // values
     // N/A
 
     // sizes (only check batch_count if applicable)
     if (STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_geql2_geqlf(STRIDED,GEQLF,handle,m,n,dA,lda,stA,dIpiv,stP,-1), 
+        EXPECT_ROCBLAS_STATUS(rocsolver_geql2_geqlf(STRIDED,GEQLF,handle,m,n,dA,lda,stA,dIpiv,stP,-1),
                               rocblas_status_invalid_size);
-        
+
     // pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_geql2_geqlf(STRIDED,GEQLF,handle,m,n,(T)nullptr,lda,stA,dIpiv,stP,bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_geql2_geqlf(STRIDED,GEQLF,handle,m,n,dA,lda,stA,(U)nullptr,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_geql2_geqlf(STRIDED,GEQLF,handle,m,n,dA,lda,stA,(U)nullptr,stP,bc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_geql2_geqlf(STRIDED,GEQLF,handle,0,n,(T)nullptr,lda,stA,(U)nullptr,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_geql2_geqlf(STRIDED,GEQLF,handle,0,n,(T)nullptr,lda,stA,(U)nullptr,stP,bc),
                           rocblas_status_success);
     EXPECT_ROCBLAS_STATUS(rocsolver_geql2_geqlf(STRIDED,GEQLF,handle,m,0,(T)nullptr,lda,stA,(U)nullptr,stP,bc),
                           rocblas_status_success);
-    
+
     // quick return with zero batch_count if applicable
     if (STRIDED)
         EXPECT_ROCBLAS_STATUS(rocsolver_geql2_geqlf(STRIDED,GEQLF,handle,m,n,dA,lda,stA,dIpiv,stP,0),
@@ -70,7 +70,7 @@ void testing_geql2_geqlf_bad_arg()
         device_strided_batch_vector<T> dIpiv(1,1,1,1);
         CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dIpiv.memcheck());
-        
+
         // check bad arguments
         geql2_geqlf_checkBadArgs<STRIDED,GEQLF>(handle,m,n,dA.data(),lda,stA,dIpiv.data(),stP,bc);
 
@@ -88,14 +88,14 @@ void testing_geql2_geqlf_bad_arg()
 
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
-void geql2_geqlf_initData(const rocblas_handle handle, 
-                        const rocblas_int m, 
-                        const rocblas_int n, 
-                        Td &dA, 
-                        const rocblas_int lda, 
-                        const rocblas_stride stA, 
-                        Ud &dIpiv, 
-                        const rocblas_stride stP, 
+void geql2_geqlf_initData(const rocblas_handle handle,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        Td &dA,
+                        const rocblas_int lda,
+                        const rocblas_stride stA,
+                        Ud &dIpiv,
+                        const rocblas_stride stP,
                         const rocblas_int bc,
                         Th &hA,
                         Uh &hIpiv)
@@ -104,13 +104,13 @@ void geql2_geqlf_initData(const rocblas_handle handle,
     {
         rocblas_init<T>(hA, true);
 
-        // scale A to avoid singularities 
+        // scale A to avoid singularities
         for (rocblas_int b = 0; b < bc; ++b) {
             for (rocblas_int i = 0; i < m; i++) {
                 for (rocblas_int j = 0; j < n; j++) {
                     if (m - i == n - j)
                         hA[b][i + j * lda] += 400;
-                    else    
+                    else
                         hA[b][i + j * lda] -= 4;
                 }
             }
@@ -126,24 +126,24 @@ void geql2_geqlf_initData(const rocblas_handle handle,
 
 
 template <bool STRIDED, bool GEQLF, typename T, typename Td, typename Ud, typename Th, typename Uh>
-void geql2_geqlf_getError(const rocblas_handle handle, 
-                        const rocblas_int m, 
-                        const rocblas_int n, 
-                        Td &dA, 
-                        const rocblas_int lda, 
-                        const rocblas_stride stA, 
-                        Ud &dIpiv, 
-                        const rocblas_stride stP, 
+void geql2_geqlf_getError(const rocblas_handle handle,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        Td &dA,
+                        const rocblas_int lda,
+                        const rocblas_stride stA,
+                        Ud &dIpiv,
+                        const rocblas_stride stP,
                         const rocblas_int bc,
                         Th &hA,
-                        Th &hARes, 
-                        Uh &hIpiv, 
+                        Th &hARes,
+                        Uh &hIpiv,
                         double *max_err)
 {
     std::vector<T> hW(n);
 
-    // input data initialization 
-    geql2_geqlf_initData<true,true,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+    // input data initialization
+    geql2_geqlf_initData<true,true,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc,
                                   hA, hIpiv);
 
     // execute computations
@@ -157,9 +157,9 @@ void geql2_geqlf_getError(const rocblas_handle handle,
             cblas_geqlf<T>(m, n, hA[b], lda, hIpiv[b], hW.data(), n):
             cblas_geql2<T>(m, n, hA[b], lda, hIpiv[b], hW.data());
     }
-   
+
     // error is ||hA - hARes|| / ||hA|| (ideally ||QL - Qres Lres|| / ||QL||)
-    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
+    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
     double err;
@@ -172,17 +172,17 @@ void geql2_geqlf_getError(const rocblas_handle handle,
 
 
 template <bool STRIDED, bool GEQLF, typename T, typename Td, typename Ud, typename Th, typename Uh>
-void geql2_geqlf_getPerfData(const rocblas_handle handle, 
-                            const rocblas_int m, 
-                            const rocblas_int n, 
-                            Td &dA, 
-                            const rocblas_int lda, 
-                            const rocblas_stride stA, 
-                            Ud &dIpiv, 
-                            const rocblas_stride stP, 
+void geql2_geqlf_getPerfData(const rocblas_handle handle,
+                            const rocblas_int m,
+                            const rocblas_int n,
+                            Td &dA,
+                            const rocblas_int lda,
+                            const rocblas_stride stA,
+                            Ud &dIpiv,
+                            const rocblas_stride stP,
                             const rocblas_int bc,
-                            Th &hA, 
-                            Uh &hIpiv, 
+                            Th &hA,
+                            Uh &hIpiv,
                             double *gpu_time_used,
                             double *cpu_time_used,
                             const rocblas_int hot_calls,
@@ -192,7 +192,7 @@ void geql2_geqlf_getPerfData(const rocblas_handle handle,
 
     if (!perf)
     {
-        geql2_geqlf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+        geql2_geqlf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc,
                                     hA, hIpiv);
 
         // cpu-lapack performance (only if not in perf mode)
@@ -205,23 +205,23 @@ void geql2_geqlf_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
 
-    geql2_geqlf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+    geql2_geqlf_initData<true,false,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc,
                                   hA, hIpiv);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        geql2_geqlf_initData<false,true,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+        geql2_geqlf_initData<false,true,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc,
                                     hA, hIpiv);
 
         CHECK_ROCBLAS_ERROR(rocsolver_geql2_geqlf(STRIDED,GEQLF,handle, m, n, dA.data(), lda, stA, dIpiv.data(), stP, bc));
     }
-        
+
     // gpu-lapack performance
     double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        geql2_geqlf_initData<false,true,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+        geql2_geqlf_initData<false,true,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc,
                                     hA, hIpiv);
 
         start = get_time_us();
@@ -232,10 +232,10 @@ void geql2_geqlf_getPerfData(const rocblas_handle handle,
 }
 
 
-template <bool BATCHED, bool STRIDED, bool GEQLF, typename T> 
-void testing_geql2_geqlf(Arguments argus) 
+template <bool BATCHED, bool STRIDED, bool GEQLF, typename T>
+void testing_geql2_geqlf(Arguments argus)
 {
-    // get arguments 
+    // get arguments
     rocblas_local_handle handle;
     rocblas_int m = argus.M;
     rocblas_int n = argus.N;
@@ -246,8 +246,8 @@ void testing_geql2_geqlf(Arguments argus)
     rocblas_int hot_calls = argus.iters;
 
     rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
-    
-    // check non-supported values 
+
+    // check non-supported values
     // N/A
 
     // determine sizes
@@ -257,7 +257,7 @@ void testing_geql2_geqlf(Arguments argus)
 
     size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
-    // check invalid sizes 
+    // check invalid sizes
     bool invalid_size = (m < 0 || n < 0 || lda < m || bc < 0);
     if (invalid_size) {
         if (BATCHED)
@@ -267,7 +267,7 @@ void testing_geql2_geqlf(Arguments argus)
             EXPECT_ROCBLAS_STATUS(rocsolver_geql2_geqlf(STRIDED,GEQLF,handle, m, n, (T*)nullptr, lda, stA, (T*)nullptr, stP, bc),
                                   rocblas_status_invalid_size);
 
-        if (argus.timing) 
+        if (argus.timing)
              ROCSOLVER_BENCH_INFORM(1);
 
         return;
@@ -294,15 +294,15 @@ void testing_geql2_geqlf(Arguments argus)
         }
 
         // check computations
-        if (argus.unit_check || argus.norm_check) 
-            geql2_geqlf_getError<STRIDED,GEQLF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+        if (argus.unit_check || argus.norm_check)
+            geql2_geqlf_getError<STRIDED,GEQLF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc,
                                           hA, hARes, hIpiv, &max_error);
 
         // collect performance data
-        if (argus.timing) 
-            geql2_geqlf_getPerfData<STRIDED,GEQLF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+        if (argus.timing)
+            geql2_geqlf_getPerfData<STRIDED,GEQLF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc,
                                               hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
-    } 
+    }
 
     else {
         // memory allocations
@@ -325,21 +325,21 @@ void testing_geql2_geqlf(Arguments argus)
         }
 
         // check computations
-        if (argus.unit_check || argus.norm_check) 
-            geql2_geqlf_getError<STRIDED,GEQLF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+        if (argus.unit_check || argus.norm_check)
+            geql2_geqlf_getError<STRIDED,GEQLF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc,
                                           hA, hARes, hIpiv, &max_error);
 
         // collect performance data
-        if (argus.timing) 
-            geql2_geqlf_getPerfData<STRIDED,GEQLF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, 
+        if (argus.timing)
+            geql2_geqlf_getPerfData<STRIDED,GEQLF,T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc,
                                               hA, hIpiv, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     // validate results for rocsolver-test
-    // using m * machine_precision as tolerance 
+    // using m * machine_precision as tolerance
     // (for possibly singular of ill-conditioned matrices we could use m*min(m,n))
-    if (argus.unit_check) 
-        rocsolver_test_check<T>(max_error,m);     
+    if (argus.unit_check)
+        rocsolver_test_check<T>(max_error,m);
 
     // output results for rocsolver-bench
     if (argus.timing) {

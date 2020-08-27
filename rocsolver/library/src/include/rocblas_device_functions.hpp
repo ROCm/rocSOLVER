@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 #pragma once
 #ifndef _ROCBLAS_DEVICE_FUNCTIONS_HPP_
@@ -20,14 +20,14 @@ __device__ void trmm_kernel_left_upper(const rocblas_diagonal diag, const rocbla
         for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
             w[i] = b[i + j * ldb];
         __syncthreads();
-            
+
         for (int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
         {
             bij = (diag == rocblas_diagonal_non_unit ? a[i + i * lda] : 1) * b[i + j * ldb];
 
             for (int k = i + 1; k < m; k++)
                 bij += a[i + k * lda] * w[k];
-            
+
             b[i + j * ldb] = *alpha * bij;
         }
         __syncthreads();
@@ -49,7 +49,7 @@ __device__ void trsm_kernel_right_upper(const rocblas_diagonal diag, const rocbl
 
             for (int k = 0; k < j; k++)
                 bij -= a[k + j * lda] * b[i + k * ldb];
-            
+
             b[i + j * ldb] = bij;
         }
         __syncthreads();
@@ -80,7 +80,7 @@ __device__ void trsm_kernel_right_lower(const rocblas_diagonal diag, const rocbl
 
             for (int k = j + 1; k < n; k++)
                 bij -= a[k + j * lda] * b[i + k * ldb];
-            
+
             b[i + j * ldb] = bij;
         }
         __syncthreads();
@@ -114,7 +114,7 @@ __device__ void gemv_kernel(const rocblas_int m, const rocblas_int n, T* alpha,
             for (int k = 0; k < n; k++)
                 yi += a[i + k * lda] * x[k * incX];
         }
-        
+
         y[i * incY] = *alpha * yi + *beta * y[i * incY];
     }
     __syncthreads();

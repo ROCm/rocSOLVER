@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -31,10 +31,10 @@ const vector<vector<int>> store = {
     {0, 0}, {0, 1}, {1, 0}, {1, 1}
 };
 
-// for checkin_lapack tests 
+// for checkin_lapack tests
 const vector<vector<int>> size_range = {
     {0,0,0},                        //always quick return
-    {0,1,0},                        //quick return for storev = 'R' invalid for 'C'   
+    {0,1,0},                        //quick return for storev = 'R' invalid for 'C'
     {1,0,0},                        //quick return for storev = 'C' invalid for 'R'
     {-1,1,1}, {1,-1,1}, {1,1,-1},   //always invalid
     {10,30,5},                      //invalid for storev = 'C'
@@ -45,11 +45,11 @@ const vector<vector<int>> size_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range = {
-    {150,150,100}, {270,270,270}, {400,400,400}, {800,800,300}, {1000,1000,1000}, {1500,1500,800} 
+    {150,150,100}, {270,270,270}, {400,400,400}, {800,800,300}, {1000,1000,1000}, {1500,1500,800}
 };
 
 
-Arguments orgbr_setup_arguments(orgbr_tuple tup) 
+Arguments orgbr_setup_arguments(orgbr_tuple tup)
 {
     vector<int> size = std::get<0>(tup);
     vector<int> store = std::get<1>(tup);
@@ -85,7 +85,7 @@ protected:
 
 TEST_P(ORGBR, __float) {
     Arguments arg = orgbr_setup_arguments(GetParam());
-    
+
     if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
         testing_orgbr_ungbr_bad_arg<float>();
 
@@ -94,7 +94,7 @@ TEST_P(ORGBR, __float) {
 
 TEST_P(ORGBR, __double) {
     Arguments arg = orgbr_setup_arguments(GetParam());
-    
+
     if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
         testing_orgbr_ungbr_bad_arg<double>();
 
@@ -103,7 +103,7 @@ TEST_P(ORGBR, __double) {
 
 TEST_P(UNGBR, __float_complex) {
     Arguments arg = orgbr_setup_arguments(GetParam());
-    
+
     if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
         testing_orgbr_ungbr_bad_arg<rocblas_float_complex>();
 
@@ -112,7 +112,7 @@ TEST_P(UNGBR, __float_complex) {
 
 TEST_P(UNGBR, __double_complex) {
     Arguments arg = orgbr_setup_arguments(GetParam());
-    
+
     if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
         testing_orgbr_ungbr_bad_arg<rocblas_double_complex>();
 

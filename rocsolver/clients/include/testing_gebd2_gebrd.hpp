@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "norm.hpp"
@@ -11,26 +11,26 @@
 
 
 template <bool STRIDED, bool GEBRD, typename S, typename T, typename U>
-void gebd2_gebrd_checkBadArgs(const rocblas_handle handle, 
-                         const rocblas_int m, 
-                         const rocblas_int n, 
-                         T dA, 
-                         const rocblas_int lda, 
+void gebd2_gebrd_checkBadArgs(const rocblas_handle handle,
+                         const rocblas_int m,
+                         const rocblas_int n,
+                         T dA,
+                         const rocblas_int lda,
                          const rocblas_stride stA,
                          S dD,
                          const rocblas_stride stD,
                          S dE,
                          const rocblas_stride stE,
-                         U dTauq, 
+                         U dTauq,
                          const rocblas_stride stQ,
-                         U dTaup, 
+                         U dTaup,
                          const rocblas_stride stP,
                          const rocblas_int bc)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,nullptr,m,n,dA,lda,stA,dD,stD,dE,stE,dTauq,stQ,dTaup,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,nullptr,m,n,dA,lda,stA,dD,stD,dE,stE,dTauq,stQ,dTaup,stP,bc),
                           rocblas_status_invalid_handle);
-    
+
     // values
     // N/A
 
@@ -38,28 +38,28 @@ void gebd2_gebrd_checkBadArgs(const rocblas_handle handle,
     if (STRIDED)
         EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,n,dA,lda,stA,dD,stD,dE,stE,dTauq,stQ,dTaup,stP,-1),
                               rocblas_status_invalid_size);
-        
+
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,n,(T)nullptr,lda,stA,dD,stD,dE,stE,dTauq,stQ,dTaup,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,n,(T)nullptr,lda,stA,dD,stD,dE,stE,dTauq,stQ,dTaup,stP,bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,n,dA,lda,stA,(S)nullptr,stD,dE,stE,dTauq,stQ,dTaup,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,n,dA,lda,stA,(S)nullptr,stD,dE,stE,dTauq,stQ,dTaup,stP,bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,n,dA,lda,stA,dD,stD,(S)nullptr,stE,dTauq,stQ,dTaup,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,n,dA,lda,stA,dD,stD,(S)nullptr,stE,dTauq,stQ,dTaup,stP,bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,n,dA,lda,stA,dD,stD,dE,stE,(U)nullptr,stQ,dTaup,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,n,dA,lda,stA,dD,stD,dE,stE,(U)nullptr,stQ,dTaup,stP,bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,n,dA,lda,stA,dD,stD,dE,stE,dTauq,stQ,(U)nullptr,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,n,dA,lda,stA,dD,stD,dE,stE,dTauq,stQ,(U)nullptr,stP,bc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,0,n,(T)nullptr,lda,stA,(S)nullptr,stD,(S)nullptr,stE,(U)nullptr,stQ,(U)nullptr,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,0,n,(T)nullptr,lda,stA,(S)nullptr,stD,(S)nullptr,stE,(U)nullptr,stQ,(U)nullptr,stP,bc),
                           rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,0,(T)nullptr,lda,stA,(S)nullptr,stD,(S)nullptr,stE,(U)nullptr,stQ,(U)nullptr,stP,bc), 
+    EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,0,(T)nullptr,lda,stA,(S)nullptr,stD,(S)nullptr,stE,(U)nullptr,stQ,(U)nullptr,stP,bc),
                           rocblas_status_success);
-    
+
     // quick return with zero batch_count if applicable
     if (STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,n,dA,lda,stA,dD,stD,dE,stE,dTauq,stQ,dTaup,stP,0), 
+        EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle,m,n,dA,lda,stA,dD,stD,dE,stE,dTauq,stQ,dTaup,stP,0),
                               rocblas_status_success);
 }
 
@@ -93,7 +93,7 @@ void testing_gebd2_gebrd_bad_arg()
         CHECK_HIP_ERROR(dE.memcheck());
         CHECK_HIP_ERROR(dTauq.memcheck());
         CHECK_HIP_ERROR(dTaup.memcheck());
-        
+
         // check bad arguments
         gebd2_gebrd_checkBadArgs<STRIDED,GEBRD>(handle,m,n,dA.data(),lda,stA,dD.data(),stD,dE.data(),stE,dTauq.data(),stQ,dTaup.data(),stP,bc);
 
@@ -117,20 +117,20 @@ void testing_gebd2_gebrd_bad_arg()
 
 
 template <bool CPU, bool GPU, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
-void gebd2_gebrd_initData(const rocblas_handle handle, 
-                        const rocblas_int m, 
-                        const rocblas_int n, 
-                        Td &dA, 
-                        const rocblas_int lda, 
-                        const rocblas_stride stA, 
-                        Sd &dD, 
-                        const rocblas_stride stD, 
-                        Sd &dE, 
-                        const rocblas_stride stE, 
-                        Ud &dTauq, 
-                        const rocblas_stride stQ, 
-                        Ud &dTaup, 
-                        const rocblas_stride stP, 
+void gebd2_gebrd_initData(const rocblas_handle handle,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        Td &dA,
+                        const rocblas_int lda,
+                        const rocblas_stride stA,
+                        Sd &dD,
+                        const rocblas_stride stD,
+                        Sd &dE,
+                        const rocblas_stride stE,
+                        Ud &dTauq,
+                        const rocblas_stride stQ,
+                        Ud &dTaup,
+                        const rocblas_stride stP,
                         const rocblas_int bc,
                         Th &hA,
                         Sh &hD,
@@ -142,7 +142,7 @@ void gebd2_gebrd_initData(const rocblas_handle handle,
     {
         rocblas_init<T>(hA, true);
 
-        // scale A to avoid singularities 
+        // scale A to avoid singularities
         for (rocblas_int b = 0; b < bc; ++b) {
             for (rocblas_int i = 0; i < m; i++) {
                 for (rocblas_int j = 0; j < n; j++) {
@@ -166,33 +166,33 @@ void gebd2_gebrd_initData(const rocblas_handle handle,
 
 
 template <bool STRIDED, bool GEBRD, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
-void gebd2_gebrd_getError(const rocblas_handle handle, 
-                        const rocblas_int m, 
-                        const rocblas_int n, 
-                        Td &dA, 
-                        const rocblas_int lda, 
-                        const rocblas_stride stA, 
-                        Sd &dD, 
-                        const rocblas_stride stD, 
-                        Sd &dE, 
-                        const rocblas_stride stE, 
-                        Ud &dTauq, 
-                        const rocblas_stride stQ, 
-                        Ud &dTaup, 
-                        const rocblas_stride stP, 
+void gebd2_gebrd_getError(const rocblas_handle handle,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        Td &dA,
+                        const rocblas_int lda,
+                        const rocblas_stride stA,
+                        Sd &dD,
+                        const rocblas_stride stD,
+                        Sd &dE,
+                        const rocblas_stride stE,
+                        Ud &dTauq,
+                        const rocblas_stride stQ,
+                        Ud &dTaup,
+                        const rocblas_stride stP,
                         const rocblas_int bc,
                         Th &hA,
                         Th &hARes,
-                        Sh &hD, 
-                        Sh &hE, 
-                        Uh &hTauq, 
-                        Uh &hTaup, 
+                        Sh &hD,
+                        Sh &hE,
+                        Uh &hTauq,
+                        Uh &hTaup,
                         double *max_err)
 {
     std::vector<T> hW(max(m,n));
 
     // input data initialization
-    gebd2_gebrd_initData<true,true,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+    gebd2_gebrd_initData<true,true,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc,
                                   hA, hD, hE, hTauq, hTaup);
 
     // execute computations
@@ -206,9 +206,9 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
             cblas_gebrd<S,T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(), max(m,n)):
             cblas_gebd2<S,T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
     }
-   
+
     // error is ||hA - hARes|| / ||hA||
-    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
+    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
     int s = min(m,n);
@@ -222,26 +222,26 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
 
 
 template <bool STRIDED, bool GEBRD, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
-void gebd2_gebrd_getPerfData(const rocblas_handle handle, 
-                            const rocblas_int m, 
-                            const rocblas_int n, 
-                            Td &dA, 
-                            const rocblas_int lda, 
-                            const rocblas_stride stA, 
-                            Sd &dD, 
-                            const rocblas_stride stD, 
-                            Sd &dE, 
-                            const rocblas_stride stE, 
-                            Ud &dTauq, 
-                            const rocblas_stride stQ, 
-                            Ud &dTaup, 
-                            const rocblas_stride stP, 
+void gebd2_gebrd_getPerfData(const rocblas_handle handle,
+                            const rocblas_int m,
+                            const rocblas_int n,
+                            Td &dA,
+                            const rocblas_int lda,
+                            const rocblas_stride stA,
+                            Sd &dD,
+                            const rocblas_stride stD,
+                            Sd &dE,
+                            const rocblas_stride stE,
+                            Ud &dTauq,
+                            const rocblas_stride stQ,
+                            Ud &dTaup,
+                            const rocblas_stride stP,
                             const rocblas_int bc,
                             Th &hA,
-                            Sh &hD, 
-                            Sh &hE, 
-                            Uh &hTauq, 
-                            Uh &hTaup, 
+                            Sh &hD,
+                            Sh &hE,
+                            Uh &hTauq,
+                            Uh &hTaup,
                             double *gpu_time_used,
                             double *cpu_time_used,
                             const rocblas_int hot_calls,
@@ -251,7 +251,7 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
 
     if (!perf)
     {
-        gebd2_gebrd_initData<true,false,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+        gebd2_gebrd_initData<true,false,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc,
                                     hA, hD, hE, hTauq, hTaup);
 
         // cpu-lapack performance (only if not in perf mode)
@@ -263,14 +263,14 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
         }
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    
-    gebd2_gebrd_initData<true,false,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+
+    gebd2_gebrd_initData<true,false,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc,
                                   hA, hD, hE, hTauq, hTaup);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        gebd2_gebrd_initData<false,true,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+        gebd2_gebrd_initData<false,true,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc,
                                     hA, hD, hE, hTauq, hTaup);
 
         CHECK_ROCBLAS_ERROR(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle, m, n, dA.data(), lda, stA, dD.data(), stD, dE.data(), stE, dTauq.data(), stQ, dTaup.data(), stP, bc));
@@ -280,7 +280,7 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
     double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        gebd2_gebrd_initData<false,true,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+        gebd2_gebrd_initData<false,true,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc,
                                     hA, hD, hE, hTauq, hTaup);
 
         start = get_time_us();
@@ -291,12 +291,12 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
 }
 
 
-template <bool BATCHED, bool STRIDED, bool GEBRD, typename T> 
-void testing_gebd2_gebrd(Arguments argus) 
+template <bool BATCHED, bool STRIDED, bool GEBRD, typename T>
+void testing_gebd2_gebrd(Arguments argus)
 {
     using S = decltype(std::real(T{}));
-    
-    // get arguments 
+
+    // get arguments
     rocblas_local_handle handle;
     rocblas_int m = argus.M;
     rocblas_int n = argus.N;
@@ -310,8 +310,8 @@ void testing_gebd2_gebrd(Arguments argus)
     rocblas_int hot_calls = argus.iters;
 
     rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
-    
-    // check non-supported values 
+
+    // check non-supported values
     // N/A
 
     // determine sizes
@@ -321,10 +321,10 @@ void testing_gebd2_gebrd(Arguments argus)
     size_t size_Q = min(m,n);
     size_t size_P = min(m,n);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0 ;
-    
+
     size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
-    // check invalid sizes 
+    // check invalid sizes
     bool invalid_size = (m < 0 || n < 0 || lda < m || bc < 0);
     if (invalid_size) {
         if (BATCHED)
@@ -334,7 +334,7 @@ void testing_gebd2_gebrd(Arguments argus)
             EXPECT_ROCBLAS_STATUS(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle, m, n, (T*)nullptr, lda, stA, (S*)nullptr, stD, (S*)nullptr, stE, (T*)nullptr, stQ, (T*)nullptr, stP, bc),
                                   rocblas_status_invalid_size);
 
-        if (argus.timing) 
+        if (argus.timing)
              ROCSOLVER_BENCH_INFORM(1);
 
         return;
@@ -370,15 +370,15 @@ void testing_gebd2_gebrd(Arguments argus)
         }
 
         // check computations
-        if (argus.unit_check || argus.norm_check) 
-            gebd2_gebrd_getError<STRIDED,GEBRD,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+        if (argus.unit_check || argus.norm_check)
+            gebd2_gebrd_getError<STRIDED,GEBRD,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc,
                                           hA, hARes, hD, hE, hTauq, hTaup, &max_error);
 
         // collect performance data
-        if (argus.timing) 
-            gebd2_gebrd_getPerfData<STRIDED,GEBRD,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+        if (argus.timing)
+            gebd2_gebrd_getPerfData<STRIDED,GEBRD,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc,
                                               hA, hD, hE, hTauq, hTaup, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
-    } 
+    }
 
     else {
         // memory allocations
@@ -410,20 +410,20 @@ void testing_gebd2_gebrd(Arguments argus)
         }
 
         // check computations
-        if (argus.unit_check || argus.norm_check) 
-            gebd2_gebrd_getError<STRIDED,GEBRD,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+        if (argus.unit_check || argus.norm_check)
+            gebd2_gebrd_getError<STRIDED,GEBRD,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc,
                                           hA, hARes, hD, hE, hTauq, hTaup, &max_error);
 
         // collect performance data
-        if (argus.timing) 
-            gebd2_gebrd_getPerfData<STRIDED,GEBRD,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, 
+        if (argus.timing)
+            gebd2_gebrd_getPerfData<STRIDED,GEBRD,S,T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc,
                                               hA, hD, hE, hTauq, hTaup, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     // validate results for rocsolver-test
     // using m*n * machine_precision as tolerance
-    if (argus.unit_check) 
-        rocsolver_test_check<T>(max_error,m*n);     
+    if (argus.unit_check)
+        rocsolver_test_check<T>(max_error,m*n);
 
     // output results for rocsolver-bench
     if (argus.timing) {

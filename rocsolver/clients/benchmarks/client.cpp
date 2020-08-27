@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2016 Advanced Micro Devices, Inc.
+ * Copyright (c) 2016-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include <boost/program_options.hpp>
@@ -29,16 +29,16 @@
 
 namespace po = boost::program_options;
 
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 try
 {
     rocblas_initialize();
 
     Arguments argus;
-  
+
     //disable unit_check in client benchmark, it is only
     // used in gtest unit test
-    argus.unit_check = 0; 
+    argus.unit_check = 0;
 
     // enable timing check,otherwise no performance data collected
     argus.timing = 1;
@@ -48,16 +48,16 @@ try
     rocblas_int device_id;
 
     // take arguments and set default values
-    // (TODO) IMPROVE WORDING/INFORMATION. CHANGE ARGUMENT NAMES FOR 
-    // MORE RELATED NAMES (THESE ARE BLAS-BASED NAMES) 
+    // (TODO) IMPROVE WORDING/INFORMATION. CHANGE ARGUMENT NAMES FOR
+    // MORE RELATED NAMES (THESE ARE BLAS-BASED NAMES)
 
     po::options_description desc("rocsolver client command line options");
     desc.add_options()("help,h", "produces this help message")
-        
+
         ("sizem,m",
          po::value<rocblas_int>(&argus.M)->default_value(1024),
          "Specific matrix size testing: the number of rows of a matrix.")
-        
+
         ("sizen,n",
          po::value<rocblas_int>(&argus.N)->default_value(1024),
          "Specific matrix/vector/order size testing: the number of columns of a matrix,"
@@ -71,15 +71,15 @@ try
         ("size4,S4",
          po::value<rocblas_int>(&argus.S4)->default_value(1024),
          "Extra size value.")
-        
+
         ("k1",
          po::value<rocblas_int>(&argus.k1)->default_value(1),
          "First index for row interchange, used with laswp. ")
-        
+
         ("k2",
          po::value<rocblas_int>(&argus.k2)->default_value(2),
          "Last index for row interchange, used with laswp. ")
-        
+
         ("lda",
          po::value<rocblas_int>(&argus.lda)->default_value(1024),
          "Specific leading dimension of matrix A, is only applicable to "
@@ -98,7 +98,7 @@ try
         ("ldv",
          po::value<rocblas_int>(&argus.ldv)->default_value(1024),
          "Specific leading dimension.")
-        
+
         ("ldt",
          po::value<rocblas_int>(&argus.ldt)->default_value(1024),
          "Specific leading dimension.")
@@ -131,50 +131,50 @@ try
          po::value<rocblas_int>(&argus.incy)->default_value(1),
          "increment between values in y vector")
 
-        ("alpha", 
+        ("alpha",
           po::value<double>(&argus.alpha)->default_value(1.0), "specifies the scalar alpha")
-        
+
         ("beta",
          po::value<double>(&argus.beta)->default_value(0.0), "specifies the scalar beta")
-              
+
         ("function,f",
          po::value<std::string>(&function)->default_value("potf2"),
          "LAPACK function to test. Options: potf2, getf2, getrf, getrs")
-        
-        ("precision,r", 
+
+        ("precision,r",
          po::value<char>(&precision)->default_value('s'), "Options: h,s,d,c,z")
-        
+
         ("transposeA",
          po::value<char>(&argus.transA_option)->default_value('N'),
          "N = no transpose, T = transpose, C = conjugate transpose")
-        
+
         ("transposeB",
          po::value<char>(&argus.transB_option)->default_value('N'),
          "N = no transpose, T = transpose, C = conjugate transpose")
-        
+
         ("transposeH",
          po::value<char>(&argus.transH_option)->default_value('N'),
          "N = no transpose, T = transpose, C = conjugate transpose")
-        
+
         ("side",
          po::value<char>(&argus.side_option)->default_value('L'),
          "L = left, R = right. Only applicable to certain routines")
-        
+
         ("uplo",
          po::value<char>(&argus.uplo_option)->default_value('U'),
          "U = upper, L = lower. Only applicable to certain routines")
-                                                                     
+
         ("direct",
          po::value<char>(&argus.direct_option)->default_value('F'),
          "F = forward, B = backward. Only applicable to certain routines")
-        
+
         ("storev",
          po::value<char>(&argus.storev)->default_value('C'),
-         "C = column_wise, R = row_wise. Only applicable to certain routines") 
-        
+         "C = column_wise, R = row_wise. Only applicable to certain routines")
+
         ("batch",
          po::value<rocblas_int>(&argus.batch_count)->default_value(1),
-         "Number of matrices. Only applicable to batched routines") 
+         "Number of matrices. Only applicable to batched routines")
 
         ("verify,v",
          po::value<rocblas_int>(&argus.norm_check)->default_value(0),
@@ -183,7 +183,7 @@ try
         ("iters,i",
          po::value<rocblas_int>(&argus.iters)->default_value(10),
          "Iterations to run inside timing loop")
-        
+
         ("perf",
          po::value<rocblas_int>(&argus.perf)->default_value(0),
          "If equal 1, only GPU timing results are collected and printed (default is 0)")
@@ -205,44 +205,44 @@ try
     // catch invalid arguments for:
 
     // precision
-    if (precision != 's' && precision != 'd' && precision != 'c' && precision != 'z') 
+    if (precision != 's' && precision != 'd' && precision != 'c' && precision != 'z')
         throw std::invalid_argument("Invalid value for --precision ");
 
     // deviceID
     if (!argus.perf) {
         rocblas_int device_count = query_device_property();
-        if (device_count <= device_id) 
+        if (device_count <= device_id)
             throw std::invalid_argument("Invalid Device ID");
     }
     set_device(device_id);
 
     // operation transA
-    if (argus.transA_option != 'N' && 
+    if (argus.transA_option != 'N' &&
         argus.transA_option != 'T' &&
         argus.transA_option != 'C')
         throw std::invalid_argument("Invalid value for --transposeA");
 
     // operation transB
-    if (argus.transB_option != 'N' && 
+    if (argus.transB_option != 'N' &&
         argus.transB_option != 'T' &&
         argus.transB_option != 'C')
         throw std::invalid_argument("Invalid value for --transposeB");
 
     // operation transH
-    if (argus.transH_option != 'N' && 
+    if (argus.transH_option != 'N' &&
         argus.transH_option != 'T' &&
         argus.transH_option != 'C')
         throw std::invalid_argument("Invalid value for --transposeH");
 
     // side
     if (argus.side_option != 'L' &&
-        argus.side_option != 'R' &&    
+        argus.side_option != 'R' &&
         argus.side_option != 'B')
         throw std::invalid_argument("Invalid value for --side");
 
     // uplo
     if (argus.uplo_option != 'U' &&
-        argus.uplo_option != 'L' &&    
+        argus.uplo_option != 'L' &&
         argus.uplo_option != 'F')
         throw std::invalid_argument("Invalid value for --uplo");
 
@@ -251,13 +251,13 @@ try
         argus.direct_option != 'B')
         throw std::invalid_argument("Invalid value for --direct");
 
-    // storev 
+    // storev
     if (argus.storev != 'R' &&
         argus.storev != 'C')
         throw std::invalid_argument("Invalid value for --storev");
-    
+
     // select and dispatch function test/benchmark
-    // (TODO) MOVE THIS TO A SEPARATE IMPROVED DISPATCH FUNCTION 
+    // (TODO) MOVE THIS TO A SEPARATE IMPROVED DISPATCH FUNCTION
     if (function == "potf2") {
         if (precision == 's')
             testing_potf2_potrf<false,false,0,float>(argus);
@@ -267,7 +267,7 @@ try
             testing_potf2_potrf<false,false,0,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_potf2_potrf<false,false,0,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "potf2_batched") {
         if (precision == 's')
             testing_potf2_potrf<true,true,0,float>(argus);
@@ -277,7 +277,7 @@ try
             testing_potf2_potrf<true,true,0,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_potf2_potrf<true,true,0,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "potf2_strided_batched") {
         if (precision == 's')
             testing_potf2_potrf<false,true,0,float>(argus);
@@ -287,7 +287,7 @@ try
             testing_potf2_potrf<false,true,0,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_potf2_potrf<false,true,0,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "potrf") {
         if (precision == 's')
             testing_potf2_potrf<false,false,1,float>(argus);
@@ -297,7 +297,7 @@ try
             testing_potf2_potrf<false,false,1,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_potf2_potrf<false,false,1,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "potrf_batched") {
         if (precision == 's')
             testing_potf2_potrf<true,true,1,float>(argus);
@@ -307,7 +307,7 @@ try
             testing_potf2_potrf<true,true,1,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_potf2_potrf<true,true,1,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "potrf_strided_batched") {
         if (precision == 's')
             testing_potf2_potrf<false,true,1,float>(argus);
@@ -317,7 +317,7 @@ try
             testing_potf2_potrf<false,true,1,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_potf2_potrf<false,true,1,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "getf2_npvt") {
         if (precision == 's')
             testing_getf2_getrf_npvt<false,false,0,float>(argus);
@@ -327,7 +327,7 @@ try
             testing_getf2_getrf_npvt<false,false,0,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_getf2_getrf_npvt<false,false,0,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "getf2_npvt_batched") {
         if (precision == 's')
             testing_getf2_getrf_npvt<true,true,0,float>(argus);
@@ -337,7 +337,7 @@ try
             testing_getf2_getrf_npvt<true,true,0,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_getf2_getrf_npvt<true,true,0,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "getf2_npvt_strided_batched") {
         if (precision == 's')
             testing_getf2_getrf_npvt<false,true,0,float>(argus);
@@ -347,7 +347,7 @@ try
             testing_getf2_getrf_npvt<false,true,0,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_getf2_getrf_npvt<false,true,0,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "getrf_npvt") {
         if (precision == 's')
             testing_getf2_getrf_npvt<false,false,1,float>(argus);
@@ -357,7 +357,7 @@ try
             testing_getf2_getrf_npvt<false,false,1,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_getf2_getrf_npvt<false,false,1,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "getrf_npvt_batched") {
         if (precision == 's')
             testing_getf2_getrf_npvt<true,true,1,float>(argus);
@@ -367,7 +367,7 @@ try
             testing_getf2_getrf_npvt<true,true,1,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_getf2_getrf_npvt<true,true,1,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "getrf_npvt_strided_batched") {
         if (precision == 's')
             testing_getf2_getrf_npvt<false,true,1,float>(argus);
@@ -387,7 +387,7 @@ try
             testing_getf2_getrf<false,false,0,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_getf2_getrf<false,false,0,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "getf2_batched") {
         if (precision == 's')
             testing_getf2_getrf<true,true,0,float>(argus);
@@ -397,7 +397,7 @@ try
             testing_getf2_getrf<true,true,0,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_getf2_getrf<true,true,0,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "getf2_strided_batched") {
         if (precision == 's')
             testing_getf2_getrf<false,true,0,float>(argus);
@@ -407,7 +407,7 @@ try
             testing_getf2_getrf<false,true,0,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_getf2_getrf<false,true,0,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "getrf") {
         if (precision == 's')
             testing_getf2_getrf<false,false,1,float>(argus);
@@ -417,7 +417,7 @@ try
             testing_getf2_getrf<false,false,1,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_getf2_getrf<false,false,1,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "getrf_batched") {
         if (precision == 's')
             testing_getf2_getrf<true,true,1,float>(argus);
@@ -427,7 +427,7 @@ try
             testing_getf2_getrf<true,true,1,rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_getf2_getrf<true,true,1,rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "getrf_strided_batched") {
         if (precision == 's')
             testing_getf2_getrf<false,true,1,float>(argus);
@@ -785,7 +785,7 @@ try
             testing_larfg<rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_larfg<rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "larf") {
         if (precision == 's')
             testing_larf<float>(argus);
@@ -795,7 +795,7 @@ try
             testing_larf<rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_larf<rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "larft") {
         if (precision == 's')
             testing_larft<float>(argus);
@@ -805,7 +805,7 @@ try
             testing_larft<rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_larft<rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "larfb") {
         if (precision == 's')
             testing_larfb<float>(argus);
@@ -815,7 +815,7 @@ try
             testing_larfb<rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_larfb<rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "labrd") {
         if (precision == 's')
             testing_labrd<float>(argus);
@@ -825,7 +825,7 @@ try
             testing_labrd<rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_labrd<rocblas_double_complex>(argus);
-    } 
+    }
     else if (function == "org2r") {
         if (precision == 's')
             testing_orgxr_ungxr<float,0>(argus);
@@ -833,7 +833,7 @@ try
             testing_orgxr_ungxr<double,0>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "ung2r") {
         if (precision == 'c')
             testing_orgxr_ungxr<rocblas_float_complex,0>(argus);
@@ -841,7 +841,7 @@ try
             testing_orgxr_ungxr<rocblas_double_complex,0>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "orgqr") {
         if (precision == 's')
             testing_orgxr_ungxr<float,1>(argus);
@@ -849,7 +849,7 @@ try
             testing_orgxr_ungxr<double,1>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "ungqr") {
         if (precision == 'c')
             testing_orgxr_ungxr<rocblas_float_complex,1>(argus);
@@ -857,7 +857,7 @@ try
             testing_orgxr_ungxr<rocblas_double_complex,1>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "orm2r") {
         if (precision == 's')
             testing_ormxr_unmxr<float,0>(argus);
@@ -865,7 +865,7 @@ try
             testing_ormxr_unmxr<double,0>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "unm2r") {
         if (precision == 'c')
             testing_ormxr_unmxr<rocblas_float_complex,0>(argus);
@@ -873,7 +873,7 @@ try
             testing_ormxr_unmxr<rocblas_double_complex,0>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "ormqr") {
         if (precision == 's')
             testing_ormxr_unmxr<float,1>(argus);
@@ -881,7 +881,7 @@ try
             testing_ormxr_unmxr<double,1>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "unmqr") {
         if (precision == 'c')
             testing_ormxr_unmxr<rocblas_float_complex,1>(argus);
@@ -889,7 +889,7 @@ try
             testing_ormxr_unmxr<rocblas_double_complex,1>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "orml2") {
         if (precision == 's')
             testing_ormlx_unmlx<float,0>(argus);
@@ -897,7 +897,7 @@ try
             testing_ormlx_unmlx<double,0>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "unml2") {
         if (precision == 'c')
             testing_ormlx_unmlx<rocblas_float_complex,0>(argus);
@@ -905,7 +905,7 @@ try
             testing_ormlx_unmlx<rocblas_double_complex,0>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "ormlq") {
         if (precision == 's')
             testing_ormlx_unmlx<float,1>(argus);
@@ -913,7 +913,7 @@ try
             testing_ormlx_unmlx<double,1>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "unmlq") {
         if (precision == 'c')
             testing_ormlx_unmlx<rocblas_float_complex,1>(argus);
@@ -921,7 +921,7 @@ try
             testing_ormlx_unmlx<rocblas_double_complex,1>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "orgl2") {
         if (precision == 's')
             testing_orglx_unglx<float,0>(argus);
@@ -929,7 +929,7 @@ try
             testing_orglx_unglx<double,0>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "ungl2") {
         if (precision == 'c')
             testing_orglx_unglx<rocblas_float_complex,0>(argus);
@@ -937,7 +937,7 @@ try
             testing_orglx_unglx<rocblas_double_complex,0>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "orglq") {
         if (precision == 's')
             testing_orglx_unglx<float,1>(argus);
@@ -945,7 +945,7 @@ try
             testing_orglx_unglx<double,1>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "unglq") {
         if (precision == 'c')
             testing_orglx_unglx<rocblas_float_complex,1>(argus);
@@ -953,7 +953,7 @@ try
             testing_orglx_unglx<rocblas_double_complex,1>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "orgbr") {
         if (precision == 's')
             testing_orgbr_ungbr<float>(argus);
@@ -961,7 +961,7 @@ try
             testing_orgbr_ungbr<double>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "ungbr") {
         if (precision == 'c')
             testing_orgbr_ungbr<rocblas_float_complex>(argus);
@@ -969,7 +969,7 @@ try
             testing_orgbr_ungbr<rocblas_double_complex>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "ormbr") {
         if (precision == 's')
             testing_ormbr_unmbr<float>(argus);
@@ -977,7 +977,7 @@ try
             testing_ormbr_unmbr<double>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "unmbr") {
         if (precision == 'c')
             testing_ormbr_unmbr<rocblas_float_complex>(argus);
@@ -985,7 +985,7 @@ try
             testing_ormbr_unmbr<rocblas_double_complex>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
-    } 
+    }
     else if (function == "bdsqr") {
         if (precision == 's')
             testing_bdsqr<float>(argus);
@@ -995,8 +995,8 @@ try
             testing_bdsqr<rocblas_float_complex>(argus);
         else if (precision == 'z')
             testing_bdsqr<rocblas_double_complex>(argus);
-    } 
-    else 
+    }
+    else
         throw std::invalid_argument("Invalid value for --function");
 
     return 0;

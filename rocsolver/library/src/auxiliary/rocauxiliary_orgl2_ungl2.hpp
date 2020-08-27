@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_ORGL2_UNGL2_HPP
@@ -27,10 +27,10 @@ __global__ void init_ident_row(const rocblas_int m, const rocblas_int n, const r
 
     if (i < m && j < n) {
         T *Ap = load_ptr_batch<T>(A,b,shiftA,strideA);
-        
-        if (i == j) 
+
+        if (i == j)
             Ap[i + j*lda] = 1.0;
-        else if (j < i) 
+        else if (j < i)
             Ap[i + j*lda] = 0.0;
         else if (i >= k)
             Ap[i + j*lda] = 0.0;
@@ -73,9 +73,9 @@ rocblas_status rocsolver_orgl2_orglq_argCheck(const rocblas_int m, const rocblas
 }
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
-rocblas_status rocsolver_orgl2_ungl2_template(rocblas_handle handle, const rocblas_int m, 
-                                   const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
-                                   const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
+rocblas_status rocsolver_orgl2_ungl2_template(rocblas_handle handle, const rocblas_int m,
+                                   const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA,
+                                   const rocblas_int lda, const rocblas_stride strideA, T* ipiv,
                                    const rocblas_stride strideP, const rocblas_int batch_count, T* scalars, T* work, T** workArr)
 {
     // quick return
@@ -84,12 +84,12 @@ rocblas_status rocsolver_orgl2_ungl2_template(rocblas_handle handle, const rocbl
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-   
+
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);
-    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);    
- 
+    rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);
+
     // Initialize identity matrix (non used columns)
     rocblas_int blocksx = (m - 1)/32 + 1;
     rocblas_int blocksy = (n - 1)/32 + 1;
@@ -108,14 +108,14 @@ rocblas_status rocsolver_orgl2_ungl2_template(rocblas_handle handle, const rocbl
 
             rocsolver_larf_template<T>(handle,rocblas_side_right,          //side
                                        m - j - 1,                          //number of rows of matrix to modify
-                                       n - j,                              //number of columns of matrix to modify    
+                                       n - j,                              //number of columns of matrix to modify
                                        A, shiftA + idx2D(j,j,lda),         //householder vector x
                                        lda, strideA,                       //inc of x
                                        (ipiv + j), strideP,                //householder scalar (alpha)
                                        A, shiftA + idx2D(j+1,j,lda),       //matrix to work on
                                        lda, strideA,                       //leading dimension
                                        batch_count,
-                                       scalars, work, workArr);          
+                                       scalars, work, workArr);
         }
 
         // set the diagonal element and negative tau
@@ -124,20 +124,20 @@ rocblas_status rocsolver_orgl2_ungl2_template(rocblas_handle handle, const rocbl
 
         if (COMPLEX)
             rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);
-        
+
         // update i-th row -corresponding to H(i)-
         if (j < n - 1)
-            rocblasCall_scal<T>(handle, n-j-1, ipiv + j, strideP, A, shiftA + idx2D(j,j+1,lda), lda, strideA, batch_count); 
+            rocblasCall_scal<T>(handle, n-j-1, ipiv + j, strideP, A, shiftA + idx2D(j,j+1,lda), lda, strideA, batch_count);
 
         if (COMPLEX)
             rocsolver_lacgv_template<T>(handle, n-j-1, A, shiftA + idx2D(j,j+1,lda), lda, strideA, batch_count);
     }
-    
+
     // restore values of tau
     blocksx = (k - 1)/128 + 1;
     hipLaunchKernelGGL(restau<T>,dim3(blocksx,batch_count),dim3(128),0,stream,
                             k,ipiv,strideP);
- 
+
     rocblas_set_pointer_mode(handle,old_mode);
     return rocblas_status_success;
 }

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_TRTRI_H
@@ -21,7 +21,7 @@ __device__ void trtri_check_singularity(const rocblas_int n, T *a, const rocblas
     int b = hipBlockIdx_x;
 
     __shared__ rocblas_int _info;
-    
+
     // compute info
     if (hipThreadIdx_y == 0)
         _info = 0;
@@ -57,7 +57,7 @@ __device__ void trtri_unblk(const rocblas_diagonal diag, const rocblas_int n, T 
         a[i + i * lda] = 1.0 / a[i + i * lda];
         __syncthreads();
     }
-    
+
     // compute element i of each column j
     T ajj, aij;
     for (rocblas_int j = 1; j < n; j++)
@@ -67,7 +67,7 @@ __device__ void trtri_unblk(const rocblas_diagonal diag, const rocblas_int n, T 
         if (i < j)
             w[i] = a[i + j * lda];
         __syncthreads();
-        
+
         if (i < j)
         {
             aij = 0;
@@ -106,7 +106,7 @@ __global__ void trtri_kernel(const rocblas_diagonal diag, const rocblas_int n,
         T minone = -1;
         T one = 1;
         rocblas_int jb, nb = TRTRI_BLOCKSIZE;
-        
+
         for (rocblas_int j = 0; j < n; j += nb)
         {
             jb = min(n-j, nb);
@@ -131,7 +131,7 @@ __global__ void trtri_kernel_large(const rocblas_diagonal diag, const rocblas_in
 
     if (j == 0)
         trtri_check_singularity(n, a, lda, info);
-    
+
     if (info[b] != 0)
     {
         // if A is singular, we want it to remain unaltered by trmm
@@ -191,7 +191,7 @@ rocblas_status rocsolver_trtri_argCheck(const rocblas_int n, const rocblas_int l
 
     // 1. invalid/non-supported values
     // N/A
-    
+
     // 2. invalid size
     if (n < 0 || lda < n || batch_count < 0)
         return rocblas_status_invalid_size;
@@ -210,7 +210,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
                                         const rocblas_int batch_count, T* scalars, T* work, T** workArr)
 {
     // quick return if zero instances in batch
-    if (batch_count == 0) 
+    if (batch_count == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
@@ -230,7 +230,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
         return rocblas_status_not_implemented;
 
     rocblas_int threads = min(((n - 1)/64 + 1) * 64, TRTRI_BLOCKSIZE);
-    
+
     if (n <= TRTRI_SWITCHSIZE_LARGE)
     {
         hipLaunchKernelGGL(trtri_kernel<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
@@ -250,7 +250,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle, const rocblas_fil
         for (rocblas_int j = 0; j < n; j += nb)
         {
             jb = min(n-j, nb);
-            
+
             rocblasCall_trmm<BATCHED,STRIDED,T>(handle, rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
                                                 diag, j, jb, &one, A, shiftA, lda, strideA,
                                                 A, shiftA + idx2D(0,j,lda), lda, strideA, batch_count, work + shiftW, workArr);

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #define batched
@@ -8,13 +8,13 @@
 template <typename T, typename U>
 rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle, const rocblas_int n, U A,
                                         const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP,
-                                        rocblas_int *info, const rocblas_int batch_count) 
-{ 
+                                        rocblas_int *info, const rocblas_int batch_count)
+{
     if(!handle)
         return rocblas_status_invalid_handle;
-    
-    //logging is missing ???    
-    
+
+    //logging is missing ???
+
     // argument checking
     rocblas_status st = rocsolver_getri_argCheck(n,lda,A,ipiv,info,batch_count);
     if (st != rocblas_status_continue)
@@ -24,7 +24,7 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle, const rocblas
 
     // memory managment
     size_t size_1;  //size of constants
-    size_t size_2;  //size of workspace 
+    size_t size_2;  //size of workspace
     size_t size_3;  //size of array of pointers to workspace
     rocsolver_getri_getMemorySize<true,T>(n,batch_count,&size_1,&size_2,&size_3);
 
@@ -71,28 +71,28 @@ extern "C" {
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_batched(rocblas_handle handle, const rocblas_int n, float *const A[],
                  const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP, rocblas_int *info,
-                 const rocblas_int batch_count) 
+                 const rocblas_int batch_count)
 {
     return rocsolver_getri_batched_impl<float>(handle, n, A, lda, ipiv, strideP, info, batch_count);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri_batched(rocblas_handle handle, const rocblas_int n, double *const A[],
                  const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP, rocblas_int *info,
-                 const rocblas_int batch_count) 
+                 const rocblas_int batch_count)
 {
     return rocsolver_getri_batched_impl<double>(handle, n, A, lda, ipiv, strideP, info, batch_count);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri_batched(rocblas_handle handle, const rocblas_int n, rocblas_float_complex *const A[],
                  const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP, rocblas_int *info,
-                 const rocblas_int batch_count) 
+                 const rocblas_int batch_count)
 {
     return rocsolver_getri_batched_impl<rocblas_float_complex>(handle, n, A, lda, ipiv, strideP, info, batch_count);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_batched(rocblas_handle handle, const rocblas_int n, rocblas_double_complex *const A[],
                  const rocblas_int lda, rocblas_int* ipiv, const rocblas_stride strideP, rocblas_int *info,
-                 const rocblas_int batch_count) 
+                 const rocblas_int batch_count)
 {
     return rocsolver_getri_batched_impl<rocblas_double_complex>(handle, n, A, lda, ipiv, strideP, info, batch_count);
 }

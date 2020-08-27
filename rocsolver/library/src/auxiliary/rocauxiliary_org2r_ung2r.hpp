@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #ifndef ROCLAPACK_ORG2R_UNG2R_HPP
@@ -26,10 +26,10 @@ __global__ void init_ident_col(const rocblas_int m, const rocblas_int n, const r
 
     if (i < m && j < n) {
         T *Ap = load_ptr_batch<T>(A,b,shiftA,strideA);
-        
-        if (i == j) 
+
+        if (i == j)
             Ap[i + j*lda] = 1.0;
-        else if (j > i) 
+        else if (j > i)
             Ap[i + j*lda] = 0.0;
         else if (j >= k)
             Ap[i + j*lda] = 0.0;
@@ -73,9 +73,9 @@ rocblas_status rocsolver_org2r_orgqr_argCheck(const rocblas_int m, const rocblas
 
 
 template <typename T, typename U>
-rocblas_status rocsolver_org2r_ung2r_template(rocblas_handle handle, const rocblas_int m, 
-                                   const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA, 
-                                   const rocblas_int lda, const rocblas_stride strideA, T* ipiv, 
+rocblas_status rocsolver_org2r_ung2r_template(rocblas_handle handle, const rocblas_int m,
+                                   const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA,
+                                   const rocblas_int lda, const rocblas_stride strideA, T* ipiv,
                                    const rocblas_stride strideP, const rocblas_int batch_count, T* scalars, T* work, T** workArr)
 {
     // quick return
@@ -89,7 +89,7 @@ rocblas_status rocsolver_org2r_ung2r_template(rocblas_handle handle, const rocbl
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle,&old_mode);
     rocblas_set_pointer_mode(handle,rocblas_pointer_mode_device);
-    
+
     // Initialize identity matrix (non used columns)
     rocblas_int blocksx = (m - 1)/32 + 1;
     rocblas_int blocksy = (n - 1)/32 + 1;
@@ -101,25 +101,25 @@ rocblas_status rocsolver_org2r_ung2r_template(rocblas_handle handle, const rocbl
         if (j < n - 1) {
             rocsolver_larf_template<T>(handle,rocblas_side_left,           //side
                                        m - j,                              //number of rows of matrix to modify
-                                       n - j - 1,                          //number of columns of matrix to modify    
+                                       n - j - 1,                          //number of columns of matrix to modify
                                        A, shiftA + idx2D(j,j,lda),         //householder vector x
                                        1, strideA,                         //inc of x
                                        (ipiv + j), strideP,                //householder scalar (alpha)
                                        A, shiftA + idx2D(j,j+1,lda),       //matrix to work on
                                        lda, strideA,                       //leading dimension
                                        batch_count,
-                                       scalars, work, workArr);          
+                                       scalars, work, workArr);
         }
 
         // set the diagonal element and negative tau
         hipLaunchKernelGGL(setdiag<T>,dim3(batch_count),dim3(1),0,stream,
                             j,A,shiftA,lda,strideA,ipiv,strideP);
-        
+
         // update i-th column -corresponding to H(i)-
-        if (j < m - 1) 
-            rocblasCall_scal<T>(handle, m-j-1, ipiv + j, strideP, A, shiftA + idx2D(j+1,j,lda), 1, strideA, batch_count);          
+        if (j < m - 1)
+            rocblasCall_scal<T>(handle, m-j-1, ipiv + j, strideP, A, shiftA + idx2D(j+1,j,lda), 1, strideA, batch_count);
     }
-    
+
     // restore values of tau
     if (k > 0) {
         blocksx = (k - 1)/128 + 1;

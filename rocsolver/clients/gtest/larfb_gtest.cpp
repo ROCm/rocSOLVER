@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -36,7 +36,7 @@ const vector<vector<int>> matrix_size_range = {
     {-1,1,1,0,1,0}, {1,-1,1,0,1,0}, {15,15,5,0,15,0},   //invalid
     {12,5,12,0,5,0}, {5,12,15,1,5,0}, {15,10,15,0,5,1}, //invalid
     {15,15,15,0,15,0}, {18,20,20,1,20,0}, {20,18,20,0,20,0}, {20,30,20,1,30,0}, {50,35,50,0,50,0},
-    {40,40,40,0,15,1}, {40,40,40,1,25,1}  
+    {40,40,40,0,15,1}, {40,40,40,1,25,1}
 };
 
 const vector<vector<int>> reflector_size_range = {
@@ -46,7 +46,7 @@ const vector<vector<int>> reflector_size_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
-    {192,192,192,0,192,0}, {640,640,640,1,700,0}, 
+    {192,192,192,0,192,0}, {640,640,640,1,700,0},
     {640,640,700,0,640,0}, {840,1024,840,1,1024,0}, {2547,1980,2547,0,2547,0},
     {200,200,220,0,100,1}, {240,300,240,1,100,1}, {600,200,600,1,100,1}
 };
@@ -67,8 +67,8 @@ Arguments larfb_setup_arguments(larfb_tuple tup) {
   arg.N = order_size[1];
   arg.lda = order_size[2];
   arg.ldv = order_size[4];
-  
-  arg.side_option = order_size[3] == 0 ? 'L' : 'R';  
+
+  arg.side_option = order_size[3] == 0 ? 'L' : 'R';
 
   arg.K = reflector_size[0];
   arg.ldt = reflector_size[1];
