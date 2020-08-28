@@ -666,6 +666,111 @@ rocblas_status rocblasCall_trsm(rocblas_handle    handle,
                                                                cast2constType(supplied_invA),0);
 }
 
+// trtri memory sizes
+template <bool BATCHED, typename T>
+void rocblasCall_trtri_mem(rocblas_int n,
+                             rocblas_int batch_count,
+                             size_t*     c_temp,
+                             size_t*     c_temp_arr)
+{
+    size_t c_temp_els = rocblas_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, batch_count);
+    *c_temp = c_temp_els * sizeof(T);
+
+    *c_temp_arr = BATCHED ? sizeof(T*) * batch_count : 0;
+}
+
+// trtri
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+rocblas_status rocblasCall_trtri(rocblas_handle   handle,
+                                    rocblas_fill     uplo,
+                                    rocblas_diagonal diag,
+                                    rocblas_int      n,
+                                    U                A,
+                                    rocblas_int      offset_A,
+                                    rocblas_int      lda,
+                                    rocblas_stride   stride_A,
+                                    U                invA,
+                                    rocblas_int      offset_invA,
+                                    rocblas_int      ldinvA,
+                                    rocblas_stride   stride_invA,
+                                    rocblas_int      batch_count,
+                                    U                c_temp,
+                                    T**              c_temp_arr,
+                                    T**              workArr)
+{
+    return rocblas_trtri_template<ROCBLAS_TRTRI_NB,BATCHED,STRIDED,T>(handle,uplo,diag,n,
+                                                                      cast2constType(A),offset_A,lda,stride_A,0,
+                                                                      invA,offset_invA,ldinvA,stride_invA,0,
+                                                                      batch_count,1,c_temp);
+}
+
+// trtri overload
+template <bool BATCHED, bool STRIDED, typename T>
+rocblas_status rocblasCall_trtri(rocblas_handle   handle,
+                                    rocblas_fill     uplo,
+                                    rocblas_diagonal diag,
+                                    rocblas_int      n,
+                                    T *const         A[],
+                                    rocblas_int      offset_A,
+                                    rocblas_int      lda,
+                                    rocblas_stride   stride_A,
+                                    T *const         invA[],
+                                    rocblas_int      offset_invA,
+                                    rocblas_int      ldinvA,
+                                    rocblas_stride   stride_invA,
+                                    rocblas_int      batch_count,
+                                    T*               c_temp,
+                                    T**              c_temp_arr,
+                                    T**              workArr)
+{
+    size_t c_temp_els = rocblas_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, 1);
+    
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks =  (batch_count - 1)/256 + 1;
+    hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,c_temp_arr,c_temp,c_temp_els,batch_count);
+
+    return rocblas_trtri_template<ROCBLAS_TRTRI_NB,BATCHED,STRIDED,T>(handle,uplo,diag,n,
+                                                                      cast2constType(A),offset_A,lda,stride_A,0,
+                                                                      invA,offset_invA,ldinvA,stride_invA,0,
+                                                                      batch_count,1,cast2constPointer(c_temp_arr));
+}
+
+// trtri overload
+template <bool BATCHED, bool STRIDED, typename T>
+rocblas_status rocblasCall_trtri(rocblas_handle   handle,
+                                    rocblas_fill     uplo,
+                                    rocblas_diagonal diag,
+                                    rocblas_int      n,
+                                    T *const         A[],
+                                    rocblas_int      offset_A,
+                                    rocblas_int      lda,
+                                    rocblas_stride   stride_A,
+                                    T*               invA,
+                                    rocblas_int      offset_invA,
+                                    rocblas_int      ldinvA,
+                                    rocblas_stride   stride_invA,
+                                    rocblas_int      batch_count,
+                                    T*               c_temp,
+                                    T**              c_temp_arr,
+                                    T**              workArr)
+{
+    size_t c_temp_els = rocblas_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, 1);
+    
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks =  (batch_count - 1)/256 + 1;
+    hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,workArr,invA,stride_invA,batch_count);
+    hipLaunchKernelGGL(get_array,dim3(blocks),dim3(256),0,stream,c_temp_arr,c_temp,c_temp_els,batch_count);
+
+    return rocblas_trtri_template<ROCBLAS_TRTRI_NB,BATCHED,STRIDED,T>(handle,uplo,diag,n,
+                                                                      cast2constType(A),offset_A,lda,stride_A,0,
+                                                                      workArr,offset_invA,ldinvA,stride_invA,0,
+                                                                      batch_count,1,c_temp_arr);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 // THESE SHOULD BE SUBTITUTED BY THEIR CORRESPONDING 

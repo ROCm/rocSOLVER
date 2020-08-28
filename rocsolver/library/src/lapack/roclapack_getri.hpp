@@ -440,6 +440,12 @@ void rocsolver_getri_getMemorySize(const rocblas_int n, const rocblas_int batch_
         *size_4 = *size_5 = *size_6 = *size_7 = 0;
     else
         rocblasCall_trsm_mem<BATCHED,T>(rocblas_side_right,n,GETRI_BLOCKSIZE,batch_count,size_4,size_5,size_6,size_7);
+    
+    // for TRTRI
+    size_t s4, s5;
+    rocblasCall_trtri_mem<BATCHED,T>(n,batch_count,&s4,&s5);
+    *size_4 = max(*size_4, s4);
+    *size_5 = max(*size_5, s5);
 }
 
 template <typename T>
@@ -517,22 +523,6 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
     }
     #endif
 
-    // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-    //      TRTRI_BATCH FUNCTIONALITY IS ENABLED. ****
-    #ifdef batched
-        T* AA[batch_count];
-        T* AA1[batch_count];
-        hipMemcpy(AA, A, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
-        if (A1 != nullptr)
-            hipMemcpy(AA1, A1, batch_count*sizeof(T*), hipMemcpyDeviceToHost);
-    #else
-        T* AA = A;
-        T* AA1 = A1;
-    #endif
-
-    // **** TRTRI_BATCH IS EXECUTED IN A FOR-LOOP UNTIL 
-    //      FUNCTIONALITY IS ENABLED. ****
-
     rocblas_int blocks = (n - 1)/32 + 1;
     rocblas_int threads = min(((n - 1)/64 + 1) * 64, BLOCKSIZE);
     rocblas_int ldw = n;
@@ -549,15 +539,11 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
                         n, A, shiftA, lda, strideA, info);
         
         // compute inv(U)
-        for (int b = 0; b < batch_count; ++b)
-        {
-            M = load_ptr_batch<T>(AA,b,shiftA,strideA);
-            W = load_ptr_batch<T>(work,b,0,strideW);
-            rocblas_trtri(handle, rocblas_fill_upper, rocblas_diagonal_non_unit,
-                        n, M, lda, W, ldw);
-        }
+        rocblasCall_trtri<BATCHED,STRIDED,T>(handle, rocblas_fill_upper, rocblas_diagonal_non_unit, n,
+                                             A, shiftA, lda, strideA, work, 0, ldw, strideW,
+                                             batch_count, (T*)x_temp, (T**)x_temp_arr, workArr);
 
-        // restore lower triangular part of A
+        // copy inv(U) to A
         hipLaunchKernelGGL((getri_trtri_update<true,T>), dim3(batch_count,blocks,blocks), dim3(1,32,32), 0, stream,
                         n, A, shiftA, lda, strideA, work, 0, ldw, strideW, info);
     }
@@ -570,13 +556,9 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
                         n, A1, shiftA1, lda1, strideA1, info);
         
         // compute inv(U)
-        for (int b = 0; b < batch_count; ++b)
-        {
-            M = load_ptr_batch<T>(AA1,b,shiftA1,strideA1);
-            W = load_ptr_batch<T>(AA,b,shiftA,strideA);
-            rocblas_trtri(handle, rocblas_fill_upper, rocblas_diagonal_non_unit,
-                        n, M, lda1, W, lda);
-        }
+        rocblasCall_trtri<BATCHED,STRIDED,T>(handle, rocblas_fill_upper, rocblas_diagonal_non_unit, n,
+                                             A1, shiftA1, lda1, strideA1, A, shiftA, lda, strideA,
+                                             batch_count, (T*)x_temp, (T**)x_temp_arr, workArr);
 
         // restore lower triangular part of A
         hipLaunchKernelGGL((getri_trtri_update<false,T>), dim3(batch_count,blocks,blocks), dim3(1,32,32), 0, stream,
