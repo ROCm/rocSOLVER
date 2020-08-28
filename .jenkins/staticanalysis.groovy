@@ -19,6 +19,7 @@ def runCompileCommand(platform, project, jobName, boolean debug=false)
             ./run_doc.sh
             popd
             """
+    command = """ """
 
     try
     {
@@ -29,13 +30,14 @@ def runCompileCommand(platform, project, jobName, boolean debug=false)
         throw e
     }
 
-    publishHTML([allowMissing: false,
+    /* publishHTML([allowMissing: false,
                 alwaysLinkToLastBuild: false,
                 keepAll: false,
                 reportDir: "${project.paths.project_build_prefix}/docs/docBin/html",
                 reportFiles: "index.html",
                 reportName: "Documentation",
                 reportTitles: "Documentation"])
+    */
 }
 
 def runCI =
