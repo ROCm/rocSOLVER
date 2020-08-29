@@ -122,8 +122,9 @@ if(CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
   # explicit xnack compilation flags
   target_compile_options( rocsolver PRIVATE
     -mno-xnack
-    -Xarch_gfx906 -mno-sram-ecc
-    -Xarch_gfx908 -msram-ecc
+    "SHELL:-Xarch_gfx900 -mno-sram-ecc"
+    "SHELL:-Xarch_gfx906 -mno-sram-ecc"
+    "SHELL:-Xarch_gfx908 -msram-ecc"
   )
 endif()
 
