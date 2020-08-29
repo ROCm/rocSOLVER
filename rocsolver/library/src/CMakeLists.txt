@@ -118,6 +118,15 @@ else()
   target_link_libraries( rocsolver PRIVATE hip::device hcc::hccshared )
 endif()
 
+if(CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
+  # explicit xnack compilation flags
+  target_compile_options( rocsolver PRIVATE
+    -mno-xnack
+    -Xarch_gfx906 -mno-sram-ecc
+    -Xarch_gfx908 -msram-ecc
+  )
+endif()
+
 set_target_properties( rocsolver PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
 
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
