@@ -120,7 +120,7 @@ endif()
 
 # explicit xnack compilation flags
 if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
-  set( gfx906_options "-Xarch_gfx906 -mno-sram-ecc" )
+  set( gfx906_options "-Xarch_gfx906 -msram-ecc" )
   set( gfx908_options "-Xarch_gfx908 -msram-ecc" )
   if( CMAKE_VERSION VERSION_LESS 3.12 )
     set_target_properties( rocsolver PROPERTIES
