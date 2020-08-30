@@ -118,25 +118,23 @@ else()
   target_link_libraries( rocsolver PRIVATE hip::device hcc::hccshared )
 endif()
 
-if(CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
-  # explicit xnack compilation flags
-  set( gfx900_options "-Xarch_gfx900 -mno-sram-ecc" )
+# explicit xnack compilation flags
+if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
   set( gfx906_options "-Xarch_gfx906 -mno-sram-ecc" )
   set( gfx908_options "-Xarch_gfx908 -msram-ecc" )
-  if(CMAKE_VERSION VERSION_LESS 3.12)
+  if( CMAKE_VERSION VERSION_LESS 3.12 )
     set_target_properties( rocsolver PROPERTIES
       COMPILE_FLAGS
-        "-mno-xnack ${gfx900_options} ${gfx906_options} ${gfx908_options}"
+        "-mno-xnack ${gfx906_options} ${gfx908_options}"
     )
-  else ()
+  else( )
     target_compile_options( rocsolver PRIVATE
       -mno-xnack
-      "SHELL:${gfx900_options}"
       "SHELL:${gfx906_options}"
       "SHELL:${gfx908_options}"
     )
-  endif()
-endif()
+  endif( )
+endif( )
 
 set_target_properties( rocsolver PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
 
