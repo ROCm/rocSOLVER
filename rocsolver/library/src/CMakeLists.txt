@@ -120,12 +120,22 @@ endif()
 
 if(CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
   # explicit xnack compilation flags
-  target_compile_options( rocsolver PRIVATE
-    -mno-xnack
-    "SHELL:-Xarch_gfx900 -mno-sram-ecc"
-    "SHELL:-Xarch_gfx906 -mno-sram-ecc"
-    "SHELL:-Xarch_gfx908 -msram-ecc"
-  )
+  set( gfx900_options "-Xarch_gfx900 -mno-sram-ecc" )
+  set( gfx906_options "-Xarch_gfx906 -mno-sram-ecc" )
+  set( gfx908_options "-Xarch_gfx908 -msram-ecc" )
+  if(CMAKE_VERSION VERSION_LESS 3.12)
+    set_target_properties( rocsolver PROPERTIES
+      COMPILE_FLAGS
+        "-mno-xnack ${gfx900_options} ${gfx906_options} ${gfx908_options}"
+    )
+  else ()
+    target_compile_options( rocsolver PRIVATE
+      -mno-xnack
+      "SHELL:${gfx900_options}"
+      "SHELL:${gfx906_options}"
+      "SHELL:${gfx908_options}"
+    )
+  endif()
 endif()
 
 set_target_properties( rocsolver PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
