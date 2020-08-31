@@ -165,7 +165,7 @@ void gebd2_gebrd_initData(const rocblas_handle handle,
 }
 
 
-template <bool STRIDED, bool GEBRD, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh, bool COMPLEX = is_complex<T>>
+template <bool STRIDED, bool GEBRD, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void gebd2_gebrd_getError(const rocblas_handle handle, 
                         const rocblas_int m, 
                         const rocblas_int n, 
@@ -189,6 +189,9 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
                         Uh &hTaup, 
                         double *max_err)
 {
+    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool VERIFY_IMPLICIT_TEST = false;
+
     std::vector<T> hW(max(m,n));
 
     // input data initialization
@@ -197,8 +200,7 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
 
     // execute computations
     // use verify_implicit_test to check correctness of the implicit test using CPU lapack
-    bool verify_implicit_test = false;
-    if (!verify_implicit_test)
+    if (!VERIFY_IMPLICIT_TEST)
     {
         // GPU lapack
         CHECK_ROCBLAS_ERROR(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle, m, n, dA.data(), lda, stA, dD.data(), stD, dE.data(), stE, dTauq.data(), stQ, dTaup.data(), stP, bc));
@@ -291,8 +293,6 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
     }
    
     // error is ||hA - hARes|| / ||hA||
-    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
-    // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
     double err;
     *max_err = 0;
