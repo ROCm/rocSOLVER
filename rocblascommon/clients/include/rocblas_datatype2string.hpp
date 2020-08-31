@@ -5,8 +5,8 @@
 #ifndef ROCBLAS_DATATYPE2CHAR_H_
 #define ROCBLAS_DATATYPE2CHAR_H_
 
-#include "rocblas.h"
 #include "../../library/src/include/rocblas_ostream.hpp"
+#include "rocblas.h"
 #include <string>
 
 typedef enum rocblas_initialization_ : int {
