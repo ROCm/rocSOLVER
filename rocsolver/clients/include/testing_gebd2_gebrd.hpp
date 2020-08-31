@@ -196,18 +196,26 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
                                   hA, hD, hE, hTauq, hTaup);
 
     // execute computations
-    // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle, m, n, dA.data(), lda, stA, dD.data(), stD, dE.data(), stE, dTauq.data(), stQ, dTaup.data(), stP, bc));
-    CHECK_HIP_ERROR(hARes.transfer_from(dA));
-    CHECK_HIP_ERROR(hTauq.transfer_from(dTauq));
-    CHECK_HIP_ERROR(hTaup.transfer_from(dTaup));
-
-    // // CPU lapack
-    // for (rocblas_int b = 0; b < bc; ++b) {
-    //     GEBRD ?
-    //         cblas_gebrd<S,T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(), max(m,n)):
-    //         cblas_gebd2<S,T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
-    // }
+    // use verify_implicit_test to check correctness of the implicit test using CPU lapack
+    bool verify_implicit_test = false;
+    if (!verify_implicit_test)
+    {
+        // GPU lapack
+        CHECK_ROCBLAS_ERROR(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle, m, n, dA.data(), lda, stA, dD.data(), stD, dE.data(), stE, dTauq.data(), stQ, dTaup.data(), stP, bc));
+        CHECK_HIP_ERROR(hARes.transfer_from(dA));
+        CHECK_HIP_ERROR(hTauq.transfer_from(dTauq));
+        CHECK_HIP_ERROR(hTaup.transfer_from(dTaup));
+    }
+    else
+    {
+        // CPU lapack
+        for (rocblas_int b = 0; b < bc; ++b) {
+            memcpy(hARes[b], hA[b], lda * n * sizeof(T));
+            GEBRD ?
+                cblas_gebrd<S,T>(m, n, hARes[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(), max(m,n)):
+                cblas_gebd2<S,T>(m, n, hARes[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
+        }
+    }
 
     // reconstruct A from the factorization for implicit testing
     std::vector<T> vec(max(m,n));
