@@ -165,7 +165,7 @@ void gebd2_gebrd_initData(const rocblas_handle handle,
 }
 
 
-template <bool STRIDED, bool GEBRD, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
+template <bool STRIDED, bool GEBRD, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh, bool COMPLEX = is_complex<T>>
 void gebd2_gebrd_getError(const rocblas_handle handle, 
                         const rocblas_int m, 
                         const rocblas_int n, 
@@ -199,19 +199,93 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_gebd2_gebrd(STRIDED,GEBRD,handle, m, n, dA.data(), lda, stA, dD.data(), stD, dE.data(), stE, dTauq.data(), stQ, dTaup.data(), stP, bc));
     CHECK_HIP_ERROR(hARes.transfer_from(dA));
+    CHECK_HIP_ERROR(hTauq.transfer_from(dTauq));
+    CHECK_HIP_ERROR(hTaup.transfer_from(dTaup));
 
-    // CPU lapack
-    for (rocblas_int b = 0; b < bc; ++b) {
-        GEBRD ?
-            cblas_gebrd<S,T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(), max(m,n)):
-            cblas_gebd2<S,T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
+    // // CPU lapack
+    // for (rocblas_int b = 0; b < bc; ++b) {
+    //     GEBRD ?
+    //         cblas_gebrd<S,T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(), max(m,n)):
+    //         cblas_gebd2<S,T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
+    // }
+
+    // reconstruct A from the factorization for implicit testing
+    std::vector<T> vec(max(m,n));
+    vec[0] = 1;
+    for (rocblas_int b = 0; b < bc; ++b)
+    {
+        T *a = hARes[b];
+        T *tauq = hTauq[b];
+        T *taup = hTaup[b];
+
+        if (m >= n)
+        {
+            for (int j = n-1; j >= 0; j--)
+            {
+                if (j < n-1)
+                {
+                    if (COMPLEX)
+                    {
+                        cblas_lacgv(1, taup + j, 1);
+                        cblas_lacgv(n-j-1, a + j + (j+1)*lda, lda);
+                    }
+                    for (int i = 1; i < n-j-1; i++)
+                    {
+                        vec[i] = a[j + (j+i+1)*lda];
+                        a[j + (j+i+1)*lda] = 0;
+                    }
+                    cblas_larf(rocblas_side_right, m-j, n-j-1, vec.data(), 1,
+                            taup + j, a + j + (j+1)*lda, lda, hW.data());
+                    if (COMPLEX)
+                        cblas_lacgv(1, taup + j, 1);
+                }
+
+                for (int i = 1; i < m-j; i++)
+                {
+                    vec[i] = a[(j+i) + j*lda];
+                    a[(j+i) + j*lda] = 0;
+                }
+                cblas_larf(rocblas_side_left, m-j, n-j, vec.data(), 1,
+                        tauq + j, a + j + j*lda, lda, hW.data());
+            }
+        }
+        else
+        {
+            for (int j = m-1; j >= 0; j--)
+            {
+                if (j < m-1)
+                {
+                    for (int i = 1; i < m-j-1; i++)
+                    {
+                        vec[i] = a[(j+i+1) + j*lda];
+                        a[(j+i+1) + j*lda] = 0;
+                    }
+                    cblas_larf(rocblas_side_left, m-j-1, n-j, vec.data(), 1,
+                            tauq + j, a + (j+1) + j*lda, lda, hW.data());
+                }
+
+                if (COMPLEX)
+                {
+                    cblas_lacgv(1, taup + j, 1);
+                    cblas_lacgv(n-j, a + j + j*lda, lda);
+                }
+                for (int i = 1; i < n-j; i++)
+                {
+                    vec[i] = a[j + (j+i)*lda];
+                    a[j + (j+i)*lda] = 0;
+                }
+                cblas_larf(rocblas_side_right, m-j, n-j, vec.data(), 1,
+                        taup + j, a + j + j*lda, lda, hW.data());
+                if (COMPLEX)
+                    cblas_lacgv(1, taup + j, 1);
+            }
+        }
     }
    
     // error is ||hA - hARes|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
-    int s = min(m,n);
     double err;
     *max_err = 0;
     for (rocblas_int b = 0; b < bc; ++b) {
