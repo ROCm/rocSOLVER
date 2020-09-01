@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef _ARGUMENTS_H_
@@ -51,7 +51,7 @@ public:
   rocblas_int bsb =
       128 * 128; //  bsb > transB_option == 'N' ? ldb * N : ldb * K
   rocblas_int bsc = 128 * 128; //  bsc >= ldc * N
-  rocblas_int bsp = 128;  //  bsp >= min(M,N)
+  rocblas_int bsp = 128;       //  bsp >= min(M,N)
 
   rocblas_int norm_check = 0;
   rocblas_int unit_check = 1;
@@ -102,7 +102,7 @@ public:
     bsb = rhs.bsb;
     bsc = rhs.bsc;
     bsp = rhs.bsp;
-    
+
     norm_check = rhs.norm_check;
     unit_check = rhs.unit_check;
     timing = rhs.timing;

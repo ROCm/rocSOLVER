@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright 2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # Enables increasingly expensive runtime correctness checks

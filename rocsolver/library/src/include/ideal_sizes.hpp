@@ -1,17 +1,17 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef IDEAL_SIZES_HPP
 #define IDEAL_SIZES_HPP
 
 // general
-#define WAVESIZE 64 //size of wavefront
+#define WAVESIZE 64 // size of wavefront
 
 // These are used by different common kernels
 //(TODO: identify functions and name accordingly)
 #define BLOCKSIZE 256
-#define BS 32  
+#define BS 32
 
 // laswp
 #define LASWP_BLOCKSIZE 256
@@ -24,7 +24,9 @@
 #define GETRF_GETF2_SWITCHSIZE 64
 #define GETF2_MAX_THDS 256
 #define GETRF_GETF2_BLOCKSIZE 64
-#define GETF2_OPTIM_NGRP 16,15,8,8,8,8,8,8,6,6,4,4,4,4,4,4,3,3,3,3,3,2,2,2,2,2,2,2,2,2,2,2
+#define GETF2_OPTIM_NGRP                                                       \
+  16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, \
+      2, 2, 2, 2, 2, 2, 2
 #define GETF2_BATCH_OPTIM_MAX_SIZE 2048
 #define GETF2_OPTIM_MAX_SIZE 1024
 
@@ -59,6 +61,5 @@
 #define ROCBLAS_IAMAX_NB 1024
 #define ROCBLAS_TRSM_BLOCK 128
 #define ROCBLAS_TRTRI_NB 16
-
 
 #endif /* IDEAL_SIZES_HPP */

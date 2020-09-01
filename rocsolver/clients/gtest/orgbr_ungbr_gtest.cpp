@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -10,7 +10,6 @@ using ::testing::TestWithParam;
 using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
-
 
 typedef std::tuple<vector<int>, vector<int>> orgbr_tuple;
 
@@ -23,115 +22,105 @@ typedef std::tuple<vector<int>, vector<int>> orgbr_tuple;
 // if st = 0, then storev = 'C'
 // if st = 1, then storev = 'R'
 
-// case when m = 0, n = 0 and storev = 'C' will also execute the bad arguments test
-// (null handle, null pointers and invalid values)
+// case when m = 0, n = 0 and storev = 'C' will also execute the bad arguments
+// test (null handle, null pointers and invalid values)
 
-const vector<vector<int>> store = {
-    {-1, 0}, {-1, 1},   //always invalid
-    {0, 0}, {0, 1}, {1, 0}, {1, 1}
-};
+const vector<vector<int>> store = {{-1, 0}, {-1, 1}, // always invalid
+                                   {0, 0},  {0, 1},  {1, 0}, {1, 1}};
 
-// for checkin_lapack tests 
+// for checkin_lapack tests
 const vector<vector<int>> size_range = {
-    {0,0,0},                        //always quick return
-    {0,1,0},                        //quick return for storev = 'R' invalid for 'C'   
-    {1,0,0},                        //quick return for storev = 'C' invalid for 'R'
-    {-1,1,1}, {1,-1,1}, {1,1,-1},   //always invalid
-    {10,30,5},                      //invalid for storev = 'C'
-    {30,10,5},                      //invalid for storev = 'R'
-    {30,10,20}, {10,30,20},         //always invalid
-    {30,30,0}, {20,20,20}, {50,50,50}, {100,100,50}
-};
+    {0, 0, 0}, // always quick return
+    {0, 1, 0}, // quick return for storev = 'R' invalid for 'C'
+    {1, 0, 0}, // quick return for storev = 'C' invalid for 'R'
+    {-1, 1, 1},   {1, -1, 1},   {1, 1, -1}, // always invalid
+    {10, 30, 5},                            // invalid for storev = 'C'
+    {30, 10, 5},                            // invalid for storev = 'R'
+    {30, 10, 20}, {10, 30, 20},             // always invalid
+    {30, 30, 0},  {20, 20, 20}, {50, 50, 50}, {100, 100, 50}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range = {
-    {150,150,100}, {270,270,270}, {400,400,400}, {800,800,300}, {1000,1000,1000}, {1500,1500,800} 
-};
+    {150, 150, 100}, {270, 270, 270},    {400, 400, 400},
+    {800, 800, 300}, {1000, 1000, 1000}, {1500, 1500, 800}};
 
+Arguments orgbr_setup_arguments(orgbr_tuple tup) {
+  vector<int> size = std::get<0>(tup);
+  vector<int> store = std::get<1>(tup);
 
-Arguments orgbr_setup_arguments(orgbr_tuple tup) 
-{
-    vector<int> size = std::get<0>(tup);
-    vector<int> store = std::get<1>(tup);
+  Arguments arg;
 
-    Arguments arg;
+  arg.storev = store[1] == 1 ? 'R' : 'C';
+  arg.K = size[2];
+  arg.M = size[0];
+  arg.lda = size[0];
+  arg.N = size[1];
 
-    arg.storev = store[1] == 1 ? 'R' : 'C';
-    arg.K = size[2];
-    arg.M = size[0];
-    arg.lda = size[0];
-    arg.N = size[1];
+  arg.lda += store[0] * 10;
 
-    arg.lda += store[0]*10;
+  arg.timing = 0;
 
-    arg.timing = 0;
-
-    return arg;
+  return arg;
 }
 
 class ORGBR : public ::TestWithParam<orgbr_tuple> {
 protected:
-    ORGBR() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+  ORGBR() {}
+  virtual void SetUp() {}
+  virtual void TearDown() {}
 };
 
 class UNGBR : public ::TestWithParam<orgbr_tuple> {
 protected:
-    UNGBR() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+  UNGBR() {}
+  virtual void SetUp() {}
+  virtual void TearDown() {}
 };
 
 TEST_P(ORGBR, __float) {
-    Arguments arg = orgbr_setup_arguments(GetParam());
-    
-    if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
-        testing_orgbr_ungbr_bad_arg<float>();
+  Arguments arg = orgbr_setup_arguments(GetParam());
 
-    testing_orgbr_ungbr<float>(arg);
+  if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
+    testing_orgbr_ungbr_bad_arg<float>();
+
+  testing_orgbr_ungbr<float>(arg);
 }
 
 TEST_P(ORGBR, __double) {
-    Arguments arg = orgbr_setup_arguments(GetParam());
-    
-    if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
-        testing_orgbr_ungbr_bad_arg<double>();
+  Arguments arg = orgbr_setup_arguments(GetParam());
 
-    testing_orgbr_ungbr<double>(arg);
+  if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
+    testing_orgbr_ungbr_bad_arg<double>();
+
+  testing_orgbr_ungbr<double>(arg);
 }
 
 TEST_P(UNGBR, __float_complex) {
-    Arguments arg = orgbr_setup_arguments(GetParam());
-    
-    if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
-        testing_orgbr_ungbr_bad_arg<rocblas_float_complex>();
+  Arguments arg = orgbr_setup_arguments(GetParam());
 
-    testing_orgbr_ungbr<rocblas_float_complex>(arg);
+  if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
+    testing_orgbr_ungbr_bad_arg<rocblas_float_complex>();
+
+  testing_orgbr_ungbr<rocblas_float_complex>(arg);
 }
 
 TEST_P(UNGBR, __double_complex) {
-    Arguments arg = orgbr_setup_arguments(GetParam());
-    
-    if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
-        testing_orgbr_ungbr_bad_arg<rocblas_double_complex>();
+  Arguments arg = orgbr_setup_arguments(GetParam());
 
-    testing_orgbr_ungbr<rocblas_double_complex>(arg);
+  if (arg.M == 0 && arg.N == 0 && arg.storev == 'C')
+    testing_orgbr_ungbr_bad_arg<rocblas_double_complex>();
+
+  testing_orgbr_ungbr<rocblas_double_complex>(arg);
 }
 
-
 INSTANTIATE_TEST_SUITE_P(daily_lapack, ORGBR,
-                         Combine(ValuesIn(large_size_range),
-                                 ValuesIn(store)));
+                         Combine(ValuesIn(large_size_range), ValuesIn(store)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORGBR,
-                         Combine(ValuesIn(size_range),
-                                 ValuesIn(store)));
+                         Combine(ValuesIn(size_range), ValuesIn(store)));
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, UNGBR,
-                         Combine(ValuesIn(large_size_range),
-                                 ValuesIn(store)));
+                         Combine(ValuesIn(large_size_range), ValuesIn(store)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNGBR,
-                         Combine(ValuesIn(size_range),
-                                 ValuesIn(store)));
+                         Combine(ValuesIn(size_range), ValuesIn(store)));
