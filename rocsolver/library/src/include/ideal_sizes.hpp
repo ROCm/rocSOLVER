@@ -30,7 +30,7 @@
 
 // getri
 #define GETRI_SWITCHSIZE_MID 64
-#define GETRI_SWITCHSIZE_LARGE 64
+#define GETRI_SWITCHSIZE_LARGE 320
 #define GETRI_BLOCKSIZE 64
 
 // potf2/potrf
