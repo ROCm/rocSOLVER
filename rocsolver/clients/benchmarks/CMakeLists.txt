@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright 2016 Advanced Micro Devices, Inc.
+# Copyright (c) 2016-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # set( Boost_DEBUG ON )
@@ -17,7 +17,7 @@ if(EXISTS /etc/redhat-release)
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread")
 endif()
-    
+
 find_package( Boost COMPONENTS program_options )
 
 if( NOT Boost_FOUND )
@@ -103,13 +103,13 @@ if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
     # External header includes included as system files
     target_include_directories( rocsolver-bench
       SYSTEM PRIVATE
-        $<BUILD_INTERFACE:${CLANG_INCLUDE_DIR}> 
+        $<BUILD_INTERFACE:${CLANG_INCLUDE_DIR}>
 #        $<BUILD_INTERFACE:${BLIS_INCLUDE_DIR}>
         $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${HCC_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${OPENMP_INCLUDE_DIR}> 
+        $<BUILD_INTERFACE:${OPENMP_INCLUDE_DIR}>
         )
 
     target_link_libraries( rocsolver-bench PRIVATE ${Boost_LIBRARIES} ${OPENMP_LIBRARY} cblas lapack roc::rocsolver )

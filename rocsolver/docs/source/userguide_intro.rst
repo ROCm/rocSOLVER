@@ -4,16 +4,16 @@ Introduction
 *************
 
 .. toctree::
-   :maxdepth: 4 
+   :maxdepth: 4
    :caption: Contents:
 
 Overview
 ==================
 
 rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_
-on top of AMD’s Radeon Open Compute Platform runtime and toolchains (`ROCm <https://rocm.github.io>`_). 
+on top of AMD's Radeon Open Compute Platform runtime and toolchains (`ROCm <https://rocm.github.io>`_).
 rocSOLVER is implemented in the `HIP programming language <https://github.com/ROCm-Developer-Tools/HIP>`_
-an optimized for AMD’s latest discrete GPUs.  
+an optimized for AMD's latest discrete GPUs.
 
 Brief description and functionality
 ====================================
@@ -34,26 +34,26 @@ LAPACK Auxiliary Function       single double single complex double complex
 **rocsolver_larfb**             x      x         x              x
 **rocsolver_labrd**             x      x         x              x
 **rocsolver_bdsqr**             x      x         x              x
-**rocsolver_org2r**             x      x      
-**rocsolver_orgqr**             x      x      
-**rocsolver_orgl2**             x      x      
-**rocsolver_orglq**             x      x      
-**rocsolver_orgbr**             x      x      
-**rocsolver_orm2r**             x      x      
-**rocsolver_ormqr**             x      x      
-**rocsolver_orml2**             x      x      
-**rocsolver_ormlq**             x      x      
-**rocsolver_ormbr**             x      x      
-**rocsolver_ung2r**                              x              x      
-**rocsolver_ungqr**                              x              x     
-**rocsolver_ungl2**                              x              x      
-**rocsolver_unglq**                              x              x     
-**rocsolver_ungbr**                              x              x     
-**rocsolver_unm2r**                              x              x      
-**rocsolver_unmqr**                              x              x     
-**rocsolver_unml2**                              x              x      
-**rocsolver_unmlq**                              x              x     
-**rocsolver_unmbr**                              x              x     
+**rocsolver_org2r**             x      x
+**rocsolver_orgqr**             x      x
+**rocsolver_orgl2**             x      x
+**rocsolver_orglq**             x      x
+**rocsolver_orgbr**             x      x
+**rocsolver_orm2r**             x      x
+**rocsolver_ormqr**             x      x
+**rocsolver_orml2**             x      x
+**rocsolver_ormlq**             x      x
+**rocsolver_ormbr**             x      x
+**rocsolver_ung2r**                              x              x
+**rocsolver_ungqr**                              x              x
+**rocsolver_ungl2**                              x              x
+**rocsolver_unglq**                              x              x
+**rocsolver_ungbr**                              x              x
+**rocsolver_unm2r**                              x              x
+**rocsolver_unmqr**                              x              x
+**rocsolver_unml2**                              x              x
+**rocsolver_unmlq**                              x              x
+**rocsolver_unmbr**                              x              x
 =============================== ====== ====== ============== ==============
 
 =============================== ====== ====== ============== ==============
@@ -68,7 +68,7 @@ rocsolver_potrf_strided_batched x      x          x             x
 **rocsolver_getf2**             x      x          x             x
 rocsolver_getf2_batched         x      x          x             x
 rocsolver_getf2_strided_batched x      x          x             x
-**rocsolver_getrf**             x      x          x             x 
+**rocsolver_getrf**             x      x          x             x
 rocsolver_getrf_batched         x      x          x             x
 rocsolver_getrf_strided_batched x      x          x             x
 **rocsolver_geqr2**             x      x          x             x
@@ -95,7 +95,7 @@ rocsolver_getrs_strided_batched x      x          x             x
 **rocsolver_getri**             x      x          x             x
 rocsolver_getri_batched         x      x          x             x
 rocsolver_getri_strided_batched x      x          x             x
-**rocsolver_gebd2**             x      x          x             x 
+**rocsolver_gebd2**             x      x          x             x
 rocsolver_gebd2_batched         x      x          x             x
 rocsolver_gebd2_strided_batched x      x          x             x
 **rocsolver_gebrd**             x      x          x             x
@@ -109,9 +109,9 @@ Lapack-like Function                 single double single complex double complex
 **rocsolver_getf2_npvt**             x      x          x             x
 rocsolver_getf2_npvt_batched         x      x          x             x
 rocsolver_getf2_npvt_strided_batched x      x          x             x
-**rocsolver_getrf_npvt**             x      x          x             x 
+**rocsolver_getrf_npvt**             x      x          x             x
 rocsolver_getrf_npvt_batched         x      x          x             x
 rocsolver_getrf_npvt_strided_batched x      x          x             x
 ==================================== ====== ====== ============== ==============
 
- 
+

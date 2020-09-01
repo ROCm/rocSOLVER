@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # For debugging, uncomment this
@@ -103,7 +103,7 @@ if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
         else()
             set( ROCM_OPENMP_PATH /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7 )
         endif()
-        
+
         # defer OpenMP include as search order must come after clang
         set( XXX_OPENMP_INCLUDE_DIR ${ROCM_OPENMP_PATH}/include )
         set( OPENMP_LIBRARY ${ROCM_OPENMP_PATH}/libgomp.so )
@@ -132,14 +132,14 @@ if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
     # External header includes included as system files
     target_include_directories( rocsolver-test
       SYSTEM PRIVATE
-        $<BUILD_INTERFACE:${CLANG_INCLUDE_DIR}> 
+        $<BUILD_INTERFACE:${CLANG_INCLUDE_DIR}>
 #        $<BUILD_INTERFACE:${BLIS_INCLUDE_DIR}>
         $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${HCC_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${GTEST_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${OPENMP_INCLUDE_DIR}> 
+        $<BUILD_INTERFACE:${OPENMP_INCLUDE_DIR}>
         )
 
     target_link_libraries( rocsolver-test PRIVATE ${GTEST_LIBRARIES} ${Boost_LIBRARIES} ${OPENMP_LIBRARY} cblas lapack roc::rocsolver )

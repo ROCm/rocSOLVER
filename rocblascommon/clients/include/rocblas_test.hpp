@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef ROCBLAS_TEST_H_
@@ -22,7 +22,8 @@
 
 #include "../../library/src/include/rocblas_ostream.hpp"
 
-// Suppress warnings about hipMalloc(), hipFree() except in rocblas-test and rocblas-bench
+// Suppress warnings about hipMalloc(), hipFree() except in rocblas-test and
+// rocblas-bench
 #if !defined(GOOGLE_TEST) && !defined(ROCBLAS_BENCH)
 #undef hipMalloc
 #undef hipFree
@@ -35,53 +36,43 @@
 #define CHECK_HIP_ERROR2(ERROR) ASSERT_EQ(ERROR, hipSuccess)
 #define CHECK_HIP_ERROR(ERROR) CHECK_HIP_ERROR2(ERROR)
 
-#define CHECK_DEVICE_ALLOCATION(ERROR)            \
-    do                                            \
-    {                                             \
-        auto error = ERROR;                       \
-        if(error == hipErrorOutOfMemory)          \
-        {                                         \
-            SUCCEED() << LIMITED_MEMORY_STRING;   \
-            return;                               \
-        }                                         \
-        else if(error != hipSuccess)              \
-        {                                         \
-            fprintf(stderr,                       \
-                    "error: '%s'(%d) at %s:%d\n", \
-                    hipGetErrorString(error),     \
-                    error,                        \
-                    __FILE__,                     \
-                    __LINE__);                    \
-            return;                               \
-        }                                         \
-    } while(0)
+#define CHECK_DEVICE_ALLOCATION(ERROR)                                         \
+  do {                                                                         \
+    auto error = ERROR;                                                        \
+    if (error == hipErrorOutOfMemory) {                                        \
+      SUCCEED() << LIMITED_MEMORY_STRING;                                      \
+      return;                                                                  \
+    } else if (error != hipSuccess) {                                          \
+      fprintf(stderr, "error: '%s'(%d) at %s:%d\n", hipGetErrorString(error),  \
+              error, __FILE__, __LINE__);                                      \
+      return;                                                                  \
+    }                                                                          \
+  } while (0)
 
 #define EXPECT_ROCBLAS_STATUS ASSERT_EQ
 
 #else // GOOGLE_TEST
 
-inline void rocblas_expect_status(rocblas_status status, rocblas_status expect)
-{
-    if(status != expect)
-    {
-        rocblas_cerr << "rocBLAS status error: Expected " << rocblas_status_to_string(expect)
-                     << ", received " << rocblas_status_to_string(status) << std::endl;
-        if(expect == rocblas_status_success)
-            exit(EXIT_FAILURE);
-    }
+inline void rocblas_expect_status(rocblas_status status,
+                                  rocblas_status expect) {
+  if (status != expect) {
+    rocblas_cerr << "rocBLAS status error: Expected "
+                 << rocblas_status_to_string(expect) << ", received "
+                 << rocblas_status_to_string(status) << std::endl;
+    if (expect == rocblas_status_success)
+      exit(EXIT_FAILURE);
+  }
 }
 
-#define CHECK_HIP_ERROR(ERROR)                                                     \
-    do                                                                             \
-    {                                                                              \
-        auto error = ERROR;                                                        \
-        if(error != hipSuccess)                                                    \
-        {                                                                          \
-            rocblas_cerr << "error: " << hipGetErrorString(error) << " (" << error \
-                         << ") at " __FILE__ ":" << __LINE__ << std::endl;         \
-            rocblas_abort();                                                       \
-        }                                                                          \
-    } while(0)
+#define CHECK_HIP_ERROR(ERROR)                                                 \
+  do {                                                                         \
+    auto error = ERROR;                                                        \
+    if (error != hipSuccess) {                                                 \
+      rocblas_cerr << "error: " << hipGetErrorString(error) << " (" << error   \
+                   << ") at " __FILE__ ":" << __LINE__ << std::endl;           \
+      rocblas_abort();                                                         \
+    }                                                                          \
+  } while (0)
 
 #define CHECK_DEVICE_ALLOCATION(ERROR)
 
@@ -89,28 +80,33 @@ inline void rocblas_expect_status(rocblas_status status, rocblas_status expect)
 
 #endif // GOOGLE_TEST
 
-#define CHECK_ROCBLAS_ERROR2(STATUS) EXPECT_ROCBLAS_STATUS(STATUS, rocblas_status_success)
+#define CHECK_ROCBLAS_ERROR2(STATUS)                                           \
+  EXPECT_ROCBLAS_STATUS(STATUS, rocblas_status_success)
 #define CHECK_ROCBLAS_ERROR(STATUS) CHECK_ROCBLAS_ERROR2(STATUS)
-
 
 /*
 #ifdef GOOGLE_TEST
 
-// Function which matches Arguments with a category, accounting for arg.known_bug_platforms
-bool match_test_category(const Arguments& arg, const char* category);
+// Function which matches Arguments with a category, accounting for
+arg.known_bug_platforms bool match_test_category(const Arguments& arg, const
+char* category);
 
 // The tests are instantiated by filtering through the RocBLAS_Data stream
 // The filter is by category and by the type_filter() and function_filter()
 // functions in the testclass
-#define INSTANTIATE_TEST_CATEGORY(testclass, categ0ry)                                           \
-    INSTANTIATE_TEST_SUITE_P(categ0ry,                                                            \
-                            testclass,                                                           \
-                            testing::ValuesIn(RocBLAS_TestData::begin([](const Arguments& arg) { \
-                                                  return testclass::type_filter(arg)             \
-                                                         && testclass::function_filter(arg)      \
-                                                         && match_test_category(arg, #categ0ry); \
-                                              }),                                                \
-                                              RocBLAS_TestData::end()),                          \
+#define INSTANTIATE_TEST_CATEGORY(testclass, categ0ry) \
+    INSTANTIATE_TEST_SUITE_P(categ0ry, \
+                            testclass, \
+                            testing::ValuesIn(RocBLAS_TestData::begin([](const
+Arguments& arg) { \
+                                                  return
+testclass::type_filter(arg)             \
+                                                         &&
+testclass::function_filter(arg)      \
+                                                         &&
+match_test_category(arg, #categ0ry); \
+                                              }), \
+                                              RocBLAS_TestData::end()), \
                             testclass::PrintToStringParamName());
 
 // Instantiate all test categories
@@ -121,9 +117,11 @@ bool match_test_category(const Arguments& arg, const char* category);
     INSTANTIATE_TEST_CATEGORY(testclass, known_bug)
 
 // Function to catch signals and exceptions as failures
-void catch_signals_and_exceptions_as_failures(const std::function<void()>& test);
+void catch_signals_and_exceptions_as_failures(const std::function<void()>&
+test);
 
-// Macro to call catch_signals_and_exceptions_as_failures() with a lambda expression
+// Macro to call catch_signals_and_exceptions_as_failures() with a lambda
+expression
 #define CATCH_SIGNALS_AND_EXCEPTIONS_AS_FAILURES(test) \
     catch_signals_and_exceptions_as_failures([&] { test; })
 
@@ -136,8 +134,8 @@ class RocBLAS_TestName
     static auto& get_table()
     {
         // Placed inside function to avoid dependency on initialization order
-        static std::unordered_map<std::string, size_t>* table = test_cleanup::allocate(&table);
-        return *table;
+        static std::unordered_map<std::string, size_t>* table =
+test_cleanup::allocate(&table); return *table;
     }
 
 public:
@@ -159,8 +157,8 @@ public:
                             "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
                             "Warning: Character * found in name."
                             " This means a required letter parameter\n"
-                            "(e.g., transA, diag, etc.) has not been set in the YAML file."
-                            " Check the YAML file.\n"
+                            "(e.g., transA, diag, etc.) has not been set in the
+YAML file." " Check the YAML file.\n"
                             "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                             "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                          << std::endl;
@@ -228,7 +226,8 @@ public:
     // Wrapper functor class which calls name_suffix()
     struct PrintToStringParamName
     {
-        std::string operator()(const testing::TestParamInfo<Arguments>& info) const
+        std::string operator()(const testing::TestParamInfo<Arguments>& info)
+const
         {
             return TEST::name_suffix(info.param);
         }
@@ -268,7 +267,8 @@ struct rocblas_test_invalid
     // If this specialization is actually called, print fatal error message
     virtual void operator()(const Arguments&) final
     {
-        static constexpr char msg[] = "Internal error: Test called with invalid types";
+        static constexpr char msg[] = "Internal error: Test called with invalid
+types";
 
 #ifdef GOOGLE_TEST
         FAIL() << msg;
@@ -281,4 +281,3 @@ struct rocblas_test_invalid
 */
 
 #endif
-

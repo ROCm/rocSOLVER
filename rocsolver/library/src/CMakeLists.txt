@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # ########################################################################
@@ -98,7 +98,7 @@ set( rocsolver_lapack_source
 set( auxiliaries
   buildinfo.cpp
   rocblas.cpp
-)  
+)
 
 prepend_path( ".." rocsolver_headers_public relative_rocsolver_headers_public )
 
@@ -117,6 +117,25 @@ if(CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
 else()
   target_link_libraries( rocsolver PRIVATE hip::device hcc::hccshared )
 endif()
+
+# explicit xnack and sram-ecc compilation flags
+if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
+  target_compile_options( rocsolver PRIVATE -mno-xnack )
+
+  # architecture-specific flags
+  set( gfx906_options "-Xarch_gfx906 -msram-ecc" )
+  set( gfx908_options "-Xarch_gfx908 -msram-ecc" )
+  if( CMAKE_VERSION VERSION_LESS 3.12 )
+    set_target_properties( rocsolver PROPERTIES
+      COMPILE_FLAGS "${gfx906_options} ${gfx908_options}"
+    )
+  else( )
+    target_compile_options( rocsolver PRIVATE
+      "SHELL:${gfx906_options}"
+      "SHELL:${gfx908_options}"
+    )
+  endif( )
+endif( )
 
 set_target_properties( rocsolver PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
 
