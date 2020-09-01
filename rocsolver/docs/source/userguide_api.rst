@@ -4,10 +4,10 @@ rocSOLVER API
 *************
 
 .. toctree::
-   :maxdepth: 4 
+   :maxdepth: 4
    :caption: Contents:
 
-This section provides details of the rocSOLVER library API as in last ROCm release. 
+This section provides details of the rocSOLVER library API as in last ROCm release.
 
 Types
 =====
@@ -15,7 +15,7 @@ Types
 rocSOLVER Types
 -----------------
 
-Most rocSOLVER types are aliases of rocBLAS types. 
+Most rocSOLVER types are aliases of rocBLAS types.
 See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/api.html#types>`_.
 
 rocsolver_int

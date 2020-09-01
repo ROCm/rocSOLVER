@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef _ROCLAPACK_FUNCTIONS_H
@@ -9,7 +9,8 @@
 #include <rocblas.h>
 
 /*! \file
-    \brief rocsolver_functions.h provides Lapack functionality for the ROCm platform.
+    \brief rocsolver_functions.h provides Lapack functionality for the ROCm
+ platform.
  *********************************************************************************/
 
 #ifdef __cplusplus
@@ -22,14 +23,13 @@ extern "C" {
  * ===========================================================================
  */
 
-
 /*! \brief   loads char* buf with the rocsolver library version. size_t len
      is the maximum length of char* buf.
 
  ******************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char* buf, size_t len);
-
+ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char *buf,
+                                                             size_t len);
 
 /*
  * ===========================================================================
@@ -47,26 +47,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char* buf, size_t l
     @param[in]
     n               rocblas_int. n >= 0.\n
                     The number of entries of the vector x.
-    @param[inout]      
+    @param[inout]
     x               pointer to type. Array on the GPU of size at least n.\n
-                    On input it is the vector x, 
+                    On input it is the vector x,
                     on output it is overwritten with vector conjg(x).
     @param[in]
     incx            rocblas_int. incx != 0.\n
-                    The increment between consecutive elements of x. 
+                    The increment between consecutive elements of x.
                     If incx is negative, the elements of x are indexed in
                     reverse order.
     *************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_clacgv(rocblas_handle handle,
-                                                   const rocblas_int n,
-                                                   rocblas_float_complex *x,
-                                                   const rocblas_int incx);
+                                                 const rocblas_int n,
+                                                 rocblas_float_complex *x,
+                                                 const rocblas_int incx);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zlacgv(rocblas_handle handle,
-                                                   const rocblas_int n,
-                                                   rocblas_double_complex *x,
-                                                   const rocblas_int incx);
+                                                 const rocblas_int n,
+                                                 rocblas_double_complex *x,
+                                                 const rocblas_int incx);
 
 /*! \brief LASWP performs a series of row interchanges on the matrix A.
 
@@ -80,7 +80,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlacgv(rocblas_handle handle,
     n               rocblas_int. n >= 0.\n
                     The number of columns of the matrix A.
     @param[inout]
-    A               pointer to type. Array on the GPU of dimension lda*n. \n 
+    A               pointer to type. Array on the GPU of dimension lda*n. \n
                     On entry, the matrix of column dimension n to which the row
                     interchanges will be applied. On exit, the permuted matrix.
     @param[in]
@@ -95,120 +95,102 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlacgv(rocblas_handle handle,
                     (K2-K1+1) is the number of elements of IPIV for which a row
                     interchange will be done. This is a 1-based index.
     @param[in]
-    ipiv            pointer to rocblas_int. Array on the GPU of dimension at least k1 + (k2 - k1) * abs(incx).\n
-                    The vector of pivot indices.  Only the elements in positions
-                    k1 through (k1 + (k2 - k1) * abs(incx)) of IPIV are accessed. 
-                    Elements of ipiv are considered 1-based.
+    ipiv            pointer to rocblas_int. Array on the GPU of dimension at
+   least k1 + (k2 - k1) * abs(incx).\n The vector of pivot indices.  Only the
+   elements in positions k1 through (k1 + (k2 - k1) * abs(incx)) of IPIV are
+   accessed. Elements of ipiv are considered 1-based.
     @param[in]
     incx            rocblas_int. incx != 0.\n
                     The increment between successive values of IPIV.  If IPIV
                     is negative, the pivots are applied in reverse order.
     *************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_slaswp(rocblas_handle handle, 
-                                                   const rocblas_int n,
-                                                   float *A, 
-                                                   const rocblas_int lda, 
-                                                   const rocblas_int k1, 
-                                                   const rocblas_int k2, 
-                                                   const rocblas_int *ipiv, 
-                                                   const rocblas_int incx);
+ROCSOLVER_EXPORT rocblas_status rocsolver_slaswp(
+    rocblas_handle handle, const rocblas_int n, float *A, const rocblas_int lda,
+    const rocblas_int k1, const rocblas_int k2, const rocblas_int *ipiv,
+    const rocblas_int incx);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dlaswp(rocblas_handle handle, 
-                                                   const rocblas_int n,
-                                                   double *A, 
-                                                   const rocblas_int lda, 
-                                                   const rocblas_int k1, 
-                                                   const rocblas_int k2, 
-                                                   const rocblas_int *ipiv, 
-                                                   const rocblas_int incx);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlaswp(
+    rocblas_handle handle, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_int k1, const rocblas_int k2,
+    const rocblas_int *ipiv, const rocblas_int incx);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_claswp(rocblas_handle handle, 
-                                                   const rocblas_int n,
-                                                   rocblas_float_complex *A, 
-                                                   const rocblas_int lda, 
-                                                   const rocblas_int k1, 
-                                                   const rocblas_int k2, 
-                                                   const rocblas_int *ipiv, 
-                                                   const rocblas_int incx);
+ROCSOLVER_EXPORT rocblas_status rocsolver_claswp(
+    rocblas_handle handle, const rocblas_int n, rocblas_float_complex *A,
+    const rocblas_int lda, const rocblas_int k1, const rocblas_int k2,
+    const rocblas_int *ipiv, const rocblas_int incx);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zlaswp(rocblas_handle handle, 
-                                                   const rocblas_int n,
-                                                   rocblas_double_complex *A, 
-                                                   const rocblas_int lda, 
-                                                   const rocblas_int k1, 
-                                                   const rocblas_int k2, 
-                                                   const rocblas_int *ipiv, 
-                                                   const rocblas_int incx);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlaswp(
+    rocblas_handle handle, const rocblas_int n, rocblas_double_complex *A,
+    const rocblas_int lda, const rocblas_int k1, const rocblas_int k2,
+    const rocblas_int *ipiv, const rocblas_int incx);
 
-/*! \brief LARFG generates an orthogonal Householder reflector H of order n. 
+/*! \brief LARFG generates an orthogonal Householder reflector H of order n.
 
     \details
     Householder reflector H is such that
- 
+
         H * [alpha] = [beta]
             [  x  ]   [  0 ]
 
-    where x is an n-1 vector and alpha and beta are scalars. Matrix H can be 
+    where x is an n-1 vector and alpha and beta are scalars. Matrix H can be
     generated as
-    
+
         H = I - tau * [1] * [1 v']
                       [v]
 
-    with v an n-1 vector and tau a scalar. 
+    with v an n-1 vector and tau a scalar.
 
     @param[in]
     handle          rocblas_handle
     @param[in]
     n               rocblas_int. n >= 0.\n
-                    The order (size) of reflector H. 
+                    The order (size) of reflector H.
     @param[inout]
     alpha           pointer to type. A scalar on the GPU.\n
-                    On input the scalar alpha, 
+                    On input the scalar alpha,
                     on output it is overwritten with beta.
-    @param[inout]      
+    @param[inout]
     x               pointer to type. Array on the GPU of size at least n-1.\n
-                    On input it is the vector x, 
+                    On input it is the vector x,
                     on output it is overwritten with vector v.
     @param[in]
     incx            rocblas_int. incx > 0.\n
-                    The increment between consecutive elements of x. 
+                    The increment between consecutive elements of x.
     @param[out]
     tau             pointer to type. A scalar on the GPU.\n
                     The scalar tau.
 
     *************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_slarfg(rocblas_handle handle, 
-                                                 const rocblas_int n, 
-                                                 float *alpha,
-                                                 float *x, 
-                                                 const rocblas_int incx, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_slarfg(rocblas_handle handle,
+                                                 const rocblas_int n,
+                                                 float *alpha, float *x,
+                                                 const rocblas_int incx,
                                                  float *tau);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfg(rocblas_handle handle, 
-                                                 const rocblas_int n, 
-                                                 double *alpha,
-                                                 double *x, 
-                                                 const rocblas_int incx, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfg(rocblas_handle handle,
+                                                 const rocblas_int n,
+                                                 double *alpha, double *x,
+                                                 const rocblas_int incx,
                                                  double *tau);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_clarfg(rocblas_handle handle, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_clarfg(rocblas_handle handle,
+                                                 const rocblas_int n,
                                                  rocblas_float_complex *alpha,
-                                                 rocblas_float_complex *x, 
-                                                 const rocblas_int incx, 
+                                                 rocblas_float_complex *x,
+                                                 const rocblas_int incx,
                                                  rocblas_float_complex *tau);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
+                                                 const rocblas_int n,
                                                  rocblas_double_complex *alpha,
-                                                 rocblas_double_complex *x, 
-                                                 const rocblas_int incx, 
+                                                 rocblas_double_complex *x,
+                                                 const rocblas_int incx,
                                                  rocblas_double_complex *tau);
 
-
-/*! \brief LARFT Generates the triangular factor T of a block reflector H of order n.
+/*! \brief LARFT Generates the triangular factor T of a block reflector H of
+   order n.
 
     \details
     The block reflector H is defined as the product of k Householder matrices as
@@ -216,106 +198,93 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
         H = H(1) * H(2) * ... * H(k)  (forward direction), or
         H = H(k) * ... * H(2) * H(1)  (backward direction)
 
-    depending on the value of direct.  
+    depending on the value of direct.
 
-    The triangular matrix T is upper triangular in forward direction and lower triangular in backward direction. 
-    If storev is column-wise, then
+    The triangular matrix T is upper triangular in forward direction and lower
+   triangular in backward direction. If storev is column-wise, then
 
         H = I - V * T * V'
 
-    where the i-th column of matrix V contains the Householder vector associated to H(i). If storev is row-wise, then
+    where the i-th column of matrix V contains the Householder vector associated
+   to H(i). If storev is row-wise, then
 
         H = I - V' * T * V
 
-    where the i-th row of matrix V contains the Householder vector associated to H(i). 
+    where the i-th row of matrix V contains the Householder vector associated to
+   H(i).
 
     @param[in]
     handle              rocblas_handle.
     @param[in]
     direct              rocblas_direct.\n
-                        Specifies the direction in which the Householder matrices are applied.
+                        Specifies the direction in which the Householder
+   matrices are applied.
     @param[in]
     storev              rocblas_storev.\n
-                        Specifies how the Householder vectors are stored in matrix V.
+                        Specifies how the Householder vectors are stored in
+   matrix V.
     @param[in]
     n                   rocblas_int. n >= 0.\n
                         The order (size) of the block reflector.
-    @param[in]          
+    @param[in]
     k                   rocsovler_int. k >= 1.\n
                         The number of Householder matrices.
-    @param[in]          
-    V                   pointer to type. Array on the GPU of size ldv*k if column-wise, or ldv*n if row-wise.\n
-                        The matrix of Householder vectors.
     @param[in]
-    ldv                 rocblas_int. ldv >= n if column-wise, or ldv >= k if row-wise.\n
-                        Leading dimension of V.
+    V                   pointer to type. Array on the GPU of size ldv*k if
+   column-wise, or ldv*n if row-wise.\n The matrix of Householder vectors.
+    @param[in]
+    ldv                 rocblas_int. ldv >= n if column-wise, or ldv >= k if
+   row-wise.\n Leading dimension of V.
     @param[in]
     tau                 pointer to type. Array of k scalars on the GPU.\n
-                        The vector of all the scalars associated to the Householder matrices.
+                        The vector of all the scalars associated to the
+   Householder matrices.
     @param[out]
     T                   pointer to type. Array on the GPU of dimension ldt*k.\n
-                        The triangular factor. T is upper triangular is forward operation, otherwise it is lower triangular.
-                        The rest of the array is not used. 
-    @param[in]  
+                        The triangular factor. T is upper triangular is forward
+   operation, otherwise it is lower triangular. The rest of the array is not
+   used.
+    @param[in]
     ldt                 rocblas_int. ldt >= k.\n
                         The leading dimension of T.
 
-    **************************************************************************/ 
+    **************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_slarft(rocblas_handle handle,
-                                                 const rocblas_direct direct, 
-                                                 const rocblas_storev storev,
-                                                 const rocblas_int n, 
-                                                 const rocblas_int k,
-                                                 float *V,
-                                                 const rocblas_int ldv,
-                                                 float *tau,
-                                                 float *T, 
-                                                 const rocblas_int ldt); 
+ROCSOLVER_EXPORT rocblas_status
+rocsolver_slarft(rocblas_handle handle, const rocblas_direct direct,
+                 const rocblas_storev storev, const rocblas_int n,
+                 const rocblas_int k, float *V, const rocblas_int ldv,
+                 float *tau, float *T, const rocblas_int ldt);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dlarft(rocblas_handle handle,
-                                                 const rocblas_direct direct,
-                                                 const rocblas_storev storev, 
-                                                 const rocblas_int n, 
-                                                 const rocblas_int k,
-                                                 double *V,
-                                                 const rocblas_int ldv,
-                                                 double *tau,
-                                                 double *T, 
-                                                 const rocblas_int ldt); 
+ROCSOLVER_EXPORT rocblas_status
+rocsolver_dlarft(rocblas_handle handle, const rocblas_direct direct,
+                 const rocblas_storev storev, const rocblas_int n,
+                 const rocblas_int k, double *V, const rocblas_int ldv,
+                 double *tau, double *T, const rocblas_int ldt);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_clarft(rocblas_handle handle,
-                                                 const rocblas_direct direct, 
-                                                 const rocblas_storev storev,
-                                                 const rocblas_int n, 
-                                                 const rocblas_int k,
-                                                 rocblas_float_complex *V,
-                                                 const rocblas_int ldv,
-                                                 rocblas_float_complex *tau,
-                                                 rocblas_float_complex *T, 
-                                                 const rocblas_int ldt); 
+ROCSOLVER_EXPORT rocblas_status rocsolver_clarft(
+    rocblas_handle handle, const rocblas_direct direct,
+    const rocblas_storev storev, const rocblas_int n, const rocblas_int k,
+    rocblas_float_complex *V, const rocblas_int ldv, rocblas_float_complex *tau,
+    rocblas_float_complex *T, const rocblas_int ldt);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zlarft(rocblas_handle handle,
-                                                 const rocblas_direct direct,
-                                                 const rocblas_storev storev, 
-                                                 const rocblas_int n, 
-                                                 const rocblas_int k,
-                                                 rocblas_double_complex *V,
-                                                 const rocblas_int ldv,
-                                                 rocblas_double_complex *tau,
-                                                 rocblas_double_complex *T, 
-                                                 const rocblas_int ldt); 
-
+ROCSOLVER_EXPORT rocblas_status
+rocsolver_zlarft(rocblas_handle handle, const rocblas_direct direct,
+                 const rocblas_storev storev, const rocblas_int n,
+                 const rocblas_int k, rocblas_double_complex *V,
+                 const rocblas_int ldv, rocblas_double_complex *tau,
+                 rocblas_double_complex *T, const rocblas_int ldt);
 
 /*! \brief LARF applies a Householder reflector H to a general matrix A.
 
     \details
-    The Householder reflector H, of order m (or n), is to be applied to a m-by-n matrix A
-    from the left (or the right). H is given by 
+    The Householder reflector H, of order m (or n), is to be applied to a m-by-n
+   matrix A from the left (or the right). H is given by
 
         H = I - alpha * x * x'
-    
-    where alpha is a scalar and x a Householder vector. H is never actually computed.
+
+    where alpha is a scalar and x a Householder vector. H is never actually
+   computed.
 
     @param[in]
     handle          rocblas_handle.
@@ -328,74 +297,56 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarft(rocblas_handle handle,
                     Number of rows of A.
     @param[in]
     n               rocblas_int. n >= 0.\n
-                    Number of columns of A. 
+                    Number of columns of A.
     @param[in]
-    x               pointer to type. Array on the GPU of  
+    x               pointer to type. Array on the GPU of
                     size at least (1 + (m-1)*abs(incx)) if left side, or
                     at least (1 + (n-1)*abs(incx)) if right side.\n
                     The Householder vector x.
     @param[in]
     incx            rocblas_int. incx != 0.\n
-                    Increment between to consecutive elements of x. 
-                    If incx < 0, the elements of x are used in reverse order. 
+                    Increment between to consecutive elements of x.
+                    If incx < 0, the elements of x are used in reverse order.
     @param[in]
     alpha           pointer to type. A scalar on the GPU.\n
-                    If alpha = 0, then H = I (A will remain the same, x is never used)
+                    If alpha = 0, then H = I (A will remain the same, x is never
+   used)
     @param[inout]
     A               pointer to type. Array on the GPU of size lda*n.\n
                     On input, the matrix A. On output it is overwritten with
                     H*A (or A*H).
     @param[in]
     lda             rocblas_int. lda >= m.\n
-                    Leading dimension of A. 
-                        
+                    Leading dimension of A.
+
     *************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_slarf(rocblas_handle handle, 
-                                                const rocblas_side side, 
-                                                const rocblas_int m,
-                                                const rocblas_int n, 
-                                                float* x, 
-                                                const rocblas_int incx, 
-                                                const float* alpha,
-                                                float* A, 
-                                                const rocblas_int lda);
+ROCSOLVER_EXPORT rocblas_status rocsolver_slarf(
+    rocblas_handle handle, const rocblas_side side, const rocblas_int m,
+    const rocblas_int n, float *x, const rocblas_int incx, const float *alpha,
+    float *A, const rocblas_int lda);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dlarf(rocblas_handle handle, 
-                                                const rocblas_side side, 
-                                                const rocblas_int m,
-                                                const rocblas_int n, 
-                                                double* x, 
-                                                const rocblas_int incx, 
-                                                const double* alpha,
-                                                double* A, 
-                                                const rocblas_int lda);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlarf(
+    rocblas_handle handle, const rocblas_side side, const rocblas_int m,
+    const rocblas_int n, double *x, const rocblas_int incx, const double *alpha,
+    double *A, const rocblas_int lda);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_clarf(rocblas_handle handle, 
-                                                const rocblas_side side, 
-                                                const rocblas_int m,
-                                                const rocblas_int n, 
-                                                rocblas_float_complex* x, 
-                                                const rocblas_int incx, 
-                                                const rocblas_float_complex* alpha,
-                                                rocblas_float_complex* A, 
-                                                const rocblas_int lda);
+ROCSOLVER_EXPORT rocblas_status rocsolver_clarf(
+    rocblas_handle handle, const rocblas_side side, const rocblas_int m,
+    const rocblas_int n, rocblas_float_complex *x, const rocblas_int incx,
+    const rocblas_float_complex *alpha, rocblas_float_complex *A,
+    const rocblas_int lda);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(rocblas_handle handle, 
-                                                const rocblas_side side, 
-                                                const rocblas_int m,
-                                                const rocblas_int n, 
-                                                rocblas_double_complex* x, 
-                                                const rocblas_int incx, 
-                                                const rocblas_double_complex* alpha,
-                                                rocblas_double_complex* A, 
-                                                const rocblas_int lda);
-
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(
+    rocblas_handle handle, const rocblas_side side, const rocblas_int m,
+    const rocblas_int n, rocblas_double_complex *x, const rocblas_int incx,
+    const rocblas_double_complex *alpha, rocblas_double_complex *A,
+    const rocblas_int lda);
 
 /*! \brief LARFB applies a block reflector H to a general m-by-n matrix A.
 
     \details
-    The block reflector H is applied in one of the following forms, depending on 
+    The block reflector H is applied in one of the following forms, depending on
     the values of side and trans:
 
         H  * A  (No transpose from the left)
@@ -412,12 +363,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(rocblas_handle handle,
 
         H = I - V * T * V'
 
-    where the i-th column of matrix V contains the Householder vector associated with H(i), if storev is column-wise; or
+    where the i-th column of matrix V contains the Householder vector associated
+   with H(i), if storev is column-wise; or
 
         H = I - V' * T * V
 
-    where the i-th row of matrix V contains the Householder vector associated with H(i), if storev is row-wise. 
-    T is the associated triangular factor as computed by LARFT.
+    where the i-th row of matrix V contains the Householder vector associated
+   with H(i), if storev is row-wise. T is the associated triangular factor as
+   computed by LARFT.
 
     @param[in]
     handle              rocblas_handle.
@@ -426,135 +379,113 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(rocblas_handle handle,
                         Specifies from which side to apply H.
     @param[in]
     trans               rocblas_operation.\n
-                        Specifies whether the block reflector or its transpose/conjugate transpose is to be applied.
+                        Specifies whether the block reflector or its
+   transpose/conjugate transpose is to be applied.
     @param[in]
     direct              rocblas_direct.\n
-                        Specifies the direction in which the Householder matrices were to be applied to generate H.
+                        Specifies the direction in which the Householder
+   matrices were to be applied to generate H.
     @param[in]
     storev              rocblas_storev.\n
-                        Specifies how the Householder vectors are stored in matrix V.
+                        Specifies how the Householder vectors are stored in
+   matrix V.
     @param[in]
     m                   rocblas_int. m >= 0.\n
                         Number of rows of matrix A.
     @param[in]
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix A.
-    @param[in]          
+    @param[in]
     k                   rocsovler_int. k >= 1.\n
                         The number of Householder matrices.
-    @param[in]          
-    V                   pointer to type. Array on the GPU of size ldv*k if column-wise, ldv*n if row-wise and applying from the right, 
-                        or ldv*m if row-wise and applying from the left.\n
-                        The matrix of Householder vectors.
     @param[in]
-    ldv                 rocblas_int. ldv >= k if row-wise, ldv >= m if column-wise and applying from the left, or ldv >= n if
-                        column-wise and applying from the right.\n
-                        Leading dimension of V.
+    V                   pointer to type. Array on the GPU of size ldv*k if
+   column-wise, ldv*n if row-wise and applying from the right, or ldv*m if
+   row-wise and applying from the left.\n The matrix of Householder vectors.
+    @param[in]
+    ldv                 rocblas_int. ldv >= k if row-wise, ldv >= m if
+   column-wise and applying from the left, or ldv >= n if column-wise and
+   applying from the right.\n Leading dimension of V.
     @param[in]
     T                   pointer to type. Array on the GPU of dimension ldt*k.\n
                         The triangular factor of the block reflector.
-    @param[in]  
+    @param[in]
     ldt                 rocblas_int. ldt >= k.\n
                         The leading dimension of T.
     @param[inout]
     A                   pointer to type. Array on the GPU of size lda*n.\n
                         On input, the matrix A. On output it is overwritten with
-                        H*A, A*H, H'*A, or A*H'.  
+                        H*A, A*H, H'*A, or A*H'.
     @param[in]
     lda                 rocblas_int. lda >= m.\n
-                        Leading dimension of A. 
+                        Leading dimension of A.
 
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_slarfb(rocblas_handle handle,
-                                                 const rocblas_side side,
-                                                 const rocblas_operation trans,
-                                                 const rocblas_direct direct,
-                                                 const rocblas_storev storev, 
-                                                 const rocblas_int m,
-                                                 const rocblas_int n, 
-                                                 const rocblas_int k,
-                                                 float *V,
-                                                 const rocblas_int ldv,
-                                                 float *T, 
-                                                 const rocblas_int ldt,
-                                                 float *A,
-                                                 const rocblas_int lda); 
+ROCSOLVER_EXPORT rocblas_status rocsolver_slarfb(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_direct direct,
+    const rocblas_storev storev, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, float *V, const rocblas_int ldv, float *T,
+    const rocblas_int ldt, float *A, const rocblas_int lda);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfb(rocblas_handle handle,
-                                                 const rocblas_side side,
-                                                 const rocblas_operation trans,
-                                                 const rocblas_direct direct, 
-                                                 const rocblas_storev storev, 
-                                                 const rocblas_int m,
-                                                 const rocblas_int n, 
-                                                 const rocblas_int k,
-                                                 double *V,
-                                                 const rocblas_int ldv,
-                                                 double *T, 
-                                                 const rocblas_int ldt,
-                                                 double *A,
-                                                 const rocblas_int lda); 
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfb(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_direct direct,
+    const rocblas_storev storev, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, double *V, const rocblas_int ldv, double *T,
+    const rocblas_int ldt, double *A, const rocblas_int lda);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_clarfb(rocblas_handle handle,
-                                                 const rocblas_side side,
-                                                 const rocblas_operation trans,
-                                                 const rocblas_direct direct,
-                                                 const rocblas_storev storev, 
-                                                 const rocblas_int m,
-                                                 const rocblas_int n, 
-                                                 const rocblas_int k,
-                                                 rocblas_float_complex *V,
-                                                 const rocblas_int ldv,
-                                                 rocblas_float_complex *T, 
-                                                 const rocblas_int ldt,
-                                                 rocblas_float_complex *A,
-                                                 const rocblas_int lda); 
+ROCSOLVER_EXPORT rocblas_status rocsolver_clarfb(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_direct direct,
+    const rocblas_storev storev, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_float_complex *V, const rocblas_int ldv,
+    rocblas_float_complex *T, const rocblas_int ldt, rocblas_float_complex *A,
+    const rocblas_int lda);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
-                                                 const rocblas_side side,
-                                                 const rocblas_operation trans,
-                                                 const rocblas_direct direct, 
-                                                 const rocblas_storev storev, 
-                                                 const rocblas_int m,
-                                                 const rocblas_int n, 
-                                                 const rocblas_int k,
-                                                 rocblas_double_complex *V,
-                                                 const rocblas_int ldv,
-                                                 rocblas_double_complex *T, 
-                                                 const rocblas_int ldt,
-                                                 rocblas_double_complex *A,
-                                                 const rocblas_int lda); 
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_direct direct,
+    const rocblas_storev storev, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_double_complex *V, const rocblas_int ldv,
+    rocblas_double_complex *T, const rocblas_int ldt, rocblas_double_complex *A,
+    const rocblas_int lda);
 
-/*! \brief LABRD computes the bidiagonal form of the first k rows and columns of a general
-    m-by-n matrix A, as well as the matrices X and Y needed to reduce the remaining part of A.
+/*! \brief LABRD computes the bidiagonal form of the first k rows and columns of
+   a general m-by-n matrix A, as well as the matrices X and Y needed to reduce
+   the remaining part of A.
 
     \details
     The bidiagonal form is given by:
 
         B = Q' * A * P
 
-    where B is upper bidiagonal if m >= n and lower bidiagonal if m < n, and Q and 
-    P are orthogonal/unitary matrices represented as the product of Householder matrices
+    where B is upper bidiagonal if m >= n and lower bidiagonal if m < n, and Q
+   and P are orthogonal/unitary matrices represented as the product of
+   Householder matrices
 
-        Q = H(1) * H(2) * ... *  H(k)  and P = G(1) * G(2) * ... * G(k-1), if m >= n, or
-        Q = H(1) * H(2) * ... * H(k-1) and P = G(1) * G(2) * ... *  G(k),  if m < n
+        Q = H(1) * H(2) * ... *  H(k)  and P = G(1) * G(2) * ... * G(k-1), if m
+   >= n, or Q = H(1) * H(2) * ... * H(k-1) and P = G(1) * G(2) * ... *  G(k), if
+   m < n
 
     Each Householder matrix H(i) and G(i) is given by
 
         H(i) = I - tauq[i-1] * v(i) * v(i)', and
         G(i) = I - taup[i-1] * u(i) * u(i)'
-    
-    If m >= n, the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1;
-    while the first i elements of the Householder vector u(i) are zero, and u(i)[i+1] = 1.
-    If m < n, the first i elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1;
-    while the first i-1 elements of the Householder vector u(i) are zero, and u(i)[i] = 1.
+
+    If m >= n, the first i-1 elements of the Householder vector v(i) are zero,
+   and v(i)[i] = 1; while the first i elements of the Householder vector u(i)
+   are zero, and u(i)[i+1] = 1. If m < n, the first i elements of the
+   Householder vector v(i) are zero, and v(i)[i+1] = 1; while the first i-1
+   elements of the Householder vector u(i) are zero, and u(i)[i] = 1.
 
     The unreduced part of the matrix A can be updated using a block update:
 
         A = A - V * Y' - X * U'
 
-    where V is an m-by-k matrix and U is an n-by-k formed using the vectors v and u.
+    where V is an m-by-k matrix and U is an n-by-k formed using the vectors v
+   and u.
 
     @param[in]
     handle    rocblas_handle.
@@ -566,18 +497,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
               The number of columns of the matrix A.
     @param[in]
     k         rocblas_int. min(m,n) >= k >= 0.\n
-              The number of leading rows and columns of the matrix A to be reduced.
+              The number of leading rows and columns of the matrix A to be
+   reduced.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B.
-              If m >= n, the elements below the diagonal are the m - i elements
-              of vector v(i) for i = 1,2,...,n, and the elements above the
-              superdiagonal are the n - i - 1 elements of vector u(i) for i = 1,2,...,n-1.
-              If m < n, the elements below the subdiagonal are the m - i - 1
-              elements of vector v(i) for i = 1,2,...,m-1, and the elements above the
-              diagonal are the n - i elements of vector u(i) for i = 1,2,...,m.
+              On exit, the elements on the diagonal and superdiagonal (if m >=
+   n), or subdiagonal (if m < n) contain the bidiagonal form B. If m >= n, the
+   elements below the diagonal are the m - i elements of vector v(i) for i =
+   1,2,...,n, and the elements above the superdiagonal are the n - i - 1
+   elements of vector u(i) for i = 1,2,...,n-1. If m < n, the elements below the
+   subdiagonal are the m - i - 1 elements of vector v(i) for i = 1,2,...,m-1,
+   and the elements above the diagonal are the n - i elements of vector u(i) for
+   i = 1,2,...,m.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               specifies the leading dimension of A.
@@ -608,84 +540,50 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_slabrd(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 const rocblas_int k,
-                                                 float *A,
-                                                 const rocblas_int lda,
-                                                 float *D,
-                                                 float *E,
-                                                 float *tauq,
-                                                 float *taup,
-                                                 float *X,
-                                                 const rocblas_int ldx,
-                                                 float *Y,
-                                                 const rocblas_int ldy);
+ROCSOLVER_EXPORT rocblas_status rocsolver_slabrd(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, float *A, const rocblas_int lda, float *D, float *E,
+    float *tauq, float *taup, float *X, const rocblas_int ldx, float *Y,
+    const rocblas_int ldy);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dlabrd(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 const rocblas_int k,
-                                                 double *A,
-                                                 const rocblas_int lda,
-                                                 double *D,
-                                                 double *E,
-                                                 double *tauq,
-                                                 double *taup,
-                                                 double *X,
-                                                 const rocblas_int ldx,
-                                                 double *Y,
-                                                 const rocblas_int ldy);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlabrd(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, double *A, const rocblas_int lda, double *D, double *E,
+    double *tauq, double *taup, double *X, const rocblas_int ldx, double *Y,
+    const rocblas_int ldy);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_clabrd(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 const rocblas_int k,
-                                                 rocblas_float_complex *A,
-                                                 const rocblas_int lda,
-                                                 float *D,
-                                                 float *E,
-                                                 rocblas_float_complex *tauq,
-                                                 rocblas_float_complex *taup,
-                                                 rocblas_float_complex *X,
-                                                 const rocblas_int ldx,
-                                                 rocblas_float_complex *Y,
-                                                 const rocblas_int ldy);
+ROCSOLVER_EXPORT rocblas_status rocsolver_clabrd(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_float_complex *A, const rocblas_int lda,
+    float *D, float *E, rocblas_float_complex *tauq,
+    rocblas_float_complex *taup, rocblas_float_complex *X,
+    const rocblas_int ldx, rocblas_float_complex *Y, const rocblas_int ldy);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 const rocblas_int k,
-                                                 rocblas_double_complex *A,
-                                                 const rocblas_int lda,
-                                                 double *D,
-                                                 double *E,
-                                                 rocblas_double_complex *tauq,
-                                                 rocblas_double_complex *taup,
-                                                 rocblas_double_complex *X,
-                                                 const rocblas_int ldx,
-                                                 rocblas_double_complex *Y,
-                                                 const rocblas_int ldy);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
+    double *D, double *E, rocblas_double_complex *tauq,
+    rocblas_double_complex *taup, rocblas_double_complex *X,
+    const rocblas_int ldx, rocblas_double_complex *Y, const rocblas_int ldy);
 
 /*! \brief ORG2R generates a m-by-n Matrix Q with orthonormal columns.
 
     \details
     (This is the unblocked version of the algorithm).
 
-    The matrix Q is defined as the first n columns of the product of k Householder
-    reflectors of order m
-    
+    The matrix Q is defined as the first n columns of the product of k
+   Householder reflectors of order m
+
         Q = H(1) * H(2) * ... * H(k)
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding 
-    Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
+    Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     m           rocblas_int. m >= 0.\n
-                The number of rows of the matrix Q. 
+                The number of rows of the matrix Q.
     @param[in]
     n           rocblas_int. 0 <= n <= m.\n
                 The number of columns of the matrix Q.
@@ -694,52 +592,45 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k columns of matrix A of GEQRF.
-                On exit, the computed matrix Q.
+                On entry, the i-th column has Householder vector v(i), for i =
+   1,2,...,k as returned in the first k columns of matrix A of GEQRF. On exit,
+   the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
-                Specifies the leading dimension of A. 
+                Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+                The scalar factors of the Householder matrices H(i) as returned
+   by GEQRF.
 
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sorg2r(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   float *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sorg2r(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, float *A, const rocblas_int lda, float *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2r(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   double *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2r(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, double *A, const rocblas_int lda, double *ipiv);
 
 /*! \brief UNG2R generates a m-by-n complex Matrix Q with orthonormal columns.
 
     \details
     (This is the unblocked version of the algorithm).
 
-    The matrix Q is defined as the first n columns of the product of k Householder
-    reflectors of order m
-    
+    The matrix Q is defined as the first n columns of the product of k
+   Householder reflectors of order m
+
         Q = H(1) * H(2) * ... * H(k)
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding 
-    Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
+    Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     m           rocblas_int. m >= 0.\n
-                The number of rows of the matrix Q. 
+                The number of rows of the matrix Q.
     @param[in]
     n           rocblas_int. 0 <= n <= m.\n
                 The number of columns of the matrix Q.
@@ -748,52 +639,47 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2r(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k columns of matrix A of GEQRF.
-                On exit, the computed matrix Q.
+                On entry, the i-th column has Householder vector v(i), for i =
+   1,2,...,k as returned in the first k columns of matrix A of GEQRF. On exit,
+   the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
-                Specifies the leading dimension of A. 
+                Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+                The scalar factors of the Householder matrices H(i) as returned
+   by GEQRF.
 
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cung2r(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_float_complex *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cung2r(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_float_complex *A, const rocblas_int lda,
+    rocblas_float_complex *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zung2r(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_double_complex *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zung2r(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
+    rocblas_double_complex *ipiv);
 
 /*! \brief ORGQR generates a m-by-n Matrix Q with orthonormal columns.
 
     \details
     (This is the blocked version of the algorithm).
 
-    The matrix Q is defined as the first n columns of the product of k Householder
-    reflectors of order m
-    
+    The matrix Q is defined as the first n columns of the product of k
+   Householder reflectors of order m
+
         Q = H(1) * H(2) * ... * H(k)
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding 
-    Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
+    Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     m           rocblas_int. m >= 0.\n
-                The number of rows of the matrix Q. 
+                The number of rows of the matrix Q.
     @param[in]
     n           rocblas_int. 0 <= n <= m.\n
                 The number of columns of the matrix Q.
@@ -802,52 +688,45 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zung2r(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k columns of matrix A of GEQRF.
-                On exit, the computed matrix Q.
+                On entry, the i-th column has Householder vector v(i), for i =
+   1,2,...,k as returned in the first k columns of matrix A of GEQRF. On exit,
+   the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
-                Specifies the leading dimension of A. 
+                Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+                The scalar factors of the Householder matrices H(i) as returned
+   by GEQRF.
 
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sorgqr(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   float *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sorgqr(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, float *A, const rocblas_int lda, float *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dorgqr(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   double *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dorgqr(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, double *A, const rocblas_int lda, double *ipiv);
 
 /*! \brief UNGQR generates a m-by-n complex Matrix Q with orthonormal columns.
 
     \details
     (This is the blocked version of the algorithm).
 
-    The matrix Q is defined as the first n columns of the product of k Householder
-    reflectors of order m
-    
+    The matrix Q is defined as the first n columns of the product of k
+   Householder reflectors of order m
+
         Q = H(1) * H(2) * ... * H(k)
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding 
-    Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
+    Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     m           rocblas_int. m >= 0.\n
-                The number of rows of the matrix Q. 
+                The number of rows of the matrix Q.
     @param[in]
     n           rocblas_int. 0 <= n <= m.\n
                 The number of columns of the matrix Q.
@@ -856,33 +735,28 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgqr(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k columns of matrix A of GEQRF.
-                On exit, the computed matrix Q.
+                On entry, the i-th column has Householder vector v(i), for i =
+   1,2,...,k as returned in the first k columns of matrix A of GEQRF. On exit,
+   the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
-                Specifies the leading dimension of A. 
+                Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+                The scalar factors of the Householder matrices H(i) as returned
+   by GEQRF.
 
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cungqr(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_float_complex *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cungqr(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_float_complex *A, const rocblas_int lda,
+    rocblas_float_complex *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zungqr(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_double_complex *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zungqr(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
+    rocblas_double_complex *ipiv);
 
 /*! \brief ORGL2 generates a m-by-n Matrix Q with orthonormal rows.
 
@@ -891,17 +765,17 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungqr(rocblas_handle handle,
 
     The matrix Q is defined as the first m rows of the product of k Householder
     reflectors of order n
-    
+
         Q = H(k) * H(k-1) * ... * H(1)
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding 
-    Householder vector v(i) and scalar ipiv_i as returned by GELQF.
+    Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vector v(i) and scalar ipiv_i as returned by GELQF.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     m           rocblas_int. 0 <= m <= n.\n
-                The number of rows of the matrix Q. 
+                The number of rows of the matrix Q.
     @param[in]
     n           rocblas_int. n >= 0.\n
                 The number of columns of the matrix Q.
@@ -910,33 +784,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungqr(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k rows of matrix A of GELQF.
-                On exit, the computed matrix Q.
+                On entry, the i-th row has Householder vector v(i), for i =
+   1,2,...,k as returned in the first k rows of matrix A of GELQF. On exit, the
+   computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
-                Specifies the leading dimension of A. 
+                Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GELQF.
+                The scalar factors of the Householder matrices H(i) as returned
+   by GELQF.
 
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sorgl2(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   float *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sorgl2(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, float *A, const rocblas_int lda, float *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dorgl2(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   double *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dorgl2(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, double *A, const rocblas_int lda, double *ipiv);
 
 /*! \brief UNGL2 generates a m-by-n complex Matrix Q with orthonormal rows.
 
@@ -945,17 +812,17 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgl2(rocblas_handle handle,
 
     The matrix Q is defined as the first m rows of the product of k Householder
     reflectors of order n
-    
+
         Q = H(k)**H * H(k-1)**H * ... * H(1)**H
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding 
-    Householder vector v(i) and scalar ipiv_i as returned by GELQF.
+    Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vector v(i) and scalar ipiv_i as returned by GELQF.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     m           rocblas_int. 0 <= m <= n.\n
-                The number of rows of the matrix Q. 
+                The number of rows of the matrix Q.
     @param[in]
     n           rocblas_int. n >= 0.\n
                 The number of columns of the matrix Q.
@@ -964,34 +831,28 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgl2(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k rows of matrix A of GELQF.
-                On exit, the computed matrix Q.
+                On entry, the i-th row has Householder vector v(i), for i =
+   1,2,...,k as returned in the first k rows of matrix A of GELQF. On exit, the
+   computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
-                Specifies the leading dimension of A. 
+                Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GELQF.
+                The scalar factors of the Householder matrices H(i) as returned
+   by GELQF.
 
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cungl2(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_float_complex *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cungl2(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_float_complex *A, const rocblas_int lda,
+    rocblas_float_complex *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zungl2(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_double_complex *ipiv);
-
+ROCSOLVER_EXPORT rocblas_status rocsolver_zungl2(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
+    rocblas_double_complex *ipiv);
 
 /*! \brief ORGLQ generates a m-by-n Matrix Q with orthonormal rows.
 
@@ -1000,17 +861,17 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungl2(rocblas_handle handle,
 
     The matrix Q is defined as the first m rows of the product of k Householder
     reflectors of order n
-    
+
         Q = H(k) * H(k-1) * ... * H(1)
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding 
-    Householder vector v(i) and scalar ipiv_i as returned by GELQF.
+    Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vector v(i) and scalar ipiv_i as returned by GELQF.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     m           rocblas_int. 0 <= m <= n.\n
-                The number of rows of the matrix Q. 
+                The number of rows of the matrix Q.
     @param[in]
     n           rocblas_int. n >= 0.\n
                 The number of columns of the matrix Q.
@@ -1019,34 +880,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungl2(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k rows of matrix A of GELQF.
-                On exit, the computed matrix Q.
+                On entry, the i-th row has Householder vector v(i), for i =
+   1,2,...,k as returned in the first k rows of matrix A of GELQF. On exit, the
+   computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
-                Specifies the leading dimension of A. 
+                Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GELQF.
+                The scalar factors of the Householder matrices H(i) as returned
+   by GELQF.
 
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sorglq(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   float *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sorglq(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, float *A, const rocblas_int lda, float *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dorglq(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   double *ipiv);
-
+ROCSOLVER_EXPORT rocblas_status rocsolver_dorglq(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, double *A, const rocblas_int lda, double *ipiv);
 
 /*! \brief UNGLQ generates a m-by-n complex Matrix Q with orthonormal rows.
 
@@ -1055,17 +908,17 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorglq(rocblas_handle handle,
 
     The matrix Q is defined as the first m rows of the product of k Householder
     reflectors of order n
-    
+
         Q = H(k)**H * H(k-1)**H * ... * H(1)**H
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding 
-    Householder vector v(i) and scalar ipiv_i as returned by GELQF.
+    Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vector v(i) and scalar ipiv_i as returned by GELQF.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     m           rocblas_int. 0 <= m <= n.\n
-                The number of rows of the matrix Q. 
+                The number of rows of the matrix Q.
     @param[in]
     n           rocblas_int. n >= 0.\n
                 The number of columns of the matrix Q.
@@ -1074,57 +927,55 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorglq(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k rows of matrix A of GELQF.
-                On exit, the computed matrix Q.
+                On entry, the i-th row has Householder vector v(i), for i =
+   1,2,...,k as returned in the first k rows of matrix A of GELQF. On exit, the
+   computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
-                Specifies the leading dimension of A. 
+                Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GELQF.
+                The scalar factors of the Householder matrices H(i) as returned
+   by GELQF.
 
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cunglq(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_float_complex *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cunglq(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_float_complex *A, const rocblas_int lda,
+    rocblas_float_complex *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zunglq(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_double_complex *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zunglq(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
+    rocblas_double_complex *ipiv);
 
 /*! \brief ORGBR generates a m-by-n Matrix Q with orthonormal rows or columns.
 
     \details
-    If storev is column-wise, then the matrix Q has orthonormal columns. If m >= k, Q is defined as the first 
-    n columns of the product of k Householder reflectors of order m
-    
+    If storev is column-wise, then the matrix Q has orthonormal columns. If m >=
+   k, Q is defined as the first n columns of the product of k Householder
+   reflectors of order m
+
         Q = H(1) * H(2) * ... * H(k)
 
     If m < k, Q is defined as the product of Householder reflectors of order m
 
         Q = H(1) * H(2) * ... * H(m-1)
 
-    On the other hand, if storev is row-wise, then the matrix Q has orthonormal rows. If n > k, Q is defined as the
-    first m rows of the product of k Householder reflectors of order n
+    On the other hand, if storev is row-wise, then the matrix Q has orthonormal
+   rows. If n > k, Q is defined as the first m rows of the product of k
+   Householder reflectors of order n
 
         Q = H(k) * H(k-1) * ... * H(1)
-    
+
     If n <= k, Q is defined as the product of Householder reflectors of order n
 
         Q = H(n-1) * H(n-2) * ... * H(1)
 
-    The Householder matrices H(i) are never stored, they are computed from its corresponding 
-    Householder vectors v(i) and scalars ipiv_i as returned by GEBRD in its arguments A and tauq or taup.
+    The Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vectors v(i) and scalars ipiv_i as returned by
+   GEBRD in its arguments A and tauq or taup.
 
     @param[in]
     handle      rocblas_handle.
@@ -1133,71 +984,67 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunglq(rocblas_handle handle,
                 Specifies whether to work column-wise or row-wise.
     @param[in]
     m           rocblas_int. m >= 0.\n
-                The number of rows of the matrix Q. 
+                The number of rows of the matrix Q.
                 If row-wise, then min(n,k) <= m <= n.
     @param[in]
     n           rocblas_int. n >= 0.\n
-                The number of columns of the matrix Q. 
-                If column-wise, then min(m,k) <= n <= m. 
+                The number of columns of the matrix Q.
+                If column-wise, then min(m,k) <= n <= m.
     @param[in]
     k           rocblas_int. k >= 0.\n
-                The number of columns (if storev is colum-wise) or rows (if row-wise) of the
-                original matrix reduced by GEBRD.
+                The number of columns (if storev is colum-wise) or rows (if
+   row-wise) of the original matrix reduced by GEBRD.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th column (or row) has the Householder vector v(i)
-                as returned by GEBRD.
-                On exit, the computed matrix Q.
+                On entry, the i-th column (or row) has the Householder vector
+   v(i) as returned by GEBRD. On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
-                Specifies the leading dimension of A. 
+                Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension min(m,k) if column-wise, or min(n,k) if row-wise.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEBRD.
+    ipiv        pointer to type. Array on the GPU of dimension min(m,k) if
+   column-wise, or min(n,k) if row-wise.\n The scalar factors of the Householder
+   matrices H(i) as returned by GEBRD.
 
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sorgbr(rocblas_handle handle,
-                                                   const rocblas_storev storev,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   float *ipiv);
+ROCSOLVER_EXPORT rocblas_status
+rocsolver_sorgbr(rocblas_handle handle, const rocblas_storev storev,
+                 const rocblas_int m, const rocblas_int n, const rocblas_int k,
+                 float *A, const rocblas_int lda, float *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dorgbr(rocblas_handle handle,
-                                                   const rocblas_storev storev,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   double *ipiv);
+ROCSOLVER_EXPORT rocblas_status
+rocsolver_dorgbr(rocblas_handle handle, const rocblas_storev storev,
+                 const rocblas_int m, const rocblas_int n, const rocblas_int k,
+                 double *A, const rocblas_int lda, double *ipiv);
 
-/*! \brief UNGBR generates a m-by-n complex Matrix Q with orthonormal rows or columns.
+/*! \brief UNGBR generates a m-by-n complex Matrix Q with orthonormal rows or
+   columns.
 
     \details
-    If storev is column-wise, then the matrix Q has orthonormal columns. If m >= k, Q is defined as the first 
-    n columns of the product of k Householder reflectors of order m
-    
+    If storev is column-wise, then the matrix Q has orthonormal columns. If m >=
+   k, Q is defined as the first n columns of the product of k Householder
+   reflectors of order m
+
         Q = H(1) * H(2) * ... * H(k)
 
     If m < k, Q is defined as the product of Householder reflectors of order m
 
         Q = H(1) * H(2) * ... * H(m-1)
 
-    On the other hand, if storev is row-wise, then the matrix Q has orthonormal rows. If n > k, Q is defined as the
-    first m rows of the product of k Householder reflectors of order n
+    On the other hand, if storev is row-wise, then the matrix Q has orthonormal
+   rows. If n > k, Q is defined as the first m rows of the product of k
+   Householder reflectors of order n
 
         Q = H(k) * H(k-1) * ... * H(1)
-    
+
     If n <= k, Q is defined as the product of Householder reflectors of order n
 
         Q = H(n-1) * H(n-2) * ... * H(1)
 
-    The Householder matrices H(i) are never stored, they are computed from its corresponding 
-    Householder vectors v(i) and scalars ipiv_i as returned by GEBRD in its arguments A and tauq or taup.
+    The Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vectors v(i) and scalars ipiv_i as returned by
+   GEBRD in its arguments A and tauq or taup.
 
     @param[in]
     handle      rocblas_handle.
@@ -1206,54 +1053,47 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgbr(rocblas_handle handle,
                 Specifies whether to work column-wise or row-wise.
     @param[in]
     m           rocblas_int. m >= 0.\n
-                The number of rows of the matrix Q. 
+                The number of rows of the matrix Q.
                 If row-wise, then min(n,k) <= m <= n.
     @param[in]
     n           rocblas_int. n >= 0.\n
-                The number of columns of the matrix Q. 
-                If column-wise, then min(m,k) <= n <= m. 
+                The number of columns of the matrix Q.
+                If column-wise, then min(m,k) <= n <= m.
     @param[in]
     k           rocblas_int. k >= 0.\n
-                The number of columns (if storev is colum-wise) or rows (if row-wise) of the
-                original matrix reduced by GEBRD.
+                The number of columns (if storev is colum-wise) or rows (if
+   row-wise) of the original matrix reduced by GEBRD.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th column (or row) has the Householder vector v(i)
-                as returned by GEBRD.
-                On exit, the computed matrix Q.
+                On entry, the i-th column (or row) has the Householder vector
+   v(i) as returned by GEBRD. On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
-                Specifies the leading dimension of A. 
+                Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension min(m,k) if column-wise, or min(n,k) if row-wise.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEBRD.
+    ipiv        pointer to type. Array on the GPU of dimension min(m,k) if
+   column-wise, or min(n,k) if row-wise.\n The scalar factors of the Householder
+   matrices H(i) as returned by GEBRD.
 
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cungbr(rocblas_handle handle,
-                                                   const rocblas_storev storev,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_float_complex *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cungbr(
+    rocblas_handle handle, const rocblas_storev storev, const rocblas_int m,
+    const rocblas_int n, const rocblas_int k, rocblas_float_complex *A,
+    const rocblas_int lda, rocblas_float_complex *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(rocblas_handle handle,
-                                                   const rocblas_storev storev,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_double_complex *ipiv);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(
+    rocblas_handle handle, const rocblas_storev storev, const rocblas_int m,
+    const rocblas_int n, const rocblas_int k, rocblas_double_complex *A,
+    const rocblas_int lda, rocblas_double_complex *ipiv);
 
-/*! \brief ORM2R applies a matrix Q with orthonormal columns to a general m-by-n matrix C.
+/*! \brief ORM2R applies a matrix Q with orthonormal columns to a general m-by-n
+   matrix C.
 
     \details
     (This is the unblocked version of the algorithm).
-    
-    The matrix Q is applied in one of the following forms, depending on 
+
+    The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
         Q  * C  (No transpose from the left)
@@ -1261,12 +1101,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(rocblas_handle handle,
         C * Q   (No transpose from the right), and
         C * Q'  (Transpose from the right)
 
-    Q is an orthogonal matrix defined as the product of k Householder reflectors as
+    Q is an orthogonal matrix defined as the product of k Householder reflectors
+   as
 
         Q = H(1) * H(2) * ... * H(k)
 
-    or order m if applying from the left, or n if applying from the right. Q is never stored, it is 
-    calculated from the Householder vectors and scalars returned by the QR factorization GEQRF.
+    or order m if applying from the left, or n if applying from the right. Q is
+   never stored, it is calculated from the Householder vectors and scalars
+   returned by the QR factorization GEQRF.
 
     @param[in]
     handle              rocblas_handle.
@@ -1275,66 +1117,58 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(rocblas_handle handle,
                         Specifies from which side to apply Q.
     @param[in]
     trans               rocblas_operation.\n
-                        Specifies whether the matrix Q or its transpose is to be applied.
+                        Specifies whether the matrix Q or its transpose is to be
+   applied.
     @param[in]
     m                   rocblas_int. m >= 0.\n
                         Number of rows of matrix C.
     @param[in]
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix C.
-    @param[in]          
-    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
-                        The number of Householder reflectors that form Q.
-    @param[in]          
+    @param[in]
+    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if
+   side is right.\n The number of Householder reflectors that form Q.
+    @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i) associated with H(i) as returned by GEQRF
-                        in the first k columns of its argument A.
+                        The i-th column has the Householder vector v(i)
+   associated with H(i) as returned by GEQRF in the first k columns of its
+   argument A.
     @param[in]
-    lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
-                        Leading dimension of A.
+    lda                 rocblas_int. lda >= m if side is left, or lda >= n if
+   side is right. \n Leading dimension of A.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+    ipiv                pointer to type. Array on the GPU of dimension at least
+   k.\n The scalar factors of the Householder matrices H(i) as returned by
+   GEQRF.
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
-                        Q*C, C*Q, Q'*C, or C*Q'.  
+                        Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
     lda                 rocblas_int. ldc >= m.\n
-                        Leading dimension of C. 
-     
+                        Leading dimension of C.
+
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sorm2r(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   float *ipiv,
-                                                   float *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sorm2r(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, float *A, const rocblas_int lda, float *ipiv, float *C,
+    const rocblas_int ldc);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   double *ipiv,
-                                                   double *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, double *A, const rocblas_int lda, double *ipiv,
+    double *C, const rocblas_int ldc);
 
-/*! \brief UNM2R applies a complex matrix Q with orthonormal columns to a general m-by-n matrix C.
+/*! \brief UNM2R applies a complex matrix Q with orthonormal columns to a
+   general m-by-n matrix C.
 
     \details
     (This is the unblocked version of the algorithm).
-    
-    The matrix Q is applied in one of the following forms, depending on 
+
+    The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
         Q  * C  (No transpose from the left)
@@ -1346,8 +1180,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(rocblas_handle handle,
 
         Q = H(1) * H(2) * ... * H(k)
 
-    or order m if applying from the left, or n if applying from the right. Q is never stored, it is 
-    calculated from the Householder vectors and scalars returned by the QR factorization GEQRF.
+    or order m if applying from the left, or n if applying from the right. Q is
+   never stored, it is calculated from the Householder vectors and scalars
+   returned by the QR factorization GEQRF.
 
     @param[in]
     handle              rocblas_handle.
@@ -1356,66 +1191,60 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(rocblas_handle handle,
                         Specifies from which side to apply Q.
     @param[in]
     trans               rocblas_operation.\n
-                        Specifies whether the matrix Q or its conjugate transpose is to be applied.
+                        Specifies whether the matrix Q or its conjugate
+   transpose is to be applied.
     @param[in]
     m                   rocblas_int. m >= 0.\n
                         Number of rows of matrix C.
     @param[in]
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix C.
-    @param[in]          
-    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
-                        The number of Householder reflectors that form Q.
-    @param[in]          
+    @param[in]
+    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if
+   side is right.\n The number of Householder reflectors that form Q.
+    @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i) associated with H(i) as returned by GEQRF
-                        in the first k columns of its argument A.
+                        The i-th column has the Householder vector v(i)
+   associated with H(i) as returned by GEQRF in the first k columns of its
+   argument A.
     @param[in]
-    lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
-                        Leading dimension of A.
+    lda                 rocblas_int. lda >= m if side is left, or lda >= n if
+   side is right. \n Leading dimension of A.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+    ipiv                pointer to type. Array on the GPU of dimension at least
+   k.\n The scalar factors of the Householder matrices H(i) as returned by
+   GEQRF.
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
-                        Q*C, C*Q, Q'*C, or C*Q'.  
+                        Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
     lda                 rocblas_int. ldc >= m.\n
-                        Leading dimension of C. 
-     
+                        Leading dimension of C.
+
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cunm2r(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_float_complex *ipiv,
-                                                   rocblas_float_complex *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cunm2r(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_float_complex *A, const rocblas_int lda,
+    rocblas_float_complex *ipiv, rocblas_float_complex *C,
+    const rocblas_int ldc);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_double_complex *ipiv,
-                                                   rocblas_double_complex *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
+    rocblas_double_complex *ipiv, rocblas_double_complex *C,
+    const rocblas_int ldc);
 
-/*! \brief ORMQR applies a matrix Q with orthonormal columns to a general m-by-n matrix C.
+/*! \brief ORMQR applies a matrix Q with orthonormal columns to a general m-by-n
+   matrix C.
 
     \details
     (This is the blocked version of the algorithm).
-    
-    The matrix Q is applied in one of the following forms, depending on 
+
+    The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
         Q  * C  (No transpose from the left)
@@ -1423,12 +1252,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(rocblas_handle handle,
         C * Q   (No transpose from the right), and
         C * Q'  (Transpose from the right)
 
-    Q is an orthogonal matrix defined as the product of k Householder reflectors as
+    Q is an orthogonal matrix defined as the product of k Householder reflectors
+   as
 
         Q = H(1) * H(2) * ... * H(k)
 
-    or order m if applying from the left, or n if applying from the right. Q is never stored, it is 
-    calculated from the Householder vectors and scalars returned by the QR factorization GEQRF.
+    or order m if applying from the left, or n if applying from the right. Q is
+   never stored, it is calculated from the Householder vectors and scalars
+   returned by the QR factorization GEQRF.
 
     @param[in]
     handle              rocblas_handle.
@@ -1437,66 +1268,58 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(rocblas_handle handle,
                         Specifies from which side to apply Q.
     @param[in]
     trans               rocblas_operation.\n
-                        Specifies whether the matrix Q or its transpose is to be applied.
+                        Specifies whether the matrix Q or its transpose is to be
+   applied.
     @param[in]
     m                   rocblas_int. m >= 0.\n
                         Number of rows of matrix C.
     @param[in]
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix C.
-    @param[in]          
-    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
-                        The number of Householder reflectors that form Q.
-    @param[in]          
+    @param[in]
+    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if
+   side is right.\n The number of Householder reflectors that form Q.
+    @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i) associated with H(i) as returned by GEQRF
-                        in the first k columns of its argument A.
+                        The i-th column has the Householder vector v(i)
+   associated with H(i) as returned by GEQRF in the first k columns of its
+   argument A.
     @param[in]
-    lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
-                        Leading dimension of A.
+    lda                 rocblas_int. lda >= m if side is left, or lda >= n if
+   side is right. \n Leading dimension of A.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+    ipiv                pointer to type. Array on the GPU of dimension at least
+   k.\n The scalar factors of the Householder matrices H(i) as returned by
+   GEQRF.
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
-                        Q*C, C*Q, Q'*C, or C*Q'.  
+                        Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
     lda                 rocblas_int. ldc >= m.\n
-                        Leading dimension of C. 
-     
+                        Leading dimension of C.
+
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sormqr(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   float *ipiv,
-                                                   float *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sormqr(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, float *A, const rocblas_int lda, float *ipiv, float *C,
+    const rocblas_int ldc);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   double *ipiv,
-                                                   double *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, double *A, const rocblas_int lda, double *ipiv,
+    double *C, const rocblas_int ldc);
 
-/*! \brief UNMQR applies a complex matrix Q with orthonormal columns to a general m-by-n matrix C.
+/*! \brief UNMQR applies a complex matrix Q with orthonormal columns to a
+   general m-by-n matrix C.
 
     \details
     (This is the blocked version of the algorithm).
-    
-    The matrix Q is applied in one of the following forms, depending on 
+
+    The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
         Q  * C  (No transpose from the left)
@@ -1508,8 +1331,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(rocblas_handle handle,
 
         Q = H(1) * H(2) * ... * H(k)
 
-    or order m if applying from the left, or n if applying from the right. Q is never stored, it is 
-    calculated from the Householder vectors and scalars returned by the QR factorization GEQRF.
+    or order m if applying from the left, or n if applying from the right. Q is
+   never stored, it is calculated from the Householder vectors and scalars
+   returned by the QR factorization GEQRF.
 
     @param[in]
     handle              rocblas_handle.
@@ -1518,66 +1342,60 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(rocblas_handle handle,
                         Specifies from which side to apply Q.
     @param[in]
     trans               rocblas_operation.\n
-                        Specifies whether the matrix Q or its conjugate transpose is to be applied.
+                        Specifies whether the matrix Q or its conjugate
+   transpose is to be applied.
     @param[in]
     m                   rocblas_int. m >= 0.\n
                         Number of rows of matrix C.
     @param[in]
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix C.
-    @param[in]          
-    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
-                        The number of Householder reflectors that form Q.
-    @param[in]          
+    @param[in]
+    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if
+   side is right.\n The number of Householder reflectors that form Q.
+    @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i) associated with H(i) as returned by GEQRF
-                        in the first k columns of its argument A.
+                        The i-th column has the Householder vector v(i)
+   associated with H(i) as returned by GEQRF in the first k columns of its
+   argument A.
     @param[in]
-    lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
-                        Leading dimension of A.
+    lda                 rocblas_int. lda >= m if side is left, or lda >= n if
+   side is right. \n Leading dimension of A.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+    ipiv                pointer to type. Array on the GPU of dimension at least
+   k.\n The scalar factors of the Householder matrices H(i) as returned by
+   GEQRF.
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
-                        Q*C, C*Q, Q'*C, or C*Q'.  
+                        Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
     lda                 rocblas_int. ldc >= m.\n
-                        Leading dimension of C. 
-     
+                        Leading dimension of C.
+
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cunmqr(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_float_complex *ipiv,
-                                                   rocblas_float_complex *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cunmqr(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_float_complex *A, const rocblas_int lda,
+    rocblas_float_complex *ipiv, rocblas_float_complex *C,
+    const rocblas_int ldc);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_double_complex *ipiv,
-                                                   rocblas_double_complex *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
+    rocblas_double_complex *ipiv, rocblas_double_complex *C,
+    const rocblas_int ldc);
 
-/*! \brief ORML2 applies a matrix Q with orthonormal rows to a general m-by-n matrix C.
+/*! \brief ORML2 applies a matrix Q with orthonormal rows to a general m-by-n
+   matrix C.
 
     \details
     (This is the unblocked version of the algorithm).
-    
-    The matrix Q is applied in one of the following forms, depending on 
+
+    The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
         Q  * C  (No transpose from the left)
@@ -1585,12 +1403,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(rocblas_handle handle,
         C * Q   (No transpose from the right), and
         C * Q'  (Transpose from the right)
 
-    Q is an orthogonal matrix defined as the product of k Householder reflectors as
+    Q is an orthogonal matrix defined as the product of k Householder reflectors
+   as
 
         Q = H(k) * H(k-1) * ... * H(1)
 
-    or order m if applying from the left, or n if applying from the right. Q is never stored, it is 
-    calculated from the Householder vectors and scalars returned by the LQ factorization GELQF.
+    or order m if applying from the left, or n if applying from the right. Q is
+   never stored, it is calculated from the Householder vectors and scalars
+   returned by the LQ factorization GELQF.
 
     @param[in]
     handle              rocblas_handle.
@@ -1599,66 +1419,58 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(rocblas_handle handle,
                         Specifies from which side to apply Q.
     @param[in]
     trans               rocblas_operation.\n
-                        Specifies whether the matrix Q or its transpose is to be applied.
+                        Specifies whether the matrix Q or its transpose is to be
+   applied.
     @param[in]
     m                   rocblas_int. m >= 0.\n
                         Number of rows of matrix C.
     @param[in]
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix C.
-    @param[in]          
-    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
-                        The number of Householder reflectors that form Q.
-    @param[in]          
-    A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
-                        The i-th row has the Householder vector v(i) associated with H(i) as returned by GELQF
-                        in the first k rows of its argument A.
+    @param[in]
+    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if
+   side is right.\n The number of Householder reflectors that form Q.
+    @param[in]
+    A                   pointer to type. Array on the GPU of size lda*m if side
+   is left, or lda*n if side is right.\n The i-th row has the Householder vector
+   v(i) associated with H(i) as returned by GELQF in the first k rows of its
+   argument A.
     @param[in]
     lda                 rocblas_int. lda >= k. \n
                         Leading dimension of A.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GELQF.
+    ipiv                pointer to type. Array on the GPU of dimension at least
+   k.\n The scalar factors of the Householder matrices H(i) as returned by
+   GELQF.
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
-                        Q*C, C*Q, Q'*C, or C*Q'.  
+                        Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
     lda                 rocblas_int. ldc >= m.\n
-                        Leading dimension of C. 
-     
+                        Leading dimension of C.
+
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sorml2(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   float *ipiv,
-                                                   float *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sorml2(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, float *A, const rocblas_int lda, float *ipiv, float *C,
+    const rocblas_int ldc);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   double *ipiv,
-                                                   double *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, double *A, const rocblas_int lda, double *ipiv,
+    double *C, const rocblas_int ldc);
 
-/*! \brief UNML2 applies a complex matrix Q with orthonormal rows to a general m-by-n matrix C.
+/*! \brief UNML2 applies a complex matrix Q with orthonormal rows to a general
+   m-by-n matrix C.
 
     \details
     (This is the unblocked version of the algorithm).
-    
-    The matrix Q is applied in one of the following forms, depending on 
+
+    The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
         Q  * C  (No transpose from the left)
@@ -1670,8 +1482,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(rocblas_handle handle,
 
         Q = H(k)**H * H(k-1)**H * ... * H(1)**H
 
-    or order m if applying from the left, or n if applying from the right. Q is never stored, it is 
-    calculated from the Householder vectors and scalars returned by the LQ factorization GELQF.
+    or order m if applying from the left, or n if applying from the right. Q is
+   never stored, it is calculated from the Householder vectors and scalars
+   returned by the LQ factorization GELQF.
 
     @param[in]
     handle              rocblas_handle.
@@ -1680,66 +1493,60 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(rocblas_handle handle,
                         Specifies from which side to apply Q.
     @param[in]
     trans               rocblas_operation.\n
-                        Specifies whether the matrix Q or its conjugate transpose is to be applied.
+                        Specifies whether the matrix Q or its conjugate
+   transpose is to be applied.
     @param[in]
     m                   rocblas_int. m >= 0.\n
                         Number of rows of matrix C.
     @param[in]
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix C.
-    @param[in]          
-    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
-                        The number of Householder reflectors that form Q.
-    @param[in]          
-    A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
-                        The i-th row has the Householder vector v(i) associated with H(i) as returned by GELQF
-                        in the first k rows of its argument A.
+    @param[in]
+    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if
+   side is right.\n The number of Householder reflectors that form Q.
+    @param[in]
+    A                   pointer to type. Array on the GPU of size lda*m if side
+   is left, or lda*n if side is right.\n The i-th row has the Householder vector
+   v(i) associated with H(i) as returned by GELQF in the first k rows of its
+   argument A.
     @param[in]
     lda                 rocblas_int. lda >= k. \n
                         Leading dimension of A.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GELQF.
+    ipiv                pointer to type. Array on the GPU of dimension at least
+   k.\n The scalar factors of the Householder matrices H(i) as returned by
+   GELQF.
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
-                        Q*C, C*Q, Q'*C, or C*Q'.  
+                        Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
     lda                 rocblas_int. ldc >= m.\n
-                        Leading dimension of C. 
-     
+                        Leading dimension of C.
+
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cunml2(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_float_complex *ipiv,
-                                                   rocblas_float_complex *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cunml2(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_float_complex *A, const rocblas_int lda,
+    rocblas_float_complex *ipiv, rocblas_float_complex *C,
+    const rocblas_int ldc);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_double_complex *ipiv,
-                                                   rocblas_double_complex *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
+    rocblas_double_complex *ipiv, rocblas_double_complex *C,
+    const rocblas_int ldc);
 
-/*! \brief ORMLQ applies a matrix Q with orthonormal rows to a general m-by-n matrix C.
+/*! \brief ORMLQ applies a matrix Q with orthonormal rows to a general m-by-n
+   matrix C.
 
     \details
     (This is the blocked version of the algorithm).
-    
-    The matrix Q is applied in one of the following forms, depending on 
+
+    The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
         Q  * C  (No transpose from the left)
@@ -1747,12 +1554,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(rocblas_handle handle,
         C * Q   (No transpose from the right), and
         C * Q'  (Transpose from the right)
 
-    Q is an orthogonal matrix defined as the product of k Householder reflectors as
+    Q is an orthogonal matrix defined as the product of k Householder reflectors
+   as
 
         Q = H(k) * H(k-1) * ... * H(1)
 
-    or order m if applying from the left, or n if applying from the right. Q is never stored, it is 
-    calculated from the Householder vectors and scalars returned by the LQ factorization GELQF.
+    or order m if applying from the left, or n if applying from the right. Q is
+   never stored, it is calculated from the Householder vectors and scalars
+   returned by the LQ factorization GELQF.
 
     @param[in]
     handle              rocblas_handle.
@@ -1761,66 +1570,58 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(rocblas_handle handle,
                         Specifies from which side to apply Q.
     @param[in]
     trans               rocblas_operation.\n
-                        Specifies whether the matrix Q or its transpose is to be applied.
+                        Specifies whether the matrix Q or its transpose is to be
+   applied.
     @param[in]
     m                   rocblas_int. m >= 0.\n
                         Number of rows of matrix C.
     @param[in]
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix C.
-    @param[in]          
-    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
-                        The number of Householder reflectors that form Q.
-    @param[in]          
-    A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
-                        The i-th row has the Householder vector v(i) associated with H(i) as returned by GELQF
-                        in the first k rows of its argument A.
+    @param[in]
+    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if
+   side is right.\n The number of Householder reflectors that form Q.
+    @param[in]
+    A                   pointer to type. Array on the GPU of size lda*m if side
+   is left, or lda*n if side is right.\n The i-th row has the Householder vector
+   v(i) associated with H(i) as returned by GELQF in the first k rows of its
+   argument A.
     @param[in]
     lda                 rocblas_int. lda >= k. \n
                         Leading dimension of A.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GELQF.
+    ipiv                pointer to type. Array on the GPU of dimension at least
+   k.\n The scalar factors of the Householder matrices H(i) as returned by
+   GELQF.
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
-                        Q*C, C*Q, Q'*C, or C*Q'.  
+                        Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
     lda                 rocblas_int. ldc >= m.\n
-                        Leading dimension of C. 
-     
+                        Leading dimension of C.
+
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sormlq(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   float *ipiv,
-                                                   float *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sormlq(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, float *A, const rocblas_int lda, float *ipiv, float *C,
+    const rocblas_int ldc);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   double *ipiv,
-                                                   double *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, double *A, const rocblas_int lda, double *ipiv,
+    double *C, const rocblas_int ldc);
 
-/*! \brief UNMLQ applies a complex matrix Q with orthonormal rows to a general m-by-n matrix C.
+/*! \brief UNMLQ applies a complex matrix Q with orthonormal rows to a general
+   m-by-n matrix C.
 
     \details
     (This is the blocked version of the algorithm).
-    
-    The matrix Q is applied in one of the following forms, depending on 
+
+    The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
         Q  * C  (No transpose from the left)
@@ -1832,8 +1633,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(rocblas_handle handle,
 
         Q = H(k)**H * H(k-1)**H * ... * H(1)**H
 
-    or order m if applying from the left, or n if applying from the right. Q is never stored, it is 
-    calculated from the Householder vectors and scalars returned by the LQ factorization GELQF.
+    or order m if applying from the left, or n if applying from the right. Q is
+   never stored, it is calculated from the Householder vectors and scalars
+   returned by the LQ factorization GELQF.
 
     @param[in]
     handle              rocblas_handle.
@@ -1842,66 +1644,59 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(rocblas_handle handle,
                         Specifies from which side to apply Q.
     @param[in]
     trans               rocblas_operation.\n
-                        Specifies whether the matrix Q or its conjugate transpose is to be applied.
+                        Specifies whether the matrix Q or its conjugate
+   transpose is to be applied.
     @param[in]
     m                   rocblas_int. m >= 0.\n
                         Number of rows of matrix C.
     @param[in]
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix C.
-    @param[in]          
-    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
-                        The number of Householder reflectors that form Q.
-    @param[in]          
-    A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
-                        The i-th row has the Householder vector v(i) associated with H(i) as returned by GELQF
-                        in the first k rows of its argument A.
+    @param[in]
+    k                   rocsovler_int. k >= 0; k <= m if side is left, k <= n if
+   side is right.\n The number of Householder reflectors that form Q.
+    @param[in]
+    A                   pointer to type. Array on the GPU of size lda*m if side
+   is left, or lda*n if side is right.\n The i-th row has the Householder vector
+   v(i) associated with H(i) as returned by GELQF in the first k rows of its
+   argument A.
     @param[in]
     lda                 rocblas_int. lda >= k. \n
                         Leading dimension of A.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GELQF.
+    ipiv                pointer to type. Array on the GPU of dimension at least
+   k.\n The scalar factors of the Householder matrices H(i) as returned by
+   GELQF.
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
-                        Q*C, C*Q, Q'*C, or C*Q'.  
+                        Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
     lda                 rocblas_int. ldc >= m.\n
-                        Leading dimension of C. 
-     
+                        Leading dimension of C.
+
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cunmlq(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_float_complex *ipiv,
-                                                   rocblas_float_complex *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cunmlq(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_float_complex *A, const rocblas_int lda,
+    rocblas_float_complex *ipiv, rocblas_float_complex *C,
+    const rocblas_int ldc);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(rocblas_handle handle,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_double_complex *ipiv,
-                                                   rocblas_double_complex *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(
+    rocblas_handle handle, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
+    rocblas_double_complex *ipiv, rocblas_double_complex *C,
+    const rocblas_int ldc);
 
-
-/*! \brief ORMBR applies a matrix Q with orthonormal rows or columns to a general m-by-n matrix C.
+/*! \brief ORMBR applies a matrix Q with orthonormal rows or columns to a
+   general m-by-n matrix C.
 
     \details
-    If storev is column-wise, then the matrix Q has orthonormal columns. 
-    If storev is row-wise, then the matrix Q has orthonormal rows.  
+    If storev is column-wise, then the matrix Q has orthonormal columns.
+    If storev is row-wise, then the matrix Q has orthonormal rows.
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
@@ -1910,26 +1705,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(rocblas_handle handle,
         C * Q   (No transpose from the right), and
         C * Q'  (Transpose from the right)
 
-    The order nq of orthogonal matrix Q is nq = m if applying from the left, or nq = n if applying from the right.
+    The order nq of orthogonal matrix Q is nq = m if applying from the left, or
+   nq = n if applying from the right.
 
-    When storev is column-wise, if nq >= k, then Q is defined as the product of k Householder reflectors of order nq
-    
+    When storev is column-wise, if nq >= k, then Q is defined as the product of
+   k Householder reflectors of order nq
+
         Q = H(1) * H(2) * ... * H(k),
 
-    and if nq < k, then Q is defined as the product 
+    and if nq < k, then Q is defined as the product
 
         Q = H(1) * H(2) * ... * H(nq-1).
 
-    When storev is row-wise, if nq > k, then Q is defined as the product of k Householder reflectors of order nq
+    When storev is row-wise, if nq > k, then Q is defined as the product of k
+   Householder reflectors of order nq
 
         Q = H(1) * H(2) * ... * H(k),
-    
-    and if n <= k, Q is defined as the product 
+
+    and if n <= k, Q is defined as the product
 
         Q = H(1) * H(2) * ... * H(nq-1)
 
-    The Householder matrices H(i) are never stored, they are computed from its corresponding 
-    Householder vectors v(i) and scalars ipiv_i as returned by GEBRD in its arguments A and tauq or taup.
+    The Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vectors v(i) and scalars ipiv_i as returned by
+   GEBRD in its arguments A and tauq or taup.
 
     @param[in]
     handle              rocblas_handle.
@@ -1941,68 +1740,57 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(rocblas_handle handle,
                         Specifies from which side to apply Q.
     @param[in]
     trans               rocblas_operation.\n
-                        Specifies whether the matrix Q or its transpose is to be applied.
+                        Specifies whether the matrix Q or its transpose is to be
+   applied.
     @param[in]
     m                   rocblas_int. m >= 0.\n
                         Number of rows of matrix C.
     @param[in]
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix C.
-    @param[in]          
+    @param[in]
     k                   rocsovler_int. k >= 0.\n
-                        The number of columns (if storev is colum-wise) or rows (if row-wise) of the
-                        original matrix reduced by GEBRD.
-    @param[in]          
-    A                   pointer to type. Array on the GPU of size lda*min(nq,k) if column-wise, or lda*nq if row-wise.\n
-                        The i-th column (or row) has the Householder vector v(i) associated with H(i) as returned by GEBRD.
+                        The number of columns (if storev is colum-wise) or rows
+   (if row-wise) of the original matrix reduced by GEBRD.
     @param[in]
-    lda                 rocblas_int. lda >= nq if column-wise, or lda >= min(nq,k) if row-wise. \n
-                        Leading dimension of A.
+    A                   pointer to type. Array on the GPU of size lda*min(nq,k)
+   if column-wise, or lda*nq if row-wise.\n The i-th column (or row) has the
+   Householder vector v(i) associated with H(i) as returned by GEBRD.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least min(nq,k).\n
-                        The scalar factors of the Householder matrices H(i) as returned by GEBRD.
+    lda                 rocblas_int. lda >= nq if column-wise, or lda >=
+   min(nq,k) if row-wise. \n Leading dimension of A.
+    @param[in]
+    ipiv                pointer to type. Array on the GPU of dimension at least
+   min(nq,k).\n The scalar factors of the Householder matrices H(i) as returned
+   by GEBRD.
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
-                        Q*C, C*Q, Q'*C, or C*Q'.  
+                        Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
     lda                 rocblas_int. ldc >= m.\n
-                        Leading dimension of C. 
+                        Leading dimension of C.
 
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sormbr(rocblas_handle handle,
-                                                   const rocblas_storev storev,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   float *ipiv,
-                                                   float *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sormbr(
+    rocblas_handle handle, const rocblas_storev storev, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, float *A, const rocblas_int lda, float *ipiv, float *C,
+    const rocblas_int ldc);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
-                                                   const rocblas_storev storev,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   double *ipiv,
-                                                   double *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(
+    rocblas_handle handle, const rocblas_storev storev, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, double *A, const rocblas_int lda, double *ipiv,
+    double *C, const rocblas_int ldc);
 
-
-/*! \brief UNMBR applies a complex matrix Q with orthonormal rows or columns to a general m-by-n matrix C.
+/*! \brief UNMBR applies a complex matrix Q with orthonormal rows or columns to
+   a general m-by-n matrix C.
 
     \details
-    If storev is column-wise, then the matrix Q has orthonormal columns. 
-    If storev is row-wise, then the matrix Q has orthonormal rows.  
+    If storev is column-wise, then the matrix Q has orthonormal columns.
+    If storev is row-wise, then the matrix Q has orthonormal rows.
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
@@ -2011,26 +1799,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
         C * Q   (No transpose from the right), and
         C * Q'  (Conjugate transpose from the right)
 
-    The order nq of unitary matrix Q is nq = m if applying from the left, or nq = n if applying from the right.
+    The order nq of unitary matrix Q is nq = m if applying from the left, or nq
+   = n if applying from the right.
 
-    When storev is column-wise, if nq >= k, then Q is defined as the product of k Householder reflectors of order nq
-    
+    When storev is column-wise, if nq >= k, then Q is defined as the product of
+   k Householder reflectors of order nq
+
         Q = H(1) * H(2) * ... * H(k),
 
-    and if nq < k, then Q is defined as the product 
+    and if nq < k, then Q is defined as the product
 
         Q = H(1) * H(2) * ... * H(nq-1).
 
-    When storev is row-wise, if nq > k, then Q is defined as the product of k Householder reflectors of order nq
+    When storev is row-wise, if nq > k, then Q is defined as the product of k
+   Householder reflectors of order nq
 
         Q = H(1) * H(2) * ... * H(k),
-    
-    and if n <= k, Q is defined as the product 
+
+    and if n <= k, Q is defined as the product
 
         Q = H(1) * H(2) * ... * H(nq-1)
 
-    The Householder matrices H(i) are never stored, they are computed from its corresponding 
-    Householder vectors v(i) and scalars ipiv_i as returned by GEBRD in its arguments A and tauq or taup.
+    The Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vectors v(i) and scalars ipiv_i as returned by
+   GEBRD in its arguments A and tauq or taup.
 
     @param[in]
     handle              rocblas_handle.
@@ -2042,79 +1834,72 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
                         Specifies from which side to apply Q.
     @param[in]
     trans               rocblas_operation.\n
-                        Specifies whether the matrix Q or its conjugate transpose is to be applied.
+                        Specifies whether the matrix Q or its conjugate
+   transpose is to be applied.
     @param[in]
     m                   rocblas_int. m >= 0.\n
                         Number of rows of matrix C.
     @param[in]
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix C.
-    @param[in]          
+    @param[in]
     k                   rocsovler_int. k >= 0.\n
-                        The number of columns (if storev is colum-wise) or rows (if row-wise) of the
-                        original matrix reduced by GEBRD.
-    @param[in]          
-    A                   pointer to type. Array on the GPU of size lda*min(nq,k) if column-wise, or lda*nq if row-wise.\n
-                        The i-th column (or row) has the Householder vector v(i) associated with H(i) as returned by GEBRD.
+                        The number of columns (if storev is colum-wise) or rows
+   (if row-wise) of the original matrix reduced by GEBRD.
     @param[in]
-    lda                 rocblas_int. lda >= nq if column-wise, or lda >= min(nq,k) if row-wise. \n
-                        Leading dimension of A.
+    A                   pointer to type. Array on the GPU of size lda*min(nq,k)
+   if column-wise, or lda*nq if row-wise.\n The i-th column (or row) has the
+   Householder vector v(i) associated with H(i) as returned by GEBRD.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least min(nq,k).\n
-                        The scalar factors of the Householder matrices H(i) as returned by GEBRD.
+    lda                 rocblas_int. lda >= nq if column-wise, or lda >=
+   min(nq,k) if row-wise. \n Leading dimension of A.
+    @param[in]
+    ipiv                pointer to type. Array on the GPU of dimension at least
+   min(nq,k).\n The scalar factors of the Householder matrices H(i) as returned
+   by GEBRD.
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
-                        Q*C, C*Q, Q'*C, or C*Q'.  
+                        Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
     lda                 rocblas_int. ldc >= m.\n
-                        Leading dimension of C. 
+                        Leading dimension of C.
 
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cunmbr(rocblas_handle handle,
-                                                   const rocblas_storev storev,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_float_complex *ipiv,
-                                                   rocblas_float_complex *C,
-                                                   const rocblas_int ldc);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cunmbr(
+    rocblas_handle handle, const rocblas_storev storev, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_float_complex *A, const rocblas_int lda,
+    rocblas_float_complex *ipiv, rocblas_float_complex *C,
+    const rocblas_int ldc);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
-                                                   const rocblas_storev storev,
-                                                   const rocblas_side side,
-                                                   const rocblas_operation trans,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   const rocblas_int k, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_double_complex *ipiv,
-                                                   rocblas_double_complex *C,
-                                                   const rocblas_int ldc);
-
+ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(
+    rocblas_handle handle, const rocblas_storev storev, const rocblas_side side,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
+    rocblas_double_complex *ipiv, rocblas_double_complex *C,
+    const rocblas_int ldc);
 
 /*! \brief BDSQR computes the singular value decomposition (SVD) of a
     n-by-n bidiagonal matrix B.
 
     \details
     The SVD of B has the form:
-    
+
         B = Ub * S * Vb'
 
-    where S is the n-by-n diagonal matrix of singular values of B, the columns of Ub are the left
-    singular vectors of B, and the columns of Vb are its right singular vectors. 
-    
-    The computation of the singular vectors is optional; this function accepts input matrices
-    U (of size nu-by-n) and V (of size n-by-nv) that are overwritten with U*Ub and Vb'*V. If nu = 0 
-    no left vectors are computed; if nv = 0 no right vectors are computed. 
+    where S is the n-by-n diagonal matrix of singular values of B, the columns
+   of Ub are the left singular vectors of B, and the columns of Vb are its right
+   singular vectors.
 
-    Optionally, this function can also compute Ub'*C for a given n-by-nc input matrix C.
+    The computation of the singular vectors is optional; this function accepts
+   input matrices U (of size nu-by-n) and V (of size n-by-nv) that are
+   overwritten with U*Ub and Vb'*V. If nu = 0 no left vectors are computed; if
+   nv = 0 no right vectors are computed.
+
+    Optionally, this function can also compute Ub'*C for a given n-by-nc input
+   matrix C.
 
     @param[in]
     handle      rocblas_handle.
@@ -2137,13 +1922,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
     D           pointer to real type. Array on the GPU of dimension n.\n
                 On entry, the diagonal elements of B. On exit, if info = 0,
                 the singular values of B in decreasing order; if info > 0,
-                the diagonal elements of a bidiagonal matrix 
+                the diagonal elements of a bidiagonal matrix
                 orthogonally equivalent to B.
     @param[inout]
     E           pointer to real type. Array on the GPU of dimension n-1.\n
                 On entry, the off-diagonal elements of B. On exit, if info > 0,
                 the off-diagonal elements of a bidiagonal matrix
-                orthogonally equivalent to B (if info = 0 this matrix converges to zero).
+                orthogonally equivalent to B (if info = 0 this matrix converges
+   to zero).
     @param[inout]
     V           pointer to type. Array on the GPU of dimension ldv*nv.\n
                 On entry, the matrix V. On exit, it is overwritten with Vb'*V.
@@ -2168,77 +1954,35 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
-                If info = i > 0, i elements of E have not converged to zero. 
-    
+                If info = i > 0, i elements of E have not converged to zero.
+
     ****************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sbdsqr(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n, 
-                                                 const rocblas_int nv, 
-                                                 const rocblas_int nu, 
-                                                 const rocblas_int nc,
-                                                 float* D,
-                                                 float* E, 
-                                                 float* V,
-                                                 const rocblas_int ldv,
-                                                 float* U,
-                                                 const rocblas_int ldu,
-                                                 float* C,
-                                                 const rocblas_int ldc,
-                                                 rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sbdsqr(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    const rocblas_int nv, const rocblas_int nu, const rocblas_int nc, float *D,
+    float *E, float *V, const rocblas_int ldv, float *U, const rocblas_int ldu,
+    float *C, const rocblas_int ldc, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dbdsqr(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n, 
-                                                 const rocblas_int nv, 
-                                                 const rocblas_int nu, 
-                                                 const rocblas_int nc,
-                                                 double* D,
-                                                 double* E, 
-                                                 double* V,
-                                                 const rocblas_int ldv,
-                                                 double* U,
-                                                 const rocblas_int ldu,
-                                                 double* C,
-                                                 const rocblas_int ldc,
-                                                 rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dbdsqr(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    const rocblas_int nv, const rocblas_int nu, const rocblas_int nc, double *D,
+    double *E, double *V, const rocblas_int ldv, double *U,
+    const rocblas_int ldu, double *C, const rocblas_int ldc, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cbdsqr(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n, 
-                                                 const rocblas_int nv, 
-                                                 const rocblas_int nu, 
-                                                 const rocblas_int nc,
-                                                 float* D,
-                                                 float* E, 
-                                                 rocblas_float_complex* V,
-                                                 const rocblas_int ldv,
-                                                 rocblas_float_complex* U,
-                                                 const rocblas_int ldu,
-                                                 rocblas_float_complex* C,
-                                                 const rocblas_int ldc,
-                                                 rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cbdsqr(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    const rocblas_int nv, const rocblas_int nu, const rocblas_int nc, float *D,
+    float *E, rocblas_float_complex *V, const rocblas_int ldv,
+    rocblas_float_complex *U, const rocblas_int ldu, rocblas_float_complex *C,
+    const rocblas_int ldc, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n, 
-                                                 const rocblas_int nv, 
-                                                 const rocblas_int nu, 
-                                                 const rocblas_int nc,
-                                                 double* D,
-                                                 double* E, 
-                                                 rocblas_double_complex* V,
-                                                 const rocblas_int ldv,
-                                                 rocblas_double_complex* U,
-                                                 const rocblas_int ldu,
-                                                 rocblas_double_complex* C,
-                                                 const rocblas_int ldc,
-                                                 rocblas_int *info);
-
-
-
-
+ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    const rocblas_int nv, const rocblas_int nu, const rocblas_int nc, double *D,
+    double *E, rocblas_double_complex *V, const rocblas_int ldv,
+    rocblas_double_complex *U, const rocblas_int ldu, rocblas_double_complex *C,
+    const rocblas_int ldc, rocblas_int *info);
 
 /*
  * ===========================================================================
@@ -2247,12 +1991,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
  */
 
 /*! \brief GETF2_NPVT computes the LU factorization of a general m-by-n matrix A
-    without partial pivoting. 
+    without partial pivoting.
 
     \details
-    (This is the unblocked Level-2-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls 
-    could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tuning rocSOLVER performance" on the User's guide).
+    (This is the unblocked Level-2-BLAS version of the algorithm. An optimized
+   internal implementation without rocBLAS calls could be executed with small
+   and mid-size matrices if optimizations are enabled (default option). For more
+   details see the section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization has the form
 
@@ -2262,17 +2007,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
     diagonal elements (lower trapezoidal if m > n), and U is upper
     triangular (upper trapezoidal if m < n).
 
-    Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable. 
-    If numerical accuracy is compromised, use the legacy-LAPACK-like API GETF2 routines instead.  
+    Note: Although this routine can offer better performance, Gaussian
+   elimination without pivoting is not backward stable. If numerical accuracy is
+   compromised, use the legacy-LAPACK-like API GETF2 routines instead.
 
     @param[in]
     handle    rocblas_handle.
     @param[in]
     m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A. 
+              The number of rows of the matrix A.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A. 
+              The number of columns of the matrix A.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix A to be factored.
@@ -2280,50 +2026,39 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
               The unit diagonal elements of L are not stored.
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A. 
+              Specifies the leading dimension of A.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit. 
-              If info = i > 0, U is singular. U(i,i) is the first zero element in the diagonal. The factorization from 
-              this point might be incomplete.
-            
+              If info = 0, successful exit.
+              If info = i > 0, U is singular. U(i,i) is the first zero element
+   in the diagonal. The factorization from this point might be incomplete.
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2_npvt(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2_npvt(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_npvt(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_npvt(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_npvt(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_npvt(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda, rocblas_int *info);
 
-/*! \brief GETF2_NPVT_BATCHED computes the LU factorization of a batch of general m-by-n matrices
-    without partial pivoting.
+/*! \brief GETF2_NPVT_BATCHED computes the LU factorization of a batch of
+   general m-by-n matrices without partial pivoting.
 
     \details
-    (This is the unblocked Level-2-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
-    could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tuning rocSOLVER performance" on the User's guide).
+    (This is the unblocked Level-2-BLAS version of the algorithm. An optimized
+   internal implementation without rocBLAS calls could be executed with small
+   and mid-size matrices if optimizations are enabled (default option). For more
+   details see the section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization of matrix A_i in the batch has the form
 
@@ -2333,9 +2068,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
     diagonal elements (lower trapezoidal if m > n), and U_i is upper
     triangular (upper trapezoidal if m < n).
 
-    Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable. 
-    If numerical accuracy is compromised, use the legacy-LAPACK-like API GETF2 routines instead.  
-    
+    Note: Although this routine can offer better performance, Gaussian
+   elimination without pivoting is not backward stable. If numerical accuracy is
+   compromised, use the legacy-LAPACK-like API GETF2 routines instead.
+
     @param[in]
     handle    rocblas_handle.
     @param[in]
@@ -2345,64 +2081,53 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all matrices A_i in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_i to be factored.
+    A         array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the m-by-n matrices A_i to be factored.
               On exit, the factors L_i and U_i from the factorizations.
               The unit diagonal elements of L_i are not stored.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrices A_i.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, successful exit for factorization of A_i. 
-              If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero element in the diagonal. The factorization from
-              this point might be incomplete.
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_i = 0, successful exit for factorization of A_i. If info_i = j
+   > 0, U_i is singular. U_i(j,j) is the first zero element in the diagonal. The
+   factorization from this point might be incomplete.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
-            
+                Number of matrices in the batch.
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2_npvt_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   float *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2_npvt_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    float *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_npvt_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   double *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_npvt_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    double *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_npvt_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_float_complex *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_npvt_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_double_complex *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-/*! \brief GETF2_NPVT_STRIDED_BATCHED computes the LU factorization of a batch of general m-by-n matrices
-    without partial pivoting.
+/*! \brief GETF2_NPVT_STRIDED_BATCHED computes the LU factorization of a batch
+   of general m-by-n matrices without partial pivoting.
 
     \details
-    (This is the unblocked Level-2-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
-    could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tuning rocSOLVER performance" on the User's guide).
-    
+    (This is the unblocked Level-2-BLAS version of the algorithm. An optimized
+   internal implementation without rocBLAS calls could be executed with small
+   and mid-size matrices if optimizations are enabled (default option). For more
+   details see the section "tuning rocSOLVER performance" on the User's guide).
+
     The factorization of matrix A_i in the batch has the form
 
         A_i = L_i * U_i
@@ -2411,8 +2136,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_batched(rocblas_handle han
     diagonal elements (lower trapezoidal if m > n), and U_i is upper
     triangular (upper trapezoidal if m < n).
 
-    Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable. 
-    If numerical accuracy is compromised, use the legacy-LAPACK-like API GETF2 routines instead.  
+    Note: Although this routine can offer better performance, Gaussian
+   elimination without pivoting is not backward stable. If numerical accuracy is
+   compromised, use the legacy-LAPACK-like API GETF2 routines instead.
 
     @param[in]
     handle    rocblas_handle.
@@ -2423,71 +2149,59 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_batched(rocblas_handle han
     n         rocblas_int. n >= 0.\n
               The number of columns of all matrices A_i in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_i to be factored.
-              On exit, the factors L_i and U_i from the factorization.
-              The unit diagonal elements of L_i are not stored.
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the m-by-n matrices A_i to be factored. On exit, the
+   factors L_i and U_i from the factorization. The unit diagonal elements of L_i
+   are not stored.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrices A_i.
     @param[in]
     strideA   rocblas_stride.\n
               Stride from the start of one matrix A_i and the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, successful exit for factorization of A_i. 
-              If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero element in the diagonal. The factorization from
-              this point might be incomplete. 
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_i = 0, successful exit for factorization of A_i. If info_i = j
+   > 0, U_i is singular. U_i(j,j) is the first zero element in the diagonal. The
+   factorization from this point might be incomplete.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
-            
+                Number of matrices in the batch.
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2_npvt_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2_npvt_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, const rocblas_stride strideA, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_npvt_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_npvt_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_npvt_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_npvt_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_int *info,
+    const rocblas_int batch_count);
 
 /*! \brief GETRF_NPVT computes the LU factorization of a general m-by-n matrix A
     without partial pivoting.
 
     \details
-    (This is the blocked Level-3-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
-    could be executed with mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tuning rocSOLVER performance" on the User's guide).
+    (This is the blocked Level-3-BLAS version of the algorithm. An optimized
+   internal implementation without rocBLAS calls could be executed with mid-size
+   matrices if optimizations are enabled (default option). For more details see
+   the section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization has the form
 
@@ -2496,18 +2210,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_strided_batched(rocblas_ha
     where L is lower triangular with unit
     diagonal elements (lower trapezoidal if m > n), and U is upper
     triangular (upper trapezoidal if m < n).
-    
-    Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable. 
-    If numerical accuracy is compromised, use the legacy-LAPACK-like API GETRF routines instead.  
+
+    Note: Although this routine can offer better performance, Gaussian
+   elimination without pivoting is not backward stable. If numerical accuracy is
+   compromised, use the legacy-LAPACK-like API GETRF routines instead.
 
     @param[in]
     handle    rocblas_handle.
     @param[in]
     m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A. 
+              The number of rows of the matrix A.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A. 
+              The number of columns of the matrix A.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix A to be factored.
@@ -2515,50 +2230,39 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_strided_batched(rocblas_ha
               The unit diagonal elements of L are not stored.
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A. 
+              Specifies the leading dimension of A.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit. 
-              If info = i > 0, U is singular. U(i,i) is the first zero element in the diagonal. The factorization from
-              this point might be incomplete. 
-            
+              If info = 0, successful exit.
+              If info = i > 0, U is singular. U(i,i) is the first zero element
+   in the diagonal. The factorization from this point might be incomplete.
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_npvt(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_npvt(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_npvt(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_npvt(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_npvt(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_npvt(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda, rocblas_int *info);
 
-/*! \brief GETRF_NPVT_BATCHED computes the LU factorization of a batch of general m-by-n matrices
-    without partial pivoting.
+/*! \brief GETRF_NPVT_BATCHED computes the LU factorization of a batch of
+   general m-by-n matrices without partial pivoting.
 
     \details
-    (This is the blocked Level-3-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
-    could be executed with mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tuning rocSOLVER performance" on the User's guide).
+    (This is the blocked Level-3-BLAS version of the algorithm. An optimized
+   internal implementation without rocBLAS calls could be executed with mid-size
+   matrices if optimizations are enabled (default option). For more details see
+   the section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization of matrix A_i in the batch has the form
 
@@ -2568,9 +2272,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
     diagonal elements (lower trapezoidal if m > n), and U_i is upper
     triangular (upper trapezoidal if m < n).
 
-    Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable. 
-    If numerical accuracy is compromised, use the legacy-LAPACK-like API GETRF routines instead.  
-    
+    Note: Although this routine can offer better performance, Gaussian
+   elimination without pivoting is not backward stable. If numerical accuracy is
+   compromised, use the legacy-LAPACK-like API GETRF routines instead.
+
     @param[in]
     handle    rocblas_handle.
     @param[in]
@@ -2580,64 +2285,53 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all matrices A_i in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_i to be factored.
+    A         array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the m-by-n matrices A_i to be factored.
               On exit, the factors L_i and U_i from the factorizations.
               The unit diagonal elements of L_i are not stored.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrices A_i.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, successful exit for factorization of A_i. 
-              If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero element in the diagonal. The factorization from
-              this point might be incomplete.
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_i = 0, successful exit for factorization of A_i. If info_i = j
+   > 0, U_i is singular. U_i(j,j) is the first zero element in the diagonal. The
+   factorization from this point might be incomplete.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
-            
+                Number of matrices in the batch.
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_npvt_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   float *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_npvt_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    float *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_npvt_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   double *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_npvt_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    double *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_npvt_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_float_complex *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_npvt_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_double_complex *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-/*! \brief GETRF_NPVT_STRIDED_BATCHED computes the LU factorization of a batch of general m-by-n matrices
-    without partial pivoting.
+/*! \brief GETRF_NPVT_STRIDED_BATCHED computes the LU factorization of a batch
+   of general m-by-n matrices without partial pivoting.
 
     \details
-    (This is the blocked Level-3-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
-    could be executed with mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tuning rocSOLVER performance" on the User's guide).
-    
+    (This is the blocked Level-3-BLAS version of the algorithm. An optimized
+   internal implementation without rocBLAS calls could be executed with mid-size
+   matrices if optimizations are enabled (default option). For more details see
+   the section "tuning rocSOLVER performance" on the User's guide).
+
     The factorization of matrix A_i in the batch has the form
 
         A_i = L_i * U_i
@@ -2646,9 +2340,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_batched(rocblas_handle han
     diagonal elements (lower trapezoidal if m > n), and U_i is upper
     triangular (upper trapezoidal if m < n).
 
-    Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable. 
-    If numerical accuracy is compromised, use the legacy-LAPACK-like API GETRF routines instead.  
-    
+    Note: Although this routine can offer better performance, Gaussian
+   elimination without pivoting is not backward stable. If numerical accuracy is
+   compromised, use the legacy-LAPACK-like API GETRF routines instead.
+
     @param[in]
     handle    rocblas_handle.
     @param[in]
@@ -2658,71 +2353,59 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_batched(rocblas_handle han
     n         rocblas_int. n >= 0.\n
               The number of columns of all matrices A_i in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_i to be factored.
-              On exit, the factors L_i and U_i from the factorization.
-              The unit diagonal elements of L_i are not stored.
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the m-by-n matrices A_i to be factored. On exit, the
+   factors L_i and U_i from the factorization. The unit diagonal elements of L_i
+   are not stored.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrices A_i.
     @param[in]
     strideA   rocblas_stride.\n
               Stride from the start of one matrix A_i and the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, successful exit for factorization of A_i. 
-              If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero element in the diagonal. The factorization from
-              this point might be incomplete.
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_i = 0, successful exit for factorization of A_i. If info_i = j
+   > 0, U_i is singular. U_i(j,j) is the first zero element in the diagonal. The
+   factorization from this point might be incomplete.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
-            
+                Number of matrices in the batch.
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_npvt_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_npvt_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, const rocblas_stride strideA, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_npvt_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_npvt_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_npvt_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_npvt_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_int *info,
+    const rocblas_int batch_count);
 
 /*! \brief GETF2 computes the LU factorization of a general m-by-n matrix A
     using partial pivoting with row interchanges.
 
     \details
-    (This is the unblocked Level-2-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls 
-    could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tuning rocSOLVER performance" on the User's guide).
+    (This is the unblocked Level-2-BLAS version of the algorithm. An optimized
+   internal implementation without rocBLAS calls could be executed with small
+   and mid-size matrices if optimizations are enabled (default option). For more
+   details see the section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization has the form
 
@@ -2736,10 +2419,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_strided_batched(rocblas_ha
     handle    rocblas_handle.
     @param[in]
     m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A. 
+              The number of rows of the matrix A.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A. 
+              The number of columns of the matrix A.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix A to be factored.
@@ -2747,7 +2430,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_strided_batched(rocblas_ha
               The unit diagonal elements of L are not stored.
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A. 
+              Specifies the leading dimension of A.
     @param[out]
     ipiv      pointer to rocblas_int. Array on the GPU of dimension min(m,n).\n
               The vector of pivot indices. Elements of ipiv are 1-based indices.
@@ -2756,50 +2439,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_strided_batched(rocblas_ha
               Matrix P of the factorization can be derived from ipiv.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit. 
+              If info = 0, successful exit.
               If info = i > 0, U is singular. U(i,i) is the first zero pivot.
-            
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status
+rocsolver_cgetf2(rocblas_handle handle, const rocblas_int m,
+                 const rocblas_int n, rocblas_float_complex *A,
+                 const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status
+rocsolver_zgetf2(rocblas_handle handle, const rocblas_int m,
+                 const rocblas_int n, rocblas_double_complex *A,
+                 const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info);
 
-/*! \brief GETF2_BATCHED computes the LU factorization of a batch of general m-by-n matrices
-    using partial pivoting with row interchanges.
+/*! \brief GETF2_BATCHED computes the LU factorization of a batch of general
+   m-by-n matrices using partial pivoting with row interchanges.
 
     \details
-    (This is the unblocked Level-2-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
-    could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tuning rocSOLVER performance" on the User's guide).
+    (This is the unblocked Level-2-BLAS version of the algorithm. An optimized
+   internal implementation without rocBLAS calls could be executed with small
+   and mid-size matrices if optimizations are enabled (default option). For more
+   details see the section "tuning rocSOLVER performance" on the User's guide).
 
 
     The factorization of matrix A_i in the batch has the form
@@ -2819,84 +2489,69 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all matrices A_i in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_i to be factored.
+    A         array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the m-by-n matrices A_i to be factored.
               On exit, the factors L_i and U_i from the factorizations.
               The unit diagonal elements of L_i are not stored.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrices A_i.
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n 
-              Contains the vectors of pivot indices ipiv_i (corresponding to A_i). 
-              Dimension of ipiv_i is min(m,n).
-              Elements of ipiv_i are 1-based indices.
-              For each instance A_i in the batch and for 1 <= j <= min(m,n), the row j of the
-              matrix A_i was interchanged with row ipiv_i[j].
+    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the
+   value of strideP).\n Contains the vectors of pivot indices ipiv_i
+   (corresponding to A_i). Dimension of ipiv_i is min(m,n). Elements of ipiv_i
+   are 1-based indices. For each instance A_i in the batch and for 1 <= j <=
+   min(m,n), the row j of the matrix A_i was interchanged with row ipiv_i[j].
               Matrix P_i of the factorization can be derived from ipiv_i.
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_i to the next one
+   ipiv_(i+1). There is no restriction for the value of strideP. Normal use case
+   is strideP >= min(m,n).
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, successful exit for factorization of A_i. 
-              If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero pivot.
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_i = 0, successful exit for factorization of A_i. If info_i = j
+   > 0, U_i is singular. U_i(j,j) is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
-            
+                Number of matrices in the batch.
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   float *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    float *const A[], const rocblas_int lda, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   double *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    double *const A[], const rocblas_int lda, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_float_complex *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_double_complex *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-/*! \brief GETF2_STRIDED_BATCHED computes the LU factorization of a batch of general m-by-n matrices
-    using partial pivoting with row interchanges.
+/*! \brief GETF2_STRIDED_BATCHED computes the LU factorization of a batch of
+   general m-by-n matrices using partial pivoting with row interchanges.
 
     \details
-    (This is the unblocked Level-2-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
-    could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tuning rocSOLVER performance" on the User's guide).
+    (This is the unblocked Level-2-BLAS version of the algorithm. An optimized
+   internal implementation without rocBLAS calls could be executed with small
+   and mid-size matrices if optimizations are enabled (default option). For more
+   details see the section "tuning rocSOLVER performance" on the User's guide).
 
-    
+
     The factorization of matrix A_i in the batch has the form
 
         A_i = P_i * L_i * U_i
@@ -2914,90 +2569,74 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all matrices A_i in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_i to be factored.
-              On exit, the factors L_i and U_i from the factorization.
-              The unit diagonal elements of L_i are not stored.
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the m-by-n matrices A_i to be factored. On exit, the
+   factors L_i and U_i from the factorization. The unit diagonal elements of L_i
+   are not stored.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrices A_i.
     @param[in]
     strideA   rocblas_stride.\n
               Stride from the start of one matrix A_i and the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n 
-              Contains the vectors of pivots indices ipiv_i (corresponding to A_i). 
-              Dimension of ipiv_i is min(m,n).
-              Elements of ipiv_i are 1-based indices.
-              For each instance A_i in the batch and for 1 <= j <= min(m,n), the row j of the
-              matrix A_i was interchanged with row ipiv_i[j].
+    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the
+   value of strideP).\n Contains the vectors of pivots indices ipiv_i
+   (corresponding to A_i). Dimension of ipiv_i is min(m,n). Elements of ipiv_i
+   are 1-based indices. For each instance A_i in the batch and for 1 <= j <=
+   min(m,n), the row j of the matrix A_i was interchanged with row ipiv_i[j].
               Matrix P_i of the factorization can be derived from ipiv_i.
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_i to the next one
+   ipiv_(i+1). There is no restriction for the value of strideP. Normal use case
+   is strideP >= min(m,n).
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, successful exit for factorization of A_i. 
-              If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero pivot.
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_i = 0, successful exit for factorization of A_i. If info_i = j
+   > 0, U_i is singular. U_i(j,j) is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
-            
+                Number of matrices in the batch.
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, const rocblas_stride strideA, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetf2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
 /*! \brief GETRF computes the LU factorization of a general m-by-n matrix A
     using partial pivoting with row interchanges.
 
     \details
-    (This is the blocked Level-3-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
-    could be executed with mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tuning rocSOLVER performance" on the User's guide).
+    (This is the blocked Level-3-BLAS version of the algorithm. An optimized
+   internal implementation without rocBLAS calls could be executed with mid-size
+   matrices if optimizations are enabled (default option). For more details see
+   the section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization has the form
 
@@ -3011,10 +2650,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(rocblas_handle 
     handle    rocblas_handle.
     @param[in]
     m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A. 
+              The number of rows of the matrix A.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A. 
+              The number of columns of the matrix A.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix A to be factored.
@@ -3022,7 +2661,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(rocblas_handle 
               The unit diagonal elements of L are not stored.
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A. 
+              Specifies the leading dimension of A.
     @param[out]
     ipiv      pointer to rocblas_int. Array on the GPU of dimension min(m,n).\n
               The vector of pivot indices. Elements of ipiv are 1-based indices.
@@ -3031,50 +2670,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(rocblas_handle 
               Matrix P of the factorization can be derived from ipiv.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit. 
+              If info = 0, successful exit.
               If info = i > 0, U is singular. U(i,i) is the first zero pivot.
-            
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status
+rocsolver_cgetrf(rocblas_handle handle, const rocblas_int m,
+                 const rocblas_int n, rocblas_float_complex *A,
+                 const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status
+rocsolver_zgetrf(rocblas_handle handle, const rocblas_int m,
+                 const rocblas_int n, rocblas_double_complex *A,
+                 const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info);
 
-/*! \brief GETRF_BATCHED computes the LU factorization of a batch of general m-by-n matrices
-    using partial pivoting with row interchanges.
+/*! \brief GETRF_BATCHED computes the LU factorization of a batch of general
+   m-by-n matrices using partial pivoting with row interchanges.
 
     \details
-    (This is the blocked Level-3-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
-    could be executed with mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tuning rocSOLVER performance" on the User's guide).
+    (This is the blocked Level-3-BLAS version of the algorithm. An optimized
+   internal implementation without rocBLAS calls could be executed with mid-size
+   matrices if optimizations are enabled (default option). For more details see
+   the section "tuning rocSOLVER performance" on the User's guide).
 
     The factorization of matrix A_i in the batch has the form
 
@@ -3093,83 +2719,68 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all matrices A_i in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_i to be factored.
+    A         array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the m-by-n matrices A_i to be factored.
               On exit, the factors L_i and U_i from the factorizations.
               The unit diagonal elements of L_i are not stored.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrices A_i.
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n 
-              Contains the vectors of pivot indices ipiv_i (corresponding to A_i). 
-              Dimension of ipiv_i is min(m,n).
-              Elements of ipiv_i are 1-based indices.
-              For each instance A_i in the batch and for 1 <= j <= min(m,n), the row j of the
-              matrix A_i was interchanged with row ipiv_i(j).
+    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the
+   value of strideP).\n Contains the vectors of pivot indices ipiv_i
+   (corresponding to A_i). Dimension of ipiv_i is min(m,n). Elements of ipiv_i
+   are 1-based indices. For each instance A_i in the batch and for 1 <= j <=
+   min(m,n), the row j of the matrix A_i was interchanged with row ipiv_i(j).
               Matrix P_i of the factorization can be derived from ipiv_i.
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_i to the next one
+   ipiv_(i+1). There is no restriction for the value of strideP. Normal use case
+   is strideP >= min(m,n).
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, successful exit for factorization of A_i. 
-              If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero pivot.
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_i = 0, successful exit for factorization of A_i. If info_i = j
+   > 0, U_i is singular. U_i(j,j) is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
-            
+                Number of matrices in the batch.
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   float *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    float *const A[], const rocblas_int lda, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   double *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    double *const A[], const rocblas_int lda, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_float_complex *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_double_complex *const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-/*! \brief GETRF_STRIDED_BATCHED computes the LU factorization of a batch of general m-by-n matrices
-    using partial pivoting with row interchanges.
+/*! \brief GETRF_STRIDED_BATCHED computes the LU factorization of a batch of
+   general m-by-n matrices using partial pivoting with row interchanges.
 
     \details
-    (This is the blocked Level-3-BLAS version of the algorithm. An optimized internal implementation without rocBLAS calls
-    could be executed with mid-size matrices if optimizations are enabled (default option). For more details see the
-    section "tuning rocSOLVER performance" on the User's guide).
-    
+    (This is the blocked Level-3-BLAS version of the algorithm. An optimized
+   internal implementation without rocBLAS calls could be executed with mid-size
+   matrices if optimizations are enabled (default option). For more details see
+   the section "tuning rocSOLVER performance" on the User's guide).
+
     The factorization of matrix A_i in the batch has the form
 
         A_i = P_i * L_i * U_i
@@ -3187,82 +2798,65 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_batched(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all matrices A_i in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_i to be factored.
-              On exit, the factors L_i and U_i from the factorization.
-              The unit diagonal elements of L_i are not stored.
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the m-by-n matrices A_i to be factored. On exit, the
+   factors L_i and U_i from the factorization. The unit diagonal elements of L_i
+   are not stored.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrices A_i.
     @param[in]
     strideA   rocblas_stride.\n
               Stride from the start of one matrix A_i and the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n 
-              Contains the vectors of pivots indices ipiv_i (corresponding to A_i). 
-              Dimension of ipiv_i is min(m,n).
-              Elements of ipiv_i are 1-based indices.
-              For each instance A_i in the batch and for 1 <= j <= min(m,n), the row j of the
-              matrix A_i was interchanged with row ipiv_i(j).
+    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the
+   value of strideP).\n Contains the vectors of pivots indices ipiv_i
+   (corresponding to A_i). Dimension of ipiv_i is min(m,n). Elements of ipiv_i
+   are 1-based indices. For each instance A_i in the batch and for 1 <= j <=
+   min(m,n), the row j of the matrix A_i was interchanged with row ipiv_i(j).
               Matrix P_i of the factorization can be derived from ipiv_i.
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_i to the next one
+   ipiv_(i+1). There is no restriction for the value of strideP. Normal use case
+   is strideP >= min(m,n).
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, successful exit for factorization of A_i. 
-              If info_i = j > 0, U_i is singular. U_i(j,j) is the first zero pivot.
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_i = 0, successful exit for factorization of A_i. If info_i = j
+   > 0, U_i is singular. U_i(j,j) is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
-            
+                Number of matrices in the batch.
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, const rocblas_stride strideA, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_strided_batched(rocblas_handle handle,
-                                                   const rocblas_int m,
-                                                   const rocblas_int n, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   rocblas_int *ipiv,
-                                                   const rocblas_stride strideP,
-                                                   rocblas_int *info,
-                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
 /*! \brief GEQR2 computes a QR factorization of a general m-by-n matrix A.
 
@@ -3274,16 +2868,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_strided_batched(rocblas_handle 
         A =  Q * [ R ]
                  [ 0 ]
 
-    where R is upper triangular (upper trapezoidal if m < n), and Q is 
-    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+    where R is upper triangular (upper trapezoidal if m < n), and Q is
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q = H(1) * H(2) * ... * H(k), with k = min(m,n)
 
     Each Householder matrix H(i), for i = 1,2,...,k, is given by
 
         H(i) = I - ipiv[i-1] * v(i) * v(i)'
-    
-    where the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
+
+    where the first i-1 elements of the Householder vector v(i) are zero, and
+   v(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -3296,47 +2892,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_strided_batched(rocblas_handle 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix to be factored.
-              On exit, the elements on and above the diagonal contain the 
+              On exit, the elements on and above the diagonal contain the
               factor R; the elements below the diagonal are the m - i elements
               of vector v(i) for i = 1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A. 
+              Specifies the leading dimension of A.
     @param[out]
     ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
               The scalar factors of the Householder matrices H(i).
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqr2(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
-                                                 float *A,
-                                                 const rocblas_int lda, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqr2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, float *A,
+                                                 const rocblas_int lda,
                                                  float *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqr2(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
-                                                 double *A,
-                                                 const rocblas_int lda, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqr2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, double *A,
+                                                 const rocblas_int lda,
                                                  double *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqr2(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqr2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
                                                  rocblas_float_complex *A,
-                                                 const rocblas_int lda, 
+                                                 const rocblas_int lda,
                                                  rocblas_float_complex *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
                                                  rocblas_double_complex *A,
-                                                 const rocblas_int lda, 
+                                                 const rocblas_int lda,
                                                  rocblas_double_complex *ipiv);
 
-/*! \brief GEQR2_BATCHED computes the QR factorization of a batch of general m-by-n matrices.
+/*! \brief GEQR2_BATCHED computes the QR factorization of a batch of general
+   m-by-n matrices.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -3346,16 +2941,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2(rocblas_handle handle,
         A_j =  Q_j * [ R_j ]
                      [  0  ]
 
-    where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+    where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
-    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i =
+   1,2,...,k, is given by
 
         H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
 
-    where the first i-1 elements of Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where the first i-1 elements of Householder vector v_j(i) are zero, and
+   v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -3366,66 +2964,53 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and above the diagonal contain the 
+    A         Array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the m-by-n matrices A_j to be factored.
+              On exit, the elements on and above the diagonal contain the
               factor R_j. The elements below the diagonal are the m - i elements
               of vector v_j(i) for i=1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of scalar factors of the 
+    ipiv      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors ipiv_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqr2_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         float *const A[],
-                                                         const rocblas_int lda, 
-                                                         float *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqr2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    float *const A[], const rocblas_int lda, float *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqr2_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         double *const A[],
-                                                         const rocblas_int lda, 
-                                                         double *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqr2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    double *const A[], const rocblas_int lda, double *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqr2_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         rocblas_float_complex *const A[],
-                                                         const rocblas_int lda, 
-                                                         rocblas_float_complex *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqr2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda,
+    rocblas_float_complex *ipiv, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         rocblas_double_complex *const A[],
-                                                         const rocblas_int lda, 
-                                                         rocblas_double_complex *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda,
+    rocblas_double_complex *ipiv, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-/*! \brief GEQR2_STRIDED_BATCHED computes the QR factorization of a batch of general m-by-n matrices.
+/*! \brief GEQR2_STRIDED_BATCHED computes the QR factorization of a batch of
+   general m-by-n matrices.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -3433,18 +3018,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_batched(rocblas_handle handle,
     The factorization of matrix A_j in the batch has the form
 
         A_j =  Q_j * [ R_j ]
-                     [  0  ] 
+                     [  0  ]
 
-    where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+    where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
-    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i =
+   1,2,...,k, is given by
 
         H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
 
-    where the first i-1 elements of Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where the first i-1 elements of Householder vector v_j(i) are zero, and
+   v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -3455,72 +3043,55 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_batched(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and above the diagonal contain the 
-              factor R_j. The elements below the diagonal are the m - i elements
-              of vector v_j(i) for i = 1,2,...,min(m,n).
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the m-by-n matrices A_j to be factored. On exit, the
+   elements on and above the diagonal contain the factor R_j. The elements below
+   the diagonal are the m - i elements of vector v_j(i) for i =
+   1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n   
-              Stride from the start of one matrix A_j and the next one A_(j+1). 
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_j and the next one A_(j+1).
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of scalar factors of the 
+    ipiv      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors ipiv_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqr2_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 float *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 float *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqr2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, const rocblas_stride strideA, float *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqr2_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 double *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 double *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqr2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, double *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqr2_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 rocblas_float_complex *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 rocblas_float_complex *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqr2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_float_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 rocblas_double_complex *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 rocblas_double_complex *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_double_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
 /*! \brief GEQL2 computes a QL factorization of a general m-by-n matrix A.
 
@@ -3532,16 +3103,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched(rocblas_handle 
         A =  Q * [ 0 ]
                  [ L ]
 
-    where L is lower triangular (lower trapezoidal if m < n), and Q is 
-    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+    where L is lower triangular (lower trapezoidal if m < n), and Q is
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q = H(k) * ... * H(2) * H(1), with k = min(m,n)
 
     Each Householder matrix H(i), for i = 1,2,...,k, is given by
 
         H(i) = I - ipiv[i-1] * v(i) * v(i)'
-    
-    where the last m-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
+
+    where the last m-i elements of the Householder vector v(i) are zero, and
+   v(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -3555,47 +3128,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched(rocblas_handle 
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix to be factored.
               On exit, the elements on and below the (m-n)th subdiagonal (when
-              m >= n) or the (n-m)th superdiagonal (when n > m) contain the 
+              m >= n) or the (n-m)th superdiagonal (when n > m) contain the
               factor L; the elements above the sub/superdiagonal are the i - 1
               elements of vector v(i) for i = 1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A. 
+              Specifies the leading dimension of A.
     @param[out]
     ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
               The scalar factors of the Householder matrices H(i).
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeql2(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
-                                                 float *A,
-                                                 const rocblas_int lda, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeql2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, float *A,
+                                                 const rocblas_int lda,
                                                  float *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeql2(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
-                                                 double *A,
-                                                 const rocblas_int lda, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeql2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, double *A,
+                                                 const rocblas_int lda,
                                                  double *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeql2(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeql2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
                                                  rocblas_float_complex *A,
-                                                 const rocblas_int lda, 
+                                                 const rocblas_int lda,
                                                  rocblas_float_complex *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
                                                  rocblas_double_complex *A,
-                                                 const rocblas_int lda, 
+                                                 const rocblas_int lda,
                                                  rocblas_double_complex *ipiv);
 
-/*! \brief GEQL2_BATCHED computes the QL factorization of a batch of general m-by-n matrices.
+/*! \brief GEQL2_BATCHED computes the QL factorization of a batch of general
+   m-by-n matrices.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -3605,16 +3177,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2(rocblas_handle handle,
         A_j =  Q_j * [  0  ]
                      [ L_j ]
 
-    where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+    where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q_j = H_j(k) * ... * H_j(2) * H_j(1), with k = min(m,n)
 
-    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i =
+   1,2,...,k, is given by
 
         H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
 
-    where the last m-i elements of Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where the last m-i elements of Householder vector v_j(i) are zero, and
+   v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -3625,67 +3200,54 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
+    A         Array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the m-by-n matrices A_j to be factored.
               On exit, the elements on and below the (m-n)th subdiagonal (when
-              m >= n) or the (n-m)th superdiagonal (when n > m) contain the 
+              m >= n) or the (n-m)th superdiagonal (when n > m) contain the
               factor L_j; the elements above the sub/superdiagonal are the i - 1
               elements of vector v_j(i) for i = 1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of scalar factors of the 
+    ipiv      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors ipiv_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeql2_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         float *const A[],
-                                                         const rocblas_int lda, 
-                                                         float *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeql2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    float *const A[], const rocblas_int lda, float *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeql2_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         double *const A[],
-                                                         const rocblas_int lda, 
-                                                         double *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeql2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    double *const A[], const rocblas_int lda, double *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeql2_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         rocblas_float_complex *const A[],
-                                                         const rocblas_int lda, 
-                                                         rocblas_float_complex *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeql2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda,
+    rocblas_float_complex *ipiv, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         rocblas_double_complex *const A[],
-                                                         const rocblas_int lda, 
-                                                         rocblas_double_complex *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda,
+    rocblas_double_complex *ipiv, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-/*! \brief GEQL2_STRIDED_BATCHED computes the QL factorization of a batch of general m-by-n matrices.
+/*! \brief GEQL2_STRIDED_BATCHED computes the QL factorization of a batch of
+   general m-by-n matrices.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -3693,18 +3255,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_batched(rocblas_handle handle,
     The factorization of matrix A_j in the batch has the form
 
         A_j =  Q_j * [  0  ]
-                     [ L_j ] 
+                     [ L_j ]
 
-    where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+    where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q_j = H_j(k) * ... * H_j(2) * H_j(1), with k = min(m,n)
 
-    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i =
+   1,2,...,k, is given by
 
         H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
 
-    where the last m-i elements of Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where the last m-i elements of Householder vector v_j(i) are zero, and
+   v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -3715,73 +3280,56 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_batched(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the (m-n)th subdiagonal (when
-              m >= n) or the (n-m)th superdiagonal (when n > m) contain the 
-              factor L_j; the elements above the sub/superdiagonal are the i - 1
-              elements of vector v_j(i) for i = 1,2,...,min(m,n).
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the m-by-n matrices A_j to be factored. On exit, the
+   elements on and below the (m-n)th subdiagonal (when m >= n) or the (n-m)th
+   superdiagonal (when n > m) contain the factor L_j; the elements above the
+   sub/superdiagonal are the i - 1 elements of vector v_j(i) for i =
+   1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n   
-              Stride from the start of one matrix A_j and the next one A_(j+1). 
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_j and the next one A_(j+1).
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of scalar factors of the 
+    ipiv      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors ipiv_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeql2_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 float *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 float *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeql2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, const rocblas_stride strideA, float *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeql2_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 double *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 double *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeql2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, double *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeql2_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 rocblas_float_complex *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 rocblas_float_complex *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeql2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_float_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 rocblas_double_complex *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 rocblas_double_complex *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_double_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
 /*! \brief GELQ2 computes a LQ factorization of a general m-by-n matrix A.
 
@@ -3791,17 +3339,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_strided_batched(rocblas_handle 
     The factorization has the form
 
         A = [ L 0 ] * Q
- 
-    where L is lower triangular (lower trapezoidal if m > n), and Q is 
-    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
+
+    where L is lower triangular (lower trapezoidal if m > n), and Q is
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q = H(k) * H(k-1) * ... * H(1), with k = min(m,n)
 
     Each Householder matrix H(i), for i = 1,2,...,k, is given by
 
         H(i) = I - ipiv[i-1] * v(i)' * v(i)
-    
-    where the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
+
+    where the first i-1 elements of the Householder vector v(i) are zero, and
+   v(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -3814,65 +3364,67 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_strided_batched(rocblas_handle 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix to be factored.
-              On exit, the elements on and delow the diagonal contain the 
+              On exit, the elements on and delow the diagonal contain the
               factor L; the elements above the diagonal are the n - i elements
               of vector v(i) for i = 1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A. 
+              Specifies the leading dimension of A.
     @param[out]
     ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
               The scalar factors of the Householder matrices H(i).
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgelq2(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
-                                                 float *A,
-                                                 const rocblas_int lda, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgelq2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, float *A,
+                                                 const rocblas_int lda,
                                                  float *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgelq2(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
-                                                 double *A,
-                                                 const rocblas_int lda, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgelq2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, double *A,
+                                                 const rocblas_int lda,
                                                  double *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgelq2(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgelq2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
                                                  rocblas_float_complex *A,
-                                                 const rocblas_int lda, 
+                                                 const rocblas_int lda,
                                                  rocblas_float_complex *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
                                                  rocblas_double_complex *A,
-                                                 const rocblas_int lda, 
+                                                 const rocblas_int lda,
                                                  rocblas_double_complex *ipiv);
 
-/*! \brief GELQ2_BATCHED computes the LQ factorization of a batch of general m-by-n matrices.
+/*! \brief GELQ2_BATCHED computes the LQ factorization of a batch of general
+   m-by-n matrices.
 
     \details
     (This is the unblocked version of the algorithm).
 
     The factorization of matrix A_j in the batch has the form
 
-        A_j = [ L_j 0 ] * Q_j 
+        A_j = [ L_j 0 ] * Q_j
 
-    where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is 
-    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
+    where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q_j = H_j(k) * H_j(k-1) * ... * H_j(1), with k = min(m,n)
 
-    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i =
+   1,2,...,k, is given by
 
         H_j(i) = I - ipiv_j[i-1] * v_j(i)' * v_j(i)
 
-    where the first i-1 elements of Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where the first i-1 elements of Householder vector v_j(i) are zero, and
+   v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -3883,84 +3435,74 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the diagonal contain the 
+    A         Array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the m-by-n matrices A_j to be factored.
+              On exit, the elements on and below the diagonal contain the
               factor L_j. The elements above the diagonal are the n - i elements
               of vector v_j(i) for i=1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of scalar factors of the 
+    ipiv      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors ipiv_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgelq2_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         float *const A[],
-                                                         const rocblas_int lda, 
-                                                         float *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgelq2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    float *const A[], const rocblas_int lda, float *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgelq2_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         double *const A[],
-                                                         const rocblas_int lda, 
-                                                         double *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgelq2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    double *const A[], const rocblas_int lda, double *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgelq2_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         rocblas_float_complex *const A[],
-                                                         const rocblas_int lda, 
-                                                         rocblas_float_complex *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgelq2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda,
+    rocblas_float_complex *ipiv, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         rocblas_double_complex *const A[],
-                                                         const rocblas_int lda, 
-                                                         rocblas_double_complex *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda,
+    rocblas_double_complex *ipiv, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-/*! \brief GELQ2_STRIDED_BATCHED computes the LQ factorization of a batch of general m-by-n matrices.
+/*! \brief GELQ2_STRIDED_BATCHED computes the LQ factorization of a batch of
+   general m-by-n matrices.
 
     \details
     (This is the unblocked version of the algorithm).
 
     The factorization of matrix A_j in the batch has the form
 
-        A_j = [ L_j 0 ] * Q_j 
+        A_j = [ L_j 0 ] * Q_j
 
-    where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is 
-    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
+    where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q_j = H_j(k) * H_j(k-1) * ... * H_j(1), with k = min(m,n)
 
-    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i =
+   1,2,...,k, is given by
 
         H_j(i) = I - ipiv_j[i-1] * v_j(i)' * v_j(i)
 
-    where the first i-1 elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where the first i-1 elements of vector Householder vector v_j(i) are zero,
+   and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -3971,73 +3513,55 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_batched(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the diagonal contain the 
-              factor L_j. The elements above the diagonal are the n - i elements
-              of vector v_j(i) for i = 1,2,...,min(m,n).
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the m-by-n matrices A_j to be factored. On exit, the
+   elements on and below the diagonal contain the factor L_j. The elements above
+   the diagonal are the n - i elements of vector v_j(i) for i =
+   1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n   
-              Stride from the start of one matrix A_j and the next one A_(j+1). 
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_j and the next one A_(j+1).
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of scalar factors of the 
+    ipiv      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors ipiv_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgelq2_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 float *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 float *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgelq2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, const rocblas_stride strideA, float *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgelq2_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 double *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 double *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgelq2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, double *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgelq2_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 rocblas_float_complex *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 rocblas_float_complex *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgelq2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_float_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 rocblas_double_complex *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 rocblas_double_complex *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
-
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_double_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
 /*! \brief GEQRF computes a QR factorization of a general m-by-n matrix A.
 
@@ -4048,17 +3572,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_strided_batched(rocblas_handle 
 
         A =  Q * [ R ]
                  [ 0 ]
- 
-    where R is upper triangular (upper trapezoidal if m < n), and Q is 
-    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+
+    where R is upper triangular (upper trapezoidal if m < n), and Q is
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q = H(1) * H(2) * ... * H(k), with k = min(m,n)
 
     Each Householder matrix H(i), for i = 1,2,...,k, is given by
 
         H(i) = I - ipiv[i-1] * v(i) * v(i)'
-    
-    where the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
+
+    where the first i-1 elements of the Householder vector v(i) are zero, and
+   v(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4071,47 +3597,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_strided_batched(rocblas_handle 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix to be factored.
-              On exit, the elements on and above the diagonal contain the 
+              On exit, the elements on and above the diagonal contain the
               factor R; the elements below the diagonal are the m - i elements
               of vector v(i) for i = 1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A. 
+              Specifies the leading dimension of A.
     @param[out]
     ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
               The scalar factors of the Householder matrices H(i).
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
-                                                 float *A,
-                                                 const rocblas_int lda, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, float *A,
+                                                 const rocblas_int lda,
                                                  float *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
-                                                 double *A,
-                                                 const rocblas_int lda, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, double *A,
+                                                 const rocblas_int lda,
                                                  double *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
                                                  rocblas_float_complex *A,
-                                                 const rocblas_int lda, 
+                                                 const rocblas_int lda,
                                                  rocblas_float_complex *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
                                                  rocblas_double_complex *A,
-                                                 const rocblas_int lda, 
+                                                 const rocblas_int lda,
                                                  rocblas_double_complex *ipiv);
 
-/*! \brief GEQRF_BATCHED computes the QR factorization of a batch of general m-by-n matrices.
+/*! \brief GEQRF_BATCHED computes the QR factorization of a batch of general
+   m-by-n matrices.
 
     \details
     (This is the blocked version of the algorithm).
@@ -4119,18 +3644,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
     The factorization of matrix A_j in the batch has the form
 
         A_j =  Q_j * [ R_j ]
-                     [  0  ] 
+                     [  0  ]
 
-    where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+    where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
-    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i =
+   1,2,...,k, is given by
 
         H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
 
-    where the first i-1 elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where the first i-1 elements of vector Householder vector v_j(i) are zero,
+   and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4141,66 +3669,53 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and above the diagonal contain the 
+    A         Array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the m-by-n matrices A_j to be factored.
+              On exit, the elements on and above the diagonal contain the
               factor R_j. The elements below the diagonal are the m - i elements
               of vector v_j(i) for i=1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of scalar factors of the 
+    ipiv      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors ipiv_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         float *const A[],
-                                                         const rocblas_int lda, 
-                                                         float *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    float *const A[], const rocblas_int lda, float *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         double *const A[],
-                                                         const rocblas_int lda, 
-                                                         double *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    double *const A[], const rocblas_int lda, double *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         rocblas_float_complex *const A[],
-                                                         const rocblas_int lda, 
-                                                         rocblas_float_complex *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda,
+    rocblas_float_complex *ipiv, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         rocblas_double_complex *const A[],
-                                                         const rocblas_int lda, 
-                                                         rocblas_double_complex *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda,
+    rocblas_double_complex *ipiv, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-/*! \brief GEQRF_STRIDED_BATCHED computes the QR factorization of a batch of general m-by-n matrices.
+/*! \brief GEQRF_STRIDED_BATCHED computes the QR factorization of a batch of
+   general m-by-n matrices.
 
     \details
     (This is the blocked version of the algorithm).
@@ -4208,18 +3723,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched(rocblas_handle handle,
     The factorization of matrix A_j in the batch has the form
 
         A_j =  Q_j * [ R_j ]
-                     [  0  ] 
+                     [  0  ]
 
-    where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+    where R_j is upper triangular (upper trapezoidal if m < n), and Q_j is
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q_j = H_j(1) * H_j(2) * ... * H_j(k), with k = min(m,n)
 
-    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i =
+   1,2,...,k, is given by
 
         H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
 
-    where the first i-1 elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where the first i-1 elements of vector Householder vector v_j(i) are zero,
+   and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4230,72 +3748,55 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and above the diagonal contain the 
-              factor R_j. The elements below the diagonal are the m - i elements
-              of vector v_j(i) for i = 1,2,...,min(m,n).
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the m-by-n matrices A_j to be factored. On exit, the
+   elements on and above the diagonal contain the factor R_j. The elements below
+   the diagonal are the m - i elements of vector v_j(i) for i =
+   1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n   
-              Stride from the start of one matrix A_j and the next one A_(j+1). 
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_j and the next one A_(j+1).
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of scalar factors of the 
+    ipiv      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors ipiv_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 float *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 float *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, const rocblas_stride strideA, float *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 double *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 double *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, double *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 rocblas_float_complex *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 rocblas_float_complex *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_float_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 rocblas_double_complex *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 rocblas_double_complex *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_double_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
 /*! \brief GEQLF computes a QL factorization of a general m-by-n matrix A.
 
@@ -4306,17 +3807,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(rocblas_handle 
 
         A =  Q * [ 0 ]
                  [ L ]
- 
-    where L is lower triangular (lower trapezoidal if m < n), and Q is 
-    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+
+    where L is lower triangular (lower trapezoidal if m < n), and Q is
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q = H(k) * ... * H(2) * H(1), with k = min(m,n)
 
     Each Householder matrix H(i), for i = 1,2,...,k, is given by
 
         H(i) = I - ipiv[i-1] * v(i) * v(i)'
-    
-    where the last m-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
+
+    where the last m-i elements of the Householder vector v(i) are zero, and
+   v(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4330,47 +3833,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(rocblas_handle 
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix to be factored.
               On exit, the elements on and below the (m-n)th subdiagonal (when
-              m >= n) or the (n-m)th superdiagonal (when n > m) contain the 
+              m >= n) or the (n-m)th superdiagonal (when n > m) contain the
               factor L; the elements above the sub/superdiagonal are the i - 1
               elements of vector v(i) for i = 1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A. 
+              Specifies the leading dimension of A.
     @param[out]
     ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
               The scalar factors of the Householder matrices H(i).
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqlf(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
-                                                 float *A,
-                                                 const rocblas_int lda, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqlf(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, float *A,
+                                                 const rocblas_int lda,
                                                  float *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqlf(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
-                                                 double *A,
-                                                 const rocblas_int lda, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqlf(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, double *A,
+                                                 const rocblas_int lda,
                                                  double *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqlf(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqlf(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
                                                  rocblas_float_complex *A,
-                                                 const rocblas_int lda, 
+                                                 const rocblas_int lda,
                                                  rocblas_float_complex *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
                                                  rocblas_double_complex *A,
-                                                 const rocblas_int lda, 
+                                                 const rocblas_int lda,
                                                  rocblas_double_complex *ipiv);
 
-/*! \brief GEQLF_BATCHED computes the QL factorization of a batch of general m-by-n matrices.
+/*! \brief GEQLF_BATCHED computes the QL factorization of a batch of general
+   m-by-n matrices.
 
     \details
     (This is the blocked version of the algorithm).
@@ -4378,18 +3880,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf(rocblas_handle handle,
     The factorization of matrix A_j in the batch has the form
 
         A_j =  Q_j * [  0  ]
-                     [ L_j ] 
+                     [ L_j ]
 
-    where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+    where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q_j = H_j(k) * ... * H_j(2) * H_j(1), with k = min(m,n)
 
-    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i =
+   1,2,...,k, is given by
 
         H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
 
-    where the last m-i elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where the last m-i elements of vector Householder vector v_j(i) are zero,
+   and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4400,67 +3905,54 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
+    A         Array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the m-by-n matrices A_j to be factored.
               On exit, the elements on and below the (m-n)th subdiagonal (when
-              m >= n) or the (n-m)th superdiagonal (when n > m) contain the 
+              m >= n) or the (n-m)th superdiagonal (when n > m) contain the
               factor L_j; the elements above the sub/superdiagonal are the i - 1
               elements of vector v_j(i) for i = 1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of scalar factors of the 
+    ipiv      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors ipiv_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqlf_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         float *const A[],
-                                                         const rocblas_int lda, 
-                                                         float *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqlf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    float *const A[], const rocblas_int lda, float *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqlf_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         double *const A[],
-                                                         const rocblas_int lda, 
-                                                         double *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqlf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    double *const A[], const rocblas_int lda, double *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqlf_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         rocblas_float_complex *const A[],
-                                                         const rocblas_int lda, 
-                                                         rocblas_float_complex *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqlf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda,
+    rocblas_float_complex *ipiv, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         rocblas_double_complex *const A[],
-                                                         const rocblas_int lda, 
-                                                         rocblas_double_complex *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda,
+    rocblas_double_complex *ipiv, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-/*! \brief GEQLF_STRIDED_BATCHED computes the QL factorization of a batch of general m-by-n matrices.
+/*! \brief GEQLF_STRIDED_BATCHED computes the QL factorization of a batch of
+   general m-by-n matrices.
 
     \details
     (This is the blocked version of the algorithm).
@@ -4468,18 +3960,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_batched(rocblas_handle handle,
     The factorization of matrix A_j in the batch has the form
 
         A_j =  Q_j * [  0  ]
-                     [ L_j ] 
+                     [ L_j ]
 
-    where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is 
-    a m-by-m orthogonal/unitary matrix represented as the product of Householder matrices
+    where L_j is lower triangular (lower trapezoidal if m < n), and Q_j is
+    a m-by-m orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q_j = H_j(k) * ... * H_j(2) * H_j(1), with k = min(m,n)
 
-    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i =
+   1,2,...,k, is given by
 
         H_j(i) = I - ipiv_j[i-1] * v_j(i) * v_j(i)'
 
-    where the last m-i elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where the last m-i elements of vector Householder vector v_j(i) are zero,
+   and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4490,73 +3985,56 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_batched(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the (m-n)th subdiagonal (when
-              m >= n) or the (n-m)th superdiagonal (when n > m) contain the 
-              factor L_j; the elements above the sub/superdiagonal are the i - 1
-              elements of vector v_j(i) for i = 1,2,...,min(m,n).
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the m-by-n matrices A_j to be factored. On exit, the
+   elements on and below the (m-n)th subdiagonal (when m >= n) or the (n-m)th
+   superdiagonal (when n > m) contain the factor L_j; the elements above the
+   sub/superdiagonal are the i - 1 elements of vector v_j(i) for i =
+   1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n   
-              Stride from the start of one matrix A_j and the next one A_(j+1). 
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_j and the next one A_(j+1).
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of scalar factors of the 
+    ipiv      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors ipiv_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqlf_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 float *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 float *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqlf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, const rocblas_stride strideA, float *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqlf_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 double *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 double *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqlf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, double *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqlf_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 rocblas_float_complex *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 rocblas_float_complex *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqlf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_float_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 rocblas_double_complex *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 rocblas_double_complex *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_double_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
 /*! \brief GELQF computes a LQ factorization of a general m-by-n matrix A.
 
@@ -4566,17 +4044,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_strided_batched(rocblas_handle 
     The factorization has the form
 
         A = [ L 0 ] * Q
- 
-    where L is lower triangular (lower trapezoidal if m > n), and Q is 
-    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
+
+    where L is lower triangular (lower trapezoidal if m > n), and Q is
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q = H(k) * H(k-1) * ... * H(1), with k = min(m,n)
 
     Each Householder matrix H(i), for i = 1,2,...,k, is given by
 
         H(i) = I - ipiv[i-1] * v(i)' * v(i)
-    
-    where the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
+
+    where the first i-1 elements of the Householder vector v(i) are zero, and
+   v(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4589,65 +4069,67 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_strided_batched(rocblas_handle 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix to be factored.
-              On exit, the elements on and below the diagonal contain the 
+              On exit, the elements on and below the diagonal contain the
               factor L; the elements above the diagonal are the n - i elements
               of vector v(i) for i = 1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A. 
+              Specifies the leading dimension of A.
     @param[out]
     ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
               The scalar factors of the Householder matrices H(i).
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgelqf(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
-                                                 float *A,
-                                                 const rocblas_int lda, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgelqf(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, float *A,
+                                                 const rocblas_int lda,
                                                  float *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgelqf(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
-                                                 double *A,
-                                                 const rocblas_int lda, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgelqf(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n, double *A,
+                                                 const rocblas_int lda,
                                                  double *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgelqf(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgelqf(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
                                                  rocblas_float_complex *A,
-                                                 const rocblas_int lda, 
+                                                 const rocblas_int lda,
                                                  rocblas_float_complex *ipiv);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf(rocblas_handle handle, 
-                                                 const rocblas_int m, 
-                                                 const rocblas_int n, 
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf(rocblas_handle handle,
+                                                 const rocblas_int m,
+                                                 const rocblas_int n,
                                                  rocblas_double_complex *A,
-                                                 const rocblas_int lda, 
+                                                 const rocblas_int lda,
                                                  rocblas_double_complex *ipiv);
 
-/*! \brief GELQF_BATCHED computes the LQ factorization of a batch of general m-by-n matrices.
+/*! \brief GELQF_BATCHED computes the LQ factorization of a batch of general
+   m-by-n matrices.
 
     \details
     (This is the blocked version of the algorithm).
 
     The factorization of matrix A_j in the batch has the form
 
-        A_j = [ L_j 0 ] * Q_j 
+        A_j = [ L_j 0 ] * Q_j
 
-    where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is 
-    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
+    where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q_j = H_j(k) * H_j(k-1) * ... * H_j(1), with k = min(m,n)
 
-    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i =
+   1,2,...,k, is given by
 
         H_j(i) = I - ipiv_j[i-1] * v_j(i)' * v_j(i)
 
-    where the first i-1 elements of Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where the first i-1 elements of Householder vector v_j(i) are zero, and
+   v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4658,84 +4140,74 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the diagonal contain the 
+    A         Array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the m-by-n matrices A_j to be factored.
+              On exit, the elements on and below the diagonal contain the
               factor L_j. The elements above the diagonal are the n - i elements
               of vector v_j(i) for i=1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of scalar factors of the 
+    ipiv      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors ipiv_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgelqf_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         float *const A[],
-                                                         const rocblas_int lda, 
-                                                         float *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgelqf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    float *const A[], const rocblas_int lda, float *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgelqf_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         double *const A[],
-                                                         const rocblas_int lda, 
-                                                         double *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgelqf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    double *const A[], const rocblas_int lda, double *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgelqf_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         rocblas_float_complex *const A[],
-                                                         const rocblas_int lda, 
-                                                         rocblas_float_complex *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgelqf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda,
+    rocblas_float_complex *ipiv, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_batched(rocblas_handle handle, 
-                                                         const rocblas_int m, 
-                                                         const rocblas_int n, 
-                                                         rocblas_double_complex *const A[],
-                                                         const rocblas_int lda, 
-                                                         rocblas_double_complex *ipiv, 
-                                                         const rocblas_stride strideP, 
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda,
+    rocblas_double_complex *ipiv, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-/*! \brief GELQF_STRIDED_BATCHED computes the LQ factorization of a batch of general m-by-n matrices.
+/*! \brief GELQF_STRIDED_BATCHED computes the LQ factorization of a batch of
+   general m-by-n matrices.
 
     \details
     (This is the blocked version of the algorithm).
 
     The factorization of matrix A_j in the batch has the form
 
-        A_j = [ L_j 0 ] * Q_j 
+        A_j = [ L_j 0 ] * Q_j
 
-    where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is 
-    a n-by-n orthogonal/unitary matrix represented as the product of Householder matrices
+    where L_j is lower triangular (lower trapezoidal if m > n), and Q_j is
+    a n-by-n orthogonal/unitary matrix represented as the product of Householder
+   matrices
 
         Q_j = H_j(k) * H_j(k-1) * ... * H_j(1), with k = min(m,n)
 
-    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i = 1,2,...,k, is given by
+    Each Householder matrices H_j(i), for j = 1,2,...,batch_count, and i =
+   1,2,...,k, is given by
 
         H_j(i) = I - ipiv_j[i-1] * v_j(i)' * v_j(i)
 
-    where the first i-1 elements of vector Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where the first i-1 elements of vector Householder vector v_j(i) are zero,
+   and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4746,97 +4218,83 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_batched(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the diagonal contain the 
-              factor L_j. The elements above the diagonal are the n - i elements
-              of vector v_j(i) for i = 1,2,...,min(m,n).
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the m-by-n matrices A_j to be factored. On exit, the
+   elements on and below the diagonal contain the factor L_j. The elements above
+   the diagonal are the n - i elements of vector v_j(i) for i =
+   1,2,...,min(m,n).
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n   
-              Stride from the start of one matrix A_j and the next one A_(j+1). 
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_j and the next one A_(j+1).
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of scalar factors of the 
+    ipiv      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors ipiv_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgelqf_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 float *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 float *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgelqf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, const rocblas_stride strideA, float *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgelqf_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 double *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 double *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgelqf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, double *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgelqf_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 rocblas_float_complex *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 rocblas_float_complex *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgelqf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_float_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_strided_batched(rocblas_handle handle, 
-                                                                 const rocblas_int m, 
-                                                                 const rocblas_int n, 
-                                                                 rocblas_double_complex *A,
-                                                                 const rocblas_int lda, 
-                                                                 const rocblas_stride strideA, 
-                                                                 rocblas_double_complex *ipiv, 
-                                                                 const rocblas_stride strideP, 
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_double_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
 /*! \brief GEBD2 computes the bidiagonal form of a general m-by-n matrix A.
 
     \details
-    (This is the unblocked version of the algorithm). 
+    (This is the unblocked version of the algorithm).
 
     The bidiagonal form is given by:
 
         B = Q' * A * P
 
-    where B is upper bidiagonal if m >= n and lower bidiagonal if m < n, and Q and 
-    P are orthogonal/unitary matrices represented as the product of Householder matrices
+    where B is upper bidiagonal if m >= n and lower bidiagonal if m < n, and Q
+   and P are orthogonal/unitary matrices represented as the product of
+   Householder matrices
 
-        Q = H(1) * H(2) * ... *  H(n)  and P = G(1) * G(2) * ... * G(n-1), if m >= n, or
-        Q = H(1) * H(2) * ... * H(m-1) and P = G(1) * G(2) * ... *  G(m),  if m < n
+        Q = H(1) * H(2) * ... *  H(n)  and P = G(1) * G(2) * ... * G(n-1), if m
+   >= n, or Q = H(1) * H(2) * ... * H(m-1) and P = G(1) * G(2) * ... *  G(m), if
+   m < n
 
     Each Householder matrix H(i) and G(i) is given by
 
         H(i) = I - tauq[i-1] * v(i) * v(i)', and
         G(i) = I - taup[i-1] * u(i) * u(i)'
-    
-    If m >= n, the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1;
-    while the first i elements of the Householder vector u(i) are zero, and u(i)[i+1] = 1.
-    If m < n, the first i elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1;
-    while the first i-1 elements of the Householder vector u(i) are zero, and u(i)[i] = 1.
+
+    If m >= n, the first i-1 elements of the Householder vector v(i) are zero,
+   and v(i)[i] = 1; while the first i elements of the Householder vector u(i)
+   are zero, and u(i)[i+1] = 1. If m < n, the first i elements of the
+   Householder vector v(i) are zero, and v(i)[i+1] = 1; while the first i-1
+   elements of the Householder vector u(i) are zero, and u(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4849,14 +4307,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_strided_batched(rocblas_handle 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B.
-              If m >= n, the elements below the diagonal are the m - i elements
-              of vector v(i) for i = 1,2,...,n, and the elements above the
-              superdiagonal are the n - i - 1 elements of vector u(i) for i = 1,2,...,n-1.
-              If m < n, the elements below the subdiagonal are the m - i - 1
-              elements of vector v(i) for i = 1,2,...,m-1, and the elements above the
-              diagonal are the n - i elements of vector u(i) for i = 1,2,...,m.
+              On exit, the elements on the diagonal and superdiagonal (if m >=
+   n), or subdiagonal (if m < n) contain the bidiagonal form B. If m >= n, the
+   elements below the diagonal are the m - i elements of vector v(i) for i =
+   1,2,...,n, and the elements above the superdiagonal are the n - i - 1
+   elements of vector u(i) for i = 1,2,...,n-1. If m < n, the elements below the
+   subdiagonal are the m - i - 1 elements of vector v(i) for i = 1,2,...,m-1,
+   and the elements above the diagonal are the n - i elements of vector u(i) for
+   i = 1,2,...,m.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               specifies the leading dimension of A.
@@ -4875,70 +4333,53 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_strided_batched(rocblas_handle 
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgebd2(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 float *A,
-                                                 const rocblas_int lda,
-                                                 float *D,
-                                                 float *E,
-                                                 float *tauq,
-                                                 float *taup);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgebd2(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, float *D, float *E, float *tauq, float *taup);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgebd2(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 double *A,
-                                                 const rocblas_int lda,
-                                                 double *D,
-                                                 double *E,
-                                                 double *tauq,
-                                                 double *taup);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgebd2(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, double *D, double *E, double *tauq, double *taup);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgebd2(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_float_complex *A,
-                                                 const rocblas_int lda,
-                                                 float *D,
-                                                 float *E,
-                                                 rocblas_float_complex *tauq,
-                                                 rocblas_float_complex *taup);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgebd2(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda, float *D, float *E,
+    rocblas_float_complex *tauq, rocblas_float_complex *taup);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_double_complex *A,
-                                                 const rocblas_int lda,
-                                                 double *D,
-                                                 double *E,
-                                                 rocblas_double_complex *tauq,
-                                                 rocblas_double_complex *taup);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda, double *D, double *E,
+    rocblas_double_complex *tauq, rocblas_double_complex *taup);
 
-/*! \brief GEBD2_BATCHED computes the bidiagonal form of a batch of general m-by-n matrices.
+/*! \brief GEBD2_BATCHED computes the bidiagonal form of a batch of general
+   m-by-n matrices.
 
     \details
-    (This is the unblocked version of the algorithm). 
+    (This is the unblocked version of the algorithm).
 
     The bidiagonal form is given by:
 
         B_j = Q_j' * A_j * P_j
 
-    where B_j is upper bidiagonal if m >= n and lower bidiagonal if m < n, and Q_j and 
-    P_j are orthogonal/unitary matrices represented as the product of Householder matrices
+    where B_j is upper bidiagonal if m >= n and lower bidiagonal if m < n, and
+   Q_j and P_j are orthogonal/unitary matrices represented as the product of
+   Householder matrices
 
-        Q_j = H_j(1) * H_j(2) * ... *  H_j(n)  and P_j = G_j(1) * G_j(2) * ... * G_j(n-1), if m >= n, or
-        Q_j = H_j(1) * H_j(2) * ... * H_j(m-1) and P_j = G_j(1) * G_j(2) * ... *  G_j(m),  if m < n
+        Q_j = H_j(1) * H_j(2) * ... *  H_j(n)  and P_j = G_j(1) * G_j(2) * ... *
+   G_j(n-1), if m >= n, or Q_j = H_j(1) * H_j(2) * ... * H_j(m-1) and P_j =
+   G_j(1) * G_j(2) * ... *  G_j(m),  if m < n
 
-    Each Householder matrix H_j(i) and G_j(i), for j = 1,2,...,batch_count, is given by
+    Each Householder matrix H_j(i) and G_j(i), for j = 1,2,...,batch_count, is
+   given by
 
         H_j(i) = I - tauq_j[i-1] * v_j(i) * v_j(i)', and
         G_j(i) = I - taup_j[i-1] * u_j(i) * u_j(i)'
-    
-    If m >= n, the first i-1 elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1;
-    while the first i elements of the Householder vector u_j(i) are zero, and u_j(i)[i+1] = 1.
-    If m < n, the first i elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1;
-    while the first i-1 elements of the Householder vector u_j(i) are zero, and u_j(i)[i] = 1.
+
+    If m >= n, the first i-1 elements of the Householder vector v_j(i) are zero,
+   and v_j(i)[i] = 1; while the first i elements of the Householder vector
+   u_j(i) are zero, and u_j(i)[i+1] = 1. If m < n, the first i elements of the
+   Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1; while the first i-1
+   elements of the Householder vector u_j(i) are zero, and u_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -4949,141 +4390,118 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B_j.
-              If m >= n, the elements below the diagonal are the m - i elements
-              of vector v_j(i) for i = 1,2,...,n, and the elements above the
-              superdiagonal are the n - i - 1 elements of vector u_j(i) for i = 1,2,...,n-1.
-              If m < n, the elements below the subdiagonal are the m - i - 1
-              elements of vector v_j(i) for i = 1,2,...,m-1, and the elements above the
-              diagonal are the n - i elements of vector u_j(i) for i = 1,2,...,m.
+    A         Array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the m-by-n matrices A_j to be factored.
+              On exit, the elements on the diagonal and superdiagonal (if m >=
+   n), or subdiagonal (if m < n) contain the bidiagonal form B_j. If m >= n, the
+   elements below the diagonal are the m - i elements of vector v_j(i) for i =
+   1,2,...,n, and the elements above the superdiagonal are the n - i - 1
+   elements of vector u_j(i) for i = 1,2,...,n-1. If m < n, the elements below
+   the subdiagonal are the m - i - 1 elements of vector v_j(i) for i =
+   1,2,...,m-1, and the elements above the diagonal are the n - i elements of
+   vector u_j(i) for i = 1,2,...,m.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrices A_j.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of B_j.
+    D         pointer to real type. Array on the GPU (the size depends on the
+   value of strideD).\n The diagonal elements of B_j.
     @param[in]
-    strideD   rocblas_stride.\n   
-              Stride from the start of one vector D_j and the next one D_(j+1). 
-              There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
+    strideD   rocblas_stride.\n
+              Stride from the start of one vector D_j and the next one D_(j+1).
+              There is no restriction for the value of strideD. Normal use case
+   is strideD >= min(m,n).
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of B_j.
+    E         pointer to real type. Array on the GPU (the size depends on the
+   value of strideE).\n The off-diagonal elements of B_j.
     @param[in]
-    strideE   rocblas_stride.\n   
-              Stride from the start of one vector E_j and the next one E_(j+1). 
-              There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
+    strideE   rocblas_stride.\n
+              Stride from the start of one vector E_j and the next one E_(j+1).
+              There is no restriction for the value of strideE. Normal use case
+   is strideE >= min(m,n)-1.
     @param[out]
-    tauq      pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
-              Contains the vectors tauq_j of scalar factors of the 
+    tauq      pointer to type. Array on the GPU (the size depends on the value
+   of strideQ).\n Contains the vectors tauq_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideQ   rocblas_stride.\n
-              Stride from the start of one vector tauq_j to the next one tauq_(j+1). 
-              There is no restriction for the value
-              of strideQ. Normal use is strideQ >= min(m,n).
+              Stride from the start of one vector tauq_j to the next one
+   tauq_(j+1). There is no restriction for the value of strideQ. Normal use is
+   strideQ >= min(m,n).
     @param[out]
-    taup      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors taup_j of scalar factors of the 
+    taup      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors taup_j of scalar factors of the
               Householder matrices G_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector taup_j to the next one taup_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector taup_j to the next one
+   taup_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgebd2_batched(rocblas_handle handle,
-                                                         const rocblas_int m,
-                                                         const rocblas_int n,
-                                                         float *const A[],
-                                                         const rocblas_int lda,
-                                                         float *D,
-                                                         const rocblas_stride strideD,
-                                                         float *E,
-                                                         const rocblas_stride strideE,
-                                                         float *tauq,
-                                                         const rocblas_stride strideQ,
-                                                         float *taup,
-                                                         const rocblas_stride strideP,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgebd2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    float *const A[], const rocblas_int lda, float *D,
+    const rocblas_stride strideD, float *E, const rocblas_stride strideE,
+    float *tauq, const rocblas_stride strideQ, float *taup,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgebd2_batched(rocblas_handle handle,
-                                                         const rocblas_int m,
-                                                         const rocblas_int n,
-                                                         double *const A[],
-                                                         const rocblas_int lda,
-                                                         double *D,
-                                                         const rocblas_stride strideD,
-                                                         double *E,
-                                                         const rocblas_stride strideE,
-                                                         double *tauq,
-                                                         const rocblas_stride strideQ,
-                                                         double *taup,
-                                                         const rocblas_stride strideP,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgebd2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    double *const A[], const rocblas_int lda, double *D,
+    const rocblas_stride strideD, double *E, const rocblas_stride strideE,
+    double *tauq, const rocblas_stride strideQ, double *taup,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgebd2_batched(rocblas_handle handle,
-                                                         const rocblas_int m,
-                                                         const rocblas_int n,
-                                                         rocblas_float_complex *const A[],
-                                                         const rocblas_int lda,
-                                                         float *D,
-                                                         const rocblas_stride strideD,
-                                                         float *E,
-                                                         const rocblas_stride strideE,
-                                                         rocblas_float_complex *tauq,
-                                                         const rocblas_stride strideQ,
-                                                         rocblas_float_complex *taup,
-                                                         const rocblas_stride strideP,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgebd2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda, float *D,
+    const rocblas_stride strideD, float *E, const rocblas_stride strideE,
+    rocblas_float_complex *tauq, const rocblas_stride strideQ,
+    rocblas_float_complex *taup, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_batched(rocblas_handle handle,
-                                                         const rocblas_int m,
-                                                         const rocblas_int n,
-                                                         rocblas_double_complex *const A[],
-                                                         const rocblas_int lda,
-                                                         double *D,
-                                                         const rocblas_stride strideD,
-                                                         double *E,
-                                                         const rocblas_stride strideE,
-                                                         rocblas_double_complex *tauq,
-                                                         const rocblas_stride strideQ,
-                                                         rocblas_double_complex *taup,
-                                                         const rocblas_stride strideP,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda, double *D,
+    const rocblas_stride strideD, double *E, const rocblas_stride strideE,
+    rocblas_double_complex *tauq, const rocblas_stride strideQ,
+    rocblas_double_complex *taup, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-/*! \brief GEBD2_STRIDED_BATCHED computes the bidiagonal form of a batch of general m-by-n matrices.
+/*! \brief GEBD2_STRIDED_BATCHED computes the bidiagonal form of a batch of
+   general m-by-n matrices.
 
     \details
-    (This is the unblocked version of the algorithm). 
+    (This is the unblocked version of the algorithm).
 
     The bidiagonal form is given by:
 
         B_j = Q_j' * A_j * P_j
 
-    where B_j is upper bidiagonal if m >= n and lower bidiagonal if m < n, and Q_j and 
-    P_j are orthogonal/unitary matrices represented as the product of Householder matrices
+    where B_j is upper bidiagonal if m >= n and lower bidiagonal if m < n, and
+   Q_j and P_j are orthogonal/unitary matrices represented as the product of
+   Householder matrices
 
-        Q_j = H_j(1) * H_j(2) * ... *  H_j(n)  and P_j = G_j(1) * G_j(2) * ... * G_j(n-1), if m >= n, or
-        Q_j = H_j(1) * H_j(2) * ... * H_j(m-1) and P_j = G_j(1) * G_j(2) * ... *  G_j(m),  if m < n
+        Q_j = H_j(1) * H_j(2) * ... *  H_j(n)  and P_j = G_j(1) * G_j(2) * ... *
+   G_j(n-1), if m >= n, or Q_j = H_j(1) * H_j(2) * ... * H_j(m-1) and P_j =
+   G_j(1) * G_j(2) * ... *  G_j(m),  if m < n
 
-    Each Householder matrix H_j(i) and G_j(i), for j = 1,2,...,batch_count, is given by
+    Each Householder matrix H_j(i) and G_j(i), for j = 1,2,...,batch_count, is
+   given by
 
         H_j(i) = I - tauq_j[i-1] * v_j(i) * v_j(i)', and
         G_j(i) = I - taup_j[i-1] * u_j(i) * u_j(i)'
-    
-    If m >= n, the first i-1 elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1;
-    while the first i elements of the Householder vector u_j(i) are zero, and u_j(i)[i+1] = 1.
-    If m < n, the first i elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1;
-    while the first i-1 elements of the Householder vector u_j(i) are zero, and u_j(i)[i] = 1.
+
+    If m >= n, the first i-1 elements of the Householder vector v_j(i) are zero,
+   and v_j(i)[i] = 1; while the first i elements of the Householder vector
+   u_j(i) are zero, and u_j(i)[i+1] = 1. If m < n, the first i elements of the
+   Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1; while the first i-1
+   elements of the Householder vector u_j(i) are zero, and u_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -5094,149 +4512,120 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_batched(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B_j.
-              If m >= n, the elements below the diagonal are the m - i elements
-              of vector v_j(i) for i = 1,2,...,n, and the elements above the
-              superdiagonal are the n - i - 1 elements of vector u_j(i) for i = 1,2,...,n-1.
-              If m < n, the elements below the subdiagonal are the m - i - 1
-              elements of vector v_j(i) for i = 1,2,...,m-1, and the elements above the
-              diagonal are the n - i elements of vector u_j(i) for i = 1,2,...,m.
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the m-by-n matrices A_j to be factored. On exit, the
+   elements on the diagonal and superdiagonal (if m >= n), or subdiagonal (if m
+   < n) contain the bidiagonal form B_j. If m >= n, the elements below the
+   diagonal are the m - i elements of vector v_j(i) for i = 1,2,...,n, and the
+   elements above the superdiagonal are the n - i - 1 elements of vector u_j(i)
+   for i = 1,2,...,n-1. If m < n, the elements below the subdiagonal are the m -
+   i - 1 elements of vector v_j(i) for i = 1,2,...,m-1, and the elements above
+   the diagonal are the n - i elements of vector u_j(i) for i = 1,2,...,m.
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n   
-              Stride from the start of one matrix A_j and the next one A_(j+1). 
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_j and the next one A_(j+1).
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of B_j.
+    D         pointer to real type. Array on the GPU (the size depends on the
+   value of strideD).\n The diagonal elements of B_j.
     @param[in]
-    strideD   rocblas_stride.\n   
-              Stride from the start of one vector D_j and the next one D_(j+1). 
-              There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
+    strideD   rocblas_stride.\n
+              Stride from the start of one vector D_j and the next one D_(j+1).
+              There is no restriction for the value of strideD. Normal use case
+   is strideD >= min(m,n).
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of B_j.
+    E         pointer to real type. Array on the GPU (the size depends on the
+   value of strideE).\n The off-diagonal elements of B_j.
     @param[in]
-    strideE   rocblas_stride.\n   
-              Stride from the start of one vector E_j and the next one E_(j+1). 
-              There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
+    strideE   rocblas_stride.\n
+              Stride from the start of one vector E_j and the next one E_(j+1).
+              There is no restriction for the value of strideE. Normal use case
+   is strideE >= min(m,n)-1.
     @param[out]
-    tauq      pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
-              Contains the vectors tauq_j of scalar factors of the 
+    tauq      pointer to type. Array on the GPU (the size depends on the value
+   of strideQ).\n Contains the vectors tauq_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideQ   rocblas_stride.\n
-              Stride from the start of one vector tauq_j to the next one tauq_(j+1). 
-              There is no restriction for the value
-              of strideQ. Normal use is strideQ >= min(m,n).
+              Stride from the start of one vector tauq_j to the next one
+   tauq_(j+1). There is no restriction for the value of strideQ. Normal use is
+   strideQ >= min(m,n).
     @param[out]
-    taup      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors taup_j of scalar factors of the 
+    taup      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors taup_j of scalar factors of the
               Householder matrices G_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector taup_j to the next one taup_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector taup_j to the next one
+   taup_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgebd2_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int m,
-                                                                 const rocblas_int n,
-                                                                 float *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 float *D,
-                                                                 const rocblas_stride strideD,
-                                                                 float *E,
-                                                                 const rocblas_stride strideE,
-                                                                 float *tauq,
-                                                                 const rocblas_stride strideQ,
-                                                                 float *taup,
-                                                                 const rocblas_stride strideP,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgebd2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, const rocblas_stride strideA, float *D,
+    const rocblas_stride strideD, float *E, const rocblas_stride strideE,
+    float *tauq, const rocblas_stride strideQ, float *taup,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgebd2_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int m,
-                                                                 const rocblas_int n,
-                                                                 double *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 double *D,
-                                                                 const rocblas_stride strideD,
-                                                                 double *E,
-                                                                 const rocblas_stride strideE,
-                                                                 double *tauq,
-                                                                 const rocblas_stride strideQ,
-                                                                 double *taup,
-                                                                 const rocblas_stride strideP,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgebd2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, double *D,
+    const rocblas_stride strideD, double *E, const rocblas_stride strideE,
+    double *tauq, const rocblas_stride strideQ, double *taup,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgebd2_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int m,
-                                                                 const rocblas_int n,
-                                                                 rocblas_float_complex *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 float *D,
-                                                                 const rocblas_stride strideD,
-                                                                 float *E,
-                                                                 const rocblas_stride strideE,
-                                                                 rocblas_float_complex *tauq,
-                                                                 const rocblas_stride strideQ,
-                                                                 rocblas_float_complex *taup,
-                                                                 const rocblas_stride strideP,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgebd2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, float *D, const rocblas_stride strideD,
+    float *E, const rocblas_stride strideE, rocblas_float_complex *tauq,
+    const rocblas_stride strideQ, rocblas_float_complex *taup,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int m,
-                                                                 const rocblas_int n,
-                                                                 rocblas_double_complex *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 double *D,
-                                                                 const rocblas_stride strideD,
-                                                                 double *E,
-                                                                 const rocblas_stride strideE,
-                                                                 rocblas_double_complex *tauq,
-                                                                 const rocblas_stride strideQ,
-                                                                 rocblas_double_complex *taup,
-                                                                 const rocblas_stride strideP,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, double *D, const rocblas_stride strideD,
+    double *E, const rocblas_stride strideE, rocblas_double_complex *tauq,
+    const rocblas_stride strideQ, rocblas_double_complex *taup,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
 /*! \brief GEBRD computes the bidiagonal form of a general m-by-n matrix A.
 
     \details
-    (This is the blocked version of the algorithm). 
+    (This is the blocked version of the algorithm).
 
     The bidiagonal form is given by:
 
         B = Q' * A * P
 
-    where B is upper bidiagonal if m >= n and lower bidiagonal if m < n, and Q and 
-    P are orthogonal/unitary matrices represented as the product of Householder matrices
+    where B is upper bidiagonal if m >= n and lower bidiagonal if m < n, and Q
+   and P are orthogonal/unitary matrices represented as the product of
+   Householder matrices
 
-        Q = H(1) * H(2) * ... *  H(n)  and P = G(1) * G(2) * ... * G(n-1), if m >= n, or
-        Q = H(1) * H(2) * ... * H(m-1) and P = G(1) * G(2) * ... *  G(m),  if m < n
+        Q = H(1) * H(2) * ... *  H(n)  and P = G(1) * G(2) * ... * G(n-1), if m
+   >= n, or Q = H(1) * H(2) * ... * H(m-1) and P = G(1) * G(2) * ... *  G(m), if
+   m < n
 
     Each Householder matrix H(i) and G(i) is given by
 
         H(i) = I - tauq[i-1] * v(i) * v(i)', and
         G(i) = I - taup[i-1] * u(i) * u(i)'
-    
-    If m >= n, the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1;
-    while the first i elements of the Householder vector u(i) are zero, and u(i)[i+1] = 1.
-    If m < n, the first i elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1;
-    while the first i-1 elements of the Householder vector u(i) are zero, and u(i)[i] = 1.
+
+    If m >= n, the first i-1 elements of the Householder vector v(i) are zero,
+   and v(i)[i] = 1; while the first i elements of the Householder vector u(i)
+   are zero, and u(i)[i+1] = 1. If m < n, the first i elements of the
+   Householder vector v(i) are zero, and v(i)[i+1] = 1; while the first i-1
+   elements of the Householder vector u(i) are zero, and u(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -5249,14 +4638,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_strided_batched(rocblas_handle 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B.
-              If m >= n, the elements below the diagonal are the m - i elements
-              of vector v(i) for i = 1,2,...,n, and the elements above the
-              superdiagonal are the n - i - 1 elements of vector u(i) for i = 1,2,...,n-1.
-              If m < n, the elements below the subdiagonal are the m - i - 1
-              elements of vector v(i) for i = 1,2,...,m-1, and the elements above the
-              diagonal are the n - i elements of vector u(i) for i = 1,2,...,m.
+              On exit, the elements on the diagonal and superdiagonal (if m >=
+   n), or subdiagonal (if m < n) contain the bidiagonal form B. If m >= n, the
+   elements below the diagonal are the m - i elements of vector v(i) for i =
+   1,2,...,n, and the elements above the superdiagonal are the n - i - 1
+   elements of vector u(i) for i = 1,2,...,n-1. If m < n, the elements below the
+   subdiagonal are the m - i - 1 elements of vector v(i) for i = 1,2,...,m-1,
+   and the elements above the diagonal are the n - i elements of vector u(i) for
+   i = 1,2,...,m.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               specifies the leading dimension of A.
@@ -5275,70 +4664,53 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_strided_batched(rocblas_handle 
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgebrd(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 float *A,
-                                                 const rocblas_int lda,
-                                                 float *D,
-                                                 float *E,
-                                                 float *tauq,
-                                                 float *taup);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgebrd(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, float *D, float *E, float *tauq, float *taup);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgebrd(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 double *A,
-                                                 const rocblas_int lda,
-                                                 double *D,
-                                                 double *E,
-                                                 double *tauq,
-                                                 double *taup);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgebrd(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, double *D, double *E, double *tauq, double *taup);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgebrd(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_float_complex *A,
-                                                 const rocblas_int lda,
-                                                 float *D,
-                                                 float *E,
-                                                 rocblas_float_complex *tauq,
-                                                 rocblas_float_complex *taup);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgebrd(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda, float *D, float *E,
+    rocblas_float_complex *tauq, rocblas_float_complex *taup);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_double_complex *A,
-                                                 const rocblas_int lda,
-                                                 double *D,
-                                                 double *E,
-                                                 rocblas_double_complex *tauq,
-                                                 rocblas_double_complex *taup);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda, double *D, double *E,
+    rocblas_double_complex *tauq, rocblas_double_complex *taup);
 
-/*! \brief GEBRD_BATCHED computes the bidiagonal form of a batch of general m-by-n matrices.
+/*! \brief GEBRD_BATCHED computes the bidiagonal form of a batch of general
+   m-by-n matrices.
 
     \details
-    (This is the blocked version of the algorithm). 
+    (This is the blocked version of the algorithm).
 
     The bidiagonal form is given by:
 
         B_j = Q_j' * A_j * P_j
 
-    where B_j is upper bidiagonal if m >= n and lower bidiagonal if m < n, and Q_j and 
-    P_j are orthogonal/unitary matrices represented as the product of Householder matrices
+    where B_j is upper bidiagonal if m >= n and lower bidiagonal if m < n, and
+   Q_j and P_j are orthogonal/unitary matrices represented as the product of
+   Householder matrices
 
-        Q_j = H_j(1) * H_j(2) * ... *  H_j(n)  and P_j = G_j(1) * G_j(2) * ... * G_j(n-1), if m >= n, or
-        Q_j = H_j(1) * H_j(2) * ... * H_j(m-1) and P_j = G_j(1) * G_j(2) * ... *  G_j(m),  if m < n
+        Q_j = H_j(1) * H_j(2) * ... *  H_j(n)  and P_j = G_j(1) * G_j(2) * ... *
+   G_j(n-1), if m >= n, or Q_j = H_j(1) * H_j(2) * ... * H_j(m-1) and P_j =
+   G_j(1) * G_j(2) * ... *  G_j(m),  if m < n
 
-    Each Householder matrix H_j(i) and G_j(i), for j = 1,2,...,batch_count, is given by
+    Each Householder matrix H_j(i) and G_j(i), for j = 1,2,...,batch_count, is
+   given by
 
         H_j(i) = I - tauq_j[i-1] * v_j(i) * v_j(i)', and
         G_j(i) = I - taup_j[i-1] * u_j(i) * u_j(i)'
-    
-    If m >= n, the first i-1 elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1;
-    while the first i elements of the Householder vector u_j(i) are zero, and u_j(i)[i+1] = 1.
-    If m < n, the first i elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1;
-    while the first i-1 elements of the Householder vector u_j(i) are zero, and u_j(i)[i] = 1.
+
+    If m >= n, the first i-1 elements of the Householder vector v_j(i) are zero,
+   and v_j(i)[i] = 1; while the first i elements of the Householder vector
+   u_j(i) are zero, and u_j(i)[i+1] = 1. If m < n, the first i elements of the
+   Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1; while the first i-1
+   elements of the Householder vector u_j(i) are zero, and u_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -5349,141 +4721,118 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B_j.
-              If m >= n, the elements below the diagonal are the m - i elements
-              of vector v_j(i) for i = 1,2,...,n, and the elements above the
-              superdiagonal are the n - i - 1 elements of vector u_j(i) for i = 1,2,...,n-1.
-              If m < n, the elements below the subdiagonal are the m - i - 1
-              elements of vector v_j(i) for i = 1,2,...,m-1, and the elements above the
-              diagonal are the n - i elements of vector u_j(i) for i = 1,2,...,m.
+    A         Array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the m-by-n matrices A_j to be factored.
+              On exit, the elements on the diagonal and superdiagonal (if m >=
+   n), or subdiagonal (if m < n) contain the bidiagonal form B_j. If m >= n, the
+   elements below the diagonal are the m - i elements of vector v_j(i) for i =
+   1,2,...,n, and the elements above the superdiagonal are the n - i - 1
+   elements of vector u_j(i) for i = 1,2,...,n-1. If m < n, the elements below
+   the subdiagonal are the m - i - 1 elements of vector v_j(i) for i =
+   1,2,...,m-1, and the elements above the diagonal are the n - i elements of
+   vector u_j(i) for i = 1,2,...,m.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrices A_j.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of B_j.
+    D         pointer to real type. Array on the GPU (the size depends on the
+   value of strideD).\n The diagonal elements of B_j.
     @param[in]
-    strideD   rocblas_stride.\n   
-              Stride from the start of one vector D_j and the next one D_(j+1). 
-              There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
+    strideD   rocblas_stride.\n
+              Stride from the start of one vector D_j and the next one D_(j+1).
+              There is no restriction for the value of strideD. Normal use case
+   is strideD >= min(m,n).
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of B_j.
+    E         pointer to real type. Array on the GPU (the size depends on the
+   value of strideE).\n The off-diagonal elements of B_j.
     @param[in]
-    strideE   rocblas_stride.\n   
-              Stride from the start of one vector E_j and the next one E_(j+1). 
-              There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
+    strideE   rocblas_stride.\n
+              Stride from the start of one vector E_j and the next one E_(j+1).
+              There is no restriction for the value of strideE. Normal use case
+   is strideE >= min(m,n)-1.
     @param[out]
-    tauq      pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
-              Contains the vectors tauq_j of scalar factors of the 
+    tauq      pointer to type. Array on the GPU (the size depends on the value
+   of strideQ).\n Contains the vectors tauq_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideQ   rocblas_stride.\n
-              Stride from the start of one vector tauq_j to the next one tauq_(j+1). 
-              There is no restriction for the value
-              of strideQ. Normal use is strideQ >= min(m,n).
+              Stride from the start of one vector tauq_j to the next one
+   tauq_(j+1). There is no restriction for the value of strideQ. Normal use is
+   strideQ >= min(m,n).
     @param[out]
-    taup      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors taup_j of scalar factors of the 
+    taup      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors taup_j of scalar factors of the
               Householder matrices G_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector taup_j to the next one taup_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector taup_j to the next one
+   taup_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgebrd_batched(rocblas_handle handle,
-                                                         const rocblas_int m,
-                                                         const rocblas_int n,
-                                                         float *const A[],
-                                                         const rocblas_int lda,
-                                                         float *D,
-                                                         const rocblas_stride strideD,
-                                                         float *E,
-                                                         const rocblas_stride strideE,
-                                                         float *tauq,
-                                                         const rocblas_stride strideQ,
-                                                         float *taup,
-                                                         const rocblas_stride strideP,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgebrd_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    float *const A[], const rocblas_int lda, float *D,
+    const rocblas_stride strideD, float *E, const rocblas_stride strideE,
+    float *tauq, const rocblas_stride strideQ, float *taup,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgebrd_batched(rocblas_handle handle,
-                                                         const rocblas_int m,
-                                                         const rocblas_int n,
-                                                         double *const A[],
-                                                         const rocblas_int lda,
-                                                         double *D,
-                                                         const rocblas_stride strideD,
-                                                         double *E,
-                                                         const rocblas_stride strideE,
-                                                         double *tauq,
-                                                         const rocblas_stride strideQ,
-                                                         double *taup,
-                                                         const rocblas_stride strideP,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgebrd_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    double *const A[], const rocblas_int lda, double *D,
+    const rocblas_stride strideD, double *E, const rocblas_stride strideE,
+    double *tauq, const rocblas_stride strideQ, double *taup,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgebrd_batched(rocblas_handle handle,
-                                                         const rocblas_int m,
-                                                         const rocblas_int n,
-                                                         rocblas_float_complex *const A[],
-                                                         const rocblas_int lda,
-                                                         float *D,
-                                                         const rocblas_stride strideD,
-                                                         float *E,
-                                                         const rocblas_stride strideE,
-                                                         rocblas_float_complex *tauq,
-                                                         const rocblas_stride strideQ,
-                                                         rocblas_float_complex *taup,
-                                                         const rocblas_stride strideP,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgebrd_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda, float *D,
+    const rocblas_stride strideD, float *E, const rocblas_stride strideE,
+    rocblas_float_complex *tauq, const rocblas_stride strideQ,
+    rocblas_float_complex *taup, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_batched(rocblas_handle handle,
-                                                         const rocblas_int m,
-                                                         const rocblas_int n,
-                                                         rocblas_double_complex *const A[],
-                                                         const rocblas_int lda,
-                                                         double *D,
-                                                         const rocblas_stride strideD,
-                                                         double *E,
-                                                         const rocblas_stride strideE,
-                                                         rocblas_double_complex *tauq,
-                                                         const rocblas_stride strideQ,
-                                                         rocblas_double_complex *taup,
-                                                         const rocblas_stride strideP,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda, double *D,
+    const rocblas_stride strideD, double *E, const rocblas_stride strideE,
+    rocblas_double_complex *tauq, const rocblas_stride strideQ,
+    rocblas_double_complex *taup, const rocblas_stride strideP,
+    const rocblas_int batch_count);
 
-/*! \brief GEBRD_STRIDED_BATCHED computes the bidiagonal form of a batch of general m-by-n matrices.
+/*! \brief GEBRD_STRIDED_BATCHED computes the bidiagonal form of a batch of
+   general m-by-n matrices.
 
     \details
-    (This is the blocked version of the algorithm). 
+    (This is the blocked version of the algorithm).
 
     The bidiagonal form is given by:
 
         B_j = Q_j' * A_j * P_j
 
-    where B_j is upper bidiagonal if m >= n and lower bidiagonal if m < n, and Q_j and 
-    P_j are orthogonal/unitary matrices represented as the product of Householder matrices
+    where B_j is upper bidiagonal if m >= n and lower bidiagonal if m < n, and
+   Q_j and P_j are orthogonal/unitary matrices represented as the product of
+   Householder matrices
 
-        Q_j = H_j(1) * H_j(2) * ... *  H_j(n)  and P_j = G_j(1) * G_j(2) * ... * G_j(n-1), if m >= n, or
-        Q_j = H_j(1) * H_j(2) * ... * H_j(m-1) and P_j = G_j(1) * G_j(2) * ... *  G_j(m),  if m < n
+        Q_j = H_j(1) * H_j(2) * ... *  H_j(n)  and P_j = G_j(1) * G_j(2) * ... *
+   G_j(n-1), if m >= n, or Q_j = H_j(1) * H_j(2) * ... * H_j(m-1) and P_j =
+   G_j(1) * G_j(2) * ... *  G_j(m),  if m < n
 
-    Each Householder matrix H_j(i) and G_j(i), for j = 1,2,...,batch_count, is given by
+    Each Householder matrix H_j(i) and G_j(i), for j = 1,2,...,batch_count, is
+   given by
 
         H_j(i) = I - tauq_j[i-1] * v_j(i) * v_j(i)', and
         G_j(i) = I - taup_j[i-1] * u_j(i) * u_j(i)'
-    
-    If m >= n, the first i-1 elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1;
-    while the first i elements of the Householder vector u_j(i) are zero, and u_j(i)[i+1] = 1.
-    If m < n, the first i elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1;
-    while the first i-1 elements of the Householder vector u_j(i) are zero, and u_j(i)[i] = 1.
+
+    If m >= n, the first i-1 elements of the Householder vector v_j(i) are zero,
+   and v_j(i)[i] = 1; while the first i elements of the Householder vector
+   u_j(i) are zero, and u_j(i)[i+1] = 1. If m < n, the first i elements of the
+   Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1; while the first i-1
+   elements of the Householder vector u_j(i) are zero, and u_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -5494,154 +4843,125 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_batched(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B_j.
-              If m >= n, the elements below the diagonal are the m - i elements
-              of vector v_j(i) for i = 1,2,...,n, and the elements above the
-              superdiagonal are the n - i - 1 elements of vector u_j(i) for i = 1,2,...,n-1.
-              If m < n, the elements below the subdiagonal are the m - i - 1
-              elements of vector v_j(i) for i = 1,2,...,m-1, and the elements above the
-              diagonal are the n - i elements of vector u_j(i) for i = 1,2,...,m.
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the m-by-n matrices A_j to be factored. On exit, the
+   elements on the diagonal and superdiagonal (if m >= n), or subdiagonal (if m
+   < n) contain the bidiagonal form B_j. If m >= n, the elements below the
+   diagonal are the m - i elements of vector v_j(i) for i = 1,2,...,n, and the
+   elements above the superdiagonal are the n - i - 1 elements of vector u_j(i)
+   for i = 1,2,...,n-1. If m < n, the elements below the subdiagonal are the m -
+   i - 1 elements of vector v_j(i) for i = 1,2,...,m-1, and the elements above
+   the diagonal are the n - i elements of vector u_j(i) for i = 1,2,...,m.
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j. 
+              Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n   
-              Stride from the start of one matrix A_j and the next one A_(j+1). 
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_j and the next one A_(j+1).
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of B_j.
+    D         pointer to real type. Array on the GPU (the size depends on the
+   value of strideD).\n The diagonal elements of B_j.
     @param[in]
-    strideD   rocblas_stride.\n   
-              Stride from the start of one vector D_j and the next one D_(j+1). 
-              There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
+    strideD   rocblas_stride.\n
+              Stride from the start of one vector D_j and the next one D_(j+1).
+              There is no restriction for the value of strideD. Normal use case
+   is strideD >= min(m,n).
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of B_j.
+    E         pointer to real type. Array on the GPU (the size depends on the
+   value of strideE).\n The off-diagonal elements of B_j.
     @param[in]
-    strideE   rocblas_stride.\n   
-              Stride from the start of one vector E_j and the next one E_(j+1). 
-              There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
+    strideE   rocblas_stride.\n
+              Stride from the start of one vector E_j and the next one E_(j+1).
+              There is no restriction for the value of strideE. Normal use case
+   is strideE >= min(m,n)-1.
     @param[out]
-    tauq      pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
-              Contains the vectors tauq_j of scalar factors of the 
+    tauq      pointer to type. Array on the GPU (the size depends on the value
+   of strideQ).\n Contains the vectors tauq_j of scalar factors of the
               Householder matrices H_j(i).
     @param[in]
     strideQ   rocblas_stride.\n
-              Stride from the start of one vector tauq_j to the next one tauq_(j+1). 
-              There is no restriction for the value
-              of strideQ. Normal use is strideQ >= min(m,n).
+              Stride from the start of one vector tauq_j to the next one
+   tauq_(j+1). There is no restriction for the value of strideQ. Normal use is
+   strideQ >= min(m,n).
     @param[out]
-    taup      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors taup_j of scalar factors of the 
+    taup      pointer to type. Array on the GPU (the size depends on the value
+   of strideP).\n Contains the vectors taup_j of scalar factors of the
               Householder matrices G_j(i).
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector taup_j to the next one taup_(j+1). 
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+              Stride from the start of one vector taup_j to the next one
+   taup_(j+1). There is no restriction for the value of strideP. Normal use is
+   strideP >= min(m,n).
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgebrd_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int m,
-                                                                 const rocblas_int n,
-                                                                 float *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 float *D,
-                                                                 const rocblas_stride strideD,
-                                                                 float *E,
-                                                                 const rocblas_stride strideE,
-                                                                 float *tauq,
-                                                                 const rocblas_stride strideQ,
-                                                                 float *taup,
-                                                                 const rocblas_stride strideP,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgebrd_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, const rocblas_stride strideA, float *D,
+    const rocblas_stride strideD, float *E, const rocblas_stride strideE,
+    float *tauq, const rocblas_stride strideQ, float *taup,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgebrd_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int m,
-                                                                 const rocblas_int n,
-                                                                 double *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 double *D,
-                                                                 const rocblas_stride strideD,
-                                                                 double *E,
-                                                                 const rocblas_stride strideE,
-                                                                 double *tauq,
-                                                                 const rocblas_stride strideQ,
-                                                                 double *taup,
-                                                                 const rocblas_stride strideP,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgebrd_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, double *D,
+    const rocblas_stride strideD, double *E, const rocblas_stride strideE,
+    double *tauq, const rocblas_stride strideQ, double *taup,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgebrd_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int m,
-                                                                 const rocblas_int n,
-                                                                 rocblas_float_complex *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 float *D,
-                                                                 const rocblas_stride strideD,
-                                                                 float *E,
-                                                                 const rocblas_stride strideE,
-                                                                 rocblas_float_complex *tauq,
-                                                                 const rocblas_stride strideQ,
-                                                                 rocblas_float_complex *taup,
-                                                                 const rocblas_stride strideP,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgebrd_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, float *D, const rocblas_stride strideD,
+    float *E, const rocblas_stride strideE, rocblas_float_complex *tauq,
+    const rocblas_stride strideQ, rocblas_float_complex *taup,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int m,
-                                                                 const rocblas_int n,
-                                                                 rocblas_double_complex *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 double *D,
-                                                                 const rocblas_stride strideD,
-                                                                 double *E,
-                                                                 const rocblas_stride strideE,
-                                                                 rocblas_double_complex *tauq,
-                                                                 const rocblas_stride strideQ,
-                                                                 rocblas_double_complex *taup,
-                                                                 const rocblas_stride strideP,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, double *D, const rocblas_stride strideD,
+    double *E, const rocblas_stride strideE, rocblas_double_complex *tauq,
+    const rocblas_stride strideQ, rocblas_double_complex *taup,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-/*! \brief GETRS solves a system of n linear equations on n variables using the LU factorization computed by GETRF.
+/*! \brief GETRS solves a system of n linear equations on n variables using the
+   LU factorization computed by GETRF.
 
     \details
-    It solves one of the following systems: 
+    It solves one of the following systems:
 
-        A  * X = B (no transpose),  
-        A' * X = B (transpose),  or  
+        A  * X = B (no transpose),
+        A' * X = B (transpose),  or
         A* * X = B (conjugate transpose)
 
-    depending on the value of trans. 
+    depending on the value of trans.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     trans       rocblas_operation.\n
-                Specifies the form of the system of equations. 
+                Specifies the form of the system of equations.
     @param[in]
     n           rocblas_int. n >= 0.\n
-                The order of the system, i.e. the number of columns and rows of A.  
+                The order of the system, i.e. the number of columns and rows of
+   A.
     @param[in]
     nrhs        rocblas_int. nrhs >= 0.\n
                 The number of right hand sides, i.e., the number of columns
                 of the matrix B.
     @param[in]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                The factors L and U of the factorization A = P*L*U returned by GETRF.
+                The factors L and U of the factorization A = P*L*U returned by
+   GETRF.
     @param[in]
     lda         rocblas_int. lda >= n.\n
-                The leading dimension of A.  
+                The leading dimension of A.
     @param[in]
     ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
                 The pivot indices returned by GETRF.
@@ -5655,257 +4975,201 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(rocblas_handle 
 
    ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrs(rocblas_handle handle,
-                                                 const rocblas_operation trans,
-                                                 const rocblas_int n,
-                                                 const rocblas_int nrhs,
-                                                 float *A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_int *ipiv,
-                                                 float *B,
-                                                 const rocblas_int ldb);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrs(
+    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+    const rocblas_int nrhs, float *A, const rocblas_int lda,
+    const rocblas_int *ipiv, float *B, const rocblas_int ldb);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrs(rocblas_handle handle,
-                                                 const rocblas_operation trans,
-                                                 const rocblas_int n,
-                                                 const rocblas_int nrhs,
-                                                 double *A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_int *ipiv,
-                                                 double *B,
-                                                 const rocblas_int ldb);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrs(
+    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+    const rocblas_int nrhs, double *A, const rocblas_int lda,
+    const rocblas_int *ipiv, double *B, const rocblas_int ldb);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrs(rocblas_handle handle,
-                                                 const rocblas_operation trans,
-                                                 const rocblas_int n,
-                                                 const rocblas_int nrhs,
-                                                 rocblas_float_complex *A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_int *ipiv,
-                                                 rocblas_float_complex *B,
-                                                 const rocblas_int ldb);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrs(
+    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+    const rocblas_int nrhs, rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_int *ipiv, rocblas_float_complex *B, const rocblas_int ldb);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(rocblas_handle handle,
-                                                 const rocblas_operation trans,
-                                                 const rocblas_int n,
-                                                 const rocblas_int nrhs,
-                                                 rocblas_double_complex *A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_int *ipiv,
-                                                 rocblas_double_complex *B,
-                                                 const rocblas_int ldb);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(
+    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+    const rocblas_int nrhs, rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_int *ipiv, rocblas_double_complex *B, const rocblas_int ldb);
 
-/*! \brief GETRS_BATCHED solves a batch of systems of n linear equations on n variables 
-     using the LU factorization computed by GETRF_BATCHED.
+/*! \brief GETRS_BATCHED solves a batch of systems of n linear equations on n
+   variables using the LU factorization computed by GETRF_BATCHED.
 
     \details
-    For each instance j in the batch, it solves one of the following systems: 
+    For each instance j in the batch, it solves one of the following systems:
 
-        A_j  * X_j = B_j (no transpose),  
-        A_j' * X_j = B_j (transpose),  or  
+        A_j  * X_j = B_j (no transpose),
+        A_j' * X_j = B_j (transpose),  or
         A_j* * X_j = B_j (conjugate transpose)
 
-    depending on the value of trans. 
+    depending on the value of trans.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     trans       rocblas_operation.\n
-                Specifies the form of the system of equations of each instance in the batch. 
+                Specifies the form of the system of equations of each instance
+   in the batch.
     @param[in]
     n           rocblas_int. n >= 0.\n
-                The order of the system, i.e. the number of columns and rows of all A_j matrices.  
+                The order of the system, i.e. the number of columns and rows of
+   all A_j matrices.
     @param[in]
     nrhs        rocblas_int. nrhs >= 0.\n
                 The number of right hand sides, i.e., the number of columns
                 of all the matrices B_j.
     @param[in]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-                The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by GETRF_BATCHED.
+    A           Array of pointers to type. Each pointer points to an array on
+   the GPU of dimension lda*n.\n The factors L_j and U_j of the factorization
+   A_j = P_j*L_j*U_j returned by GETRF_BATCHED.
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 The leading dimension of matrices A_j.
     @param[in]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-                Contains the vectors ipiv_j of pivot indices returned by GETRF_BATCHED.
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on
+   the value of strideP).\n Contains the vectors ipiv_j of pivot indices
+   returned by GETRF_BATCHED.
     @param[in]
     strideP     rocblas_stride.\n
-                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-                There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+                Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use case
+   is strideP >= min(m,n).
     @param[in,out]
-    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n 
-                On entry, the right hand side matrices B_j.
+    B           Array of pointers to type. Each pointer points to an array on
+   the GPU of dimension ldb*nrhs.\n On entry, the right hand side matrices B_j.
                 On exit, the solution matrix X_j of each system in the batch.
     @param[in]
     ldb         rocblas_int. ldb >= n.\n
                 The leading dimension of matrices B_j.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of instances (systems) in the batch. 
+                Number of instances (systems) in the batch.
 
    ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrs_batched(rocblas_handle handle,
-                                                         const rocblas_operation trans,
-                                                         const rocblas_int n,
-                                                         const rocblas_int nrhs,
-                                                         float *const A[],
-                                                         const rocblas_int lda,
-                                                         const rocblas_int *ipiv,
-                                                         const rocblas_stride strideP,
-                                                         float *const B[],
-                                                         const rocblas_int ldb,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrs_batched(
+    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+    const rocblas_int nrhs, float *const A[], const rocblas_int lda,
+    const rocblas_int *ipiv, const rocblas_stride strideP, float *const B[],
+    const rocblas_int ldb, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrs_batched(rocblas_handle handle,
-                                                         const rocblas_operation trans,
-                                                         const rocblas_int n,
-                                                         const rocblas_int nrhs,
-                                                         double *const A[],
-                                                         const rocblas_int lda,
-                                                         const rocblas_int *ipiv,
-                                                         const rocblas_stride strideP,
-                                                         double *const B[],
-                                                         const rocblas_int ldb,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrs_batched(
+    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+    const rocblas_int nrhs, double *const A[], const rocblas_int lda,
+    const rocblas_int *ipiv, const rocblas_stride strideP, double *const B[],
+    const rocblas_int ldb, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrs_batched(rocblas_handle handle,
-                                                         const rocblas_operation trans,
-                                                         const rocblas_int n,
-                                                         const rocblas_int nrhs,
-                                                         rocblas_float_complex *const A[],
-                                                         const rocblas_int lda,
-                                                         const rocblas_int *ipiv,
-                                                         const rocblas_stride strideP,
-                                                         rocblas_float_complex *const B[],
-                                                         const rocblas_int ldb,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrs_batched(
+    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+    const rocblas_int nrhs, rocblas_float_complex *const A[],
+    const rocblas_int lda, const rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_float_complex *const B[],
+    const rocblas_int ldb, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
-                                                         const rocblas_operation trans,
-                                                         const rocblas_int n,
-                                                         const rocblas_int nrhs,
-                                                         rocblas_double_complex *const A[],
-                                                         const rocblas_int lda,
-                                                         const rocblas_int *ipiv,
-                                                         const rocblas_stride strideP,
-                                                         rocblas_double_complex *const B[],
-                                                         const rocblas_int ldb,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(
+    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+    const rocblas_int nrhs, rocblas_double_complex *const A[],
+    const rocblas_int lda, const rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_double_complex *const B[],
+    const rocblas_int ldb, const rocblas_int batch_count);
 
-/*! \brief GETRS_STRIDED_BATCHED solves a batch of systems of n linear equations on n variables 
-     using the LU factorization computed by GETRF_STRIDED_BATCHED.
+/*! \brief GETRS_STRIDED_BATCHED solves a batch of systems of n linear equations
+   on n variables using the LU factorization computed by GETRF_STRIDED_BATCHED.
 
     \details
-    For each instance j in the batch, it solves one of the following systems: 
+    For each instance j in the batch, it solves one of the following systems:
 
-        A_j  * X_j = B_j (no transpose),  
-        A_j' * X_j = B_j (transpose),  or  
+        A_j  * X_j = B_j (no transpose),
+        A_j' * X_j = B_j (transpose),  or
         A_j* * X_j = B_j (conjugate transpose)
 
-    depending on the value of trans. 
+    depending on the value of trans.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     trans       rocblas_operation.\n
-                Specifies the form of the system of equations of each instance in the batch. 
+                Specifies the form of the system of equations of each instance
+   in the batch.
     @param[in]
     n           rocblas_int. n >= 0.\n
-                The order of the system, i.e. the number of columns and rows of all A_j matrices.  
+                The order of the system, i.e. the number of columns and rows of
+   all A_j matrices.
     @param[in]
     nrhs        rocblas_int. nrhs >= 0.\n
                 The number of right hand sides, i.e., the number of columns
                 of all the matrices B_j.
     @param[in]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-                The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by GETRF_STRIDED_BATCHED.
+    A           pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j
+   returned by GETRF_STRIDED_BATCHED.
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 The leading dimension of matrices A_j.
     @param[in]
     strideA     rocblas_stride.\n
-                Stride from the start of one matrix A_j and the next one A_(j+1). 
-                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+                Stride from the start of one matrix A_j and the next one
+   A_(j+1). There is no restriction for the value of strideA. Normal use case is
+   strideA >= lda*n.
     @param[in]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-                Contains the vectors ipiv_j of pivot indices returned by GETRF_STRIDED_BATCHED.
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on
+   the value of strideP).\n Contains the vectors ipiv_j of pivot indices
+   returned by GETRF_STRIDED_BATCHED.
     @param[in]
     strideP     rocblas_stride.\n
-                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-                There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+                Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use case
+   is strideP >= min(m,n).
     @param[in,out]
-    B           pointer to type. Array on the GPU (size depends on the value of strideB).\n
-                On entry, the right hand side matrices B_j.
-                On exit, the solution matrix X_j of each system in the batch.
+    B           pointer to type. Array on the GPU (size depends on the value of
+   strideB).\n On entry, the right hand side matrices B_j. On exit, the solution
+   matrix X_j of each system in the batch.
     @param[in]
     ldb         rocblas_int. ldb >= n.\n
                 The leading dimension of matrices B_j.
     @param[in]
     strideB     rocblas_stride.\n
-                Stride from the start of one matrix B_j and the next one B_(j+1). 
-                There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs.
+                Stride from the start of one matrix B_j and the next one
+   B_(j+1). There is no restriction for the value of strideB. Normal use case is
+   strideB >= ldb*nrhs.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of instances (systems) in the batch. 
+                Number of instances (systems) in the batch.
 
    ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrs_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_operation trans,
-                                                                 const rocblas_int n,
-                                                                 const rocblas_int nrhs,
-                                                                 float *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 const rocblas_int *ipiv,
-                                                                 const rocblas_stride strideP,
-                                                                 float *B,
-                                                                 const rocblas_int ldb,
-                                                                 const rocblas_stride strideB,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrs_strided_batched(
+    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+    const rocblas_int nrhs, float *A, const rocblas_int lda,
+    const rocblas_stride strideA, const rocblas_int *ipiv,
+    const rocblas_stride strideP, float *B, const rocblas_int ldb,
+    const rocblas_stride strideB, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrs_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_operation trans,
-                                                                 const rocblas_int n,
-                                                                 const rocblas_int nrhs,
-                                                                 double *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 const rocblas_int *ipiv,
-                                                                 const rocblas_stride strideP,
-                                                                 double *B,
-                                                                 const rocblas_int ldb,
-                                                                 const rocblas_stride strideB,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrs_strided_batched(
+    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+    const rocblas_int nrhs, double *A, const rocblas_int lda,
+    const rocblas_stride strideA, const rocblas_int *ipiv,
+    const rocblas_stride strideP, double *B, const rocblas_int ldb,
+    const rocblas_stride strideB, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrs_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_operation trans,
-                                                                 const rocblas_int n,
-                                                                 const rocblas_int nrhs,
-                                                                 rocblas_float_complex *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 const rocblas_int *ipiv,
-                                                                 const rocblas_stride strideP,
-                                                                 rocblas_float_complex *B,
-                                                                 const rocblas_int ldb,
-                                                                 const rocblas_stride strideB,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrs_strided_batched(
+    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+    const rocblas_int nrhs, rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, const rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_float_complex *B,
+    const rocblas_int ldb, const rocblas_stride strideB,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_operation trans,
-                                                                 const rocblas_int n,
-                                                                 const rocblas_int nrhs,
-                                                                 rocblas_double_complex *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 const rocblas_int *ipiv,
-                                                                 const rocblas_stride strideP,
-                                                                 rocblas_double_complex *B,
-                                                                 const rocblas_int ldb,
-                                                                 const rocblas_stride strideB,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(
+    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
+    const rocblas_int nrhs, rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, const rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_double_complex *B,
+    const rocblas_int ldb, const rocblas_stride strideB,
+    const rocblas_int batch_count);
 
 /*! \brief GETRI inverts a general n-by-n matrix A using the LU factorization
     computed by GETRF.
@@ -5915,58 +5179,51 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(rocblas_handle 
 
         inv(A) * L = inv(U)
 
-    where L is the lower triangular factor of A with unit diagonal elements, and U is the
-    upper triangular factor.
+    where L is the lower triangular factor of A with unit diagonal elements, and
+   U is the upper triangular factor.
 
     @param[in]
     handle    rocblas_handle.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrix A. 
+              The number of rows and columns of the matrix A.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the factors L and U of the factorization A = P*L*U returned by GETRF.
-              On exit, the inverse of A if info = 0; otherwise undefined.
+              On entry, the factors L and U of the factorization A = P*L*U
+   returned by GETRF. On exit, the inverse of A if info = 0; otherwise
+   undefined.
     @param[in]
     lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A. 
+              Specifies the leading dimension of A.
     @param[in]
     ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
               The pivot indices returned by GETRF.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit. 
+              If info = 0, successful exit.
               If info = i > 0, U is singular. U(i,i) is the first zero pivot.
-            
+
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri(rocblas_handle handle,
-                                                   const rocblas_int n, 
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   rocblas_int *info);
+                                                 const rocblas_int n, float *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int *ipiv,
+                                                 rocblas_int *info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri(rocblas_handle handle,
-                                                   const rocblas_int n, 
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   rocblas_int *info);
+                                                 const rocblas_int n, double *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int *ipiv,
+                                                 rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri(rocblas_handle handle,
-                                                   const rocblas_int n, 
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri(
+    rocblas_handle handle, const rocblas_int n, rocblas_float_complex *A,
+    const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(rocblas_handle handle,
-                                                   const rocblas_int n, 
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int *ipiv,
-                                                   rocblas_int *info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(
+    rocblas_handle handle, const rocblas_int n, rocblas_double_complex *A,
+    const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info);
 
 /*! \brief GETRI_BATCHED inverts a batch of general n-by-n matrices using
     the LU factorization computed by GETRF_BATCHED.
@@ -5976,8 +5233,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(rocblas_handle handle,
 
         inv(A_j) * L_j = inv(U_j)
 
-    where L_j is the lower triangular factor of A_j with unit diagonal elements, and U_j is the
-    upper triangular factor.
+    where L_j is the lower triangular factor of A_j with unit diagonal elements,
+   and U_j is the upper triangular factor.
 
     @param[in]
     handle    rocblas_handle.
@@ -5985,76 +5242,63 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of rows and columns of all matrices A_j in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the factors L_j and U_j of the factorization A = P_j*L_j*U_j returned by
-              GETRF_BATCHED.
-              On exit, the inverses of A_j if info_j = 0; otherwise undefined.
+    A         array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the factors L_j and U_j of the
+   factorization A = P_j*L_j*U_j returned by GETRF_BATCHED. On exit, the
+   inverses of A_j if info_j = 0; otherwise undefined.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of matrices A_j.
     @param[in]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n 
-              The pivot indices returned by GETRF_BATCHED.
+    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the
+   value of strideP).\n The pivot indices returned by GETRF_BATCHED.
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(i+j).
-              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(i+j). There is no restriction for the value of strideP. Normal use case
+   is strideP >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_j = 0, successful exit for inversion of A_j. 
-              If info_j = i > 0, U_j is singular. U_j(i,i) is the first zero pivot.
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_j = 0, successful exit for inversion of A_j. If info_j = i >
+   0, U_j is singular. U_j(i,i) is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
-            
+                Number of matrices in the batch.
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_batched(rocblas_handle handle,
-                                                         const rocblas_int n, 
-                                                         float *const A[],
-                                                         const rocblas_int lda,
-                                                         rocblas_int *ipiv,
-                                                         const rocblas_stride strideP,
-                                                         rocblas_int *info,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_batched(
+    rocblas_handle handle, const rocblas_int n, float *const A[],
+    const rocblas_int lda, rocblas_int *ipiv, const rocblas_stride strideP,
+    rocblas_int *info, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri_batched(rocblas_handle handle,
-                                                         const rocblas_int n, 
-                                                         double *const A[],
-                                                         const rocblas_int lda,
-                                                         rocblas_int *ipiv,
-                                                         const rocblas_stride strideP,
-                                                         rocblas_int *info,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri_batched(
+    rocblas_handle handle, const rocblas_int n, double *const A[],
+    const rocblas_int lda, rocblas_int *ipiv, const rocblas_stride strideP,
+    rocblas_int *info, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri_batched(rocblas_handle handle,
-                                                         const rocblas_int n, 
-                                                         rocblas_float_complex *const A[],
-                                                         const rocblas_int lda,
-                                                         rocblas_int *ipiv,
-                                                         const rocblas_stride strideP,
-                                                         rocblas_int *info,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri_batched(
+    rocblas_handle handle, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_batched(rocblas_handle handle,
-                                                         const rocblas_int n, 
-                                                         rocblas_double_complex *const A[],
-                                                         const rocblas_int lda,
-                                                         rocblas_int *ipiv,
-                                                         const rocblas_stride strideP,
-                                                         rocblas_int *info,
-                                                         const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_batched(
+    rocblas_handle handle, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-/*! \brief GETRI_STRIDED_BATCHED inverts a batch of general n-by-n matrices using
-    the LU factorization computed by GETRF_STRIDED_BATCHED.
+/*! \brief GETRI_STRIDED_BATCHED inverts a batch of general n-by-n matrices
+   using the LU factorization computed by GETRF_STRIDED_BATCHED.
 
     \details
     The inverse is computed by solving the linear system
 
         inv(A_j) * L_j = inv(U_j)
 
-    where L_j is the lower triangular factor of A_j with unit diagonal elements, and U_j is the
-    upper triangular factor.
+    where L_j is the lower triangular factor of A_j with unit diagonal elements,
+   and U_j is the upper triangular factor.
 
     @param[in]
     handle    rocblas_handle.
@@ -6062,504 +5306,439 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_batched(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of rows and columns of all matrices A_i in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by
-              GETRF_STRIDED_BATCHED.
-              On exit, the inverses of A_j if info_j = 0; otherwise undefined.
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the factors L_j and U_j of the factorization A_j =
+   P_j*L_j*U_j returned by GETRF_STRIDED_BATCHED. On exit, the inverses of A_j
+   if info_j = 0; otherwise undefined.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of matrices A_j.
     @param[in]
     strideA   rocblas_stride.\n
               Stride from the start of one matrix A_j and the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n
     @param[in]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n 
-              The pivot indices returned by GETRF_STRIDED_BATCHED.
+    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the
+   value of strideP).\n The pivot indices returned by GETRF_STRIDED_BATCHED.
     @param[in]
     strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+              Stride from the start of one vector ipiv_j to the next one
+   ipiv_(j+1). There is no restriction for the value of strideP. Normal use case
+   is strideP >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_j = 0, successful exit for inversion of A_j. 
-              If info_j = i > 0, U_j is singular. U_j(i,i) is the first zero pivot.
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_j = 0, successful exit for inversion of A_j. If info_j = i >
+   0, U_j is singular. U_j(i,i) is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
-            
+                Number of matrices in the batch.
+
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int n, 
-                                                                 float *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 rocblas_int *ipiv,
-                                                                 const rocblas_stride strideP,
-                                                                 rocblas_int *info,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_strided_batched(
+    rocblas_handle handle, const rocblas_int n, float *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int n, 
-                                                                 double *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 rocblas_int *ipiv,
-                                                                 const rocblas_stride strideP,
-                                                                 rocblas_int *info,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri_strided_batched(
+    rocblas_handle handle, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int n, 
-                                                                 rocblas_float_complex *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 rocblas_int *ipiv,
-                                                                 const rocblas_stride strideP,
-                                                                 rocblas_int *info,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri_strided_batched(
+    rocblas_handle handle, const rocblas_int n, rocblas_float_complex *A,
+    const rocblas_int lda, const rocblas_stride strideA, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int n, 
-                                                                 rocblas_double_complex *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 rocblas_int *ipiv,
-                                                                 const rocblas_stride strideP,
-                                                                 rocblas_int *info,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(
+    rocblas_handle handle, const rocblas_int n, rocblas_double_complex *A,
+    const rocblas_int lda, const rocblas_stride strideA, rocblas_int *ipiv,
+    const rocblas_stride strideP, rocblas_int *info,
+    const rocblas_int batch_count);
 
 /*! \brief POTF2 computes the Cholesky factorization of a real symmetric/complex
     Hermitian positive definite matrix A.
 
     \details
-    (This is the unblocked version of the algorithm). 
+    (This is the unblocked version of the algorithm).
 
     The factorization has the form:
 
         A = U' * U, or
         A = L  * L'
 
-    depending on the value of uplo. U is an upper triangular matrix and L is lower triangular.
+    depending on the value of uplo. U is an upper triangular matrix and L is
+   lower triangular.
 
     @param[in]
     handle    rocblas_handle.
     @param[in]
     uplo      rocblas_fill.\n
               Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+              If uplo indicates lower (or upper), then the upper (or lower) part
+   of A is not used.
     @param[in]
     n         rocblas_int. n >= 0.\n
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix A to be factored. On exit, the lower or upper triangular factor.
+              On entry, the matrix A to be factored. On exit, the lower or upper
+   triangular factor.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               specifies the leading dimension of A.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful factorization of matrix A. 
-              If info = i > 0, the leading minor of order i of A is not positive definite. 
-              The factorization stopped at this point.
+              If info = 0, successful factorization of matrix A.
+              If info = i > 0, the leading minor of order i of A is not positive
+   definite. The factorization stopped at this point.
 
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_spotf2(rocblas_handle handle,
-                                                   const rocblas_fill uplo,
-                                                   const rocblas_int n,
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int* info);
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n, float *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int *info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dpotf2(rocblas_handle handle,
-                                                   const rocblas_fill uplo,
-                                                   const rocblas_int n,
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int* info);
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n, double *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cpotf2(rocblas_handle handle,
-                                                   const rocblas_fill uplo,
-                                                   const rocblas_int n,
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int* info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotf2(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2(rocblas_handle handle,
-                                                   const rocblas_fill uplo,
-                                                   const rocblas_int n,
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int* info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda, rocblas_int *info);
 
-
-/*! \brief POTF2_BATCHED computes the Cholesky factorization of a 
+/*! \brief POTF2_BATCHED computes the Cholesky factorization of a
     batch of real symmetric/complex Hermitian positive definite matrices.
 
     \details
-    (This is the unblocked version of the algorithm). 
+    (This is the unblocked version of the algorithm).
 
     The factorization of matrix A_i in the batch has the form:
 
         A_i = U_i' * U_i, or
         A_i = L_i  * L_i'
 
-    depending on the value of uplo. U_i is an upper triangular matrix and L_i is lower triangular.
+    depending on the value of uplo. U_i is an upper triangular matrix and L_i is
+   lower triangular.
 
     @param[in]
     handle    rocblas_handle.
     @param[in]
     uplo      rocblas_fill.\n
               Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+              If uplo indicates lower (or upper), then the upper (or lower) part
+   of A is not used.
     @param[in]
     n         rocblas_int. n >= 0.\n
               The dimension of matrix A_i.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_i to be factored. On exit, the upper or lower triangular factors. 
+    A         array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the matrices A_i to be factored. On exit,
+   the upper or lower triangular factors.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               specifies the leading dimension of A_i.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, successful factorization of matrix A_i. 
-              If info_i = j > 0, the leading minor of order j of A_i is not positive definite. 
-              The i-th factorization stopped at this point.
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_i = 0, successful factorization of matrix A_i. If info_i = j >
+   0, the leading minor of order j of A_i is not positive definite. The i-th
+   factorization stopped at this point.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
+                Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_spotf2_batched(rocblas_handle handle,
-                                                           const rocblas_fill uplo,
-                                                           const rocblas_int n, 
-                                                           float *const A[],
-                                                           const rocblas_int lda,
-                                                           rocblas_int* info,
-                                                           const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotf2_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    float *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dpotf2_batched(rocblas_handle handle,
-                                                           const rocblas_fill uplo,
-                                                           const rocblas_int n, 
-                                                           double *const A[],
-                                                           const rocblas_int lda,
-                                                           rocblas_int* info,
-                                                           const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotf2_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    double *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cpotf2_batched(rocblas_handle handle,
-                                                           const rocblas_fill uplo,
-                                                           const rocblas_int n, 
-                                                           rocblas_float_complex *const A[],
-                                                           const rocblas_int lda,
-                                                           rocblas_int* info,
-                                                           const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotf2_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_batched(rocblas_handle handle,
-                                                           const rocblas_fill uplo,
-                                                           const rocblas_int n, 
-                                                           rocblas_double_complex *const A[],
-                                                           const rocblas_int lda,
-                                                           rocblas_int* info,
-                                                           const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-/*! \brief POTF2_STRIDED_BATCHED computes the Cholesky factorization of a 
+/*! \brief POTF2_STRIDED_BATCHED computes the Cholesky factorization of a
     batch of real symmetric/complex Hermitian positive definite matrices.
 
     \details
-    (This is the unblocked version of the algorithm). 
+    (This is the unblocked version of the algorithm).
 
     The factorization of matrix A_i in the batch has the form:
 
         A_i = U_i' * U_i, or
         A_i = L_i  * L_i'
 
-    depending on the value of uplo. U_i is an upper triangular matrix and L_i is lower triangular.
+    depending on the value of uplo. U_i is an upper triangular matrix and L_i is
+   lower triangular.
 
     @param[in]
     handle    rocblas_handle.
     @param[in]
     uplo      rocblas_fill.\n
               Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+              If uplo indicates lower (or upper), then the upper (or lower) part
+   of A is not used.
     @param[in]
     n         rocblas_int. n >= 0.\n
               The dimension of matrix A_i.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_i to be factored. On exit, the upper or lower triangular factors. 
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the matrices A_i to be factored. On exit, the upper
+   or lower triangular factors.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               specifies the leading dimension of A_i.
     @param[in]
     strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i and the next one A_(i+1). 
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+              Stride from the start of one matrix A_i and the next one A_(i+1).
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, successful factorization of matrix A_i. 
-              If info_i = j > 0, the leading minor of order j of A_i is not positive definite. 
-              The i-th factorization stopped at this point.
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_i = 0, successful factorization of matrix A_i. If info_i = j >
+   0, the leading minor of order j of A_i is not positive definite. The i-th
+   factorization stopped at this point.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
+                Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_spotf2_strided_batched(rocblas_handle handle,
-                                                                   const rocblas_fill uplo,
-                                                                   const rocblas_int n, 
-                                                                   float *A,
-                                                                   const rocblas_int lda,
-                                                                   const rocblas_stride strideA,
-                                                                   rocblas_int* info,
-                                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotf2_strided_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    float *A, const rocblas_int lda, const rocblas_stride strideA,
+    rocblas_int *info, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dpotf2_strided_batched(rocblas_handle handle,
-                                                                   const rocblas_fill uplo,
-                                                                   const rocblas_int n, 
-                                                                   double *A,
-                                                                   const rocblas_int lda,
-                                                                   const rocblas_stride strideA,
-                                                                   rocblas_int* info,
-                                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotf2_strided_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    double *A, const rocblas_int lda, const rocblas_stride strideA,
+    rocblas_int *info, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cpotf2_strided_batched(rocblas_handle handle,
-                                                                   const rocblas_fill uplo,
-                                                                   const rocblas_int n, 
-                                                                   rocblas_float_complex *A,
-                                                                   const rocblas_int lda,
-                                                                   const rocblas_stride strideA,
-                                                                   rocblas_int* info,
-                                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotf2_strided_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_strided_batched(rocblas_handle handle,
-                                                                   const rocblas_fill uplo,
-                                                                   const rocblas_int n, 
-                                                                   rocblas_double_complex *A,
-                                                                   const rocblas_int lda,
-                                                                   const rocblas_stride strideA,
-                                                                   rocblas_int* info,
-                                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_strided_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_int *info,
+    const rocblas_int batch_count);
 
 /*! \brief POTRF computes the Cholesky factorization of a real symmetric/complex
     Hermitian positive definite matrix A.
 
     \details
-    (This is the blocked version of the algorithm). 
+    (This is the blocked version of the algorithm).
 
     The factorization has the form:
 
         A = U' * U, or
         A = L  * L'
 
-    depending on the value of uplo. U is an upper triangular matrix and L is lower triangular.
+    depending on the value of uplo. U is an upper triangular matrix and L is
+   lower triangular.
 
     @param[in]
     handle    rocblas_handle.
     @param[in]
     uplo      rocblas_fill.\n
               Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+              If uplo indicates lower (or upper), then the upper (or lower) part
+   of A is not used.
     @param[in]
     n         rocblas_int. n >= 0.\n
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix A to be factored. On exit, the lower or upper triangular factor.
+              On entry, the matrix A to be factored. On exit, the lower or upper
+   triangular factor.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               specifies the leading dimension of A.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful factorization of matrix A. 
-              If info = i > 0, the leading minor of order i of A is not positive definite. 
-              The factorization stopped at this point.
+              If info = 0, successful factorization of matrix A.
+              If info = i > 0, the leading minor of order i of A is not positive
+   definite. The factorization stopped at this point.
 
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_spotrf(rocblas_handle handle,
-                                                   const rocblas_fill uplo,
-                                                   const rocblas_int n,
-                                                   float *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int* info);
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n, float *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int *info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrf(rocblas_handle handle,
-                                                   const rocblas_fill uplo,
-                                                   const rocblas_int n,
-                                                   double *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int* info);
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n, double *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrf(rocblas_handle handle,
-                                                   const rocblas_fill uplo,
-                                                   const rocblas_int n,
-                                                   rocblas_float_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int* info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrf(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda, rocblas_int *info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf(rocblas_handle handle,
-                                                   const rocblas_fill uplo,
-                                                   const rocblas_int n,
-                                                   rocblas_double_complex *A,
-                                                   const rocblas_int lda,
-                                                   rocblas_int* info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda, rocblas_int *info);
 
-
-/*! \brief POTRF_BATCHED computes the Cholesky factorization of a 
+/*! \brief POTRF_BATCHED computes the Cholesky factorization of a
     batch of real symmetric/complex Hermitian positive definite matrices.
 
     \details
-    (This is the blocked version of the algorithm). 
+    (This is the blocked version of the algorithm).
 
     The factorization of matrix A_i in the batch has the form:
 
         A_i = U_i' * U_i, or
         A_i = L_i  * L_i'
 
-    depending on the value of uplo. U_i is an upper triangular matrix and L_i is lower triangular.
+    depending on the value of uplo. U_i is an upper triangular matrix and L_i is
+   lower triangular.
 
     @param[in]
     handle    rocblas_handle.
     @param[in]
     uplo      rocblas_fill.\n
               Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+              If uplo indicates lower (or upper), then the upper (or lower) part
+   of A is not used.
     @param[in]
     n         rocblas_int. n >= 0.\n
               The dimension of matrix A_i.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_i to be factored. On exit, the upper or lower triangular factors. 
+    A         array of pointers to type. Each pointer points to an array on the
+   GPU of dimension lda*n.\n On entry, the matrices A_i to be factored. On exit,
+   the upper or lower triangular factors.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               specifies the leading dimension of A_i.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, successful factorization of matrix A_i. 
-              If info_i = j > 0, the leading minor of order j of A_i is not positive definite. 
-              The i-th factorization stopped at this point.
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_i = 0, successful factorization of matrix A_i. If info_i = j >
+   0, the leading minor of order j of A_i is not positive definite. The i-th
+   factorization stopped at this point.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
+                Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_spotrf_batched(rocblas_handle handle,
-                                                           const rocblas_fill uplo,
-                                                           const rocblas_int n, 
-                                                           float *const A[],
-                                                           const rocblas_int lda,
-                                                           rocblas_int* info,
-                                                           const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotrf_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    float *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrf_batched(rocblas_handle handle,
-                                                           const rocblas_fill uplo,
-                                                           const rocblas_int n, 
-                                                           double *const A[],
-                                                           const rocblas_int lda,
-                                                           rocblas_int* info,
-                                                           const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrf_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    double *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrf_batched(rocblas_handle handle,
-                                                           const rocblas_fill uplo,
-                                                           const rocblas_int n, 
-                                                           rocblas_float_complex *const A[],
-                                                           const rocblas_int lda,
-                                                           rocblas_int* info,
-                                                           const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrf_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    rocblas_float_complex *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_batched(rocblas_handle handle,
-                                                           const rocblas_fill uplo,
-                                                           const rocblas_int n, 
-                                                           rocblas_double_complex *const A[],
-                                                           const rocblas_int lda,
-                                                           rocblas_int* info,
-                                                           const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *info,
+    const rocblas_int batch_count);
 
-/*! \brief POTRF_STRIDED_BATCHED computes the Cholesky factorization of a 
+/*! \brief POTRF_STRIDED_BATCHED computes the Cholesky factorization of a
     batch of real symmetric/complex Hermitian positive definite matrices.
 
     \details
-    (This is the blocked version of the algorithm). 
+    (This is the blocked version of the algorithm).
 
     The factorization of matrix A_i in the batch has the form:
 
         A_i = U_i' * U_i, or
         A_i = L_i  * L_i'
 
-    depending on the value of uplo. U_i is an upper triangular matrix and L_i is lower triangular.
+    depending on the value of uplo. U_i is an upper triangular matrix and L_i is
+   lower triangular.
 
     @param[in]
     handle    rocblas_handle.
     @param[in]
     uplo      rocblas_fill.\n
               Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+              If uplo indicates lower (or upper), then the upper (or lower) part
+   of A is not used.
     @param[in]
     n         rocblas_int. n >= 0.\n
               The dimension of matrix A_i.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_i to be factored. On exit, the upper or lower triangular factors. 
+    A         pointer to type. Array on the GPU (the size depends on the value
+   of strideA).\n On entry, the matrices A_i to be factored. On exit, the upper
+   or lower triangular factors.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               specifies the leading dimension of A_i.
     @param[in]
     strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i and the next one A_(i+1). 
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+              Stride from the start of one matrix A_i and the next one A_(i+1).
+              There is no restriction for the value of strideA. Normal use case
+   is strideA >= lda*n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info_i = 0, successful factorization of matrix A_i. 
-              If info_i = j > 0, the leading minor of order j of A_i is not positive definite. 
-              The i-th factorization stopped at this point.
+    info      pointer to rocblas_int. Array of batch_count integers on the
+   GPU.\n If info_i = 0, successful factorization of matrix A_i. If info_i = j >
+   0, the leading minor of order j of A_i is not positive definite. The i-th
+   factorization stopped at this point.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-                Number of matrices in the batch. 
+                Number of matrices in the batch.
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_spotrf_strided_batched(rocblas_handle handle,
-                                                                   const rocblas_fill uplo,
-                                                                   const rocblas_int n, 
-                                                                   float *A,
-                                                                   const rocblas_int lda,
-                                                                   const rocblas_stride strideA,
-                                                                   rocblas_int* info,
-                                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotrf_strided_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    float *A, const rocblas_int lda, const rocblas_stride strideA,
+    rocblas_int *info, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrf_strided_batched(rocblas_handle handle,
-                                                                   const rocblas_fill uplo,
-                                                                   const rocblas_int n, 
-                                                                   double *A,
-                                                                   const rocblas_int lda,
-                                                                   const rocblas_stride strideA,
-                                                                   rocblas_int* info,
-                                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrf_strided_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    double *A, const rocblas_int lda, const rocblas_stride strideA,
+    rocblas_int *info, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrf_strided_batched(rocblas_handle handle,
-                                                                   const rocblas_fill uplo,
-                                                                   const rocblas_int n, 
-                                                                   rocblas_float_complex *A,
-                                                                   const rocblas_int lda,
-                                                                   const rocblas_stride strideA,
-                                                                   rocblas_int* info,
-                                                                   const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrf_strided_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_int *info,
+    const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle handle,
-                                                                   const rocblas_fill uplo,
-                                                                   const rocblas_int n, 
-                                                                   rocblas_double_complex *A,
-                                                                   const rocblas_int lda,
-                                                                   const rocblas_stride strideA,
-                                                                   rocblas_int* info,
-                                                                   const rocblas_int batch_count);
-
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(
+    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_int *info,
+    const rocblas_int batch_count);
 
 #ifdef __cplusplus
 }

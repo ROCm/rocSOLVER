@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # ########################################################################
@@ -98,7 +98,7 @@ set( rocsolver_lapack_source
 set( auxiliaries
   buildinfo.cpp
   rocblas.cpp
-)  
+)
 
 prepend_path( ".." rocsolver_headers_public relative_rocsolver_headers_public )
 

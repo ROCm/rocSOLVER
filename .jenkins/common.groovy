@@ -8,7 +8,7 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
     String compiler = jobName.contains('hipclang') ? 'hipcc' : 'hcc'
     String hipClang = jobName.contains('hipclang') ? '--hip-clang' : ''
     String sles = platform.jenkinsLabel.contains('sles') ? '/usr/bin/sudo --preserve-env' : ''
-    String debug = project.buildName.contains('Debug') ? '-g' : ''   
+    String debug = project.buildName.contains('Debug') ? '-g' : ''
     String centos = platform.jenkinsLabel.contains('centos') ? 'source scl_source enable devtoolset-7' : ''
     String noOptimizations = ''
 
