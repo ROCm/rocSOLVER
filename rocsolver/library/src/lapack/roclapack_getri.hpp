@@ -406,7 +406,7 @@ __global__ void getri_kernel_large2(const rocblas_int n,
 template <bool BATCHED, bool INPLACE, typename T>
 void rocsolver_getri_getMemorySize(const rocblas_int n, const rocblas_int batch_count,
                                   size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4,
-                                  size_t *size_5, size_t *size_6, size_t *size_7)
+                                  size_t *size_5, size_t *size_6)
 {
     // for scalars
     *size_1 = sizeof(T)*3;
@@ -415,35 +415,37 @@ void rocsolver_getri_getMemorySize(const rocblas_int n, const rocblas_int batch_
     // if very small size, no workspace needed
     if (n <= WAVESIZE)
     {
-        *size_2 = *size_3 = *size_4 = *size_5 = *size_6 = *size_7 = 0;
+        *size_2 = *size_3 = *size_4 = *size_5 = *size_6 = 0;
         return;
     }
     #endif
 
-    // for workspace
-    if (INPLACE)
-        *size_2 = n*n;
+    size_t work_trtri, work_trsm, c_temp, c_temp_arr, x_temp, x_temp_arr, invA, invA_arr;
+
+    // for TRSM
+    if (n <= GETRI_SWITCHSIZE_LARGE)
+        x_temp = x_temp_arr = invA = invA_arr = 0;
     else
-        *size_2 = (n <= GETRI_SWITCHSIZE_MID ? n : n * GETRI_BLOCKSIZE);
-    *size_2 *= sizeof(T)*batch_count;
+        rocblasCall_trsm_mem<BATCHED,T>(rocblas_side_right,n,GETRI_BLOCKSIZE,batch_count,&x_temp,&x_temp_arr,&invA,&invA_arr);
+
+    // for TRTRI
+    size_t s4, s5;
+    rocblasCall_trtri_mem<BATCHED,T>(n,batch_count,&c_temp,&c_temp_arr);
+
+    // for workspace
+    work_trtri = (INPLACE ? n*n : 0) * sizeof(T) * batch_count;
+    work_trsm = (n <= GETRI_SWITCHSIZE_MID ? n : n * GETRI_BLOCKSIZE) * sizeof(T) * batch_count + invA;
+    *size_2 = max(work_trtri, work_trsm);
 
     // size of array of pointers to workspace
     if (BATCHED)
         *size_3 = sizeof(T*) * batch_count;
     else
         *size_3 = 0;
-
-    // for TRSM
-    if (n <= GETRI_SWITCHSIZE_LARGE)
-        *size_4 = *size_5 = *size_6 = *size_7 = 0;
-    else
-        rocblasCall_trsm_mem<BATCHED,T>(rocblas_side_right,n,GETRI_BLOCKSIZE,batch_count,size_4,size_5,size_6,size_7);
     
-    // for TRTRI
-    size_t s4, s5;
-    rocblasCall_trtri_mem<BATCHED,T>(n,batch_count,&s4,&s5);
-    *size_4 = max(*size_4, s4);
-    *size_5 = max(*size_5, s5);
+    *size_4 = max(c_temp, x_temp);
+    *size_5 = max(c_temp_arr, x_temp_arr);
+    *size_6 = invA_arr;
 }
 
 template <typename T>
@@ -492,7 +494,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
                                         const rocblas_int lda, const rocblas_stride strideA, rocblas_int *ipiv,
                                         const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int *info,
                                         const rocblas_int batch_count, T* scalars, T* work, T** workArr,
-                                        void* x_temp, void* x_temp_arr, void* invA, void* invA_arr, bool optim_mem)
+                                        void* x_temp, void* x_temp_arr, void* invA_arr, bool optim_mem)
 {
     // quick return if zero instances in batch
     if (batch_count == 0) 
@@ -526,14 +528,12 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
     #endif
 
     rocblas_int ldw = n;
-    rocblas_stride strideW;
+    rocblas_stride strideW = n*n;
 
     T *M, *W;
 
     if (A1 == nullptr) // in-place trtri
     {
-        strideW = n*n;
-
         // check for singularities
         hipLaunchKernelGGL(getri_check_singularity<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
                         n, A, shiftA, lda, strideA, info);
@@ -549,8 +549,6 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
     }
     else // out-of-place trtri
     {
-        strideW = (n <= GETRI_SWITCHSIZE_MID ? n : n * GETRI_BLOCKSIZE);
-
         // check for singularities
         hipLaunchKernelGGL(getri_check_singularity<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
                         n, A1, shiftA1, lda1, strideA1, info);
@@ -565,7 +563,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
                         n, A, shiftA, lda, strideA, A1, shiftA1, lda1, strideA1, info);
     }
 
-
+    strideW = (n <= GETRI_SWITCHSIZE_MID ? n : n * GETRI_BLOCKSIZE);
     if (n <= GETRI_SWITCHSIZE_LARGE)
     {
         hipLaunchKernelGGL(getri_kernel<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,
@@ -602,7 +600,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle, const rocblas_int
                                         n, jb, &one,
                                         work, j, ldw, strideW,
                                         A, shiftA + idx2D(0,j,lda), lda, strideA, batch_count, optim_mem,
-                                        x_temp, x_temp_arr, invA, invA_arr, workArr);
+                                        x_temp, x_temp_arr, work + strideW*batch_count, invA_arr, workArr);
         }
 
         hipLaunchKernelGGL(getri_kernel_large2<T>, dim3(batch_count,1,1), dim3(1,threads,1), 0, stream,

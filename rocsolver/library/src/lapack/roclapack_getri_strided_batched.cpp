@@ -21,16 +21,15 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle, const
         
     // memory managment
     size_t size_1;  //size of constants
-    size_t size_2;  //size of workspace
-    size_t size_3;  //size of array of pointers to workspace
-    size_t size_4;  //for TRSM x_temp
+    size_t size_2;  //for workspace and TRSM invA
+    size_t size_3;  //for array of pointers to workspace
+    size_t size_4;  //for TRSM x_temp and TRTRI c_temp
     size_t size_5;  //for TRSM x_temp_arr
-    size_t size_6;  //for TRSM invA
-    size_t size_7;  //for TRSM invA_arr
-    rocsolver_getri_getMemorySize<false,true,T>(n,batch_count,&size_1,&size_2,&size_3,&size_4,&size_5,&size_6,&size_7);
+    size_t size_6;  //for TRSM invA_arr
+    rocsolver_getri_getMemorySize<false,true,T>(n,batch_count,&size_1,&size_2,&size_3,&size_4,&size_5,&size_6);
 
     // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-    void *scalars, *work, *workArr, *x_temp, *x_temp_arr, *invA, *invA_arr;
+    void *scalars, *work, *workArr, *x_temp, *x_temp_arr, *invA_arr;
     bool optim_mem = true;
 
     hipMalloc(&scalars,size_1);
@@ -38,10 +37,9 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle, const
     hipMalloc(&workArr,size_3);
     hipMalloc(&x_temp,size_4);
     hipMalloc(&x_temp_arr,size_5);
-    hipMalloc(&invA,size_6);
-    hipMalloc(&invA_arr,size_7);
+    hipMalloc(&invA_arr,size_6);
     if (!scalars || (size_2 && !work) || (size_3 && !workArr) ||
-        (size_4 && !x_temp) || (size_5 && !x_temp_arr) || (size_6 && !invA) || (size_7 && !invA_arr))
+        (size_4 && !x_temp) || (size_5 && !x_temp_arr) || (size_6 && !invA_arr))
         return rocblas_status_memory_error;
 
     // scalar constants for rocblas functions calls
@@ -65,7 +63,6 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle, const
                                                   (T**)workArr,
                                                   x_temp,
                                                   x_temp_arr,
-                                                  invA,
                                                   invA_arr,
                                                   optim_mem);
 
@@ -74,7 +71,6 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle, const
     hipFree(workArr);
     hipFree(x_temp);
     hipFree(x_temp_arr);
-    hipFree(invA);
     hipFree(invA_arr);
     return status;
 }
