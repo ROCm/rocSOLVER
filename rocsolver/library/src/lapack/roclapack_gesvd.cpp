@@ -18,6 +18,7 @@ rocblas_status rocsolver_gesvd_impl(rocblas_handle handle,
                                     T* V,
                                     const rocblas_int ldv,
                                     TT* E,
+                                    const bool fast_alg,
                                     rocblas_int *info)
 { 
     if(!handle)
@@ -58,6 +59,7 @@ rocblas_status rocsolver_gesvd_impl(rocblas_handle handle,
                                        V,
                                        ldv,strideV,
                                        E,strideE,
+                                       fast_alg,             
                                        info,
                                        batch_count);
                                        
@@ -88,9 +90,10 @@ rocblas_status rocsolver_sgesvd(rocblas_handle handle,
                                 float* V,
                                 const rocblas_int ldv,
                                 float* E,
+                                const bool fast_alg,
                                 rocblas_int *info)
 {
-    return rocsolver_gesvd_impl<float>(handle,left_svect,right_svect,m,n,A,lda,S,U,ldu,V,ldv,E,info);
+    return rocsolver_gesvd_impl<float>(handle,left_svect,right_svect,m,n,A,lda,S,U,ldu,V,ldv,E,fast_alg,info);
 }
 
 rocblas_status rocsolver_dgesvd(rocblas_handle handle,
@@ -106,9 +109,10 @@ rocblas_status rocsolver_dgesvd(rocblas_handle handle,
                                 double* V,
                                 const rocblas_int ldv,
                                 double* E,
+                                const bool fast_alg,
                                 rocblas_int *info)
 {
-    return rocsolver_gesvd_impl<double>(handle,left_svect,right_svect,m,n,A,lda,S,U,ldu,V,ldv,E,info);
+    return rocsolver_gesvd_impl<double>(handle,left_svect,right_svect,m,n,A,lda,S,U,ldu,V,ldv,E,fast_alg,info);
 }
 
 rocblas_status rocsolver_cgesvd(rocblas_handle handle,
@@ -124,9 +128,10 @@ rocblas_status rocsolver_cgesvd(rocblas_handle handle,
                                 rocblas_float_complex* V,
                                 const rocblas_int ldv,
                                 float* E,
+                                const bool fast_alg,
                                 rocblas_int *info)
 {
-    return rocsolver_gesvd_impl<rocblas_float_complex>(handle,left_svect,right_svect,m,n,A,lda,S,U,ldu,V,ldv,E,info);
+    return rocsolver_gesvd_impl<rocblas_float_complex>(handle,left_svect,right_svect,m,n,A,lda,S,U,ldu,V,ldv,E,fast_alg,info);
 }
 
 rocblas_status rocsolver_zgesvd(rocblas_handle handle,
@@ -142,9 +147,10 @@ rocblas_status rocsolver_zgesvd(rocblas_handle handle,
                                 rocblas_double_complex* V,
                                 const rocblas_int ldv,
                                 double* E,
+                                const bool fast_alg,
                                 rocblas_int *info)
 {
-    return rocsolver_gesvd_impl<rocblas_double_complex>(handle,left_svect,right_svect,m,n,A,lda,S,U,ldu,V,ldv,E,info);
+    return rocsolver_gesvd_impl<rocblas_double_complex>(handle,left_svect,right_svect,m,n,A,lda,S,U,ldu,V,ldv,E,fast_alg,info);
 }
 
 

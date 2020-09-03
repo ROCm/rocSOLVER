@@ -86,6 +86,7 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                         T* V, 
                                         const rocblas_int ldv, const rocblas_stride strideV,
                                         TT* E, const rocblas_stride strideE,
+                                        const bool fast_alg,
                                         rocblas_int *info,
                                         const rocblas_int batch_count)
 {

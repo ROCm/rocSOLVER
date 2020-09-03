@@ -5765,6 +5765,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(
 
     left_svect and right_svect cannot both be set to overwrite. When none is set to overwrite, the contents of A are destroyed by the time
     the function returns.      
+
+    (When m >> n or (n >> m) the algorithm could be speeded up by compressing the matrix via a QR (or LQ) factorization, and working with the 
+    triangular factor afterwards. If the singular vectors are also requested, its computation could be speeded up as well via executing 
+    some intermediate operations out-of-place, and relying more on matrix multiplications (GEMMs); this will require, however, a larger memory
+    workspace. The boolean fast_alg controls whether the fast algorithm is executed or not. For more details see the
+    sections "Tuning rocSOLVER performance" and "Memory model" on the User's guide).    
         
     @param[in]
     handle      rocblas_handle.
@@ -5811,6 +5817,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(
                 On exit, if info > 0, it contains the unconverged off-diagonal elements of B (or properly speaking, 
                 a bidiagonal matrix orthogonally equivalent to B). The diagonal elements of this matrix are in S; those
                 that converged correspond to a subset of the singular values of A (not necessarily ordered).
+    @param[in]
+    fast_alg    boolean. \n
+                If set to true, the function will execute the fast version of the algorithm when possible. 
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit. 
@@ -5831,6 +5840,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvd(rocblas_handle handle,
                                                  float* V,
                                                  const rocblas_int ldv,
                                                  float* E,
+                                                 const bool fast_alg,
                                                  rocblas_int *info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvd(rocblas_handle handle,
@@ -5846,6 +5856,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvd(rocblas_handle handle,
                                                  double* V,
                                                  const rocblas_int ldv,
                                                  double* E,
+                                                 const bool fast_alg,
                                                  rocblas_int *info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvd(rocblas_handle handle,
@@ -5861,6 +5872,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvd(rocblas_handle handle,
                                                  rocblas_float_complex* V,
                                                  const rocblas_int ldv,
                                                  float* E,
+                                                 const bool fast_alg,
                                                  rocblas_int *info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
@@ -5876,6 +5888,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
                                                  rocblas_double_complex* V,
                                                  const rocblas_int ldv,
                                                  double* E,
+                                                 const bool fast_alg,
                                                  rocblas_int *info);
 
 
@@ -5896,6 +5909,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvd_batched(rocblas_handle handle,
                                                      const rocblas_stride strideV,                                                        
                                                      float* E,
                                                      const rocblas_stride strideE,                                                        
+                                                     const bool fast_alg,
                                                      rocblas_int *info,
                                                      const rocblas_int batch_count);
 
@@ -5916,6 +5930,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvd_batched(rocblas_handle handle,
                                                      const rocblas_stride strideV,                                                        
                                                      double* E,
                                                      const rocblas_stride strideE,                                                        
+                                                     const bool fast_alg,
                                                      rocblas_int *info,
                                                      const rocblas_int batch_count);
 
@@ -5936,6 +5951,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvd_batched(rocblas_handle handle,
                                                      const rocblas_stride strideV,                                                        
                                                      float* E,
                                                      const rocblas_stride strideE,                                                        
+                                                     const bool fast_alg,
                                                      rocblas_int *info,
                                                      const rocblas_int batch_count);
 
@@ -5956,6 +5972,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
                                                      const rocblas_stride strideV,                                                        
                                                      double* E,
                                                      const rocblas_stride strideE,                                                        
+                                                     const bool fast_alg,
                                                      rocblas_int *info,
                                                      const rocblas_int batch_count);
 
@@ -5978,6 +5995,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvd_strided_batched(rocblas_handle 
                                                              const rocblas_stride strideV,                                                        
                                                              float* E,
                                                              const rocblas_stride strideE,                                                        
+                                                             const bool fast_alg,
                                                              rocblas_int *info,
                                                              const rocblas_int batch_count);
 
@@ -5999,6 +6017,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvd_strided_batched(rocblas_handle 
                                                              const rocblas_stride strideV,                                                        
                                                              double* E,
                                                              const rocblas_stride strideE,                                                        
+                                                             const bool fast_alg,
                                                              rocblas_int *info,
                                                              const rocblas_int batch_count);
 
@@ -6020,6 +6039,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvd_strided_batched(rocblas_handle 
                                                              const rocblas_stride strideV,                                                        
                                                              float* E,
                                                              const rocblas_stride strideE,                                                        
+                                                             const bool fast_alg,
                                                              rocblas_int *info,
                                                              const rocblas_int batch_count);
 
@@ -6041,6 +6061,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
                                                              const rocblas_stride strideV,                                                        
                                                              double* E,
                                                              const rocblas_stride strideE,                                                        
+                                                             const bool fast_alg,
                                                              rocblas_int *info,
                                                              const rocblas_int batch_count);
 

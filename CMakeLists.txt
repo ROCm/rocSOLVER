@@ -25,8 +25,10 @@ if ( NOT DEFINED CMAKE_Fortran_COMPILER AND NOT DEFINED ENV{FC} )
   set( CMAKE_Fortran_COMPILER  "gfortran" )
 endif()
 
+# this remove some of the known warnings from the build output
 unset(ENV{ROCM_BUILD_ID})
 add_compile_options( -Wno-unused-command-line-argument )
+add_compile_options( -Wno-pass-failed )
 
 project( rocsolver LANGUAGES CXX )
 
