@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -11,10 +11,11 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-
 typedef std::tuple<vector<int>, vector<int>> gesvd_tuple;
 
-// each size_range vector is a {m, n};
+// each size_range vector is a {m, n, fa};
+// if fa = 0 then no fast algorithm is allowed
+// if fa = 1 fast algorithm is used when possible
 
 // each opt_range vector is a {lda, ldu, ldv, leftsv, rightsv};
 // if ldx = -1 then ldx < limit (invalid size)
@@ -25,221 +26,251 @@ typedef std::tuple<vector<int>, vector<int>> gesvd_tuple;
 // if leftsv (rightsv) = 2 then compute all orthogonal matrix
 // if leftsv (rightsv) = 3 then no singular vectors are computed
 
-// case when m = n = 0 and rightsv = leftsv = 3 will also execute the bad arguments test
-// (null handle, null pointers and invalid values)
+// case when m = n = 0 and rightsv = leftsv = 3 will also execute the bad
+// arguments test (null handle, null pointers and invalid values)
 
 // for checkin_lapack tests
 const vector<vector<int>> size_range = {
-    {0, 0}, {0, 1}, {1, 0}, //quick return
-    {-1, 1}, {1, -1},       //invalid 
-    {20, 20}, {30, 50}, {50, 30}, {60, 60}
-};
+    // quick return
+    {0, 0, 0},
+    {0, 1, 0},
+    {1, 0, 0},
+    // invalid
+    {-1, 1, 0},
+    {1, -1, 0},
+    // normal (valid) samples
+    {20, 20, 0},
+    {30, 40, 0},
+    {40, 30, 0},
+    {60, 30, 0},
+    {60, 30, 1},
+    {30, 60, 0},
+    {30, 60, 1}};
 const vector<vector<int>> opt_range = {
-    {-1, 0, 0, 2, 2}, {0, -1, 0, 1, 2}, {0, 0, -1, 2, 1}, {0, -1, 0, 2, 2}, {0, 0, -1, 2, 2},   //invalid 
-    {0, 0, 0, 3, 3}, {0, 0, 0, 2, 2}, {1, 0, 0, 0, 1}, {0, 1, 0, 1, 0}, {0, 0, 1, 1, 1}
-};
+    // invalid
+    {-1, 0, 0, 2, 2},
+    {0, -1, 0, 1, 2},
+    {0, 0, -1, 2, 1},
+    {0, -1, 0, 2, 2},
+    {0, 0, -1, 2, 2},
+    // normal (valid) samples
+    {1, 1, 1, 3, 3},
+    {0, 0, 0, 2, 2},
+    {1, 0, 0, 0, 1},
+    {0, 1, 0, 1, 0},
+    {0, 0, 1, 1, 1},
+    {0, 0, 0, 3, 0},
+    {0, 0, 0, 3, 1},
+    {0, 0, 0, 3, 2},
+    {0, 0, 0, 0, 3},
+    {0, 0, 0, 1, 3},
+    {0, 0, 0, 2, 3}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range = {
-    {70, 70}, {192, 192}, {600, 700}, {1000, 1000}, {1500, 1000}
-};
+    {90, 90, 0},    {192, 180, 0},  {600, 700, 0}, {1000, 500, 0},
+    {1000, 500, 1}, {500, 1000, 0}, {500, 1000, 1}};
 const vector<vector<int>> large_opt_range = {
-    {0, 0, 0, 2, 2}, {0, 0, 0, 3, 3}, {1, 0, 0, 0, 1}, {0, 1, 0, 1, 0}, {0, 0, 1, 1, 1}
-};
-
+    {0, 0, 0, 2, 2}, {0, 0, 0, 3, 3}, {1, 0, 0, 0, 1}, {0, 1, 0, 1, 0},
+    {0, 0, 1, 1, 1}, {0, 0, 0, 3, 0}, {0, 0, 0, 1, 3}, {0, 0, 0, 3, 2}};
 
 Arguments gesvd_setup_arguments(gesvd_tuple tup) {
-    vector<int> size = std::get<0>(tup);
-    vector<int> opt = std::get<1>(tup);
+  vector<int> size = std::get<0>(tup);
+  vector<int> opt = std::get<1>(tup);
 
-    Arguments arg;
+  Arguments arg;
 
-    // sizes
-    arg.M = size[0];
-    arg.N = size[1];
-    
-    // leading dimensions
-    arg.lda = arg.M;                                    //lda
-    arg.ldb = arg.M;                                    //ldu
-    arg.ldv = opt[4] == 2 ? arg.N : min(arg.M,arg.N);   //ldv
-    arg.lda += opt[0]*10;
-    arg.ldb += opt[1]*10;
-    arg.ldv += opt[2]*10; 
+  // sizes
+  arg.M = size[0];
+  arg.N = size[1];
 
-    // vector options
-    if (opt[3] == 0)
-        arg.left_svect = 'O';
-    else if (opt[3] == 1)
-        arg.left_svect = 'S';
-    else if (opt[3] == 2)
-        arg.left_svect = 'A';
-    else
-        arg.left_svect = 'N';
+  // fast algorithm
+  arg.fast_alg = size[2];
 
-    if (opt[4] == 0)
-        arg.right_svect = 'O';
-    else if (opt[4] == 1)
-        arg.right_svect = 'S';
-    else if (opt[4] == 2)
-        arg.right_svect = 'A';
-    else
-        arg.right_svect = 'N';
-    
-    // only testing standard use case for strides 
-    // strides are ignored in normal and batched tests
-    arg.bsa = arg.lda * arg.N;  //strideA  
-    arg.bsb = min(arg.M,arg.N); //strideS
-    arg.bsc = arg.ldb * arg.M;  //strideU
-    arg.bsp = arg.ldv * arg.N;  //strideV
-////////////////////////////
-    arg.bs5 = 5*arg.bsb;        //strideE
-/////////////////////////////
+  // leading dimensions
+  arg.lda = arg.M;                                   // lda
+  arg.ldb = arg.M;                                   // ldu
+  arg.ldv = opt[4] == 2 ? arg.N : min(arg.M, arg.N); // ldv
+  arg.lda += opt[0] * 10;
+  arg.ldb += opt[1] * 10;
+  arg.ldv += opt[2] * 10;
 
-    arg.timing = 0;
-    
-    return arg;
+  // vector options
+  if (opt[3] == 0)
+    arg.left_svect = 'O';
+  else if (opt[3] == 1)
+    arg.left_svect = 'S';
+  else if (opt[3] == 2)
+    arg.left_svect = 'A';
+  else
+    arg.left_svect = 'N';
+
+  if (opt[4] == 0)
+    arg.right_svect = 'O';
+  else if (opt[4] == 1)
+    arg.right_svect = 'S';
+  else if (opt[4] == 2)
+    arg.right_svect = 'A';
+  else
+    arg.right_svect = 'N';
+
+  // only testing standard use case for strides
+  // strides are ignored in normal and batched tests
+  arg.bsa = arg.lda * arg.N;   // strideA
+  arg.bsb = min(arg.M, arg.N); // strideS
+  arg.bsc = arg.ldb * arg.M;   // strideU
+  arg.bsp = arg.ldv * arg.N;   // strideV
+  arg.bs5 = arg.bsb;           // strideE
+
+  arg.timing = 0;
+
+  return arg;
 }
 
 class GESVD : public ::TestWithParam<gesvd_tuple> {
 protected:
-    GESVD() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+  GESVD() {}
+  virtual void SetUp() {}
+  virtual void TearDown() {}
 };
-
 
 // non-batch tests
 
 TEST_P(GESVD, __float) {
-    Arguments arg = gesvd_setup_arguments(GetParam());
+  Arguments arg = gesvd_setup_arguments(GetParam());
 
-    if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false,false,float>();
+  if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' &&
+      arg.right_svect == 'N')
+    testing_gesvd_bad_arg<false, false, float>();
 
-    arg.batch_count = 1;
-    testing_gesvd<false,false,float>(arg);
+  arg.batch_count = 1;
+  testing_gesvd<false, false, float>(arg);
 }
 
 TEST_P(GESVD, __double) {
-    Arguments arg = gesvd_setup_arguments(GetParam());
+  Arguments arg = gesvd_setup_arguments(GetParam());
 
-    if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false,false,double>();
+  if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' &&
+      arg.right_svect == 'N')
+    testing_gesvd_bad_arg<false, false, double>();
 
-    arg.batch_count = 1;
-    testing_gesvd<false,false,double>(arg);
+  arg.batch_count = 1;
+  testing_gesvd<false, false, double>(arg);
 }
 
 TEST_P(GESVD, __float_complex) {
-    Arguments arg = gesvd_setup_arguments(GetParam());
+  Arguments arg = gesvd_setup_arguments(GetParam());
 
-    if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false,false,rocblas_float_complex>();
+  if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' &&
+      arg.right_svect == 'N')
+    testing_gesvd_bad_arg<false, false, rocblas_float_complex>();
 
-    arg.batch_count = 1;
-    testing_gesvd<false,false,rocblas_float_complex>(arg);
+  arg.batch_count = 1;
+  testing_gesvd<false, false, rocblas_float_complex>(arg);
 }
 
 TEST_P(GESVD, __double_complex) {
-    Arguments arg = gesvd_setup_arguments(GetParam());
+  Arguments arg = gesvd_setup_arguments(GetParam());
 
-    if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false,false,rocblas_double_complex>();
+  if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' &&
+      arg.right_svect == 'N')
+    testing_gesvd_bad_arg<false, false, rocblas_double_complex>();
 
-    arg.batch_count = 1;
-    testing_gesvd<false,false,rocblas_double_complex>(arg);
+  arg.batch_count = 1;
+  testing_gesvd<false, false, rocblas_double_complex>(arg);
 }
-
-
 
 // batched tests
 
 TEST_P(GESVD, batched__float) {
-    Arguments arg = gesvd_setup_arguments(GetParam());
+  Arguments arg = gesvd_setup_arguments(GetParam());
 
-    if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<true,true,float>();
+  if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' &&
+      arg.right_svect == 'N')
+    testing_gesvd_bad_arg<true, true, float>();
 
-    arg.batch_count = 3;
-    testing_gesvd<true,true,float>(arg);
+  arg.batch_count = 3;
+  testing_gesvd<true, true, float>(arg);
 }
 
 TEST_P(GESVD, batched__double) {
-    Arguments arg = gesvd_setup_arguments(GetParam());
+  Arguments arg = gesvd_setup_arguments(GetParam());
 
-    if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<true,true,double>();
+  if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' &&
+      arg.right_svect == 'N')
+    testing_gesvd_bad_arg<true, true, double>();
 
-    arg.batch_count = 3;
-    testing_gesvd<true,true,double>(arg);
+  arg.batch_count = 3;
+  testing_gesvd<true, true, double>(arg);
 }
 
 TEST_P(GESVD, batched__float_complex) {
-    Arguments arg = gesvd_setup_arguments(GetParam());
+  Arguments arg = gesvd_setup_arguments(GetParam());
 
-    if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<true,true,rocblas_float_complex>();
+  if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' &&
+      arg.right_svect == 'N')
+    testing_gesvd_bad_arg<true, true, rocblas_float_complex>();
 
-    arg.batch_count = 3;
-    testing_gesvd<true,true,rocblas_float_complex>(arg);
+  arg.batch_count = 3;
+  testing_gesvd<true, true, rocblas_float_complex>(arg);
 }
 
 TEST_P(GESVD, batched__double_complex) {
-    Arguments arg = gesvd_setup_arguments(GetParam());
+  Arguments arg = gesvd_setup_arguments(GetParam());
 
-    if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<true,true,rocblas_double_complex>();
+  if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' &&
+      arg.right_svect == 'N')
+    testing_gesvd_bad_arg<true, true, rocblas_double_complex>();
 
-    arg.batch_count = 3;
-    testing_gesvd<true,true,rocblas_double_complex>(arg);
+  arg.batch_count = 3;
+  testing_gesvd<true, true, rocblas_double_complex>(arg);
 }
-
-
 
 // strided_batched tests
 
 TEST_P(GESVD, strided_batched__float) {
-    Arguments arg = gesvd_setup_arguments(GetParam());
+  Arguments arg = gesvd_setup_arguments(GetParam());
 
-    if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false,true,float>();
-    
-    arg.batch_count = 3;
-    testing_gesvd<false,true,float>(arg);
+  if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' &&
+      arg.right_svect == 'N')
+    testing_gesvd_bad_arg<false, true, float>();
+
+  arg.batch_count = 3;
+  testing_gesvd<false, true, float>(arg);
 }
 
 TEST_P(GESVD, strided_batched__double) {
-    Arguments arg = gesvd_setup_arguments(GetParam());
+  Arguments arg = gesvd_setup_arguments(GetParam());
 
-    if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false,true,double>();
+  if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' &&
+      arg.right_svect == 'N')
+    testing_gesvd_bad_arg<false, true, double>();
 
-    arg.batch_count = 3;
-    testing_gesvd<false,true,double>(arg);
+  arg.batch_count = 3;
+  testing_gesvd<false, true, double>(arg);
 }
 
 TEST_P(GESVD, strided_batched__float_complex) {
-    Arguments arg = gesvd_setup_arguments(GetParam());
+  Arguments arg = gesvd_setup_arguments(GetParam());
 
-    if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false,true,rocblas_float_complex>();
+  if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' &&
+      arg.right_svect == 'N')
+    testing_gesvd_bad_arg<false, true, rocblas_float_complex>();
 
-    arg.batch_count = 3;
-    testing_gesvd<false,true,rocblas_float_complex>(arg);
+  arg.batch_count = 3;
+  testing_gesvd<false, true, rocblas_float_complex>(arg);
 }
 
 TEST_P(GESVD, strided_batched__double_complex) {
-    Arguments arg = gesvd_setup_arguments(GetParam());
+  Arguments arg = gesvd_setup_arguments(GetParam());
 
-    if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false,true,rocblas_double_complex>();
+  if (arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' &&
+      arg.right_svect == 'N')
+    testing_gesvd_bad_arg<false, true, rocblas_double_complex>();
 
-    arg.batch_count = 3;
-    testing_gesvd<false,true,rocblas_double_complex>(arg);
+  arg.batch_count = 3;
+  testing_gesvd<false, true, rocblas_double_complex>(arg);
 }
-
-
-
 
 // daily_lapack tests normal execution with medium to large sizes
 INSTANTIATE_TEST_SUITE_P(daily_lapack, GESVD,
@@ -249,5 +280,4 @@ INSTANTIATE_TEST_SUITE_P(daily_lapack, GESVD,
 // checkin_lapack tests normal execution with small sizes, invalid sizes,
 // quick returns, and corner cases
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, GESVD,
-                         Combine(ValuesIn(size_range),
-                                 ValuesIn(opt_range)));
+                         Combine(ValuesIn(size_range), ValuesIn(opt_range)));
