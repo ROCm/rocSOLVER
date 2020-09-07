@@ -10,18 +10,22 @@
 #ifndef ROCLAPACK_BDSQR_H
 #define ROCLAPACK_BDSQR_H
 
+//#define HIP_ENABLE_PRINTF
+
 #include "common_device.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-// (TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS
-//  FOR THE BATCHED VERSIONS (A DIFFERENT THREAD WORKS ON EACH INSTANCE OF THE
-//  BATCH). MORE PARALLELISM CAN BE INTRODUCED IN THE FUTURE IN AT LEAST TWO
-//  WAYS:
-//  1. the splitted diagonal blocks can be worked in parallel as they are
-//  independent
-//  2. for each block, multiple threads can accelerate some of the reductions
-//  and vector operations
+/****************************************************************************
+(TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS
+  FOR THE BATCHED VERSIONS (A DIFFERENT THREAD WORKS ON EACH INSTANCE OF THE
+  BATCH). MORE PARALLELISM CAN BE INTRODUCED IN THE FUTURE IN AT LEAST TWO
+  WAYS:
+  1. the splitted diagonal blocks can be worked in parallel as they are
+  independent
+  2. for each block, multiple threads can accelerate some of the reductions
+  and vector operations
+***************************************************************************/
 
 /** LARTG device function computes the sine (s) and cosine (c) values
     to create a givens rotation such that:
@@ -294,14 +298,39 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
             const S sfm, const S tol, const S minshift, S *workA,
             const rocblas_stride strideW) {
   rocblas_int bid = hipBlockIdx_x;
+  // printf("+++ start bdsqrkernel from id: %d\n",bid);
+
+  /*printf("\nin device on entry:\n");
+  printf("D in: %p\n", (void*)DD);
+  printf("E in: %p\n", (void*)EE);
+  printf("V in: %p\n", (void*)VV);
+  printf("U in: %p\n", (void*)UU);
+  printf("C in: %p\n", (void*)CC);
+  printf("work in: %p\n", (void*)workA);*/
 
   // select batch instance to work with
-  S *rots = workA + bid * strideW;
+  // (avoiding arithmetics with possible nullptrs)
+  S *rots;
+  T *V, *U, *C;
   S *D = DD + bid * strideD;
   S *E = EE + bid * strideE;
-  T *V = load_ptr_batch<T>(VV, bid, shiftV, strideV);
-  T *U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
-  T *C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+  if (VV)
+    V = load_ptr_batch<T>(VV, bid, shiftV, strideV);
+  if (UU)
+    U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
+  if (CC)
+    C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+  if (workA)
+    rots = workA + bid * strideW;
+  // printf("+++ batch instance selected from id: %d\n",bid);
+
+  /*printf("\nin device batch instance:\n");
+  printf("D in: %p\n", (void*)D);
+  printf("E in: %p\n", (void*)E);
+  printf("V in: %p\n", (void*)V);
+  printf("U in: %p\n", (void*)U);
+  printf("C in: %p\n", (void*)C);
+  printf("work in: %p\n", (void*)rots);*/
 
   // calculate threshold for zeroing elements (convergence threshold)
   int t2b = (D[0] >= D[n - 1]) ? 1 : 0; // direction
@@ -372,6 +401,7 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
       }
     }
   }
+  // printf("+++ finish main loop from id: %d\n",bid);
 
   // re-arange singular values/vectors if algorithm converged
   if (k == 0) {
@@ -384,6 +414,7 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
       }
     }
 
+    // printf("+++ finish all positives from id: %d\n",bid);
     // in drecreasing order
     rocblas_int idx;
     for (rocblas_int ii = 0; ii < n - 1; ++ii) {
@@ -398,16 +429,26 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
       }
       // swap
       if (idx != ii) {
+        // printf("+++++++++++++++++ a swap from id: %d ",bid);
         D[idx] = D[ii];
         D[ii] = smax;
         if (nv)
           swapvect(nv, V + idx, ldv, V + ii, ldv);
+        // printf("para v, ");
         if (nu)
           swapvect(nu, U + idx * ldu, 1, U + ii * ldu, 1);
+        // printf("para u, ");
         if (nc)
           swapvect(nc, C + idx, ldc, C + ii, ldc);
+        // printf("para c,\n");
       }
     }
+
+    // printf("+++ finish ordering from id: %d -- ",bid);
+    // for (int i=0;i<n;++i)
+    //    printf("%2.6f ",D[i]);
+    // printf("\n");
+
   }
 
   // if not, set value of info
@@ -434,11 +475,17 @@ lower2upper(const rocblas_int n, const rocblas_int nu, const rocblas_int nc,
   S f, g, c, s, r;
 
   // select batch instance to work with
-  S *rots = workA + bid * strideW;
+  // (avoiding arithmetics with possible nullptrs)
+  S *rots;
+  T *U, *C;
   S *D = DD + bid * strideD;
   S *E = EE + bid * strideE;
-  T *U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
-  T *C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+  if (UU)
+    U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
+  if (CC)
+    C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+  if (workA)
+    rots = workA + bid * strideW;
 
   f = D[0];
   g = E[0];
@@ -527,20 +574,18 @@ rocblas_status rocsolver_bdsqr_template(
   hipStream_t stream;
   rocblas_get_stream(handle, &stream);
 
-  // set tolerance and max number of iterations
-  S eps =
-      get_epsilon<S>() / 2; // machine precision (considering rounding strategy)
-  S sfm = get_safemin<S>(); // safest minimum value such that 1/sfm does not
-                            // overflow
-  rocblas_int maxiter =
-      6 * n *
-      n; // max number of iterations (QR steps) before declaring not convergence
-  S tol = std::max(S(10.0), std::min(S(100.0), S(pow(eps, -0.125)))) *
-          eps; // relative accuracy tolerance
-  S minshift = std::max(eps,
-                        tol / S(100)) /
-               (n * tol); //(minimum accepted shift to not ruin relative
-                          // accuracy) / (max singular value)
+  // set tolerance and max number of iterations:
+  // machine precision (considering rounding strategy)
+  S eps = get_epsilon<S>() / 2;
+  // safest minimum value such that 1/sfm does not overflow
+  S sfm = get_safemin<S>();
+  // max number of iterations (QR steps) before declaring not convergence
+  rocblas_int maxiter = 6 * n * n;
+  // relative accuracy tolerance
+  S tol = std::max(S(10.0), std::min(S(100.0), S(pow(eps, -0.125)))) * eps;
+  //(minimum accepted shift to not ruin relative accuracy) / (max singular
+  //value)
+  S minshift = std::max(eps, tol / S(100)) / (n * tol);
 
   rocblas_stride strideW = 4 * n;
 
@@ -551,11 +596,22 @@ rocblas_status rocsolver_bdsqr_template(
                        strideU, C, shiftC, ldc, strideC, work, strideW);
   }
 
+  /*printf("in host:\n");
+  printf("D in: %p\n", (void*)D);
+  printf("E in: %p\n", (void*)E);
+  printf("V in: %p\n", (void*)V);
+  printf("U in: %p\n", (void*)U);
+  printf("C in: %p\n", (void*)C);
+  printf("work in: %p\n", (void*)work);
+  */
+
   // main computation of SVD
   hipLaunchKernelGGL((bdsqrKernel<T>), dim3(batch_count), dim3(1), 0, stream, n,
                      nv, nu, nc, D, strideD, E, strideE, V, shiftV, ldv,
                      strideV, U, shiftU, ldu, strideU, C, shiftC, ldc, strideC,
                      info, maxiter, eps, sfm, tol, minshift, work, strideW);
+
+  hipDeviceSynchronize();
 
   return rocblas_status_success;
 }

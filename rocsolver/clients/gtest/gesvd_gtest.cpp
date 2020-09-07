@@ -40,12 +40,13 @@ const vector<vector<int>> size_range = {
     {1, -1, 0},
     // normal (valid) samples
     {20, 20, 0},
-    {30, 40, 0},
     {40, 30, 0},
     {60, 30, 0},
     {60, 30, 1},
+    {30, 40, 0},
     {30, 60, 0},
     {30, 60, 1}};
+
 const vector<vector<int>> opt_range = {
     // invalid
     {-1, 0, 0, 2, 2},
@@ -67,12 +68,13 @@ const vector<vector<int>> opt_range = {
     {0, 0, 0, 2, 3}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_size_range = {
-    {90, 90, 0},    {192, 180, 0},  {600, 700, 0}, {1000, 500, 0},
-    {1000, 500, 1}, {500, 1000, 0}, {500, 1000, 1}};
+const vector<vector<int>> large_size_range = {{120, 100, 0}, {300, 120, 0},
+                                              {300, 120, 1}, {100, 120, 0},
+                                              {120, 300, 0}, {120, 300, 1}};
+
 const vector<vector<int>> large_opt_range = {
-    {0, 0, 0, 2, 2}, {0, 0, 0, 3, 3}, {1, 0, 0, 0, 1}, {0, 1, 0, 1, 0},
-    {0, 0, 1, 1, 1}, {0, 0, 0, 3, 0}, {0, 0, 0, 1, 3}, {0, 0, 0, 3, 2}};
+    {0, 0, 0, 3, 3}, {1, 0, 0, 0, 1}, {0, 1, 0, 1, 0}, {0, 0, 1, 1, 1},
+    {0, 0, 0, 3, 0}, {0, 0, 0, 1, 3}, {0, 0, 0, 3, 2}};
 
 Arguments gesvd_setup_arguments(gesvd_tuple tup) {
   vector<int> size = std::get<0>(tup);
