@@ -53,6 +53,9 @@
 #define GEBRD_GEBD2_SWITCHSIZE 32
 
 // gesvd
+// This value should be ~1.6 (to be tunned).
+// For now, it is set to a very high value until the thin-SVD algorithm is
+// implemented
 #define THIN_SVD_SWITCH 16000
 
 // THESE FOLLOWING VALUES ARE TO MATCH ROCBLAS C++ INTERFACE

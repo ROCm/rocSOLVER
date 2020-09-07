@@ -103,6 +103,7 @@ void local_bdsqr_template(
       1, info, batch_count, work);
 }
 
+/** Argument checking **/
 template <typename T, typename TT, typename W>
 rocblas_status rocsolver_gesvd_argCheck(
     const rocblas_svect left_svect, const rocblas_svect right_svect,
@@ -150,6 +151,7 @@ rocblas_status rocsolver_gesvd_argCheck(
   return rocblas_status_continue;
 }
 
+/** Helper to calculate workspace sizes **/
 template <bool BATCHED, typename T, typename S>
 void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
                                    const rocblas_svect right_svect,
@@ -253,172 +255,106 @@ rocblas_status rocsolver_gesvd_template(
   const bool rightvA = (right_svect == rocblas_svect_all);
   const bool rightvN = (right_svect == rocblas_svect_none);
 
+  rocblas_int mn, nu, nv;
+  rocblas_fill uplo;
+  const rocblas_int k = min(m, n);
+
   // common block sizes and number of threads for internal kernels
   constexpr rocblas_int numthrds = 32;
   const rocblas_int blkm = (m - 1) / numthrds + 1;
   const rocblas_int blkn = (n - 1) / numthrds + 1;
+  const rocblas_int blkk = (k - 1) / numthrds + 1;
 
-  rocblas_int mn, nu, nv;
-  const rocblas_int k = min(m, n);
+  // A thin SVD could be computed for matrices with sufficiently more rows than
+  // columns (or columns that rows) by starting with a QR factorization (or LQ
+  // factorization) and working with the triangular factor afterwards. When
+  // computing a thin SVD, a fast algorithm could be executed by doing some
+  // computations out-of-place.
 
-  // a thin SVD could be computed for matrices with more rows than columns,
-  // by starting with a QR factorization
-  if (m >= n) {
+  // choose Thin-SVD
+  if (m >= THIN_SVD_SWITCH * n || n >= THIN_SVD_SWITCH * m) {
 
-    // choose thin SVD factorization
-    if (m >= THIN_SVD_SWITCH * n) {
+    // (TODO: IMPLEMENT THIN_SVD AND FAST THIN_SVD ALGORITHMS)
 
-      // use fast thin-svd algorithm (this may require larger memory worksapce)
-      if (fast_alg) {
-      }
-
-      // use normal thin-svd
-      else { //(!fast_alg)
-      }
+    // use fast thin-svd algorithm (this may require larger memory worksapce)
+    if (fast_alg) {
+      return rocblas_status_not_implemented;
     }
 
-    // choose normal SVD
-    else { //(m < THIN_SVD_SWITCH * n)
-      // 1. Bidiagonalize A.
-      rocsolver_gebd2_template(handle, m, n, A, shiftA, lda, strideA, S,
-                               strideS, E, strideE, tau,
-                               k,                          // workspace for tauq
-                               (tau + k * batch_count), k, // workspave for taup
-                               batch_count, scalars, (T *)workgral, workArr,
-                               workfunc); // general workspace
-
-      // 2. Generate corresponding orthonormal/unitary matrices when required
-      if (leftvS || leftvA) {
-        mn = leftvS ? n : m;
-        hipLaunchKernelGGL(copy_array<T>, dim3(blkm, blkn, batch_count),
-                           dim3(numthrds, numthrds, 1), 0, stream, m, n, A,
-                           shiftA, lda, strideA, U, 0, ldu, strideU);
-        rocsolver_orgbr_ungbr_template<false, STRIDED>(
-            handle, rocblas_column_wise, m, mn, n, U, 0, ldu, strideU, tau, k,
-            batch_count, scalars, (T *)workgral, workArr, workfunc);
-      }
-      if (rightvS || rightvA) {
-        hipLaunchKernelGGL(copy_array<T>, dim3(blkn, blkn, batch_count),
-                           dim3(numthrds, numthrds, 1), 0, stream, n, n, A,
-                           shiftA, lda, strideA, V, 0, ldv, strideV);
-        rocsolver_orgbr_ungbr_template<false, STRIDED>(
-            handle, rocblas_row_wise, n, n, m, /////////
-            V, 0, ldv, strideV, (tau + k * batch_count), k, batch_count,
-            scalars, (T *)workgral, workArr, workfunc);
-      }
-      if (leftvO) {
-        rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
-            handle, rocblas_column_wise, m, n, n, A, shiftA, lda, strideA, tau,
-            k, batch_count, scalars, (T *)workgral, workArr, workfunc);
-      }
-      if (rightvO) {
-        rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
-            handle, rocblas_row_wise, n, n, m, //////////////////
-            A, shiftA, lda, strideA, (tau + k * batch_count), k, batch_count,
-            scalars, (T *)workgral, workArr, workfunc);
-      }
-
-      // 3. compute singular values (and vectors if required) using the
-      // bidiagonal form
-      nu = leftvN ? 0 : m;
-      nv = rightvN ? 0 : n;
-      if (!leftvO && !rightvO) {
-        local_bdsqr_template<T>(handle, rocblas_fill_upper, n, nv, nu, 0, S,
-                                strideS, E, strideE, V, 0, ldv, strideV, U, 0,
-                                ldu, strideU, info, batch_count, (TT *)workgral,
-                                workArr);
-      } else if (leftvO && !rightvO) {
-        local_bdsqr_template<T>(handle, rocblas_fill_upper, n, nv, nu, 0, S,
-                                strideS, E, strideE, V, 0, ldv, strideV, A,
-                                shiftA, lda, strideA, info, batch_count,
-                                (TT *)workgral, workArr);
-      } else {
-        local_bdsqr_template<T>(handle, rocblas_fill_upper, n, nv, nu, 0, S,
-                                strideS, E, strideE, A, shiftA, lda, strideA, U,
-                                0, ldu, strideU, info, batch_count,
-                                (TT *)workgral, workArr);
-      }
+    // use normal thin-svd
+    else { //(!fast_alg)
+      return rocblas_status_not_implemented;
     }
   }
 
-  // a thin SVD could be computed for matrices with more columns than rows,
-  // by starting with a LQ factorization
-  else { //(n > m)
+  // choose normal SVD
+  else { // (m < THIN_SVD_SWITCH*n && n < THIN_SVD_SWITCH*m)
 
-    // choose thin SVD factorization
-    if (n >= THIN_SVD_SWITCH * m) {
+    // 1. Bidiagonalize A.
+    rocsolver_gebd2_template(handle, m, n, A, shiftA, lda, strideA, S, strideS,
+                             E, strideE, tau, k, (tau + k * batch_count), k,
+                             batch_count, scalars, (T *)workgral, workArr,
+                             workfunc);
 
-      // use fast thin-svd algorithm (this may require larger memory worksapce)
-      if (fast_alg) {
-      }
-
-      // use normal thin-svd
-      else { //(!fast_alg)
-      }
+    // 2. Generate corresponding orthonormal/unitary matrices when required
+    if (leftvS || leftvA) {
+      mn = (m >= n && leftvS) ? n : m;
+      hipLaunchKernelGGL(copy_array<T>, dim3(blkm, blkk, batch_count),
+                         dim3(numthrds, numthrds, 1), 0, stream, m, k, A,
+                         shiftA, lda, strideA, U, 0, ldu, strideU);
+      rocsolver_orgbr_ungbr_template<false, STRIDED>(
+          handle, rocblas_column_wise, m, mn, n, U, 0, ldu, strideU, tau, k,
+          batch_count, scalars, (T *)workgral, workArr, workfunc);
     }
 
-    // choose normal SVD
-    else { //(n < THIN_SVD_SWITCH * m)
+    if (rightvS || rightvA) {
+      mn = (n > m && rightvS) ? m : n;
+      hipLaunchKernelGGL(copy_array<T>, dim3(blkk, blkn, batch_count),
+                         dim3(numthrds, numthrds, 1), 0, stream, k, n, A,
+                         shiftA, lda, strideA, V, 0, ldv, strideV);
+      rocsolver_orgbr_ungbr_template<false, STRIDED>(
+          handle, rocblas_row_wise, mn, n, m, V, 0, ldv, strideV,
+          (tau + k * batch_count), k, batch_count, scalars, (T *)workgral,
+          workArr, workfunc);
+    }
 
-      // 1. Bidiagonalize A.
-      rocsolver_gebd2_template(handle, m, n, A, shiftA, lda, strideA, S,
-                               strideS, E, strideE, tau,
-                               k,                          // workspace for tauq
-                               (tau + k * batch_count), k, // workspave for taup
-                               batch_count, scalars, (T *)workgral, workArr,
-                               workfunc); // general workspace
+    if (leftvO) {
+      rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
+          handle, rocblas_column_wise, m, k, n, A, shiftA, lda, strideA, tau, k,
+          batch_count, scalars, (T *)workgral, workArr, workfunc);
+    }
 
-      // 2. Generate corresponding orthonormal/unitary matrices when required
-      if (leftvS || leftvA) {
-        hipLaunchKernelGGL(copy_array<T>, dim3(blkm, blkm, batch_count),
-                           dim3(numthrds, numthrds, 1), 0, stream, m, m, A,
-                           shiftA, lda, strideA, U, 0, ldu, strideU);
-        rocsolver_orgbr_ungbr_template<false, STRIDED>(
-            handle, rocblas_column_wise, m, m, n, U, 0, ldu, strideU, tau, k,
-            batch_count, scalars, (T *)workgral, workArr, workfunc);
-      }
-      if (rightvS || rightvA) {
-        mn = rightvS ? m : n;
-        hipLaunchKernelGGL(copy_array<T>, dim3(blkm, blkn, batch_count),
-                           dim3(numthrds, numthrds, 1), 0, stream, m, n, A,
-                           shiftA, lda, strideA, V, 0, ldv, strideV);
-        rocsolver_orgbr_ungbr_template<false, STRIDED>(
-            handle, rocblas_row_wise, mn, n, m, V, 0, ldv, strideV,
-            (tau + k * batch_count), k, batch_count, scalars, (T *)workgral,
-            workArr, workfunc);
-      }
-      if (leftvO) {
-        rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
-            handle, rocblas_column_wise, m, m, n, A, shiftA, lda, strideA, tau,
-            k, batch_count, scalars, (T *)workgral, workArr, workfunc);
-      }
-      if (rightvO) {
-        rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
-            handle, rocblas_row_wise, m, n, m, A, shiftA, lda, strideA,
-            (tau + k * batch_count), k, batch_count, scalars, (T *)workgral,
-            workArr, workfunc);
-      }
+    if (rightvO) {
+      rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
+          handle, rocblas_row_wise, k, n, m, A, shiftA, lda, strideA,
+          (tau + k * batch_count), k, batch_count, scalars, (T *)workgral,
+          workArr, workfunc);
+    }
 
-      // 3. compute singular values (and vectors if required) using the
-      // bidiagonal form
-      nu = leftvN ? 0 : m;
-      nv = rightvN ? 0 : n;
-      if (!leftvO && !rightvO) {
-        local_bdsqr_template<T>(handle, rocblas_fill_lower, m, nv, nu, 0, S,
-                                strideS, E, strideE, V, 0, ldv, strideV, U, 0,
-                                ldu, strideU, info, batch_count, (TT *)workgral,
-                                workArr);
-      } else if (leftvO && !rightvO) {
-        local_bdsqr_template<T>(handle, rocblas_fill_lower, m, nv, nu, 0, S,
-                                strideS, E, strideE, V, 0, ldv, strideV, A,
-                                shiftA, lda, strideA, info, batch_count,
-                                (TT *)workgral, workArr);
-      } else {
-        local_bdsqr_template<T>(handle, rocblas_fill_lower, m, nv, nu, 0, S,
-                                strideS, E, strideE, A, shiftA, lda, strideA, U,
-                                0, ldu, strideU, info, batch_count,
-                                (TT *)workgral, workArr);
-      }
+    // 3. compute singular values (and vectors if required) using the
+    // bidiagonal form
+    uplo = (m >= n) ? rocblas_fill_upper : rocblas_fill_lower;
+    nu = leftvN ? 0 : m;
+    nv = rightvN ? 0 : n;
+
+    if (!leftvO && !rightvO) {
+      local_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E,
+                              strideE, V, 0, ldv, strideV, U, 0, ldu, strideU,
+                              info, batch_count, (TT *)workgral, workArr);
+    }
+
+    else if (leftvO && !rightvO) {
+      local_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E,
+                              strideE, V, 0, ldv, strideV, A, shiftA, lda,
+                              strideA, info, batch_count, (TT *)workgral,
+                              workArr);
+    }
+
+    else {
+      local_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E,
+                              strideE, A, shiftA, lda, strideA, U, 0, ldu,
+                              strideU, info, batch_count, (TT *)workgral,
+                              workArr);
     }
   }
 

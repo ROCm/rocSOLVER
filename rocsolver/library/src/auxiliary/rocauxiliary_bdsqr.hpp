@@ -10,8 +10,6 @@
 #ifndef ROCLAPACK_BDSQR_H
 #define ROCLAPACK_BDSQR_H
 
-//#define HIP_ENABLE_PRINTF
-
 #include "common_device.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
@@ -298,15 +296,6 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
             const S sfm, const S tol, const S minshift, S *workA,
             const rocblas_stride strideW) {
   rocblas_int bid = hipBlockIdx_x;
-  // printf("+++ start bdsqrkernel from id: %d\n",bid);
-
-  /*printf("\nin device on entry:\n");
-  printf("D in: %p\n", (void*)DD);
-  printf("E in: %p\n", (void*)EE);
-  printf("V in: %p\n", (void*)VV);
-  printf("U in: %p\n", (void*)UU);
-  printf("C in: %p\n", (void*)CC);
-  printf("work in: %p\n", (void*)workA);*/
 
   // select batch instance to work with
   // (avoiding arithmetics with possible nullptrs)
@@ -322,15 +311,6 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
     C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
   if (workA)
     rots = workA + bid * strideW;
-  // printf("+++ batch instance selected from id: %d\n",bid);
-
-  /*printf("\nin device batch instance:\n");
-  printf("D in: %p\n", (void*)D);
-  printf("E in: %p\n", (void*)E);
-  printf("V in: %p\n", (void*)V);
-  printf("U in: %p\n", (void*)U);
-  printf("C in: %p\n", (void*)C);
-  printf("work in: %p\n", (void*)rots);*/
 
   // calculate threshold for zeroing elements (convergence threshold)
   int t2b = (D[0] >= D[n - 1]) ? 1 : 0; // direction
@@ -401,7 +381,6 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
       }
     }
   }
-  // printf("+++ finish main loop from id: %d\n",bid);
 
   // re-arange singular values/vectors if algorithm converged
   if (k == 0) {
@@ -414,7 +393,6 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
       }
     }
 
-    // printf("+++ finish all positives from id: %d\n",bid);
     // in drecreasing order
     rocblas_int idx;
     for (rocblas_int ii = 0; ii < n - 1; ++ii) {
@@ -429,26 +407,16 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
       }
       // swap
       if (idx != ii) {
-        // printf("+++++++++++++++++ a swap from id: %d ",bid);
         D[idx] = D[ii];
         D[ii] = smax;
         if (nv)
           swapvect(nv, V + idx, ldv, V + ii, ldv);
-        // printf("para v, ");
         if (nu)
           swapvect(nu, U + idx * ldu, 1, U + ii * ldu, 1);
-        // printf("para u, ");
         if (nc)
           swapvect(nc, C + idx, ldc, C + ii, ldc);
-        // printf("para c,\n");
       }
     }
-
-    // printf("+++ finish ordering from id: %d -- ",bid);
-    // for (int i=0;i<n;++i)
-    //    printf("%2.6f ",D[i]);
-    // printf("\n");
-
   }
 
   // if not, set value of info
@@ -584,7 +552,7 @@ rocblas_status rocsolver_bdsqr_template(
   // relative accuracy tolerance
   S tol = std::max(S(10.0), std::min(S(100.0), S(pow(eps, -0.125)))) * eps;
   //(minimum accepted shift to not ruin relative accuracy) / (max singular
-  //value)
+  // value)
   S minshift = std::max(eps, tol / S(100)) / (n * tol);
 
   rocblas_stride strideW = 4 * n;
@@ -596,22 +564,11 @@ rocblas_status rocsolver_bdsqr_template(
                        strideU, C, shiftC, ldc, strideC, work, strideW);
   }
 
-  /*printf("in host:\n");
-  printf("D in: %p\n", (void*)D);
-  printf("E in: %p\n", (void*)E);
-  printf("V in: %p\n", (void*)V);
-  printf("U in: %p\n", (void*)U);
-  printf("C in: %p\n", (void*)C);
-  printf("work in: %p\n", (void*)work);
-  */
-
   // main computation of SVD
   hipLaunchKernelGGL((bdsqrKernel<T>), dim3(batch_count), dim3(1), 0, stream, n,
                      nv, nu, nc, D, strideD, E, strideE, V, shiftV, ldv,
                      strideV, U, shiftU, ldu, strideU, C, shiftC, ldc, strideC,
                      info, maxiter, eps, sfm, tol, minshift, work, strideW);
-
-  hipDeviceSynchronize();
 
   return rocblas_status_success;
 }
