@@ -12,5 +12,5 @@ User guide
    userguide_examples
    userguide_tuning
    userguide_memory
-   userguide_api 
-   
+   userguide_api
+

@@ -155,119 +155,112 @@ void bdsqr_initData(const rocblas_handle handle, const rocblas_fill uplo,
     if (nc > 0)
       CHECK_HIP_ERROR(dC.transfer_from(hC));
   }
-
 }
 
-template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
-void bdsqr_getError(const rocblas_handle handle, 
-                        const rocblas_fill uplo,
-                        const rocblas_int n, 
-                        const rocblas_int nv, 
-                        const rocblas_int nu, 
-                        const rocblas_int nc, 
-                        Sd &dD,
-                        Sd &dE,
-                        Td &dV,
-                        const rocblas_int ldv,
-                        Td &dU, 
-                        const rocblas_int ldu,
-                        Td &dC, 
-                        const rocblas_int ldc,
-                        Ud &dinfo,
-                        Sh &hD, 
-                        Sh &hDres, 
-                        Sh &hE, 
-                        Sh &hEres, 
-                        Th &hV,
-                        Th &hU,
-                        Th &hC,
-                        Uh &hinfo,
-                        double *max_err, double *max_errv)
-{
-    using S = decltype(std::real(T{}));
-    std::vector<S> hW(4*n);
-    std::vector<S> D(nv);
-    std::vector<S> E(nv);
-    
-    // input data initialization
-    bdsqr_initData<true,true,S,T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc, dinfo,
-                      hD, hE, hV, hU, hC, hinfo, D, E);
+template <typename T, typename Sd, typename Td, typename Ud, typename Sh,
+          typename Th, typename Uh>
+void bdsqr_getError(const rocblas_handle handle, const rocblas_fill uplo,
+                    const rocblas_int n, const rocblas_int nv,
+                    const rocblas_int nu, const rocblas_int nc, Sd &dD, Sd &dE,
+                    Td &dV, const rocblas_int ldv, Td &dU,
+                    const rocblas_int ldu, Td &dC, const rocblas_int ldc,
+                    Ud &dinfo, Sh &hD, Sh &hDres, Sh &hE, Sh &hEres, Th &hV,
+                    Th &hU, Th &hC, Uh &hinfo, double *max_err,
+                    double *max_errv) {
+  using S = decltype(std::real(T{}));
+  std::vector<S> hW(4 * n);
+  std::vector<S> D(nv);
+  std::vector<S> E(nv);
 
-    // execute computations
-    // CPU lapack
-    cblas_bdsqr<T>(uplo,n,nv,nu,nc,hD[0],hE[0],hV[0],ldv,hU[0],ldu,hC[0],ldc,hW.data(),hinfo[0]);
-    
-    // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(), dV.data(), ldv, dU.data(), ldu, dC.data(), ldc, dinfo.data()));
-    CHECK_HIP_ERROR(hDres.transfer_from(dD));
-    CHECK_HIP_ERROR(hEres.transfer_from(dE));
-    if (nv > 0) CHECK_HIP_ERROR(hV.transfer_from(dV));
-    if (nu > 0) CHECK_HIP_ERROR(hU.transfer_from(dU));
-    if (nc > 0) CHECK_HIP_ERROR(hC.transfer_from(dC));
+  // input data initialization
+  bdsqr_initData<true, true, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv,
+                                   dU, ldu, dC, ldc, dinfo, hD, hE, hV, hU, hC,
+                                   hinfo, D, E);
 
-    // error is ||hD - hDres||
-    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES. 
-    // IT MIGHT BE REVISITED IN THE FUTURE)
-    double err;
-    T tmp;
-    *max_err = 0;
-    *max_errv = 0;
-    err = norm_error('F',1,n,1,hD[0],hDres[0]);
+  // execute computations
+  // CPU lapack
+  cblas_bdsqr<T>(uplo, n, nv, nu, nc, hD[0], hE[0], hV[0], ldv, hU[0], ldu,
+                 hC[0], ldc, hW.data(), hinfo[0]);
+
+  // GPU lapack
+  CHECK_ROCBLAS_ERROR(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(),
+                                      dE.data(), dV.data(), ldv, dU.data(), ldu,
+                                      dC.data(), ldc, dinfo.data()));
+  CHECK_HIP_ERROR(hDres.transfer_from(dD));
+  CHECK_HIP_ERROR(hEres.transfer_from(dE));
+  if (nv > 0)
+    CHECK_HIP_ERROR(hV.transfer_from(dV));
+  if (nu > 0)
+    CHECK_HIP_ERROR(hU.transfer_from(dU));
+  if (nc > 0)
+    CHECK_HIP_ERROR(hC.transfer_from(dC));
+
+  // error is ||hD - hDres||
+  // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
+  // IT MIGHT BE REVISITED IN THE FUTURE)
+  double err;
+  T tmp;
+  *max_err = 0;
+  *max_errv = 0;
+  err = norm_error('F', 1, n, 1, hD[0], hDres[0]);
+  *max_err = err > *max_err ? err : *max_err;
+
+  // if algorithm converged, check the singular vectors if required
+  // otherwise, check E
+  if (hinfo[0][0] > 0) {
+    err = norm_error('F', 1, n - 1, 1, hE[0], hEres[0]);
     *max_err = err > *max_err ? err : *max_err;
+  }
 
-    // if algorithm converged, check the singular vectors if required
-    // otherwise, check E
-    if (hinfo[0][0] >  0) {
-        err = norm_error('F',1,n-1,1,hE[0],hEres[0]);
-        *max_err = err > *max_err ? err : *max_err;
-    } 
-    
-    else if (nv || nu || nc) {
-        err = 0;
+  else if (nv || nu || nc) {
+    err = 0;
 
-        if (uplo == rocblas_fill_upper) {
-            // check singular vectors implicitely (A'*u_i = s_i*v_i) 
-            for (rocblas_int i = 0; i < nv; ++i) {
-                for (rocblas_int j = 0; j < n; ++j) {
-                    if (i > 0)
-                        tmp = D[i] * hU[0][i+j*ldu] + E[i-1] * hU[0][(i-1)+j*ldu] - hDres[0][j] * hV[0][j+i*ldv];                        
-                    else
-                        tmp = D[i] * hU[0][i+j*ldu] - hDres[0][j] * hV[0][j+i*ldv];                        
-                    err += std::abs(tmp) * std::abs(tmp);              
-                }
-            }
-        } else {
-            // check singular vectors implicitely (A*v_i = s_i*u_i) 
-            for (rocblas_int i = 0; i < nv; ++i) {
-                for (rocblas_int j = 0; j < n; ++j) {
-                    if (i > 0)
-                        tmp = D[i] * hV[0][j+i*ldv] + E[i-1] * hV[0][j+(i-1)*ldv] - hDres[0][j] * hU[0][i+j*ldu];                        
-                    else
-                        tmp = D[i] * hV[0][j+i*ldv] - hDres[0][j] * hU[0][i+j*ldu];
-                    err += std::abs(tmp) * std::abs(tmp);              
-                }
-            }
+    if (uplo == rocblas_fill_upper) {
+      // check singular vectors implicitely (A'*u_i = s_i*v_i)
+      for (rocblas_int i = 0; i < nv; ++i) {
+        for (rocblas_int j = 0; j < n; ++j) {
+          if (i > 0)
+            tmp = D[i] * hU[0][i + j * ldu] +
+                  E[i - 1] * hU[0][(i - 1) + j * ldu] -
+                  hDres[0][j] * hV[0][j + i * ldv];
+          else
+            tmp = D[i] * hU[0][i + j * ldu] - hDres[0][j] * hV[0][j + i * ldv];
+          err += std::abs(tmp) * std::abs(tmp);
         }
-        double normD = double(snorm('F',1,n,D.data(),1));
-        double normE = double(snorm('F',1,n-1,E.data(),1));
-        err = std::sqrt(err) / std::sqrt(normD*normD + normE*normE);
-        *max_errv = err > *max_errv ? err : *max_errv;
-
-        // C should be the transpose of U
-        if (nc) {
-            err = 0;
-            for (rocblas_int i = 0; i < nv; ++i) {
-                for (rocblas_int j = 0; j < n; ++j) {
-                    tmp = hC[0][j+i*ldc] - hU[0][i+j*ldu];
-                    err += std::abs(tmp) * std::abs(tmp);
-                }
-            }
-            err = std::sqrt(err);
-            *max_errv = err > *max_errv ? err : *max_errv;
+      }
+    } else {
+      // check singular vectors implicitely (A*v_i = s_i*u_i)
+      for (rocblas_int i = 0; i < nv; ++i) {
+        for (rocblas_int j = 0; j < n; ++j) {
+          if (i > 0)
+            tmp = D[i] * hV[0][j + i * ldv] +
+                  E[i - 1] * hV[0][j + (i - 1) * ldv] -
+                  hDres[0][j] * hU[0][i + j * ldu];
+          else
+            tmp = D[i] * hV[0][j + i * ldv] - hDres[0][j] * hU[0][i + j * ldu];
+          err += std::abs(tmp) * std::abs(tmp);
         }
-    } 
+      }
+    }
+    double normD = double(snorm('F', 1, n, D.data(), 1));
+    double normE = double(snorm('F', 1, n - 1, E.data(), 1));
+    err = std::sqrt(err) / std::sqrt(normD * normD + normE * normE);
+    *max_errv = err > *max_errv ? err : *max_errv;
+
+    // C should be the transpose of U
+    if (nc) {
+      err = 0;
+      for (rocblas_int i = 0; i < nv; ++i) {
+        for (rocblas_int j = 0; j < n; ++j) {
+          tmp = hC[0][j + i * ldc] - hU[0][i + j * ldu];
+          err += std::abs(tmp) * std::abs(tmp);
+        }
+      }
+      err = std::sqrt(err);
+      *max_errv = err > *max_errv ? err : *max_errv;
+    }
+  }
 }
-
 
 template <typename T, typename Sd, typename Td, typename Ud, typename Sh,
           typename Th, typename Uh>
@@ -326,7 +319,6 @@ void bdsqr_getPerfData(const rocblas_handle handle, const rocblas_fill uplo,
   }
   *gpu_time_used /= hot_calls;
 }
-
 
 template <typename T> void testing_bdsqr(Arguments argus) {
   using S = decltype(std::real(T{}));

@@ -48,15 +48,13 @@ inline void rocsolver_bench_output(T arg, Ts... args) {
 }
 
 template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
-inline T sconj(T scalar) 
-{
-    return scalar;
+inline T sconj(T scalar) {
+  return scalar;
 }
 
 template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
-inline T sconj(T scalar) 
-{
-    return std::conj(scalar);
+inline T sconj(T scalar) {
+  return std::conj(scalar);
 }
 
 #endif

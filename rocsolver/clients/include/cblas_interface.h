@@ -246,7 +246,9 @@ void cblas_gebrd(rocblas_int m, rocblas_int n, T *A, rocblas_int lda, S *D,
                  S *E, T *tauq, T *taup, T *work, rocblas_int size_w);
 
 template <typename T, typename W>
-void cblas_gesvd(rocblas_svect leftv, rocblas_svect rightv, rocblas_int m, rocblas_int n, T* A, rocblas_int lda, 
-                W *S, T* U, rocblas_int ldu, T* V, rocblas_int ldv, T* work, rocblas_int lwork, W *E, rocblas_int *info);
+void cblas_gesvd(rocblas_svect leftv, rocblas_svect rightv, rocblas_int m,
+                 rocblas_int n, T *A, rocblas_int lda, W *S, T *U,
+                 rocblas_int ldu, T *V, rocblas_int ldv, T *work,
+                 rocblas_int lwork, W *E, rocblas_int *info);
 
 #endif /* _CBLAS_INTERFACE_ */
