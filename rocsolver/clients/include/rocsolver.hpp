@@ -890,8 +890,8 @@ rocsolver_gesvd(bool STRIDED, rocblas_handle handle, rocblas_svect leftv,
                 rocblas_int lda, rocblas_stride stA, float *S,
                 rocblas_stride stS, float *U, rocblas_int ldu,
                 rocblas_stride stU, float *V, rocblas_int ldv,
-                rocblas_stride stV, float *E, rocblas_stride stE, bool fast_alg,
-                rocblas_int *info, rocblas_int bc) {
+                rocblas_stride stV, float *E, rocblas_stride stE,
+                rocblas_workmode fast_alg, rocblas_int *info, rocblas_int bc) {
   return STRIDED ? rocsolver_sgesvd_strided_batched(
                        handle, leftv, rightv, m, n, A, lda, stA, S, stS, U, ldu,
                        stU, V, ldv, stV, E, stE, fast_alg, info, bc)
@@ -906,7 +906,7 @@ rocsolver_gesvd(bool STRIDED, rocblas_handle handle, rocblas_svect leftv,
                 rocblas_stride stS, double *U, rocblas_int ldu,
                 rocblas_stride stU, double *V, rocblas_int ldv,
                 rocblas_stride stV, double *E, rocblas_stride stE,
-                bool fast_alg, rocblas_int *info, rocblas_int bc) {
+                rocblas_workmode fast_alg, rocblas_int *info, rocblas_int bc) {
   return STRIDED ? rocsolver_dgesvd_strided_batched(
                        handle, leftv, rightv, m, n, A, lda, stA, S, stS, U, ldu,
                        stU, V, ldv, stV, E, stE, fast_alg, info, bc)
@@ -921,8 +921,8 @@ rocsolver_gesvd(bool STRIDED, rocblas_handle handle, rocblas_svect leftv,
                 float *S, rocblas_stride stS, rocblas_float_complex *U,
                 rocblas_int ldu, rocblas_stride stU, rocblas_float_complex *V,
                 rocblas_int ldv, rocblas_stride stV, float *E,
-                rocblas_stride stE, bool fast_alg, rocblas_int *info,
-                rocblas_int bc) {
+                rocblas_stride stE, rocblas_workmode fast_alg,
+                rocblas_int *info, rocblas_int bc) {
   return STRIDED ? rocsolver_cgesvd_strided_batched(
                        handle, leftv, rightv, m, n, A, lda, stA, S, stS, U, ldu,
                        stU, V, ldv, stV, E, stE, fast_alg, info, bc)
@@ -937,8 +937,8 @@ rocsolver_gesvd(bool STRIDED, rocblas_handle handle, rocblas_svect leftv,
                 double *S, rocblas_stride stS, rocblas_double_complex *U,
                 rocblas_int ldu, rocblas_stride stU, rocblas_double_complex *V,
                 rocblas_int ldv, rocblas_stride stV, double *E,
-                rocblas_stride stE, bool fast_alg, rocblas_int *info,
-                rocblas_int bc) {
+                rocblas_stride stE, rocblas_workmode fast_alg,
+                rocblas_int *info, rocblas_int bc) {
   return STRIDED ? rocsolver_zgesvd_strided_batched(
                        handle, leftv, rightv, m, n, A, lda, stA, S, stS, U, ldu,
                        stU, V, ldv, stV, E, stE, fast_alg, info, bc)
@@ -953,8 +953,8 @@ rocsolver_gesvd(bool STRIDED, rocblas_handle handle, rocblas_svect leftv,
                 float *const A[], rocblas_int lda, rocblas_stride stA, float *S,
                 rocblas_stride stS, float *U, rocblas_int ldu,
                 rocblas_stride stU, float *V, rocblas_int ldv,
-                rocblas_stride stV, float *E, rocblas_stride stE, bool fast_alg,
-                rocblas_int *info, rocblas_int bc) {
+                rocblas_stride stV, float *E, rocblas_stride stE,
+                rocblas_workmode fast_alg, rocblas_int *info, rocblas_int bc) {
   return rocsolver_sgesvd_batched(handle, leftv, rightv, m, n, A, lda, S, stS,
                                   U, ldu, stU, V, ldv, stV, E, stE, fast_alg,
                                   info, bc);
@@ -967,7 +967,7 @@ rocsolver_gesvd(bool STRIDED, rocblas_handle handle, rocblas_svect leftv,
                 double *S, rocblas_stride stS, double *U, rocblas_int ldu,
                 rocblas_stride stU, double *V, rocblas_int ldv,
                 rocblas_stride stV, double *E, rocblas_stride stE,
-                bool fast_alg, rocblas_int *info, rocblas_int bc) {
+                rocblas_workmode fast_alg, rocblas_int *info, rocblas_int bc) {
   return rocsolver_dgesvd_batched(handle, leftv, rightv, m, n, A, lda, S, stS,
                                   U, ldu, stU, V, ldv, stV, E, stE, fast_alg,
                                   info, bc);
@@ -980,8 +980,8 @@ rocsolver_gesvd(bool STRIDED, rocblas_handle handle, rocblas_svect leftv,
                 rocblas_stride stA, float *S, rocblas_stride stS,
                 rocblas_float_complex *U, rocblas_int ldu, rocblas_stride stU,
                 rocblas_float_complex *V, rocblas_int ldv, rocblas_stride stV,
-                float *E, rocblas_stride stE, bool fast_alg, rocblas_int *info,
-                rocblas_int bc) {
+                float *E, rocblas_stride stE, rocblas_workmode fast_alg,
+                rocblas_int *info, rocblas_int bc) {
   return rocsolver_cgesvd_batched(handle, leftv, rightv, m, n, A, lda, S, stS,
                                   U, ldu, stU, V, ldv, stV, E, stE, fast_alg,
                                   info, bc);
@@ -994,8 +994,8 @@ rocsolver_gesvd(bool STRIDED, rocblas_handle handle, rocblas_svect leftv,
                 rocblas_stride stA, double *S, rocblas_stride stS,
                 rocblas_double_complex *U, rocblas_int ldu, rocblas_stride stU,
                 rocblas_double_complex *V, rocblas_int ldv, rocblas_stride stV,
-                double *E, rocblas_stride stE, bool fast_alg, rocblas_int *info,
-                rocblas_int bc) {
+                double *E, rocblas_stride stE, rocblas_workmode fast_alg,
+                rocblas_int *info, rocblas_int bc) {
   return rocsolver_zgesvd_batched(handle, leftv, rightv, m, n, A, lda, S, stS,
                                   U, ldu, stU, V, ldv, stV, E, stE, fast_alg,
                                   info, bc);

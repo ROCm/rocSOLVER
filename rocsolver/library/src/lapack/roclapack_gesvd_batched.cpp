@@ -13,8 +13,8 @@ rocblas_status rocsolver_gesvd_batched_impl(
     W A, const rocblas_int lda, TT *S, const rocblas_stride strideS, T *U,
     const rocblas_int ldu, const rocblas_stride strideU, T *V,
     const rocblas_int ldv, const rocblas_stride strideV, TT *E,
-    const rocblas_stride strideE, const bool fast_alg, rocblas_int *info,
-    const rocblas_int batch_count) {
+    const rocblas_stride strideE, const rocblas_workmode fast_alg,
+    rocblas_int *info, const rocblas_int batch_count) {
   if (!handle)
     return rocblas_status_invalid_handle;
 
@@ -30,10 +30,16 @@ rocblas_status rocsolver_gesvd_batched_impl(
   rocblas_stride strideA = 0;
 
   // memory managment
+  // size for constants
   size_t size_1;
+  // size of reusable workspace
   size_t size_2;
+  // size of array of pointers to reusable workspace (only for batched case)
   size_t size_3;
+  // size of fixed workspace (it cannot be re-used by other internal
+  // subroutines)
   size_t size_4;
+  // size of the array for the householder scalars
   size_t size_5;
   rocsolver_gesvd_getMemorySize<true, T, TT>(left_svect, right_svect, m, n,
                                              batch_count, &size_1, &size_2,
@@ -85,7 +91,8 @@ rocblas_status rocsolver_sgesvd_batched(
     const rocblas_stride strideS, float *U, const rocblas_int ldu,
     const rocblas_stride strideU, float *V, const rocblas_int ldv,
     const rocblas_stride strideV, float *E, const rocblas_stride strideE,
-    const bool fast_alg, rocblas_int *info, const rocblas_int batch_count) {
+    const rocblas_workmode fast_alg, rocblas_int *info,
+    const rocblas_int batch_count) {
   return rocsolver_gesvd_batched_impl<float>(
       handle, left_svect, right_svect, m, n, A, lda, S, strideS, U, ldu,
       strideU, V, ldv, strideV, E, strideE, fast_alg, info, batch_count);
@@ -98,7 +105,8 @@ rocblas_status rocsolver_dgesvd_batched(
     const rocblas_stride strideS, double *U, const rocblas_int ldu,
     const rocblas_stride strideU, double *V, const rocblas_int ldv,
     const rocblas_stride strideV, double *E, const rocblas_stride strideE,
-    const bool fast_alg, rocblas_int *info, const rocblas_int batch_count) {
+    const rocblas_workmode fast_alg, rocblas_int *info,
+    const rocblas_int batch_count) {
   return rocsolver_gesvd_batched_impl<double>(
       handle, left_svect, right_svect, m, n, A, lda, S, strideS, U, ldu,
       strideU, V, ldv, strideV, E, strideE, fast_alg, info, batch_count);
@@ -112,7 +120,8 @@ rocblas_status rocsolver_cgesvd_batched(
     const rocblas_int ldu, const rocblas_stride strideU,
     rocblas_float_complex *V, const rocblas_int ldv,
     const rocblas_stride strideV, float *E, const rocblas_stride strideE,
-    const bool fast_alg, rocblas_int *info, const rocblas_int batch_count) {
+    const rocblas_workmode fast_alg, rocblas_int *info,
+    const rocblas_int batch_count) {
   return rocsolver_gesvd_batched_impl<rocblas_float_complex>(
       handle, left_svect, right_svect, m, n, A, lda, S, strideS, U, ldu,
       strideU, V, ldv, strideV, E, strideE, fast_alg, info, batch_count);
@@ -126,7 +135,8 @@ rocblas_status rocsolver_zgesvd_batched(
     const rocblas_int ldu, const rocblas_stride strideU,
     rocblas_double_complex *V, const rocblas_int ldv,
     const rocblas_stride strideV, double *E, const rocblas_stride strideE,
-    const bool fast_alg, rocblas_int *info, const rocblas_int batch_count) {
+    const rocblas_workmode fast_alg, rocblas_int *info,
+    const rocblas_int batch_count) {
   return rocsolver_gesvd_batched_impl<rocblas_double_complex>(
       handle, left_svect, right_svect, m, n, A, lda, S, strideS, U, ldu,
       strideU, V, ldv, strideV, E, strideE, fast_alg, info, batch_count);

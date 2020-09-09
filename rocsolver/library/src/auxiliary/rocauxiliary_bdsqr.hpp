@@ -19,7 +19,7 @@
   FOR THE BATCHED VERSIONS (A DIFFERENT THREAD WORKS ON EACH INSTANCE OF THE
   BATCH). MORE PARALLELISM CAN BE INTRODUCED IN THE FUTURE IN AT LEAST TWO
   WAYS:
-  1. the splitted diagonal blocks can be worked in parallel as they are
+  1. the split diagonal blocks can be worked in parallel as they are
   independent
   2. for each block, multiple threads can accelerate some of the reductions
   and vector operations

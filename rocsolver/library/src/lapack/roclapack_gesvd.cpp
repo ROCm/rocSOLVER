@@ -10,7 +10,8 @@ rocsolver_gesvd_impl(rocblas_handle handle, const rocblas_svect left_svect,
                      const rocblas_svect right_svect, const rocblas_int m,
                      const rocblas_int n, W A, const rocblas_int lda, TT *S,
                      T *U, const rocblas_int ldu, T *V, const rocblas_int ldv,
-                     TT *E, const bool fast_alg, rocblas_int *info) {
+                     TT *E, const rocblas_workmode fast_alg,
+                     rocblas_int *info) {
   if (!handle)
     return rocblas_status_invalid_handle;
 
@@ -30,10 +31,16 @@ rocsolver_gesvd_impl(rocblas_handle handle, const rocblas_svect left_svect,
   rocblas_int batch_count = 1;
 
   // memory managment
+  // size for constants
   size_t size_1;
+  // size of reusable workspace
   size_t size_2;
+  // size of array of pointers to reusable workspace (only for batched case)
   size_t size_3;
+  // size of fixed workspace (it cannot be re-used by other internal
+  // subroutines)
   size_t size_4;
+  // size of the array for the householder scalars
   size_t size_5;
   rocsolver_gesvd_getMemorySize<false, T, TT>(left_svect, right_svect, m, n,
                                               batch_count, &size_1, &size_2,
@@ -78,48 +85,50 @@ rocsolver_gesvd_impl(rocblas_handle handle, const rocblas_svect left_svect,
 
 extern "C" {
 
-rocblas_status rocsolver_sgesvd(rocblas_handle handle,
-                                const rocblas_svect left_svect,
-                                const rocblas_svect right_svect,
-                                const rocblas_int m, const rocblas_int n,
-                                float *A, const rocblas_int lda, float *S,
-                                float *U, const rocblas_int ldu, float *V,
-                                const rocblas_int ldv, float *E,
-                                const bool fast_alg, rocblas_int *info) {
+rocblas_status
+rocsolver_sgesvd(rocblas_handle handle, const rocblas_svect left_svect,
+                 const rocblas_svect right_svect, const rocblas_int m,
+                 const rocblas_int n, float *A, const rocblas_int lda, float *S,
+                 float *U, const rocblas_int ldu, float *V,
+                 const rocblas_int ldv, float *E,
+                 const rocblas_workmode fast_alg, rocblas_int *info) {
   return rocsolver_gesvd_impl<float>(handle, left_svect, right_svect, m, n, A,
                                      lda, S, U, ldu, V, ldv, E, fast_alg, info);
 }
 
-rocblas_status rocsolver_dgesvd(rocblas_handle handle,
-                                const rocblas_svect left_svect,
-                                const rocblas_svect right_svect,
-                                const rocblas_int m, const rocblas_int n,
-                                double *A, const rocblas_int lda, double *S,
-                                double *U, const rocblas_int ldu, double *V,
-                                const rocblas_int ldv, double *E,
-                                const bool fast_alg, rocblas_int *info) {
+rocblas_status
+rocsolver_dgesvd(rocblas_handle handle, const rocblas_svect left_svect,
+                 const rocblas_svect right_svect, const rocblas_int m,
+                 const rocblas_int n, double *A, const rocblas_int lda,
+                 double *S, double *U, const rocblas_int ldu, double *V,
+                 const rocblas_int ldv, double *E,
+                 const rocblas_workmode fast_alg, rocblas_int *info) {
   return rocsolver_gesvd_impl<double>(handle, left_svect, right_svect, m, n, A,
                                       lda, S, U, ldu, V, ldv, E, fast_alg,
                                       info);
 }
 
-rocblas_status rocsolver_cgesvd(
-    rocblas_handle handle, const rocblas_svect left_svect,
-    const rocblas_svect right_svect, const rocblas_int m, const rocblas_int n,
-    rocblas_float_complex *A, const rocblas_int lda, float *S,
-    rocblas_float_complex *U, const rocblas_int ldu, rocblas_float_complex *V,
-    const rocblas_int ldv, float *E, const bool fast_alg, rocblas_int *info) {
+rocblas_status
+rocsolver_cgesvd(rocblas_handle handle, const rocblas_svect left_svect,
+                 const rocblas_svect right_svect, const rocblas_int m,
+                 const rocblas_int n, rocblas_float_complex *A,
+                 const rocblas_int lda, float *S, rocblas_float_complex *U,
+                 const rocblas_int ldu, rocblas_float_complex *V,
+                 const rocblas_int ldv, float *E,
+                 const rocblas_workmode fast_alg, rocblas_int *info) {
   return rocsolver_gesvd_impl<rocblas_float_complex>(
       handle, left_svect, right_svect, m, n, A, lda, S, U, ldu, V, ldv, E,
       fast_alg, info);
 }
 
-rocblas_status rocsolver_zgesvd(
-    rocblas_handle handle, const rocblas_svect left_svect,
-    const rocblas_svect right_svect, const rocblas_int m, const rocblas_int n,
-    rocblas_double_complex *A, const rocblas_int lda, double *S,
-    rocblas_double_complex *U, const rocblas_int ldu, rocblas_double_complex *V,
-    const rocblas_int ldv, double *E, const bool fast_alg, rocblas_int *info) {
+rocblas_status
+rocsolver_zgesvd(rocblas_handle handle, const rocblas_svect left_svect,
+                 const rocblas_svect right_svect, const rocblas_int m,
+                 const rocblas_int n, rocblas_double_complex *A,
+                 const rocblas_int lda, double *S, rocblas_double_complex *U,
+                 const rocblas_int ldu, rocblas_double_complex *V,
+                 const rocblas_int ldv, double *E,
+                 const rocblas_workmode fast_alg, rocblas_int *info) {
   return rocsolver_gesvd_impl<rocblas_double_complex>(
       handle, left_svect, right_svect, m, n, A, lda, S, U, ldu, V, ldv, E,
       fast_alg, info);

@@ -230,9 +230,9 @@ rocblas_status rocsolver_gesvd_template(
     const rocblas_stride strideA, TT *S, const rocblas_stride strideS, T *U,
     const rocblas_int ldu, const rocblas_stride strideU, T *V,
     const rocblas_int ldv, const rocblas_stride strideV, TT *E,
-    const rocblas_stride strideE, const bool fast_alg, rocblas_int *info,
-    const rocblas_int batch_count, T *scalars, void *workgral, T **workArr,
-    T *workfunc, T *tau) {
+    const rocblas_stride strideE, const rocblas_workmode fast_alg,
+    rocblas_int *info, const rocblas_int batch_count, T *scalars,
+    void *workgral, T **workArr, T *workfunc, T *tau) {
   constexpr bool COMPLEX = is_complex<T>;
 
   // quick return
@@ -254,16 +254,17 @@ rocblas_status rocsolver_gesvd_template(
   const bool rightvO = (right_svect == rocblas_svect_overwrite);
   const bool rightvA = (right_svect == rocblas_svect_all);
   const bool rightvN = (right_svect == rocblas_svect_none);
+  const bool fast_thinSVD = (fast_alg == rocblas_outofplace);
 
   rocblas_int mn, nu, nv;
   rocblas_fill uplo;
   const rocblas_int k = min(m, n);
 
   // common block sizes and number of threads for internal kernels
-  constexpr rocblas_int numthrds = 32;
-  const rocblas_int blkm = (m - 1) / numthrds + 1;
-  const rocblas_int blkn = (n - 1) / numthrds + 1;
-  const rocblas_int blkk = (k - 1) / numthrds + 1;
+  constexpr rocblas_int thread_count = 32;
+  const rocblas_int blocks_m = (m - 1) / thread_count + 1;
+  const rocblas_int blocks_n = (n - 1) / thread_count + 1;
+  const rocblas_int blocks_k = (k - 1) / thread_count + 1;
 
   // A thin SVD could be computed for matrices with sufficiently more rows than
   // columns (or columns that rows) by starting with a QR factorization (or LQ
@@ -277,12 +278,12 @@ rocblas_status rocsolver_gesvd_template(
     // (TODO: IMPLEMENT THIN_SVD AND FAST THIN_SVD ALGORITHMS)
 
     // use fast thin-svd algorithm (this may require larger memory worksapce)
-    if (fast_alg) {
+    if (fast_thinSVD) {
       return rocblas_status_not_implemented;
     }
 
     // use normal thin-svd
-    else { //(!fast_alg)
+    else { //(!fast_thinSVD)
       return rocblas_status_not_implemented;
     }
   }
@@ -299,9 +300,9 @@ rocblas_status rocsolver_gesvd_template(
     // 2. Generate corresponding orthonormal/unitary matrices when required
     if (leftvS || leftvA) {
       mn = (m >= n && leftvS) ? n : m;
-      hipLaunchKernelGGL(copy_array<T>, dim3(blkm, blkk, batch_count),
-                         dim3(numthrds, numthrds, 1), 0, stream, m, k, A,
-                         shiftA, lda, strideA, U, 0, ldu, strideU);
+      hipLaunchKernelGGL(copy_array<T>, dim3(blocks_m, blocks_k, batch_count),
+                         dim3(thread_count, thread_count, 1), 0, stream, m, k,
+                         A, shiftA, lda, strideA, U, 0, ldu, strideU);
       rocsolver_orgbr_ungbr_template<false, STRIDED>(
           handle, rocblas_column_wise, m, mn, n, U, 0, ldu, strideU, tau, k,
           batch_count, scalars, (T *)workgral, workArr, workfunc);
@@ -309,9 +310,9 @@ rocblas_status rocsolver_gesvd_template(
 
     if (rightvS || rightvA) {
       mn = (n > m && rightvS) ? m : n;
-      hipLaunchKernelGGL(copy_array<T>, dim3(blkk, blkn, batch_count),
-                         dim3(numthrds, numthrds, 1), 0, stream, k, n, A,
-                         shiftA, lda, strideA, V, 0, ldv, strideV);
+      hipLaunchKernelGGL(copy_array<T>, dim3(blocks_k, blocks_n, batch_count),
+                         dim3(thread_count, thread_count, 1), 0, stream, k, n,
+                         A, shiftA, lda, strideA, V, 0, ldv, strideV);
       rocsolver_orgbr_ungbr_template<false, STRIDED>(
           handle, rocblas_row_wise, mn, n, m, V, 0, ldv, strideV,
           (tau + k * batch_count), k, batch_count, scalars, (T *)workgral,

@@ -31,6 +31,16 @@ constexpr auto rocblas2char_storev(rocblas_storev value) {
   return '\0';
 }
 
+constexpr auto rocblas2char_workmode(rocblas_workmode value) {
+  switch (value) {
+  case rocblas_outofplace:
+    return 'O';
+  case rocblas_inplace:
+    return 'I';
+  }
+  return '\0';
+}
+
 constexpr auto rocblas2char_svect(rocblas_svect value) {
   switch (value) {
   case rocblas_svect_all:
@@ -66,6 +76,17 @@ constexpr rocblas_storev char2rocblas_storev(char value) {
     return rocblas_row_wise;
   default:
     return static_cast<rocblas_storev>(-1);
+  }
+}
+
+constexpr rocblas_workmode char2rocblas_workmode(char value) {
+  switch (value) {
+  case 'O':
+    return rocblas_outofplace;
+  case 'I':
+    return rocblas_inplace;
+  default:
+    return static_cast<rocblas_workmode>(-1);
   }
 }
 

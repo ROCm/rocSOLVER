@@ -18,8 +18,8 @@ void gesvd_checkBadArgs(const rocblas_handle handle,
                         const rocblas_stride stS, T dU, const rocblas_int ldu,
                         const rocblas_stride stU, T dV, const rocblas_int ldv,
                         const rocblas_stride stV, TT dE,
-                        const rocblas_stride stE, const bool fa, U dinfo,
-                        const rocblas_int bc) {
+                        const rocblas_stride stE, const rocblas_workmode fa,
+                        U dinfo, const rocblas_int bc) {
   // handle
   EXPECT_ROCBLAS_STATUS(rocsolver_gesvd(STRIDED, nullptr, left_svect,
                                         right_svect, m, n, dA, lda, stA, dS,
@@ -123,7 +123,7 @@ template <bool BATCHED, bool STRIDED, typename T> void testing_gesvd_bad_arg() {
   rocblas_stride stV = 2;
   rocblas_stride stE = 2;
   rocblas_int bc = 1;
-  bool fa = true;
+  rocblas_workmode fa = rocblas_outofplace;
 
   if (BATCHED) {
     // memory allocations
@@ -214,8 +214,9 @@ void gesvd_getError(const rocblas_handle handle, const rocblas_svect left_svect,
                     const rocblas_stride stA, Td &dS, const rocblas_stride stS,
                     Ud &dU, const rocblas_int ldu, const rocblas_stride stU,
                     Ud &dV, const rocblas_int ldv, const rocblas_stride stV,
-                    Td &dE, const rocblas_stride stE, const bool fa, Id &dinfo,
-                    const rocblas_int bc, const rocblas_svect left_svectT,
+                    Td &dE, const rocblas_stride stE, const rocblas_workmode fa,
+                    Id &dinfo, const rocblas_int bc,
+                    const rocblas_svect left_svectT,
                     const rocblas_svect right_svectT, const rocblas_int mT,
                     const rocblas_int nT, Ud &dUT, const rocblas_int lduT,
                     const rocblas_stride stUT, Ud &dVT, const rocblas_int ldvT,
@@ -330,10 +331,10 @@ void gesvd_getPerfData(
     Wd &dA, const rocblas_int lda, const rocblas_stride stA, Td &dS,
     const rocblas_stride stS, Ud &dU, const rocblas_int ldu,
     const rocblas_stride stU, Ud &dV, const rocblas_int ldv,
-    const rocblas_stride stV, Td &dE, const rocblas_stride stE, const bool fa,
-    Id &dinfo, const rocblas_int bc, Wh &hA, Th &hS, Uh &hU, Uh &hV, Th &hE,
-    Ih &hinfo, double *gpu_time_used, double *cpu_time_used,
-    const rocblas_int hot_calls, const bool perf) {
+    const rocblas_stride stV, Td &dE, const rocblas_stride stE,
+    const rocblas_workmode fa, Id &dinfo, const rocblas_int bc, Wh &hA, Th &hS,
+    Uh &hU, Uh &hV, Th &hE, Ih &hinfo, double *gpu_time_used,
+    double *cpu_time_used, const rocblas_int hot_calls, const bool perf) {
   rocblas_int lwork = 5 * max(m, n);
   std::vector<T> hWork(lwork);
   std::vector<T> A;
@@ -396,12 +397,13 @@ void testing_gesvd(Arguments argus) {
   rocblas_stride stV = argus.bsp;
   rocblas_stride stE = argus.bs5;
   rocblas_int bc = argus.batch_count;
-  bool fa = argus.fast_alg;
 
+  char faC = argus.workmode;
   char leftvC = argus.left_svect;
   char rightvC = argus.right_svect;
   rocblas_svect leftv = char2rocblas_svect(leftvC);
   rocblas_svect rightv = char2rocblas_svect(rightvC);
+  rocblas_workmode fa = char2rocblas_workmode(faC);
   rocblas_int hot_calls = argus.iters;
 
   // check non-supported values

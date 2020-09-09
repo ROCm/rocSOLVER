@@ -192,9 +192,9 @@ int main(int argc, char *argv[]) try {
          po::value<rocblas_int>(&device_id)->default_value(0),
          "Set default device to be used for subsequent program runs")
 
-        ("fastAlg",
-         po::value<bool>(&argus.fast_alg)->default_value(true),
-         "Enables fast algorithm for the SVD factorization")
+        ("workmode",
+         po::value<char>(&argus.workmode)->default_value('O'),
+         "Enables out-of-place computations in some routines")
 
         ("leftsv",
          po::value<char>(&argus.left_svect)->default_value('N'),
@@ -272,6 +272,10 @@ int main(int argc, char *argv[]) try {
   if (argus.right_svect != 'A' && argus.right_svect != 'S' &&
       argus.right_svect != 'O' && argus.right_svect != 'N')
     throw std::invalid_argument("Invalid value for --rightsv");
+
+  // rightsv
+  if (argus.workmode != 'O' && argus.workmode != 'I')
+    throw std::invalid_argument("Invalid value for --workmode");
 
   // select and dispatch function test/benchmark
   // (TODO) MOVE THIS TO A SEPARATE IMPROVED DISPATCH FUNCTION

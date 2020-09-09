@@ -88,6 +88,9 @@ rocblas_svect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenenum:: rocblas_svect
 
+rocblas_workmode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocblas_workmode
 
 
 LAPACK Auxiliary Functions

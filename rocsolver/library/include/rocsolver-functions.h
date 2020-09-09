@@ -5748,39 +5748,41 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(
 
         A = U * S * V'
 
-    where m-by-n matrix S is zero except, possibly, for its min(m,n) diagonal
-   elements which are the singular values of A. U and V are orthogonal (unitary)
-   matrices. The first min(m,n) columns of U and V are the left and right
-    singular vectors of A respectively.
+    where the m-by-n matrix S is zero except, possibly, for its min(m,n)
+   diagonal elements, which are the singular values of A. U and V are orthogonal
+   (unitary) matrices. The first min(m,n) columns of U and V are the left and
+   right singular vectors of A, respectively.
 
     The computation of the singular vectors is optional and it is controlled by
    the function arguments left_svect and right_svect as described below. When
    computed, this function returns the tranpose (or transpose conjugate) of the
-   right singular vectors, ie. the rows of V'.
+   right singular vectors, i.e. the rows of V'.
 
     left_svect and right_svect are rocblas_svect enums that can take the
    following values:
 
-        rocblas_svect_all: the entire matrix U (or V') is computed,
-        rocblas_svect_singular: only the singular vectors (first min(m,n)
-   columns of U or rows of V') are computed, rocblas_svect_overwrite: the first
+    - rocblas_svect_all: the entire matrix U (or V') is computed,
+    - rocblas_svect_singular: only the singular vectors (first min(m,n)
+   columns of U or rows of V') are computed,
+    - rocblas_svect_overwrite: the first
    columns (or rows) of A are overwritten with the singular vectors, or
-        rocblas_svect_none: no columns (or rows) of U (or V') are computed, ie.
+    - rocblas_svect_none: no columns (or rows) of U (or V') are computed, i.e.
    no singular vectors.
 
-    left_svect and right_svect cannot both be set to overwrite. When none is set
-   to overwrite, the contents of A are destroyed by the time the function
+    left_svect and right_svect cannot both be set to overwrite. When neither is
+   set to overwrite, the contents of A are destroyed by the time the function
    returns.
 
-    (When m >> n or (n >> m) the algorithm could be speeded up by compressing
+   \note
+   When m >> n (or n >> m) the algorithm could be sped up by compressing
    the matrix A via a QR (or LQ) factorization, and working with the triangular
    factor afterwards (thin-SVD). If the singular vectors are also requested, its
-   computation could be speeded up as well via executing some intermediate
+   computation could be sped up as well via executing some intermediate
    operations out-of-place, and relying more on matrix multiplications (GEMMs);
-   this will require, however, a larger memory workspace. The boolean fast_alg
+   this will require, however, a larger memory workspace. The parameter fast_alg
    controls whether the fast algorithm is executed or not. For more details see
    the sections "Tuning rocSOLVER performance" and "Memory model" on the User's
-   guide).
+   guide.
 
     @param[in]
     handle      rocblas_handle.
@@ -5834,9 +5836,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(
    are in S; those that converged correspond to a subset of the singular values
    of A (not necessarily ordered).
     @param[in]
-    fast_alg    boolean. \n
-                If set to true, the function will execute the fast thin-SVD
-   version of the algorithm when possible.
+    fast_alg    rocblas_workmode. \n
+                If set to rocblas_outofplace, the function will execute the fast
+   thin-SVD version of the algorithm when possible.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
@@ -5849,7 +5851,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvd(
     rocblas_handle handle, const rocblas_svect left_svect,
     const rocblas_svect right_svect, const rocblas_int m, const rocblas_int n,
     float *A, const rocblas_int lda, float *S, float *U, const rocblas_int ldu,
-    float *V, const rocblas_int ldv, float *E, const bool fast_alg,
+    float *V, const rocblas_int ldv, float *E, const rocblas_workmode fast_alg,
     rocblas_int *info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvd(
@@ -5857,21 +5859,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvd(
     const rocblas_svect right_svect, const rocblas_int m, const rocblas_int n,
     double *A, const rocblas_int lda, double *S, double *U,
     const rocblas_int ldu, double *V, const rocblas_int ldv, double *E,
-    const bool fast_alg, rocblas_int *info);
+    const rocblas_workmode fast_alg, rocblas_int *info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvd(
     rocblas_handle handle, const rocblas_svect left_svect,
     const rocblas_svect right_svect, const rocblas_int m, const rocblas_int n,
     rocblas_float_complex *A, const rocblas_int lda, float *S,
     rocblas_float_complex *U, const rocblas_int ldu, rocblas_float_complex *V,
-    const rocblas_int ldv, float *E, const bool fast_alg, rocblas_int *info);
+    const rocblas_int ldv, float *E, const rocblas_workmode fast_alg,
+    rocblas_int *info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(
     rocblas_handle handle, const rocblas_svect left_svect,
     const rocblas_svect right_svect, const rocblas_int m, const rocblas_int n,
     rocblas_double_complex *A, const rocblas_int lda, double *S,
     rocblas_double_complex *U, const rocblas_int ldu, rocblas_double_complex *V,
-    const rocblas_int ldv, double *E, const bool fast_alg, rocblas_int *info);
+    const rocblas_int ldv, double *E, const rocblas_workmode fast_alg,
+    rocblas_int *info);
 
 /*! \brief GESVD_BATCHED computes the Singular Values and optionally the
    Singular Vectors of a batch of general m-by-n matrix A (Singular Value
@@ -5882,39 +5886,41 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(
 
         A_j = U_j * S_j * V_j'
 
-    where m-by-n matrix S_j is zero except, possibly, for its min(m,n) diagonal
-   elements which are the singular values of A_j. U_j and V_j are orthogonal
-   (unitary) matrices. The first min(m,n) columns of U_j and V_j are the left
-   and right singular vectors of A_j respectively.
+    where the m-by-n matrix S_j is zero except, possibly, for its min(m,n)
+   diagonal elements, which are the singular values of A_j. U_j and V_j are
+   orthogonal (unitary) matrices. The first min(m,n) columns of U_j and V_j are
+   the left and right singular vectors of A_j, respectively.
 
     The computation of the singular vectors is optional and it is controlled by
    the function arguments left_svect and right_svect as described below. When
    computed, this function returns the tranpose (or transpose conjugate) of the
-   right singular vectors, ie. the rows of V_j'.
+   right singular vectors, i.e. the rows of V_j'.
 
     left_svect and right_svect are rocblas_svect enums that can take the
    following values:
 
-        rocblas_svect_all: the entire matrix U_j (or V_j') is computed,
-        rocblas_svect_singular: only the singular vectors (first min(m,n)
-   columns of U_j or rows of V_j') are computed, rocblas_svect_overwrite: the
+    - rocblas_svect_all: the entire matrix U_j (or V_j') is computed,
+    - rocblas_svect_singular: only the singular vectors (first min(m,n)
+   columns of U_j or rows of V_j') are computed,
+    - rocblas_svect_overwrite: the
    first columns (or rows) of A_j are overwritten with the singular vectors, or
-        rocblas_svect_none: no columns (or rows) of U_j (or V_j') are computed,
-   ie. no singular vectors.
+    - rocblas_svect_none: no columns (or rows) of U_j (or V_j') are computed,
+   i.e. no singular vectors.
 
-    left_svect and right_svect cannot both be set to overwrite. When none is set
-   to overwrite, the contents of A_j are destroyed by the time the function
+    left_svect and right_svect cannot both be set to overwrite. When neither is
+   set to overwrite, the contents of A_j are destroyed by the time the function
    returns.
 
-    (When m >> n or (n >> m) the algorithm could be speeded up by compressing
+    \note
+    When m >> n (or n >> m) the algorithm could be sped up by compressing
    the matrix A_j via a QR (or LQ) factorization, and working with the
     triangular factor afterwards (thin-SVD). If the singular vectors are also
-   requested, its computation could be speeded up as well via executing some
+   requested, its computation could be sped up as well via executing some
    intermediate operations out-of-place, and relying more on matrix
    multiplications (GEMMs); this will require, however, a larger memory
-    workspace. The boolean fast_alg controls whether the fast algorithm is
-   executed or not. For more details see the sections "Tuning rocSOLVER
-   performance" and "Memory model" on the User's guide).
+    workspace. The parameter fast_alg controls whether the fast algorithm is
+   executed or not. For more details see the sections
+    "Tuning rocSOLVER performance" and "Memory model" on the User's guide.
 
     @param[in]
     handle      rocblas_handle.
@@ -5988,9 +5994,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(
    There is no restriction for the value of strideE. Normal use case is strideE
    >= min(m,n)-1.
     @param[in]
-    fast_alg    boolean. \n
-                If set to true, the function will execute the fast thin-SVD
-   version of the algorithm when possible.
+    fast_alg    rocblas_workmode. \n
+                If set to rocblas_outofplace, the function will execute the fast
+   thin-SVD version of the algorithm when possible.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
@@ -6009,7 +6015,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvd_batched(
     const rocblas_stride strideS, float *U, const rocblas_int ldu,
     const rocblas_stride strideU, float *V, const rocblas_int ldv,
     const rocblas_stride strideV, float *E, const rocblas_stride strideE,
-    const bool fast_alg, rocblas_int *info, const rocblas_int batch_count);
+    const rocblas_workmode fast_alg, rocblas_int *info,
+    const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvd_batched(
     rocblas_handle handle, const rocblas_svect left_svect,
@@ -6018,7 +6025,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvd_batched(
     const rocblas_stride strideS, double *U, const rocblas_int ldu,
     const rocblas_stride strideU, double *V, const rocblas_int ldv,
     const rocblas_stride strideV, double *E, const rocblas_stride strideE,
-    const bool fast_alg, rocblas_int *info, const rocblas_int batch_count);
+    const rocblas_workmode fast_alg, rocblas_int *info,
+    const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvd_batched(
     rocblas_handle handle, const rocblas_svect left_svect,
@@ -6028,7 +6036,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvd_batched(
     const rocblas_int ldu, const rocblas_stride strideU,
     rocblas_float_complex *V, const rocblas_int ldv,
     const rocblas_stride strideV, float *E, const rocblas_stride strideE,
-    const bool fast_alg, rocblas_int *info, const rocblas_int batch_count);
+    const rocblas_workmode fast_alg, rocblas_int *info,
+    const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(
     rocblas_handle handle, const rocblas_svect left_svect,
@@ -6038,7 +6047,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(
     const rocblas_int ldu, const rocblas_stride strideU,
     rocblas_double_complex *V, const rocblas_int ldv,
     const rocblas_stride strideV, double *E, const rocblas_stride strideE,
-    const bool fast_alg, rocblas_int *info, const rocblas_int batch_count);
+    const rocblas_workmode fast_alg, rocblas_int *info,
+    const rocblas_int batch_count);
 
 /*! \brief GESVD_STRIDED_BATCHED computes the Singular Values and optionally the
    Singular Vectors of a batch of general m-by-n matrix A (Singular Value
@@ -6049,39 +6059,41 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(
 
         A_j = U_j * S_j * V_j'
 
-    where m-by-n matrix S_j is zero except, possibly, for its min(m,n) diagonal
-   elements which are the singular values of A_j. U_j and V_j are orthogonal
-   (unitary) matrices. The first min(m,n) columns of U_j and V_j are the left
-   and right singular vectors of A_j respectively.
+    where the m-by-n matrix S_j is zero except, possibly, for its min(m,n)
+   diagonal elements, which are the singular values of A_j. U_j and V_j are
+   orthogonal (unitary) matrices. The first min(m,n) columns of U_j and V_j are
+   the left and right singular vectors of A_j, respectively.
 
     The computation of the singular vectors is optional and it is controlled by
    the function arguments left_svect and right_svect as described below. When
    computed, this function returns the tranpose (or transpose conjugate) of the
-   right singular vectors, ie. the rows of V_j'.
+   right singular vectors, i.e. the rows of V_j'.
 
     left_svect and right_svect are rocblas_svect enums that can take the
    following values:
 
-        rocblas_svect_all: the entire matrix U_j (or V_j') is computed,
-        rocblas_svect_singular: only the singular vectors (first min(m,n)
-   columns of U_j or rows of V_j') are computed, rocblas_svect_overwrite: the
-   first columns (or rows) of A_j are overwritten with the singular vectors, or
-        rocblas_svect_none: no columns (or rows) of U_j (or V_j') are computed,
-   ie. no singular vectors.
+    - rocblas_svect_all: the entire matrix U_j (or V_j') is computed,
+    - rocblas_svect_singular: only the singular vectors (first min(m,n) columns
+   of U_j or rows of V_j') are computed,
+    - rocblas_svect_overwrite: the first columns (or rows) of
+   A_j are overwritten with the singular vectors, or
+    - rocblas_svect_none: no columns (or rows) of U_j (or V_j')
+   are computed, i.e. no singular vectors.
 
-    left_svect and right_svect cannot both be set to overwrite. When none is set
-   to overwrite, the contents of A_j are destroyed by the time the function
+    left_svect and right_svect cannot both be set to overwrite. When neither is
+   set to overwrite, the contents of A_j are destroyed by the time the function
    returns.
 
-    (When m >> n or (n >> m) the algorithm could be speeded up by compressing
+    \note
+    When m >> n (or n >> m) the algorithm could be sped up by compressing
    the matrix A_j via a QR (or LQ) factorization, and working with the
     triangular factor afterwards (thin-SVD). If the singular vectors are also
-   requested, its computation could be speeded up as well via executing some
+   requested, its computation could be sped up as well via executing some
    intermediate operations out-of-place, and relying more on matrix
    multiplications (GEMMs); this will require, however, a larger memory
-    workspace. The boolean fast_alg controls whether the fast algorithm is
-   executed or not. For more details see the sections "Tuning rocSOLVER
-   performance" and "Memory model" on the User's guide).
+    workspace. The parameter fast_alg controls whether the fast algorithm is
+   executed or not. For more details see the sections
+    "Tuning rocSOLVER performance" and "Memory model" on the User's guide.
 
     @param[in]
     handle      rocblas_handle.
@@ -6160,9 +6172,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(
    There is no restriction for the value of strideE. Normal use case is strideE
    >= min(m,n)-1.
     @param[in]
-    fast_alg    boolean. \n
-                If set to true, the function will execute the fast thin-SVD
-   version of the algorithm when possible.
+    fast_alg    rocblas_workmode. \n
+                If set to rocblas_outofplace, the function will execute the fast
+   thin-SVD version of the algorithm when possible.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
@@ -6181,7 +6193,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvd_strided_batched(
     const rocblas_stride strideS, float *U, const rocblas_int ldu,
     const rocblas_stride strideU, float *V, const rocblas_int ldv,
     const rocblas_stride strideV, float *E, const rocblas_stride strideE,
-    const bool fast_alg, rocblas_int *info, const rocblas_int batch_count);
+    const rocblas_workmode fast_alg, rocblas_int *info,
+    const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvd_strided_batched(
     rocblas_handle handle, const rocblas_svect left_svect,
@@ -6190,7 +6203,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvd_strided_batched(
     const rocblas_stride strideS, double *U, const rocblas_int ldu,
     const rocblas_stride strideU, double *V, const rocblas_int ldv,
     const rocblas_stride strideV, double *E, const rocblas_stride strideE,
-    const bool fast_alg, rocblas_int *info, const rocblas_int batch_count);
+    const rocblas_workmode fast_alg, rocblas_int *info,
+    const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvd_strided_batched(
     rocblas_handle handle, const rocblas_svect left_svect,
@@ -6200,8 +6214,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvd_strided_batched(
     rocblas_float_complex *U, const rocblas_int ldu,
     const rocblas_stride strideU, rocblas_float_complex *V,
     const rocblas_int ldv, const rocblas_stride strideV, float *E,
-    const rocblas_stride strideE, const bool fast_alg, rocblas_int *info,
-    const rocblas_int batch_count);
+    const rocblas_stride strideE, const rocblas_workmode fast_alg,
+    rocblas_int *info, const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(
     rocblas_handle handle, const rocblas_svect left_svect,
@@ -6211,8 +6225,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(
     rocblas_double_complex *U, const rocblas_int ldu,
     const rocblas_stride strideU, rocblas_double_complex *V,
     const rocblas_int ldv, const rocblas_stride strideV, double *E,
-    const rocblas_stride strideE, const bool fast_alg, rocblas_int *info,
-    const rocblas_int batch_count);
+    const rocblas_stride strideE, const rocblas_workmode fast_alg,
+    rocblas_int *info, const rocblas_int batch_count);
 
 #ifdef __cplusplus
 }

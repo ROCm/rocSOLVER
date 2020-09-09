@@ -87,7 +87,10 @@ Arguments gesvd_setup_arguments(gesvd_tuple tup) {
   arg.N = size[1];
 
   // fast algorithm
-  arg.fast_alg = size[2];
+  if (size[2] == 0)
+    arg.workmode = 'I';
+  else
+    arg.workmode = 'O';
 
   // leading dimensions
   arg.lda = arg.M;                                   // lda
