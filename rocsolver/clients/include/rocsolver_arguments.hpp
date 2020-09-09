@@ -7,7 +7,7 @@
 
 #include "rocblas.h"
 
-/* (TODO: The default values most be reviwed. Some combinations don't actually
+/* (TODO: The default values most be reviewed. Some combinations don't actually
     work for most of the tests) */
 
 class Arguments {
