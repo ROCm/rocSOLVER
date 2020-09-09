@@ -12,8 +12,11 @@
 /* LAPACK fortran library functionality */
 
 extern "C" {
+float slange_(char *norm_type, int *m, int *n, float *A, int *lda, float *work);
 double dlange_(char *norm_type, int *m, int *n, double *A, int *lda,
                double *work);
+float clange_(char *norm_type, int *m, int *n, rocblas_float_complex *A,
+              int *lda, float *work);
 double zlange_(char *norm_type, int *m, int *n, rocblas_double_complex *A,
                int *lda, double *work);
 
@@ -22,9 +25,19 @@ void zaxpy_(int *n, double *alpha, rocblas_double_complex *x, int *incx,
             rocblas_double_complex *y, int *incy);
 }
 
+inline float xlange(char *norm_type, int *m, int *n, float *A, int *lda,
+                    float *work) {
+  return slange_(norm_type, m, n, A, lda, work);
+}
+
 inline double xlange(char *norm_type, int *m, int *n, double *A, int *lda,
                      double *work) {
   return dlange_(norm_type, m, n, A, lda, work);
+}
+
+inline float xlange(char *norm_type, int *m, int *n, rocblas_float_complex *A,
+                    int *lda, float *work) {
+  return clange_(norm_type, m, n, A, lda, work);
 }
 
 inline double xlange(char *norm_type, int *m, int *n, rocblas_double_complex *A,
@@ -128,6 +141,11 @@ double norm_error_lowerTr(char norm_type, rocblas_int M, rocblas_int N,
     }
   }
   return norm_error(norm_type, M, N, lda, gold, comp);
+}
+
+template <typename T, typename S = decltype(std::real(T{}))>
+S snorm(char norm_type, rocblas_int m, rocblas_int n, T *A, rocblas_int lda) {
+  return xlange(&norm_type, &m, &n, A, &lda, (S *)nullptr);
 }
 
 #endif

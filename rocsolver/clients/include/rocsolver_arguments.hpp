@@ -7,6 +7,9 @@
 
 #include "rocblas.h"
 
+/* (TODO: The default values most be reviewed. Some combinations don't actually
+    work for most of the tests) */
+
 class Arguments {
 public:
   rocblas_int M = 128;
@@ -42,16 +45,17 @@ public:
   char diag_option = 'N';
   char direct_option = 'F';
   char storev = 'C';
+  char left_svect = 'N';
+  char right_svect = 'N';
 
   rocblas_int apiCallCount = 1;
   rocblas_int batch_count = 5;
 
-  rocblas_int bsa =
-      128 * 128; //  bsa > transA_option == 'N' ? lda * K : lda * M
-  rocblas_int bsb =
-      128 * 128; //  bsb > transB_option == 'N' ? ldb * N : ldb * K
-  rocblas_int bsc = 128 * 128; //  bsc >= ldc * N
-  rocblas_int bsp = 128;       //  bsp >= min(M,N)
+  rocblas_int bsa = 128 * 128;
+  rocblas_int bsb = 128 * 128;
+  rocblas_int bsc = 128 * 128;
+  rocblas_int bsp = 128;
+  rocblas_int bs5 = 128;
 
   rocblas_int norm_check = 0;
   rocblas_int unit_check = 1;
@@ -59,59 +63,7 @@ public:
   rocblas_int perf = 0;
 
   rocblas_int iters = 5;
-
-  Arguments &operator=(const Arguments &rhs) {
-    M = rhs.M;
-    N = rhs.N;
-    K = rhs.K;
-    S4 = rhs.S4;
-    k1 = rhs.k1;
-    k2 = rhs.k2;
-
-    lda = rhs.lda;
-    ldb = rhs.ldb;
-    ldc = rhs.ldc;
-    ldv = rhs.ldv;
-    ldt = rhs.ldt;
-
-    incx = rhs.incx;
-    incy = rhs.incy;
-    incd = rhs.incd;
-    incb = rhs.incb;
-
-    start = rhs.start;
-    end = rhs.end;
-    step = rhs.step;
-
-    alpha = rhs.alpha;
-    beta = rhs.beta;
-
-    transA_option = rhs.transA_option;
-    transB_option = rhs.transB_option;
-    transH_option = rhs.transH_option;
-    side_option = rhs.side_option;
-    uplo_option = rhs.uplo_option;
-    diag_option = rhs.diag_option;
-    direct_option = rhs.direct_option;
-    storev = rhs.storev;
-
-    apiCallCount = rhs.apiCallCount;
-    batch_count = rhs.batch_count;
-
-    bsa = rhs.bsa;
-    bsb = rhs.bsb;
-    bsc = rhs.bsc;
-    bsp = rhs.bsp;
-
-    norm_check = rhs.norm_check;
-    unit_check = rhs.unit_check;
-    timing = rhs.timing;
-    perf = rhs.perf;
-
-    iters = rhs.iters;
-
-    return *this;
-  }
+  char workmode = 'O';
 };
 
 #endif

@@ -93,6 +93,9 @@ set( rocsolver_lapack_source
   lapack/roclapack_gebrd.cpp
   lapack/roclapack_gebrd_batched.cpp
   lapack/roclapack_gebrd_strided_batched.cpp
+  lapack/roclapack_gesvd.cpp
+  lapack/roclapack_gesvd_batched.cpp
+  lapack/roclapack_gesvd_strided_batched.cpp
 )
 
 set( auxiliaries

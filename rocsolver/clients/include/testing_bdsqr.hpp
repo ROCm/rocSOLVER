@@ -242,7 +242,9 @@ void bdsqr_getError(const rocblas_handle handle, const rocblas_fill uplo,
         }
       }
     }
-    err = std::sqrt(err);
+    double normD = double(snorm('F', 1, n, D.data(), 1));
+    double normE = double(snorm('F', 1, n - 1, E.data(), 1));
+    err = std::sqrt(err) / std::sqrt(normD * normD + normE * normE);
     *max_errv = err > *max_errv ? err : *max_errv;
 
     // C should be the transpose of U
@@ -469,12 +471,11 @@ template <typename T> void testing_bdsqr(Arguments argus) {
   }
 
   // validate results for rocsolver-test
-  // using n * machine_precision as tolerance for the singular values
-  // and n^2 * machine_precision for the singular vectors
+  // using n * machine_precision as tolerance
   if (argus.unit_check) {
     rocsolver_test_check<T>(max_error, n);
     if (nv || nu || nc)
-      rocsolver_test_check<T>(max_errorv, n * n);
+      rocsolver_test_check<T>(max_errorv, n);
   }
 
   // output results for rocsolver-bench
