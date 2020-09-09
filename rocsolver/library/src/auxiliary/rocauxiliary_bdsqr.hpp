@@ -14,14 +14,16 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-// (TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS
-//  FOR THE BATCHED VERSIONS (A DIFFERENT THREAD WORKS ON EACH INSTANCE OF THE
-//  BATCH). MORE PARALLELISM CAN BE INTRODUCED IN THE FUTURE IN AT LEAST TWO
-//  WAYS:
-//  1. the splitted diagonal blocks can be worked in parallel as they are
-//  independent
-//  2. for each block, multiple threads can accelerate some of the reductions
-//  and vector operations
+/****************************************************************************
+(TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS
+  FOR THE BATCHED VERSIONS (A DIFFERENT THREAD WORKS ON EACH INSTANCE OF THE
+  BATCH). MORE PARALLELISM CAN BE INTRODUCED IN THE FUTURE IN AT LEAST TWO
+  WAYS:
+  1. the split diagonal blocks can be worked in parallel as they are
+  independent
+  2. for each block, multiple threads can accelerate some of the reductions
+  and vector operations
+***************************************************************************/
 
 /** LARTG device function computes the sine (s) and cosine (c) values
     to create a givens rotation such that:
@@ -296,12 +298,19 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
   rocblas_int bid = hipBlockIdx_x;
 
   // select batch instance to work with
-  S *rots = workA + bid * strideW;
+  // (avoiding arithmetics with possible nullptrs)
+  S *rots;
+  T *V, *U, *C;
   S *D = DD + bid * strideD;
   S *E = EE + bid * strideE;
-  T *V = load_ptr_batch<T>(VV, bid, shiftV, strideV);
-  T *U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
-  T *C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+  if (VV)
+    V = load_ptr_batch<T>(VV, bid, shiftV, strideV);
+  if (UU)
+    U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
+  if (CC)
+    C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+  if (workA)
+    rots = workA + bid * strideW;
 
   // calculate threshold for zeroing elements (convergence threshold)
   int t2b = (D[0] >= D[n - 1]) ? 1 : 0; // direction
@@ -434,11 +443,17 @@ lower2upper(const rocblas_int n, const rocblas_int nu, const rocblas_int nc,
   S f, g, c, s, r;
 
   // select batch instance to work with
-  S *rots = workA + bid * strideW;
+  // (avoiding arithmetics with possible nullptrs)
+  S *rots;
+  T *U, *C;
   S *D = DD + bid * strideD;
   S *E = EE + bid * strideE;
-  T *U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
-  T *C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+  if (UU)
+    U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
+  if (CC)
+    C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+  if (workA)
+    rots = workA + bid * strideW;
 
   f = D[0];
   g = E[0];
@@ -527,20 +542,18 @@ rocblas_status rocsolver_bdsqr_template(
   hipStream_t stream;
   rocblas_get_stream(handle, &stream);
 
-  // set tolerance and max number of iterations
-  S eps =
-      get_epsilon<S>() / 2; // machine precision (considering rounding strategy)
-  S sfm = get_safemin<S>(); // safest minimum value such that 1/sfm does not
-                            // overflow
-  rocblas_int maxiter =
-      6 * n *
-      n; // max number of iterations (QR steps) before declaring not convergence
-  S tol = std::max(S(10.0), std::min(S(100.0), S(pow(eps, -0.125)))) *
-          eps; // relative accuracy tolerance
-  S minshift = std::max(eps,
-                        tol / S(100)) /
-               (n * tol); //(minimum accepted shift to not ruin relative
-                          // accuracy) / (max singular value)
+  // set tolerance and max number of iterations:
+  // machine precision (considering rounding strategy)
+  S eps = get_epsilon<S>() / 2;
+  // safest minimum value such that 1/sfm does not overflow
+  S sfm = get_safemin<S>();
+  // max number of iterations (QR steps) before declaring not convergence
+  rocblas_int maxiter = 6 * n * n;
+  // relative accuracy tolerance
+  S tol = std::max(S(10.0), std::min(S(100.0), S(pow(eps, -0.125)))) * eps;
+  //(minimum accepted shift to not ruin relative accuracy) / (max singular
+  // value)
+  S minshift = std::max(eps, tol / S(100)) / (n * tol);
 
   rocblas_stride strideW = 4 * n;
 

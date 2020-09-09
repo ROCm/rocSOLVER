@@ -385,6 +385,21 @@ void zgebrd_(int *m, int *n, rocblas_double_complex *A, int *lda, double *D,
              rocblas_double_complex *taup, rocblas_double_complex *work,
              int *size_w, int *info);
 
+void sgesvd_(char *jobu, char *jobv, int *m, int *n, float *A, int *lda,
+             float *S, float *U, int *ldu, float *V, int *ldv, float *E,
+             int *lwork, int *info);
+void dgesvd_(char *jobu, char *jobv, int *m, int *n, double *A, int *lda,
+             double *S, double *U, int *ldu, double *V, int *ldv, double *E,
+             int *lwork, int *info);
+void cgesvd_(char *jobu, char *jobv, int *m, int *n, rocblas_float_complex *A,
+             int *lda, float *S, rocblas_float_complex *U, int *ldu,
+             rocblas_float_complex *V, int *ldv, rocblas_float_complex *work,
+             int *lwork, float *E, int *info);
+void zgesvd_(char *jobu, char *jobv, int *m, int *n, rocblas_double_complex *A,
+             int *lda, double *S, rocblas_double_complex *U, int *ldu,
+             rocblas_double_complex *V, int *ldv, rocblas_double_complex *work,
+             int *lwork, double *E, int *info);
+
 #ifdef __cplusplus
 }
 #endif
@@ -648,6 +663,54 @@ void cblas_bdsqr(rocblas_fill uplo, rocblas_int n, rocblas_int nv,
                  rocblas_int *info) {
   char uploC = (uplo == rocblas_fill_upper) ? 'U' : 'L';
   zbdsqr_(&uploC, &n, &nv, &nu, &nc, D, E, V, &ldv, U, &ldu, C, &ldc, work,
+          info);
+}
+
+// gesvd
+template <>
+void cblas_gesvd(rocblas_svect leftv, rocblas_svect rightv, rocblas_int m,
+                 rocblas_int n, float *A, rocblas_int lda, float *S, float *U,
+                 rocblas_int ldu, float *V, rocblas_int ldv, float *work,
+                 rocblas_int lwork, float *E, rocblas_int *info) {
+  char jobu = rocblas2char_svect(leftv);
+  char jobv = rocblas2char_svect(rightv);
+  sgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, E, &lwork, info);
+}
+
+template <>
+void cblas_gesvd(rocblas_svect leftv, rocblas_svect rightv, rocblas_int m,
+                 rocblas_int n, double *A, rocblas_int lda, double *S,
+                 double *U, rocblas_int ldu, double *V, rocblas_int ldv,
+                 double *work, rocblas_int lwork, double *E,
+                 rocblas_int *info) {
+  char jobu = rocblas2char_svect(leftv);
+  char jobv = rocblas2char_svect(rightv);
+  dgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, E, &lwork, info);
+}
+
+template <>
+void cblas_gesvd(rocblas_svect leftv, rocblas_svect rightv, rocblas_int m,
+                 rocblas_int n, rocblas_float_complex *A, rocblas_int lda,
+                 float *S, rocblas_float_complex *U, rocblas_int ldu,
+                 rocblas_float_complex *V, rocblas_int ldv,
+                 rocblas_float_complex *work, rocblas_int lwork, float *E,
+                 rocblas_int *info) {
+  char jobu = rocblas2char_svect(leftv);
+  char jobv = rocblas2char_svect(rightv);
+  cgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, E,
+          info);
+}
+
+template <>
+void cblas_gesvd(rocblas_svect leftv, rocblas_svect rightv, rocblas_int m,
+                 rocblas_int n, rocblas_double_complex *A, rocblas_int lda,
+                 double *S, rocblas_double_complex *U, rocblas_int ldu,
+                 rocblas_double_complex *V, rocblas_int ldv,
+                 rocblas_double_complex *work, rocblas_int lwork, double *E,
+                 rocblas_int *info) {
+  char jobu = rocblas2char_svect(leftv);
+  char jobv = rocblas2char_svect(rightv);
+  zgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, E,
           info);
 }
 
