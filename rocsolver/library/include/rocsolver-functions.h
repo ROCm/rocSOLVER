@@ -5758,7 +5758,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(
    computed, this function returns the tranpose (or transpose conjugate) of the
    right singular vectors, i.e. the rows of V'.
 
-    left_svect and right_svect are rocblas_svect enums that can take the
+    left_svect and right_svect are #rocblas_svect enums that can take the
    following values:
 
     - rocblas_svect_all: the entire matrix U (or V') is computed,
@@ -5787,10 +5787,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  rocblas_svect.\n
+    left_svect  #rocblas_svect.\n
                 Specifies how the left singular vectors are computed.
     @param[in]
-    right_svect rocblas_svect.\n
+    right_svect #rocblas_svect.\n
                 Specifies how the right singular vectors are computed.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -5896,7 +5896,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(
    computed, this function returns the tranpose (or transpose conjugate) of the
    right singular vectors, i.e. the rows of V_j'.
 
-    left_svect and right_svect are rocblas_svect enums that can take the
+    left_svect and right_svect are #rocblas_svect enums that can take the
    following values:
 
     - rocblas_svect_all: the entire matrix U_j (or V_j') is computed,
@@ -5925,10 +5925,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  rocblas_svect.\n
+    left_svect  #rocblas_svect.\n
                 Specifies how the left singular vectors are computed.
     @param[in]
-    right_svect rocblas_svect.\n
+    right_svect #rocblas_svect.\n
                 Specifies how the right singular vectors are computed.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -6069,7 +6069,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(
    computed, this function returns the tranpose (or transpose conjugate) of the
    right singular vectors, i.e. the rows of V_j'.
 
-    left_svect and right_svect are rocblas_svect enums that can take the
+    left_svect and right_svect are #rocblas_svect enums that can take the
    following values:
 
     - rocblas_svect_all: the entire matrix U_j (or V_j') is computed,
@@ -6098,10 +6098,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  rocblas_svect.\n
+    left_svect  #rocblas_svect.\n
                 Specifies how the left singular vectors are computed.
     @param[in]
-    right_svect rocblas_svect.\n
+    right_svect #rocblas_svect.\n
                 Specifies how the right singular vectors are computed.
     @param[in]
     m           rocblas_int. m >= 0.\n
