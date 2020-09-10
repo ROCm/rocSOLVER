@@ -220,7 +220,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
                         Specifies the direction in which the Householder
    matrices are applied.
     @param[in]
-    storev              rocblas_storev.\n
+    storev              #rocblas_storev.\n
                         Specifies how the Householder vectors are stored in
    matrix V.
     @param[in]
@@ -386,7 +386,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(
                         Specifies the direction in which the Householder
    matrices were to be applied to generate H.
     @param[in]
-    storev              rocblas_storev.\n
+    storev              #rocblas_storev.\n
                         Specifies how the Householder vectors are stored in
    matrix V.
     @param[in]
@@ -980,7 +980,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunglq(
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    storev      rocblas_storev.\n
+    storev      #rocblas_storev.\n
                 Specifies whether to work column-wise or row-wise.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -1049,7 +1049,7 @@ rocsolver_dorgbr(rocblas_handle handle, const rocblas_storev storev,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    storev      rocblas_storev.\n
+    storev      #rocblas_storev.\n
                 Specifies whether to work column-wise or row-wise.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -1733,7 +1733,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(
     @param[in]
     handle              rocblas_handle.
     @param[in]
-    storev              rocblas_storev.\n
+    storev              #rocblas_storev.\n
                         Specifies whether to work column-wise or row-wise.
     @param[in]
     side                rocblas_side.\n
@@ -1827,7 +1827,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(
     @param[in]
     handle              rocblas_handle.
     @param[in]
-    storev              rocblas_storev.\n
+    storev              #rocblas_storev.\n
                         Specifies whether to work column-wise or row-wise.
     @param[in]
     side                rocblas_side.\n
