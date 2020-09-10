@@ -43,10 +43,13 @@ rocsolver_larfb_impl(rocblas_handle handle, const rocblas_side side,
 
   //  execution
   rocblas_status status = rocsolver_larfb_template<false, false, T>(
-      handle, side, trans, direct, storev, m, n, k, V, 0, // shifted 0 entries
-      ldv, stridev, F, 0,                                 // shifted 0 entries
-      ldf, stridef, A, 0,                                 // shifted 0 entries
-      lda, stridea, batch_count, (T *)work, (T **)workArr);
+      handle, side, trans, direct, storev, m, n, k, V,
+      // shifted 0 entries
+      0, ldv, stridev, F,
+      // shifted 0 entries
+      0, ldf, stridef, A,
+      // shifted 0 entries
+      0, lda, stridea, batch_count, (T *)work, (T **)workArr);
 
   hipFree(work);
   hipFree(workArr);

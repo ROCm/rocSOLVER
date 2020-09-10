@@ -66,14 +66,17 @@ rocblas_status rocsolver_geqr2_template(
 
   for (rocblas_int j = 0; j < dim; ++j) {
     // generate Householder reflector to work on column j
-    rocsolver_larfg_template(
-        handle,
-        m - j,                                        // order of reflector
-        A, shiftA + idx2D(j, j, lda),                 // value of alpha
-        A, shiftA + idx2D(min(j + 1, m - 1), j, lda), // vector x to work on
-        1, strideA,                                   // inc of x
-        (ipiv + j), strideP,                          // tau
-        batch_count, diag, work);
+    rocsolver_larfg_template(handle,
+                             // order of reflector
+                             m - j,
+                             // value of alpha
+                             A, shiftA + idx2D(j, j, lda),
+                             // vector x to work on
+                             A, shiftA + idx2D(min(j + 1, m - 1), j, lda),
+                             // inc of x
+                             1, strideA,
+                             // tau
+                             (ipiv + j), strideP, batch_count, diag, work);
 
     // insert one in A(j,j) tobuild/apply the householder matrix
     hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
@@ -86,16 +89,24 @@ rocblas_status rocsolver_geqr2_template(
 
     // Apply Householder reflector to the rest of matrix from the left
     if (j < n - 1) {
-      rocsolver_larf_template(
-          handle, rocblas_side_left,    // side
-          m - j,                        // number of rows of matrix to modify
-          n - j - 1,                    // number of columns of matrix to modify
-          A, shiftA + idx2D(j, j, lda), // householder vector x
-          1, strideA,                   // inc of x
-          (ipiv + j), strideP,          // householder scalar (alpha)
-          A, shiftA + idx2D(j, j + 1, lda), // matrix to work on
-          lda, strideA,                     // leading dimension
-          batch_count, scalars, work, workArr);
+      rocsolver_larf_template(handle,
+                              // side
+                              rocblas_side_left,
+                              // number of rows of matrix to modify
+                              m - j,
+                              // number of columns of matrix to modify
+                              n - j - 1,
+                              // householder vector x
+                              A, shiftA + idx2D(j, j, lda),
+                              // inc of x
+                              1, strideA,
+                              // householder scalar (alpha)
+                              (ipiv + j), strideP,
+                              // matrix to work on
+                              A, shiftA + idx2D(j, j + 1, lda),
+                              // leading dimension
+                              lda, strideA, batch_count, scalars, work,
+                              workArr);
     }
 
     // restore original value of A(j,j)
