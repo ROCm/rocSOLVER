@@ -19,6 +19,10 @@ if read_the_docs_build:
 extensions = ['sphinx.ext.mathjax', 'breathe']
 breathe_projects = { "rocSOLVER": "../docBin/xml" }
 breathe_default_project = "rocSOLVER"
+breathe_domain_by_extension = {
+  "h" : "c",
+  "hpp" : "cpp",
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
