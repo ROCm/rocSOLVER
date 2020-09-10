@@ -216,7 +216,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
     @param[in]
     handle              rocblas_handle.
     @param[in]
-    direct              rocblas_direct.\n
+    direct              #rocblas_direct.\n
                         Specifies the direction in which the Householder
    matrices are applied.
     @param[in]
@@ -382,7 +382,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(
                         Specifies whether the block reflector or its
    transpose/conjugate transpose is to be applied.
     @param[in]
-    direct              rocblas_direct.\n
+    direct              #rocblas_direct.\n
                         Specifies the direction in which the Householder
    matrices were to be applied to generate H.
     @param[in]
