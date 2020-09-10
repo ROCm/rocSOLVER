@@ -5836,9 +5836,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(
    are in S; those that converged correspond to a subset of the singular values
    of A (not necessarily ordered).
     @param[in]
-    fast_alg    rocblas_workmode. \n
-                If set to rocblas_outofplace, the function will execute the fast
-   thin-SVD version of the algorithm when possible.
+    fast_alg    #rocblas_workmode. \n
+                If set to rocblas_outofplace, the function will execute the
+   fast thin-SVD version of the algorithm when possible.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
@@ -5994,9 +5994,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(
    There is no restriction for the value of strideE. Normal use case is strideE
    >= min(m,n)-1.
     @param[in]
-    fast_alg    rocblas_workmode. \n
-                If set to rocblas_outofplace, the function will execute the fast
-   thin-SVD version of the algorithm when possible.
+    fast_alg    #rocblas_workmode. \n
+                If set to rocblas_outofplace, the function will execute the
+   fast thin-SVD version of the algorithm when possible.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
@@ -6172,9 +6172,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(
    There is no restriction for the value of strideE. Normal use case is strideE
    >= min(m,n)-1.
     @param[in]
-    fast_alg    rocblas_workmode. \n
-                If set to rocblas_outofplace, the function will execute the fast
-   thin-SVD version of the algorithm when possible.
+    fast_alg    #rocblas_workmode. \n
+                If set to rocblas_outofplace, the function will execute the
+   fast thin-SVD version of the algorithm when possible.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
