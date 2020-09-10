@@ -22,15 +22,30 @@ typedef std::tuple<vector<int>, vector<int>> larf_tuple;
 // case when M == 0 and incx == 0  also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
-const vector<vector<int>> incx_range = {{0, 0}, // invalid
-                                        {-10, 0}, {-5, 1}, {-1, 0},
-                                        {1, 1},   {5, 0},  {10, 1}};
+const vector<vector<int>> incx_range = {
+    // invalid
+    {0, 0},
+    // normal (valid) samples
+    {-10, 0},
+    {-5, 1},
+    {-1, 0},
+    {1, 1},
+    {5, 0},
+    {10, 1}};
 
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
-    {0, 10, 1},   {10, 0, 10},               // quick return
-    {-1, 10, 1},  {10, -1, 10}, {10, 10, 5}, // invalid
-    {12, 20, 12}, {20, 15, 20}, {35, 35, 50}};
+    // quick return
+    {0, 10, 1},
+    {10, 0, 10},
+    // invalid
+    {-1, 10, 1},
+    {10, -1, 10},
+    {10, 10, 5},
+    // normal (valid) samples
+    {12, 20, 12},
+    {20, 15, 20},
+    {35, 35, 50}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {

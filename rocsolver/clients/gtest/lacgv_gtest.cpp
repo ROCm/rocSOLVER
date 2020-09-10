@@ -19,10 +19,18 @@ typedef vector<int> lacgv_tuple;
 // (null handle, null pointers and invalid values)
 
 // for checkin_lapack tests
-const vector<vector<int>> range = {{0, 1},          // quick return
-                                   {-1, 1}, {1, 0}, // error
-                                   {10, 1}, {10, -1}, {20, 2},
-                                   {30, 3}, {30, -3}};
+const vector<vector<int>> range = {
+    // quick return
+    {0, 1},
+    // invalid
+    {-1, 1},
+    {1, 0},
+    // normal (valid) samples
+    {10, 1},
+    {10, -1},
+    {20, 2},
+    {30, 3},
+    {30, -3}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_range = {{192, 10}, {192, -10}, {250, 20},

@@ -22,15 +22,34 @@ typedef std::tuple<vector<int>, vector<int>> labrd_tuple;
 
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
-    {0, 1, 1}, // quick return (if nb = 0, else invalid)
-    {1, 1, 0},    {-1, 1, 1},    {1, 1, -1},      {20, 5, 20},
-    {20, 20, 5}, // invalid
-    {50, 50, 50}, {70, 100, 70}, {130, 130, 150}, {150, 200, 200}};
+    // quick return (if nb = 0, else invalid)
+    {0, 1, 1},
+    // invalid
+    {1, 1, 0},
+    {-1, 1, 1},
+    {1, 1, -1},
+    {20, 5, 20},
+    {20, 20, 5},
+    // normal (valid) samples
+    {50, 50, 50},
+    {70, 100, 70},
+    {130, 130, 150},
+    {150, 200, 200}};
 
 const vector<vector<int>> n_size_range = {
-    {0, 1, 0},    {1, 1, 0},                                  // quick return
-    {-1, 1, 1},   {1, 1, -1},   {20, 5, 20},    {20, 20, 25}, // invalid
-    {16, 16, 10}, {20, 30, 10}, {120, 120, 30}, {150, 200, 30}};
+    // quick return
+    {0, 1, 0},
+    {1, 1, 0},
+    // invalid
+    {-1, 1, 1},
+    {1, 1, -1},
+    {20, 5, 20},
+    {20, 20, 25},
+    // normal (valid) samples
+    {16, 16, 10},
+    {20, 30, 10},
+    {120, 120, 30},
+    {150, 200, 30}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {

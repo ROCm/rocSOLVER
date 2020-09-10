@@ -17,15 +17,27 @@ typedef std::tuple<int, int> larfg_tuple;
 // (null handle, null pointers and invalid values)
 
 const vector<int> incx_range = {
-    -1, 0, // invalid
-    1,  5, 8, 10,
+    // invalid
+    -1,
+    0,
+    // normal (valid) samples
+    1,
+    5,
+    8,
+    10,
 };
 
 // for checkin_lapack tests
 const vector<int> n_size_range = {
-    0,  // quick return
-    -1, // invalid
-    1,  12, 20, 35,
+    // quick return
+    0,
+    // invalid
+    -1,
+    // normal (valid) samples
+    1,
+    12,
+    20,
+    35,
 };
 
 // for daily_lapack tests
