@@ -17,7 +17,7 @@ if read_the_docs_build:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.mathjax', 'breathe']
-breathe_projects = { "rocSOLVER": "../docBin/xml" }
+breathe_projects = { "rocSOLVER": "../../build/docs/doxygen/xml" }
 breathe_default_project = "rocSOLVER"
 breathe_domain_by_extension = {
   "h" : "c",
