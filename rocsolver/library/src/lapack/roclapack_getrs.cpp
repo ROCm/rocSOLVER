@@ -42,23 +42,25 @@ rocsolver_getrs_impl(rocblas_handle handle, const rocblas_operation trans,
  * ===========================================================================
  */
 
-extern "C" ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrs(
-    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
-    const rocblas_int nrhs, float *A, const rocblas_int lda,
-    const rocblas_int *ipiv, float *B, const rocblas_int ldb) {
+extern "C" rocblas_status
+rocsolver_sgetrs(rocblas_handle handle, const rocblas_operation trans,
+                 const rocblas_int n, const rocblas_int nrhs, float *A,
+                 const rocblas_int lda, const rocblas_int *ipiv, float *B,
+                 const rocblas_int ldb) {
   return rocsolver_getrs_impl<float>(handle, trans, n, nrhs, A, lda, ipiv, B,
                                      ldb);
 }
 
-extern "C" ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrs(
-    rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
-    const rocblas_int nrhs, double *A, const rocblas_int lda,
-    const rocblas_int *ipiv, double *B, const rocblas_int ldb) {
+extern "C" rocblas_status
+rocsolver_dgetrs(rocblas_handle handle, const rocblas_operation trans,
+                 const rocblas_int n, const rocblas_int nrhs, double *A,
+                 const rocblas_int lda, const rocblas_int *ipiv, double *B,
+                 const rocblas_int ldb) {
   return rocsolver_getrs_impl<double>(handle, trans, n, nrhs, A, lda, ipiv, B,
                                       ldb);
 }
 
-extern "C" ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrs(
+extern "C" rocblas_status rocsolver_cgetrs(
     rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
     const rocblas_int nrhs, rocblas_float_complex *A, const rocblas_int lda,
     const rocblas_int *ipiv, rocblas_float_complex *B, const rocblas_int ldb) {
@@ -66,7 +68,7 @@ extern "C" ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrs(
                                                      lda, ipiv, B, ldb);
 }
 
-extern "C" ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(
+extern "C" rocblas_status rocsolver_zgetrs(
     rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
     const rocblas_int nrhs, rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_int *ipiv, rocblas_double_complex *B, const rocblas_int ldb) {

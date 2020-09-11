@@ -72,40 +72,46 @@ rocsolver_ormlq_unmlq_impl(rocblas_handle handle, const rocblas_side side,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sormlq(
-    rocblas_handle handle, const rocblas_side side,
-    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
-    const rocblas_int k, float *A, const rocblas_int lda, float *ipiv, float *C,
-    const rocblas_int ldc) {
+rocblas_status rocsolver_sormlq(rocblas_handle handle, const rocblas_side side,
+                                const rocblas_operation trans,
+                                const rocblas_int m, const rocblas_int n,
+                                const rocblas_int k, float *A,
+                                const rocblas_int lda, float *ipiv, float *C,
+                                const rocblas_int ldc) {
   return rocsolver_ormlq_unmlq_impl<float>(handle, side, trans, m, n, k, A, lda,
                                            ipiv, C, ldc);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(
-    rocblas_handle handle, const rocblas_side side,
-    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
-    const rocblas_int k, double *A, const rocblas_int lda, double *ipiv,
-    double *C, const rocblas_int ldc) {
+rocblas_status rocsolver_dormlq(rocblas_handle handle, const rocblas_side side,
+                                const rocblas_operation trans,
+                                const rocblas_int m, const rocblas_int n,
+                                const rocblas_int k, double *A,
+                                const rocblas_int lda, double *ipiv, double *C,
+                                const rocblas_int ldc) {
   return rocsolver_ormlq_unmlq_impl<double>(handle, side, trans, m, n, k, A,
                                             lda, ipiv, C, ldc);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cunmlq(
-    rocblas_handle handle, const rocblas_side side,
-    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
-    const rocblas_int k, rocblas_float_complex *A, const rocblas_int lda,
-    rocblas_float_complex *ipiv, rocblas_float_complex *C,
-    const rocblas_int ldc) {
+rocblas_status rocsolver_cunmlq(rocblas_handle handle, const rocblas_side side,
+                                const rocblas_operation trans,
+                                const rocblas_int m, const rocblas_int n,
+                                const rocblas_int k, rocblas_float_complex *A,
+                                const rocblas_int lda,
+                                rocblas_float_complex *ipiv,
+                                rocblas_float_complex *C,
+                                const rocblas_int ldc) {
   return rocsolver_ormlq_unmlq_impl<rocblas_float_complex>(
       handle, side, trans, m, n, k, A, lda, ipiv, C, ldc);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(
-    rocblas_handle handle, const rocblas_side side,
-    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
-    const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
-    rocblas_double_complex *ipiv, rocblas_double_complex *C,
-    const rocblas_int ldc) {
+rocblas_status rocsolver_zunmlq(rocblas_handle handle, const rocblas_side side,
+                                const rocblas_operation trans,
+                                const rocblas_int m, const rocblas_int n,
+                                const rocblas_int k, rocblas_double_complex *A,
+                                const rocblas_int lda,
+                                rocblas_double_complex *ipiv,
+                                rocblas_double_complex *C,
+                                const rocblas_int ldc) {
   return rocsolver_ormlq_unmlq_impl<rocblas_double_complex>(
       handle, side, trans, m, n, k, A, lda, ipiv, C, ldc);
 }

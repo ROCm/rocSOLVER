@@ -68,7 +68,7 @@ rocblas_status rocsolver_geqrf_strided_batched_impl(
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf_strided_batched(
+rocblas_status rocsolver_sgeqrf_strided_batched(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
     const rocblas_int lda, const rocblas_stride strideA, float *ipiv,
     const rocblas_stride stridep, const rocblas_int batch_count) {
@@ -76,7 +76,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf_strided_batched(
       handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf_strided_batched(
+rocblas_status rocsolver_dgeqrf_strided_batched(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
     const rocblas_int lda, const rocblas_stride strideA, double *ipiv,
     const rocblas_stride stridep, const rocblas_int batch_count) {
@@ -84,7 +84,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf_strided_batched(
       handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf_strided_batched(
+rocblas_status rocsolver_cgeqrf_strided_batched(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     rocblas_float_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, rocblas_float_complex *ipiv,
@@ -93,7 +93,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf_strided_batched(
       handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(
+rocblas_status rocsolver_zgeqrf_strided_batched(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, rocblas_double_complex *ipiv,

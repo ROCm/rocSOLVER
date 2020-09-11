@@ -72,36 +72,42 @@ rocsolver_geqrf_batched_impl(rocblas_handle handle, const rocblas_int m,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf_batched(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    float *const A[], const rocblas_int lda, float *ipiv,
-    const rocblas_stride stridep, const rocblas_int batch_count) {
+rocblas_status rocsolver_sgeqrf_batched(rocblas_handle handle,
+                                        const rocblas_int m,
+                                        const rocblas_int n, float *const A[],
+                                        const rocblas_int lda, float *ipiv,
+                                        const rocblas_stride stridep,
+                                        const rocblas_int batch_count) {
   return rocsolver_geqrf_batched_impl<float>(handle, m, n, A, lda, ipiv,
                                              stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf_batched(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    double *const A[], const rocblas_int lda, double *ipiv,
-    const rocblas_stride stridep, const rocblas_int batch_count) {
+rocblas_status rocsolver_dgeqrf_batched(rocblas_handle handle,
+                                        const rocblas_int m,
+                                        const rocblas_int n, double *const A[],
+                                        const rocblas_int lda, double *ipiv,
+                                        const rocblas_stride stridep,
+                                        const rocblas_int batch_count) {
   return rocsolver_geqrf_batched_impl<double>(handle, m, n, A, lda, ipiv,
                                               stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf_batched(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    rocblas_float_complex *const A[], const rocblas_int lda,
-    rocblas_float_complex *ipiv, const rocblas_stride stridep,
-    const rocblas_int batch_count) {
+rocblas_status
+rocsolver_cgeqrf_batched(rocblas_handle handle, const rocblas_int m,
+                         const rocblas_int n, rocblas_float_complex *const A[],
+                         const rocblas_int lda, rocblas_float_complex *ipiv,
+                         const rocblas_stride stridep,
+                         const rocblas_int batch_count) {
   return rocsolver_geqrf_batched_impl<rocblas_float_complex>(
       handle, m, n, A, lda, ipiv, stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    rocblas_double_complex *const A[], const rocblas_int lda,
-    rocblas_double_complex *ipiv, const rocblas_stride stridep,
-    const rocblas_int batch_count) {
+rocblas_status
+rocsolver_zgeqrf_batched(rocblas_handle handle, const rocblas_int m,
+                         const rocblas_int n, rocblas_double_complex *const A[],
+                         const rocblas_int lda, rocblas_double_complex *ipiv,
+                         const rocblas_stride stridep,
+                         const rocblas_int batch_count) {
   return rocsolver_geqrf_batched_impl<rocblas_double_complex>(
       handle, m, n, A, lda, ipiv, stridep, batch_count);
 }

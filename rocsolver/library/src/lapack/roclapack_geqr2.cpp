@@ -67,38 +67,30 @@ rocblas_status rocsolver_geqr2_impl(rocblas_handle handle, const rocblas_int m,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqr2(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n, float *A,
-                                                 const rocblas_int lda,
-                                                 float *ipiv) {
+rocblas_status rocsolver_sgeqr2(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, float *A,
+                                const rocblas_int lda, float *ipiv) {
   return rocsolver_geqr2_impl<float>(handle, m, n, A, lda, ipiv);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqr2(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n, double *A,
-                                                 const rocblas_int lda,
-                                                 double *ipiv) {
+rocblas_status rocsolver_dgeqr2(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, double *A,
+                                const rocblas_int lda, double *ipiv) {
   return rocsolver_geqr2_impl<double>(handle, m, n, A, lda, ipiv);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqr2(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_float_complex *A,
-                                                 const rocblas_int lda,
-                                                 rocblas_float_complex *ipiv) {
+rocblas_status rocsolver_cgeqr2(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, rocblas_float_complex *A,
+                                const rocblas_int lda,
+                                rocblas_float_complex *ipiv) {
   return rocsolver_geqr2_impl<rocblas_float_complex>(handle, m, n, A, lda,
                                                      ipiv);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_double_complex *A,
-                                                 const rocblas_int lda,
-                                                 rocblas_double_complex *ipiv) {
+rocblas_status rocsolver_zgeqr2(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, rocblas_double_complex *A,
+                                const rocblas_int lda,
+                                rocblas_double_complex *ipiv) {
   return rocsolver_geqr2_impl<rocblas_double_complex>(handle, m, n, A, lda,
                                                       ipiv);
 }

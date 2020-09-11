@@ -38,7 +38,7 @@ rocblas_status rocsolver_getrs_strided_batched_impl(
  * ===========================================================================
  */
 
-extern "C" ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrs_strided_batched(
+extern "C" rocblas_status rocsolver_sgetrs_strided_batched(
     rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
     const rocblas_int nrhs, float *A, const rocblas_int lda,
     const rocblas_stride strideA, const rocblas_int *ipiv,
@@ -49,7 +49,7 @@ extern "C" ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrs_strided_batched(
       batch_count);
 }
 
-extern "C" ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrs_strided_batched(
+extern "C" rocblas_status rocsolver_dgetrs_strided_batched(
     rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
     const rocblas_int nrhs, double *A, const rocblas_int lda,
     const rocblas_stride strideA, const rocblas_int *ipiv,
@@ -60,7 +60,7 @@ extern "C" ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrs_strided_batched(
       batch_count);
 }
 
-extern "C" ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrs_strided_batched(
+extern "C" rocblas_status rocsolver_cgetrs_strided_batched(
     rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
     const rocblas_int nrhs, rocblas_float_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, const rocblas_int *ipiv,
@@ -72,7 +72,7 @@ extern "C" ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrs_strided_batched(
       batch_count);
 }
 
-extern "C" ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(
+extern "C" rocblas_status rocsolver_zgetrs_strided_batched(
     rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
     const rocblas_int nrhs, rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, const rocblas_int *ipiv,
