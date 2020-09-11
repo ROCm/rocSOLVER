@@ -346,6 +346,8 @@ template <typename T>
 __device__ void copy_and_zero(const rocblas_int m, const rocblas_int n, T *a,
                               const rocblas_int lda, T *w,
                               const rocblas_int ldw) {
+  // Copies the lower triangular part of the matrix to the workspace and then
+  // replaces it with zeroes
   int i, j;
   for (int k = hipThreadIdx_y; k < m * n; k += hipBlockDim_y) {
     i = k % m;
@@ -361,6 +363,8 @@ __device__ void copy_and_zero(const rocblas_int m, const rocblas_int n, T *a,
 template <typename T>
 __device__ void zero_work(const rocblas_int m, const rocblas_int n, T *w,
                           const rocblas_int ldw) {
+  // Zeroes the workspace so that calls to gemm and trsm do not alter the matrix
+  // (used for singular matrices)
   int i, j;
   for (int k = hipThreadIdx_y; k < m * n; k += hipBlockDim_y) {
     i = k % m;
@@ -373,6 +377,7 @@ __device__ void zero_work(const rocblas_int m, const rocblas_int n, T *w,
 template <typename T>
 __device__ void getri_pivot(const rocblas_int n, T *a, const rocblas_int lda,
                             rocblas_int *p) {
+  // Applies the pivots specified in ipiv to the inverted matrix
   rocblas_int jp;
   T temp;
   for (rocblas_int j = n - 2; j >= 0; --j) {
@@ -393,16 +398,18 @@ __global__ void
 getri_check_singularity(const rocblas_int n, U A, const rocblas_int shifta,
                         const rocblas_int lda, const rocblas_stride stridea,
                         rocblas_int *info) {
+  // Checks for singularities in the matrix and updates info to indicate where
+  // the first singularity (if any) occurs
   int b = hipBlockIdx_x;
 
   T *a = load_ptr_batch<T>(A, b, shifta, stridea);
 
   __shared__ rocblas_int _info;
 
-  // check for singularities
   if (hipThreadIdx_y == 0)
     _info = 0;
   __syncthreads();
+
   for (int i = hipThreadIdx_y; i < n; i += hipBlockDim_y) {
     if (a[i + i * lda] == 0) {
       rocblas_int _info_temp = _info;
@@ -422,6 +429,8 @@ getri_trtri_update(const rocblas_int n, U A, const rocblas_int shifta,
                    const rocblas_int lda, const rocblas_stride stridea,
                    const V W, const rocblas_int shiftw, const rocblas_int ldw,
                    const rocblas_stride stridew, rocblas_int *info) {
+  // Processes the output of rocblas_trtri so that it matches the output of
+  // vanilla LAPACK
   int b = hipBlockIdx_x;
   int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
   int j = hipBlockIdx_z * hipBlockDim_z + hipThreadIdx_z;
@@ -429,8 +438,8 @@ getri_trtri_update(const rocblas_int n, U A, const rocblas_int shifta,
   T *a = load_ptr_batch<T>(A, b, shifta, stridea);
   T *w = load_ptr_batch<T>(W, b, shiftw, stridew);
 
-  // in-place: if A is singular, do not change A; otherwise, copy upper
-  // triangular inverse out-of-place: if A is singular, restore A; otherwise,
+  // In-place: if A is singular, do not change A; otherwise, copy upper
+  // triangular inverse. Out-of-place: if A is singular, restore A; otherwise,
   // copy lower triangular original
   bool copy = COPYALL || (info[b] == 0 && INPLACE && i <= j) ||
               (info[b] == 0 && !INPLACE && i > j) || (info[b] != 0 && !INPLACE);
@@ -446,6 +455,8 @@ __global__ void getri_kernel(const rocblas_int n, U A, const rocblas_int shiftA,
                              const rocblas_int shiftP,
                              const rocblas_stride strideP, rocblas_int *info,
                              V work, const rocblas_stride strideW) {
+  // Do-everything getri kernel (excepting the call to trtri) for small- and
+  // mid-size matrices
   int b = hipBlockIdx_x;
 
   T *a = load_ptr_batch<T>(A, b, shiftA, strideA);
@@ -491,6 +502,8 @@ getri_kernel_large1(const rocblas_int n, const rocblas_int j,
                     const rocblas_int jb, U A, const rocblas_int shiftA,
                     const rocblas_int lda, const rocblas_stride strideA,
                     rocblas_int *info, V work, const rocblas_stride strideW) {
+  // Helper kernel for large-size matrices. Preps the matrix for calls to
+  // gemm and trsm.
   int b = hipBlockIdx_x;
 
   T *a = load_ptr_batch<T>(A, b, shiftA, strideA);
@@ -508,6 +521,8 @@ getri_kernel_large2(const rocblas_int n, U A, const rocblas_int shiftA,
                     const rocblas_int lda, const rocblas_stride strideA,
                     rocblas_int *ipiv, const rocblas_int shiftP,
                     const rocblas_stride strideP, rocblas_int *info) {
+  // Helper kernel for large-size matrices. Applies the pivots to the inverted
+  // matrix.
   int b = hipBlockIdx_x;
 
   T *a = load_ptr_batch<T>(A, b, shiftA, strideA);
@@ -692,6 +707,10 @@ rocblas_status rocsolver_getri_template(
                        stream, n, A, shiftA, lda, strideA, A1, shiftA1, lda1,
                        strideA1, info);
   }
+
+  // at this point: if A is singular, then it contains the original triangular
+  // factors L and U (i.e. it is unmodified); otherwise, it contains L and
+  // inv(U)
 
   strideW = (n <= GETRI_SWITCHSIZE_MID ? n : n * GETRI_BLOCKSIZE);
   if (n <= GETRI_SWITCHSIZE_LARGE) {
