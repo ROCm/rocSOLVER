@@ -1,14 +1,13 @@
 #!/bin/bash
 
-if [ -d docBin ]; then
-    rm -rf docBin
-fi
+set -eu
 
-sh run_doxygen.sh
+# Make this directory the PWD
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+bash run_doxygen.sh
 
 cd source
 make clean
 make html
 make latexpdf
-cd ..
-
