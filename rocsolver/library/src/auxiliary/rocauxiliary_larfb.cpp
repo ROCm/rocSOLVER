@@ -27,29 +27,34 @@ rocsolver_larfb_impl(rocblas_handle handle, const rocblas_side side,
   rocblas_stride stridea = 0;
   rocblas_stride stridef = 0;
   rocblas_int batch_count = 1;
+  rocblas_int shiftV = 0;
+  rocblas_int shiftF = 0;
+  rocblas_int shiftA = 0;
 
   // memory managment
   size_t size_1; // size of workspace
   size_t size_2; // size of array of pointers to workspace
+  size_t size_3; // size of worksapce for TRMM calls
   rocsolver_larfb_getMemorySize<T, false>(side, m, n, k, batch_count, &size_1,
-                                          &size_2);
+                                          &size_2, &size_3);
 
   // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-  void *work, *workArr;
+  void *work, *workArr, *workTrmm;
   hipMalloc(&work, size_1);
   hipMalloc(&workArr, size_2);
-  if ((size_1 && !work) || (size_2 && !workArr))
+  hipMalloc(&workTrmm, size_3);
+  if ((size_1 && !work) || (size_2 && !workArr) || (size_3 && !workTrmm))
     return rocblas_status_memory_error;
 
   //  execution
   rocblas_status status = rocsolver_larfb_template<false, false, T>(
-      handle, side, trans, direct, storev, m, n, k, V, 0, // shifted 0 entries
-      ldv, stridev, F, 0,                                 // shifted 0 entries
-      ldf, stridef, A, 0,                                 // shifted 0 entries
-      lda, stridea, batch_count, (T *)work, (T **)workArr);
+      handle, side, trans, direct, storev, m, n, k, V, shiftV, ldv, stridev, F,
+      shiftF, ldf, stridef, A, shiftA, lda, stridea, batch_count, (T *)work,
+      (T **)workArr, (T *)workTrmm);
 
   hipFree(work);
   hipFree(workArr);
+  hipFree(workTrmm);
   return status;
 }
 

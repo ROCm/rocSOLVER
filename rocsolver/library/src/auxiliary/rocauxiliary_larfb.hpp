@@ -57,7 +57,8 @@ template <typename T, bool BATCHED>
 void rocsolver_larfb_getMemorySize(const rocblas_side side, const rocblas_int m,
                                    const rocblas_int n, const rocblas_int k,
                                    const rocblas_int batch_count,
-                                   size_t *size_1, size_t *size_2) {
+                                   size_t *size_1, size_t *size_2,
+                                   size_t *size_3) {
   // size of workspace
   if (side == rocblas_side_left)
     *size_1 = n;
@@ -70,9 +71,17 @@ void rocsolver_larfb_getMemorySize(const rocblas_side side, const rocblas_int m,
     *size_2 = sizeof(T *) * batch_count;
   else
     *size_2 = 0;
+
+  // size of workspace for TRMM calls
+  if (BATCHED)
+    *size_3 =
+        (2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB * sizeof(T) + sizeof(T *)) *
+        batch_count;
+  else
+    *size_3 = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB * sizeof(T) * batch_count;
 }
 
-template <typename T>
+/*template <typename T>
 void rocsolver_larfb_getMemorySize(const rocblas_side side, const rocblas_int m,
                                    const rocblas_int n, const rocblas_int k,
                                    const rocblas_int batch_count,
@@ -83,7 +92,7 @@ void rocsolver_larfb_getMemorySize(const rocblas_side side, const rocblas_int m,
   else
     *size = m;
   *size *= sizeof(T) * k * batch_count;
-}
+}*/
 
 template <typename T, typename U>
 rocblas_status
@@ -134,7 +143,7 @@ rocblas_status rocsolver_larfb_template(
     const rocblas_int ldf, const rocblas_stride strideF, U A,
     const rocblas_int shiftA, const rocblas_int lda,
     const rocblas_stride strideA, const rocblas_int batch_count, T *work,
-    T **workArr) {
+    T **workArr, T *workTrmm) {
   // quick return
   if (m == 0 || n == 0 || batch_count == 0)
     return rocblas_status_success;
@@ -152,14 +161,14 @@ rocblas_status rocsolver_larfb_template(
   T minone = -1;
   T one = 1;
 
-// **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-//      TRMM_BATCH FUNCTIONALITY IS ENABLED. ****
-#ifdef batched
-  T *VV[batch_count];
-  hipMemcpy(VV, V, batch_count * sizeof(T *), hipMemcpyDeviceToHost);
-#else
-  T *VV = V;
-#endif
+  // **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
+  //      TRMM_BATCH FUNCTIONALITY IS ENABLED. ****
+  //#ifdef batched
+  //  T *VV[batch_count];
+  //  hipMemcpy(VV, V, batch_count * sizeof(T *), hipMemcpyDeviceToHost);
+  //#else
+  //  T *VV = V;
+  //#endif
 
   // determine the side, size of workspace
   // and whether V is trapezoidal
@@ -237,8 +246,8 @@ rocblas_status rocsolver_larfb_template(
   rocblas_stride strideW = rocblas_stride(ldw) * order;
   uploT = (forward ? rocblas_fill_upper : rocblas_fill_lower);
 
-  // **** TRMM_BATCH IS EXECUTED IN A FOR-LOOP UNTIL
-  //      FUNCITONALITY IS ENABLED ****
+  //  // **** TRMM_BATCH IS EXECUTED IN A FOR-LOOP UNTIL
+  //  //      FUNCITONALITY IS ENABLED ****
 
   // copy A1 to work
   rocblas_int blocksx = (order - 1) / 32 + 1;
@@ -249,11 +258,16 @@ rocblas_status rocsolver_larfb_template(
 
   // compute: V1' * A1
   //   or    A1 * V1
-  for (int b = 0; b < batch_count; ++b) {
-    Vp = load_ptr_batch<T>(VV, b, offsetV1, strideV);
-    rocblas_trmm(handle, side, uploV, transp, rocblas_diagonal_unit, ldw, order,
-                 &one, Vp, ldv, (work + b * strideW), ldw);
-  }
+  //  for (int b = 0; b < batch_count; ++b) {
+  //    Vp = load_ptr_batch<T>(VV, b, offsetV1, strideV);
+  //    rocblasCall_trmm(handle, side, uploV, transp, rocblas_diagonal_unit,
+  //    ldw, order,
+  //                 &one, Vp, ldv, (work + b * strideW), ldw);
+  //  }
+  rocblasCall_trmm<BATCHED, STRIDED, T>(
+      handle, side, uploV, transp, rocblas_diagonal_unit, ldw, order, &one, V,
+      offsetV1, ldv, strideV, work, 0, ldw, strideW, batch_count, workTrmm,
+      workArr);
 
   // compute: V1' * A1 + V2' * A2
   //    or    A1 * V1 + A2 * V2
@@ -272,11 +286,16 @@ rocblas_status rocsolver_larfb_template(
 
   // compute: trans(T) * (V1' * A1 + V2' * A2)
   //    or    (A1 * V1 + A2 * V2) * trans(T)
-  for (int b = 0; b < batch_count; ++b) {
-    Fp = load_ptr_batch<T>(F, b, shiftF, strideF);
-    rocblas_trmm(handle, side, uploT, transt, rocblas_diagonal_non_unit, ldw,
-                 order, &one, Fp, ldf, (work + b * strideW), ldw);
-  }
+  //  for (int b = 0; b < batch_count; ++b) {
+  //    Fp = load_ptr_batch<T>(F, b, shiftF, strideF);
+  //    rocblasCall_trmm(handle, side, uploT, transt, rocblas_diagonal_non_unit,
+  //    ldw,
+  //                 order, &one, Fp, ldf, (work + b * strideW), ldw);
+  //  }
+  rocblasCall_trmm<BATCHED, STRIDED, T>(
+      handle, side, uploT, transt, rocblas_diagonal_non_unit, ldw, order, &one,
+      F, shiftF, ldf, strideF, work, 0, ldw, strideW, batch_count, workTrmm,
+      workArr);
 
   // compute: A2 - V2 * trans(T) * (V1' * A1 + V2' * A2)
   //    or    A2 - (A1 * V1 + A2 * V2) * trans(T) * V2'
@@ -300,11 +319,16 @@ rocblas_status rocsolver_larfb_template(
 
   // compute: V1 * trans(T) * (V1' * A1 + V2' * A2)
   //    or    (A1 * V1 + A2 * V2) * trans(T) * V1'
-  for (int b = 0; b < batch_count; ++b) {
-    Vp = load_ptr_batch<T>(VV, b, offsetV1, strideV);
-    rocblas_trmm(handle, side, uploV, transp, rocblas_diagonal_unit, ldw, order,
-                 &one, Vp, ldv, (work + b * strideW), ldw);
-  }
+  //  for (int b = 0; b < batch_count; ++b) {
+  //    Vp = load_ptr_batch<T>(VV, b, offsetV1, strideV);
+  //    rocblasCall_trmm(handle, side, uploV, transp, rocblas_diagonal_unit,
+  //    ldw, order,
+  //                 &one, Vp, ldv, (work + b * strideW), ldw);
+  //  }
+  rocblasCall_trmm<BATCHED, STRIDED, T>(
+      handle, side, uploV, transp, rocblas_diagonal_unit, ldw, order, &one, V,
+      offsetV1, ldv, strideV, work, 0, ldw, strideW, batch_count, workTrmm,
+      workArr);
 
   // compute: A1 - V1 * trans(T) * (V1' * A1 + V2' * A2)
   //    or    A1 - (A1 * V1 + A2 * V2) * trans(T) * V1'

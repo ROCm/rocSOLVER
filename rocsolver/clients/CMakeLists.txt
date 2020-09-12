@@ -48,14 +48,14 @@ endif()
 # The presense of hip is not sufficient to determine if we want a rocm or cuda backend
 find_package( CUDA QUIET )
 
-if( BUILD_CLIENTS_BENCHMARKS )
-  add_subdirectory( benchmarks )
-endif( )
+#if( BUILD_CLIENTS_BENCHMARKS )
+#  add_subdirectory( benchmarks )
+#endif( )
 
 if( BUILD_CLIENTS_TESTS )
   add_subdirectory( gtest )
 endif( )
 
-if( BUILD_CLIENTS_SAMPLES )
-  add_subdirectory( samples )
-endif( )
+#if( BUILD_CLIENTS_SAMPLES )
+#  add_subdirectory( samples )
+#endif( )
