@@ -73,12 +73,7 @@ void rocsolver_larfb_getMemorySize(const rocblas_side side, const rocblas_int m,
     *size_2 = 0;
 
   // size of workspace for TRMM calls
-  if (BATCHED)
-    *size_3 =
-        (2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB * sizeof(T) + sizeof(T *)) *
-        batch_count;
-  else
-    *size_3 = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB * sizeof(T) * batch_count;
+  *size_3 = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB * sizeof(T) * batch_count;
 }
 
 /*template <typename T>
@@ -292,7 +287,7 @@ rocblas_status rocsolver_larfb_template(
   //    ldw,
   //                 order, &one, Fp, ldf, (work + b * strideW), ldw);
   //  }
-  rocblasCall_trmm<BATCHED, STRIDED, T>(
+  rocblasCall_trmm<false, STRIDED, T>(
       handle, side, uploT, transt, rocblas_diagonal_non_unit, ldw, order, &one,
       F, shiftF, ldf, strideF, work, 0, ldw, strideW, batch_count, workTrmm,
       workArr);

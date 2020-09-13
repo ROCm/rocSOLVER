@@ -43,57 +43,57 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_orglq_unglq.cpp
   auxiliary/rocauxiliary_orgbr_ungbr.cpp
   auxiliary/rocauxiliary_orm2r_unm2r.cpp
-#  auxiliary/rocauxiliary_ormqr_unmqr.cpp
+  auxiliary/rocauxiliary_ormqr_unmqr.cpp
   auxiliary/rocauxiliary_orml2_unml2.cpp
-#  auxiliary/rocauxiliary_ormlq_unmlq.cpp
-#  auxiliary/rocauxiliary_ormbr_unmbr.cpp
-#  # bidiagonal matrices and svd
-#  auxiliary/rocauxiliary_bdsqr.cpp
-#  auxiliary/rocauxiliary_labrd.cpp
+  auxiliary/rocauxiliary_ormlq_unmlq.cpp
+  auxiliary/rocauxiliary_ormbr_unmbr.cpp
+  # bidiagonal matrices and svd
+  auxiliary/rocauxiliary_bdsqr.cpp
+  auxiliary/rocauxiliary_labrd.cpp
 )
 
 set( rocsolver_lapack_source
-#  # triangular factorizations and linear solvers
-#  lapack/roclapack_getf2.cpp
-#  lapack/roclapack_getf2_batched.cpp
-#  lapack/roclapack_getf2_strided_batched.cpp
-#  lapack/roclapack_getrf.cpp
-#  lapack/roclapack_getrf_batched.cpp
-#  lapack/roclapack_getrf_strided_batched.cpp
-#  lapack/roclapack_getrs.cpp
-#  lapack/roclapack_getrs_batched.cpp
-#  lapack/roclapack_getrs_strided_batched.cpp
-#  lapack/roclapack_getri.cpp
-#  lapack/roclapack_getri_batched.cpp
-#  lapack/roclapack_getri_strided_batched.cpp
-#  lapack/roclapack_getri_outofplace_batched.cpp
-#  lapack/roclapack_potf2.cpp
-#  lapack/roclapack_potf2_batched.cpp
-#  lapack/roclapack_potf2_strided_batched.cpp
-#  lapack/roclapack_potrf.cpp
-#  lapack/roclapack_potrf_batched.cpp
-#  lapack/roclapack_potrf_strided_batched.cpp
-#  # orthogonal factorizations
-#  lapack/roclapack_geqr2.cpp
-#  lapack/roclapack_geqr2_batched.cpp
-#  lapack/roclapack_geqr2_strided_batched.cpp
-#  lapack/roclapack_geql2.cpp
-#  lapack/roclapack_geql2_batched.cpp
-#  lapack/roclapack_geql2_strided_batched.cpp
-#  lapack/roclapack_gelq2.cpp
-#  lapack/roclapack_gelq2_batched.cpp
-#  lapack/roclapack_gelq2_strided_batched.cpp
-#  lapack/roclapack_geqrf.cpp
-#  lapack/roclapack_geqrf_batched.cpp
-#  lapack/roclapack_geqrf_ptr_batched.cpp
-#  lapack/roclapack_geqrf_strided_batched.cpp
+  # triangular factorizations and linear solvers
+  lapack/roclapack_getf2.cpp
+  lapack/roclapack_getf2_batched.cpp
+  lapack/roclapack_getf2_strided_batched.cpp
+  lapack/roclapack_getrf.cpp
+  lapack/roclapack_getrf_batched.cpp
+  lapack/roclapack_getrf_strided_batched.cpp
+  lapack/roclapack_getrs.cpp
+  lapack/roclapack_getrs_batched.cpp
+  lapack/roclapack_getrs_strided_batched.cpp
+  lapack/roclapack_getri.cpp
+  lapack/roclapack_getri_batched.cpp
+  lapack/roclapack_getri_strided_batched.cpp
+  lapack/roclapack_getri_outofplace_batched.cpp
+  lapack/roclapack_potf2.cpp
+  lapack/roclapack_potf2_batched.cpp
+  lapack/roclapack_potf2_strided_batched.cpp
+  lapack/roclapack_potrf.cpp
+  lapack/roclapack_potrf_batched.cpp
+  lapack/roclapack_potrf_strided_batched.cpp
+  # orthogonal factorizations
+  lapack/roclapack_geqr2.cpp
+  lapack/roclapack_geqr2_batched.cpp
+  lapack/roclapack_geqr2_strided_batched.cpp
+  lapack/roclapack_geql2.cpp
+  lapack/roclapack_geql2_batched.cpp
+  lapack/roclapack_geql2_strided_batched.cpp
+  lapack/roclapack_gelq2.cpp
+  lapack/roclapack_gelq2_batched.cpp
+  lapack/roclapack_gelq2_strided_batched.cpp
+  lapack/roclapack_geqrf.cpp
+  lapack/roclapack_geqrf_batched.cpp
+  lapack/roclapack_geqrf_ptr_batched.cpp
+  lapack/roclapack_geqrf_strided_batched.cpp
 #  lapack/roclapack_geqlf.cpp
 #  lapack/roclapack_geqlf_batched.cpp
 #  lapack/roclapack_geqlf_strided_batched.cpp
 #  lapack/roclapack_gelqf.cpp
 #  lapack/roclapack_gelqf_batched.cpp
 #  lapack/roclapack_gelqf_strided_batched.cpp
-#  # bidiagonalization and svd
+  # bidiagonalization and svd
 #  lapack/roclapack_gebd2.cpp
 #  lapack/roclapack_gebd2_batched.cpp
 #  lapack/roclapack_gebd2_strided_batched.cpp

@@ -2,7 +2,6 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#define batched
 #include "roclapack_potf2.hpp"
 
 template <typename T, typename U>
@@ -100,5 +99,3 @@ rocsolver_zpotf2_batched(rocblas_handle handle, const rocblas_fill uplo,
       handle, uplo, n, A, lda, info, batch_count);
 }
 }
-
-#undef batched
