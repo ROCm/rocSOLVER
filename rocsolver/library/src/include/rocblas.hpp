@@ -581,12 +581,12 @@ alpha, A, lda, B, ldb);
 }*/
 
 // trmm
-template <typename T>
+/*template <typename T>
 rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side,
                             rocblas_fill uplo, rocblas_operation trans,
                             rocblas_diagonal diag, rocblas_int m, rocblas_int n,
                             T *alpha, T *A, rocblas_int lda, T *B,
-                            rocblas_int ldb);
+                            rocblas_int ldb);*/
 /*template <>
 rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side,
 rocblas_fill uplo, rocblas_operation trans, rocblas_diagonal diag, rocblas_int
@@ -605,9 +605,10 @@ rocblas_int ldb)
 }*/
 
 // trtri
-template <typename T>
+/*template <typename T>
 rocblas_status rocblas_trtri(rocblas_handle handle, rocblas_fill uplo,
                              rocblas_diagonal diag, rocblas_int n, const T *A,
                              rocblas_int lda, T *invA, rocblas_int ldinvA);
+*/
 
 #endif // _ROCBLAS_HPP_

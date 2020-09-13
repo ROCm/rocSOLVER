@@ -2,7 +2,6 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#define batched
 #include "roclapack_gebd2.hpp"
 
 template <typename S, typename T, typename U>
@@ -116,4 +115,3 @@ rocblas_status rocsolver_zgebd2_batched(
 }
 
 } // extern C
-#undef batched

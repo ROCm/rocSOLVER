@@ -87,22 +87,22 @@ set( rocsolver_lapack_source
   lapack/roclapack_geqrf_batched.cpp
   lapack/roclapack_geqrf_ptr_batched.cpp
   lapack/roclapack_geqrf_strided_batched.cpp
-#  lapack/roclapack_geqlf.cpp
-#  lapack/roclapack_geqlf_batched.cpp
-#  lapack/roclapack_geqlf_strided_batched.cpp
-#  lapack/roclapack_gelqf.cpp
-#  lapack/roclapack_gelqf_batched.cpp
-#  lapack/roclapack_gelqf_strided_batched.cpp
+  lapack/roclapack_geqlf.cpp
+  lapack/roclapack_geqlf_batched.cpp
+  lapack/roclapack_geqlf_strided_batched.cpp
+  lapack/roclapack_gelqf.cpp
+  lapack/roclapack_gelqf_batched.cpp
+  lapack/roclapack_gelqf_strided_batched.cpp
   # bidiagonalization and svd
-#  lapack/roclapack_gebd2.cpp
-#  lapack/roclapack_gebd2_batched.cpp
-#  lapack/roclapack_gebd2_strided_batched.cpp
-#  lapack/roclapack_gebrd.cpp
-#  lapack/roclapack_gebrd_batched.cpp
-#  lapack/roclapack_gebrd_strided_batched.cpp
-#  lapack/roclapack_gesvd.cpp
-#  lapack/roclapack_gesvd_batched.cpp
-#  lapack/roclapack_gesvd_strided_batched.cpp
+  lapack/roclapack_gebd2.cpp
+  lapack/roclapack_gebd2_batched.cpp
+  lapack/roclapack_gebd2_strided_batched.cpp
+  lapack/roclapack_gebrd.cpp
+  lapack/roclapack_gebrd_batched.cpp
+  lapack/roclapack_gebrd_strided_batched.cpp
+  lapack/roclapack_gesvd.cpp
+  lapack/roclapack_gesvd_batched.cpp
+  lapack/roclapack_gesvd_strided_batched.cpp
 )
 
 set( auxiliaries

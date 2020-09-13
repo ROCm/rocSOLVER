@@ -71,11 +71,11 @@ set(roclapack_test_source
     getrs_gtest.cpp
     # orthogonal factorizations
     geqr2_geqrf_gtest.cpp
-#    geql2_geqlf_gtest.cpp
-#    gelq2_gelqf_gtest.cpp
+    geql2_geqlf_gtest.cpp
+    gelq2_gelqf_gtest.cpp
     # bidiagonalization and svd
-#    gebd2_gebrd_gtest.cpp
-#    gesvd_gtest.cpp
+    gebd2_gebrd_gtest.cpp
+    gesvd_gtest.cpp
     )
 
 set(rocsolver_test_source

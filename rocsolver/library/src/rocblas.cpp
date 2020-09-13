@@ -81,7 +81,7 @@ rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
                        ldb);
 }
 
-template <>
+/*template <>
 rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side,
                             rocblas_fill uplo, rocblas_operation trans,
                             rocblas_diagonal diag, rocblas_int m, rocblas_int n,
@@ -152,4 +152,4 @@ rocblas_status rocblas_trtri(rocblas_handle handle, rocblas_fill uplo,
                              const rocblas_double_complex *A, rocblas_int lda,
                              rocblas_double_complex *invA, rocblas_int ldinvA) {
   return rocblas_ztrtri(handle, uplo, diag, n, A, lda, invA, ldinvA);
-}
+}*/
