@@ -41,8 +41,8 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle, const rocblas_int m,
   // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
   void *scalars, *pivot_val, *pivot_idx, *iinfo, *work, *x_temp, *x_temp_arr,
       *invA, *invA_arr;
-  bool optim_mem =
-      true; // always allocate all required memory for TRSM optimal performance
+  // always allocate all required memory for TRSM optimal performance
+  bool optim_mem = true;
 
   hipMalloc(&scalars, size_1);
   hipMalloc(&pivot_val, size_2);
