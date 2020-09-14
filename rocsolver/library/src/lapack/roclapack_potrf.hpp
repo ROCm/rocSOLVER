@@ -47,7 +47,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n, const rocblas_fill uplo,
                                        batch_count, size_5, size_6, size_7,
                                        size_8);
     else
-      rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, n - jb, jb,
+      rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, n - jb, jb,
                                        batch_count, size_5, size_6, size_7,
                                        size_8);
   }

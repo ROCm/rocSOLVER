@@ -2,7 +2,6 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#define batched
 #include "roclapack_getrs.hpp"
 
 template <typename T, typename U>
@@ -26,13 +25,36 @@ rocblas_status rocsolver_getrs_batched_impl(
   rocblas_stride strideB = 0;
 
   // memory managment
-  // this function does not requiere memory work space
+  size_t size_1; // for TRSM x_temp
+  size_t size_2; // for TRSM x_temp_arr
+  size_t size_3; // for TRSM invA
+  size_t size_4; // for TRSM invA_arr
+  rocsolver_getrs_getMemorySize<true, T>(n, nrhs, batch_count, &size_1, &size_2,
+                                         &size_3, &size_4);
+
   // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
+  void *x_temp, *x_temp_arr, *invA, *invA_arr;
+  // always allocate all required memory for TRSM optimal performance
+  bool optim_mem = true;
+
+  hipMalloc(&x_temp, size_1);
+  hipMalloc(&x_temp_arr, size_2);
+  hipMalloc(&invA, size_3);
+  hipMalloc(&invA_arr, size_4);
+  if ((size_1 && !x_temp) || (size_2 && !x_temp_arr) || (size_3 && !invA) ||
+      (size_4 && !invA_arr))
+    return rocblas_status_memory_error;
 
   // execution
-  return rocsolver_getrs_template<T>(handle, trans, n, nrhs, A, 0, lda, strideA,
-                                     ipiv, strideP, B, 0, ldb, strideB,
-                                     batch_count);
+  rocblas_status status = rocsolver_getrs_template<true, T>(
+      handle, trans, n, nrhs, A, 0, lda, strideA, ipiv, strideP, B, 0, ldb,
+      strideB, batch_count, x_temp, x_temp_arr, invA, invA_arr, optim_mem);
+
+  hipFree(x_temp);
+  hipFree(x_temp_arr);
+  hipFree(invA);
+  hipFree(invA_arr);
+  return status;
 }
 
 /*
@@ -78,5 +100,3 @@ extern "C" rocblas_status rocsolver_zgetrs_batched(
   return rocsolver_getrs_batched_impl<rocblas_double_complex>(
       handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
 }
-
-#undef batched
