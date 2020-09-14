@@ -407,40 +407,32 @@ inline rocblas_status rocsolver_orgxl_ungxl(bool GQL, rocblas_handle handle,
                                             rocblas_int m, rocblas_int n,
                                             rocblas_int k, float *A,
                                             rocblas_int lda, float *Ipiv) {
-  return GQL ? rocblas_status_not_implemented // rocsolver_sorgql(handle, m, n,
-                                              // k, A, lda, Ipiv)
-             : rocblas_status_not_implemented; // rocsolver_sorg2l(handle, m, n,
-                                               // k, A, lda, Ipiv);
+  return GQL ? rocsolver_sorgql(handle, m, n, k, A, lda, Ipiv)
+             : rocsolver_sorg2l(handle, m, n, k, A, lda, Ipiv);
 }
 
 inline rocblas_status rocsolver_orgxl_ungxl(bool GQL, rocblas_handle handle,
                                             rocblas_int m, rocblas_int n,
                                             rocblas_int k, double *A,
                                             rocblas_int lda, double *Ipiv) {
-  return GQL ? rocblas_status_not_implemented // rocsolver_dorgql(handle, m, n,
-                                              // k, A, lda, Ipiv)
-             : rocblas_status_not_implemented; // rocsolver_dorg2l(handle, m, n,
-                                               // k, A, lda, Ipiv);
+  return GQL ? rocsolver_dorgql(handle, m, n, k, A, lda, Ipiv)
+             : rocsolver_dorg2l(handle, m, n, k, A, lda, Ipiv);
 }
 
 inline rocblas_status
 rocsolver_orgxl_ungxl(bool GQL, rocblas_handle handle, rocblas_int m,
                       rocblas_int n, rocblas_int k, rocblas_float_complex *A,
                       rocblas_int lda, rocblas_float_complex *Ipiv) {
-  return GQL ? rocblas_status_not_implemented // rocsolver_cungql(handle, m, n,
-                                              // k, A, lda, Ipiv)
-             : rocblas_status_not_implemented; // rocsolver_cung2l(handle, m, n,
-                                               // k, A, lda, Ipiv);
+  return GQL ? rocsolver_cungql(handle, m, n, k, A, lda, Ipiv)
+             : rocsolver_cung2l(handle, m, n, k, A, lda, Ipiv);
 }
 
 inline rocblas_status
 rocsolver_orgxl_ungxl(bool GQL, rocblas_handle handle, rocblas_int m,
                       rocblas_int n, rocblas_int k, rocblas_double_complex *A,
                       rocblas_int lda, rocblas_double_complex *Ipiv) {
-  return GQL ? rocblas_status_not_implemented // rocsolver_zungql(handle, m, n,
-                                              // k, A, lda, Ipiv)
-             : rocblas_status_not_implemented; // rocsolver_zung2l(handle, m, n,
-                                               // k, A, lda, Ipiv);
+  return GQL ? rocsolver_zungql(handle, m, n, k, A, lda, Ipiv)
+             : rocsolver_zung2l(handle, m, n, k, A, lda, Ipiv);
 }
 /***************************************************************/
 
