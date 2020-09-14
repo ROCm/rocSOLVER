@@ -107,7 +107,6 @@ set( rocsolver_lapack_source
 
 set( auxiliaries
   buildinfo.cpp
-  rocblas.cpp
 )
 
 prepend_path( ".." rocsolver_headers_public relative_rocsolver_headers_public )

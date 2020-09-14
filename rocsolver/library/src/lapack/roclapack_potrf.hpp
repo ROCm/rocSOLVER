@@ -82,15 +82,6 @@ rocsolver_potrf_template(rocblas_handle handle, const rocblas_fill uplo,
                                        info, batch_count, scalars, work,
                                        pivotGPU);
 
-  //// **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-  ////      TRSM_BATCH FUNCTIONALITY IS ENABLED. ****
-  //#ifdef batched
-  //  T *AA[batch_count];
-  //  hipMemcpy(AA, A, batch_count * sizeof(T *), hipMemcpyDeviceToHost);
-  //#else
-  //  T *AA = A;
-  //#endif
-
   // constants for rocblas functions calls
   T t_one = 1;
   S s_one = 1;
@@ -99,15 +90,11 @@ rocsolver_potrf_template(rocblas_handle handle, const rocblas_fill uplo,
   rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
   dim3 gridReset(blocksReset, 1, 1);
   dim3 threads(BLOCKSIZE, 1, 1);
-  //  T *M;
   rocblas_int jb;
 
   // info=0 (starting with a positive definite matrix)
   hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info,
                      batch_count, 0);
-
-  //  // **** TRSM_BATCH IS EXECUTED IN A FOR-LOOP UNTIL
-  //  //      FUNCITONALITY IS ENABLED. ****
 
   // Compute the Cholesky factorization A = U'*U.
   if (uplo == rocblas_fill_upper) {
@@ -126,15 +113,12 @@ rocsolver_potrf_template(rocblas_handle handle, const rocblas_fill uplo,
 
       if (j + jb < n) {
         // update trailing submatrix
-        //        for (int b = 0; b < batch_count; ++b) {
-        //          M = load_ptr_batch<T>(AA, b, shiftA, strideA);
         rocblasCall_trsm<BATCHED, T>(
             handle, rocblas_side_left, uplo,
             rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit,
             jb, (n - j - jb), &t_one, A, shiftA + idx2D(j, j, lda), lda,
             strideA, A, shiftA + idx2D(j, j + jb, lda), lda, strideA,
             batch_count, optim_mem, x_temp, x_temp_arr, invA, invA_arr);
-        //        }
 
         rocblasCall_herk<S, T>(
             handle, uplo, rocblas_operation_conjugate_transpose, n - j - jb, jb,
@@ -160,15 +144,12 @@ rocsolver_potrf_template(rocblas_handle handle, const rocblas_fill uplo,
 
       if (j + jb < n) {
         // update trailing submatrix
-        //        for (int b = 0; b < batch_count; ++b) {
-        //          M = load_ptr_batch<T>(AA, b, shiftA, strideA);
         rocblasCall_trsm<BATCHED, T>(
             handle, rocblas_side_right, uplo,
             rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit,
             (n - j - jb), jb, &t_one, A, shiftA + idx2D(j, j, lda), lda,
             strideA, A, shiftA + idx2D(j + jb, j, lda), lda, strideA,
             batch_count, optim_mem, x_temp, x_temp_arr, invA, invA_arr);
-        //        }
 
         rocblasCall_herk<S, T>(
             handle, uplo, rocblas_operation_none, n - j - jb, jb, &s_minone, A,

@@ -68,35 +68,14 @@ rocblas_status rocsolver_getrs_template(
   rocblas_get_pointer_mode(handle, &old_mode);
   rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
-  //// **** THIS SYNCHRONIZATION WILL BE REQUIRED UNTIL
-  ////      TRSM_BATCH FUNCTIONALITY IS ENABLED. ****
-  //#ifdef batched
-  //  T *AA[batch_count];
-  //  T *BB[batch_count];
-  //  hipMemcpy(AA, A, batch_count * sizeof(T *), hipMemcpyDeviceToHost);
-  //  hipMemcpy(BB, B, batch_count * sizeof(T *), hipMemcpyDeviceToHost);
-  //#else
-  //  T *AA = A;
-  //  T *BB = B;
-  //#endif
-
   // constants to use when calling rocablas functions
   T one = 1; // constant 1 in host
-
-  //  T *Ap, *Bp;
-
-  //  // **** TRSM_BATCH IS EXECUTED IN A FOR-LOOP UNTIL
-  //  //      FUNCITONALITY IS ENABLED. ****
 
   if (trans == rocblas_operation_none) {
 
     // first apply row interchanges to the right hand sides
     rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n,
                                 ipiv, 0, strideP, 1, batch_count);
-
-    //     for (int b = 0; b < batch_count; ++b) {
-    //      Ap = load_ptr_batch<T>(AA, b, shiftA, strideA);
-    //      Bp = load_ptr_batch<T>(BB, b, shiftB, strideB);
 
     // solve L*X = B, overwriting B with X
     rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
@@ -111,13 +90,8 @@ rocblas_status rocsolver_getrs_template(
                                  &one, A, shiftA, lda, strideA, B, shiftB, ldb,
                                  strideB, batch_count, optim_mem, x_temp,
                                  x_temp_arr, invA, invA_arr);
-    //    }
 
   } else {
-
-    //    for (int b = 0; b < batch_count; ++b) {
-    //      Ap = load_ptr_batch<T>(AA, b, shiftA, strideA);
-    //      Bp = load_ptr_batch<T>(BB, b, shiftB, strideB);
 
     // solve U**T *X = B or U**H *X = B, overwriting B with X
     rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_upper,
@@ -132,7 +106,6 @@ rocblas_status rocsolver_getrs_template(
                                  shiftA, lda, strideA, B, shiftB, ldb, strideB,
                                  batch_count, optim_mem, x_temp, x_temp_arr,
                                  invA, invA_arr);
-    //    }
 
     // then apply row interchanges to the solution vectors
     rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n,
