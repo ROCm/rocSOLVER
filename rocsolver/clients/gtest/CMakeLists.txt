@@ -64,7 +64,7 @@ set(roclapack_test_source
     # bidiagonal matrices and svd
     labrd_gtest.cpp
     bdsqr_gtest.cpp
-    # tringular factorizations and linear solvers
+    # triangular factorizations and linear solvers
     potf2_potrf_gtest.cpp
     getf2_getrf_gtest.cpp
     getri_gtest.cpp

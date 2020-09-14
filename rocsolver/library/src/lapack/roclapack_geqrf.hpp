@@ -22,7 +22,7 @@ void rocsolver_geqrf_getMemorySize(const rocblas_int m, const rocblas_int n,
                                    size_t *size_1, size_t *size_2,
                                    size_t *size_3, size_t *size_4,
                                    size_t *size_5) {
-  size_t s1, s2, s3, dum, s4 = 0;
+  size_t s1, s2, s3, unused, s4 = 0;
   rocsolver_geqr2_getMemorySize<T, BATCHED>(m, n, batch_count, size_1, &s1,
                                             size_3, size_4);
   if (m <= GEQRF_GEQR2_SWITCHSIZE || n <= GEQRF_GEQR2_SWITCHSIZE) {
@@ -32,7 +32,7 @@ void rocsolver_geqrf_getMemorySize(const rocblas_int m, const rocblas_int n,
     rocblas_int jb = GEQRF_GEQR2_BLOCKSIZE;
     rocsolver_larft_getMemorySize<T>(jb, batch_count, &s2);
     rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_left, m, n - jb, jb,
-                                              batch_count, &s3, &dum, &s4);
+                                              batch_count, &s3, &unused, &s4);
     *size_2 = max(s1, max(s2, s3));
     *size_5 = sizeof(T) * jb * jb * batch_count;
   }

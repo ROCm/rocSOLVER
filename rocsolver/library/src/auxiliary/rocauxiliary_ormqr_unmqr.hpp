@@ -21,7 +21,7 @@ void rocsolver_ormqr_unmqr_getMemorySize(
     const rocblas_side side, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, const rocblas_int batch_count, size_t *size_1,
     size_t *size_2, size_t *size_3, size_t *size_4, size_t *size_5) {
-  size_t s1, s2, dum;
+  size_t s1, s2, unused;
   rocsolver_orm2r_unm2r_getMemorySize<T, BATCHED>(
       side, m, n, batch_count, size_1, size_2, size_3, size_4);
 
@@ -30,8 +30,8 @@ void rocsolver_ormqr_unmqr_getMemorySize(
     // maximum of what is needed by larft and larfb
     rocblas_int jb = ORMQR_ORM2R_BLOCKSIZE;
     rocsolver_larft_getMemorySize<T>(min(jb, k), batch_count, &s1);
-    rocsolver_larfb_getMemorySize<T, BATCHED>(side, m, n, min(jb, k),
-                                              batch_count, &s2, &dum, size_5);
+    rocsolver_larfb_getMemorySize<T, BATCHED>(
+        side, m, n, min(jb, k), batch_count, &s2, &unused, size_5);
 
     *size_2 = max(s1, s2);
 

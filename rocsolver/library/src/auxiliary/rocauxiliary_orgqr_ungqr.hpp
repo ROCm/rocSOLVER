@@ -38,7 +38,7 @@ void rocsolver_orgqr_ungqr_getMemorySize(
     const rocblas_int m, const rocblas_int n, const rocblas_int k,
     const rocblas_int batch_count, size_t *size_1, size_t *size_2,
     size_t *size_3, size_t *size_4, size_t *size_5) {
-  size_t s1, s2, s3, dum;
+  size_t s1, s2, s3, unused;
   rocsolver_org2r_ung2r_getMemorySize<T, BATCHED>(m, n, batch_count, size_1,
                                                   size_2, size_3);
 
@@ -54,8 +54,8 @@ void rocsolver_orgqr_ungqr_getMemorySize(
     rocsolver_org2r_ung2r_getMemorySize<T>(m, max(n - kk, jb), batch_count,
                                            &s1);
     rocsolver_larft_getMemorySize<T>(jb, batch_count, &s2);
-    rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_left, m, n - jb, jb,
-                                              batch_count, &s3, &dum, size_5);
+    rocsolver_larfb_getMemorySize<T, BATCHED>(
+        rocblas_side_left, m, n - jb, jb, batch_count, &s3, &unused, size_5);
 
     *size_2 = max(max(s1, s2), s3);
 

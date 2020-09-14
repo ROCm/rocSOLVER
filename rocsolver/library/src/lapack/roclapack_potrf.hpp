@@ -96,8 +96,8 @@ rocsolver_potrf_template(rocblas_handle handle, const rocblas_fill uplo,
   hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info,
                      batch_count, 0);
 
-  // Compute the Cholesky factorization A = U'*U.
   if (uplo == rocblas_fill_upper) {
+    // Compute the Cholesky factorization A = U'*U.
     for (rocblas_int j = 0; j < n; j += POTRF_POTF2_SWITCHSIZE) {
       // Factor diagonal and subdiagonal blocks
       jb = min(n - j, POTRF_POTF2_SWITCHSIZE); // number of columns in the block
@@ -127,8 +127,8 @@ rocsolver_potrf_template(rocblas_handle handle, const rocblas_fill uplo,
       }
     }
 
-    // Compute the Cholesky factorization A = L*L'.
   } else {
+    // Compute the Cholesky factorization A = L*L'.
     for (rocblas_int j = 0; j < n; j += POTRF_POTF2_SWITCHSIZE) {
       // Factor diagonal and subdiagonal blocks
       jb = min(n - j, POTRF_POTF2_SWITCHSIZE); // number of columns in the block
