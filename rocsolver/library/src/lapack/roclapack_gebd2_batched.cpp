@@ -2,7 +2,6 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#define batched
 #include "roclapack_gebd2.hpp"
 
 template <typename S, typename T, typename U>
@@ -69,7 +68,7 @@ rocblas_status rocsolver_gebd2_batched_impl(
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgebd2_batched(
+rocblas_status rocsolver_sgebd2_batched(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     float *const A[], const rocblas_int lda, float *D,
     const rocblas_stride strideD, float *E, const rocblas_stride strideE,
@@ -80,7 +79,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgebd2_batched(
       strideP, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgebd2_batched(
+rocblas_status rocsolver_dgebd2_batched(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     double *const A[], const rocblas_int lda, double *D,
     const rocblas_stride strideD, double *E, const rocblas_stride strideE,
@@ -91,7 +90,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgebd2_batched(
       strideP, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgebd2_batched(
+rocblas_status rocsolver_cgebd2_batched(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     rocblas_float_complex *const A[], const rocblas_int lda, float *D,
     const rocblas_stride strideD, float *E, const rocblas_stride strideE,
@@ -103,7 +102,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgebd2_batched(
       strideP, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_batched(
+rocblas_status rocsolver_zgebd2_batched(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     rocblas_double_complex *const A[], const rocblas_int lda, double *D,
     const rocblas_stride strideD, double *E, const rocblas_stride strideE,
@@ -116,4 +115,3 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_batched(
 }
 
 } // extern C
-#undef batched

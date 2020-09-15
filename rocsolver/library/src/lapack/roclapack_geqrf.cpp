@@ -26,7 +26,7 @@ rocblas_status rocsolver_geqrf_impl(rocblas_handle handle, const rocblas_int m,
   size_t size_1; // size of constants
   size_t size_2; // size of workspace
   size_t size_3; // size of array of pointers to workspace
-  size_t size_4; // size of diagonal entry cache
+  size_t size_4; // size of diagonal entry cache and TRMM calls workspace
   size_t size_5; // size of triangular factor for block reflector
   rocsolver_geqrf_getMemorySize<T, false>(m, n, batch_count, &size_1, &size_2,
                                           &size_3, &size_4, &size_5);
@@ -70,38 +70,30 @@ rocblas_status rocsolver_geqrf_impl(rocblas_handle handle, const rocblas_int m,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n, float *A,
-                                                 const rocblas_int lda,
-                                                 float *ipiv) {
+rocblas_status rocsolver_sgeqrf(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, float *A,
+                                const rocblas_int lda, float *ipiv) {
   return rocsolver_geqrf_impl<float>(handle, m, n, A, lda, ipiv);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n, double *A,
-                                                 const rocblas_int lda,
-                                                 double *ipiv) {
+rocblas_status rocsolver_dgeqrf(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, double *A,
+                                const rocblas_int lda, double *ipiv) {
   return rocsolver_geqrf_impl<double>(handle, m, n, A, lda, ipiv);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_float_complex *A,
-                                                 const rocblas_int lda,
-                                                 rocblas_float_complex *ipiv) {
+rocblas_status rocsolver_cgeqrf(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, rocblas_float_complex *A,
+                                const rocblas_int lda,
+                                rocblas_float_complex *ipiv) {
   return rocsolver_geqrf_impl<rocblas_float_complex>(handle, m, n, A, lda,
                                                      ipiv);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_double_complex *A,
-                                                 const rocblas_int lda,
-                                                 rocblas_double_complex *ipiv) {
+rocblas_status rocsolver_zgeqrf(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, rocblas_double_complex *A,
+                                const rocblas_int lda,
+                                rocblas_double_complex *ipiv) {
   return rocsolver_geqrf_impl<rocblas_double_complex>(handle, m, n, A, lda,
                                                       ipiv);
 }

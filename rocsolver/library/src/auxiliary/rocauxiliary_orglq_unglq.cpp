@@ -28,17 +28,19 @@ rocsolver_orglq_unglq_impl(rocblas_handle handle, const rocblas_int m,
   size_t size_2; // size of workspace
   size_t size_3; // size of array of pointers to workspace
   size_t size_4; // size of temporary array for triangular factor
-  rocsolver_orglq_unglq_getMemorySize<T, false>(m, n, k, batch_count, &size_1,
-                                                &size_2, &size_3, &size_4);
+  size_t size_5; // size of workspace for TRMM calls
+  rocsolver_orglq_unglq_getMemorySize<T, false>(
+      m, n, k, batch_count, &size_1, &size_2, &size_3, &size_4, &size_5);
 
   // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-  void *scalars, *work, *workArr, *trfact;
+  void *scalars, *work, *workArr, *trfact, *workTrmm;
   hipMalloc(&scalars, size_1);
   hipMalloc(&work, size_2);
   hipMalloc(&workArr, size_3);
   hipMalloc(&trfact, size_4);
+  hipMalloc(&workTrmm, size_5);
   if (!scalars || (size_2 && !work) || (size_3 && !workArr) ||
-      (size_4 && !trfact))
+      (size_4 && !trfact) || (size_5 && !workTrmm))
     return rocblas_status_memory_error;
 
   // scalar constants for rocblas functions calls
@@ -50,12 +52,13 @@ rocsolver_orglq_unglq_impl(rocblas_handle handle, const rocblas_int m,
   rocblas_status status = rocsolver_orglq_unglq_template<false, false, T>(
       handle, m, n, k, A, 0, // shifted 0 entries
       lda, strideA, ipiv, strideP, batch_count, (T *)scalars, (T *)work,
-      (T **)workArr, (T *)trfact);
+      (T **)workArr, (T *)trfact, (T *)workTrmm);
 
   hipFree(scalars);
   hipFree(work);
   hipFree(workArr);
   hipFree(trfact);
+  hipFree(workTrmm);
   return status;
 }
 
@@ -67,30 +70,32 @@ rocsolver_orglq_unglq_impl(rocblas_handle handle, const rocblas_int m,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sorglq(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    const rocblas_int k, float *A, const rocblas_int lda, float *ipiv) {
+rocblas_status rocsolver_sorglq(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, const rocblas_int k,
+                                float *A, const rocblas_int lda, float *ipiv) {
   return rocsolver_orglq_unglq_impl<float>(handle, m, n, k, A, lda, ipiv);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dorglq(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    const rocblas_int k, double *A, const rocblas_int lda, double *ipiv) {
+rocblas_status rocsolver_dorglq(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, const rocblas_int k,
+                                double *A, const rocblas_int lda,
+                                double *ipiv) {
   return rocsolver_orglq_unglq_impl<double>(handle, m, n, k, A, lda, ipiv);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cunglq(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    const rocblas_int k, rocblas_float_complex *A, const rocblas_int lda,
-    rocblas_float_complex *ipiv) {
+rocblas_status rocsolver_cunglq(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, const rocblas_int k,
+                                rocblas_float_complex *A, const rocblas_int lda,
+                                rocblas_float_complex *ipiv) {
   return rocsolver_orglq_unglq_impl<rocblas_float_complex>(handle, m, n, k, A,
                                                            lda, ipiv);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zunglq(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
-    rocblas_double_complex *ipiv) {
+rocblas_status rocsolver_zunglq(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, const rocblas_int k,
+                                rocblas_double_complex *A,
+                                const rocblas_int lda,
+                                rocblas_double_complex *ipiv) {
   return rocsolver_orglq_unglq_impl<rocblas_double_complex>(handle, m, n, k, A,
                                                             lda, ipiv);
 }

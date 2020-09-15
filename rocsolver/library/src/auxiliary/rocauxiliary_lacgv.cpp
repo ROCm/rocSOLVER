@@ -38,17 +38,15 @@ rocblas_status rocsolver_lacgv_impl(rocblas_handle handle, const rocblas_int n,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_clacgv(rocblas_handle handle,
-                                                 const rocblas_int n,
-                                                 rocblas_float_complex *x,
-                                                 const rocblas_int incx) {
+rocblas_status rocsolver_clacgv(rocblas_handle handle, const rocblas_int n,
+                                rocblas_float_complex *x,
+                                const rocblas_int incx) {
   return rocsolver_lacgv_impl<rocblas_float_complex>(handle, n, x, incx);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zlacgv(rocblas_handle handle,
-                                                 const rocblas_int n,
-                                                 rocblas_double_complex *x,
-                                                 const rocblas_int incx) {
+rocblas_status rocsolver_zlacgv(rocblas_handle handle, const rocblas_int n,
+                                rocblas_double_complex *x,
+                                const rocblas_int incx) {
   return rocsolver_lacgv_impl<rocblas_double_complex>(handle, n, x, incx);
 }
 

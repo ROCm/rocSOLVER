@@ -66,35 +66,40 @@ rocblas_status rocsolver_larf_impl(rocblas_handle handle,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_slarf(
-    rocblas_handle handle, const rocblas_side side, const rocblas_int m,
-    const rocblas_int n, float *x, const rocblas_int incx, const float *alpha,
-    float *A, const rocblas_int lda) {
+rocblas_status rocsolver_slarf(rocblas_handle handle, const rocblas_side side,
+                               const rocblas_int m, const rocblas_int n,
+                               float *x, const rocblas_int incx,
+                               const float *alpha, float *A,
+                               const rocblas_int lda) {
   return rocsolver_larf_impl<float>(handle, side, m, n, x, incx, alpha, A, lda);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dlarf(
-    rocblas_handle handle, const rocblas_side side, const rocblas_int m,
-    const rocblas_int n, double *x, const rocblas_int incx, const double *alpha,
-    double *A, const rocblas_int lda) {
+rocblas_status rocsolver_dlarf(rocblas_handle handle, const rocblas_side side,
+                               const rocblas_int m, const rocblas_int n,
+                               double *x, const rocblas_int incx,
+                               const double *alpha, double *A,
+                               const rocblas_int lda) {
   return rocsolver_larf_impl<double>(handle, side, m, n, x, incx, alpha, A,
                                      lda);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_clarf(
-    rocblas_handle handle, const rocblas_side side, const rocblas_int m,
-    const rocblas_int n, rocblas_float_complex *x, const rocblas_int incx,
-    const rocblas_float_complex *alpha, rocblas_float_complex *A,
-    const rocblas_int lda) {
+rocblas_status rocsolver_clarf(rocblas_handle handle, const rocblas_side side,
+                               const rocblas_int m, const rocblas_int n,
+                               rocblas_float_complex *x, const rocblas_int incx,
+                               const rocblas_float_complex *alpha,
+                               rocblas_float_complex *A,
+                               const rocblas_int lda) {
   return rocsolver_larf_impl<rocblas_float_complex>(handle, side, m, n, x, incx,
                                                     alpha, A, lda);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(
-    rocblas_handle handle, const rocblas_side side, const rocblas_int m,
-    const rocblas_int n, rocblas_double_complex *x, const rocblas_int incx,
-    const rocblas_double_complex *alpha, rocblas_double_complex *A,
-    const rocblas_int lda) {
+rocblas_status rocsolver_zlarf(rocblas_handle handle, const rocblas_side side,
+                               const rocblas_int m, const rocblas_int n,
+                               rocblas_double_complex *x,
+                               const rocblas_int incx,
+                               const rocblas_double_complex *alpha,
+                               rocblas_double_complex *A,
+                               const rocblas_int lda) {
   return rocsolver_larf_impl<rocblas_double_complex>(handle, side, m, n, x,
                                                      incx, alpha, A, lda);
 }

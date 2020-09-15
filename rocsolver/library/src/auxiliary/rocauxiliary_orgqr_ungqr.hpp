@@ -34,18 +34,17 @@ __global__ void set_zero_col(const rocblas_int n, const rocblas_int kk, U A,
 }
 
 template <typename T, bool BATCHED>
-void rocsolver_orgqr_ungqr_getMemorySize(const rocblas_int m,
-                                         const rocblas_int n,
-                                         const rocblas_int k,
-                                         const rocblas_int batch_count,
-                                         size_t *size_1, size_t *size_2,
-                                         size_t *size_3, size_t *size_4) {
-  size_t s1, s2, s3;
+void rocsolver_orgqr_ungqr_getMemorySize(
+    const rocblas_int m, const rocblas_int n, const rocblas_int k,
+    const rocblas_int batch_count, size_t *size_1, size_t *size_2,
+    size_t *size_3, size_t *size_4, size_t *size_5) {
+  size_t s1, s2, s3, unused;
   rocsolver_org2r_ung2r_getMemorySize<T, BATCHED>(m, n, batch_count, size_1,
                                                   size_2, size_3);
 
   if (k <= GEQRF_GEQR2_SWITCHSIZE) {
     *size_4 = 0;
+    *size_5 = 0;
   } else {
     // size of workspace
     // maximum of what is needed by org2r, larft and larfb
@@ -55,8 +54,8 @@ void rocsolver_orgqr_ungqr_getMemorySize(const rocblas_int m,
     rocsolver_org2r_ung2r_getMemorySize<T>(m, max(n - kk, jb), batch_count,
                                            &s1);
     rocsolver_larft_getMemorySize<T>(jb, batch_count, &s2);
-    rocsolver_larfb_getMemorySize<T>(rocblas_side_left, m, n - jb, jb,
-                                     batch_count, &s3);
+    rocsolver_larfb_getMemorySize<T, BATCHED>(
+        rocblas_side_left, m, n - jb, jb, batch_count, &s3, &unused, size_5);
 
     *size_2 = max(max(s1, s2), s3);
 
@@ -70,8 +69,8 @@ rocblas_status rocsolver_orgqr_ungqr_template(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda,
     const rocblas_stride strideA, T *ipiv, const rocblas_stride strideP,
-    const rocblas_int batch_count, T *scalars, T *work, T **workArr,
-    T *trfact) {
+    const rocblas_int batch_count, T *scalars, T *work, T **workArr, T *trfact,
+    T *workTrmm) {
   // quick return
   if (!n || !m || !batch_count)
     return rocblas_status_success;
@@ -126,7 +125,7 @@ rocblas_status rocsolver_orgqr_ungqr_template(
           rocblas_forward_direction, rocblas_column_wise, m - j, n - j - jb, jb,
           A, shiftA + idx2D(j, j, lda), lda, strideA, trfact, 0, ldw, strideW,
           A, shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count, work,
-          workArr);
+          workArr, workTrmm);
     }
 
     // now compute the current block and set to zero

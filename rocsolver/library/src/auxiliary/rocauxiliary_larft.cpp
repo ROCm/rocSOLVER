@@ -66,34 +66,37 @@ rocsolver_larft_impl(rocblas_handle handle, const rocblas_direct direct,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status
-rocsolver_slarft(rocblas_handle handle, const rocblas_direct direct,
-                 const rocblas_storev storev, const rocblas_int n,
-                 const rocblas_int k, float *V, const rocblas_int ldv,
-                 float *tau, float *T, const rocblas_int ldt) {
+rocblas_status rocsolver_slarft(rocblas_handle handle,
+                                const rocblas_direct direct,
+                                const rocblas_storev storev,
+                                const rocblas_int n, const rocblas_int k,
+                                float *V, const rocblas_int ldv, float *tau,
+                                float *T, const rocblas_int ldt) {
   return rocsolver_larft_impl<float>(handle, direct, storev, n, k, V, ldv, tau,
                                      T, ldt);
 }
 
-ROCSOLVER_EXPORT rocblas_status
-rocsolver_dlarft(rocblas_handle handle, const rocblas_direct direct,
-                 const rocblas_storev storev, const rocblas_int n,
-                 const rocblas_int k, double *V, const rocblas_int ldv,
-                 double *tau, double *T, const rocblas_int ldt) {
+rocblas_status rocsolver_dlarft(rocblas_handle handle,
+                                const rocblas_direct direct,
+                                const rocblas_storev storev,
+                                const rocblas_int n, const rocblas_int k,
+                                double *V, const rocblas_int ldv, double *tau,
+                                double *T, const rocblas_int ldt) {
   return rocsolver_larft_impl<double>(handle, direct, storev, n, k, V, ldv, tau,
                                       T, ldt);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_clarft(
-    rocblas_handle handle, const rocblas_direct direct,
-    const rocblas_storev storev, const rocblas_int n, const rocblas_int k,
-    rocblas_float_complex *V, const rocblas_int ldv, rocblas_float_complex *tau,
-    rocblas_float_complex *T, const rocblas_int ldt) {
+rocblas_status
+rocsolver_clarft(rocblas_handle handle, const rocblas_direct direct,
+                 const rocblas_storev storev, const rocblas_int n,
+                 const rocblas_int k, rocblas_float_complex *V,
+                 const rocblas_int ldv, rocblas_float_complex *tau,
+                 rocblas_float_complex *T, const rocblas_int ldt) {
   return rocsolver_larft_impl<rocblas_float_complex>(handle, direct, storev, n,
                                                      k, V, ldv, tau, T, ldt);
 }
 
-ROCSOLVER_EXPORT rocblas_status
+rocblas_status
 rocsolver_zlarft(rocblas_handle handle, const rocblas_direct direct,
                  const rocblas_storev storev, const rocblas_int n,
                  const rocblas_int k, rocblas_double_complex *V,

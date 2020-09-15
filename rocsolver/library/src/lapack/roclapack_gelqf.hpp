@@ -22,7 +22,7 @@ void rocsolver_gelqf_getMemorySize(const rocblas_int m, const rocblas_int n,
                                    size_t *size_1, size_t *size_2,
                                    size_t *size_3, size_t *size_4,
                                    size_t *size_5) {
-  size_t s1, s2, s3;
+  size_t s1, s2, s3, unused, s4 = 0;
   rocsolver_gelq2_getMemorySize<T, BATCHED>(m, n, batch_count, size_1, &s1,
                                             size_3, size_4);
   if (m <= GEQRF_GEQR2_SWITCHSIZE || n <= GEQRF_GEQR2_SWITCHSIZE) {
@@ -31,11 +31,17 @@ void rocsolver_gelqf_getMemorySize(const rocblas_int m, const rocblas_int n,
   } else {
     rocblas_int jb = GEQRF_GEQR2_BLOCKSIZE;
     rocsolver_larft_getMemorySize<T>(jb, batch_count, &s2);
-    rocsolver_larfb_getMemorySize<T>(rocblas_side_right, m - jb, n, jb,
-                                     batch_count, &s3);
+    rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_right, m - jb, n, jb,
+                                              batch_count, &s3, &unused, &s4);
     *size_2 = max(s1, max(s2, s3));
     *size_5 = sizeof(T) * jb * jb * batch_count;
   }
+  *size_4 = max(*size_4, s4);
+
+  // size of workArr is double to accomodate
+  // the TRMM calls in the batched case
+  if (BATCHED)
+    *size_3 *= 2;
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
@@ -88,7 +94,7 @@ rocsolver_gelqf_template(rocblas_handle handle, const rocblas_int m,
           rocblas_forward_direction, rocblas_row_wise, m - j - jb, n - j, jb, A,
           shiftA + idx2D(j, j, lda), lda, strideA, trfact, 0, ldw, strideW, A,
           shiftA + idx2D(j + jb, j, lda), lda, strideA, batch_count, work,
-          workArr);
+          workArr, diag);
     }
     j += GEQRF_GEQR2_BLOCKSIZE;
   }

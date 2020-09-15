@@ -63,30 +63,32 @@ rocsolver_org2r_ung2r_impl(rocblas_handle handle, const rocblas_int m,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sorg2r(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    const rocblas_int k, float *A, const rocblas_int lda, float *ipiv) {
+rocblas_status rocsolver_sorg2r(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, const rocblas_int k,
+                                float *A, const rocblas_int lda, float *ipiv) {
   return rocsolver_org2r_ung2r_impl<float>(handle, m, n, k, A, lda, ipiv);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2r(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    const rocblas_int k, double *A, const rocblas_int lda, double *ipiv) {
+rocblas_status rocsolver_dorg2r(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, const rocblas_int k,
+                                double *A, const rocblas_int lda,
+                                double *ipiv) {
   return rocsolver_org2r_ung2r_impl<double>(handle, m, n, k, A, lda, ipiv);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cung2r(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    const rocblas_int k, rocblas_float_complex *A, const rocblas_int lda,
-    rocblas_float_complex *ipiv) {
+rocblas_status rocsolver_cung2r(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, const rocblas_int k,
+                                rocblas_float_complex *A, const rocblas_int lda,
+                                rocblas_float_complex *ipiv) {
   return rocsolver_org2r_ung2r_impl<rocblas_float_complex>(handle, m, n, k, A,
                                                            lda, ipiv);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zung2r(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
-    rocblas_double_complex *ipiv) {
+rocblas_status rocsolver_zung2r(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, const rocblas_int k,
+                                rocblas_double_complex *A,
+                                const rocblas_int lda,
+                                rocblas_double_complex *ipiv) {
   return rocsolver_org2r_ung2r_impl<rocblas_double_complex>(handle, m, n, k, A,
                                                             lda, ipiv);
 }
