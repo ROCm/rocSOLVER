@@ -16,10 +16,10 @@
 #include "rocsolver.h"
 
 template <typename T, typename U>
-__global__ void init_ident_row(const rocblas_int m, const rocblas_int n,
-                               const rocblas_int k, U A,
-                               const rocblas_int shiftA, const rocblas_int lda,
-                               const rocblas_stride strideA) {
+__global__ void
+orgl2_init_ident(const rocblas_int m, const rocblas_int n, const rocblas_int k,
+                 U A, const rocblas_int shiftA, const rocblas_int lda,
+                 const rocblas_stride strideA) {
   const auto blocksizex = hipBlockDim_x;
   const auto blocksizey = hipBlockDim_y;
   const auto b = hipBlockIdx_z;
@@ -100,7 +100,7 @@ rocblas_status rocsolver_orgl2_ungl2_template(
   // Initialize identity matrix (non used columns)
   rocblas_int blocksx = (m - 1) / 32 + 1;
   rocblas_int blocksy = (n - 1) / 32 + 1;
-  hipLaunchKernelGGL(init_ident_row<T>, dim3(blocksx, blocksy, batch_count),
+  hipLaunchKernelGGL(orgl2_init_ident<T>, dim3(blocksx, blocksy, batch_count),
                      dim3(32, 32), 0, stream, m, n, k, A, shiftA, lda, strideA);
 
   for (rocblas_int j = k - 1; j >= 0; --j) {
@@ -127,8 +127,8 @@ rocblas_status rocsolver_orgl2_ungl2_template(
     }
 
     // set the diagonal element and negative tau
-    hipLaunchKernelGGL(setdiag<T>, dim3(batch_count), dim3(1), 0, stream, j, A,
-                       shiftA, lda, strideA, ipiv, strideP);
+    hipLaunchKernelGGL(subtract_tau<T>, dim3(batch_count), dim3(1), 0, stream,
+                       j, j, A, shiftA, lda, strideA, ipiv + j, strideP);
 
     if (COMPLEX)
       rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);

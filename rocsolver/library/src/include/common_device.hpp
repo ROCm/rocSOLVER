@@ -78,16 +78,17 @@ __global__ void shift_array(T **out, U in, rocblas_int shift,
 }
 
 template <typename T, typename U>
-__global__ void setdiag(const rocblas_int j, U A, const rocblas_int shiftA,
-                        const rocblas_int lda, const rocblas_stride strideA,
-                        T *ipiv, const rocblas_stride strideP) {
+__global__ void subtract_tau(const rocblas_int i, const rocblas_int j, U A,
+                             const rocblas_int shiftA, const rocblas_int lda,
+                             const rocblas_stride strideA, T *ipiv,
+                             const rocblas_stride strideP) {
   const auto b = hipBlockIdx_x;
   T *Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
   T *tau = ipiv + b * strideP;
 
-  T t = -tau[j];
-  tau[j] = t;
-  Ap[j + j * lda] = 1.0 + t;
+  T t = -(*tau);
+  *tau = t;
+  Ap[i + j * lda] = 1.0 + t;
 }
 
 template <typename T>
