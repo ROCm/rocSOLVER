@@ -2,7 +2,6 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#define batched
 #include "roclapack_gelqf.hpp"
 
 template <typename T, typename U>
@@ -28,7 +27,7 @@ rocsolver_gelqf_batched_impl(rocblas_handle handle, const rocblas_int m,
   size_t size_1; // size of constants
   size_t size_2; // size of workspace
   size_t size_3; // size of array of pointers to workspace
-  size_t size_4; // size of diagonal entry cache
+  size_t size_4; // size of diagonal entry cache and TRMM calls workspace
   size_t size_5; // size of triangular factor for block reflector
   rocsolver_gelqf_getMemorySize<T, true>(m, n, batch_count, &size_1, &size_2,
                                          &size_3, &size_4, &size_5);
@@ -72,40 +71,44 @@ rocsolver_gelqf_batched_impl(rocblas_handle handle, const rocblas_int m,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgelqf_batched(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    float *const A[], const rocblas_int lda, float *ipiv,
-    const rocblas_stride stridep, const rocblas_int batch_count) {
+rocblas_status rocsolver_sgelqf_batched(rocblas_handle handle,
+                                        const rocblas_int m,
+                                        const rocblas_int n, float *const A[],
+                                        const rocblas_int lda, float *ipiv,
+                                        const rocblas_stride stridep,
+                                        const rocblas_int batch_count) {
   return rocsolver_gelqf_batched_impl<float>(handle, m, n, A, lda, ipiv,
                                              stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgelqf_batched(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    double *const A[], const rocblas_int lda, double *ipiv,
-    const rocblas_stride stridep, const rocblas_int batch_count) {
+rocblas_status rocsolver_dgelqf_batched(rocblas_handle handle,
+                                        const rocblas_int m,
+                                        const rocblas_int n, double *const A[],
+                                        const rocblas_int lda, double *ipiv,
+                                        const rocblas_stride stridep,
+                                        const rocblas_int batch_count) {
   return rocsolver_gelqf_batched_impl<double>(handle, m, n, A, lda, ipiv,
                                               stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgelqf_batched(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    rocblas_float_complex *const A[], const rocblas_int lda,
-    rocblas_float_complex *ipiv, const rocblas_stride stridep,
-    const rocblas_int batch_count) {
+rocblas_status
+rocsolver_cgelqf_batched(rocblas_handle handle, const rocblas_int m,
+                         const rocblas_int n, rocblas_float_complex *const A[],
+                         const rocblas_int lda, rocblas_float_complex *ipiv,
+                         const rocblas_stride stridep,
+                         const rocblas_int batch_count) {
   return rocsolver_gelqf_batched_impl<rocblas_float_complex>(
       handle, m, n, A, lda, ipiv, stridep, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_batched(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    rocblas_double_complex *const A[], const rocblas_int lda,
-    rocblas_double_complex *ipiv, const rocblas_stride stridep,
-    const rocblas_int batch_count) {
+rocblas_status
+rocsolver_zgelqf_batched(rocblas_handle handle, const rocblas_int m,
+                         const rocblas_int n, rocblas_double_complex *const A[],
+                         const rocblas_int lda, rocblas_double_complex *ipiv,
+                         const rocblas_stride stridep,
+                         const rocblas_int batch_count) {
   return rocsolver_gelqf_batched_impl<rocblas_double_complex>(
       handle, m, n, A, lda, ipiv, stridep, batch_count);
 }
 
 } // extern C
-
-#undef batched

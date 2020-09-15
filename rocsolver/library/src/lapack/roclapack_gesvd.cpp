@@ -42,19 +42,22 @@ rocsolver_gesvd_impl(rocblas_handle handle, const rocblas_svect left_svect,
   size_t size_4;
   // size of the array for the householder scalars
   size_t size_5;
-  rocsolver_gesvd_getMemorySize<false, T, TT>(left_svect, right_svect, m, n,
-                                              batch_count, &size_1, &size_2,
-                                              &size_3, &size_4, &size_5);
+  // size of workspace for TRMM calls
+  size_t size_6;
+  rocsolver_gesvd_getMemorySize<false, T, TT>(
+      left_svect, right_svect, m, n, batch_count, &size_1, &size_2, &size_3,
+      &size_4, &size_5, &size_6);
 
   // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-  void *scalars, *workgral, *workArr, *workfunc, *tau;
+  void *scalars, *workgral, *workArr, *workfunc, *tau, *workTrmm;
   hipMalloc(&scalars, size_1);
   hipMalloc(&workgral, size_2);
   hipMalloc(&workArr, size_3);
   hipMalloc(&workfunc, size_4);
   hipMalloc(&tau, size_5);
+  hipMalloc(&workTrmm, size_6);
   if ((size_1 && !scalars) || (size_2 && !workgral) || (size_3 && !workArr) ||
-      (size_4 && !workfunc) || (size_5 && !tau))
+      (size_4 && !workfunc) || (size_5 && !tau) || (size_6 && !workTrmm))
     return rocblas_status_memory_error;
 
   // scalar constants for rocblas functions calls
@@ -66,13 +69,15 @@ rocsolver_gesvd_impl(rocblas_handle handle, const rocblas_svect left_svect,
   rocblas_status status = rocsolver_gesvd_template<false, false, T>(
       handle, left_svect, right_svect, m, n, A, 0, lda, strideA, S, strideS, U,
       ldu, strideU, V, ldv, strideV, E, strideE, fast_alg, info, batch_count,
-      (T *)scalars, workgral, (T **)workArr, (T *)workfunc, (T *)tau);
+      (T *)scalars, workgral, (T **)workArr, (T *)workfunc, (T *)tau,
+      (T *)workTrmm);
 
   hipFree(scalars);
   hipFree(workgral);
   hipFree(workArr);
   hipFree(workfunc);
   hipFree(tau);
+  hipFree(workTrmm);
 
   return status;
 }

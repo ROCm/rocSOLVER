@@ -88,27 +88,29 @@ template <typename T, bool BATCHED>
 void rocsolver_orgbr_ungbr_getMemorySize(
     const rocblas_storev storev, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, const rocblas_int batch_count, size_t *size_1,
-    size_t *size_2, size_t *size_3, size_t *size_4) {
+    size_t *size_2, size_t *size_3, size_t *size_4, size_t *size_5) {
   if (storev == rocblas_column_wise) {
     if (m >= k) {
       rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(
-          m, n, k, batch_count, size_1, size_2, size_3, size_4);
+          m, n, k, batch_count, size_1, size_2, size_3, size_4, size_5);
     } else {
       size_t s1 = sizeof(T) * batch_count * (m - 1) * m / 2;
       size_t s2;
-      rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(
-          m - 1, m - 1, m - 1, batch_count, size_1, &s2, size_3, size_4);
+      rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(m - 1, m - 1, m - 1,
+                                                      batch_count, size_1, &s2,
+                                                      size_3, size_4, size_5);
       *size_2 = max(s1, s2);
     }
   } else {
     if (n > k) {
       rocsolver_orglq_unglq_getMemorySize<T, BATCHED>(
-          m, n, k, batch_count, size_1, size_2, size_3, size_4);
+          m, n, k, batch_count, size_1, size_2, size_3, size_4, size_5);
     } else {
       size_t s1 = sizeof(T) * batch_count * (n - 1) * n / 2;
       size_t s2;
-      rocsolver_orglq_unglq_getMemorySize<T, BATCHED>(
-          n - 1, n - 1, n - 1, batch_count, size_1, &s2, size_3, size_4);
+      rocsolver_orglq_unglq_getMemorySize<T, BATCHED>(n - 1, n - 1, n - 1,
+                                                      batch_count, size_1, &s2,
+                                                      size_3, size_4, size_5);
       *size_2 = max(s1, s2);
     }
   }
@@ -148,7 +150,7 @@ rocblas_status rocsolver_orgbr_ungbr_template(
     const rocblas_int n, const rocblas_int k, U A, const rocblas_int shiftA,
     const rocblas_int lda, const rocblas_stride strideA, T *ipiv,
     const rocblas_stride strideP, const rocblas_int batch_count, T *scalars,
-    T *work, T **workArr, T *trfact) {
+    T *work, T **workArr, T *trfact, T *workTrmm) {
   // quick return
   if (!n || !m || !batch_count)
     return rocblas_status_success;
@@ -162,7 +164,7 @@ rocblas_status rocsolver_orgbr_ungbr_template(
     if (m >= k) {
       rocsolver_orgqr_ungqr_template<BATCHED, STRIDED, T>(
           handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count,
-          scalars, work, workArr, trfact);
+          scalars, work, workArr, trfact, workTrmm);
     } else {
       // shift the householder vectors provided by gebrd as they come below the
       // first subdiagonal
@@ -184,7 +186,8 @@ rocblas_status rocsolver_orgbr_ungbr_template(
       // result
       rocsolver_orgqr_ungqr_template<BATCHED, STRIDED, T>(
           handle, m - 1, m - 1, m - 1, A, shiftA + idx2D(1, 1, lda), lda,
-          strideA, ipiv, strideP, batch_count, scalars, work, workArr, trfact);
+          strideA, ipiv, strideP, batch_count, scalars, work, workArr, trfact,
+          workTrmm);
     }
   }
 
@@ -194,7 +197,7 @@ rocblas_status rocsolver_orgbr_ungbr_template(
     if (n > k) {
       rocsolver_orglq_unglq_template<BATCHED, STRIDED, T>(
           handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count,
-          scalars, work, workArr, trfact);
+          scalars, work, workArr, trfact, workTrmm);
     } else {
       // shift the householder vectors provided by gebrd as they come above the
       // first superdiagonal
@@ -216,7 +219,8 @@ rocblas_status rocsolver_orgbr_ungbr_template(
       // result
       rocsolver_orglq_unglq_template<BATCHED, STRIDED, T>(
           handle, n - 1, n - 1, n - 1, A, shiftA + idx2D(1, 1, lda), lda,
-          strideA, ipiv, strideP, batch_count, scalars, work, workArr, trfact);
+          strideA, ipiv, strideP, batch_count, scalars, work, workArr, trfact,
+          workTrmm);
     }
   }
 

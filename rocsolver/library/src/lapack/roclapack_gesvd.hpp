@@ -159,7 +159,7 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
                                    const rocblas_int batch_count,
                                    size_t *size_1, size_t *size_2,
                                    size_t *size_3, size_t *size_4,
-                                   size_t *size_5) {
+                                   size_t *size_5, size_t *size_6) {
   // if quick return, set workspace to zero
   if (n == 0 || m == 0 || batch_count == 0) {
     *size_1 = 0;
@@ -167,6 +167,7 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
     *size_3 = 0;
     *size_4 = 0;
     *size_5 = 0;
+    *size_6 = 0;
     return;
   }
 
@@ -199,8 +200,9 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
       k = n;
     else
       k = m;
-    rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(
-        rocblas_column_wise, m, k, n, batch_count, size_1, &s2, size_3, &s4);
+    rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(rocblas_column_wise, m, k,
+                                                    n, batch_count, size_1, &s2,
+                                                    size_3, &s4, size_6);
     *size_2 = (s2 >= *size_2) ? s2 : *size_2;
     *size_4 = (s4 >= *size_4) ? s4 : *size_4;
   }
@@ -211,8 +213,9 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
       k = m;
     else
       k = n;
-    rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(
-        rocblas_row_wise, k, n, m, batch_count, size_1, &s2, size_3, &s4);
+    rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(rocblas_row_wise, k, n, m,
+                                                    batch_count, size_1, &s2,
+                                                    size_3, &s4, size_6);
     *size_2 = (s2 >= *size_2) ? s2 : *size_2;
     *size_4 = (s4 >= *size_4) ? s4 : *size_4;
   }
@@ -232,7 +235,7 @@ rocblas_status rocsolver_gesvd_template(
     const rocblas_int ldv, const rocblas_stride strideV, TT *E,
     const rocblas_stride strideE, const rocblas_workmode fast_alg,
     rocblas_int *info, const rocblas_int batch_count, T *scalars,
-    void *workgral, T **workArr, T *workfunc, T *tau) {
+    void *workgral, T **workArr, T *workfunc, T *tau, T *workTrmm) {
   constexpr bool COMPLEX = is_complex<T>;
 
   // quick return
@@ -305,7 +308,7 @@ rocblas_status rocsolver_gesvd_template(
                          A, shiftA, lda, strideA, U, 0, ldu, strideU);
       rocsolver_orgbr_ungbr_template<false, STRIDED>(
           handle, rocblas_column_wise, m, mn, n, U, 0, ldu, strideU, tau, k,
-          batch_count, scalars, (T *)workgral, workArr, workfunc);
+          batch_count, scalars, (T *)workgral, workArr, workfunc, workTrmm);
     }
 
     if (rightvS || rightvA) {
@@ -316,20 +319,20 @@ rocblas_status rocsolver_gesvd_template(
       rocsolver_orgbr_ungbr_template<false, STRIDED>(
           handle, rocblas_row_wise, mn, n, m, V, 0, ldv, strideV,
           (tau + k * batch_count), k, batch_count, scalars, (T *)workgral,
-          workArr, workfunc);
+          workArr, workfunc, workTrmm);
     }
 
     if (leftvO) {
       rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
           handle, rocblas_column_wise, m, k, n, A, shiftA, lda, strideA, tau, k,
-          batch_count, scalars, (T *)workgral, workArr, workfunc);
+          batch_count, scalars, (T *)workgral, workArr, workfunc, workTrmm);
     }
 
     if (rightvO) {
       rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
           handle, rocblas_row_wise, k, n, m, A, shiftA, lda, strideA,
           (tau + k * batch_count), k, batch_count, scalars, (T *)workgral,
-          workArr, workfunc);
+          workArr, workfunc, workTrmm);
     }
 
     // 3. compute singular values (and vectors if required) using the

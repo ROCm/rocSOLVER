@@ -19,14 +19,17 @@ template <typename T, bool BATCHED>
 void rocsolver_ormbr_unmbr_getMemorySize(
     const rocblas_storev storev, const rocblas_side side, const rocblas_int m,
     const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
-    size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4) {
+    size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4,
+    size_t *size_5) {
   rocblas_int nq = side == rocblas_side_left ? m : n;
   if (storev == rocblas_column_wise)
-    rocsolver_ormqr_unmqr_getMemorySize<T, BATCHED>(
-        side, m, n, min(nq, k), batch_count, size_1, size_2, size_3, size_4);
+    rocsolver_ormqr_unmqr_getMemorySize<T, BATCHED>(side, m, n, min(nq, k),
+                                                    batch_count, size_1, size_2,
+                                                    size_3, size_4, size_5);
   else
-    rocsolver_ormlq_unmlq_getMemorySize<T, BATCHED>(
-        side, m, n, min(nq, k), batch_count, size_1, size_2, size_3, size_4);
+    rocsolver_ormlq_unmlq_getMemorySize<T, BATCHED>(side, m, n, min(nq, k),
+                                                    batch_count, size_1, size_2,
+                                                    size_3, size_4, size_5);
 }
 
 template <bool COMPLEX, typename T, typename U>
@@ -77,7 +80,7 @@ rocblas_status rocsolver_ormbr_unmbr_template(
     const rocblas_stride strideA, T *ipiv, const rocblas_stride strideP, U C,
     const rocblas_int shiftC, const rocblas_int ldc,
     const rocblas_stride strideC, const rocblas_int batch_count, T *scalars,
-    T *work, T **workArr, T *trfact) {
+    T *work, T **workArr, T *trfact, T *workTrmm) {
   // quick return
   if (!n || !m || !k || !batch_count)
     return rocblas_status_success;
@@ -105,14 +108,15 @@ rocblas_status rocsolver_ormbr_unmbr_template(
     if (nq >= k) {
       rocsolver_ormqr_unmqr_template<BATCHED, STRIDED, T>(
           handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP,
-          C, shiftC, ldc, strideC, batch_count, scalars, work, workArr, trfact);
+          C, shiftC, ldc, strideC, batch_count, scalars, work, workArr, trfact,
+          workTrmm);
     } else {
       // shift the householder vectors provided by gebrd as they come below the
       // first subdiagonal
       rocsolver_ormqr_unmqr_template<BATCHED, STRIDED, T>(
           handle, side, trans, rows, cols, nq - 1, A, shiftA + idx2D(1, 0, lda),
           lda, strideA, ipiv, strideP, C, shiftC + idx2D(rowC, colC, ldc), ldc,
-          strideC, batch_count, scalars, work, workArr, trfact);
+          strideC, batch_count, scalars, work, workArr, trfact, workTrmm);
     }
   }
 
@@ -128,7 +132,8 @@ rocblas_status rocsolver_ormbr_unmbr_template(
     if (nq > k) {
       rocsolver_ormlq_unmlq_template<BATCHED, STRIDED, T>(
           handle, side, transP, m, n, k, A, shiftA, lda, strideA, ipiv, strideP,
-          C, shiftC, ldc, strideC, batch_count, scalars, work, workArr, trfact);
+          C, shiftC, ldc, strideC, batch_count, scalars, work, workArr, trfact,
+          workTrmm);
     } else {
       // shift the householder vectors provided by gebrd as they come above the
       // first superdiagonal
@@ -136,7 +141,7 @@ rocblas_status rocsolver_ormbr_unmbr_template(
           handle, side, transP, rows, cols, nq - 1, A,
           shiftA + idx2D(0, 1, lda), lda, strideA, ipiv, strideP, C,
           shiftC + idx2D(rowC, colC, ldc), ldc, strideC, batch_count, scalars,
-          work, workArr, trfact);
+          work, workArr, trfact, workTrmm);
     }
   }
 

@@ -61,36 +61,40 @@ rocsolver_bdsqr_impl(rocblas_handle handle, const rocblas_fill uplo,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sbdsqr(
-    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
-    const rocblas_int nv, const rocblas_int nu, const rocblas_int nc, float *D,
-    float *E, float *V, const rocblas_int ldv, float *U, const rocblas_int ldu,
-    float *C, const rocblas_int ldc, rocblas_int *info) {
+rocblas_status rocsolver_sbdsqr(rocblas_handle handle, const rocblas_fill uplo,
+                                const rocblas_int n, const rocblas_int nv,
+                                const rocblas_int nu, const rocblas_int nc,
+                                float *D, float *E, float *V,
+                                const rocblas_int ldv, float *U,
+                                const rocblas_int ldu, float *C,
+                                const rocblas_int ldc, rocblas_int *info) {
   return rocsolver_bdsqr_impl<float>(handle, uplo, n, nv, nu, nc, D, E, V, ldv,
                                      U, ldu, C, ldc, info);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dbdsqr(
-    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
-    const rocblas_int nv, const rocblas_int nu, const rocblas_int nc, double *D,
-    double *E, double *V, const rocblas_int ldv, double *U,
-    const rocblas_int ldu, double *C, const rocblas_int ldc,
-    rocblas_int *info) {
+rocblas_status rocsolver_dbdsqr(rocblas_handle handle, const rocblas_fill uplo,
+                                const rocblas_int n, const rocblas_int nv,
+                                const rocblas_int nu, const rocblas_int nc,
+                                double *D, double *E, double *V,
+                                const rocblas_int ldv, double *U,
+                                const rocblas_int ldu, double *C,
+                                const rocblas_int ldc, rocblas_int *info) {
   return rocsolver_bdsqr_impl<double>(handle, uplo, n, nv, nu, nc, D, E, V, ldv,
                                       U, ldu, C, ldc, info);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cbdsqr(
-    rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
-    const rocblas_int nv, const rocblas_int nu, const rocblas_int nc, float *D,
-    float *E, rocblas_float_complex *V, const rocblas_int ldv,
-    rocblas_float_complex *U, const rocblas_int ldu, rocblas_float_complex *C,
-    const rocblas_int ldc, rocblas_int *info) {
+rocblas_status rocsolver_cbdsqr(rocblas_handle handle, const rocblas_fill uplo,
+                                const rocblas_int n, const rocblas_int nv,
+                                const rocblas_int nu, const rocblas_int nc,
+                                float *D, float *E, rocblas_float_complex *V,
+                                const rocblas_int ldv, rocblas_float_complex *U,
+                                const rocblas_int ldu, rocblas_float_complex *C,
+                                const rocblas_int ldc, rocblas_int *info) {
   return rocsolver_bdsqr_impl<rocblas_float_complex>(
       handle, uplo, n, nv, nu, nc, D, E, V, ldv, U, ldu, C, ldc, info);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(
+rocblas_status rocsolver_zbdsqr(
     rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
     const rocblas_int nv, const rocblas_int nu, const rocblas_int nc, double *D,
     double *E, rocblas_double_complex *V, const rocblas_int ldv,
