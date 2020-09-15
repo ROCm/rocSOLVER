@@ -45,32 +45,36 @@ rocblas_status rocsolver_laswp_impl(rocblas_handle handle, const rocblas_int n,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_slaswp(
-    rocblas_handle handle, const rocblas_int n, float *A, const rocblas_int lda,
-    const rocblas_int k1, const rocblas_int k2, const rocblas_int *ipiv,
-    const rocblas_int incx) {
+rocblas_status rocsolver_slaswp(rocblas_handle handle, const rocblas_int n,
+                                float *A, const rocblas_int lda,
+                                const rocblas_int k1, const rocblas_int k2,
+                                const rocblas_int *ipiv,
+                                const rocblas_int incx) {
   return rocsolver_laswp_impl<float>(handle, n, A, lda, k1, k2, ipiv, incx);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dlaswp(
-    rocblas_handle handle, const rocblas_int n, double *A,
-    const rocblas_int lda, const rocblas_int k1, const rocblas_int k2,
-    const rocblas_int *ipiv, const rocblas_int incx) {
+rocblas_status rocsolver_dlaswp(rocblas_handle handle, const rocblas_int n,
+                                double *A, const rocblas_int lda,
+                                const rocblas_int k1, const rocblas_int k2,
+                                const rocblas_int *ipiv,
+                                const rocblas_int incx) {
   return rocsolver_laswp_impl<double>(handle, n, A, lda, k1, k2, ipiv, incx);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_claswp(
-    rocblas_handle handle, const rocblas_int n, rocblas_float_complex *A,
-    const rocblas_int lda, const rocblas_int k1, const rocblas_int k2,
-    const rocblas_int *ipiv, const rocblas_int incx) {
+rocblas_status rocsolver_claswp(rocblas_handle handle, const rocblas_int n,
+                                rocblas_float_complex *A, const rocblas_int lda,
+                                const rocblas_int k1, const rocblas_int k2,
+                                const rocblas_int *ipiv,
+                                const rocblas_int incx) {
   return rocsolver_laswp_impl<rocblas_float_complex>(handle, n, A, lda, k1, k2,
                                                      ipiv, incx);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zlaswp(
-    rocblas_handle handle, const rocblas_int n, rocblas_double_complex *A,
-    const rocblas_int lda, const rocblas_int k1, const rocblas_int k2,
-    const rocblas_int *ipiv, const rocblas_int incx) {
+rocblas_status rocsolver_zlaswp(rocblas_handle handle, const rocblas_int n,
+                                rocblas_double_complex *A,
+                                const rocblas_int lda, const rocblas_int k1,
+                                const rocblas_int k2, const rocblas_int *ipiv,
+                                const rocblas_int incx) {
   return rocsolver_laswp_impl<rocblas_double_complex>(handle, n, A, lda, k1, k2,
                                                       ipiv, incx);
 }

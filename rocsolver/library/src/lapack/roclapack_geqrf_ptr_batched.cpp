@@ -2,7 +2,6 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#define batched
 #include "roclapack_geqrf.hpp"
 
 /*
@@ -50,7 +49,7 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
   size_t size_1; // size of constants
   size_t size_2; // size of workspace
   size_t size_3; // size of array of pointers to workspace
-  size_t size_4; // size of diagonal entry cache
+  size_t size_4; // size of diagonal entry cache and TRMM calls
   size_t size_5; // size of triangular factor for block reflector
   size_t size_6 = sizeof(T) * strideP * batch_count;
   rocsolver_geqrf_getMemorySize<T, true>(m, n, batch_count, &size_1, &size_2,
@@ -137,5 +136,3 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_ptr_batched(
 }
 
 } // extern C
-
-#undef batched

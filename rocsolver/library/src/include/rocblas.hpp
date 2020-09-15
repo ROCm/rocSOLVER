@@ -270,21 +270,104 @@ rocblasCall_gemm(rocblas_handle handle, rocblas_operation trans_a,
 }
 
 // trmm
-template <bool BATCHED, bool STRIDED, typename T, typename U, typename V,
-          std::enable_if_t<!BATCHED, int> = 0>
+template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status
 rocblasCall_trmm(rocblas_handle handle, rocblas_side side, rocblas_fill uplo,
                  rocblas_operation transA, rocblas_diagonal diag, rocblas_int m,
-                 rocblas_int n, U alpha, V A, rocblas_int offsetA,
-                 rocblas_int lda, rocblas_stride strideA, V B,
+                 rocblas_int n, U alpha, T *A, rocblas_int offsetA,
+                 rocblas_int lda, rocblas_stride strideA, T *B,
                  rocblas_int offsetB, rocblas_int ldb, rocblas_stride strideB,
                  rocblas_int batch_count, T *work, T **workArr) {
   constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
   constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
+
+  // adding offsets directly to the arrays A and B until rocblas_trmm
+  // supports offset arguments
   return rocblas_trmm_template<BATCHED, nb, nb, T>(
       handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha),
       cast2constType<T>(A + offsetA), lda, strideA, B + offsetB, ldb, strideB,
       batch_count, work, strideW);
+}
+
+// trmm overload
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+rocblas_status
+rocblasCall_trmm(rocblas_handle handle, rocblas_side side, rocblas_fill uplo,
+                 rocblas_operation transA, rocblas_diagonal diag, rocblas_int m,
+                 rocblas_int n, U alpha, T *const *A, rocblas_int offsetA,
+                 rocblas_int lda, rocblas_stride strideA, T *const *B,
+                 rocblas_int offsetB, rocblas_int ldb, rocblas_stride strideB,
+                 rocblas_int batch_count, T *work, T **workArr) {
+  constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
+  constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
+
+  hipStream_t stream;
+  rocblas_get_stream(handle, &stream);
+  rocblas_int blocks = (batch_count - 1) / 256 + 1;
+  hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr,
+                     work, strideW, batch_count);
+
+  // until rocblas_trmm support offset arguments,
+  // we need to manually offset A and B and store in temporary arrays AA and BB
+  T **AA, **BB;
+  hipMalloc(&AA, sizeof(T *) * batch_count);
+  hipMalloc(&BB, sizeof(T *) * batch_count);
+  hipLaunchKernelGGL(shift_array, dim3(blocks), dim3(256), 0, stream, AA, A,
+                     offsetA, batch_count);
+  hipLaunchKernelGGL(shift_array, dim3(blocks), dim3(256), 0, stream, BB, B,
+                     offsetB, batch_count);
+
+  rocblas_status status = rocblas_trmm_template<BATCHED, nb, nb, T>(
+      handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha),
+      cast2constType<T>(cast2constPointer<T>(AA)), lda, strideA,
+      cast2constPointer<T>(BB), ldb, strideB, batch_count,
+      cast2constPointer<T>(workArr), strideW);
+
+  hipFree(AA);
+  hipFree(BB);
+
+  return status;
+}
+
+// trmm overload
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+rocblas_status
+rocblasCall_trmm(rocblas_handle handle, rocblas_side side, rocblas_fill uplo,
+                 rocblas_operation transA, rocblas_diagonal diag, rocblas_int m,
+                 rocblas_int n, U alpha, T *const *A, rocblas_int offsetA,
+                 rocblas_int lda, rocblas_stride strideA, T *B,
+                 rocblas_int offsetB, rocblas_int ldb, rocblas_stride strideB,
+                 rocblas_int batch_count, T *work, T **workArr) {
+  constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
+  constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
+
+  hipStream_t stream;
+  rocblas_get_stream(handle, &stream);
+  rocblas_int blocks = (batch_count - 1) / 256 + 1;
+
+  // adding offsets directly to the array B until rocblas_trmm
+  // supports offset arguments
+  hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr,
+                     B + offsetB, strideB, batch_count);
+  hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream,
+                     workArr + batch_count, work, strideW, batch_count);
+
+  // until rocblas_trmm support offset arguments,
+  // we need to manually offset A and store in temporary array AA
+  T **AA;
+  hipMalloc(&AA, sizeof(T *) * batch_count);
+  hipLaunchKernelGGL(shift_array, dim3(blocks), dim3(256), 0, stream, AA, A,
+                     offsetA, batch_count);
+
+  rocblas_status status = rocblas_trmm_template<BATCHED, nb, nb, T>(
+      handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha),
+      cast2constType<T>(cast2constPointer<T>(AA)), lda, strideA,
+      cast2constPointer<T>(workArr), ldb, strideB, batch_count,
+      cast2constPointer<T>(workArr + batch_count), strideW);
+
+  hipFree(AA);
+
+  return status;
 }
 
 // syrk
@@ -504,131 +587,5 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle, rocblas_fill uplo,
       handle, uplo, diag, n, cast2constType(A), offset_A, lda, stride_A, 0,
       workArr, offset_invA, ldinvA, stride_invA, 0, batch_count, 1, c_temp_arr);
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
-// THESE SHOULD BE SUBTITUTED BY THEIR CORRESPONDING
-// ROCBLAS TEMPLATE FUNCTIONS ONCE THEY ARE EXPORTED
-// (ROCBLAS.CPP CAN BE ELIMINATED THEN)
-
-// nrm2
-template <typename T1, typename T2>
-rocblas_status rocblas_nrm2(rocblas_handle handle, rocblas_int n, const T1 *x,
-                            rocblas_int incx, T2 *result);
-/*template <>
-rocblas_status rocblas_nrm2(rocblas_handle handle, rocblas_int n,
-                            const float* x, const rocblas_int incx, float*
-result) { return rocblas_snrm2(handle, n, x, incx, result);
-}
-template <>
-rocblas_status rocblas_nrm2(rocblas_handle handle, rocblas_int n,
-                            const double* x, const rocblas_int incx, double*
-result) { return rocblas_dnrm2(handle, n, x, incx, result);
-}*/
-
-// iamax
-// template <typename T>
-// rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n, const T
-// *x,
-//                             rocblas_int incx, rocblas_int *result);
-/*template <>
-rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n,
-                             const float *x, rocblas_int incx,
-                             rocblas_int *result) {
-  return rocblas_isamax(handle, n, x, incx, result);
-}
-template <>
-rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n,
-                             const double *x, rocblas_int incx,
-                             rocblas_int *result) {
-  return rocblas_idamax(handle, n, x, incx, result);
-}
-template <>
-rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n,
-                             const rocblas_float_complex *x, rocblas_int incx,
-                             rocblas_int *result) {
-  return rocblas_icamax(handle, n, x, incx, result);
-}
-template <>
-rocblas_status rocblas_iamax(rocblas_handle handle, rocblas_int n,
-                             const rocblas_double_complex *x, rocblas_int incx,
-                             rocblas_int *result) {
-  return rocblas_izamax(handle, n, x, incx, result);
-}*/
-
-// trsm
-// (Do not remove yet, some functions still use it)
-template <typename T>
-rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
-                            rocblas_fill uplo, rocblas_operation transA,
-                            rocblas_diagonal diag, rocblas_int m, rocblas_int n,
-                            const T *alpha, T *A, rocblas_int lda, T *B,
-                            rocblas_int ldb);
-/*template <>
-rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
-                            rocblas_fill uplo, rocblas_operation transA,
-                            rocblas_diagonal diag, rocblas_int m, rocblas_int n,
-                            const float *alpha, float *A, rocblas_int lda,
-                            float *B, rocblas_int ldb) {
-  return rocblas_strsm(handle, side, uplo, transA, diag, m, n, alpha, A, lda,
-B,ldb);
-}
-template <>
-rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
-                            rocblas_fill uplo, rocblas_operation transA,
-                            rocblas_diagonal diag, rocblas_int m, rocblas_int n,
-                            const double *alpha, double *A, rocblas_int lda,
-                            double *B, rocblas_int ldb) {
-  return rocblas_dtrsm(handle, side, uplo, transA, diag, m, n, alpha, A, lda,
-B,ldb);
-}
-template <>
-rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
-                            rocblas_fill uplo, rocblas_operation transA,
-                            rocblas_diagonal diag, rocblas_int m, rocblas_int n,
-                            const rocblas_float_complex *alpha,
-rocblas_float_complex *A, rocblas_int lda, rocblas_float_complex *B, rocblas_int
-ldb) { return rocblas_ctrsm(handle, side, uplo, transA, diag, m, n, alpha, A,
-lda, B, ldb);
-}
-template <>
-rocblas_status rocblas_trsm(rocblas_handle handle, rocblas_side side,
-                            rocblas_fill uplo, rocblas_operation transA,
-                            rocblas_diagonal diag, rocblas_int m, rocblas_int n,
-                            const rocblas_double_complex *alpha,
-rocblas_double_complex *A, rocblas_int lda, rocblas_double_complex *B,
-rocblas_int ldb) { return rocblas_ztrsm(handle, side, uplo, transA, diag, m, n,
-alpha, A, lda, B, ldb);
-}*/
-
-// trmm
-template <typename T>
-rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side,
-                            rocblas_fill uplo, rocblas_operation trans,
-                            rocblas_diagonal diag, rocblas_int m, rocblas_int n,
-                            T *alpha, T *A, rocblas_int lda, T *B,
-                            rocblas_int ldb);
-/*template <>
-rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side,
-rocblas_fill uplo, rocblas_operation trans, rocblas_diagonal diag, rocblas_int
-m, rocblas_int n, float *alpha, float *A, rocblas_int lda, float* B, rocblas_int
-ldb)
-{
-    return rocblas_strmm(handle,side,uplo,trans,diag,m,n,alpha,A,lda,B,ldb);
-}
-template <>
-rocblas_status rocblas_trmm(rocblas_handle handle, rocblas_side side,
-rocblas_fill uplo, rocblas_operation trans, rocblas_diagonal diag, rocblas_int
-m, rocblas_int n, double *alpha, double *A, rocblas_int lda, double* B,
-rocblas_int ldb)
-{
-    return rocblas_dtrmm(handle,side,uplo,trans,diag,m,n,alpha,A,lda,B,ldb);
-}*/
-
-// trtri
-template <typename T>
-rocblas_status rocblas_trtri(rocblas_handle handle, rocblas_fill uplo,
-                             rocblas_diagonal diag, rocblas_int n, const T *A,
-                             rocblas_int lda, T *invA, rocblas_int ldinvA);
 
 #endif // _ROCBLAS_HPP_

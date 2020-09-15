@@ -84,6 +84,14 @@ rocblas_storev
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenenum:: rocblas_storev
 
+rocblas_svect
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocblas_svect
+
+rocblas_workmode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocblas_workmode
+
 
 LAPACK Auxiliary Functions
 ============================
@@ -585,6 +593,32 @@ rocsolver_<type>getrs_strided_batched()
 .. doxygenfunction:: rocsolver_cgetrs_strided_batched
 .. doxygenfunction:: rocsolver_dgetrs_strided_batched
 .. doxygenfunction:: rocsolver_sgetrs_strided_batched
+
+
+General Matrix Singular Value Decomposition
+------------------------------------------------
+
+rocsolver_<type>gesvd()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgesvd
+.. doxygenfunction:: rocsolver_cgesvd
+.. doxygenfunction:: rocsolver_dgesvd
+.. doxygenfunction:: rocsolver_sgesvd
+
+rocsolver_<type>gesvd_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgesvd_batched
+.. doxygenfunction:: rocsolver_cgesvd_batched
+.. doxygenfunction:: rocsolver_dgesvd_batched
+.. doxygenfunction:: rocsolver_sgesvd_batched
+
+rocsolver_<type>gesvd_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgesvd_strided_batched
+.. doxygenfunction:: rocsolver_cgesvd_strided_batched
+.. doxygenfunction:: rocsolver_dgesvd_strided_batched
+.. doxygenfunction:: rocsolver_sgesvd_strided_batched
+
 
 
 Lapack-like Functions

@@ -25,6 +25,11 @@ if ( NOT DEFINED CMAKE_Fortran_COMPILER AND NOT DEFINED ENV{FC} )
   set( CMAKE_Fortran_COMPILER  "gfortran" )
 endif()
 
+# this remove some of the known warnings from the build output
+unset(ENV{ROCM_BUILD_ID})
+add_compile_options( -Wno-unused-command-line-argument )
+add_compile_options( -Wno-pass-failed )
+
 project( rocsolver LANGUAGES CXX )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -148,7 +153,7 @@ message (STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
 # keeping versioning according to ROCm release
-set ( VERSION_STRING "3.8.0" )
+set ( VERSION_STRING "3.9.0" )
 rocm_setup_version( VERSION ${VERSION_STRING} )
 
 # NOTE:  workaround until hcc & hip cmake modules fixes symlink logic in their config files; remove when fixed

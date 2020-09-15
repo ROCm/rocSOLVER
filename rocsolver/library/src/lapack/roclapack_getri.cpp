@@ -77,32 +77,29 @@ rocblas_status rocsolver_getri_impl(rocblas_handle handle, const rocblas_int n,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri(rocblas_handle handle,
-                                                 const rocblas_int n, float *A,
-                                                 const rocblas_int lda,
-                                                 rocblas_int *ipiv,
-                                                 rocblas_int *info) {
+rocblas_status rocsolver_sgetri(rocblas_handle handle, const rocblas_int n,
+                                float *A, const rocblas_int lda,
+                                rocblas_int *ipiv, rocblas_int *info) {
   return rocsolver_getri_impl<float>(handle, n, A, lda, ipiv, info);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri(rocblas_handle handle,
-                                                 const rocblas_int n, double *A,
-                                                 const rocblas_int lda,
-                                                 rocblas_int *ipiv,
-                                                 rocblas_int *info) {
+rocblas_status rocsolver_dgetri(rocblas_handle handle, const rocblas_int n,
+                                double *A, const rocblas_int lda,
+                                rocblas_int *ipiv, rocblas_int *info) {
   return rocsolver_getri_impl<double>(handle, n, A, lda, ipiv, info);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri(
-    rocblas_handle handle, const rocblas_int n, rocblas_float_complex *A,
-    const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info) {
+rocblas_status rocsolver_cgetri(rocblas_handle handle, const rocblas_int n,
+                                rocblas_float_complex *A, const rocblas_int lda,
+                                rocblas_int *ipiv, rocblas_int *info) {
   return rocsolver_getri_impl<rocblas_float_complex>(handle, n, A, lda, ipiv,
                                                      info);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(
-    rocblas_handle handle, const rocblas_int n, rocblas_double_complex *A,
-    const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info) {
+rocblas_status rocsolver_zgetri(rocblas_handle handle, const rocblas_int n,
+                                rocblas_double_complex *A,
+                                const rocblas_int lda, rocblas_int *ipiv,
+                                rocblas_int *info) {
   return rocsolver_getri_impl<rocblas_double_complex>(handle, n, A, lda, ipiv,
                                                       info);
 }

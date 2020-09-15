@@ -31,6 +31,30 @@ constexpr auto rocblas2char_storev(rocblas_storev value) {
   return '\0';
 }
 
+constexpr auto rocblas2char_workmode(rocblas_workmode value) {
+  switch (value) {
+  case rocblas_outofplace:
+    return 'O';
+  case rocblas_inplace:
+    return 'I';
+  }
+  return '\0';
+}
+
+constexpr auto rocblas2char_svect(rocblas_svect value) {
+  switch (value) {
+  case rocblas_svect_all:
+    return 'A';
+  case rocblas_svect_singular:
+    return 'S';
+  case rocblas_svect_overwrite:
+    return 'O';
+  case rocblas_svect_none:
+    return 'N';
+  }
+  return '\0';
+}
+
 /*  Convert lapack char constants to rocblas type. */
 
 constexpr rocblas_direct char2rocblas_direct(char value) {
@@ -52,6 +76,32 @@ constexpr rocblas_storev char2rocblas_storev(char value) {
     return rocblas_row_wise;
   default:
     return static_cast<rocblas_storev>(-1);
+  }
+}
+
+constexpr rocblas_workmode char2rocblas_workmode(char value) {
+  switch (value) {
+  case 'O':
+    return rocblas_outofplace;
+  case 'I':
+    return rocblas_inplace;
+  default:
+    return static_cast<rocblas_workmode>(-1);
+  }
+}
+
+constexpr rocblas_svect char2rocblas_svect(char value) {
+  switch (value) {
+  case 'A':
+    return rocblas_svect_all;
+  case 'S':
+    return rocblas_svect_singular;
+  case 'O':
+    return rocblas_svect_overwrite;
+  case 'N':
+    return rocblas_svect_none;
+  default:
+    return static_cast<rocblas_svect>(-1);
   }
 }
 

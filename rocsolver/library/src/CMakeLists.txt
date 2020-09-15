@@ -27,14 +27,16 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 set( rocsolver_auxiliary_source
+  # vector & matrix manipulations
   auxiliary/rocauxiliary_aliases.cpp
   auxiliary/rocauxiliary_lacgv.cpp
   auxiliary/rocauxiliary_laswp.cpp
+  # householder reflections
   auxiliary/rocauxiliary_larfg.cpp
   auxiliary/rocauxiliary_larf.cpp
   auxiliary/rocauxiliary_larft.cpp
   auxiliary/rocauxiliary_larfb.cpp
-  auxiliary/rocauxiliary_labrd.cpp
+  # orthonormal/unitary matrices
   auxiliary/rocauxiliary_org2r_ung2r.cpp
   auxiliary/rocauxiliary_orgqr_ungqr.cpp
   auxiliary/rocauxiliary_orgl2_ungl2.cpp
@@ -45,10 +47,13 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_orml2_unml2.cpp
   auxiliary/rocauxiliary_ormlq_unmlq.cpp
   auxiliary/rocauxiliary_ormbr_unmbr.cpp
+  # bidiagonal matrices and svd
   auxiliary/rocauxiliary_bdsqr.cpp
+  auxiliary/rocauxiliary_labrd.cpp
 )
 
 set( rocsolver_lapack_source
+  # triangular factorizations and linear solvers
   lapack/roclapack_getf2.cpp
   lapack/roclapack_getf2_batched.cpp
   lapack/roclapack_getf2_strided_batched.cpp
@@ -68,6 +73,7 @@ set( rocsolver_lapack_source
   lapack/roclapack_potrf.cpp
   lapack/roclapack_potrf_batched.cpp
   lapack/roclapack_potrf_strided_batched.cpp
+  # orthogonal factorizations
   lapack/roclapack_geqr2.cpp
   lapack/roclapack_geqr2_batched.cpp
   lapack/roclapack_geqr2_strided_batched.cpp
@@ -87,17 +93,20 @@ set( rocsolver_lapack_source
   lapack/roclapack_gelqf.cpp
   lapack/roclapack_gelqf_batched.cpp
   lapack/roclapack_gelqf_strided_batched.cpp
+  # bidiagonalization and svd
   lapack/roclapack_gebd2.cpp
   lapack/roclapack_gebd2_batched.cpp
   lapack/roclapack_gebd2_strided_batched.cpp
   lapack/roclapack_gebrd.cpp
   lapack/roclapack_gebrd_batched.cpp
   lapack/roclapack_gebrd_strided_batched.cpp
+  lapack/roclapack_gesvd.cpp
+  lapack/roclapack_gesvd_batched.cpp
+  lapack/roclapack_gesvd_strided_batched.cpp
 )
 
 set( auxiliaries
   buildinfo.cpp
-  rocblas.cpp
 )
 
 prepend_path( ".." rocsolver_headers_public relative_rocsolver_headers_public )

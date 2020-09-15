@@ -47,12 +47,16 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m, const rocblas_int n,
                                       size_5);
   if (m < GETRF_GETF2_SWITCHSIZE || n < GETRF_GETF2_SWITCHSIZE) {
     *size_4 = 0;
+    *size_6 = 0;
+    *size_7 = 0;
+    *size_8 = 0;
+    *size_9 = 0;
   } else {
     *size_4 = sizeof(rocblas_int) * batch_count;
+    rocblas_int jb = GETRF_GETF2_SWITCHSIZE;
+    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, jb, n - jb, batch_count,
+                                     size_6, size_7, size_8, size_9);
   }
-
-  rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, m, n, batch_count, size_6,
-                                   size_7, size_8, size_9);
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>

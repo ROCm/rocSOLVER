@@ -46,28 +46,36 @@ set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
 
 set(roclapack_test_source
+    # vector & matrix manipulations
     lacgv_gtest.cpp
     laswp_gtest.cpp
+    # householder reflections
     larfg_gtest.cpp
     larf_gtest.cpp
     larft_gtest.cpp
     larfb_gtest.cpp
-    labrd_gtest.cpp
-    bdsqr_gtest.cpp
+    # orthonormal/unitary matrices
     orgxr_ungxr_gtest.cpp
     orglx_unglx_gtest.cpp
     ormxr_unmxr_gtest.cpp
     ormlx_unmlx_gtest.cpp
     orgbr_ungbr_gtest.cpp
     ormbr_unmbr_gtest.cpp
-    getf2_getrf_gtest.cpp
+    # bidiagonal matrices and svd
+    labrd_gtest.cpp
+    bdsqr_gtest.cpp
+    # triangular factorizations and linear solvers
     potf2_potrf_gtest.cpp
-    getrs_gtest.cpp
+    getf2_getrf_gtest.cpp
     getri_gtest.cpp
+    getrs_gtest.cpp
+    # orthogonal factorizations
     geqr2_geqrf_gtest.cpp
     geql2_geqlf_gtest.cpp
     gelq2_gelqf_gtest.cpp
+    # bidiagonalization and svd
     gebd2_gebrd_gtest.cpp
+    gesvd_gtest.cpp
     )
 
 set(rocsolver_test_source

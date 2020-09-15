@@ -2,7 +2,6 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#define batched
 #include "roclapack_getri.hpp"
 
 /*
@@ -127,5 +126,3 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_outofplace_batched(
 }
 
 } // extern C
-
-#undef batched

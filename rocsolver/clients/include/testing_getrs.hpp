@@ -234,8 +234,13 @@ void getrs_getPerfData(const rocblas_handle handle,
 
 template <bool BATCHED, bool STRIDED, typename T>
 void testing_getrs(Arguments argus) {
-  // get arguments
   rocblas_local_handle handle;
+  //  /* Set handle memory size to a large enough value for all tests to pass.
+  //   (TODO: A more definitive solution could be implemented once
+  //   the handle memory model APIs are enabled in rocsolver)*/
+  //  rocblas_set_device_memory_size(handle, 20000000);
+
+  // get arguments
   rocblas_int m = argus.M;
   rocblas_int nrhs = argus.N;
   rocblas_int lda = argus.lda;
