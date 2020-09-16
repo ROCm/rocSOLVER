@@ -53,38 +53,32 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_slarfg(rocblas_handle handle,
-                                                 const rocblas_int n,
-                                                 float *alpha, float *x,
-                                                 const rocblas_int incx,
-                                                 float *tau) {
+rocblas_status rocsolver_slarfg(rocblas_handle handle, const rocblas_int n,
+                                float *alpha, float *x, const rocblas_int incx,
+                                float *tau) {
   return rocsolver_larfg_impl<float>(handle, n, alpha, x, incx, tau);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfg(rocblas_handle handle,
-                                                 const rocblas_int n,
-                                                 double *alpha, double *x,
-                                                 const rocblas_int incx,
-                                                 double *tau) {
+rocblas_status rocsolver_dlarfg(rocblas_handle handle, const rocblas_int n,
+                                double *alpha, double *x,
+                                const rocblas_int incx, double *tau) {
   return rocsolver_larfg_impl<double>(handle, n, alpha, x, incx, tau);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_clarfg(rocblas_handle handle,
-                                                 const rocblas_int n,
-                                                 rocblas_float_complex *alpha,
-                                                 rocblas_float_complex *x,
-                                                 const rocblas_int incx,
-                                                 rocblas_float_complex *tau) {
+rocblas_status rocsolver_clarfg(rocblas_handle handle, const rocblas_int n,
+                                rocblas_float_complex *alpha,
+                                rocblas_float_complex *x,
+                                const rocblas_int incx,
+                                rocblas_float_complex *tau) {
   return rocsolver_larfg_impl<rocblas_float_complex>(handle, n, alpha, x, incx,
                                                      tau);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
-                                                 const rocblas_int n,
-                                                 rocblas_double_complex *alpha,
-                                                 rocblas_double_complex *x,
-                                                 const rocblas_int incx,
-                                                 rocblas_double_complex *tau) {
+rocblas_status rocsolver_zlarfg(rocblas_handle handle, const rocblas_int n,
+                                rocblas_double_complex *alpha,
+                                rocblas_double_complex *x,
+                                const rocblas_int incx,
+                                rocblas_double_complex *tau) {
   return rocsolver_larfg_impl<rocblas_double_complex>(handle, n, alpha, x, incx,
                                                       tau);
 }
