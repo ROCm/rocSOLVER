@@ -16,23 +16,6 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, typename U>
-__global__ void set_zero_row(const rocblas_int m, const rocblas_int kk, U A,
-                             const rocblas_int shiftA, const rocblas_int lda,
-                             const rocblas_stride strideA) {
-  const auto blocksizex = hipBlockDim_x;
-  const auto blocksizey = hipBlockDim_y;
-  const auto b = hipBlockIdx_z;
-  const auto j = hipBlockIdx_y * blocksizey + hipThreadIdx_y;
-  const auto i = hipBlockIdx_x * blocksizex + hipThreadIdx_x + kk;
-
-  if (i < m && j < kk) {
-    T *Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
-
-    Ap[i + j * lda] = 0.0;
-  }
-}
-
 template <typename T, bool BATCHED>
 void rocsolver_orglq_unglq_getMemorySize(
     const rocblas_int m, const rocblas_int n, const rocblas_int k,
@@ -101,8 +84,9 @@ rocblas_status rocsolver_orglq_unglq_template(
   if (kk < m) {
     blocksx = (m - kk - 1) / 32 + 1;
     blocksy = (kk - 1) / 32 + 1;
-    hipLaunchKernelGGL(set_zero_row<T>, dim3(blocksx, blocksy, batch_count),
-                       dim3(32, 32), 0, stream, m, kk, A, shiftA, lda, strideA);
+    hipLaunchKernelGGL(set_zero<T>, dim3(blocksx, blocksy, batch_count),
+                       dim3(32, 32), 0, stream, m - kk, kk, A,
+                       shiftA + idx2D(kk, 0, lda), lda, strideA);
 
     rocsolver_orgl2_ungl2_template<T>(
         handle, m - kk, n - kk, k - kk, A, shiftA + idx2D(kk, kk, lda), lda,
@@ -133,9 +117,9 @@ rocblas_status rocsolver_orglq_unglq_template(
     if (j > 0) {
       blocksx = (jb - 1) / 32 + 1;
       blocksy = (j - 1) / 32 + 1;
-      hipLaunchKernelGGL(set_zero_row<T>, dim3(blocksx, blocksy, batch_count),
-                         dim3(32, 32), 0, stream, j + jb, j, A, shiftA, lda,
-                         strideA);
+      hipLaunchKernelGGL(set_zero<T>, dim3(blocksx, blocksy, batch_count),
+                         dim3(32, 32), 0, stream, jb, j, A,
+                         shiftA + idx2D(j, 0, lda), lda, strideA);
     }
     rocsolver_orgl2_ungl2_template<T>(
         handle, jb, n - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,

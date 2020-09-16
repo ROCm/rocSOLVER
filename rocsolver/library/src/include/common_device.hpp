@@ -157,4 +157,19 @@ restore_diag(S *D, const rocblas_int shiftd, const rocblas_stride strided, U A,
     a[j] = d[i];
 }
 
+template <typename T, typename U>
+__global__ void set_zero(const rocblas_int m, const rocblas_int n, U A,
+                         const rocblas_int shiftA, const rocblas_int lda,
+                         const rocblas_stride strideA) {
+  const auto b = hipBlockIdx_z;
+  const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+  const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+
+  if (i < m && j < n) {
+    T *Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+
+    Ap[i + j * lda] = 0.0;
+  }
+}
+
 #endif
