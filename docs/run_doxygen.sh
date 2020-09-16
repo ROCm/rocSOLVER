@@ -6,6 +6,5 @@ set -eu
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 # Build the doxygen info
-mkdir -p ../build/docs
-rm -rf ../build/docs/doxygen
+rm -rf docBin
 doxygen Doxyfile
