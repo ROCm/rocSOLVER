@@ -19,10 +19,17 @@ typedef vector<int> getri_tuple;
 // (null handle, null pointers and invalid values)
 
 // for checkin_lapack tests
-const vector<vector<int>> matrix_size_range = {{0, 1}, // quick return
-                                               {-1, 1},   {20, 5}, // invalid
-                                               {32, 32},  {50, 50},
-                                               {70, 100}, {100, 150}};
+const vector<vector<int>> matrix_size_range = {
+    // quick return
+    {0, 1},
+    // invalid
+    {-1, 1},
+    {20, 5},
+    // normal (valid) samples
+    {32, 32},
+    {50, 50},
+    {70, 100},
+    {100, 150}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {

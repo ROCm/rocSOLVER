@@ -21,16 +21,31 @@ typedef std::tuple<vector<int>, vector<int>> orgqr_tuple;
 // (null handle, null pointers and invalid values)
 
 // for checkin_lapack tests
-const vector<vector<int>> m_size_range = {{0, 1},             // quick return
-                                          {-1, 1},   {20, 5}, // always invalid
-                                          {50, 50}, // invalid for case *
-                                          {70, 100}, {130, 130}};
+const vector<vector<int>> m_size_range = {
+    // quick return
+    {0, 1},
+    // always invalid
+    {-1, 1},
+    {20, 5},
+    // invalid for case *
+    {50, 50},
+    // normal (valid) samples
+    {70, 100},
+    {130, 130}};
 
 const vector<vector<int>> n_size_range = {
-    {0, 1},                       // quick return
-    {-1, 1},  {1, -1},  {10, 20}, // always invalid
-    {55, 55},                     // invalid for case *
-    {10, 0},  {20, 20}, {35, 25}};
+    // quick return
+    {0, 1},
+    // always invalid
+    {-1, 1},
+    {1, -1},
+    {10, 20},
+    // invalid for case *
+    {55, 55},
+    // normal (valid) samples
+    {10, 0},
+    {20, 20},
+    {35, 25}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_m_size_range = {

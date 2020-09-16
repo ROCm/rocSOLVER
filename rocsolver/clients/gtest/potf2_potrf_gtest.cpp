@@ -23,10 +23,17 @@ typedef std::tuple<vector<int>, char> potrf_tuple;
 const vector<char> uplo_range = {'L', 'U'};
 
 // for checkin_lapack tests
-const vector<vector<int>> matrix_size_range = {{0, 1}, // quick return
-                                               {-1, 1},  {10, 2}, // invalid
-                                               {10, 10}, {20, 30},
-                                               {50, 50}, {70, 80}};
+const vector<vector<int>> matrix_size_range = {
+    // quick return
+    {0, 1},
+    // invalid
+    {-1, 1},
+    {10, 2},
+    // normal (valid) samples
+    {10, 10},
+    {20, 30},
+    {50, 50},
+    {70, 80}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
