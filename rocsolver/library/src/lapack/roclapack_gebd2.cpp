@@ -20,6 +20,8 @@ rocblas_status rocsolver_gebd2_impl(rocblas_handle handle, const rocblas_int m,
   if (st != rocblas_status_continue)
     return st;
 
+  // the matrices are shifted 0 entries (will work on the entire matrix)
+  rocblas_int shiftA = 0;
   rocblas_stride strideA = 0;
   rocblas_stride strideD = 0;
   rocblas_stride strideE = 0;
@@ -52,10 +54,9 @@ rocblas_status rocsolver_gebd2_impl(rocblas_handle handle, const rocblas_int m,
 
   // execution
   rocblas_status status = rocsolver_gebd2_template<S, T>(
-      handle, m, n, A,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      lda, strideA, D, strideD, E, strideE, tauq, strideQ, taup, strideP,
-      batch_count, (T *)scalars, (T *)work, (T **)workArr, (T *)diag);
+      handle, m, n, A, shiftA, lda, strideA, D, strideD, E, strideE, tauq,
+      strideQ, taup, strideP, batch_count, (T *)scalars, (T *)work,
+      (T **)workArr, (T *)diag);
 
   hipFree(scalars);
   hipFree(work);
@@ -72,32 +73,36 @@ rocblas_status rocsolver_gebd2_impl(rocblas_handle handle, const rocblas_int m,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgebd2(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
-    const rocblas_int lda, float *D, float *E, float *tauq, float *taup) {
+rocblas_status rocsolver_sgebd2(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, float *A,
+                                const rocblas_int lda, float *D, float *E,
+                                float *tauq, float *taup) {
   return rocsolver_gebd2_impl<float, float>(handle, m, n, A, lda, D, E, tauq,
                                             taup);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgebd2(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
-    const rocblas_int lda, double *D, double *E, double *tauq, double *taup) {
+rocblas_status rocsolver_dgebd2(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, double *A,
+                                const rocblas_int lda, double *D, double *E,
+                                double *tauq, double *taup) {
   return rocsolver_gebd2_impl<double, double>(handle, m, n, A, lda, D, E, tauq,
                                               taup);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgebd2(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    rocblas_float_complex *A, const rocblas_int lda, float *D, float *E,
-    rocblas_float_complex *tauq, rocblas_float_complex *taup) {
+rocblas_status rocsolver_cgebd2(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, rocblas_float_complex *A,
+                                const rocblas_int lda, float *D, float *E,
+                                rocblas_float_complex *tauq,
+                                rocblas_float_complex *taup) {
   return rocsolver_gebd2_impl<float, rocblas_float_complex>(
       handle, m, n, A, lda, D, E, tauq, taup);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    rocblas_double_complex *A, const rocblas_int lda, double *D, double *E,
-    rocblas_double_complex *tauq, rocblas_double_complex *taup) {
+rocblas_status rocsolver_zgebd2(rocblas_handle handle, const rocblas_int m,
+                                const rocblas_int n, rocblas_double_complex *A,
+                                const rocblas_int lda, double *D, double *E,
+                                rocblas_double_complex *tauq,
+                                rocblas_double_complex *taup) {
   return rocsolver_gebd2_impl<double, rocblas_double_complex>(
       handle, m, n, A, lda, D, E, tauq, taup);
 }

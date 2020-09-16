@@ -72,14 +72,10 @@ rocblas_status rocsolver_gelq2_template(
                                   lda, strideA, batch_count);
 
     // generate Householder reflector to work on row j
-    rocsolver_larfg_template(
-        handle,
-        n - j,                                        // order of reflector
-        A, shiftA + idx2D(j, j, lda),                 // value of alpha
-        A, shiftA + idx2D(j, min(j + 1, n - 1), lda), // vector x to work on
-        lda, strideA,                                 // inc of x
-        (ipiv + j), strideP,                          // tau
-        batch_count, diag, work);
+    rocsolver_larfg_template(handle, n - j, A, shiftA + idx2D(j, j, lda), A,
+                             shiftA + idx2D(j, min(j + 1, n - 1), lda), lda,
+                             strideA, (ipiv + j), strideP, batch_count, diag,
+                             work);
 
     // insert one in A(j,j) tobuild/apply the householder matrix
     hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
@@ -88,16 +84,11 @@ rocblas_status rocsolver_gelq2_template(
 
     // Apply Householder reflector to the rest of matrix from the right
     if (j < m - 1) {
-      rocsolver_larf_template(
-          handle, rocblas_side_right,   // side
-          m - j - 1,                    // number of rows of matrix to modify
-          n - j,                        // number of columns of matrix to modify
-          A, shiftA + idx2D(j, j, lda), // householder vector x
-          lda, strideA,                 // inc of x
-          (ipiv + j), strideP,          // householder scalar (alpha)
-          A, shiftA + idx2D(j + 1, j, lda), // matrix to work on
-          lda, strideA,                     // leading dimension
-          batch_count, scalars, work, workArr);
+      rocsolver_larf_template(handle, rocblas_side_right, m - j - 1, n - j, A,
+                              shiftA + idx2D(j, j, lda), lda, strideA,
+                              (ipiv + j), strideP, A,
+                              shiftA + idx2D(j + 1, j, lda), lda, strideA,
+                              batch_count, scalars, work, workArr);
     }
 
     // restore original value of A(j,j)

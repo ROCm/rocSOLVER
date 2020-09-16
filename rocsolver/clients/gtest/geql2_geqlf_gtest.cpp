@@ -19,14 +19,25 @@ typedef std::tuple<vector<int>, int> geqlf_tuple;
 // (null handle, null pointers and invalid values)
 
 // for checkin_lapack tests
-const vector<vector<int>> matrix_size_range = {{0, 1}, // quick return
-                                               {-1, 1},    {20, 5}, // invalid
-                                               {50, 50},   {70, 100},
-                                               {130, 130}, {150, 200}};
+const vector<vector<int>> matrix_size_range = {
+    // quick return
+    {0, 1},
+    // invalid
+    {-1, 1},
+    {20, 5},
+    // normal (valid) samples
+    {50, 50},
+    {70, 100},
+    {130, 130},
+    {150, 200}};
 
-const vector<int> n_size_range = {0,  // quick return
-                                  -1, // invalid
-                                  16, 20, 130, 150};
+const vector<int> n_size_range = {
+    // quick return
+    0,
+    // invalid
+    -1,
+    // normal (valid) samples
+    16, 20, 130, 150};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {

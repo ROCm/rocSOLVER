@@ -32,17 +32,36 @@ typedef std::tuple<vector<int>, vector<int>> ormqr_tuple;
 // test (null handle, null pointers and invalid values)
 
 const vector<vector<int>> op_range = {
-    {-1, 0, 0, 0}, {0, -1, 0, 0}, // invalid
-    {0, 0, 0, 0},  {0, 0, 0, 1},  {0, 0, 0, 2}, {0, 0, 1, 0},
-    {0, 0, 1, 1},  {0, 0, 1, 2},  {1, 1, 0, 0}};
+    // invalid
+    {-1, 0, 0, 0},
+    {0, -1, 0, 0},
+    // normal (valid) samples
+    {0, 0, 0, 0},
+    {0, 0, 0, 1},
+    {0, 0, 0, 2},
+    {0, 0, 1, 0},
+    {0, 0, 1, 1},
+    {0, 0, 1, 2},
+    {1, 1, 0, 0}};
 
 // for checkin_lapack tests
 const vector<vector<int>> size_range = {
-    {0, 1, 0},    {1, 0, 0},    {30, 30, 0}, // quick return
-    {-1, 1, 1},   {1, -1, 1},   {1, 1, -1},  // always invalid
-    {20, 10, 20},                            // invalid for side = 'R'
-    {15, 25, 25},                            // invalid for side = 'L'
-    {40, 40, 40}, {45, 40, 30}, {50, 50, 20}};
+    // quick return
+    {0, 1, 0},
+    {1, 0, 0},
+    {30, 30, 0},
+    // always invalid
+    {-1, 1, 1},
+    {1, -1, 1},
+    {1, 1, -1},
+    // invalid for side = 'R'
+    {20, 10, 20},
+    // invalid for side = 'L'
+    {15, 25, 25},
+    // normal (valid) samples
+    {40, 40, 40},
+    {45, 40, 30},
+    {50, 50, 20}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range = {{100, 100, 100},
