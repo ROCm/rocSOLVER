@@ -9,7 +9,6 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 bash run_doxygen.sh
 
 # Build sphinx docs
-mkdir -p ../build/docs/sphinx
 cd source
 make clean
 make html

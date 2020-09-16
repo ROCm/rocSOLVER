@@ -470,7 +470,11 @@ if [[ "${build_docs}" == true ]]; then
   docs_build_command='cp -r /mnt/rocsolver /home/docs/ && /home/docs/rocsolver/docs/run_doc.sh'
   docker build -t rocsolver:docs -f docker/dockerfile-docs .
   docker run -v "$main:/mnt/rocsolver:ro" --name "$container_name" rocsolver:docs /bin/sh -c "$docs_build_command"
-  docker cp "$container_name:/home/docs/rocsolver/build/docs" "$build_dir/"
+  docker cp "$container_name:/home/docs/rocsolver/docs/build" "$main/docs/"
+  docker cp "$container_name:/home/docs/rocsolver/docs/docBin" "$main/docs/"
+  mkdir -p "$build_dir/docs"
+  ln -sr "$main/docs/docBin" "$build_dir/docs/doxygen"
+  ln -sr "$main/docs/build" "$build_dir/docs/sphinx"
   exit
 fi
 
