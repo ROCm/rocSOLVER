@@ -23,6 +23,10 @@ rocsolver_larfb_impl(rocblas_handle handle, const rocblas_side side,
   if (st != rocblas_status_continue)
     return st;
 
+  // the matrices are shifted 0 entries (will work on the entire matrix)
+  rocblas_int shiftv = 0;
+  rocblas_int shifta = 0;
+  rocblas_int shiftf = 0;
   rocblas_stride stridev = 0;
   rocblas_stride stridea = 0;
   rocblas_stride stridef = 0;

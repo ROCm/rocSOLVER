@@ -20,6 +20,8 @@ rocblas_status rocsolver_gebd2_impl(rocblas_handle handle, const rocblas_int m,
   if (st != rocblas_status_continue)
     return st;
 
+  // the matrices are shifted 0 entries (will work on the entire matrix)
+  rocblas_int shiftA = 0;
   rocblas_stride strideA = 0;
   rocblas_stride strideD = 0;
   rocblas_stride strideE = 0;
@@ -52,10 +54,9 @@ rocblas_status rocsolver_gebd2_impl(rocblas_handle handle, const rocblas_int m,
 
   // execution
   rocblas_status status = rocsolver_gebd2_template<S, T>(
-      handle, m, n, A,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      lda, strideA, D, strideD, E, strideE, tauq, strideQ, taup, strideP,
-      batch_count, (T *)scalars, (T *)work, (T **)workArr, (T *)diag);
+      handle, m, n, A, shiftA, lda, strideA, D, strideD, E, strideE, tauq,
+      strideQ, taup, strideP, batch_count, (T *)scalars, (T *)work,
+      (T **)workArr, (T *)diag);
 
   hipFree(scalars);
   hipFree(work);

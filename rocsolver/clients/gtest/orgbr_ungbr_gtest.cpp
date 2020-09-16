@@ -25,19 +25,40 @@ typedef std::tuple<vector<int>, vector<int>> orgbr_tuple;
 // case when m = 0, n = 0 and storev = 'C' will also execute the bad arguments
 // test (null handle, null pointers and invalid values)
 
-const vector<vector<int>> store = {{-1, 0}, {-1, 1}, // always invalid
-                                   {0, 0},  {0, 1},  {1, 0}, {1, 1}};
+const vector<vector<int>> store = {
+    // always invalid
+    {-1, 0},
+    {-1, 1},
+    // normal (valid) samples
+    {0, 0},
+    {0, 1},
+    {1, 0},
+    {1, 1}};
 
 // for checkin_lapack tests
 const vector<vector<int>> size_range = {
-    {0, 0, 0}, // always quick return
-    {0, 1, 0}, // quick return for storev = 'R' invalid for 'C'
-    {1, 0, 0}, // quick return for storev = 'C' invalid for 'R'
-    {-1, 1, 1},   {1, -1, 1},   {1, 1, -1}, // always invalid
-    {10, 30, 5},                            // invalid for storev = 'C'
-    {30, 10, 5},                            // invalid for storev = 'R'
-    {30, 10, 20}, {10, 30, 20},             // always invalid
-    {30, 30, 0},  {20, 20, 20}, {50, 50, 50}, {100, 100, 50}};
+    // always quick return
+    {0, 0, 0},
+    // quick return for storev = 'R' invalid for 'C'
+    {0, 1, 0},
+    // quick return for storev = 'C' invalid for 'R'
+    {1, 0, 0},
+    // always invalid
+    {-1, 1, 1},
+    {1, -1, 1},
+    {1, 1, -1},
+    // invalid for storev = 'C'
+    {10, 30, 5},
+    // invalid for storev = 'R'
+    {30, 10, 5},
+    // always invalid
+    {30, 10, 20},
+    {10, 30, 20},
+    // normal (valid) samples
+    {30, 30, 0},
+    {20, 20, 20},
+    {50, 50, 50},
+    {100, 100, 50}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range = {

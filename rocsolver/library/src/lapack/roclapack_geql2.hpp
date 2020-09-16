@@ -67,13 +67,9 @@ rocblas_status rocsolver_geql2_template(
   for (rocblas_int j = 0; j < dim; j++) {
     // generate Householder reflector to work on column j
     rocsolver_larfg_template(
-        handle,
-        m - j,                                        // order of reflector
-        A, shiftA + idx2D(m - j - 1, n - j - 1, lda), // value of alpha
-        A, shiftA + idx2D(0, n - j - 1, lda),         // vector x to work on
-        1, strideA,                                   // inc of x
-        (ipiv + dim - j - 1), strideP,                // tau
-        batch_count, diag, work);
+        handle, m - j, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), A,
+        shiftA + idx2D(0, n - j - 1, lda), 1, strideA, (ipiv + dim - j - 1),
+        strideP, batch_count, diag, work);
 
     // insert one in A(m-j-1,n-j-1) tobuild/apply the householder matrix
     hipLaunchKernelGGL(
@@ -86,16 +82,10 @@ rocblas_status rocsolver_geql2_template(
                                   batch_count);
 
     // Apply Householder reflector to the rest of matrix from the left
-    rocsolver_larf_template(
-        handle, rocblas_side_left, // side
-        m - j,                     // number of rows of matrix to modify
-        n - j - 1,                 // number of columns of matrix to modify
-        A, shiftA + idx2D(0, n - j - 1, lda), // householder vector x
-        1, strideA,                           // inc of x
-        (ipiv + dim - j - 1), strideP,        // householder scalar (alpha)
-        A, shiftA,                            // matrix to work on
-        lda, strideA,                         // leading dimension
-        batch_count, scalars, work, workArr);
+    rocsolver_larf_template(handle, rocblas_side_left, m - j, n - j - 1, A,
+                            shiftA + idx2D(0, n - j - 1, lda), 1, strideA,
+                            (ipiv + dim - j - 1), strideP, A, shiftA, lda,
+                            strideA, batch_count, scalars, work, workArr);
 
     // restore original value of A(m-j-1,n-j-1)
     hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1),

@@ -27,14 +27,31 @@ typedef std::tuple<vector<int>, vector<int>> bdsqr_tuple;
 
 // for checkin_lapack tests
 const vector<vector<int>> size_range = {
-    {0, 1, 1, 1}, // quick return
-    {-1, 1, 1, 1},    {1, -1, 1, 1},  {1, 1, -1, 1},   {1, 1, 1, -1}, // invalid
-    {15, 10, 10, 10}, {20, 0, 0, 15}, {30, 30, 50, 0}, {50, 60, 20, 0},
+    // quick return
+    {0, 1, 1, 1},
+    // invalid
+    {-1, 1, 1, 1},
+    {1, -1, 1, 1},
+    {1, 1, -1, 1},
+    {1, 1, 1, -1},
+    // normal (valid) samples
+    {15, 10, 10, 10},
+    {20, 0, 0, 15},
+    {30, 30, 50, 0},
+    {50, 60, 20, 0},
     {70, 0, 0, 0}};
 
 const vector<vector<int>> opt_range = {
-    {0, -1, 0, 0}, {0, 0, -1, 0}, {0, 0, 0, -1}, // invalid
-    {0, 0, 0, 0},  {1, 0, 0, 0},  {0, 1, 0, 0},  {0, 0, 1, 0}, {0, 0, 0, 1}};
+    // invalid
+    {0, -1, 0, 0},
+    {0, 0, -1, 0},
+    {0, 0, 0, -1},
+    // normal (valid) samples
+    {0, 0, 0, 0},
+    {1, 0, 0, 0},
+    {0, 1, 0, 0},
+    {0, 0, 1, 0},
+    {0, 0, 0, 1}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range = {{152, 152, 152, 152},

@@ -26,15 +26,25 @@ typedef std::tuple<vector<int>, vector<int>> larft_tuple;
 
 // for checkin_lapack tests
 const vector<vector<int>> order_size_range = {
-    {0, 1, 0},                            // quick return
-    {-1, 1, 0},  {10, 5, 0},  {10, 3, 1}, // invalid
-    {15, 15, 0}, {20, 20, 1}, {35, 50, 0}};
+    // quick return
+    {0, 1, 0},
+    // invalid
+    {-1, 1, 0},
+    {10, 5, 0},
+    {10, 3, 1},
+    // normal (valid) samples
+    {15, 15, 0},
+    {20, 20, 1},
+    {35, 50, 0}};
 
-const vector<vector<int>> reflector_size_range = {{0, 1, 0},
-                                                  {5, 1, 0}, // invalid
-                                                  {5, 5, 0},
-                                                  {10, 20, 1},
-                                                  {15, 15, 0}};
+const vector<vector<int>> reflector_size_range = {
+    // invalid
+    {0, 1, 0},
+    {5, 1, 0},
+    // normal (valid) samples
+    {5, 5, 0},
+    {10, 20, 1},
+    {15, 15, 0}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_order_size_range = {

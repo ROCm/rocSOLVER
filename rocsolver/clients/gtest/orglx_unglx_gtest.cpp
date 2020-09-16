@@ -20,16 +20,28 @@ typedef std::tuple<vector<int>, int> orglq_tuple;
 
 // for checkin_lapack tests
 const vector<vector<int>> m_size_range = {
-    {0, 1, 0},                                // quick return
-    {-1, 1, 1},   {20, 5, 1},   {10, 10, 20}, // always invalid
-    {30, 30, 25},                             // invalid for case *
-    {10, 10, 10}, {20, 50, 20},
+    // quick return
+    {0, 1, 0},
+    // always invalid
+    {-1, 1, 1},
+    {20, 5, 1},
+    {10, 10, 20},
+    // invalid for case *
+    {30, 30, 25},
+    // normal (valid) samples
+    {10, 10, 10},
+    {20, 50, 20},
 };
 
-const vector<int> n_size_range = {0,  // quick return
-                                  -1, // always invalid
-                                  25, // invalid for case *
-                                  50, 70, 130};
+const vector<int> n_size_range = {
+    // quick return
+    0,
+    // always invalid
+    -1,
+    // invalid for case *
+    25,
+    // normal (valid) samples
+    50, 70, 130};
 
 // for daily_lapack tests
 const vector<vector<int>> large_m_size_range = {{164, 164, 130},

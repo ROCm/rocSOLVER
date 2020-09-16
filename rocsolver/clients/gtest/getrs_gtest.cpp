@@ -25,13 +25,26 @@ typedef std::tuple<vector<int>, vector<int>> getrs_tuple;
 
 // for checkin_lapack tests
 const vector<vector<int>> matrix_sizeA_range = {
-    {0, 1, 1},                               // quick return
-    {-1, 1, 1},   {10, 2, 10},  {10, 10, 2}, // invalid
-    {20, 20, 20}, {30, 50, 30}, {30, 30, 50}, {50, 60, 60}};
+    // quick return
+    {0, 1, 1},
+    // invalid
+    {-1, 1, 1},
+    {10, 2, 10},
+    {10, 10, 2},
+    /// normal (valid) samples
+    {20, 20, 20},
+    {30, 50, 30},
+    {30, 30, 50},
+    {50, 60, 60}};
 const vector<vector<int>> matrix_sizeB_range = {
-    {0, 0},  // quick return
-    {-1, 0}, // invalid
-    {10, 0}, {20, 1}, {30, 2},
+    // quick return
+    {0, 0},
+    // invalid
+    {-1, 0},
+    // normal (valid) samples
+    {10, 0},
+    {20, 1},
+    {30, 2},
 };
 
 // for daily_lapack tests
