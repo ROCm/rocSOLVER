@@ -29,10 +29,13 @@ org2r_init_ident(const rocblas_int m, const rocblas_int n, const rocblas_int k,
     T *Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
 
     if (i == j)
+      // ones along the main diagonal
       Ap[i + j * lda] = 1.0;
     else if (j > i)
+      // zero the upper triangular factor R
       Ap[i + j * lda] = 0.0;
     else if (j >= k)
+      // zero the right part of the matrix, leaving k Householder vectors
       Ap[i + j * lda] = 0.0;
   }
 }
