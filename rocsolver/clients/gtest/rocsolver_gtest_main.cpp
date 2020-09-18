@@ -12,10 +12,19 @@
 #define STRINGIFY_HELPER(s) #s
 
 static void print_version_info() {
-  rocblas_cout
-      << "rocSOLVER version " STRINGIFY(ROCSOLVER_VERSION_MAJOR) "." STRINGIFY(ROCSOLVER_VERSION_MINOR) "." STRINGIFY(ROCSOLVER_VERSION_PATCH) "." STRINGIFY(ROCSOLVER_VERSION_TWEAK) " (with rocBLAS " STRINGIFY(
-             ROCBLAS_VERSION_MAJOR) "." STRINGIFY(ROCBLAS_VERSION_MINOR) "." STRINGIFY(ROCBLAS_VERSION_PATCH) "." STRINGIFY(ROCBLAS_VERSION_TWEAK) ")"
-      << std::endl;
+    // clang-format off
+    rocblas_cout << "rocSOLVER version "
+        STRINGIFY(ROCSOLVER_VERSION_MAJOR) "."
+        STRINGIFY(ROCSOLVER_VERSION_MINOR) "."
+        STRINGIFY(ROCSOLVER_VERSION_PATCH) "."
+        STRINGIFY(ROCSOLVER_VERSION_TWEAK)
+        " (with rocBLAS "
+        STRINGIFY(ROCBLAS_VERSION_MAJOR) "."
+        STRINGIFY(ROCBLAS_VERSION_MINOR) "."
+        STRINGIFY(ROCBLAS_VERSION_PATCH) "."
+        STRINGIFY(ROCBLAS_VERSION_TWEAK) ")"
+        << std::endl;
+    // clang-format on
 }
 
 int main(int argc, char **argv) {
