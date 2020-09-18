@@ -1279,6 +1279,114 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(
     const rocblas_int n, const rocblas_int k, rocblas_double_complex *A,
     const rocblas_int lda, rocblas_double_complex *ipiv);
 
+/*! \brief ORGTR generates a n-by-n orthogonal Matrix Q.
+
+    \details
+    Q is defined as the product of n-1 Householder reflectors of order n. If
+   uplo indicates upper, then Q has the form
+
+        Q = H(n-1) * H(n-2) * ... * H(1)
+
+    On the other hand, if uplo indicates lower, then Q has the form
+
+        Q = H(1) * H(2) * ... * H(n-1)
+
+    The Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vectors v(i) and scalars ipiv_i as returned by
+   SYTRD in its arguments A and tau.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the SYTRD factorization was upper or lower
+   triangular. If uplo indicates lower (or upper), then the upper (or lower)
+   part of A is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrix Q.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the (i+1)-th column (if uplo indicates upper) or i-th
+   column (if uplo indicates lower) has the Householder vector v(i) as returned
+   by SYTRD. On exit, the computed matrix Q.
+    @param[in]
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
+    @param[in]
+    ipiv        pointer to type. Array on the GPU of dimension n-1.\n
+                The scalar factors of the Householder
+   matrices H(i) as returned by SYTRD.
+
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sorgtr(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n, float *A,
+                                                 const rocblas_int lda,
+                                                 float *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dorgtr(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n, double *A,
+                                                 const rocblas_int lda,
+                                                 double *ipiv);
+
+/*! \brief UNGTR generates a n-by-n unitary Matrix Q.
+
+    \details
+    Q is defined as the product of n-1 Householder reflectors of order n. If
+   uplo indicates upper, then Q has the form
+
+        Q = H(n-1) * H(n-2) * ... * H(1)
+
+    On the other hand, if uplo indicates lower, then Q has the form
+
+        Q = H(1) * H(2) * ... * H(n-1)
+
+    The Householder matrices H(i) are never stored, they are computed from its
+   corresponding Householder vectors v(i) and scalars ipiv_i as returned by
+   HETRD in its arguments A and tau.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the HETRD factorization was upper or lower
+   triangular. If uplo indicates lower (or upper), then the upper (or lower)
+   part of A is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrix Q.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the (i+1)-th column (if uplo indicates upper) or i-th
+   column (if uplo indicates lower) has the Householder vector v(i) as returned
+   by HETRD. On exit, the computed matrix Q.
+    @param[in]
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
+    @param[in]
+    ipiv        pointer to type. Array on the GPU of dimension n-1.\n
+                The scalar factors of the Householder
+   matrices H(i) as returned by HETRD.
+
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cungtr(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_float_complex *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_float_complex *ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zungtr(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_double_complex *A,
+                                                 const rocblas_int lda,
+                                                 rocblas_double_complex *ipiv);
+
 /*! \brief ORM2R applies a matrix Q with orthonormal columns to a general m-by-n
    matrix C.
 
