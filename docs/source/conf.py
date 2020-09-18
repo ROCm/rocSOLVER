@@ -5,7 +5,7 @@ import subprocess
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 if read_the_docs_build:
-    subprocess.call('cd ..; ./run_doxygen.sh; cd source', shell=True)
+    subprocess.call('../run_doxygen.sh')
 
 # -- General configuration ------------------------------------------------
 
@@ -19,6 +19,10 @@ if read_the_docs_build:
 extensions = ['sphinx.ext.mathjax', 'breathe']
 breathe_projects = { "rocSOLVER": "../docBin/xml" }
 breathe_default_project = "rocSOLVER"
+breathe_domain_by_extension = {
+  "h" : "c",
+  "hpp" : "cpp",
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
