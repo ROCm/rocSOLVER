@@ -22,7 +22,15 @@ void rocsolver_orgtr_ungtr_getMemorySize(const rocblas_fill uplo,
                                          size_t *size_1, size_t *size_2,
                                          size_t *size_3, size_t *size_4,
                                          size_t *size_5) {
-  *size_1 = *size_2 = *size_3 = *size_4 = *size_5 = 0;
+  size_t s2a = sizeof(T) * batch_count * (n - 1) * n / 2;
+  size_t s2b;
+  if (uplo == rocblas_fill_upper)
+    rocsolver_orgql_ungql_getMemorySize<T, BATCHED>(
+        n - 1, n - 1, n - 1, batch_count, size_1, &s2b, size_3, size_4, size_5);
+  else
+    rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(
+        n - 1, n - 1, n - 1, batch_count, size_1, &s2b, size_3, size_4, size_5);
+  *size_2 = max(s2a, s2b);
 }
 
 template <typename T, typename U>
@@ -40,7 +48,7 @@ rocblas_status rocsolver_orgtr_argCheck(const rocblas_fill uplo,
     return rocblas_status_invalid_size;
 
   // 3. invalid pointers
-  if ((n && !A) || (n > 1 && !ipiv))
+  if ((n && !A) || (n && !ipiv))
     return rocblas_status_invalid_pointer;
 
   return rocblas_status_continue;
@@ -53,7 +61,59 @@ rocblas_status rocsolver_orgtr_ungtr_template(
     const rocblas_stride strideA, T *ipiv, const rocblas_stride strideP,
     const rocblas_int batch_count, T *scalars, T *work, T **workArr, T *trfact,
     T *workTrmm) {
-  return rocblas_status_not_implemented;
+  // quick return
+  if (!n || !batch_count)
+    return rocblas_status_success;
+
+  hipStream_t stream;
+  rocblas_get_stream(handle, &stream);
+
+  rocblas_stride strideW =
+      rocblas_stride(n - 1) * n / 2; // number of elements to copy
+  rocblas_int ldw = n - 1;
+  rocblas_int blocks = (n - 2) / BS + 1;
+
+  if (uplo == rocblas_fill_upper) {
+    // shift the householder vectors provided by gebrd as they come below the
+    // first subdiagonal
+
+    // copy
+    hipLaunchKernelGGL(copyshift_left<T>, dim3(blocks, blocks, batch_count),
+                       dim3(BS, BS), 0, stream, true, n - 1, A, shiftA, lda,
+                       strideA, work, 0, ldw, strideW);
+
+    // shift
+    hipLaunchKernelGGL(copyshift_left<T>, dim3(blocks, blocks, batch_count),
+                       dim3(BS, BS), 0, stream, false, n - 1, A, shiftA, lda,
+                       strideA, work, 0, ldw, strideW);
+
+    // result
+    rocsolver_orgql_ungql_template<BATCHED, STRIDED, T>(
+        handle, n - 1, n - 1, n - 1, A, shiftA, lda, strideA, ipiv, strideP,
+        batch_count, scalars, work, workArr, trfact, workTrmm);
+  }
+
+  else {
+    // shift the householder vectors provided by gebrd as they come above the
+    // first superdiagonal
+
+    // copy
+    hipLaunchKernelGGL(copyshift_right<T>, dim3(blocks, blocks, batch_count),
+                       dim3(BS, BS), 0, stream, true, n - 1, A, shiftA, lda,
+                       strideA, work, 0, ldw, strideW);
+
+    // shift
+    hipLaunchKernelGGL(copyshift_right<T>, dim3(blocks, blocks, batch_count),
+                       dim3(BS, BS), 0, stream, false, n - 1, A, shiftA, lda,
+                       strideA, work, 0, ldw, strideW);
+
+    // result
+    rocsolver_orgqr_ungqr_template<BATCHED, STRIDED, T>(
+        handle, n - 1, n - 1, n - 1, A, shiftA + idx2D(1, 1, lda), lda, strideA,
+        ipiv, strideP, batch_count, scalars, work, workArr, trfact, workTrmm);
+  }
+
+  return rocblas_status_success;
 }
 
 #endif
