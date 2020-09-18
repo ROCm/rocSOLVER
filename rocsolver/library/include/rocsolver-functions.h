@@ -216,11 +216,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
     @param[in]
     handle              rocblas_handle.
     @param[in]
-    direct              rocblas_direct.\n
+    direct              #rocblas_direct.\n
                         Specifies the direction in which the Householder
    matrices are applied.
     @param[in]
-    storev              rocblas_storev.\n
+    storev              #rocblas_storev.\n
                         Specifies how the Householder vectors are stored in
    matrix V.
     @param[in]
@@ -382,11 +382,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(
                         Specifies whether the block reflector or its
    transpose/conjugate transpose is to be applied.
     @param[in]
-    direct              rocblas_direct.\n
+    direct              #rocblas_direct.\n
                         Specifies the direction in which the Householder
    matrices were to be applied to generate H.
     @param[in]
-    storev              rocblas_storev.\n
+    storev              #rocblas_storev.\n
                         Specifies how the Householder vectors are stored in
    matrix V.
     @param[in]
@@ -980,7 +980,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunglq(
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    storev      rocblas_storev.\n
+    storev      #rocblas_storev.\n
                 Specifies whether to work column-wise or row-wise.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -1049,7 +1049,7 @@ rocsolver_dorgbr(rocblas_handle handle, const rocblas_storev storev,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    storev      rocblas_storev.\n
+    storev      #rocblas_storev.\n
                 Specifies whether to work column-wise or row-wise.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -1145,7 +1145,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -1219,7 +1219,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -1296,7 +1296,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -1370,7 +1370,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -1447,7 +1447,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -1521,7 +1521,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -1598,7 +1598,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -1672,7 +1672,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -1733,7 +1733,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(
     @param[in]
     handle              rocblas_handle.
     @param[in]
-    storev              rocblas_storev.\n
+    storev              #rocblas_storev.\n
                         Specifies whether to work column-wise or row-wise.
     @param[in]
     side                rocblas_side.\n
@@ -1768,7 +1768,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -1827,7 +1827,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(
     @param[in]
     handle              rocblas_handle.
     @param[in]
-    storev              rocblas_storev.\n
+    storev              #rocblas_storev.\n
                         Specifies whether to work column-wise or row-wise.
     @param[in]
     side                rocblas_side.\n
@@ -1862,7 +1862,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -5758,7 +5758,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(
    computed, this function returns the tranpose (or transpose conjugate) of the
    right singular vectors, i.e. the rows of V'.
 
-    left_svect and right_svect are rocblas_svect enums that can take the
+    left_svect and right_svect are #rocblas_svect enums that can take the
    following values:
 
     - rocblas_svect_all: the entire matrix U (or V') is computed,
@@ -5787,10 +5787,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  rocblas_svect.\n
+    left_svect  #rocblas_svect.\n
                 Specifies how the left singular vectors are computed.
     @param[in]
-    right_svect rocblas_svect.\n
+    right_svect #rocblas_svect.\n
                 Specifies how the right singular vectors are computed.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -5836,9 +5836,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(
    are in S; those that converged correspond to a subset of the singular values
    of A (not necessarily ordered).
     @param[in]
-    fast_alg    rocblas_workmode. \n
-                If set to rocblas_outofplace, the function will execute the fast
-   thin-SVD version of the algorithm when possible.
+    fast_alg    #rocblas_workmode. \n
+                If set to rocblas_outofplace, the function will execute the
+   fast thin-SVD version of the algorithm when possible.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
@@ -5896,7 +5896,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(
    computed, this function returns the tranpose (or transpose conjugate) of the
    right singular vectors, i.e. the rows of V_j'.
 
-    left_svect and right_svect are rocblas_svect enums that can take the
+    left_svect and right_svect are #rocblas_svect enums that can take the
    following values:
 
     - rocblas_svect_all: the entire matrix U_j (or V_j') is computed,
@@ -5925,10 +5925,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  rocblas_svect.\n
+    left_svect  #rocblas_svect.\n
                 Specifies how the left singular vectors are computed.
     @param[in]
-    right_svect rocblas_svect.\n
+    right_svect #rocblas_svect.\n
                 Specifies how the right singular vectors are computed.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -5994,9 +5994,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(
    There is no restriction for the value of strideE. Normal use case is strideE
    >= min(m,n)-1.
     @param[in]
-    fast_alg    rocblas_workmode. \n
-                If set to rocblas_outofplace, the function will execute the fast
-   thin-SVD version of the algorithm when possible.
+    fast_alg    #rocblas_workmode. \n
+                If set to rocblas_outofplace, the function will execute the
+   fast thin-SVD version of the algorithm when possible.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
@@ -6069,7 +6069,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(
    computed, this function returns the tranpose (or transpose conjugate) of the
    right singular vectors, i.e. the rows of V_j'.
 
-    left_svect and right_svect are rocblas_svect enums that can take the
+    left_svect and right_svect are #rocblas_svect enums that can take the
    following values:
 
     - rocblas_svect_all: the entire matrix U_j (or V_j') is computed,
@@ -6098,10 +6098,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  rocblas_svect.\n
+    left_svect  #rocblas_svect.\n
                 Specifies how the left singular vectors are computed.
     @param[in]
-    right_svect rocblas_svect.\n
+    right_svect #rocblas_svect.\n
                 Specifies how the right singular vectors are computed.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -6172,9 +6172,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(
    There is no restriction for the value of strideE. Normal use case is strideE
    >= min(m,n)-1.
     @param[in]
-    fast_alg    rocblas_workmode. \n
-                If set to rocblas_outofplace, the function will execute the fast
-   thin-SVD version of the algorithm when possible.
+    fast_alg    #rocblas_workmode. \n
+                If set to rocblas_outofplace, the function will execute the
+   fast thin-SVD version of the algorithm when possible.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
