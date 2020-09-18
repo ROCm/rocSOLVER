@@ -21,6 +21,7 @@
 #include "testing_laswp.hpp"
 #include "testing_orgbr_ungbr.hpp"
 #include "testing_orglx_unglx.hpp"
+#include "testing_orgtr_ungtr.hpp"
 #include "testing_orgxl_ungxl.hpp"
 #include "testing_orgxr_ungxr.hpp"
 #include "testing_ormbr_unmbr.hpp"
@@ -912,6 +913,22 @@ int main(int argc, char *argv[]) try {
       testing_orgbr_ungbr<rocblas_float_complex>(argus);
     else if (precision == 'z')
       testing_orgbr_ungbr<rocblas_double_complex>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "orgtr") {
+    if (precision == 's')
+      testing_orgtr_ungtr<float>(argus);
+    else if (precision == 'd')
+      testing_orgtr_ungtr<double>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "ungtr") {
+    if (precision == 'c')
+      testing_orgtr_ungtr<rocblas_float_complex>(argus);
+    else if (precision == 'z')
+      testing_orgtr_ungtr<rocblas_double_complex>(argus);
     else
       throw std::invalid_argument(
           "This function does not support the given --precision");

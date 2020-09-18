@@ -470,6 +470,42 @@ rocsolver_orgbr_ungbr(rocblas_handle handle, rocblas_storev storev,
 }
 /***************************************************************/
 
+/******************** ORGTR_UNGTR ********************/
+inline rocblas_status rocsolver_orgtr_ungtr(rocblas_handle handle,
+                                            rocblas_fill uplo, rocblas_int n,
+                                            float *A, rocblas_int lda,
+                                            float *Ipiv) {
+  return rocblas_status_not_implemented; // rocsolver_sorgtr(handle, uplo, n, A,
+                                         // lda, Ipiv);
+}
+
+inline rocblas_status rocsolver_orgtr_ungtr(rocblas_handle handle,
+                                            rocblas_fill uplo, rocblas_int n,
+                                            double *A, rocblas_int lda,
+                                            double *Ipiv) {
+  return rocblas_status_not_implemented; // rocsolver_dorgtr(handle, uplo, n, A,
+                                         // lda, Ipiv);
+}
+
+inline rocblas_status rocsolver_orgtr_ungtr(rocblas_handle handle,
+                                            rocblas_fill uplo, rocblas_int n,
+                                            rocblas_float_complex *A,
+                                            rocblas_int lda,
+                                            rocblas_float_complex *Ipiv) {
+  return rocblas_status_not_implemented; // rocsolver_cungtr(handle, uplo, n, A,
+                                         // lda, Ipiv);
+}
+
+inline rocblas_status rocsolver_orgtr_ungtr(rocblas_handle handle,
+                                            rocblas_fill uplo, rocblas_int n,
+                                            rocblas_double_complex *A,
+                                            rocblas_int lda,
+                                            rocblas_double_complex *Ipiv) {
+  return rocblas_status_not_implemented; // rocsolver_zungtr(handle, uplo, n, A,
+                                         // lda, Ipiv);
+}
+/***************************************************************/
+
 /******************** ORMxR_UNMxR ********************/
 inline rocblas_status
 rocsolver_ormxr_unmxr(bool MQR, rocblas_handle handle, rocblas_side side,
