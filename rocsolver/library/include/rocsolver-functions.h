@@ -23,9 +23,12 @@ extern "C" {
  * ===========================================================================
  */
 
-/*! \brief   loads char* buf with the rocsolver library version. size_t len
-     is the maximum length of char* buf.
+/*! \brief Query the library version.
 
+    @param[out]
+    buf         A buffer that the version string will be written into.
+    @param[in]
+    len         The size of the given buffer in bytes.
  ******************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char *buf,
