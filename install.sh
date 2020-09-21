@@ -59,6 +59,8 @@ Options:
 
   -n | --no-optimizations     Pass this flag to disable optimizations for small sizes.
 
+  --hooks                     Pass this flag to link the git hooks used for development into .git/hooks.
+
   --docs                      (experimental) Pass this flag to build the documentation from source.
                               Official documentation is available online at https://rocsolver.readthedocs.io/
                               Building locally with this flag will require docker on your machine. If you are
@@ -69,9 +71,6 @@ EOF
 
 # Find project root directory
 main=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-
-# Adding pre-commit hook
-/bin/ln -fs ../../.githooks/pre-commit "$main/.git/hooks/"
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
 # true is a system command that completes successfully, function returns success
@@ -308,6 +307,7 @@ supported_distro
 install_package=false
 build_package=false
 install_dependencies=false
+install_hooks=false
 static_lib=false
 build_clients=false
 build_hcc=false
@@ -332,7 +332,7 @@ fi
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,hcc,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static,relocatable,no-optimizations,docs --options hipcdgsrn -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,hcc,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static,relocatable,no-optimizations,docs,hooks --options hipcdgsrn -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -394,6 +394,9 @@ while true; do
     --docs)
         build_docs=true
         shift ;;
+    --hooks)
+        install_hooks=true
+        shift ;;
     -r|--relocatable)
         build_relocatable=true
         shift ;;
@@ -404,6 +407,12 @@ while true; do
         ;;
   esac
 done
+
+# Add pre-commit hook
+if [[ "${install_hooks}" == true ]]; then
+  ln -s ../../.githooks/pre-commit "$main/.git/hooks/"
+  exit
+fi
 
 set -x
 printf "\033[32mCreating project build directory in: \033[33m${build_dir}\033[0m\n"
