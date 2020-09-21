@@ -40,7 +40,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char *buf,
  * ===========================================================================
  */
 
-/*! \brief LACGV conjugates the complex vector x.
+/*! @{
+    \brief LACGV conjugates the complex vector x.
 
     \details
     It conjugates the n entries of a complex vector x with increment incx.
@@ -70,8 +71,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlacgv(rocblas_handle handle,
                                                  const rocblas_int n,
                                                  rocblas_double_complex *x,
                                                  const rocblas_int incx);
+//! @}
 
-/*! \brief LASWP performs a series of row interchanges on the matrix A.
+/*! @{
+    \brief LASWP performs a series of row interchanges on the matrix A.
 
     \details
     It interchanges row I with row IPIV[k1 + (I - k1) * abs(inx)], for
@@ -127,8 +130,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlaswp(
     rocblas_handle handle, const rocblas_int n, rocblas_double_complex *A,
     const rocblas_int lda, const rocblas_int k1, const rocblas_int k2,
     const rocblas_int *ipiv, const rocblas_int incx);
+//! @}
 
-/*! \brief LARFG generates an orthogonal Householder reflector H of order n.
+/*! @{
+    \brief LARFG generates an orthogonal Householder reflector H of order n.
 
     \details
     Householder reflector H is such that
@@ -191,8 +196,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
                                                  rocblas_double_complex *x,
                                                  const rocblas_int incx,
                                                  rocblas_double_complex *tau);
+//! @}
 
-/*! \brief LARFT Generates the triangular factor T of a block reflector H of
+/*! @{
+    \brief LARFT Generates the triangular factor T of a block reflector H of
    order n.
 
     \details
@@ -277,8 +284,10 @@ rocsolver_zlarft(rocblas_handle handle, const rocblas_direct direct,
                  const rocblas_int k, rocblas_double_complex *V,
                  const rocblas_int ldv, rocblas_double_complex *tau,
                  rocblas_double_complex *T, const rocblas_int ldt);
+//! @}
 
-/*! \brief LARF applies a Householder reflector H to a general matrix A.
+/*! @{
+    \brief LARF applies a Householder reflector H to a general matrix A.
 
     \details
     The Householder reflector H, of order m (or n), is to be applied to a m-by-n
@@ -345,8 +354,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(
     const rocblas_int n, rocblas_double_complex *x, const rocblas_int incx,
     const rocblas_double_complex *alpha, rocblas_double_complex *A,
     const rocblas_int lda);
+//! @}
 
-/*! \brief LARFB applies a block reflector H to a general m-by-n matrix A.
+/*! @{
+    \brief LARFB applies a block reflector H to a general m-by-n matrix A.
 
     \details
     The block reflector H is applied in one of the following forms, depending on
@@ -454,8 +465,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(
     const rocblas_int k, rocblas_double_complex *V, const rocblas_int ldv,
     rocblas_double_complex *T, const rocblas_int ldt, rocblas_double_complex *A,
     const rocblas_int lda);
+//! @}
 
-/*! \brief LABRD computes the bidiagonal form of the first k rows and columns of
+/*! @{
+    \brief LABRD computes the bidiagonal form of the first k rows and columns of
    a general m-by-n matrix A, as well as the matrices X and Y needed to reduce
    the remaining part of A.
 
@@ -568,8 +581,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(
     double *D, double *E, rocblas_double_complex *tauq,
     rocblas_double_complex *taup, rocblas_double_complex *X,
     const rocblas_int ldx, rocblas_double_complex *Y, const rocblas_int ldy);
+//! @}
 
-/*! \brief ORG2R generates a m-by-n Matrix Q with orthonormal columns.
+/*! @{
+    \brief ORG2R generates a m-by-n Matrix Q with orthonormal columns.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -615,8 +630,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sorg2r(
 ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2r(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, double *A, const rocblas_int lda, double *ipiv);
+//! @}
 
-/*! \brief UNG2R generates a m-by-n complex Matrix Q with orthonormal columns.
+/*! @{
+    \brief UNG2R generates a m-by-n complex Matrix Q with orthonormal columns.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -664,8 +681,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zung2r(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
     rocblas_double_complex *ipiv);
+//! @}
 
-/*! \brief ORGQR generates a m-by-n Matrix Q with orthonormal columns.
+/*! @{
+    \brief ORGQR generates a m-by-n Matrix Q with orthonormal columns.
 
     \details
     (This is the blocked version of the algorithm).
@@ -711,8 +730,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sorgqr(
 ROCSOLVER_EXPORT rocblas_status rocsolver_dorgqr(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, double *A, const rocblas_int lda, double *ipiv);
+//! @}
 
-/*! \brief UNGQR generates a m-by-n complex Matrix Q with orthonormal columns.
+/*! @{
+    \brief UNGQR generates a m-by-n complex Matrix Q with orthonormal columns.
 
     \details
     (This is the blocked version of the algorithm).
@@ -760,8 +781,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungqr(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
     rocblas_double_complex *ipiv);
+//! @}
 
-/*! \brief ORGL2 generates a m-by-n Matrix Q with orthonormal rows.
+/*! @{
+    \brief ORGL2 generates a m-by-n Matrix Q with orthonormal rows.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -807,8 +830,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sorgl2(
 ROCSOLVER_EXPORT rocblas_status rocsolver_dorgl2(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, double *A, const rocblas_int lda, double *ipiv);
+//! @}
 
-/*! \brief UNGL2 generates a m-by-n complex Matrix Q with orthonormal rows.
+/*! @{
+    \brief UNGL2 generates a m-by-n complex Matrix Q with orthonormal rows.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -856,8 +881,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungl2(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
     rocblas_double_complex *ipiv);
+//! @}
 
-/*! \brief ORGLQ generates a m-by-n Matrix Q with orthonormal rows.
+/*! @{
+    \brief ORGLQ generates a m-by-n Matrix Q with orthonormal rows.
 
     \details
     (This is the blocked version of the algorithm).
@@ -903,8 +930,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sorglq(
 ROCSOLVER_EXPORT rocblas_status rocsolver_dorglq(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, double *A, const rocblas_int lda, double *ipiv);
+//! @}
 
-/*! \brief UNGLQ generates a m-by-n complex Matrix Q with orthonormal rows.
+/*! @{
+    \brief UNGLQ generates a m-by-n complex Matrix Q with orthonormal rows.
 
     \details
     (This is the blocked version of the algorithm).
@@ -1144,8 +1173,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungql(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
     rocblas_double_complex *ipiv);
+//! @}
 
-/*! \brief ORGBR generates a m-by-n Matrix Q with orthonormal rows or columns.
+/*! @{
+    \brief ORGBR generates a m-by-n Matrix Q with orthonormal rows or columns.
 
     \details
     If storev is column-wise, then the matrix Q has orthonormal columns. If m >=
@@ -1212,8 +1243,10 @@ ROCSOLVER_EXPORT rocblas_status
 rocsolver_dorgbr(rocblas_handle handle, const rocblas_storev storev,
                  const rocblas_int m, const rocblas_int n, const rocblas_int k,
                  double *A, const rocblas_int lda, double *ipiv);
+//! @}
 
-/*! \brief UNGBR generates a m-by-n complex Matrix Q with orthonormal rows or
+/*! @{
+    \brief UNGBR generates a m-by-n complex Matrix Q with orthonormal rows or
    columns.
 
     \details
@@ -1281,8 +1314,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(
     rocblas_handle handle, const rocblas_storev storev, const rocblas_int m,
     const rocblas_int n, const rocblas_int k, rocblas_double_complex *A,
     const rocblas_int lda, rocblas_double_complex *ipiv);
+//! @}
 
-/*! \brief ORM2R applies a matrix Q with orthonormal columns to a general m-by-n
+/*! @{
+    \brief ORM2R applies a matrix Q with orthonormal columns to a general m-by-n
    matrix C.
 
     \details
@@ -1356,8 +1391,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(
     const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, double *A, const rocblas_int lda, double *ipiv,
     double *C, const rocblas_int ldc);
+//! @}
 
-/*! \brief UNM2R applies a complex matrix Q with orthonormal columns to a
+/*! @{
+    \brief UNM2R applies a complex matrix Q with orthonormal columns to a
    general m-by-n matrix C.
 
     \details
@@ -1432,8 +1469,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(
     const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
     rocblas_double_complex *ipiv, rocblas_double_complex *C,
     const rocblas_int ldc);
+//! @}
 
-/*! \brief ORMQR applies a matrix Q with orthonormal columns to a general m-by-n
+/*! @{
+    \brief ORMQR applies a matrix Q with orthonormal columns to a general m-by-n
    matrix C.
 
     \details
@@ -1507,8 +1546,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(
     const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, double *A, const rocblas_int lda, double *ipiv,
     double *C, const rocblas_int ldc);
+//! @}
 
-/*! \brief UNMQR applies a complex matrix Q with orthonormal columns to a
+/*! @{
+    \brief UNMQR applies a complex matrix Q with orthonormal columns to a
    general m-by-n matrix C.
 
     \details
@@ -1583,8 +1624,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(
     const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
     rocblas_double_complex *ipiv, rocblas_double_complex *C,
     const rocblas_int ldc);
+//! @}
 
-/*! \brief ORML2 applies a matrix Q with orthonormal rows to a general m-by-n
+/*! @{
+    \brief ORML2 applies a matrix Q with orthonormal rows to a general m-by-n
    matrix C.
 
     \details
@@ -1658,8 +1701,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(
     const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, double *A, const rocblas_int lda, double *ipiv,
     double *C, const rocblas_int ldc);
+//! @}
 
-/*! \brief UNML2 applies a complex matrix Q with orthonormal rows to a general
+/*! @{
+    \brief UNML2 applies a complex matrix Q with orthonormal rows to a general
    m-by-n matrix C.
 
     \details
@@ -1734,8 +1779,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(
     const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
     rocblas_double_complex *ipiv, rocblas_double_complex *C,
     const rocblas_int ldc);
+//! @}
 
-/*! \brief ORMLQ applies a matrix Q with orthonormal rows to a general m-by-n
+/*! @{
+    \brief ORMLQ applies a matrix Q with orthonormal rows to a general m-by-n
    matrix C.
 
     \details
@@ -1809,8 +1856,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(
     const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, double *A, const rocblas_int lda, double *ipiv,
     double *C, const rocblas_int ldc);
+//! @}
 
-/*! \brief UNMLQ applies a complex matrix Q with orthonormal rows to a general
+/*! @{
+    \brief UNMLQ applies a complex matrix Q with orthonormal rows to a general
    m-by-n matrix C.
 
     \details
@@ -1885,8 +1934,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(
     const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
     rocblas_double_complex *ipiv, rocblas_double_complex *C,
     const rocblas_int ldc);
+//! @}
 
-/*! \brief ORMBR applies a matrix Q with orthonormal rows or columns to a
+/*! @{
+    \brief ORMBR applies a matrix Q with orthonormal rows or columns to a
    general m-by-n matrix C.
 
     \details
@@ -1979,8 +2030,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(
     const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, double *A, const rocblas_int lda, double *ipiv,
     double *C, const rocblas_int ldc);
+//! @}
 
-/*! \brief UNMBR applies a complex matrix Q with orthonormal rows or columns to
+/*! @{
+    \brief UNMBR applies a complex matrix Q with orthonormal rows or columns to
    a general m-by-n matrix C.
 
     \details
@@ -2075,8 +2128,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(
     const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
     rocblas_double_complex *ipiv, rocblas_double_complex *C,
     const rocblas_int ldc);
+//! @}
 
-/*! \brief BDSQR computes the singular value decomposition (SVD) of a
+/*! @{
+    \brief BDSQR computes the singular value decomposition (SVD) of a
     n-by-n bidiagonal matrix B.
 
     \details
@@ -2184,8 +2239,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(
  *      LAPACK functions
  * ===========================================================================
  */
+//! @}
 
-/*! \brief GETF2_NPVT computes the LU factorization of a general m-by-n matrix A
+/*! @{
+    \brief GETF2_NPVT computes the LU factorization of a general m-by-n matrix A
     without partial pivoting.
 
     \details
@@ -2245,8 +2302,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgetf2_npvt(
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     rocblas_double_complex *A, const rocblas_int lda, rocblas_int *info);
+//! @}
 
-/*! \brief GETF2_NPVT_BATCHED computes the LU factorization of a batch of
+/*! @{
+    \brief GETF2_NPVT_BATCHED computes the LU factorization of a batch of
    general m-by-n matrices without partial pivoting.
 
     \details
@@ -2313,8 +2372,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_batched(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GETF2_NPVT_STRIDED_BATCHED computes the LU factorization of a batch
+/*! @{
+    \brief GETF2_NPVT_STRIDED_BATCHED computes the LU factorization of a batch
    of general m-by-n matrices without partial pivoting.
 
     \details
@@ -2388,8 +2449,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_strided_batched(
     rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GETRF_NPVT computes the LU factorization of a general m-by-n matrix A
+/*! @{
+    \brief GETRF_NPVT computes the LU factorization of a general m-by-n matrix A
     without partial pivoting.
 
     \details
@@ -2449,8 +2512,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_npvt(
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     rocblas_double_complex *A, const rocblas_int lda, rocblas_int *info);
+//! @}
 
-/*! \brief GETRF_NPVT_BATCHED computes the LU factorization of a batch of
+/*! @{
+    \brief GETRF_NPVT_BATCHED computes the LU factorization of a batch of
    general m-by-n matrices without partial pivoting.
 
     \details
@@ -2517,8 +2582,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_batched(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GETRF_NPVT_STRIDED_BATCHED computes the LU factorization of a batch
+/*! @{
+    \brief GETRF_NPVT_STRIDED_BATCHED computes the LU factorization of a batch
    of general m-by-n matrices without partial pivoting.
 
     \details
@@ -2592,8 +2659,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_strided_batched(
     rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GETF2 computes the LU factorization of a general m-by-n matrix A
+/*! @{
+    \brief GETF2 computes the LU factorization of a general m-by-n matrix A
     using partial pivoting with row interchanges.
 
     \details
@@ -2656,8 +2725,10 @@ ROCSOLVER_EXPORT rocblas_status
 rocsolver_zgetf2(rocblas_handle handle, const rocblas_int m,
                  const rocblas_int n, rocblas_double_complex *A,
                  const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info);
+//! @}
 
-/*! \brief GETF2_BATCHED computes the LU factorization of a batch of general
+/*! @{
+    \brief GETF2_BATCHED computes the LU factorization of a batch of general
    m-by-n matrices using partial pivoting with row interchanges.
 
     \details
@@ -2736,8 +2807,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(
     rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *ipiv,
     const rocblas_stride strideP, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GETF2_STRIDED_BATCHED computes the LU factorization of a batch of
+/*! @{
+    \brief GETF2_STRIDED_BATCHED computes the LU factorization of a batch of
    general m-by-n matrices using partial pivoting with row interchanges.
 
     \details
@@ -2823,8 +2896,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(
     const rocblas_stride strideA, rocblas_int *ipiv,
     const rocblas_stride strideP, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GETRF computes the LU factorization of a general m-by-n matrix A
+/*! @{
+    \brief GETRF computes the LU factorization of a general m-by-n matrix A
     using partial pivoting with row interchanges.
 
     \details
@@ -2887,8 +2962,10 @@ ROCSOLVER_EXPORT rocblas_status
 rocsolver_zgetrf(rocblas_handle handle, const rocblas_int m,
                  const rocblas_int n, rocblas_double_complex *A,
                  const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info);
+//! @}
 
-/*! \brief GETRF_BATCHED computes the LU factorization of a batch of general
+/*! @{
+    \brief GETRF_BATCHED computes the LU factorization of a batch of general
    m-by-n matrices using partial pivoting with row interchanges.
 
     \details
@@ -2966,8 +3043,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_batched(
     rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *ipiv,
     const rocblas_stride strideP, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GETRF_STRIDED_BATCHED computes the LU factorization of a batch of
+/*! @{
+    \brief GETRF_STRIDED_BATCHED computes the LU factorization of a batch of
    general m-by-n matrices using partial pivoting with row interchanges.
 
     \details
@@ -3052,8 +3131,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_strided_batched(
     const rocblas_stride strideA, rocblas_int *ipiv,
     const rocblas_stride strideP, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GEQR2 computes a QR factorization of a general m-by-n matrix A.
+/*! @{
+    \brief GEQR2 computes a QR factorization of a general m-by-n matrix A.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -3124,8 +3205,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2(rocblas_handle handle,
                                                  rocblas_double_complex *A,
                                                  const rocblas_int lda,
                                                  rocblas_double_complex *ipiv);
+//! @}
 
-/*! \brief GEQR2_BATCHED computes the QR factorization of a batch of general
+/*! @{
+    \brief GEQR2_BATCHED computes the QR factorization of a batch of general
    m-by-n matrices.
 
     \details
@@ -3203,8 +3286,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_batched(
     rocblas_double_complex *const A[], const rocblas_int lda,
     rocblas_double_complex *ipiv, const rocblas_stride strideP,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GEQR2_STRIDED_BATCHED computes the QR factorization of a batch of
+/*! @{
+    \brief GEQR2_STRIDED_BATCHED computes the QR factorization of a batch of
    general m-by-n matrices.
 
     \details
@@ -3287,8 +3372,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched(
     rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, rocblas_double_complex *ipiv,
     const rocblas_stride strideP, const rocblas_int batch_count);
+//! @}
 
-/*! \brief GEQL2 computes a QL factorization of a general m-by-n matrix A.
+/*! @{
+    \brief GEQL2 computes a QL factorization of a general m-by-n matrix A.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -3360,8 +3447,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2(rocblas_handle handle,
                                                  rocblas_double_complex *A,
                                                  const rocblas_int lda,
                                                  rocblas_double_complex *ipiv);
+//! @}
 
-/*! \brief GEQL2_BATCHED computes the QL factorization of a batch of general
+/*! @{
+    \brief GEQL2_BATCHED computes the QL factorization of a batch of general
    m-by-n matrices.
 
     \details
@@ -3440,8 +3529,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_batched(
     rocblas_double_complex *const A[], const rocblas_int lda,
     rocblas_double_complex *ipiv, const rocblas_stride strideP,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GEQL2_STRIDED_BATCHED computes the QL factorization of a batch of
+/*! @{
+    \brief GEQL2_STRIDED_BATCHED computes the QL factorization of a batch of
    general m-by-n matrices.
 
     \details
@@ -3525,8 +3616,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_strided_batched(
     rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, rocblas_double_complex *ipiv,
     const rocblas_stride strideP, const rocblas_int batch_count);
+//! @}
 
-/*! \brief GELQ2 computes a LQ factorization of a general m-by-n matrix A.
+/*! @{
+    \brief GELQ2 computes a LQ factorization of a general m-by-n matrix A.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -3596,8 +3689,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2(rocblas_handle handle,
                                                  rocblas_double_complex *A,
                                                  const rocblas_int lda,
                                                  rocblas_double_complex *ipiv);
+//! @}
 
-/*! \brief GELQ2_BATCHED computes the LQ factorization of a batch of general
+/*! @{
+    \brief GELQ2_BATCHED computes the LQ factorization of a batch of general
    m-by-n matrices.
 
     \details
@@ -3674,8 +3769,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_batched(
     rocblas_double_complex *const A[], const rocblas_int lda,
     rocblas_double_complex *ipiv, const rocblas_stride strideP,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GELQ2_STRIDED_BATCHED computes the LQ factorization of a batch of
+/*! @{
+    \brief GELQ2_STRIDED_BATCHED computes the LQ factorization of a batch of
    general m-by-n matrices.
 
     \details
@@ -3757,8 +3854,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_strided_batched(
     rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, rocblas_double_complex *ipiv,
     const rocblas_stride strideP, const rocblas_int batch_count);
+//! @}
 
-/*! \brief GEQRF computes a QR factorization of a general m-by-n matrix A.
+/*! @{
+    \brief GEQRF computes a QR factorization of a general m-by-n matrix A.
 
     \details
     (This is the blocked version of the algorithm).
@@ -3829,8 +3928,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
                                                  rocblas_double_complex *A,
                                                  const rocblas_int lda,
                                                  rocblas_double_complex *ipiv);
+//! @}
 
-/*! \brief GEQRF_BATCHED computes the QR factorization of a batch of general
+/*! @{
+    \brief GEQRF_BATCHED computes the QR factorization of a batch of general
    m-by-n matrices.
 
     \details
@@ -3908,8 +4009,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched(
     rocblas_double_complex *const A[], const rocblas_int lda,
     rocblas_double_complex *ipiv, const rocblas_stride strideP,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GEQRF_STRIDED_BATCHED computes the QR factorization of a batch of
+/*! @{
+    \brief GEQRF_STRIDED_BATCHED computes the QR factorization of a batch of
    general m-by-n matrices.
 
     \details
@@ -3992,8 +4095,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(
     rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, rocblas_double_complex *ipiv,
     const rocblas_stride strideP, const rocblas_int batch_count);
+//! @}
 
-/*! \brief GEQLF computes a QL factorization of a general m-by-n matrix A.
+/*! @{
+    \brief GEQLF computes a QL factorization of a general m-by-n matrix A.
 
     \details
     (This is the blocked version of the algorithm).
@@ -4065,8 +4170,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf(rocblas_handle handle,
                                                  rocblas_double_complex *A,
                                                  const rocblas_int lda,
                                                  rocblas_double_complex *ipiv);
+//! @}
 
-/*! \brief GEQLF_BATCHED computes the QL factorization of a batch of general
+/*! @{
+    \brief GEQLF_BATCHED computes the QL factorization of a batch of general
    m-by-n matrices.
 
     \details
@@ -4145,8 +4252,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_batched(
     rocblas_double_complex *const A[], const rocblas_int lda,
     rocblas_double_complex *ipiv, const rocblas_stride strideP,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GEQLF_STRIDED_BATCHED computes the QL factorization of a batch of
+/*! @{
+    \brief GEQLF_STRIDED_BATCHED computes the QL factorization of a batch of
    general m-by-n matrices.
 
     \details
@@ -4230,8 +4339,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_strided_batched(
     rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, rocblas_double_complex *ipiv,
     const rocblas_stride strideP, const rocblas_int batch_count);
+//! @}
 
-/*! \brief GELQF computes a LQ factorization of a general m-by-n matrix A.
+/*! @{
+    \brief GELQF computes a LQ factorization of a general m-by-n matrix A.
 
     \details
     (This is the blocked version of the algorithm).
@@ -4301,8 +4412,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf(rocblas_handle handle,
                                                  rocblas_double_complex *A,
                                                  const rocblas_int lda,
                                                  rocblas_double_complex *ipiv);
+//! @}
 
-/*! \brief GELQF_BATCHED computes the LQ factorization of a batch of general
+/*! @{
+    \brief GELQF_BATCHED computes the LQ factorization of a batch of general
    m-by-n matrices.
 
     \details
@@ -4379,8 +4492,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_batched(
     rocblas_double_complex *const A[], const rocblas_int lda,
     rocblas_double_complex *ipiv, const rocblas_stride strideP,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GELQF_STRIDED_BATCHED computes the LQ factorization of a batch of
+/*! @{
+    \brief GELQF_STRIDED_BATCHED computes the LQ factorization of a batch of
    general m-by-n matrices.
 
     \details
@@ -4462,8 +4577,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_strided_batched(
     rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, rocblas_double_complex *ipiv,
     const rocblas_stride strideP, const rocblas_int batch_count);
+//! @}
 
-/*! \brief GEBD2 computes the bidiagonal form of a general m-by-n matrix A.
+/*! @{
+    \brief GEBD2 computes the bidiagonal form of a general m-by-n matrix A.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -4545,8 +4662,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     rocblas_double_complex *A, const rocblas_int lda, double *D, double *E,
     rocblas_double_complex *tauq, rocblas_double_complex *taup);
+//! @}
 
-/*! \brief GEBD2_BATCHED computes the bidiagonal form of a batch of general
+/*! @{
+    \brief GEBD2_BATCHED computes the bidiagonal form of a batch of general
    m-by-n matrices.
 
     \details
@@ -4667,8 +4786,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_batched(
     rocblas_double_complex *tauq, const rocblas_stride strideQ,
     rocblas_double_complex *taup, const rocblas_stride strideP,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GEBD2_STRIDED_BATCHED computes the bidiagonal form of a batch of
+/*! @{
+    \brief GEBD2_STRIDED_BATCHED computes the bidiagonal form of a batch of
    general m-by-n matrices.
 
     \details
@@ -4793,8 +4914,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_strided_batched(
     double *E, const rocblas_stride strideE, rocblas_double_complex *tauq,
     const rocblas_stride strideQ, rocblas_double_complex *taup,
     const rocblas_stride strideP, const rocblas_int batch_count);
+//! @}
 
-/*! \brief GEBRD computes the bidiagonal form of a general m-by-n matrix A.
+/*! @{
+    \brief GEBRD computes the bidiagonal form of a general m-by-n matrix A.
 
     \details
     (This is the blocked version of the algorithm).
@@ -4876,8 +4999,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     rocblas_double_complex *A, const rocblas_int lda, double *D, double *E,
     rocblas_double_complex *tauq, rocblas_double_complex *taup);
+//! @}
 
-/*! \brief GEBRD_BATCHED computes the bidiagonal form of a batch of general
+/*! @{
+    \brief GEBRD_BATCHED computes the bidiagonal form of a batch of general
    m-by-n matrices.
 
     \details
@@ -4998,8 +5123,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_batched(
     rocblas_double_complex *tauq, const rocblas_stride strideQ,
     rocblas_double_complex *taup, const rocblas_stride strideP,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GEBRD_STRIDED_BATCHED computes the bidiagonal form of a batch of
+/*! @{
+    \brief GEBRD_STRIDED_BATCHED computes the bidiagonal form of a batch of
    general m-by-n matrices.
 
     \details
@@ -5124,8 +5251,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(
     double *E, const rocblas_stride strideE, rocblas_double_complex *tauq,
     const rocblas_stride strideQ, rocblas_double_complex *taup,
     const rocblas_stride strideP, const rocblas_int batch_count);
+//! @}
 
-/*! \brief GETRS solves a system of n linear equations on n variables using the
+/*! @{
+    \brief GETRS solves a system of n linear equations on n variables using the
    LU factorization computed by GETRF.
 
     \details
@@ -5189,8 +5318,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(
     rocblas_handle handle, const rocblas_operation trans, const rocblas_int n,
     const rocblas_int nrhs, rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_int *ipiv, rocblas_double_complex *B, const rocblas_int ldb);
+//! @}
 
-/*! \brief GETRS_BATCHED solves a batch of systems of n linear equations on n
+/*! @{
+    \brief GETRS_BATCHED solves a batch of systems of n linear equations on n
    variables using the LU factorization computed by GETRF_BATCHED.
 
     \details
@@ -5270,8 +5401,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(
     const rocblas_int lda, const rocblas_int *ipiv,
     const rocblas_stride strideP, rocblas_double_complex *const B[],
     const rocblas_int ldb, const rocblas_int batch_count);
+//! @}
 
-/*! \brief GETRS_STRIDED_BATCHED solves a batch of systems of n linear equations
+/*! @{
+    \brief GETRS_STRIDED_BATCHED solves a batch of systems of n linear equations
    on n variables using the LU factorization computed by GETRF_STRIDED_BATCHED.
 
     \details
@@ -5365,8 +5498,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(
     const rocblas_stride strideP, rocblas_double_complex *B,
     const rocblas_int ldb, const rocblas_stride strideB,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GETRI inverts a general n-by-n matrix A using the LU factorization
+/*! @{
+    \brief GETRI inverts a general n-by-n matrix A using the LU factorization
     computed by GETRF.
 
     \details
@@ -5419,8 +5554,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri(
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(
     rocblas_handle handle, const rocblas_int n, rocblas_double_complex *A,
     const rocblas_int lda, rocblas_int *ipiv, rocblas_int *info);
+//! @}
 
-/*! \brief GETRI_BATCHED inverts a batch of general n-by-n matrices using
+/*! @{
+    \brief GETRI_BATCHED inverts a batch of general n-by-n matrices using
     the LU factorization computed by GETRF_BATCHED.
 
     \details
@@ -5483,8 +5620,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_batched(
     rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *ipiv,
     const rocblas_stride strideP, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GETRI_STRIDED_BATCHED inverts a batch of general n-by-n matrices
+/*! @{
+    \brief GETRI_STRIDED_BATCHED inverts a batch of general n-by-n matrices
    using the LU factorization computed by GETRF_STRIDED_BATCHED.
 
     \details
@@ -5554,8 +5693,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(
     const rocblas_int lda, const rocblas_stride strideA, rocblas_int *ipiv,
     const rocblas_stride strideP, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief POTF2 computes the Cholesky factorization of a real symmetric/complex
+/*! @{
+    \brief POTF2 computes the Cholesky factorization of a real symmetric/complex
     Hermitian positive definite matrix A.
 
     \details
@@ -5613,8 +5754,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cpotf2(
 ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2(
     rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
     rocblas_double_complex *A, const rocblas_int lda, rocblas_int *info);
+//! @}
 
-/*! \brief POTF2_BATCHED computes the Cholesky factorization of a
+/*! @{
+    \brief POTF2_BATCHED computes the Cholesky factorization of a
     batch of real symmetric/complex Hermitian positive definite matrices.
 
     \details
@@ -5675,8 +5818,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_batched(
     rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
     rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief POTF2_STRIDED_BATCHED computes the Cholesky factorization of a
+/*! @{
+    \brief POTF2_STRIDED_BATCHED computes the Cholesky factorization of a
     batch of real symmetric/complex Hermitian positive definite matrices.
 
     \details
@@ -5744,8 +5889,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_strided_batched(
     rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief POTRF computes the Cholesky factorization of a real symmetric/complex
+/*! @{
+    \brief POTRF computes the Cholesky factorization of a real symmetric/complex
     Hermitian positive definite matrix A.
 
     \details
@@ -5803,8 +5950,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrf(
 ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf(
     rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
     rocblas_double_complex *A, const rocblas_int lda, rocblas_int *info);
+//! @}
 
-/*! \brief POTRF_BATCHED computes the Cholesky factorization of a
+/*! @{
+    \brief POTRF_BATCHED computes the Cholesky factorization of a
     batch of real symmetric/complex Hermitian positive definite matrices.
 
     \details
@@ -5865,8 +6014,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_batched(
     rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n,
     rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief POTRF_STRIDED_BATCHED computes the Cholesky factorization of a
+/*! @{
+    \brief POTRF_STRIDED_BATCHED computes the Cholesky factorization of a
     batch of real symmetric/complex Hermitian positive definite matrices.
 
     \details
@@ -5934,8 +6085,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(
     rocblas_double_complex *A, const rocblas_int lda,
     const rocblas_stride strideA, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GESVD computes the Singular Values and optionally the Singular
+/*! @{
+    \brief GESVD computes the Singular Values and optionally the Singular
    Vectors of a general m-by-n matrix A (Singular Value Decomposition).
 
     \details
@@ -6071,8 +6224,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(
     rocblas_double_complex *U, const rocblas_int ldu, rocblas_double_complex *V,
     const rocblas_int ldv, double *E, const rocblas_workmode fast_alg,
     rocblas_int *info);
+//! @}
 
-/*! \brief GESVD_BATCHED computes the Singular Values and optionally the
+/*! @{
+    \brief GESVD_BATCHED computes the Singular Values and optionally the
    Singular Vectors of a batch of general m-by-n matrix A (Singular Value
    Decomposition).
 
@@ -6244,8 +6399,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(
     const rocblas_stride strideV, double *E, const rocblas_stride strideE,
     const rocblas_workmode fast_alg, rocblas_int *info,
     const rocblas_int batch_count);
+//! @}
 
-/*! \brief GESVD_STRIDED_BATCHED computes the Singular Values and optionally the
+/*! @{
+    \brief GESVD_STRIDED_BATCHED computes the Singular Values and optionally the
    Singular Vectors of a batch of general m-by-n matrix A (Singular Value
    Decomposition).
 
