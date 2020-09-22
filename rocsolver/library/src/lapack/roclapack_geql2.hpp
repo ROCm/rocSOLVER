@@ -21,10 +21,19 @@ void rocsolver_geql2_getMemorySize(const rocblas_int m, const rocblas_int n,
                                    const rocblas_int batch_count,
                                    size_t *size_1, size_t *size_2,
                                    size_t *size_3, size_t *size_4) {
+  // if quick return no workspace needed
+  if (m == 0 || n == 0 || batch_count == 0) {
+    *size_1 = 0;
+    *size_2 = 0;
+    *size_3 = 0;
+    *size_4 = 0;
+    return;
+  }
+
   size_t s1, s2;
   rocsolver_larf_getMemorySize<T, BATCHED>(rocblas_side_left, m, n, batch_count,
                                            size_1, &s1, size_3);
-  rocsolver_larfg_getMemorySize<T>(n, batch_count, size_4, &s2);
+  rocsolver_larfg_getMemorySize<T>(n, batch_count, &s2, size_4);
   *size_2 = max(s1, s2);
 }
 
@@ -69,7 +78,7 @@ rocblas_status rocsolver_geql2_template(
     rocsolver_larfg_template(
         handle, m - j, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), A,
         shiftA + idx2D(0, n - j - 1, lda), 1, strideA, (ipiv + dim - j - 1),
-        strideP, batch_count, diag, work);
+        strideP, batch_count, work, diag);
 
     // insert one in A(m-j-1,n-j-1) tobuild/apply the householder matrix
     hipLaunchKernelGGL(

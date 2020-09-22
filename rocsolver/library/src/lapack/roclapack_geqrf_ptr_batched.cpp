@@ -63,7 +63,7 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
   hipMalloc(&diag, size_4);
   hipMalloc(&trfact, size_5);
   hipMalloc(&ipiv, size_6);
-  if (!scalars || (size_2 && !work) || (size_3 && !workArr) ||
+  if ((size_1 && !scalars) || (size_2 && !work) || (size_3 && !workArr) ||
       (size_4 && !diag) || (size_5 && !trfact) || (size_6 && !ipiv))
     return rocblas_status_memory_error;
 

@@ -14,55 +14,36 @@
 #include "rocsolver.h"
 
 template <typename T, bool BATCHED>
-void rocsolver_larf_getMemorySize(const rocblas_int m, const rocblas_int n,
-                                  const rocblas_int batch_count, size_t *size_1,
-                                  size_t *size_2, size_t *size_3) {
-  // size of scalars (constants)
-  *size_1 = sizeof(T) * 3;
+void rocsolver_larf_getMemorySize(const rocblas_side side, const rocblas_int m,
+                                  const rocblas_int n,
+                                  const rocblas_int batch_count,
+                                  size_t *size_scalars, size_t *size_Abyx,
+                                  size_t *size_workArr) {
+  // if quick return no workspace needed
+  if (n == 0 || m == 0 || !batch_count) {
+    *size_scalars = 0;
+    *size_Abyx = 0;
+    *size_workArr = 0;
+    return;
+  }
 
-  // size of workspace
-  *size_2 = max(m, n);
-  *size_2 *= sizeof(T) * batch_count;
+  // size of scalars (constants)
+  *size_scalars = sizeof(T) * 3;
+
+  // size of temporary result in Householder matrix generation
+  if (side == rocblas_side_left)
+    *size_Abyx = n;
+  else if (side == rocblas_side_right)
+    *size_Abyx = m;
+  else
+    *size_Abyx = max(m, n);
+  *size_Abyx *= sizeof(T) * batch_count;
 
   // size of array of pointers to workspace
   if (BATCHED)
-    *size_3 = sizeof(T *) * batch_count;
+    *size_workArr = sizeof(T *) * batch_count;
   else
-    *size_3 = 0;
-}
-
-template <typename T, bool BATCHED>
-void rocsolver_larf_getMemorySize(const rocblas_side side, const rocblas_int m,
-                                  const rocblas_int n,
-                                  const rocblas_int batch_count, size_t *size_1,
-                                  size_t *size_2, size_t *size_3) {
-  // size of scalars (constants)
-  *size_1 = sizeof(T) * 3;
-
-  // size of workspace
-  if (side == rocblas_side_left)
-    *size_2 = n;
-  else
-    *size_2 = m;
-  *size_2 *= sizeof(T) * batch_count;
-
-  // size of array of pointers to workspace
-  if (BATCHED)
-    *size_3 = sizeof(T *) * batch_count;
-  else
-    *size_3 = 0;
-}
-
-template <typename T>
-void rocsolver_larf_getMemorySize(const rocblas_side side, const rocblas_int m,
-                                  const rocblas_int n,
-                                  const rocblas_int batch_count, size_t *size) {
-  // size of workspace
-  if (side == rocblas_side_left)
-    *size = n;
-  else
-    *size = m;
-  *size *= sizeof(T) * batch_count;
+    *size_workArr = 0;
 }
 
 template <typename T, typename U>
@@ -96,7 +77,7 @@ rocblas_status rocsolver_larf_template(
     const rocblas_stride stridex, const T *alpha, const rocblas_stride stridep,
     U A, const rocblas_int shiftA, const rocblas_int lda,
     const rocblas_stride stridea, const rocblas_int batch_count, T *scalars,
-    T *work, T **workArr) {
+    T *Abyx, T **workArr) {
   // quick return
   if (n == 0 || m == 0 || !batch_count)
     return rocblas_status_success;
@@ -127,16 +108,16 @@ rocblas_status rocsolver_larf_template(
   // compute the matrix vector product  (W=-A'*X or W=-A*X)
   rocblasCall_gemv<T>(handle, trans, m, n, cast2constType<T>(scalars), 0, A,
                       shiftA, lda, stridea, x, shiftx, incx, stridex,
-                      cast2constType<T>(scalars + 1), 0, work, 0, 1, order,
+                      cast2constType<T>(scalars + 1), 0, Abyx, 0, 1, order,
                       batch_count, workArr);
 
-  // compute the rank-1 update  (A + tau*V*W'  or A + tau*W*V')
+  // compute the rank-1 update  (A + tau*X*W'  or A + tau*W*X')
   if (leftside) {
     rocblasCall_ger<COMPLEX, T>(handle, m, n, alpha, stridep, x, shiftx, incx,
-                                stridex, work, 0, 1, order, A, shiftA, lda,
+                                stridex, Abyx, 0, 1, order, A, shiftA, lda,
                                 stridea, batch_count, workArr);
   } else {
-    rocblasCall_ger<COMPLEX, T>(handle, m, n, alpha, stridep, work, 0, 1, order,
+    rocblasCall_ger<COMPLEX, T>(handle, m, n, alpha, stridep, Abyx, 0, 1, order,
                                 x, shiftx, incx, stridex, A, shiftA, lda,
                                 stridea, batch_count, workArr);
   }

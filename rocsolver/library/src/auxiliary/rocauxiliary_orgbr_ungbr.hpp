@@ -89,6 +89,16 @@ void rocsolver_orgbr_ungbr_getMemorySize(
     const rocblas_storev storev, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, const rocblas_int batch_count, size_t *size_1,
     size_t *size_2, size_t *size_3, size_t *size_4, size_t *size_5) {
+  // if quick return no workspace needed
+  if (m == 0 || n == 0 || batch_count == 0) {
+    *size_1 = 0;
+    *size_2 = 0;
+    *size_3 = 0;
+    *size_4 = 0;
+    *size_5 = 0;
+    return;
+  }
+
   if (storev == rocblas_column_wise) {
     if (m >= k) {
       rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(

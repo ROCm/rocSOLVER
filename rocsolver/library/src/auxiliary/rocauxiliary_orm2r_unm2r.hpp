@@ -22,6 +22,15 @@ void rocsolver_orm2r_unm2r_getMemorySize(const rocblas_side side,
                                          const rocblas_int batch_count,
                                          size_t *size_1, size_t *size_2,
                                          size_t *size_3, size_t *size_4) {
+  // if quick return no workspace needed
+  if (m == 0 || n == 0 || batch_count == 0) {
+    *size_1 = 0;
+    *size_2 = 0;
+    *size_3 = 0;
+    *size_4 = 0;
+    return;
+  }
+
   // memory requirements to call larf
   rocsolver_larf_getMemorySize<T, BATCHED>(side, m, n, batch_count, size_1,
                                            size_2, size_3);

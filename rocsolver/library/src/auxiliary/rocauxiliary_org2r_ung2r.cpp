@@ -35,7 +35,7 @@ rocsolver_org2r_ung2r_impl(rocblas_handle handle, const rocblas_int m,
   hipMalloc(&scalars, size_1);
   hipMalloc(&work, size_2);
   hipMalloc(&workArr, size_3);
-  if (!scalars || (size_2 && !work) || (size_3 && !workArr))
+  if ((size_1 && !scalars) || (size_2 && !work) || (size_3 && !workArr))
     return rocblas_status_memory_error;
 
   // scalar constants for rocblas functions calls

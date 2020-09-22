@@ -21,6 +21,16 @@ void rocsolver_ormqr_unmqr_getMemorySize(
     const rocblas_side side, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, const rocblas_int batch_count, size_t *size_1,
     size_t *size_2, size_t *size_3, size_t *size_4, size_t *size_5) {
+  // if quick return no workspace needed
+  if (m == 0 || n == 0 || k == 0 || batch_count == 0) {
+    *size_1 = 0;
+    *size_2 = 0;
+    *size_3 = 0;
+    *size_4 = 0;
+    *size_5 = 0;
+    return;
+  }
+
   size_t s1, s2, unused;
   rocsolver_orm2r_unm2r_getMemorySize<T, BATCHED>(
       side, m, n, batch_count, size_1, size_2, size_3, size_4);
@@ -29,9 +39,10 @@ void rocsolver_ormqr_unmqr_getMemorySize(
     // size of workspace
     // maximum of what is needed by larft and larfb
     rocblas_int jb = ORMQR_ORM2R_BLOCKSIZE;
-    rocsolver_larft_getMemorySize<T>(min(jb, k), batch_count, &s1);
+    rocsolver_larft_getMemorySize<T, BATCHED>(min(jb, k), batch_count, &unused,
+                                              &s1, &unused);
     rocsolver_larfb_getMemorySize<T, BATCHED>(
-        side, m, n, min(jb, k), batch_count, &s2, &unused, size_5);
+        side, m, n, min(jb, k), batch_count, size_5, &s2, &unused);
 
     *size_2 = max(s1, s2);
 
@@ -116,7 +127,7 @@ rocblas_status rocsolver_ormqr_unmqr_template(
         handle, side, trans, rocblas_forward_direction, rocblas_column_wise,
         nrow, ncol, min(ldw, k - i), A, shiftA + idx2D(i, i, lda), lda, strideA,
         trfact, 0, ldw, strideW, C, shiftC + idx2D(ic, jc, ldc), ldc, strideC,
-        batch_count, work, workArr, workTrmm);
+        batch_count, workTrmm, work, workArr);
   }
 
   return rocblas_status_success;

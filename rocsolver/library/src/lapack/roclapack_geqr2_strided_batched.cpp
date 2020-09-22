@@ -34,7 +34,7 @@ rocblas_status rocsolver_geqr2_strided_batched_impl(
   hipMalloc(&work, size_2);
   hipMalloc(&workArr, size_3);
   hipMalloc(&diag, size_4);
-  if (!scalars || (size_2 && !work) || (size_3 && !workArr) ||
+  if ((size_1 && !scalars) || (size_2 && !work) || (size_3 && !workArr) ||
       (size_4 && !diag))
     return rocblas_status_memory_error;
 

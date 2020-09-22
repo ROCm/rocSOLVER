@@ -46,19 +46,27 @@ void rocsolver_org2r_ung2r_getMemorySize(const rocblas_int m,
                                          const rocblas_int batch_count,
                                          size_t *size_1, size_t *size_2,
                                          size_t *size_3) {
+  // if quick return no workspace needed
+  if (m == 0 || n == 0 || batch_count == 0) {
+    *size_1 = 0;
+    *size_2 = 0;
+    *size_3 = 0;
+    return;
+  }
+
   // memory requirements to call larf
   rocsolver_larf_getMemorySize<T, BATCHED>(rocblas_side_left, m, n, batch_count,
                                            size_1, size_2, size_3);
 }
 
-template <typename T>
+/*template <typename T>
 void rocsolver_org2r_ung2r_getMemorySize(const rocblas_int m,
                                          const rocblas_int n,
                                          const rocblas_int batch_count,
                                          size_t *size) {
   // memory requirements to call larf
   rocsolver_larf_getMemorySize<T>(rocblas_side_left, m, n, batch_count, size);
-}
+}*/
 
 template <typename T, typename U>
 rocblas_status

@@ -21,6 +21,16 @@ void rocsolver_orgqr_ungqr_getMemorySize(
     const rocblas_int m, const rocblas_int n, const rocblas_int k,
     const rocblas_int batch_count, size_t *size_1, size_t *size_2,
     size_t *size_3, size_t *size_4, size_t *size_5) {
+  // if quick return no workspace needed
+  if (m == 0 || n == 0 || batch_count == 0) {
+    *size_1 = 0;
+    *size_2 = 0;
+    *size_3 = 0;
+    *size_4 = 0;
+    *size_5 = 0;
+    return;
+  }
+
   size_t s1, s2, s3, unused;
   rocsolver_org2r_ung2r_getMemorySize<T, BATCHED>(m, n, batch_count, size_1,
                                                   size_2, size_3);
@@ -34,11 +44,12 @@ void rocsolver_orgqr_ungqr_getMemorySize(
     rocblas_int jb = ORGxx_UNGxx_BLOCKSIZE;
     rocblas_int j = ((k - ORGxx_UNGxx_SWITCHSIZE - 1) / jb) * jb;
     rocblas_int kk = min(k, j + jb);
-    rocsolver_org2r_ung2r_getMemorySize<T>(m, max(n - kk, jb), batch_count,
-                                           &s1);
-    rocsolver_larft_getMemorySize<T>(jb, batch_count, &s2);
+    rocsolver_org2r_ung2r_getMemorySize<T, BATCHED>(
+        m, max(n - kk, jb), batch_count, &unused, &s1, &unused);
+    rocsolver_larft_getMemorySize<T, BATCHED>(jb, batch_count, &unused, &s2,
+                                              &unused);
     rocsolver_larfb_getMemorySize<T, BATCHED>(
-        rocblas_side_left, m, n - jb, jb, batch_count, &s3, &unused, size_5);
+        rocblas_side_left, m, n - jb, jb, batch_count, size_5, &s3, &unused);
 
     *size_2 = max(max(s1, s2), s3);
 
@@ -108,8 +119,8 @@ rocblas_status rocsolver_orgqr_ungqr_template(
           handle, rocblas_side_left, rocblas_operation_none,
           rocblas_forward_direction, rocblas_column_wise, m - j, n - j - jb, jb,
           A, shiftA + idx2D(j, j, lda), lda, strideA, trfact, 0, ldw, strideW,
-          A, shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count, work,
-          workArr, workTrmm);
+          A, shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count,
+          workTrmm, work, workArr);
     }
 
     // now compute the current block and set to zero

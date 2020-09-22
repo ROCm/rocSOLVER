@@ -22,6 +22,16 @@ void rocsolver_geqrf_getMemorySize(const rocblas_int m, const rocblas_int n,
                                    size_t *size_1, size_t *size_2,
                                    size_t *size_3, size_t *size_4,
                                    size_t *size_5) {
+  // if quick return no workspace needed
+  if (m == 0 || n == 0 || batch_count == 0) {
+    *size_1 = 0;
+    *size_2 = 0;
+    *size_3 = 0;
+    *size_4 = 0;
+    *size_5 = 0;
+    return;
+  }
+
   size_t s1, s2, s3, unused, s4 = 0;
   rocsolver_geqr2_getMemorySize<T, BATCHED>(m, n, batch_count, size_1, &s1,
                                             size_3, size_4);
@@ -30,9 +40,10 @@ void rocsolver_geqrf_getMemorySize(const rocblas_int m, const rocblas_int n,
     *size_5 = 0;
   } else {
     rocblas_int jb = GEQRF_GEQR2_BLOCKSIZE;
-    rocsolver_larft_getMemorySize<T>(jb, batch_count, &s2);
+    rocsolver_larft_getMemorySize<T, BATCHED>(jb, batch_count, &unused, &s2,
+                                              &unused);
     rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_left, m, n - jb, jb,
-                                              batch_count, &s3, &unused, &s4);
+                                              batch_count, &s4, &s3, &unused);
     *size_2 = max(s1, max(s2, s3));
     *size_5 = sizeof(T) * jb * jb * batch_count;
   }
@@ -93,8 +104,8 @@ rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int m,
           handle, rocblas_side_left, rocblas_operation_conjugate_transpose,
           rocblas_forward_direction, rocblas_column_wise, m - j, n - j - jb, jb,
           A, shiftA + idx2D(j, j, lda), lda, strideA, trfact, 0, ldw, strideW,
-          A, shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count, work,
-          workArr, diag);
+          A, shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count, diag,
+          work, workArr);
     }
     j += GEQRF_GEQR2_BLOCKSIZE;
   }

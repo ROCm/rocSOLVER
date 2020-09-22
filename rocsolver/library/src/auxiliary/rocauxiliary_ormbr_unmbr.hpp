@@ -21,6 +21,16 @@ void rocsolver_ormbr_unmbr_getMemorySize(
     const rocblas_int n, const rocblas_int k, const rocblas_int batch_count,
     size_t *size_1, size_t *size_2, size_t *size_3, size_t *size_4,
     size_t *size_5) {
+  // if quick return no workspace needed
+  if (m == 0 || n == 0 || k == 0 || batch_count == 0) {
+    *size_1 = 0;
+    *size_2 = 0;
+    *size_3 = 0;
+    *size_4 = 0;
+    *size_5 = 0;
+    return;
+  }
+
   rocblas_int nq = side == rocblas_side_left ? m : n;
   if (storev == rocblas_column_wise)
     rocsolver_ormqr_unmqr_getMemorySize<T, BATCHED>(side, m, n, min(nq, k),

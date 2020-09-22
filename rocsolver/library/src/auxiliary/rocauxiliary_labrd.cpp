@@ -44,7 +44,7 @@ rocsolver_labrd_impl(rocblas_handle handle, const rocblas_int m,
   hipMalloc(&work, size_2);
   hipMalloc(&workArr, size_3);
   hipMalloc(&norms, size_4);
-  if (!scalars || (size_2 && !work) || (size_3 && !workArr) ||
+  if ((size_1 && !scalars) || (size_2 && !work) || (size_3 && !workArr) ||
       (size_4 && !norms))
     return rocblas_status_memory_error;
 

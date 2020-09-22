@@ -69,7 +69,7 @@ __global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms,
   }
 }
 
-template <typename T>
+/*template <typename T>
 void rocsolver_larfg_getMemorySize(const rocblas_int m, const rocblas_int n,
                                    const rocblas_int batch_count,
                                    size_t *size_1, size_t *size_2) {
@@ -79,18 +79,25 @@ void rocsolver_larfg_getMemorySize(const rocblas_int m, const rocblas_int n,
   // size of workspace
   *size_2 = (max(m, n) - 2) / ROCBLAS_DOT_NB + 2;
   *size_2 *= sizeof(T) * batch_count;
-}
+}*/
 
 template <typename T>
 void rocsolver_larfg_getMemorySize(const rocblas_int n,
                                    const rocblas_int batch_count,
-                                   size_t *size_1, size_t *size_2) {
-  // size of norms
-  *size_1 = sizeof(T) * batch_count;
+                                   size_t *size_work, size_t *size_norms) {
+  // if quick return no workspace needed
+  if (n == 0 || batch_count == 0) {
+    *size_norms = 0;
+    *size_work = 0;
+    return;
+  }
+
+  // size of space to store norms
+  *size_norms = sizeof(T) * batch_count;
 
   // size of workspace
-  *size_2 = (n - 2) / ROCBLAS_DOT_NB + 2;
-  *size_2 *= sizeof(T) * batch_count;
+  *size_work = n > 2 ? (n - 2) / ROCBLAS_DOT_NB + 2 : 1;
+  *size_work *= sizeof(T) * batch_count;
 }
 
 template <typename T, typename U>
@@ -120,9 +127,9 @@ rocsolver_larfg_template(rocblas_handle handle, const rocblas_int n, U alpha,
                          const rocblas_int shiftx, const rocblas_int incx,
                          const rocblas_stride stridex, T *tau,
                          const rocblas_stride strideP,
-                         const rocblas_int batch_count, T *norms, T *work) {
+                         const rocblas_int batch_count, T *work, T *norms) {
   // quick return
-  if (n == 0 || !batch_count)
+  if (n == 0 || batch_count == 0)
     return rocblas_status_success;
 
   hipStream_t stream;

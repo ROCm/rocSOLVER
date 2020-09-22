@@ -21,6 +21,15 @@ void rocsolver_labrd_getMemorySize(const rocblas_int m, const rocblas_int n,
                                    const rocblas_int batch_count,
                                    size_t *size_1, size_t *size_2,
                                    size_t *size_3, size_t *size_4) {
+  // if quick return no workspace needed
+  if (n == 0 || batch_count == 0) {
+    *size_1 = 0;
+    *size_2 = 0;
+    *size_3 = 0;
+    *size_4 = 0;
+    return;
+  }
+
   // size of scalars (constants)
   *size_1 = sizeof(T) * 3;
 
@@ -30,7 +39,7 @@ void rocsolver_labrd_getMemorySize(const rocblas_int m, const rocblas_int n,
   else
     *size_3 = 0;
 
-  rocsolver_larfg_getMemorySize<T>(m, n, batch_count, size_4, size_2);
+  rocsolver_larfg_getMemorySize<T>(max(m, n), batch_count, size_2, size_4);
 }
 
 template <typename S, typename T, typename U>
@@ -109,7 +118,7 @@ rocblas_status rocsolver_labrd_template(
           A, shiftA + idx2D(min(j + 1, m - 1), j, lda), // vector x to work on
           1, strideA,                                   // inc of x
           (tauq + j), strideQ,                          // tau
-          batch_count, norms, work);
+          batch_count, work, norms);
       hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
                          stream, D, j, strideD, A, shiftA + idx2D(j, j, lda),
                          lda, strideA, 1, j < n - 1);
@@ -185,7 +194,7 @@ rocblas_status rocsolver_labrd_template(
             A, shiftA + idx2D(j, min(j + 2, n - 1), lda), // vector x to work on
             lda, strideA,                                 // inc of x
             (taup + j), strideP,                          // tau
-            batch_count, norms, work);
+            batch_count, work, norms);
         hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1),
                            0, stream, E, j, strideE, A,
                            shiftA + idx2D(j, j + 1, lda), lda, strideA, 1,
@@ -269,7 +278,7 @@ rocblas_status rocsolver_labrd_template(
           A, shiftA + idx2D(j, min(j + 1, n - 1), lda), // vector x to work on
           lda, strideA,                                 // inc of x
           (taup + j), strideP,                          // tau
-          batch_count, norms, work);
+          batch_count, work, norms);
       hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
                          stream, D, j, strideD, A, shiftA + idx2D(j, j, lda),
                          lda, strideA, 1, j < m - 1);
@@ -342,7 +351,7 @@ rocblas_status rocsolver_labrd_template(
             A, shiftA + idx2D(min(j + 2, m - 1), j, lda), // vector x to work on
             1, strideA,                                   // inc of x
             (tauq + j), strideQ,                          // tau
-            batch_count, norms, work);
+            batch_count, work, norms);
         hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1),
                            0, stream, E, j, strideE, A,
                            shiftA + idx2D(j + 1, j, lda), lda, strideA, 1,

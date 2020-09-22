@@ -22,10 +22,19 @@ void rocsolver_gebd2_getMemorySize(const rocblas_int m, const rocblas_int n,
                                    const rocblas_int batch_count,
                                    size_t *size_1, size_t *size_2,
                                    size_t *size_3, size_t *size_4) {
+  // if quick return no workspace needed
+  if (n == 0 || batch_count == 0) {
+    *size_1 = 0;
+    *size_2 = 0;
+    *size_3 = 0;
+    *size_4 = 0;
+    return;
+  }
+
   size_t s1, s2;
-  rocsolver_larf_getMemorySize<T, BATCHED>(m, n, batch_count, size_1, &s1,
-                                           size_3);
-  rocsolver_larfg_getMemorySize<T>(m, n, batch_count, size_4, &s2);
+  rocsolver_larf_getMemorySize<T, BATCHED>(rocblas_side_both, m, n, batch_count,
+                                           size_1, &s1, size_3);
+  rocsolver_larfg_getMemorySize<T>(max(m, n), batch_count, &s2, size_4);
   *size_2 = max(s1, s2);
 }
 
@@ -74,8 +83,8 @@ rocblas_status rocsolver_gebd2_template(
       // generate Householder reflector H(j)
       rocsolver_larfg_template(handle, m - j, A, shiftA + idx2D(j, j, lda), A,
                                shiftA + idx2D(min(j + 1, m - 1), j, lda), 1,
-                               strideA, (tauq + j), strideQ, batch_count, diag,
-                               work);
+                               strideA, (tauq + j), strideQ, batch_count, work,
+                               diag);
 
       // copy A(j,j) to D and insert one to build/apply the householder matrix
       hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
@@ -116,7 +125,7 @@ rocblas_status rocsolver_gebd2_template(
         rocsolver_larfg_template(
             handle, n - j - 1, A, shiftA + idx2D(j, j + 1, lda), A,
             shiftA + idx2D(j, min(j + 2, n - 1), lda), lda, strideA, (taup + j),
-            strideP, batch_count, diag, work);
+            strideP, batch_count, work, diag);
 
         // copy A(j,j+1) to E and insert one to build/apply the householder
         // matrix
@@ -157,8 +166,8 @@ rocblas_status rocsolver_gebd2_template(
       // generate Householder reflector G(j)
       rocsolver_larfg_template(handle, n - j, A, shiftA + idx2D(j, j, lda), A,
                                shiftA + idx2D(j, min(j + 1, n - 1), lda), lda,
-                               strideA, (taup + j), strideP, batch_count, diag,
-                               work);
+                               strideA, (taup + j), strideP, batch_count, work,
+                               diag);
 
       // copy A(j,j) to D and insert one to build/apply the householder matrix
       hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
@@ -188,7 +197,7 @@ rocblas_status rocsolver_gebd2_template(
         rocsolver_larfg_template(
             handle, m - j - 1, A, shiftA + idx2D(j + 1, j, lda), A,
             shiftA + idx2D(min(j + 2, m - 1), j, lda), 1, strideA, (tauq + j),
-            strideQ, batch_count, diag, work);
+            strideQ, batch_count, work, diag);
 
         // copy A(j+1,j) to D and insert one to build/apply the householder
         // matrix

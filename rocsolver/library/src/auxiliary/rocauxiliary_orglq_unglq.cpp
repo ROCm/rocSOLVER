@@ -39,7 +39,7 @@ rocsolver_orglq_unglq_impl(rocblas_handle handle, const rocblas_int m,
   hipMalloc(&workArr, size_3);
   hipMalloc(&trfact, size_4);
   hipMalloc(&workTrmm, size_5);
-  if (!scalars || (size_2 && !work) || (size_3 && !workArr) ||
+  if ((size_1 && !scalars) || (size_2 && !work) || (size_3 && !workArr) ||
       (size_4 && !trfact) || (size_5 && !workTrmm))
     return rocblas_status_memory_error;
 

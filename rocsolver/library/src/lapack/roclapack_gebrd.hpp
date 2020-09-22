@@ -22,6 +22,17 @@ void rocsolver_gebrd_getMemorySize(const rocblas_int m, const rocblas_int n,
                                    size_t *size_1, size_t *size_2,
                                    size_t *size_3, size_t *size_4,
                                    size_t *size_5, size_t *size_6) {
+  // if quick return no workspace needed
+  if (m == 0 || n == 0 || batch_count == 0) {
+    *size_1 = 0;
+    *size_2 = 0;
+    *size_3 = 0;
+    *size_4 = 0;
+    *size_5 = 0;
+    *size_6 = 0;
+    return;
+  }
+
   if (m <= GEBRD_GEBD2_SWITCHSIZE || n <= GEBRD_GEBD2_SWITCHSIZE) {
     rocsolver_gebd2_getMemorySize<T, BATCHED>(m, n, batch_count, size_1, size_2,
                                               size_3, size_4);
