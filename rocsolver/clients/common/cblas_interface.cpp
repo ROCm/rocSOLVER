@@ -1948,25 +1948,35 @@ void cblas_getf2(rocblas_int m, rocblas_int n, rocblas_double_complex *A,
 /*
 // trtri
 template <>
-rocblas_int cblas_trtri<float>(char uplo, char diag, rocblas_int n, float *A,
-                               rocblas_int lda) {
-  // just directly cast, since transA, transB are integers in the enum
-  // printf("transA: rocblas =%d, cblas=%d\n", transA, (CBLAS_TRANSPOSE)transA
-  // );
-  rocblas_int info;
-  strtri_(&uplo, &diag, &n, A, &lda, &info);
+rocblas_int cblas_trtri<float>(rocblas_fill uplo, rocblas_diagonal diag,
+rocblas_int n, float *A, rocblas_int lda) { rocblas_int info; char uploC =
+rocblas2char_fill(uplo); char diagC = rocblas2char_diagonal(diag);
+  strtri_(&uploC, &diagC, &n, A, &lda, &info);
   return info;
 }
 
 template <>
-rocblas_int cblas_trtri<double>(char uplo, char diag, rocblas_int n, double *A,
-                                rocblas_int lda) {
-  // just directly cast, since transA, transB are integers in the enum
-  // printf("transA: rocblas =%d, cblas=%d\n", transA, (CBLAS_TRANSPOSE)transA
-  // );
-  rocblas_int info;
-  dtrtri_(&uplo, &diag, &n, A, &lda, &info);
+rocblas_int cblas_trtri<double>(rocblas_fill uplo, rocblas_diagonal diag,
+rocblas_int n, double *A, rocblas_int lda) { rocblas_int info; char uploC =
+rocblas2char_fill(uplo); char diagC = rocblas2char_diagonal(diag);
+  dtrtri_(&uploC, &diagC, &n, A, &lda, &info);
   return info;
+}
+
+template <>
+rocblas_int cblas_trtri<rocblas_float_complex>(rocblas_fill uplo,
+rocblas_diagonal diag, rocblas_int n, rocblas_float_complex *A, rocblas_int lda)
+{ rocblas_int info; char uploC = rocblas2char_fill(uplo); char diagC =
+rocblas2char_diagonal(diag); ctrtri_(&uploC, &diagC, &n, A, &lda, &info); return
+info;
+}
+
+template <>
+rocblas_int cblas_trtri<rocblas_double_complex>(rocblas_fill uplo,
+rocblas_diagonal diag, rocblas_int n, rocblas_double_complex *A, rocblas_int
+lda) { rocblas_int info; char uploC = rocblas2char_fill(uplo); char diagC =
+rocblas2char_diagonal(diag); ztrtri_(&uploC, &diagC, &n, A, &lda, &info); return
+info;
 }
 
 // trmm

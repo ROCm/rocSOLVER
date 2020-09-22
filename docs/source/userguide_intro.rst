@@ -11,14 +11,14 @@ Overview
 ==================
 
 rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_
-on top of AMD's Radeon Open Compute Platform runtime and toolchains (`ROCm <https://rocm.github.io>`_).
-rocSOLVER is implemented in the `HIP programming language <https://github.com/ROCm-Developer-Tools/HIP>`_
-an optimized for AMD's latest discrete GPUs.
+on top of `AMD ROCm <https://rocm.github.io>`_. rocSOLVER is implemented in the
+`HIP programming language <https://github.com/ROCm-Developer-Tools/HIP>`_ and optimized for AMD's
+latest discrete GPUs.
 
 Brief description and functionality
 ====================================
 
-The rocSolver library is in the early stages of active development. New features are being
+The rocSOLVER library is in the early stages of active development. New features are being
 continuously added, with new functionality documented at each release of the ROCm platform.
 
 The following table summarizes the LAPACK functionality implemented in rocSOLVER's latest release.

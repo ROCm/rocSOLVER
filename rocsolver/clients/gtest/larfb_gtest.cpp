@@ -51,8 +51,14 @@ const vector<vector<int>> matrix_size_range = {
     {40, 40, 40, 1, 25, 1}};
 
 const vector<vector<int>> reflector_size_range = {
-    {0, 1, 0, 0}, {5, 1, 0, 0}, // invalid
-    {7, 7, 0, 1}, {10, 10, 1, 1}, {12, 70, 0, 2}, {15, 15, 1, 2}};
+    // invalid
+    {0, 1, 0, 0},
+    {5, 1, 0, 0},
+    // normal (valid) samples
+    {7, 7, 0, 1},
+    {10, 10, 1, 1},
+    {12, 70, 0, 2},
+    {15, 15, 1, 2}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {

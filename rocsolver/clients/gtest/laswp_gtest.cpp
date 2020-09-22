@@ -21,12 +21,27 @@ typedef std::tuple<vector<int>, vector<int>> laswp_tuple;
 // (null handle, null pointers and invalid values)
 
 // for checkin_lapack tests
-const vector<vector<int>> range1 = {{0, 1},             // quick return
-                                    {-1, 1},   {10, 0}, // invalid
-                                    {10, 100}, {20, 100}, {30, 100}};
+const vector<vector<int>> range1 = {
+    // quick return
+    {0, 1},
+    // invalid
+    {-1, 1},
+    {10, 0},
+    // normal (valid) samples
+    {10, 100},
+    {20, 100},
+    {30, 100}};
 const vector<vector<int>> range2 = {
-    {0, 1, 1}, {1, 0, 1}, {1, 2, 0},   {2, 1, 1}, // invalid
-    {1, 3, 1}, {3, 5, 2}, {5, 10, -1}, {3, 12, -2}};
+    // invalid
+    {0, 1, 1},
+    {1, 0, 1},
+    {1, 2, 0},
+    {2, 1, 1},
+    // normal (valid) samples
+    {1, 3, 1},
+    {3, 5, 2},
+    {5, 10, -1},
+    {3, 12, -2}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_range1 = {
