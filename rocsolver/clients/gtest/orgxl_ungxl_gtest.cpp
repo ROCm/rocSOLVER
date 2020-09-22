@@ -26,7 +26,7 @@ const vector<vector<int>> n_size_range = {
     {0, 0},
     // always invalid
     {-1, 1},
-    {20, 1},
+    {1, -1},
     {10, 20},
     // invalid for case *
     {30, 25},

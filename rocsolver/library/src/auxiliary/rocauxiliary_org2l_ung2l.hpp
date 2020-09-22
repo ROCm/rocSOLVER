@@ -28,7 +28,7 @@ org2l_init_ident(const rocblas_int m, const rocblas_int n, const rocblas_int k,
     T *Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
 
     if (i == m - n + j)
-      // ones along the diagonal that goes to the bottom right corner
+      // ones along the (m-n)th subdiagonal
       Ap[i + j * lda] = 1.0;
     else if (i > m - n + j)
       // zero the lower triangular factor L

@@ -70,7 +70,7 @@ rocblas_status rocsolver_orgql_ungql_template(
   rocblas_int ldw = ORGxx_UNGxx_BLOCKSIZE;
   rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
-  // start of the unblocked block
+  // size of blocked part (unblocked size is k - kk)
   rocblas_int jb = ORGxx_UNGxx_BLOCKSIZE;
   rocblas_int kk = min(k, ((k - ORGxx_UNGxx_SWITCHSIZE + jb - 1) / jb) * jb);
 
@@ -80,7 +80,7 @@ rocblas_status rocsolver_orgql_ungql_template(
   rocblas_int blocksy, blocksx;
 
   // compute the unblocked part and set to zero the
-  // corresponding left submatrix
+  // corresponding bottom submatrix
   if (kk < m) {
     blocksx = (kk - 1) / 32 + 1;
     blocksy = (n - kk - 1) / 32 + 1;

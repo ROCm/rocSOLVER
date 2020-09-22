@@ -977,8 +977,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunglq(
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the (n-k+i)-th column has Householder vector v(i), for
-   i = 1,2,...,k as returned in the last k column of matrix A of GEQLF. On exit,
-   the computed matrix Q.
+   i = 1,2,...,k as returned in the last k columns of matrix A of GEQLF. On
+   exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
@@ -1005,7 +1005,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2l(
     The matrix Q is defined as the last n columns of the product of k
    Householder reflectors of order m
 
-        Q = H(k)**H * H(k-1)**H * ... * H(1)**H
+        Q = H(k) * H(k-1) * ... * H(1)
 
     Householder matrices H(i) are never stored, they are computed from its
    corresponding Householder vector v(i) and scalar ipiv_i as returned by GEQLF.
@@ -1024,8 +1024,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2l(
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the (n-k+i)-th column has Householder vector v(i), for
-   i = 1,2,...,k as returned in the last k column of matrix A of GEQLF. On exit,
-   the computed matrix Q.
+   i = 1,2,...,k as returned in the last k columns of matrix A of GEQLF. On
+   exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
@@ -1101,7 +1101,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgql(
     The matrix Q is defined as the last n columns of the product of k
    Householder reflectors of order m
 
-        Q = H(k)**H * H(k-1)**H * ... * H(1)**H
+        Q = H(k) * H(k-1) * ... * H(1)
 
     Householder matrices H(i) are never stored, they are computed from its
    corresponding Householder vector v(i) and scalar ipiv_i as returned by GEQLF.
