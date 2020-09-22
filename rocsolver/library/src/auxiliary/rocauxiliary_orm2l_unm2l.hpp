@@ -22,7 +22,12 @@ void rocsolver_orm2l_unm2l_getMemorySize(const rocblas_side side,
                                          const rocblas_int batch_count,
                                          size_t *size_1, size_t *size_2,
                                          size_t *size_3, size_t *size_4) {
-  *size_1 = *size_2 = *size_3 = *size_4 = 0;
+  // memory requirements to call larf
+  rocsolver_larf_getMemorySize<T, BATCHED>(side, m, n, batch_count, size_1,
+                                           size_2, size_3);
+
+  // size of temporary array for diagonal elemements
+  *size_4 = sizeof(T) * batch_count;
 }
 
 template <bool COMPLEX, typename T, typename U>
@@ -68,7 +73,74 @@ rocblas_status rocsolver_orm2l_unm2l_template(
     const rocblas_int shiftC, const rocblas_int ldc,
     const rocblas_stride strideC, const rocblas_int batch_count, T *scalars,
     T *work, T **workArr, T *diag) {
-  return rocblas_status_not_implemented;
+  // quick return
+  if (!n || !m || !k || !batch_count)
+    return rocblas_status_success;
+
+  hipStream_t stream;
+  rocblas_get_stream(handle, &stream);
+
+  // determine limits and indices
+  bool left = (side == rocblas_side_left);
+  bool transpose = (trans != rocblas_operation_none);
+  rocblas_int start, step, nq, ncol, nrow;
+  if (left) {
+    nq = m;
+    ncol = n;
+    if (!transpose) {
+      start = -1;
+      step = 1;
+    } else {
+      start = k;
+      step = -1;
+    }
+  } else {
+    nq = n;
+    nrow = m;
+    if (!transpose) {
+      start = k;
+      step = -1;
+    } else {
+      start = -1;
+      step = 1;
+    }
+  }
+
+  // conjugate tau
+  if (COMPLEX && transpose)
+    rocsolver_lacgv_template<T>(handle, k, ipiv, 0, 1, strideP, batch_count);
+
+  rocblas_int i;
+  for (rocblas_int j = 1; j <= k; ++j) {
+    i = start + step * j; // current householder vector
+    if (left) {
+      nrow = m - k + i + 1;
+    } else {
+      ncol = n - k + i + 1;
+    }
+
+    // insert one in A(i,i) tobuild/apply the householder matrix
+    hipLaunchKernelGGL(
+        set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag, 0,
+        1, A, shiftA + idx2D(nq - k + i, i, lda), lda, strideA, 1, true);
+
+    // Apply current Householder reflector
+    rocsolver_larf_template(handle, side, nrow, ncol, A,
+                            shiftA + idx2D(0, i, lda), 1, strideA, (ipiv + i),
+                            strideP, C, shiftC, ldc, strideC, batch_count,
+                            scalars, work, workArr);
+
+    // restore original value of A(i,i)
+    hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1),
+                       0, stream, diag, 0, 1, A,
+                       shiftA + idx2D(nq - k + i, i, lda), lda, strideA, 1);
+  }
+
+  // restore tau
+  if (COMPLEX && transpose)
+    rocsolver_lacgv_template<T>(handle, k, ipiv, 0, 1, strideP, batch_count);
+
+  return rocblas_status_success;
 }
 
 #endif
