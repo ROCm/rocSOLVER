@@ -25,10 +25,10 @@ void rocsolver_ormlq_unmlq_getMemorySize(
   rocsolver_orml2_unml2_getMemorySize<T, BATCHED>(
       side, m, n, batch_count, size_1, size_2, size_3, size_4);
 
-  if (k > ORMLQ_ORML2_BLOCKSIZE) {
+  if (k > ORMxx_ORMxx_BLOCKSIZE) {
     // size of workspace
     // maximum of what is needed by larft and larfb
-    rocblas_int jb = ORMLQ_ORML2_BLOCKSIZE;
+    rocblas_int jb = ORMxx_ORMxx_BLOCKSIZE;
     rocsolver_larft_getMemorySize<T>(min(jb, k), batch_count, &s1);
     rocsolver_larfb_getMemorySize<T, BATCHED>(
         side, m, n, min(jb, k), batch_count, &s2, &unused, size_5);
@@ -59,21 +59,21 @@ rocblas_status rocsolver_ormlq_unmlq_template(
   rocblas_get_stream(handle, &stream);
 
   // if the matrix is small, use the unblocked variant of the algorithm
-  if (k <= ORMLQ_ORML2_BLOCKSIZE)
+  if (k <= ORMxx_ORMxx_BLOCKSIZE)
     return rocsolver_orml2_unml2_template<T>(
         handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C,
         shiftC, ldc, strideC, batch_count, scalars, work, workArr, trfact);
 
-  rocblas_int ldw = ORMLQ_ORML2_BLOCKSIZE;
+  rocblas_int ldw = ORMxx_ORMxx_BLOCKSIZE;
   rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
   // determine limits and indices
   bool left = (side == rocblas_side_left);
   bool transpose = (trans != rocblas_operation_none);
-  rocblas_int start, step, ncol, nrow, ic, jc, order;
+  rocblas_int start, step, nq, ncol, nrow, ic, jc;
   if (left) {
+    nq = m;
     ncol = n;
-    order = m;
     jc = 0;
     if (!transpose) {
       start = 0;
@@ -83,8 +83,8 @@ rocblas_status rocsolver_ormlq_unmlq_template(
       step = -1;
     }
   } else {
+    nq = n;
     nrow = m;
-    order = n;
     ic = 0;
     if (!transpose) {
       start = (k - 1) / ldw * ldw;
@@ -102,9 +102,10 @@ rocblas_status rocsolver_ormlq_unmlq_template(
     transB = (COMPLEX ? rocblas_operation_conjugate_transpose
                       : rocblas_operation_transpose);
 
-  rocblas_int i;
+  rocblas_int i, ib;
   for (rocblas_int j = 0; j < k; j += ldw) {
     i = start + step * j; // current householder block
+    ib = min(ldw, k - i);
     if (left) {
       nrow = m - i;
       ic = i;
@@ -115,16 +116,16 @@ rocblas_status rocsolver_ormlq_unmlq_template(
 
     // generate triangular factor of current block reflector
     rocsolver_larft_template<T>(
-        handle, rocblas_forward_direction, rocblas_row_wise, order - i,
-        min(ldw, k - i), A, shiftA + idx2D(i, i, lda), lda, strideA, ipiv + i,
-        strideP, trfact, ldw, strideW, batch_count, scalars, work, workArr);
+        handle, rocblas_forward_direction, rocblas_row_wise, nq - i, ib, A,
+        shiftA + idx2D(i, i, lda), lda, strideA, ipiv + i, strideP, trfact, ldw,
+        strideW, batch_count, scalars, work, workArr);
 
     // apply current block reflector
     rocsolver_larfb_template<BATCHED, STRIDED, T>(
         handle, side, transB, rocblas_forward_direction, rocblas_row_wise, nrow,
-        ncol, min(ldw, k - i), A, shiftA + idx2D(i, i, lda), lda, strideA,
-        trfact, 0, ldw, strideW, C, shiftC + idx2D(ic, jc, ldc), ldc, strideC,
-        batch_count, work, workArr, workTrmm);
+        ncol, ib, A, shiftA + idx2D(i, i, lda), lda, strideA, trfact, 0, ldw,
+        strideW, C, shiftC + idx2D(ic, jc, ldc), ldc, strideC, batch_count,
+        work, workArr, workTrmm);
   }
 
   return rocblas_status_success;

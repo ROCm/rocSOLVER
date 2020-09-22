@@ -20,9 +20,8 @@
 #define ORGxx_UNGxx_SWITCHSIZE 128
 #define ORGxx_UNGxx_BLOCKSIZE 64
 
-// ormqr/orm2r & ormlq_orml2
-#define ORMQR_ORM2R_BLOCKSIZE 32
-#define ORMLQ_ORML2_BLOCKSIZE 32
+// ormxx/unmxx
+#define ORMxx_ORMxx_BLOCKSIZE 32
 
 // getf2/getfr
 #define GETRF_GETF2_SWITCHSIZE 64
