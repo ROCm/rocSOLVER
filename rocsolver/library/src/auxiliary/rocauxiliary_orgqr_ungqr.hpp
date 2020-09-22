@@ -25,14 +25,14 @@ void rocsolver_orgqr_ungqr_getMemorySize(
   rocsolver_org2r_ung2r_getMemorySize<T, BATCHED>(m, n, batch_count, size_1,
                                                   size_2, size_3);
 
-  if (k <= GEQRF_GEQR2_SWITCHSIZE) {
+  if (k <= ORGxx_UNGxx_SWITCHSIZE) {
     *size_4 = 0;
     *size_5 = 0;
   } else {
     // size of workspace
     // maximum of what is needed by org2r, larft and larfb
-    rocblas_int jb = GEQRF_GEQR2_BLOCKSIZE;
-    rocblas_int j = ((k - GEQRF_GEQR2_SWITCHSIZE - 1) / jb) * jb;
+    rocblas_int jb = ORGxx_UNGxx_BLOCKSIZE;
+    rocblas_int j = ((k - ORGxx_UNGxx_SWITCHSIZE - 1) / jb) * jb;
     rocblas_int kk = min(k, j + jb);
     rocsolver_org2r_ung2r_getMemorySize<T>(m, max(n - kk, jb), batch_count,
                                            &s1);
@@ -62,17 +62,17 @@ rocblas_status rocsolver_orgqr_ungqr_template(
   rocblas_get_stream(handle, &stream);
 
   // if the matrix is small, use the unblocked variant of the algorithm
-  if (k <= GEQRF_GEQR2_SWITCHSIZE)
+  if (k <= ORGxx_UNGxx_SWITCHSIZE)
     return rocsolver_org2r_ung2r_template<T>(
         handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count,
         scalars, work, workArr);
 
-  rocblas_int ldw = GEQRF_GEQR2_BLOCKSIZE;
+  rocblas_int ldw = ORGxx_UNGxx_BLOCKSIZE;
   rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
   // start of first blocked block
-  rocblas_int jb = GEQRF_GEQR2_BLOCKSIZE;
-  rocblas_int j = ((k - GEQRF_GEQR2_SWITCHSIZE - 1) / jb) * jb;
+  rocblas_int jb = ORGxx_UNGxx_BLOCKSIZE;
+  rocblas_int j = ((k - ORGxx_UNGxx_SWITCHSIZE - 1) / jb) * jb;
 
   // start of the unblocked block
   rocblas_int kk = min(k, j + jb);
