@@ -30,7 +30,7 @@ and rocSOLVER shared libraries will become link-time and run-time dependencies
 for the user application.
 
 If you are a developer contributing to rocSOLVER, you may wish to run
-`./install.sh --hooks` to install the git hooks for autoformatting.
+`.githooks/install` to install the git hooks for autoformatting.
 
 ## Using rocSOLVER
 
