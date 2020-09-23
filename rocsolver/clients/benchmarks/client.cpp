@@ -21,6 +21,7 @@
 #include "testing_laswp.hpp"
 #include "testing_orgbr_ungbr.hpp"
 #include "testing_orglx_unglx.hpp"
+#include "testing_orgxl_ungxl.hpp"
 #include "testing_orgxr_ungxr.hpp"
 #include "testing_ormbr_unmbr.hpp"
 #include "testing_ormlx_unmlx.hpp"
@@ -850,6 +851,70 @@ int main(int argc, char *argv[]) try {
     else
       throw std::invalid_argument(
           "This function does not support the given --precision");
+  } else if (function == "orgl2") {
+    if (precision == 's')
+      testing_orglx_unglx<float, 0>(argus);
+    else if (precision == 'd')
+      testing_orglx_unglx<double, 0>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "ungl2") {
+    if (precision == 'c')
+      testing_orglx_unglx<rocblas_float_complex, 0>(argus);
+    else if (precision == 'z')
+      testing_orglx_unglx<rocblas_double_complex, 0>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "orglq") {
+    if (precision == 's')
+      testing_orglx_unglx<float, 1>(argus);
+    else if (precision == 'd')
+      testing_orglx_unglx<double, 1>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "unglq") {
+    if (precision == 'c')
+      testing_orglx_unglx<rocblas_float_complex, 1>(argus);
+    else if (precision == 'z')
+      testing_orglx_unglx<rocblas_double_complex, 1>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "orgql") {
+    if (precision == 's')
+      testing_orgxl_ungxl<float, 1>(argus);
+    else if (precision == 'd')
+      testing_orgxl_ungxl<double, 1>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "ungql") {
+    if (precision == 'c')
+      testing_orgxl_ungxl<rocblas_float_complex, 1>(argus);
+    else if (precision == 'z')
+      testing_orgxl_ungxl<rocblas_double_complex, 1>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "orgbr") {
+    if (precision == 's')
+      testing_orgbr_ungbr<float>(argus);
+    else if (precision == 'd')
+      testing_orgbr_ungbr<double>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "ungbr") {
+    if (precision == 'c')
+      testing_orgbr_ungbr<rocblas_float_complex>(argus);
+    else if (precision == 'z')
+      testing_orgbr_ungbr<rocblas_double_complex>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
   } else if (function == "orm2r") {
     if (precision == 's')
       testing_ormxr_unmxr<float, 0>(argus);
@@ -911,54 +976,6 @@ int main(int argc, char *argv[]) try {
       testing_ormlx_unmlx<rocblas_float_complex, 1>(argus);
     else if (precision == 'z')
       testing_ormlx_unmlx<rocblas_double_complex, 1>(argus);
-    else
-      throw std::invalid_argument(
-          "This function does not support the given --precision");
-  } else if (function == "orgl2") {
-    if (precision == 's')
-      testing_orglx_unglx<float, 0>(argus);
-    else if (precision == 'd')
-      testing_orglx_unglx<double, 0>(argus);
-    else
-      throw std::invalid_argument(
-          "This function does not support the given --precision");
-  } else if (function == "ungl2") {
-    if (precision == 'c')
-      testing_orglx_unglx<rocblas_float_complex, 0>(argus);
-    else if (precision == 'z')
-      testing_orglx_unglx<rocblas_double_complex, 0>(argus);
-    else
-      throw std::invalid_argument(
-          "This function does not support the given --precision");
-  } else if (function == "orglq") {
-    if (precision == 's')
-      testing_orglx_unglx<float, 1>(argus);
-    else if (precision == 'd')
-      testing_orglx_unglx<double, 1>(argus);
-    else
-      throw std::invalid_argument(
-          "This function does not support the given --precision");
-  } else if (function == "unglq") {
-    if (precision == 'c')
-      testing_orglx_unglx<rocblas_float_complex, 1>(argus);
-    else if (precision == 'z')
-      testing_orglx_unglx<rocblas_double_complex, 1>(argus);
-    else
-      throw std::invalid_argument(
-          "This function does not support the given --precision");
-  } else if (function == "orgbr") {
-    if (precision == 's')
-      testing_orgbr_ungbr<float>(argus);
-    else if (precision == 'd')
-      testing_orgbr_ungbr<double>(argus);
-    else
-      throw std::invalid_argument(
-          "This function does not support the given --precision");
-  } else if (function == "ungbr") {
-    if (precision == 'c')
-      testing_orgbr_ungbr<rocblas_float_complex>(argus);
-    else if (precision == 'z')
-      testing_orgbr_ungbr<rocblas_double_complex>(argus);
     else
       throw std::invalid_argument(
           "This function does not support the given --precision");

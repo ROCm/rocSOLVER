@@ -203,6 +203,14 @@ void cblas_orglq_unglq(rocblas_int m, rocblas_int n, rocblas_int k, T *A,
                        rocblas_int lda, T *Ipiv, T *work, rocblas_int sizeW);
 
 template <typename T>
+void cblas_org2l_ung2l(rocblas_int m, rocblas_int n, rocblas_int k, T *A,
+                       rocblas_int lda, T *Ipiv, T *work);
+
+template <typename T>
+void cblas_orgql_ungql(rocblas_int m, rocblas_int n, rocblas_int k, T *A,
+                       rocblas_int lda, T *Ipiv, T *work, rocblas_int sizeW);
+
+template <typename T>
 void cblas_orgbr_ungbr(rocblas_storev storev, rocblas_int m, rocblas_int n,
                        rocblas_int k, T *A, rocblas_int lda, T *Ipiv, T *work,
                        rocblas_int size_w);

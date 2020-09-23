@@ -7,22 +7,22 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORGLQ_UNGLQ_HPP
-#define ROCLAPACK_ORGLQ_UNGLQ_HPP
+#ifndef ROCLAPACK_ORGQL_UNGQL_HPP
+#define ROCLAPACK_ORGQL_UNGQL_HPP
 
 #include "rocauxiliary_larfb.hpp"
 #include "rocauxiliary_larft.hpp"
-#include "rocauxiliary_orgl2_ungl2.hpp"
+#include "rocauxiliary_org2l_ung2l.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
 template <typename T, bool BATCHED>
-void rocsolver_orglq_unglq_getMemorySize(
+void rocsolver_orgql_ungql_getMemorySize(
     const rocblas_int m, const rocblas_int n, const rocblas_int k,
     const rocblas_int batch_count, size_t *size_1, size_t *size_2,
     size_t *size_3, size_t *size_4, size_t *size_5) {
   size_t s1, s2, s3, unused;
-  rocsolver_orgl2_ungl2_getMemorySize<T, BATCHED>(m, n, batch_count, size_1,
+  rocsolver_org2l_ung2l_getMemorySize<T, BATCHED>(m, n, batch_count, size_1,
                                                   size_2, size_3);
 
   if (k <= ORGxx_UNGxx_SWITCHSIZE) {
@@ -30,11 +30,11 @@ void rocsolver_orglq_unglq_getMemorySize(
     *size_5 = 0;
   } else {
     // size of workspace
-    // maximum of what is needed by org2r, larft and larfb
+    // maximum of what is needed by org2l, larft and larfb
     rocblas_int jb = ORGxx_UNGxx_BLOCKSIZE;
     rocblas_int j = ((k - ORGxx_UNGxx_SWITCHSIZE - 1) / jb) * jb;
     rocblas_int kk = min(k, j + jb);
-    rocsolver_orgl2_ungl2_getMemorySize<T>(max(m - kk, jb), n, batch_count,
+    rocsolver_org2l_ung2l_getMemorySize<T>(max(m - kk, jb), n, batch_count,
                                            &s1);
     rocsolver_larft_getMemorySize<T>(jb, batch_count, &s2);
     rocsolver_larfb_getMemorySize<T, BATCHED>(
@@ -48,7 +48,7 @@ void rocsolver_orglq_unglq_getMemorySize(
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status rocsolver_orglq_unglq_template(
+rocblas_status rocsolver_orgql_ungql_template(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda,
     const rocblas_stride strideA, T *ipiv, const rocblas_stride strideP,
@@ -63,69 +63,70 @@ rocblas_status rocsolver_orglq_unglq_template(
 
   // if the matrix is small, use the unblocked variant of the algorithm
   if (k <= ORGxx_UNGxx_SWITCHSIZE)
-    return rocsolver_orgl2_ungl2_template<T>(
+    return rocsolver_org2l_ung2l_template<T>(
         handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count,
         scalars, work, workArr);
 
   rocblas_int ldw = ORGxx_UNGxx_BLOCKSIZE;
   rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
-  // start of first blocked block
+  // size of blocked part (unblocked size is k - kk)
   rocblas_int jb = ORGxx_UNGxx_BLOCKSIZE;
-  rocblas_int j = ((k - ORGxx_UNGxx_SWITCHSIZE - 1) / jb) * jb;
+  rocblas_int kk = min(k, ((k - ORGxx_UNGxx_SWITCHSIZE + jb - 1) / jb) * jb);
 
-  // start of the unblocked block
-  rocblas_int kk = min(k, j + jb);
+  // start of first blocked block
+  rocblas_int j = k - kk;
 
   rocblas_int blocksy, blocksx;
 
-  // compute the unblockled part and set to zero the
-  // corresponding left submatrix
+  // compute the unblocked part and set to zero the
+  // corresponding bottom submatrix
   if (kk < m) {
-    blocksx = (m - kk - 1) / 32 + 1;
-    blocksy = (kk - 1) / 32 + 1;
+    blocksx = (kk - 1) / 32 + 1;
+    blocksy = (n - kk - 1) / 32 + 1;
     hipLaunchKernelGGL(set_zero<T>, dim3(blocksx, blocksy, batch_count),
-                       dim3(32, 32), 0, stream, m - kk, kk, A,
-                       shiftA + idx2D(kk, 0, lda), lda, strideA);
+                       dim3(32, 32), 0, stream, kk, n - kk, A,
+                       shiftA + idx2D(m - kk, 0, lda), lda, strideA);
 
-    rocsolver_orgl2_ungl2_template<T>(
-        handle, m - kk, n - kk, k - kk, A, shiftA + idx2D(kk, kk, lda), lda,
-        strideA, (ipiv + kk), strideP, batch_count, scalars, work, workArr);
+    rocsolver_org2l_ung2l_template<T>(handle, m - kk, n - kk, k - kk, A, shiftA,
+                                      lda, strideA, ipiv, strideP, batch_count,
+                                      scalars, work, workArr);
   }
 
   // compute the blocked part
-  while (j >= 0) {
-
+  while (j < k) {
     // first update the already computed part
     // applying the current block reflector using larft + larfb
-    if (j + jb < m) {
-      rocsolver_larft_template<T>(
-          handle, rocblas_forward_direction, rocblas_row_wise, n - j, jb, A,
-          shiftA + idx2D(j, j, lda), lda, strideA, (ipiv + j), strideP, trfact,
-          ldw, strideW, batch_count, scalars, work, workArr);
+    if (n - k + j > 0) {
+      rocsolver_larft_template<T>(handle, rocblas_backward_direction,
+                                  rocblas_column_wise, m - k + j + jb, jb, A,
+                                  shiftA + idx2D(0, n - k + j, lda), lda,
+                                  strideA, (ipiv + j), strideP, trfact, ldw,
+                                  strideW, batch_count, scalars, work, workArr);
 
       rocsolver_larfb_template<BATCHED, STRIDED, T>(
-          handle, rocblas_side_right, rocblas_operation_conjugate_transpose,
-          rocblas_forward_direction, rocblas_row_wise, m - j - jb, n - j, jb, A,
-          shiftA + idx2D(j, j, lda), lda, strideA, trfact, 0, ldw, strideW, A,
-          shiftA + idx2D(j + jb, j, lda), lda, strideA, batch_count, work,
+          handle, rocblas_side_left, rocblas_operation_none,
+          rocblas_backward_direction, rocblas_column_wise, m - k + j + jb,
+          n - k + j, jb, A, shiftA + idx2D(0, n - k + j, lda), lda, strideA,
+          trfact, 0, ldw, strideW, A, shiftA, lda, strideA, batch_count, work,
           workArr, workTrmm);
     }
 
     // now compute the current block and set to zero
-    // the corresponding top submatrix
+    // the corresponding bottom submatrix
     if (j > 0) {
-      blocksx = (jb - 1) / 32 + 1;
-      blocksy = (j - 1) / 32 + 1;
+      blocksx = (k - j - jb - 1) / 32 + 1;
+      blocksy = (jb - 1) / 32 + 1;
       hipLaunchKernelGGL(set_zero<T>, dim3(blocksx, blocksy, batch_count),
-                         dim3(32, 32), 0, stream, jb, j, A,
-                         shiftA + idx2D(j, 0, lda), lda, strideA);
+                         dim3(32, 32), 0, stream, k - j - jb, jb, A,
+                         shiftA + idx2D(m - k + j + jb, n - k + j, lda), lda,
+                         strideA);
     }
-    rocsolver_orgl2_ungl2_template<T>(
-        handle, jb, n - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
-        (ipiv + j), strideP, batch_count, scalars, work, workArr);
+    rocsolver_org2l_ung2l_template<T>(
+        handle, m - k + j + jb, jb, jb, A, shiftA + idx2D(0, n - k + j, lda),
+        lda, strideA, (ipiv + j), strideP, batch_count, scalars, work, workArr);
 
-    j -= jb;
+    j += jb;
   }
 
   return rocblas_status_success;

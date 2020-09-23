@@ -16,6 +16,10 @@
 // laswp
 #define LASWP_BLOCKSIZE 256
 
+// orgxx/ungxx
+#define ORGxx_UNGxx_SWITCHSIZE 128
+#define ORGxx_UNGxx_BLOCKSIZE 64
+
 // ormqr/orm2r & ormlq_orml2
 #define ORMQR_ORM2R_BLOCKSIZE 32
 #define ORMLQ_ORML2_BLOCKSIZE 32

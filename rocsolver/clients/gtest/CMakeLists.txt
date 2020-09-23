@@ -57,9 +57,10 @@ set(roclapack_test_source
     # orthonormal/unitary matrices
     orgxr_ungxr_gtest.cpp
     orglx_unglx_gtest.cpp
+    orgxl_ungxl_gtest.cpp
+    orgbr_ungbr_gtest.cpp
     ormxr_unmxr_gtest.cpp
     ormlx_unmlx_gtest.cpp
-    orgbr_ungbr_gtest.cpp
     ormbr_unmbr_gtest.cpp
     # bidiagonal matrices and svd
     labrd_gtest.cpp
