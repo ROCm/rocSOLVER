@@ -4392,45 +4392,27 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_batched(
 
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgelqf_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int m,
-                                                                 const rocblas_int n,
-                                                                 float *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 float *ipiv,
-                                                                 const rocblas_stride strideP,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgelqf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, float *A,
+    const rocblas_int lda, const rocblas_stride strideA, float *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgelqf_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int m,
-                                                                 const rocblas_int n,
-                                                                 double *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 double *ipiv,
-                                                                 const rocblas_stride strideP,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgelqf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, double *A,
+    const rocblas_int lda, const rocblas_stride strideA, double *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgelqf_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int m,
-                                                                 const rocblas_int n,
-                                                                 rocblas_float_complex *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 rocblas_float_complex *ipiv,
-                                                                 const rocblas_stride strideP,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgelqf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_float_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_strided_batched(rocblas_handle handle,
-                                                                 const rocblas_int m,
-                                                                 const rocblas_int n,
-                                                                 rocblas_double_complex *A,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 rocblas_double_complex *ipiv,
-                                                                 const rocblas_stride strideP,
-                                                                 const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_strided_batched(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
+    const rocblas_stride strideA, rocblas_double_complex *ipiv,
+    const rocblas_stride strideP, const rocblas_int batch_count);
 //! @}
 
 /*! @{
