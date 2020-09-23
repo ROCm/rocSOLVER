@@ -3,14 +3,14 @@
 rocSOLVER is a work-in-progress implementation of a subset of [LAPACK][1]
 functionality on the [ROCm platform][2].
 
-# Documentation
+## Documentation
 
 For a detailed description of the rocSOLVER library, its implemented routines,
 the installation process and user guide, see the [rocSOLVER documentation][3].
 
-# Quick start
+## Building rocSOLVER
 
-To download rocSOLVER source code, clone this repository with the command:
+To download the rocSOLVER source code, clone this repository with the command:
 
     git clone https://github.com/ROCmSoftwarePlatform/rocSOLVER.git
 
@@ -21,7 +21,7 @@ more information about rocBLAS and how to install it, see the
 After a standard installation of rocBLAS, the following commands will build
 rocSOLVER and install to `/opt/rocm/rocsolver`:
 
-    cd rocsolver
+    cd rocSOLVER
     ./install.sh -i
 
 Once installed, rocSOLVER can be used just like any other library with a C API.
@@ -29,11 +29,16 @@ The header file will need to be included in the user code, and both the rocBLAS
 and rocSOLVER shared libraries will become link-time and run-time dependencies
 for the user application.
 
-# Using rocSOLVER example
+If you are a developer contributing to rocSOLVER, you may wish to run
+`.githooks/install` to install the git hooks for autoformatting.
 
-The following code snippet uses rocSOLVER to compute the QR factorization of a
-general m-by-n real matrix in double precision. For a description of the
-function `rocsolver_dgeqrf`, see the [API documentation][5].
+## Using rocSOLVER
+
+The following code snippet shows how to compute the QR factorization of a
+general m-by-n real matrix in double precision using rocSOLVER. A longer
+version of this example is provided in the [rocSOLVER samples][5].
+For a description of the function `rocsolver_dgeqrf`, see the
+[API documentation][6].
 
 ```cpp
 /////////////////////////////
@@ -97,4 +102,5 @@ system environment, but here is a typical example:
 [2]: https://rocm.github.io
 [3]: https://rocsolver.readthedocs.io/en/latest
 [4]: https://rocblas.readthedocs.io/en/latest
-[5]: https://rocsolver.readthedocs.io/en/latest/userguide_api.html#rocsolver-type-geqrf
+[5]: rocsolver/clients/samples/example_basic.cpp
+[6]: https://rocsolver.readthedocs.io/en/latest/userguide_api.html#rocsolver-type-geqrf
