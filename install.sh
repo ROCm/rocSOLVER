@@ -70,9 +70,6 @@ EOF
 # Find project root directory
 main=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-# Adding pre-commit hook
-/bin/ln -fs ../../.githooks/pre-commit "$main/.git/hooks/"
-
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
 # true is a system command that completes successfully, function returns success
 # prereq: ${ID} must be defined before calling
