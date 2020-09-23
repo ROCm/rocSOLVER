@@ -402,6 +402,40 @@ rocsolver_orglx_unglx(bool GLQ, rocblas_handle handle, rocblas_int m,
 }
 /***************************************************************/
 
+/******************** ORGxL_UNGxL ********************/
+inline rocblas_status rocsolver_orgxl_ungxl(bool GQL, rocblas_handle handle,
+                                            rocblas_int m, rocblas_int n,
+                                            rocblas_int k, float *A,
+                                            rocblas_int lda, float *Ipiv) {
+  return GQL ? rocsolver_sorgql(handle, m, n, k, A, lda, Ipiv)
+             : rocsolver_sorg2l(handle, m, n, k, A, lda, Ipiv);
+}
+
+inline rocblas_status rocsolver_orgxl_ungxl(bool GQL, rocblas_handle handle,
+                                            rocblas_int m, rocblas_int n,
+                                            rocblas_int k, double *A,
+                                            rocblas_int lda, double *Ipiv) {
+  return GQL ? rocsolver_dorgql(handle, m, n, k, A, lda, Ipiv)
+             : rocsolver_dorg2l(handle, m, n, k, A, lda, Ipiv);
+}
+
+inline rocblas_status
+rocsolver_orgxl_ungxl(bool GQL, rocblas_handle handle, rocblas_int m,
+                      rocblas_int n, rocblas_int k, rocblas_float_complex *A,
+                      rocblas_int lda, rocblas_float_complex *Ipiv) {
+  return GQL ? rocsolver_cungql(handle, m, n, k, A, lda, Ipiv)
+             : rocsolver_cung2l(handle, m, n, k, A, lda, Ipiv);
+}
+
+inline rocblas_status
+rocsolver_orgxl_ungxl(bool GQL, rocblas_handle handle, rocblas_int m,
+                      rocblas_int n, rocblas_int k, rocblas_double_complex *A,
+                      rocblas_int lda, rocblas_double_complex *Ipiv) {
+  return GQL ? rocsolver_zungql(handle, m, n, k, A, lda, Ipiv)
+             : rocsolver_zung2l(handle, m, n, k, A, lda, Ipiv);
+}
+/***************************************************************/
+
 /******************** ORGBR_UNGBR ********************/
 inline rocblas_status rocsolver_orgbr_ungbr(rocblas_handle handle,
                                             rocblas_storev storev,

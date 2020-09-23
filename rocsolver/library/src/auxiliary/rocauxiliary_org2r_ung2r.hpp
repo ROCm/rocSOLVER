@@ -15,10 +15,10 @@
 #include "rocsolver.h"
 
 template <typename T, typename U>
-__global__ void init_ident_col(const rocblas_int m, const rocblas_int n,
-                               const rocblas_int k, U A,
-                               const rocblas_int shiftA, const rocblas_int lda,
-                               const rocblas_stride strideA) {
+__global__ void
+org2r_init_ident(const rocblas_int m, const rocblas_int n, const rocblas_int k,
+                 U A, const rocblas_int shiftA, const rocblas_int lda,
+                 const rocblas_stride strideA) {
   const auto blocksizex = hipBlockDim_x;
   const auto blocksizey = hipBlockDim_y;
   const auto b = hipBlockIdx_z;
@@ -29,10 +29,13 @@ __global__ void init_ident_col(const rocblas_int m, const rocblas_int n,
     T *Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
 
     if (i == j)
+      // ones along the main diagonal
       Ap[i + j * lda] = 1.0;
     else if (j > i)
+      // zero the upper triangular factor R
       Ap[i + j * lda] = 0.0;
     else if (j >= k)
+      // zero the right part of the matrix, leaving k Householder vectors
       Ap[i + j * lda] = 0.0;
   }
 }
@@ -99,7 +102,7 @@ rocblas_status rocsolver_org2r_ung2r_template(
   // Initialize identity matrix (non used columns)
   rocblas_int blocksx = (m - 1) / 32 + 1;
   rocblas_int blocksy = (n - 1) / 32 + 1;
-  hipLaunchKernelGGL(init_ident_col<T>, dim3(blocksx, blocksy, batch_count),
+  hipLaunchKernelGGL(org2r_init_ident<T>, dim3(blocksx, blocksy, batch_count),
                      dim3(32, 32), 0, stream, m, n, k, A, shiftA, lda, strideA);
 
   for (rocblas_int j = k - 1; j >= 0; --j) {
@@ -118,8 +121,8 @@ rocblas_status rocsolver_org2r_ung2r_template(
     }
 
     // set the diagonal element and negative tau
-    hipLaunchKernelGGL(setdiag<T>, dim3(batch_count), dim3(1), 0, stream, j, A,
-                       shiftA, lda, strideA, ipiv, strideP);
+    hipLaunchKernelGGL(subtract_tau<T>, dim3(batch_count), dim3(1), 0, stream,
+                       j, j, A, shiftA, lda, strideA, ipiv + j, strideP);
 
     // update i-th column -corresponding to H(i)-
     if (j < m - 1)
