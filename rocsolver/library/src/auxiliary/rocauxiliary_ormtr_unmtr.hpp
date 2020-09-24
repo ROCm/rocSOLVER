@@ -20,7 +20,13 @@ void rocsolver_ormtr_unmtr_getMemorySize(
     const rocblas_side side, const rocblas_fill uplo, const rocblas_int m,
     const rocblas_int n, const rocblas_int batch_count, size_t *size_1,
     size_t *size_2, size_t *size_3, size_t *size_4, size_t *size_5) {
-  *size_1 = *size_2 = *size_3 = *size_4 = *size_5 = 0;
+  rocblas_int nq = side == rocblas_side_left ? m : n;
+  if (uplo == rocblas_fill_upper)
+    rocsolver_ormql_unmql_getMemorySize<T, BATCHED>(
+        side, m, n, nq, batch_count, size_1, size_2, size_3, size_4, size_5);
+  else
+    rocsolver_ormqr_unmqr_getMemorySize<T, BATCHED>(
+        side, m, n, nq, batch_count, size_1, size_2, size_3, size_4, size_5);
 }
 
 template <bool COMPLEX, typename T, typename U>
@@ -66,7 +72,40 @@ rocblas_status rocsolver_ormtr_unmtr_template(
     const rocblas_int shiftC, const rocblas_int ldc,
     const rocblas_stride strideC, const rocblas_int batch_count, T *scalars,
     T *work, T **workArr, T *trfact, T *workTrmm) {
-  return rocblas_status_not_implemented;
+  // quick return
+  if (!n || !m || !batch_count)
+    return rocblas_status_success;
+
+  hipStream_t stream;
+  rocblas_get_stream(handle, &stream);
+
+  rocblas_int nq = side == rocblas_side_left ? m : n;
+  rocblas_int cols, rows, colC, rowC;
+  if (side == rocblas_side_left) {
+    rows = m - 1;
+    cols = n;
+    rowC = 1;
+    colC = 0;
+  } else {
+    rows = m;
+    cols = n - 1;
+    rowC = 0;
+    colC = 1;
+  }
+
+  if (uplo == rocblas_fill_upper) {
+    rocsolver_ormql_unmql_template<BATCHED, STRIDED, T>(
+        handle, side, trans, rows, cols, nq - 1, A, shiftA + idx2D(0, 1, lda),
+        lda, strideA, ipiv, strideP, C, shiftC, ldc, strideC, batch_count,
+        scalars, work, workArr, trfact, workTrmm);
+  } else {
+    rocsolver_ormqr_unmqr_template<BATCHED, STRIDED, T>(
+        handle, side, trans, rows, cols, nq - 1, A, shiftA + idx2D(1, 0, lda),
+        lda, strideA, ipiv, strideP, C, shiftC + idx2D(rowC, colC, ldc), ldc,
+        strideC, batch_count, scalars, work, workArr, trfact, workTrmm);
+  }
+
+  return rocblas_status_success;
 }
 
 #endif
