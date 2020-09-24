@@ -41,32 +41,22 @@ org2r_init_ident(const rocblas_int m, const rocblas_int n, const rocblas_int k,
 }
 
 template <typename T, bool BATCHED>
-void rocsolver_org2r_ung2r_getMemorySize(const rocblas_int m,
-                                         const rocblas_int n,
-                                         const rocblas_int batch_count,
-                                         size_t *size_1, size_t *size_2,
-                                         size_t *size_3) {
+void rocsolver_org2r_ung2r_getMemorySize(
+    const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+    size_t *size_scalars, size_t *size_Abyx, size_t *size_workArr) {
   // if quick return no workspace needed
   if (m == 0 || n == 0 || batch_count == 0) {
-    *size_1 = 0;
-    *size_2 = 0;
-    *size_3 = 0;
+    *size_scalars = 0;
+    *size_Abyx = 0;
+    *size_workArr = 0;
     return;
   }
 
   // memory requirements to call larf
   rocsolver_larf_getMemorySize<T, BATCHED>(rocblas_side_left, m, n, batch_count,
-                                           size_1, size_2, size_3);
+                                           size_scalars, size_Abyx,
+                                           size_workArr);
 }
-
-/*template <typename T>
-void rocsolver_org2r_ung2r_getMemorySize(const rocblas_int m,
-                                         const rocblas_int n,
-                                         const rocblas_int batch_count,
-                                         size_t *size) {
-  // memory requirements to call larf
-  rocsolver_larf_getMemorySize<T>(rocblas_side_left, m, n, batch_count, size);
-}*/
 
 template <typename T, typename U>
 rocblas_status
@@ -94,7 +84,7 @@ rocblas_status rocsolver_org2r_ung2r_template(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda,
     const rocblas_stride strideA, T *ipiv, const rocblas_stride strideP,
-    const rocblas_int batch_count, T *scalars, T *work, T **workArr) {
+    const rocblas_int batch_count, T *scalars, T *Abyx, T **workArr) {
   // quick return
   if (!n || !m || !batch_count)
     return rocblas_status_success;
@@ -116,16 +106,11 @@ rocblas_status rocsolver_org2r_ung2r_template(
   for (rocblas_int j = k - 1; j >= 0; --j) {
     // apply H(i) to Q(i:m,i:n) from the left
     if (j < n - 1) {
-      rocsolver_larf_template<T>(
-          handle, rocblas_side_left,    // side
-          m - j,                        // number of rows of matrix to modify
-          n - j - 1,                    // number of columns of matrix to modify
-          A, shiftA + idx2D(j, j, lda), // householder vector x
-          1, strideA,                   // inc of x
-          (ipiv + j), strideP,          // householder scalar (alpha)
-          A, shiftA + idx2D(j, j + 1, lda), // matrix to work on
-          lda, strideA,                     // leading dimension
-          batch_count, scalars, work, workArr);
+      rocsolver_larf_template<T>(handle, rocblas_side_left, m - j, n - j - 1, A,
+                                 shiftA + idx2D(j, j, lda), 1, strideA,
+                                 (ipiv + j), strideP, A,
+                                 shiftA + idx2D(j, j + 1, lda), lda, strideA,
+                                 batch_count, scalars, Abyx, workArr);
     }
 
     // set the diagonal element and negative tau
