@@ -76,7 +76,7 @@ set(roclapack_test_source
     gelq2_gelqf_gtest.cpp
     # bidiagonalization and svd
     gebd2_gebrd_gtest.cpp
-    gesvd_gtest.cpp
+#    gesvd_gtest.cpp
     )
 
 set(rocsolver_test_source

@@ -28,8 +28,12 @@ rocsolver_orgl2_ungl2_impl(rocblas_handle handle, const rocblas_int m,
   rocblas_int batch_count = 1;
 
   // memory workspace sizes:
-  // requirements for calling LARF
-  size_t size_scalars, size_Abyx, size_workArr;
+  // size for constants in rocblas calls
+  size_t size_scalars;
+  // size of arrays of pointers (for batched cases)
+  size_t size_workArr;
+  // extra requirements for calling LARF
+  size_t size_Abyx;
   rocsolver_orgl2_ungl2_getMemorySize<T, false>(
       m, n, batch_count, &size_scalars, &size_Abyx, &size_workArr);
 
