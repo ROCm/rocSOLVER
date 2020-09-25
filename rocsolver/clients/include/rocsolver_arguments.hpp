@@ -10,6 +10,7 @@
 /* (TODO: The default values most be reviewed. Some combinations don't actually
     work for most of the tests) */
 
+// See the rocsolver-bench command-line options for a description of these arguments.
 class Arguments
 {
 public:

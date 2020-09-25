@@ -135,13 +135,33 @@ void print_device_matrix(const std::string name,
     }
 }
 
-// ROCSOLVER_UNREACHABLE is an alternative to __builtin_unreachable
-// that verifies that the path is actually unreachable if
-// ROCSOLVER_VERIFY_ASSUMPTIONS is defined.
+// ROCSOLVER_UNREACHABLE is an alternative to __builtin_unreachable that verifies that the path is
+// actually unreachable if ROCSOLVER_VERIFY_ASSUMPTIONS is defined.
 #ifdef ROCSOLVER_VERIFY_ASSUMPTIONS
 #define ROCSOLVER_UNREACHABLE std::abort
 #else
 #define ROCSOLVER_UNREACHABLE __builtin_unreachable
 #endif
+
+// ROCSOLVER_UNREACHABLE_X is a variant of ROCSOLVER_UNREACHABLE that takes a string as a parameter,
+// which should explain why this path is believed to be unreachable.
+#define ROCSOLVER_UNREACHABLE_X(message) ROCSOLVER_UNREACHABLE()
+
+// ROCSOLVER_ASSUME is an alternative to __builtin_assume that verifies that the assumption is
+// actually true if ROCSOLVER_VERIFY_ASSUMPTIONS is defined.
+#ifdef ROCSOLVER_VERIFY_ASSUMPTIONS
+#define ROCSOLVER_ASSUME(invariant) \
+    do                              \
+    {                               \
+        if(!(invariant))            \
+            std::abort();           \
+    } while(0)
+#else
+#define ROCSOLVER_ASSUME(invariant) __builtin_assume(invariant)
+#endif
+
+// ROCSOLVER_ASSUME_X is a variant of ROCSOLVER_ASSUME that takes a string as a second parameter,
+// which should explain why this invariant is believed to be guaranteed.
+#define ROCSOLVER_ASSUME_X(invariant, message) ROCSOLVER_ASSUME(invariant)
 
 #endif /* HELPERS_H */

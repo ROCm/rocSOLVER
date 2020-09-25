@@ -5,6 +5,7 @@
 #include "testing_bdsqr.hpp"
 #include "testing_gebd2_gebrd.hpp"
 #include "testing_gelq2_gelqf.hpp"
+#include "testing_gels.hpp"
 #include "testing_geql2_geqlf.hpp"
 #include "testing_geqr2_geqrf.hpp"
 #include "testing_gesvd.hpp"
@@ -813,6 +814,39 @@ try
             testing_getri<true, false, rocblas_float_complex>(argus);
         else if(precision == 'z')
             testing_getri<true, false, rocblas_double_complex>(argus);
+    }
+    else if(function == "gels")
+    {
+        if(precision == 's')
+            testing_gels<false, false, float>(argus);
+        else if(precision == 'd')
+            testing_gels<false, false, double>(argus);
+        else if(precision == 'c')
+            testing_gels<false, false, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_gels<false, false, rocblas_double_complex>(argus);
+    }
+    else if(function == "gels_batched")
+    {
+        if(precision == 's')
+            testing_gels<true, true, float>(argus);
+        else if(precision == 'd')
+            testing_gels<true, true, double>(argus);
+        else if(precision == 'c')
+            testing_gels<true, true, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_gels<true, true, rocblas_double_complex>(argus);
+    }
+    else if(function == "gels_strided_batched")
+    {
+        if(precision == 's')
+            testing_gels<false, true, float>(argus);
+        else if(precision == 'd')
+            testing_gels<false, true, double>(argus);
+        else if(precision == 'c')
+            testing_gels<false, true, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_gels<false, true, rocblas_double_complex>(argus);
     }
     else if(function == "gebd2")
     {
