@@ -3817,51 +3817,35 @@ void cblas_getrs<rocblas_double_complex>(rocblas_operation trans,
 
 // getri
 template <>
-void cblas_getri<float>(rocblas_int n,
-                        float* A,
-                        rocblas_int lda,
-                        rocblas_int* ipiv,
-                        float* work,
-                        rocblas_int* lwork)
-{
-    rocblas_int info;
-    sgetri_(&n, A, &lda, ipiv, work, lwork, &info);
+void cblas_getri<float>(rocblas_int n, float *A, rocblas_int lda,
+                        rocblas_int *ipiv, float *work, rocblas_int *lwork,
+                        rocblas_int *info) {
+  sgetri_(&n, A, &lda, ipiv, work, lwork, info);
 }
 
 template <>
-void cblas_getri<double>(rocblas_int n,
-                         double* A,
-                         rocblas_int lda,
-                         rocblas_int* ipiv,
-                         double* work,
-                         rocblas_int* lwork)
-{
-    rocblas_int info;
-    dgetri_(&n, A, &lda, ipiv, work, lwork, &info);
+void cblas_getri<double>(rocblas_int n, double *A, rocblas_int lda,
+                         rocblas_int *ipiv, double *work, rocblas_int *lwork,
+                         rocblas_int *info) {
+  dgetri_(&n, A, &lda, ipiv, work, lwork, info);
 }
 
 template <>
-void cblas_getri<rocblas_float_complex>(rocblas_int n,
-                                        rocblas_float_complex* A,
-                                        rocblas_int lda,
-                                        rocblas_int* ipiv,
-                                        rocblas_float_complex* work,
-                                        rocblas_int* lwork)
-{
-    rocblas_int info;
-    cgetri_(&n, A, &lda, ipiv, work, lwork, &info);
+void cblas_getri<rocblas_float_complex>(rocblas_int n, rocblas_float_complex *A,
+                                        rocblas_int lda, rocblas_int *ipiv,
+                                        rocblas_float_complex *work,
+                                        rocblas_int *lwork, rocblas_int *info) {
+  cgetri_(&n, A, &lda, ipiv, work, lwork, info);
 }
 
 template <>
 void cblas_getri<rocblas_double_complex>(rocblas_int n,
-                                         rocblas_double_complex* A,
-                                         rocblas_int lda,
-                                         rocblas_int* ipiv,
-                                         rocblas_double_complex* work,
-                                         rocblas_int* lwork)
-{
-    rocblas_int info;
-    zgetri_(&n, A, &lda, ipiv, work, lwork, &info);
+                                         rocblas_double_complex *A,
+                                         rocblas_int lda, rocblas_int *ipiv,
+                                         rocblas_double_complex *work,
+                                         rocblas_int *lwork,
+                                         rocblas_int *info) {
+  zgetri_(&n, A, &lda, ipiv, work, lwork, info);
 }
 
 // geqrf
