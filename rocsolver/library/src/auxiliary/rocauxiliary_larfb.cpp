@@ -38,7 +38,7 @@ rocsolver_larfb_impl(rocblas_handle handle, const rocblas_side side,
   // size of re-usable workspace
   size_t size_work;
   // size of array for temporary computations with
-  // triangular part of A
+  // triangular part of V
   size_t size_tmptr;
   // size of arrays of pointers (for batched cases)
   size_t size_workArr;

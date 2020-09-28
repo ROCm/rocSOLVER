@@ -19,45 +19,48 @@
 template <typename T, bool BATCHED>
 void rocsolver_gebrd_getMemorySize(const rocblas_int m, const rocblas_int n,
                                    const rocblas_int batch_count,
-                                   size_t *size_1, size_t *size_2,
-                                   size_t *size_3, size_t *size_4,
-                                   size_t *size_5, size_t *size_6) {
+                                   size_t *size_scalars,
+                                   size_t *size_work_workArr,
+                                   size_t *size_Abyx_norms, size_t *size_X,
+                                   size_t *size_Y) {
   // if quick return no workspace needed
   if (m == 0 || n == 0 || batch_count == 0) {
-    *size_1 = 0;
-    *size_2 = 0;
-    *size_3 = 0;
-    *size_4 = 0;
-    *size_5 = 0;
-    *size_6 = 0;
+    *size_scalars = 0;
+    *size_work_workArr = 0;
+    *size_Abyx_norms = 0;
+    *size_X = 0;
+    *size_Y = 0;
     return;
   }
 
   if (m <= GEBRD_GEBD2_SWITCHSIZE || n <= GEBRD_GEBD2_SWITCHSIZE) {
-    rocsolver_gebd2_getMemorySize<T, BATCHED>(m, n, batch_count, size_1, size_2,
-                                              size_3, size_4);
-    *size_5 = 0;
-    *size_6 = 0;
-  } else {
-    size_t s1, s2, s3, s4;
+    // requirements for calling a single GEBD2
+    rocsolver_gebd2_getMemorySize<T, BATCHED>(
+        m, n, batch_count, size_scalars, size_work_workArr, size_Abyx_norms);
+    *size_X = 0;
+    *size_Y = 0;
+  }
+
+  else {
+    size_t s1, s2, w1, w2, unused;
     rocblas_int k = GEBRD_GEBD2_SWITCHSIZE;
     rocblas_int d = min(m / k, n / k);
+
+    // sizes are maximum of what is required by GEBD2 and LABRD
     rocsolver_gebd2_getMemorySize<T, BATCHED>(m - d * k, n - d * k, batch_count,
-                                              size_1, size_2, size_3, size_4);
-    rocsolver_labrd_getMemorySize<T, BATCHED>(m, n, batch_count, &s1, &s2, &s3,
-                                              &s4);
-    *size_1 = max(*size_1, s1);
-    *size_2 = max(*size_2, s2);
-    *size_3 = max(*size_3, s3);
-    *size_4 = max(*size_4, s4);
+                                              size_scalars, &w1, &s1);
+    rocsolver_labrd_getMemorySize<T, BATCHED>(m, n, batch_count, &unused, &w2,
+                                              &s2);
+    *size_work_workArr = max(s1, s2);
+    *size_Abyx_norms = max(w1, w2);
 
     // size of matrix X
-    *size_5 = m * k;
-    *size_5 *= sizeof(T) * batch_count;
+    *size_X = m * k;
+    *size_X *= sizeof(T) * batch_count;
 
     // size of matrix Y
-    *size_6 = n * k;
-    *size_6 *= sizeof(T) * batch_count;
+    *size_Y = n * k;
+    *size_Y *= sizeof(T) * batch_count;
   }
 }
 
@@ -72,18 +75,13 @@ rocblas_status rocsolver_gebrd_template(
     const rocblas_int ldx, const rocblas_stride strideX, U Y,
     const rocblas_int shiftY, const rocblas_int ldy,
     const rocblas_stride strideY, const rocblas_int batch_count, T *scalars,
-    T *work, T **workArr, T *diag) {
+    void *work_workArr, T *Abyx_norms) {
   // quick return
   if (m == 0 || n == 0 || batch_count == 0)
     return rocblas_status_success;
 
   hipStream_t stream;
   rocblas_get_stream(handle, &stream);
-
-  // everything must be executed with scalars on the device
-  rocblas_pointer_mode old_mode;
-  rocblas_get_pointer_mode(handle, &old_mode);
-  rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
   T minone = -1;
   T one = 1;
@@ -93,14 +91,15 @@ rocblas_status rocsolver_gebrd_template(
   rocblas_int blocks;
 
   // if the matrix is small, use the unblocked variant of the algorithm
-  if (m <= k || n <= k) {
-    rocsolver_gebd2_template<S, T>(
+  if (m <= k || n <= k)
+    return rocsolver_gebd2_template<S, T>(
         handle, m, n, A, shiftA, lda, strideA, D, strideD, E, strideE, tauq,
         strideQ, taup, strideP, batch_count, scalars, work, workArr, diag);
 
-    rocblas_set_pointer_mode(handle, old_mode);
-    return rocblas_status_success;
-  }
+  // everything must be executed with scalars on the host
+  rocblas_pointer_mode old_mode;
+  rocblas_get_pointer_mode(handle, &old_mode);
+  rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
   // zero X and Y
   blocks = (ldx * k - 1) / 64 + 1;
@@ -119,7 +118,7 @@ rocblas_status rocsolver_gebrd_template(
         handle, m - j, n - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
         D + j, strideD, E + j, strideE, tauq + j, strideQ, taup + j, strideP, X,
         shiftX, ldx, strideX, Y, shiftY, ldy, strideY, batch_count, scalars,
-        work, workArr, diag);
+        work_workArr, Abyx_norms);
 
     // update the rest of the matrix
     rocblasCall_gemm<BATCHED, STRIDED, T>(
@@ -127,13 +126,13 @@ rocblas_status rocsolver_gebrd_template(
         m - j - jb, n - j - jb, jb, &minone, A, shiftA + idx2D(j + jb, j, lda),
         lda, strideA, Y, shiftY + jb, ldy, strideY, &one, A,
         shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count,
-        workArr);
+        (T **)work_workArr);
     rocblasCall_gemm<BATCHED, STRIDED, T>(
         handle, rocblas_operation_none, rocblas_operation_none, m - j - jb,
         n - j - jb, jb, &minone, X, shiftX + jb, ldx, strideX, A,
         shiftA + idx2D(j, j + jb, lda), lda, strideA, &one, A,
         shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count,
-        workArr);
+        (T **)work_workArr);
 
     blocks = (jb - 1) / 64 + 1;
     if (m >= n) {
@@ -160,7 +159,7 @@ rocblas_status rocsolver_gebrd_template(
     rocsolver_gebd2_template<S, T>(
         handle, m - j, n - j, A, shiftA + idx2D(j, j, lda), lda, strideA, D + j,
         strideD, E + j, strideE, tauq + j, strideQ, taup + j, strideP,
-        batch_count, scalars, work, workArr, diag);
+        batch_count, scalars, work_workArr, Abyx_norms);
 
   rocblas_set_pointer_mode(handle, old_mode);
   return rocblas_status_success;

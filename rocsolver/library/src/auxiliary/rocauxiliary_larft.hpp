@@ -122,7 +122,7 @@ void rocsolver_larft_getMemorySize(const rocblas_int k,
   // size of scalars (constants)
   *size_scalars = sizeof(T) * 3;
 
-  // size of workspace
+  // size of re-usable workspace
   *size_work = sizeof(T) * k * batch_count;
 
   // size of array of pointers to workspace

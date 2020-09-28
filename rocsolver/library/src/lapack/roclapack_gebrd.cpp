@@ -20,6 +20,12 @@ rocblas_status rocsolver_gebrd_impl(rocblas_handle handle, const rocblas_int m,
   if (st != rocblas_status_continue)
     return st;
 
+  // working with unshifted arrays
+  rocblas_int shiftA = 0;
+  rocblas_int shiftX = 0;
+  rocblas_int shiftY = 0;
+
+  // normal (non-bacthed non-strided) execution
   rocblas_stride strideA = 0;
   rocblas_stride strideD = 0;
   rocblas_stride strideE = 0;

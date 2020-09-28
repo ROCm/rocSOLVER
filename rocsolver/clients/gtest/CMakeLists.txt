@@ -1,4 +1,4 @@
-# ########################################################################
+ ########################################################################
 # Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
@@ -59,11 +59,11 @@ set(roclapack_test_source
     orglx_unglx_gtest.cpp
     orgxl_ungxl_gtest.cpp
     orgbr_ungbr_gtest.cpp
-    ormxr_unmxr_gtest.cpp
-    ormlx_unmlx_gtest.cpp
-    ormbr_unmbr_gtest.cpp
+#    ormxr_unmxr_gtest.cpp
+#    ormlx_unmlx_gtest.cpp
+#    ormbr_unmbr_gtest.cpp
     # bidiagonal matrices and svd
-    labrd_gtest.cpp
+#    labrd_gtest.cpp
     bdsqr_gtest.cpp
     # triangular factorizations and linear solvers
     potf2_potrf_gtest.cpp

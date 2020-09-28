@@ -49,7 +49,7 @@ void rocsolver_orgql_ungql_getMemorySize(
     // size of Abyx_tmptr is maximum of what is needed by org2r/ung2r and larfb.
     rocsolver_larft_getMemorySize<T, BATCHED>(jb, batch_count, &unused, &s1,
                                               &unused);
-    rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_left, m - jb, n, jb,
+    rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_left, m, n - jb, jb,
                                               batch_count, &s2, &s3, &unused);
 
     *size_work = max(s1, s2);
@@ -83,11 +83,11 @@ rocblas_status rocsolver_orgql_ungql_template(
   rocblas_int ldw = ORGxx_UNGxx_BLOCKSIZE;
   rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
-  // size of blocked part (unblocked size is k - kk)
+  // size of blocked part
   rocblas_int jb = ORGxx_UNGxx_BLOCKSIZE;
   rocblas_int kk = min(k, ((k - ORGxx_UNGxx_SWITCHSIZE + jb - 1) / jb) * jb);
 
-  // start of first blocked block
+  // start of first blocked block is j + n - k = n - kk
   rocblas_int j = k - kk;
 
   rocblas_int blocksy, blocksx;

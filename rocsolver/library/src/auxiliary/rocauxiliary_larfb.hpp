@@ -68,7 +68,7 @@ void rocsolver_larfb_getMemorySize(const rocblas_side side, const rocblas_int m,
   }
 
   // size of temporary array for computations with
-  // triangular part of A
+  // triangular part of V
   if (side == rocblas_side_left)
     *size_tmptr = n;
   else
@@ -228,7 +228,7 @@ rocblas_status rocsolver_larfb_template(
   rocblas_stride strideW = rocblas_stride(ldw) * order;
   uploT = (forward ? rocblas_fill_upper : rocblas_fill_lower);
 
-  // copy A1 to work
+  // copy A1 to tmptr
   rocblas_int blocksx = (order - 1) / 32 + 1;
   rocblas_int blocksy = (ldw - 1) / 32 + 1;
   hipLaunchKernelGGL(copymatA1, dim3(blocksx, blocksy, batch_count),
