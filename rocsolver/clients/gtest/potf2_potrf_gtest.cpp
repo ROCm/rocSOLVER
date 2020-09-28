@@ -13,7 +13,7 @@ using namespace std;
 
 typedef std::tuple<vector<int>, char> potrf_tuple;
 
-// each size_range vector is a {N, lda}
+// each size_range vector is a {N, lda, singular}
 
 // each uplo_range is a {uplo}
 
@@ -25,19 +25,20 @@ const vector<char> uplo_range = {'L', 'U'};
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
     // quick return
-    {0, 1},
+    {0, 1, 0},
     // invalid
-    {-1, 1},
-    {10, 2},
+    {-1, 1, 0},
+    {10, 2, 0},
     // normal (valid) samples
-    {10, 10},
-    {20, 30},
-    {50, 50},
-    {70, 80}};
+    {10, 10, 1},
+    {20, 30, 0},
+    {50, 50, 1},
+    {70, 80, 0}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
-    {192, 192}, {640, 960}, {1000, 1000}, {1024, 1024}, {2000, 2000},
+    {192, 192, 0},   {640, 960, 1},   {1000, 1000, 0},
+    {1024, 1024, 1}, {2000, 2000, 0},
 };
 
 Arguments potrf_setup_arguments(potrf_tuple tup)
@@ -52,7 +53,8 @@ Arguments potrf_setup_arguments(potrf_tuple tup)
 
     arg.uplo_option = uplo;
 
-    arg.timing = 0;
+  arg.timing = 0;
+  arg.singular = matrix_size[2];
 
     // only testing standard use case for strides
     // strides are ignored in normal and batched tests
@@ -86,8 +88,12 @@ TEST_P(POTF2, __float)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, false, 0, float>();
 
-    arg.batch_count = 1;
+  arg.batch_count = 1;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, false, 0, float>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, false, 0, float>(arg);
 }
 
 TEST_P(POTF2, __double)
@@ -97,8 +103,12 @@ TEST_P(POTF2, __double)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, false, 0, double>();
 
-    arg.batch_count = 1;
+  arg.batch_count = 1;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, false, 0, double>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, false, 0, double>(arg);
 }
 
 TEST_P(POTF2, __float_complex)
@@ -108,8 +118,12 @@ TEST_P(POTF2, __float_complex)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, false, 0, rocblas_float_complex>();
 
-    arg.batch_count = 1;
+  arg.batch_count = 1;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, false, 0, rocblas_float_complex>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, false, 0, rocblas_float_complex>(arg);
 }
 
 TEST_P(POTF2, __double_complex)
@@ -119,8 +133,12 @@ TEST_P(POTF2, __double_complex)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, false, 0, rocblas_double_complex>();
 
-    arg.batch_count = 1;
+  arg.batch_count = 1;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, false, 0, rocblas_double_complex>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, false, 0, rocblas_double_complex>(arg);
 }
 
 TEST_P(POTRF, __float)
@@ -130,8 +148,12 @@ TEST_P(POTRF, __float)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, false, 1, float>();
 
-    arg.batch_count = 1;
+  arg.batch_count = 1;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, false, 1, float>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, false, 1, float>(arg);
 }
 
 TEST_P(POTRF, __double)
@@ -141,8 +163,12 @@ TEST_P(POTRF, __double)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, false, 1, double>();
 
-    arg.batch_count = 1;
+  arg.batch_count = 1;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, false, 1, double>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, false, 1, double>(arg);
 }
 
 TEST_P(POTRF, __float_complex)
@@ -152,8 +178,12 @@ TEST_P(POTRF, __float_complex)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, false, 1, rocblas_float_complex>();
 
-    arg.batch_count = 1;
+  arg.batch_count = 1;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, false, 1, rocblas_float_complex>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, false, 1, rocblas_float_complex>(arg);
 }
 
 TEST_P(POTRF, __double_complex)
@@ -163,8 +193,12 @@ TEST_P(POTRF, __double_complex)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, false, 1, rocblas_double_complex>();
 
-    arg.batch_count = 1;
+  arg.batch_count = 1;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, false, 1, rocblas_double_complex>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, false, 1, rocblas_double_complex>(arg);
 }
 
 // batched tests
@@ -176,8 +210,12 @@ TEST_P(POTF2, batched__float)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true, true, 0, float>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<true, true, 0, float>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<true, true, 0, float>(arg);
 }
 
 TEST_P(POTF2, batched__double)
@@ -187,8 +225,12 @@ TEST_P(POTF2, batched__double)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true, true, 0, double>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<true, true, 0, double>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<true, true, 0, double>(arg);
 }
 
 TEST_P(POTF2, batched__float_complex)
@@ -198,8 +240,12 @@ TEST_P(POTF2, batched__float_complex)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true, true, 0, rocblas_float_complex>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<true, true, 0, rocblas_float_complex>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<true, true, 0, rocblas_float_complex>(arg);
 }
 
 TEST_P(POTF2, batched__double_complex)
@@ -209,8 +255,12 @@ TEST_P(POTF2, batched__double_complex)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true, true, 0, rocblas_double_complex>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<true, true, 0, rocblas_double_complex>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<true, true, 0, rocblas_double_complex>(arg);
 }
 
 TEST_P(POTRF, batched__float)
@@ -220,8 +270,12 @@ TEST_P(POTRF, batched__float)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true, true, 1, float>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<true, true, 1, float>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<true, true, 1, float>(arg);
 }
 
 TEST_P(POTRF, batched__double)
@@ -231,8 +285,12 @@ TEST_P(POTRF, batched__double)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true, true, 1, double>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<true, true, 1, double>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<true, true, 1, double>(arg);
 }
 
 TEST_P(POTRF, batched__float_complex)
@@ -242,8 +300,12 @@ TEST_P(POTRF, batched__float_complex)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true, true, 1, rocblas_float_complex>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<true, true, 1, rocblas_float_complex>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<true, true, 1, rocblas_float_complex>(arg);
 }
 
 TEST_P(POTRF, batched__double_complex)
@@ -253,8 +315,12 @@ TEST_P(POTRF, batched__double_complex)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<true, true, 1, rocblas_double_complex>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<true, true, 1, rocblas_double_complex>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<true, true, 1, rocblas_double_complex>(arg);
 }
 
 // strided_batched cases
@@ -266,8 +332,12 @@ TEST_P(POTF2, strided_batched__float)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, true, 0, float>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, true, 0, float>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, true, 0, float>(arg);
 }
 
 TEST_P(POTF2, strided_batched__double)
@@ -277,8 +347,12 @@ TEST_P(POTF2, strided_batched__double)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, true, 0, double>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, true, 0, double>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, true, 0, double>(arg);
 }
 
 TEST_P(POTF2, strided_batched__float_complex)
@@ -288,8 +362,12 @@ TEST_P(POTF2, strided_batched__float_complex)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, true, 0, rocblas_float_complex>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, true, 0, rocblas_float_complex>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, true, 0, rocblas_float_complex>(arg);
 }
 
 TEST_P(POTF2, strided_batched__double_complex)
@@ -299,8 +377,12 @@ TEST_P(POTF2, strided_batched__double_complex)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, true, 0, rocblas_double_complex>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, true, 0, rocblas_double_complex>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, true, 0, rocblas_double_complex>(arg);
 }
 
 TEST_P(POTRF, strided_batched__float)
@@ -310,8 +392,12 @@ TEST_P(POTRF, strided_batched__float)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, true, 1, float>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, true, 1, float>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, true, 1, float>(arg);
 }
 
 TEST_P(POTRF, strided_batched__double)
@@ -321,8 +407,12 @@ TEST_P(POTRF, strided_batched__double)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, true, 1, double>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, true, 1, double>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, true, 1, double>(arg);
 }
 
 TEST_P(POTRF, strided_batched__float_complex)
@@ -332,8 +422,12 @@ TEST_P(POTRF, strided_batched__float_complex)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, true, 1, rocblas_float_complex>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, true, 1, rocblas_float_complex>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, true, 1, rocblas_float_complex>(arg);
 }
 
 TEST_P(POTRF, strided_batched__double_complex)
@@ -343,8 +437,12 @@ TEST_P(POTRF, strided_batched__double_complex)
     if(arg.uplo_option == 'L' && arg.N == 0)
         testing_potf2_potrf_bad_arg<false, true, 1, rocblas_double_complex>();
 
-    arg.batch_count = 3;
+  arg.batch_count = 3;
+  if (arg.singular == 1)
     testing_potf2_potrf<false, true, 1, rocblas_double_complex>(arg);
+
+  arg.singular = 0;
+  testing_potf2_potrf<false, true, 1, rocblas_double_complex>(arg);
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
