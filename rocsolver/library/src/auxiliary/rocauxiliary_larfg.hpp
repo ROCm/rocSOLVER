@@ -32,6 +32,7 @@ __global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms,
     t[0] = (n - a[0]) / n;
     // beta:
     a[0] = n;
+
   } else {
     norms[b] = 1;
     t[0] = 0;
@@ -63,6 +64,7 @@ __global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms,
     t[0] = (n - a[0]) / n;
     // beta:
     a[0] = n;
+
   } else {
     norms[b] = 1;
     t[0] = 0;
@@ -123,20 +125,19 @@ rocsolver_larfg_template(rocblas_handle handle, const rocblas_int n, U alpha,
   hipStream_t stream;
   rocblas_get_stream(handle, &stream);
 
-  // everything must be executed with scalars on the device
-  rocblas_pointer_mode old_mode;
-  rocblas_get_pointer_mode(handle, &old_mode);
-  rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
-
   // if n==1 return tau=0
   dim3 gridReset(1, batch_count, 1);
   dim3 threads(1, 1, 1);
   if (n == 1 && !COMPLEX) {
     hipLaunchKernelGGL(reset_batch_info<T>, gridReset, threads, 0, stream, tau,
                        strideP, 1, 0);
-    rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
   }
+
+  // everything must be executed with scalars on the device
+  rocblas_pointer_mode old_mode;
+  rocblas_get_pointer_mode(handle, &old_mode);
+  rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
   // compute squared norm of x
   rocblasCall_dot<COMPLEX, T>(handle, n - 1, x, shiftx, incx, stridex, x,
