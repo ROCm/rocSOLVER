@@ -49,10 +49,10 @@ void rocsolver_gebrd_getMemorySize(const rocblas_int m, const rocblas_int n,
     // sizes are maximum of what is required by GEBD2 and LABRD
     rocsolver_gebd2_getMemorySize<T, BATCHED>(m - d * k, n - d * k, batch_count,
                                               size_scalars, &w1, &s1);
-    rocsolver_labrd_getMemorySize<T, BATCHED>(m, n, batch_count, &unused, &w2,
-                                              &s2);
-    *size_work_workArr = max(s1, s2);
-    *size_Abyx_norms = max(w1, w2);
+    rocsolver_labrd_getMemorySize<T, BATCHED>(m, n, k, batch_count, &unused,
+                                              &w2, &s2);
+    *size_work_workArr = max(w1, w2);
+    *size_Abyx_norms = max(s1, s2);
 
     // size of matrix X
     *size_X = m * k;
@@ -71,8 +71,8 @@ rocblas_status rocsolver_gebrd_template(
     const rocblas_int shiftA, const rocblas_int lda,
     const rocblas_stride strideA, S *D, const rocblas_stride strideD, S *E,
     const rocblas_stride strideE, T *tauq, const rocblas_stride strideQ,
-    T *taup, const rocblas_stride strideP, U X, const rocblas_int shiftX,
-    const rocblas_int ldx, const rocblas_stride strideX, U Y,
+    T *taup, const rocblas_stride strideP, T *X, const rocblas_int shiftX,
+    const rocblas_int ldx, const rocblas_stride strideX, T *Y,
     const rocblas_int shiftY, const rocblas_int ldy,
     const rocblas_stride strideY, const rocblas_int batch_count, T *scalars,
     void *work_workArr, T *Abyx_norms) {
@@ -94,7 +94,7 @@ rocblas_status rocsolver_gebrd_template(
   if (m <= k || n <= k)
     return rocsolver_gebd2_template<S, T>(
         handle, m, n, A, shiftA, lda, strideA, D, strideD, E, strideE, tauq,
-        strideQ, taup, strideP, batch_count, scalars, work, workArr, diag);
+        strideQ, taup, strideP, batch_count, scalars, work_workArr, Abyx_norms);
 
   // everything must be executed with scalars on the host
   rocblas_pointer_mode old_mode;

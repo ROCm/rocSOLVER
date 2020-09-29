@@ -18,6 +18,7 @@
 
 template <typename T, bool BATCHED>
 void rocsolver_labrd_getMemorySize(const rocblas_int m, const rocblas_int n,
+                                   const rocblas_int k,
                                    const rocblas_int batch_count,
                                    size_t *size_scalars,
                                    size_t *size_work_workArr,
@@ -31,13 +32,13 @@ void rocsolver_labrd_getMemorySize(const rocblas_int m, const rocblas_int n,
   }
 
   // size of scalars (constants) for rocblas calls
-  *size_1 = sizeof(T) * 3;
+  *size_scalars = sizeof(T) * 3;
 
   size_t s1, s2;
 
   // size of array of pointers (batched cases)
   if (BATCHED)
-    s1 = sizeof(T *) * batch_count;
+    s1 = 2 * sizeof(T *) * batch_count;
   else
     s1 = 0;
 

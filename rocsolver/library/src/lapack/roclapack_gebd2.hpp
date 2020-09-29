@@ -18,9 +18,11 @@
 #include "rocsolver.h"
 
 template <typename T, bool BATCHED>
-void rocsolver_gebd2_getMemorySize(
-    const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
-    size_t *size_scalars, size_t *size_work_workArr size_t *size_Abyx_norms) {
+void rocsolver_gebd2_getMemorySize(const rocblas_int m, const rocblas_int n,
+                                   const rocblas_int batch_count,
+                                   size_t *size_scalars,
+                                   size_t *size_work_workArr,
+                                   size_t *size_Abyx_norms) {
   // if quick return no workspace needed
   if (m == 0 || n == 0 || batch_count == 0) {
     *size_scalars = 0;
