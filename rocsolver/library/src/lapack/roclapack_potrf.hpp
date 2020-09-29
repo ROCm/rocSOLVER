@@ -16,7 +16,7 @@
 
 template <typename U>
 __global__ void chk_positive(rocblas_int *iinfo, rocblas_int *info, int j) {
-  int id = hipBlockIdx_x;
+  int id = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
   if (info[id] == 0 && iinfo[id] > 0)
     info[id] = iinfo[id] + j;
