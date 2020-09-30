@@ -24,12 +24,14 @@ __global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms,
 
   if (norms[b] > 0) {
     T n = sqrt(norms[b] + a[0] * a[0]);
-    n = a[0] > 0 ? -n : n;
+    n = a[0] >= 0 ? -n : n;
 
     // scaling factor:
     norms[b] = 1.0 / (a[0] - n);
+
     // tau:
     t[0] = (n - a[0]) / n;
+
     // beta:
     a[0] = n;
 
@@ -43,25 +45,35 @@ template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
 __global__ void set_taubeta(T *tau, const rocblas_stride strideP, T *norms,
                             U alpha, const rocblas_int shifta,
                             const rocblas_stride stride) {
+  using S = decltype(std::real(T{}));
   int b = hipBlockIdx_x;
+  S r, rr, ri, ar, ai;
 
   T *a = load_ptr_batch<T>(alpha, b, shifta, stride);
   T *t = tau + b * strideP;
 
-  auto m = a[0].imag() * a[0].imag();
+  ar = a[0].real();
+  ai = a[0].imag();
+  S m = ai * ai;
 
   if (norms[b].real() > 0 || m > 0) {
-    m += a[0].real() * a[0].real();
-    auto nr = sqrt(norms[b].real() + m);
-
-    // n = -sgn(alpha) * norm(x)
-    auto n =
-        m > 0 ? -copysign(nr, a[0].real() != 0 ? a[0].real() : a[0].imag()) : 0;
+    m += ar * ar;
+    S n = sqrt(norms[b].real() + m);
+    n = ar >= 0 ? -n : n;
 
     // scaling factor:
-    norms[b] = 1.0 / (a[0] - n);
+    //    norms[b] = 1.0 / (a[0] - n);
+    r = (ar - n) * (ar - n) + ai * ai;
+    rr = (ar - n) / r;
+    ri = -ai / r;
+    norms[b] = rocblas_complex_num<S>(rr, ri);
+
     // tau:
-    t[0] = (n - a[0]) / n;
+    //t[0] = (n - a[0]) / n;
+    rr = (n - ar) / n;
+    ri = -ai / n;
+    t[0] = rocblas_complex_num<S>(rr, ri);
+
     // beta:
     a[0] = n;
 

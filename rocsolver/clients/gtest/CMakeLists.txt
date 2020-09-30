@@ -66,10 +66,10 @@ set(roclapack_test_source
     labrd_gtest.cpp
     bdsqr_gtest.cpp
     # triangular factorizations and linear solvers
-#    potf2_potrf_gtest.cpp
-#    getf2_getrf_gtest.cpp
-#    getri_gtest.cpp
-#    getrs_gtest.cpp
+    potf2_potrf_gtest.cpp
+    getf2_getrf_gtest.cpp
+    getri_gtest.cpp
+    getrs_gtest.cpp
     # orthogonal factorizations
 #    geqr2_geqrf_gtest.cpp
 #    geql2_geqlf_gtest.cpp
