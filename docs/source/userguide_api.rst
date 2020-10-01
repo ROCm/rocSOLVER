@@ -16,7 +16,7 @@ rocSOLVER Types
 -----------------
 
 Most rocSOLVER types are aliases of rocBLAS types.
-See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/api.html#types>`_.
+See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html>`_.
 
 rocsolver_int
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
