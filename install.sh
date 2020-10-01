@@ -67,7 +67,7 @@ Options:
                               Official documentation is available online at https://rocsolver.readthedocs.io/
                               Building locally with this flag will require docker on your machine. If you are
                               familiar with doxygen, sphinx and documentation tools, you can alternatively
-                              use the scripts provided in rocsolver/docs.
+                              use the scripts provided in the docs directory.
 EOF
 }
 
