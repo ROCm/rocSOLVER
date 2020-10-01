@@ -249,7 +249,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
     n                   rocblas_int. n >= 0.\n
                         The order (size) of the block reflector.
     @param[in]
-    k                   rocsovler_int. k >= 1.\n
+    k                   rocblas_int. k >= 1.\n
                         The number of Householder matrices.
     @param[in]
     V                   pointer to type. Array on the GPU of size ldv*k if column-wise, or ldv*n if row-wise.\n
@@ -450,7 +450,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(rocblas_handle handle,
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix A.
     @param[in]
-    k                   rocsovler_int. k >= 1.\n
+    k                   rocblas_int. k >= 1.\n
                         The number of Householder matrices.
     @param[in]
     V                   pointer to type. Array on the GPU of size ldv*k if column-wise, ldv*n if row-wise and applying from the right,
