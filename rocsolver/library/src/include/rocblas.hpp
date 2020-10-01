@@ -341,7 +341,7 @@ rocblasCall_gemm(rocblas_handle handle, rocblas_operation trans_a,
   return rocblas_gemm_template<BATCHED, T>(
       handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a,
       ld_a, stride_a, cast2constType<T>(B), offset_b, ld_b, stride_b, beta,
-      work, offset_c, ld_c, stride_c, batch_count);
+      cast2constPointer(work), offset_c, ld_c, stride_c, batch_count);
 }
 
 // trmm
@@ -555,8 +555,8 @@ rocblasCall_trsm(rocblas_handle handle, rocblas_side side, rocblas_fill uplo,
   U supplied_invA = nullptr;
   return rocblas_trsm_template<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
       handle, side, uplo, transA, diag, m, n, alpha, cast2constType(A),
-      offset_A, lda, stride_A, cast2nonConstPointer(B), offset_B, ldb, stride_B,
-      batch_count, optimal_mem, x_temp, x_temp_arr, invA, invA_arr,
+      offset_A, lda, stride_A, B, offset_B, ldb, stride_B, batch_count,
+      optimal_mem, x_temp, x_temp_arr, invA, invA_arr,
       cast2constType(supplied_invA), 0);
 }
 
@@ -582,8 +582,8 @@ rocblasCall_trsm(rocblas_handle handle, rocblas_side side, rocblas_fill uplo,
   U supplied_invA = nullptr;
   return rocblas_trsm_template<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
       handle, side, uplo, transA, diag, m, n, alpha, cast2constType((U)workArr),
-      offset_A, lda, stride_A, cast2nonConstPointer(B), offset_B, ldb, stride_B,
-      batch_count, optimal_mem, x_temp, x_temp_arr, invA, invA_arr,
+      offset_A, lda, stride_A, B, offset_B, ldb, stride_B, batch_count,
+      optimal_mem, x_temp, x_temp_arr, invA, invA_arr,
       cast2constType(supplied_invA), 0);
 }
 
@@ -660,7 +660,8 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle, rocblas_fill uplo,
 
   return rocblas_trtri_template<ROCBLAS_TRTRI_NB, BATCHED, STRIDED, T>(
       handle, uplo, diag, n, cast2constType(A), offset_A, lda, stride_A, 0,
-      workArr, offset_invA, ldinvA, stride_invA, 0, batch_count, 1, c_temp_arr);
+      cast2constPointer(workArr), offset_invA, ldinvA, stride_invA, 0,
+      batch_count, 1, cast2constPointer(c_temp_arr));
 }
 
 #endif // _ROCBLAS_HPP_
