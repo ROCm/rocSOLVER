@@ -40,10 +40,21 @@ rocblas_status rocsolver_getrs_argCheck(
 template <bool BATCHED, typename T>
 void rocsolver_getrs_getMemorySize(const rocblas_int n, const rocblas_int nrhs,
                                    const rocblas_int batch_count,
-                                   size_t *size_1, size_t *size_2,
-                                   size_t *size_3, size_t *size_4) {
+                                   size_t *size_work1, size_t *size_work2,
+                                   size_t *size_work3, size_t *size_work4) {
+  // if quick return, no workspace is needed
+  if (n == 0 || nrhs == 0 || batch_count == 0) {
+    *size_work1 = 0;
+    *size_work2 = 0;
+    *size_work3 = 0;
+    *size_work4 = 0;
+    return;
+  }
+
+  // workspace required for calling TRSM
   rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, n, nrhs, batch_count,
-                                   size_1, size_2, size_3, size_4);
+                                   size_work1, size_work2, size_work3,
+                                   size_work4);
 }
 
 template <bool BATCHED, typename T, typename U>
@@ -53,8 +64,8 @@ rocblas_status rocsolver_getrs_template(
     const rocblas_int lda, const rocblas_stride strideA,
     const rocblas_int *ipiv, const rocblas_stride strideP, U B,
     const rocblas_int shiftB, const rocblas_int ldb,
-    const rocblas_stride strideB, const rocblas_int batch_count, void *x_temp,
-    void *x_temp_arr, void *invA, void *invA_arr, bool optim_mem) {
+    const rocblas_stride strideB, const rocblas_int batch_count, void *work1,
+    void *work2, void *work3, void *work4, bool optim_mem) {
   // quick return
   if (n == 0 || nrhs == 0 || batch_count == 0) {
     return rocblas_status_success;
@@ -81,31 +92,30 @@ rocblas_status rocsolver_getrs_template(
     rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
                                  trans, rocblas_diagonal_unit, n, nrhs, &one, A,
                                  shiftA, lda, strideA, B, shiftB, ldb, strideB,
-                                 batch_count, optim_mem, x_temp, x_temp_arr,
-                                 invA, invA_arr);
+                                 batch_count, optim_mem, work1, work2, work3,
+                                 work4);
 
     // solve U*X = B, overwriting B with X
     rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_upper,
                                  trans, rocblas_diagonal_non_unit, n, nrhs,
                                  &one, A, shiftA, lda, strideA, B, shiftB, ldb,
-                                 strideB, batch_count, optim_mem, x_temp,
-                                 x_temp_arr, invA, invA_arr);
-
+                                 strideB, batch_count, optim_mem, work1, work2,
+                                 work3, work4);
   } else {
 
     // solve U**T *X = B or U**H *X = B, overwriting B with X
     rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_upper,
                                  trans, rocblas_diagonal_non_unit, n, nrhs,
                                  &one, A, shiftA, lda, strideA, B, shiftB, ldb,
-                                 strideB, batch_count, optim_mem, x_temp,
-                                 x_temp_arr, invA, invA_arr);
+                                 strideB, batch_count, optim_mem, work1, work2,
+                                 work3, work4);
 
     // solve L**T *X = B, or L**H *X = B overwriting B with X
     rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
                                  trans, rocblas_diagonal_unit, n, nrhs, &one, A,
                                  shiftA, lda, strideA, B, shiftB, ldb, strideB,
-                                 batch_count, optim_mem, x_temp, x_temp_arr,
-                                 invA, invA_arr);
+                                 batch_count, optim_mem, work1, work2, work3,
+                                 work4);
 
     // then apply row interchanges to the solution vectors
     rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n,

@@ -20,37 +20,44 @@ rocsolver_potf2_batched_impl(rocblas_handle handle, const rocblas_fill uplo,
   if (st != rocblas_status_continue)
     return st;
 
+  // working with unshifted arrays
+  rocblas_int shiftA = 0;
+
+  // batched execution
   rocblas_stride strideA = 0;
 
-  // memory managment
-  size_t size_1; // size of constants
-  size_t size_2; // size of workspace
-  size_t size_3;
-  rocsolver_potf2_getMemorySize<T>(n, batch_count, &size_1, &size_2, &size_3);
+  // memory workspace sizes:
+  // size for constants in rocblas calls
+  size_t size_scalars;
+  // size of reusable workspace
+  size_t size_work;
+  // size to store pivots in intermediate computations
+  size_t size_pivots;
+  rocsolver_potf2_getMemorySize<T>(n, batch_count, &size_scalars, &size_work,
+                                   &size_pivots);
 
-  // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-  void *scalars, *work, *pivotGPU;
-  hipMalloc(&scalars, size_1);
-  hipMalloc(&work, size_2);
-  hipMalloc(&pivotGPU, size_3);
-  if (!scalars || (size_2 && !work) || (size_3 && !pivotGPU))
+  if (rocblas_is_device_memory_size_query(handle))
+    return rocblas_set_optimal_device_memory_size(handle, size_scalars,
+                                                  size_work, size_pivots);
+
+  // memory workspace allocation
+  void *scalars, *work, *pivots;
+  rocblas_device_malloc mem(handle, size_scalars, size_work, size_pivots);
+
+  if (!mem)
     return rocblas_status_memory_error;
 
-  // scalar constants for rocblas functions calls
-  // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
+  scalars = mem[0];
+  work = mem[1];
+  pivots = mem[2];
   T sca[] = {-1, 0, 1};
-  RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
+  RETURN_IF_HIP_ERROR(
+      hipMemcpy((T *)scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
   // execution
-  rocblas_status status = rocsolver_potf2_template<T>(
-      handle, uplo, n, A,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      lda, strideA, info, batch_count, (T *)scalars, (T *)work, (T *)pivotGPU);
-
-  hipFree(scalars);
-  hipFree(work);
-  hipFree(pivotGPU);
-  return status;
+  return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA,
+                                     info, batch_count, (T *)scalars, (T *)work,
+                                     (T *)pivots);
 }
 
 /*

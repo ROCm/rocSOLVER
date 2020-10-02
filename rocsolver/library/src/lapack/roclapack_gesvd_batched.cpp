@@ -25,58 +25,60 @@ rocblas_status rocsolver_gesvd_batched_impl(
   if (st != rocblas_status_continue)
     return st;
 
+  // working with unshifted arrays
+  rocblas_int shiftA = 0;
+
+  // batched execution
   rocblas_stride strideA = 0;
 
-  // memory managment
-  // size for constants
-  size_t size_1;
-  // size of reusable workspace
-  size_t size_2;
-  // size of array of pointers to reusable workspace (only for batched case)
-  size_t size_3;
-  // size of fixed workspace (it cannot be re-used by other internal
-  // subroutines)
-  size_t size_4;
-  // size of the array for the householder scalars
-  size_t size_5;
-  // size of workspace for TRMM calls
-  size_t size_6;
+  // memory workspace sizes:
+  // size for constants in rocblas calls
+  size_t size_scalars;
+  // size of reusable workspace and array of pointers (batched case)
+  size_t size_work_workArr;
+  // size of array of pointers (only for batched case)
+  size_t size_workArr;
+  // extra requirements for calling GEBRD and ORGBR
+  size_t size_Abyx_norms_tmptr, size_X_trfact, size_Y;
+  //size of array tau to store householder scalars
+  size_t size_tau;
   rocsolver_gesvd_getMemorySize<true, T, TT>(
-      left_svect, right_svect, m, n, batch_count, &size_1, &size_2, &size_3,
-      &size_4, &size_5, &size_6);
+      left_svect, right_svect, m, n, batch_count, &size_scalars,
+      &size_work_workArr, &size_Abyx_norms_tmptr, &size_X_trfact, &size_Y,
+      &size_tau, &size_workArr);
 
-  // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-  void *scalars, *workgral, *workArr, *workfunc, *tau, *workTrmm;
-  hipMalloc(&scalars, size_1);
-  hipMalloc(&workgral, size_2);
-  hipMalloc(&workArr, size_3);
-  hipMalloc(&workfunc, size_4);
-  hipMalloc(&tau, size_5);
-  hipMalloc(&workTrmm, size_6);
-  if ((size_1 && !scalars) || (size_2 && !workgral) || (size_3 && !workArr) ||
-      (size_4 && !workfunc) || (size_5 && !tau) || (size_6 && !workTrmm))
+  if (rocblas_is_device_memory_size_query(handle))
+    return rocblas_set_optimal_device_memory_size(
+        handle, size_scalars, size_work_workArr, size_Abyx_norms_tmptr,
+        size_X_trfact, size_Y, size_tau, size_workArr);
+
+  // memory workspace allocation
+  void *scalars, *work_workArr, *Abyx_norms_tmptr, *X_trfact, *Y, *tau,
+      *workArr;
+  rocblas_device_malloc mem(handle, size_scalars, size_work_workArr,
+                            size_Abyx_norms_tmptr, size_X_trfact, size_Y,
+                            size_tau, size_workArr);
+
+  if (!mem)
     return rocblas_status_memory_error;
 
-  // scalar constants for rocblas functions calls
-  // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
+  scalars = mem[0];
+  work_workArr = mem[1];
+  Abyx_norms_tmptr = mem[2];
+  X_trfact = mem[3];
+  Y = mem[4];
+  tau = mem[5];
+  workArr = mem[6];
   T sca[] = {-1, 0, 1};
-  RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
+  RETURN_IF_HIP_ERROR(
+      hipMemcpy((T *)scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
   // execution
-  rocblas_status status = rocsolver_gesvd_template<true, false, T>(
-      handle, left_svect, right_svect, m, n, A, 0, lda, strideA, S, strideS, U,
-      ldu, strideU, V, ldv, strideV, E, strideE, fast_alg, info, batch_count,
-      (T *)scalars, workgral, (T **)workArr, (T *)workfunc, (T *)tau,
-      (T *)workTrmm);
-
-  hipFree(scalars);
-  hipFree(workgral);
-  hipFree(workArr);
-  hipFree(workfunc);
-  hipFree(tau);
-  hipFree(workTrmm);
-
-  return status;
+  return rocsolver_gesvd_template<true, false, T>(
+      handle, left_svect, right_svect, m, n, A, shiftA, lda, strideA, S,
+      strideS, U, ldu, strideU, V, ldv, strideV, E, strideE, fast_alg, info,
+      batch_count, (T *)scalars, work_workArr, (T *)Abyx_norms_tmptr,
+      (T *)X_trfact, (T *)Y, (T *)tau, (T **)workArr);
 }
 
 /*

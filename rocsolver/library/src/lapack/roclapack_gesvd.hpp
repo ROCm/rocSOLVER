@@ -153,21 +153,21 @@ rocblas_status rocsolver_gesvd_argCheck(
 
 /** Helper to calculate workspace sizes **/
 template <bool BATCHED, typename T, typename S>
-void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
-                                   const rocblas_svect right_svect,
-                                   const rocblas_int m, const rocblas_int n,
-                                   const rocblas_int batch_count,
-                                   size_t *size_1, size_t *size_2,
-                                   size_t *size_3, size_t *size_4,
-                                   size_t *size_5, size_t *size_6) {
+void rocsolver_gesvd_getMemorySize(
+    const rocblas_svect left_svect, const rocblas_svect right_svect,
+    const rocblas_int m, const rocblas_int n, const rocblas_int batch_count,
+    size_t *size_scalars, size_t *size_work_workArr,
+    size_t *size_Abyx_norms_tmptr, size_t *size_X_trfact, size_t *size_Y,
+    size_t *size_tau, size_t *size_workArr) {
   // if quick return, set workspace to zero
   if (n == 0 || m == 0 || batch_count == 0) {
-    *size_1 = 0;
-    *size_2 = 0;
-    *size_3 = 0;
-    *size_4 = 0;
-    *size_5 = 0;
-    *size_6 = 0;
+    *size_scalars = 0;
+    *size_work_workArr = 0;
+    *size_Abyx_norms_tmptr = 0;
+    *size_X_trfact = 0;
+    *size_Y = 0;
+    *size_tau = 0;
+    *size_workArr = 0;
     return;
   }
 
@@ -181,18 +181,22 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
   const bool rightvA = (right_svect == rocblas_svect_all);
   const bool rightvN = (right_svect == rocblas_svect_none);
 
-  size_t s2, s4;
+  size_t w, s, t, unused;
   rocblas_int k = min(m, n);
   rocblas_int nu = leftvN ? 0 : m;
   rocblas_int nv = rightvN ? 0 : n;
 
+  *size_workArr = 0;
+
   // workspace required for the bidiagonalization
-  rocsolver_gebd2_getMemorySize<T, BATCHED>(m, n, batch_count, size_1, size_2,
-                                            size_3, size_4);
+  rocsolver_gebrd_getMemorySize<T, BATCHED>(
+      m, n, batch_count, size_scalars, size_work_workArr, size_Abyx_norms_tmptr,
+      size_X_trfact, size_Y);
 
   // worksapce required for the SVD of the bidiagonal form
-  rocsolver_bdsqr_getMemorySize<S>(k, nv, nu, 0, batch_count, &s2);
-  *size_2 = (s2 >= *size_2) ? s2 : *size_2;
+  rocsolver_bdsqr_getMemorySize<S>(k, nv, nu, 0, batch_count, &w);
+  if (w > *size_work_workArr)
+    *size_work_workArr = w;
 
   // workspace required to compute the left singular vectors
   if (!leftvN) {
@@ -201,10 +205,14 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
     else
       k = m;
     rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(rocblas_column_wise, m, k,
-                                                    n, batch_count, size_1, &s2,
-                                                    size_3, &s4, size_6);
-    *size_2 = (s2 >= *size_2) ? s2 : *size_2;
-    *size_4 = (s4 >= *size_4) ? s4 : *size_4;
+                                                    n, batch_count, &unused, &w,
+                                                    &s, &t, size_workArr);
+    if (w > *size_work_workArr)
+      *size_work_workArr = w;
+    if (s > *size_Abyx_norms_tmptr)
+      *size_Abyx_norms_tmptr = s;
+    if (t > *size_X_trfact)
+      *size_X_trfact = t;
   }
 
   // workspace required to compute the right singular vectors
@@ -214,15 +222,20 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
     else
       k = n;
     rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(rocblas_row_wise, k, n, m,
-                                                    batch_count, size_1, &s2,
-                                                    size_3, &s4, size_6);
-    *size_2 = (s2 >= *size_2) ? s2 : *size_2;
-    *size_4 = (s4 >= *size_4) ? s4 : *size_4;
+                                                    batch_count, &unused, &w,
+                                                    &s, &t, size_workArr);
+
+    if (w > *size_work_workArr)
+      *size_work_workArr = w;
+    if (s > *size_Abyx_norms_tmptr)
+      *size_Abyx_norms_tmptr = s;
+    if (t > *size_X_trfact)
+      *size_X_trfact = t;
   }
 
   // size of array tau to store householder scalars on intermediate
   // orthonormal/unitary matrices
-  *size_5 = 2 * sizeof(T) * min(m, n) * batch_count;
+  *size_tau = 2 * sizeof(T) * min(m, n) * batch_count;
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename TT, typename W>
@@ -235,7 +248,8 @@ rocblas_status rocsolver_gesvd_template(
     const rocblas_int ldv, const rocblas_stride strideV, TT *E,
     const rocblas_stride strideE, const rocblas_workmode fast_alg,
     rocblas_int *info, const rocblas_int batch_count, T *scalars,
-    void *workgral, T **workArr, T *workfunc, T *tau, T *workTrmm) {
+    void *work_workArr, T *Abyx_norms_tmptr, T *X_trfact, T *Y, T *tau,
+    T **workArr) {
   constexpr bool COMPLEX = is_complex<T>;
 
   // quick return
@@ -295,10 +309,10 @@ rocblas_status rocsolver_gesvd_template(
   else { // (m < THIN_SVD_SWITCH*n && n < THIN_SVD_SWITCH*m)
 
     // 1. Bidiagonalize A.
-    rocsolver_gebd2_template(handle, m, n, A, shiftA, lda, strideA, S, strideS,
-                             E, strideE, tau, k, (tau + k * batch_count), k,
-                             batch_count, scalars, (T *)workgral, workArr,
-                             workfunc);
+    rocsolver_gebrd_template<BATCHED, STRIDED>(
+        handle, m, n, A, shiftA, lda, strideA, S, strideS, E, strideE, tau, k,
+        (tau + k * batch_count), k, X_trfact, 0, m, m * k, Y, 0, n, n * k,
+        batch_count, scalars, work_workArr, Abyx_norms_tmptr);
 
     // 2. Generate corresponding orthonormal/unitary matrices when required
     if (leftvS || leftvA) {
@@ -308,7 +322,8 @@ rocblas_status rocsolver_gesvd_template(
                          A, shiftA, lda, strideA, U, 0, ldu, strideU);
       rocsolver_orgbr_ungbr_template<false, STRIDED>(
           handle, rocblas_column_wise, m, mn, n, U, 0, ldu, strideU, tau, k,
-          batch_count, scalars, (T *)workgral, workArr, workfunc, workTrmm);
+          batch_count, scalars, (T *)work_workArr, Abyx_norms_tmptr, X_trfact,
+          workArr);
     }
 
     if (rightvS || rightvA) {
@@ -318,21 +333,22 @@ rocblas_status rocsolver_gesvd_template(
                          A, shiftA, lda, strideA, V, 0, ldv, strideV);
       rocsolver_orgbr_ungbr_template<false, STRIDED>(
           handle, rocblas_row_wise, mn, n, m, V, 0, ldv, strideV,
-          (tau + k * batch_count), k, batch_count, scalars, (T *)workgral,
-          workArr, workfunc, workTrmm);
+          (tau + k * batch_count), k, batch_count, scalars, (T *)work_workArr,
+          Abyx_norms_tmptr, X_trfact, workArr);
     }
 
     if (leftvO) {
       rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
           handle, rocblas_column_wise, m, k, n, A, shiftA, lda, strideA, tau, k,
-          batch_count, scalars, (T *)workgral, workArr, workfunc, workTrmm);
+          batch_count, scalars, (T *)work_workArr, Abyx_norms_tmptr, X_trfact,
+          workArr);
     }
 
     if (rightvO) {
       rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
           handle, rocblas_row_wise, k, n, m, A, shiftA, lda, strideA,
-          (tau + k * batch_count), k, batch_count, scalars, (T *)workgral,
-          workArr, workfunc, workTrmm);
+          (tau + k * batch_count), k, batch_count, scalars, (T *)work_workArr,
+          Abyx_norms_tmptr, X_trfact, workArr);
     }
 
     // 3. compute singular values (and vectors if required) using the
@@ -344,20 +360,20 @@ rocblas_status rocsolver_gesvd_template(
     if (!leftvO && !rightvO) {
       local_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E,
                               strideE, V, 0, ldv, strideV, U, 0, ldu, strideU,
-                              info, batch_count, (TT *)workgral, workArr);
+                              info, batch_count, (TT *)work_workArr, workArr);
     }
 
     else if (leftvO && !rightvO) {
       local_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E,
                               strideE, V, 0, ldv, strideV, A, shiftA, lda,
-                              strideA, info, batch_count, (TT *)workgral,
+                              strideA, info, batch_count, (TT *)work_workArr,
                               workArr);
     }
 
     else {
       local_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E,
                               strideE, A, shiftA, lda, strideA, U, 0, ldu,
-                              strideU, info, batch_count, (TT *)workgral,
+                              strideU, info, batch_count, (TT *)work_workArr,
                               workArr);
     }
   }

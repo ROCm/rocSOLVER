@@ -20,21 +20,22 @@ rocblas_status rocsolver_laswp_impl(rocblas_handle handle, const rocblas_int n,
   if (st != rocblas_status_continue)
     return st;
 
+  // working with unshifted arrays
+  rocblas_int shiftA = 0;
+  rocblas_int shiftP = 0;
+
+  // normal (non-batched non-strided) execution
   rocblas_stride strideA = 0;
   rocblas_stride strideP = 0;
   rocblas_int batch_count = 1;
 
-  // memory managment
   // this function does not requiere memory work space
-  // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
+  if (rocblas_is_device_memory_size_query(handle))
+    return rocblas_status_size_unchanged;
 
   // execution
-  return rocsolver_laswp_template<T>(
-      handle, n, A,
-      0, // The matrix is shifted 0 entries (will work on the entire matrix)
-      lda, strideA, k1, k2, ipiv,
-      0, // the vector is shifted 0 entries (will work on the entire vector)
-      strideP, incx, batch_count);
+  return rocsolver_laswp_template<T>(handle, n, A, shiftA, lda, strideA, k1, k2,
+                                     ipiv, shiftP, strideP, incx, batch_count);
 }
 
 /*

@@ -28,57 +28,60 @@ rocblas_status rocsolver_getri_outofplace_batched_impl(
   if (st != rocblas_status_continue)
     return st;
 
+  // working with unshifted arrays
+  rocblas_int shiftA = 0;
+  rocblas_int shiftP = 0;
+  rocblas_int shiftC = 0;
+
+  // batched execution
   rocblas_stride strideA = 0;
   rocblas_stride strideC = 0;
 
-  hipStream_t stream;
-  rocblas_get_stream(handle, &stream);
-
-  // memory managment
-  size_t size_1; // size of constants
-  size_t size_2; // for workspace and TRSM invA
-  size_t size_3; // for array of pointers to workspace
-  size_t size_4; // for TRSM x_temp and TRTRI c_temp
-  size_t size_5; // for TRSM x_temp_arr
-  size_t size_6; // for TRSM invA_arr
+  // memory workspace sizes:
+  // size for constants in rocblas calls
+  size_t size_scalars;
+  // size of reusable workspace (for calling TRSM and TRTRI)
+  size_t size_work1, size_work2, size_work3, size_work4;
+  // size of temporary array required for copies
+  size_t size_tmpcopy;
+  // size of arrays of pointers (for batched cases)
+  size_t size_workArr;
   rocsolver_getri_getMemorySize<true, false, T>(
-      n, batch_count, &size_1, &size_2, &size_3, &size_4, &size_5, &size_6);
+      n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
+      &size_work4, &size_tmpcopy, &size_workArr);
 
-  // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-  void *scalars, *work, *workArr, *x_temp, *x_temp_arr, *invA_arr;
+  if (rocblas_is_device_memory_size_query(handle))
+    return rocblas_set_optimal_device_memory_size(
+        handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
+        size_tmpcopy, size_workArr);
+
+  // always allocate all required memory for TRSM optimal performance
   bool optim_mem = true;
 
-  hipMalloc(&scalars, size_1);
-  hipMalloc(&work, size_2);
-  hipMalloc(&workArr, size_3);
-  hipMalloc(&x_temp, size_4);
-  hipMalloc(&x_temp_arr, size_5);
-  hipMalloc(&invA_arr, size_6);
-  if (!scalars || (size_2 && !work) || (size_3 && !workArr) ||
-      (size_4 && !x_temp) || (size_5 && !x_temp_arr) || (size_6 && !invA_arr))
+  // memory workspace allocation
+  void *scalars, *work1, *work2, *work3, *work4, *tmpcopy, *workArr;
+  rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2,
+                            size_work3, size_work4, size_tmpcopy, size_workArr);
+
+  if (!mem)
     return rocblas_status_memory_error;
 
-  // scalar constants for rocblas functions calls
-  // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
+  scalars = mem[0];
+  work1 = mem[1];
+  work2 = mem[2];
+  work3 = mem[3];
+  work4 = mem[4];
+  tmpcopy = mem[5];
+  workArr = mem[6];
   T sca[] = {-1, 0, 1};
-  RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
+  RETURN_IF_HIP_ERROR(
+      hipMemcpy((T *)scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
-  // execution
-  rocblas_status status = rocsolver_getri_template<true, false, T>(
-      handle, n, A, 0, lda, strideA, C,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      ldc, strideC, ipiv,
-      0, // the vector is shifted 0 entries (will work on the entire vector)
-      strideP, info, batch_count, (T *)scalars, (T *)work, (T **)workArr,
-      x_temp, x_temp_arr, invA_arr, optim_mem);
-
-  hipFree(scalars);
-  hipFree(work);
-  hipFree(workArr);
-  hipFree(x_temp);
-  hipFree(x_temp_arr);
-  hipFree(invA_arr);
-  return status;
+  // out-of-place execution
+  return rocsolver_getri_template<true, false, T>(
+      handle, n, A, shiftA, lda, strideA, C, shiftC, ldc, strideC, ipiv, shiftP,
+      strideP, info, batch_count, (T *)scalars, work1, work2, work3, work4,
+      (T *)tmpcopy, (T **)workArr, optim_mem);
 }
 
 /*

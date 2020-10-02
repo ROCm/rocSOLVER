@@ -22,6 +22,12 @@ rocsolver_bdsqr_impl(rocblas_handle handle, const rocblas_fill uplo,
   if (st != rocblas_status_continue)
     return st;
 
+  // working with unshifted arrays
+  rocblas_int shiftV = 0;
+  rocblas_int shiftU = 0;
+  rocblas_int shiftC = 0;
+
+  // normal (non-batched non-strided) execution
   rocblas_stride strideD = 0;
   rocblas_stride strideE = 0;
   rocblas_stride strideV = 0;
@@ -29,28 +35,27 @@ rocsolver_bdsqr_impl(rocblas_handle handle, const rocblas_fill uplo,
   rocblas_stride strideC = 0;
   rocblas_int batch_count = 1;
 
-  // memory managment
-  size_t size; // size of workspace
-  rocsolver_bdsqr_getMemorySize<S>(n, nv, nu, nc, batch_count, &size);
+  // memory workspace sizes:
+  // size of re-usable workspace
+  size_t size_work;
+  rocsolver_bdsqr_getMemorySize<S>(n, nv, nu, nc, batch_count, &size_work);
 
-  // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
+  if (rocblas_is_device_memory_size_query(handle))
+    return rocblas_set_optimal_device_memory_size(handle, size_work);
+
+  // memory workspace allocation
   void *work;
-  hipMalloc(&work, size);
-  if (size && !work)
+  rocblas_device_malloc mem(handle, size_work);
+  if (!mem)
     return rocblas_status_memory_error;
 
-  // execution
-  rocblas_status status = rocsolver_bdsqr_template<T>(
-      handle, uplo, n, nv, nu, nc, D, strideD, E, strideE, V,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      ldv, strideV, U,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      ldu, strideU, C,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      ldc, strideC, info, batch_count, (S *)work);
-  hipFree(work);
+  work = mem[0];
 
-  return status;
+  // execution
+  return rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, nc, D, strideD, E,
+                                     strideE, V, shiftV, ldv, strideV, U,
+                                     shiftU, ldu, strideU, C, shiftC, ldc,
+                                     strideC, info, batch_count, (S *)work);
 }
 
 /*
