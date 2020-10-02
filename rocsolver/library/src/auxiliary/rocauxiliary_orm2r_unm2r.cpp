@@ -37,7 +37,7 @@ rocsolver_orm2r_unm2r_impl(rocblas_handle handle, const rocblas_side side,
   size_t size_scalars;
   // extra requirements for calling LARF
   size_t size_Abyx;
-  // size of temporary array for diagonal elemements
+  // size of temporary array for diagonal elements
   size_t size_diag;
   // size of arrays of pointers (for batched cases)
   size_t size_workArr;

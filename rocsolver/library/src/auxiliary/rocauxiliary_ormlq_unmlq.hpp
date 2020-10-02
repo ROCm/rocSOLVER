@@ -132,18 +132,17 @@ rocblas_status rocsolver_ormlq_unmlq_template(
     }
 
     // generate triangular factor of current block reflector
-    rocsolver_larft_template<T>(handle, rocblas_forward_direction,
-                                rocblas_row_wise, nq - i, ib, A,
-                                shiftA + idx2D(i, i, lda), lda, strideA,
-                                ipiv + i, strideP, trfact, ldw, strideW,
-                                batch_count, scalars, AbyxORwork, workArr);
+    rocsolver_larft_template<T>(
+        handle, rocblas_forward_direction, rocblas_row_wise, nq - i, ib, A,
+        shiftA + idx2D(i, i, lda), lda, strideA, ipiv + i, strideP, trfact, ldw,
+        strideW, batch_count, scalars, AbyxORwork, workArr);
 
     // apply current block reflector
     rocsolver_larfb_template<BATCHED, STRIDED, T>(
         handle, side, transB, rocblas_forward_direction, rocblas_row_wise, nrow,
-        ncol, ib, A, shiftA + idx2D(i, i, lda), lda, strideA,
-        trfact, 0, ldw, strideW, C, shiftC + idx2D(ic, jc, ldc), ldc, strideC,
-        batch_count, AbyxORwork, diagORtmptr, workArr);
+        ncol, ib, A, shiftA + idx2D(i, i, lda), lda, strideA, trfact, 0, ldw,
+        strideW, C, shiftC + idx2D(ic, jc, ldc), ldc, strideC, batch_count,
+        AbyxORwork, diagORtmptr, workArr);
   }
 
   return rocblas_status_success;

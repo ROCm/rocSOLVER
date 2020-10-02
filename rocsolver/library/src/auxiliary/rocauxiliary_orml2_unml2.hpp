@@ -29,7 +29,7 @@ void rocsolver_orml2_unml2_getMemorySize(
     return;
   }
 
-  // size of temporary array for diagonal elemements
+  // size of temporary array for diagonal elements
   *size_diag = sizeof(T) * batch_count;
 
   // memory requirements to call larf

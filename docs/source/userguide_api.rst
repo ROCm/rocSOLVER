@@ -259,11 +259,13 @@ rocsolver_<type>ormlq()
 rocsolver_<type>orm2l()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dorm2l
+   :outline:
 .. doxygenfunction:: rocsolver_sorm2l
 
 rocsolver_<type>ormql()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dormql
+   :outline:
 .. doxygenfunction:: rocsolver_sormql
 
 rocsolver_<type>ormbr()
@@ -344,11 +346,13 @@ rocsolver_<type>unmlq()
 rocsolver_<type>unm2l()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_zunm2l
+   :outline:
 .. doxygenfunction:: rocsolver_cunm2l
 
 rocsolver_<type>unmql()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_zunmql
+   :outline:
 .. doxygenfunction:: rocsolver_cunmql
 
 rocsolver_<type>unmbr()
