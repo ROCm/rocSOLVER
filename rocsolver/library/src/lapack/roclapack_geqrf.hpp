@@ -19,39 +19,64 @@
 template <typename T, bool BATCHED>
 void rocsolver_geqrf_getMemorySize(const rocblas_int m, const rocblas_int n,
                                    const rocblas_int batch_count,
-                                   size_t *size_1, size_t *size_2,
-                                   size_t *size_3, size_t *size_4,
-                                   size_t *size_5) {
-  size_t s1, s2, s3, unused, s4 = 0;
-  rocsolver_geqr2_getMemorySize<T, BATCHED>(m, n, batch_count, size_1, &s1,
-                                            size_3, size_4);
-  if (m <= GEQRF_GEQR2_SWITCHSIZE || n <= GEQRF_GEQR2_SWITCHSIZE) {
-    *size_2 = s1;
-    *size_5 = 0;
-  } else {
-    rocblas_int jb = GEQRF_GEQR2_BLOCKSIZE;
-    rocsolver_larft_getMemorySize<T>(jb, batch_count, &s2);
-    rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_left, m, n - jb, jb,
-                                              batch_count, &s3, &unused, &s4);
-    *size_2 = max(s1, max(s2, s3));
-    *size_5 = sizeof(T) * jb * jb * batch_count;
+                                   size_t *size_scalars,
+                                   size_t *size_work_workArr,
+                                   size_t *size_Abyx_norms_trfact,
+                                   size_t *size_diag_tmptr,
+                                   size_t *size_workArr) {
+  // if quick return no workspace needed
+  if (m == 0 || n == 0 || batch_count == 0) {
+    *size_scalars = 0;
+    *size_work_workArr = 0;
+    *size_Abyx_norms_trfact = 0;
+    *size_diag_tmptr = 0;
+    *size_workArr = 0;
+    return;
   }
-  *size_4 = max(*size_4, s4);
 
-  // size of workArr is double to accomodate
-  // the TRMM calls in the batched case
-  if (BATCHED)
-    *size_3 *= 2;
+  if (m <= GEQxF_GEQx2_SWITCHSIZE || n <= GEQxF_GEQx2_SWITCHSIZE) {
+    // requirements for a single GEQR2 call
+    rocsolver_geqr2_getMemorySize<T, BATCHED>(
+        m, n, batch_count, size_scalars, size_work_workArr,
+        size_Abyx_norms_trfact, size_diag_tmptr);
+    *size_workArr = 0;
+  } else {
+    size_t w1, w2, w3, unused, s1, s2;
+    rocblas_int jb = GEQxF_GEQx2_BLOCKSIZE;
+
+    // size to store the temporary triangular factor
+    *size_Abyx_norms_trfact = sizeof(T) * jb * jb * batch_count;
+
+    // requirements for calling GEQR2 with sub blocks
+    rocsolver_geqr2_getMemorySize<T, BATCHED>(m, jb, batch_count, size_scalars,
+                                              &w1, &s2, &s1);
+    *size_Abyx_norms_trfact = max(s2, *size_Abyx_norms_trfact);
+
+    // requirements for calling LARFT
+    rocsolver_larft_getMemorySize<T, BATCHED>(m, jb, batch_count, &unused, &w2,
+                                              size_workArr);
+
+    // requirements for calling LARFB
+    rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_left, m, n - jb, jb,
+                                              batch_count, &w3, &s2, &unused);
+
+    *size_work_workArr = max(w1, max(w2, w3));
+    *size_diag_tmptr = max(s1, s2);
+
+    // size of workArr is double to accomodate
+    // LARFB's TRMM calls in the batched case
+    if (BATCHED)
+      *size_workArr *= 2;
+  }
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status
-rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int m,
-                         const rocblas_int n, U A, const rocblas_int shiftA,
-                         const rocblas_int lda, const rocblas_stride strideA,
-                         T *ipiv, const rocblas_stride strideP,
-                         const rocblas_int batch_count, T *scalars, T *work,
-                         T **workArr, T *diag, T *trfact) {
+rocblas_status rocsolver_geqrf_template(
+    rocblas_handle handle, const rocblas_int m, const rocblas_int n, U A,
+    const rocblas_int shiftA, const rocblas_int lda,
+    const rocblas_stride strideA, T *ipiv, const rocblas_stride strideP,
+    const rocblas_int batch_count, T *scalars, void *work_workArr,
+    T *Abyx_norms_trfact, T *diag_tmptr, T **workArr) {
   // quick return
   if (m == 0 || n == 0 || batch_count == 0)
     return rocblas_status_success;
@@ -61,23 +86,24 @@ rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int m,
 
   // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
   // algorithm
-  if (m <= GEQRF_GEQR2_SWITCHSIZE || n <= GEQRF_GEQR2_SWITCHSIZE)
-    return rocsolver_geqr2_template<T>(handle, m, n, A, shiftA, lda, strideA,
-                                       ipiv, strideP, batch_count, scalars,
-                                       work, workArr, diag);
+  if (m <= GEQxF_GEQx2_SWITCHSIZE || n <= GEQxF_GEQx2_SWITCHSIZE)
+    return rocsolver_geqr2_template<T>(
+        handle, m, n, A, shiftA, lda, strideA, ipiv, strideP, batch_count,
+        scalars, work_workArr, Abyx_norms_trfact, diag_tmptr);
 
   rocblas_int dim = min(m, n); // total number of pivots
   rocblas_int jb, j = 0;
 
-  rocblas_int ldw = GEQRF_GEQR2_BLOCKSIZE;
+  rocblas_int ldw = GEQxF_GEQx2_BLOCKSIZE;
   rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
-  while (j < dim - GEQRF_GEQR2_SWITCHSIZE) {
+  while (j < dim - GEQxF_GEQx2_SWITCHSIZE) {
     // Factor diagonal and subdiagonal blocks
-    jb = min(dim - j, GEQRF_GEQR2_BLOCKSIZE); // number of columns in the block
+    jb = min(dim - j, GEQxF_GEQx2_BLOCKSIZE); // number of columns in the block
     rocsolver_geqr2_template<T>(handle, m - j, jb, A, shiftA + idx2D(j, j, lda),
                                 lda, strideA, (ipiv + j), strideP, batch_count,
-                                scalars, work, workArr, diag);
+                                scalars, work_workArr, Abyx_norms_trfact,
+                                diag_tmptr);
 
     // apply transformation to the rest of the matrix
     if (j + jb < n) {
@@ -85,25 +111,27 @@ rocsolver_geqrf_template(rocblas_handle handle, const rocblas_int m,
       // compute block reflector
       rocsolver_larft_template<T>(
           handle, rocblas_forward_direction, rocblas_column_wise, m - j, jb, A,
-          shiftA + idx2D(j, j, lda), lda, strideA, (ipiv + j), strideP, trfact,
-          ldw, strideW, batch_count, scalars, work, workArr);
+          shiftA + idx2D(j, j, lda), lda, strideA, (ipiv + j), strideP,
+          Abyx_norms_trfact, ldw, strideW, batch_count, scalars,
+          (T *)work_workArr, workArr);
 
       // apply the block reflector
       rocsolver_larfb_template<BATCHED, STRIDED, T>(
           handle, rocblas_side_left, rocblas_operation_conjugate_transpose,
           rocblas_forward_direction, rocblas_column_wise, m - j, n - j - jb, jb,
-          A, shiftA + idx2D(j, j, lda), lda, strideA, trfact, 0, ldw, strideW,
-          A, shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count, work,
-          workArr, diag);
+          A, shiftA + idx2D(j, j, lda), lda, strideA, Abyx_norms_trfact, 0, ldw,
+          strideW, A, shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count,
+          (T *)work_workArr, diag_tmptr, workArr);
     }
-    j += GEQRF_GEQR2_BLOCKSIZE;
+    j += GEQxF_GEQx2_BLOCKSIZE;
   }
 
   // factor last block
   if (j < dim)
-    rocsolver_geqr2_template<T>(
-        handle, m - j, n - j, A, shiftA + idx2D(j, j, lda), lda, strideA,
-        (ipiv + j), strideP, batch_count, scalars, work, workArr, diag);
+    rocsolver_geqr2_template<T>(handle, m - j, n - j, A,
+                                shiftA + idx2D(j, j, lda), lda, strideA,
+                                (ipiv + j), strideP, batch_count, scalars,
+                                work_workArr, Abyx_norms_trfact, diag_tmptr);
 
   return rocblas_status_success;
 }
