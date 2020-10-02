@@ -23,13 +23,13 @@ rocsolver_potrf_batched_impl(rocblas_handle handle, const rocblas_fill uplo,
   // working with unshifted arrays
   rocblas_int shiftA = 0;
 
-  // bacthed execution
+  // batched execution
   rocblas_stride strideA = 0;
 
   // memory workspace sizes:
   // size for constants in rocblas calls
   size_t size_scalars;
-  // size of reusable workspace (and for callinf TRSM)
+  // size of reusable workspace (and for calling TRSM)
   size_t size_work1, size_work2, size_work3, size_work4;
   // extra requirements for calling POTF2
   size_t size_pivots;

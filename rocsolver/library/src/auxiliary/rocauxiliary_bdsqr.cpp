@@ -27,7 +27,7 @@ rocsolver_bdsqr_impl(rocblas_handle handle, const rocblas_fill uplo,
   rocblas_int shiftU = 0;
   rocblas_int shiftC = 0;
 
-  // normal (non-bacthed non-strided) execution
+  // normal (non-batched non-strided) execution
   rocblas_stride strideD = 0;
   rocblas_stride strideE = 0;
   rocblas_stride strideV = 0;

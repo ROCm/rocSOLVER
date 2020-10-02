@@ -24,7 +24,7 @@ rocblas_status rocsolver_gebd2_batched_impl(
   // working with unshifted arrays
   rocblas_int shiftA = 0;
 
-  // bacthed execution
+  // batched execution
   rocblas_stride strideA = 0;
 
   // memory workspace sizes:

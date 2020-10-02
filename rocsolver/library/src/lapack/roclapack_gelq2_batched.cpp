@@ -24,7 +24,7 @@ rocsolver_gelq2_batched_impl(rocblas_handle handle, const rocblas_int m,
   // working with unshifted arrays
   rocblas_int shiftA = 0;
 
-  // normal (non-batched non-strided) execution
+  // batched execution
   rocblas_stride strideA = 0;
 
   // memory workspace sizes:

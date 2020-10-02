@@ -20,7 +20,7 @@ rocblas_status rocsolver_lacgv_impl(rocblas_handle handle, const rocblas_int n,
   // working with unshifted arrays
   rocblas_int shiftx = 0;
 
-  // normal (non-bacthed non-strided) execution
+  // normal (non-batched non-strided) execution
   rocblas_stride stridex = 0;
   rocblas_int batch_count = 1;
 

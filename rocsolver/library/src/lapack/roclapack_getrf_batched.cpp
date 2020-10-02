@@ -26,7 +26,7 @@ rocblas_status rocsolver_getrf_batched_impl(
   rocblas_int shiftA = 0;
   rocblas_int shiftP = 0;
 
-  // bacthed execution
+  // batched execution
   rocblas_stride strideA = 0;
 
   // memory workspace sizes:

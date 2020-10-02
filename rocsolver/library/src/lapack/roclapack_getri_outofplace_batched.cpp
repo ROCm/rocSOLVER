@@ -33,7 +33,7 @@ rocblas_status rocsolver_getri_outofplace_batched_impl(
   rocblas_int shiftP = 0;
   rocblas_int shiftC = 0;
 
-  // bacthed execution
+  // batched execution
   rocblas_stride strideA = 0;
   rocblas_stride strideC = 0;
 

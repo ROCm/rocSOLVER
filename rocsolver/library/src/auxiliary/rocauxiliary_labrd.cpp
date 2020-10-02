@@ -26,7 +26,7 @@ rocsolver_labrd_impl(rocblas_handle handle, const rocblas_int m,
   rocblas_int shiftX = 0;
   rocblas_int shiftY = 0;
 
-  // normal (non-bacthed non-strided) execution
+  // normal (non-batched non-strided) execution
   rocblas_stride strideA = 0;
   rocblas_stride strideX = 0;
   rocblas_stride strideY = 0;

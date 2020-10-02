@@ -98,7 +98,7 @@ rocblas_status rocsolver_potrf_template(
                      batch_count, 0);
 
   // quick return
-  if (batch_count == 0)
+  if (n == 0)
     return rocblas_status_success;
 
   // everything must be executed with scalars on the host

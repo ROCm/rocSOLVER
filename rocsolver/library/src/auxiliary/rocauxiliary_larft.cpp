@@ -24,7 +24,7 @@ rocsolver_larft_impl(rocblas_handle handle, const rocblas_direct direct,
   // working with unshifted arrays
   rocblas_int shiftV = 0;
 
-  // normal (non-bacthed non-strided) execution
+  // normal (non-batched non-strided) execution
   rocblas_stride stridev = 0;
   rocblas_stride stridet = 0;
   rocblas_stride stridef = 0;

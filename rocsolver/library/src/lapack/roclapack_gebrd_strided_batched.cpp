@@ -36,7 +36,7 @@ rocblas_status rocsolver_gebrd_strided_batched_impl(
   size_t size_scalars;
   // size of arrays of pointers (for batched cases) and re-usable workspace
   size_t size_work_workArr;
-  // extra requirements for callling GEDB2 and LABRD
+  // extra requirements for calling GEDB2 and LABRD
   size_t size_Abyx_norms;
   // size for temporary resulting orthogonal matrices when calling LABRD
   size_t size_X;

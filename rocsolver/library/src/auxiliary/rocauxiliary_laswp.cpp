@@ -24,7 +24,7 @@ rocblas_status rocsolver_laswp_impl(rocblas_handle handle, const rocblas_int n,
   rocblas_int shiftA = 0;
   rocblas_int shiftP = 0;
 
-  // normal (non-bacthed non-strided) execution
+  // normal (non-batched non-strided) execution
   rocblas_stride strideA = 0;
   rocblas_stride strideP = 0;
   rocblas_int batch_count = 1;

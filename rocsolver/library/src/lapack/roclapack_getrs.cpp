@@ -25,14 +25,14 @@ rocsolver_getrs_impl(rocblas_handle handle, const rocblas_operation trans,
   rocblas_int shiftA = 0;
   rocblas_int shiftB = 0;
 
-  // normal (non-bacthed non-strided) execution
+  // normal (non-batched non-strided) execution
   rocblas_stride strideA = 0;
   rocblas_stride strideB = 0;
   rocblas_stride strideP = 0;
   rocblas_int batch_count = 1;
 
   // memory workspace sizes:
-  // size of workspace (for callinf TRSM)
+  // size of workspace (for calling TRSM)
   size_t size_work1, size_work2, size_work3, size_work4;
   rocsolver_getrs_getMemorySize<false, T>(
       n, nrhs, batch_count, &size_work1, &size_work2, &size_work3, &size_work4);

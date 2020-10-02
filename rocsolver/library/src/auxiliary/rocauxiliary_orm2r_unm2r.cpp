@@ -26,7 +26,7 @@ rocsolver_orm2r_unm2r_impl(rocblas_handle handle, const rocblas_side side,
   rocblas_int shiftA = 0;
   rocblas_int shiftC = 0;
 
-  // normal (non-bacthed non-strided) execution
+  // normal (non-batched non-strided) execution
   rocblas_stride strideA = 0;
   rocblas_stride strideP = 0;
   rocblas_stride strideC = 0;
@@ -35,12 +35,12 @@ rocsolver_orm2r_unm2r_impl(rocblas_handle handle, const rocblas_side side,
   // memory workspace sizes:
   // size for constants in rocblas calls
   size_t size_scalars;
-  // size of arrays of pointers (for batched cases)
-  size_t size_workArr;
   // extra requirements for calling LARF
   size_t size_Abyx;
   // size of temporary array for diagonal elemements
   size_t size_diag;
+  // size of arrays of pointers (for batched cases)
+  size_t size_workArr;
   rocsolver_orm2r_unm2r_getMemorySize<T, false>(side, m, n, k, batch_count,
                                                 &size_scalars, &size_Abyx,
                                                 &size_diag, &size_workArr);

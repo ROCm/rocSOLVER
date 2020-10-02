@@ -22,7 +22,7 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n,
   rocblas_int shifta = 0;
   rocblas_int shiftx = 0;
 
-  // normal (non-bacthed non-strided) execution
+  // normal (non-batched non-strided) execution
   rocblas_stride stridex = 0;
   rocblas_stride strideP = 0;
   rocblas_int batch_count = 1;

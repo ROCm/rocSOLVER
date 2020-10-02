@@ -26,7 +26,7 @@ rocblas_status rocsolver_potrf_strided_batched_impl(
   // memory workspace sizes:
   // size for constants in rocblas calls
   size_t size_scalars;
-  // size of reusable workspace (and for callinf TRSM)
+  // size of reusable workspace (and for calling TRSM)
   size_t size_work1, size_work2, size_work3, size_work4;
   // extra requirements for calling POTF2
   size_t size_pivots;

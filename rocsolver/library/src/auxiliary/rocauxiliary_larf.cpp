@@ -25,7 +25,7 @@ rocblas_status rocsolver_larf_impl(rocblas_handle handle,
   rocblas_int shiftA = 0;
   rocblas_int shiftx = 0;
 
-  // normal (non-bacthed non-strided) execution
+  // normal (non-batched non-strided) execution
   rocblas_stride stridex = 0;
   rocblas_stride stridea = 0;
   rocblas_stride stridep = 0;

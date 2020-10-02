@@ -34,9 +34,9 @@ rocblas_status rocsolver_ormbr_unmbr_impl(
   // memory workspace sizes:
   // requirements for calling ORMQR/UNMQR or ORMLQ/UNMLQ
   size_t size_scalars;
-  size_t size_workArr;
   size_t size_AbyxORwork, size_diagORtmptr;
   size_t size_trfact;
+  size_t size_workArr;
   rocsolver_ormbr_unmbr_getMemorySize<T, false>(
       storev, side, m, n, k, batch_count, &size_scalars, &size_AbyxORwork,
       &size_diagORtmptr, &size_trfact, &size_workArr);

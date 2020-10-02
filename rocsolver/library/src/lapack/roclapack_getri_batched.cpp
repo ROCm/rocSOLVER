@@ -25,7 +25,7 @@ rocsolver_getri_batched_impl(rocblas_handle handle, const rocblas_int n, U A,
   rocblas_int shiftA = 0;
   rocblas_int shiftP = 0;
 
-  // bacthed execution
+  // batched execution
   rocblas_stride strideA = 0;
 
   // memory workspace sizes:

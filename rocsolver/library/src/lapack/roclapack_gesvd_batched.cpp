@@ -28,13 +28,13 @@ rocblas_status rocsolver_gesvd_batched_impl(
   // working with unshifted arrays
   rocblas_int shiftA = 0;
 
-  // bacthed execution
+  // batched execution
   rocblas_stride strideA = 0;
 
   // memory workspace sizes:
   // size for constants in rocblas calls
   size_t size_scalars;
-  // size of reusable workspace and array of pointers (bacthed case)
+  // size of reusable workspace and array of pointers (batched case)
   size_t size_work_workArr;
   // size of array of pointers (only for batched case)
   size_t size_workArr;

@@ -25,12 +25,12 @@ rocblas_status rocsolver_getrs_batched_impl(
   rocblas_int shiftA = 0;
   rocblas_int shiftB = 0;
 
-  // bacthed execution
+  // batched execution
   rocblas_stride strideA = 0;
   rocblas_stride strideB = 0;
 
   // memory workspace sizes:
-  // size of workspace (for callinf TRSM)
+  // size of workspace (for calling TRSM)
   size_t size_work1, size_work2, size_work3, size_work4;
   rocsolver_getrs_getMemorySize<true, T>(n, nrhs, batch_count, &size_work1,
                                          &size_work2, &size_work3, &size_work4);
