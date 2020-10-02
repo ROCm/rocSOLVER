@@ -19,22 +19,29 @@
 template <typename T, bool BATCHED>
 void rocsolver_gelq2_getMemorySize(const rocblas_int m, const rocblas_int n,
                                    const rocblas_int batch_count,
-                                   size_t *size_1, size_t *size_2,
-                                   size_t *size_3, size_t *size_4) {
+                                   size_t *size_scalars,
+                                   size_t *size_work_workArr,
+                                   size_t *size_Abyx_norms, size_t *size_diag) {
   // if quick return no workspace needed
   if (m == 0 || n == 0 || batch_count == 0) {
-    *size_1 = 0;
-    *size_2 = 0;
-    *size_3 = 0;
-    *size_4 = 0;
+    *size_scalars = 0;
+    *size_work_workArr = 0;
+    *size_Abyx_norms = 0;
+    *size_diag = 0;
     return;
   }
 
-  size_t s1, s2;
+  // size of Abyx_norms is maximum of what is needed by larf and larfg
+  // size_work_workArr is maximum of re-usable work space and array of pointers to workspace
+  size_t s1, s2, w1, w2;
   rocsolver_larf_getMemorySize<T, BATCHED>(rocblas_side_right, m, n,
-                                           batch_count, size_1, &s1, size_3);
-  rocsolver_larfg_getMemorySize<T>(n, batch_count, &s2, size_4);
-  *size_2 = max(s1, s2);
+                                           batch_count, size_scalars, &s1, &w1);
+  rocsolver_larfg_getMemorySize<T>(n, batch_count, &w2, &s2);
+  *size_work_workArr = max(w1, w2);
+  *size_Abyx_norms = max(s1, s2);
+
+  // size of array to store temporary diagonal values
+  *size_diag = sizeof(T) * batch_count;
 }
 
 template <typename T, typename U>
@@ -59,11 +66,13 @@ rocsolver_gelq2_gelqf_argCheck(const rocblas_int m, const rocblas_int n,
 }
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
-rocblas_status rocsolver_gelq2_template(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n, U A,
-    const rocblas_int shiftA, const rocblas_int lda,
-    const rocblas_stride strideA, T *ipiv, const rocblas_stride strideP,
-    const rocblas_int batch_count, T *scalars, T *work, T **workArr, T *diag) {
+rocblas_status
+rocsolver_gelq2_template(rocblas_handle handle, const rocblas_int m,
+                         const rocblas_int n, U A, const rocblas_int shiftA,
+                         const rocblas_int lda, const rocblas_stride strideA,
+                         T *ipiv, const rocblas_stride strideP,
+                         const rocblas_int batch_count, T *scalars,
+                         void *work_workArr, T *Abyx_norms, T *diag) {
   // quick return
   if (m == 0 || n == 0 || batch_count == 0)
     return rocblas_status_success;
@@ -83,8 +92,8 @@ rocblas_status rocsolver_gelq2_template(
     // generate Householder reflector to work on row j
     rocsolver_larfg_template(handle, n - j, A, shiftA + idx2D(j, j, lda), A,
                              shiftA + idx2D(j, min(j + 1, n - 1), lda), lda,
-                             strideA, (ipiv + j), strideP, batch_count, work,
-                             diag);
+                             strideA, (ipiv + j), strideP, batch_count,
+                             (T *)work_workArr, Abyx_norms);
 
     // insert one in A(j,j) tobuild/apply the householder matrix
     hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
@@ -93,11 +102,11 @@ rocblas_status rocsolver_gelq2_template(
 
     // Apply Householder reflector to the rest of matrix from the right
     if (j < m - 1) {
-      rocsolver_larf_template(handle, rocblas_side_right, m - j - 1, n - j, A,
-                              shiftA + idx2D(j, j, lda), lda, strideA,
-                              (ipiv + j), strideP, A,
-                              shiftA + idx2D(j + 1, j, lda), lda, strideA,
-                              batch_count, scalars, work, workArr);
+      rocsolver_larf_template(
+          handle, rocblas_side_right, m - j - 1, n - j, A,
+          shiftA + idx2D(j, j, lda), lda, strideA, (ipiv + j), strideP, A,
+          shiftA + idx2D(j + 1, j, lda), lda, strideA, batch_count, scalars,
+          Abyx_norms, (T **)work_workArr);
     }
 
     // restore original value of A(j,j)

@@ -42,13 +42,13 @@
 // potf2/potrf
 #define POTRF_POTF2_SWITCHSIZE 64
 
-// geqr2/geqrf
-#define GEQRF_GEQR2_SWITCHSIZE 128
-#define GEQRF_GEQR2_BLOCKSIZE 64
+// geqx2/geqxf
+#define GEQxF_GEQx2_SWITCHSIZE 128
+#define GEQxF_GEQx2_BLOCKSIZE 64
 
-// geql2/geqlf
-#define GEQLF_GEQL2_SWITCHSIZE 128
-#define GEQLF_GEQL2_BLOCKSIZE 64
+// gexq2/gexqf
+#define GExQF_GExQ2_SWITCHSIZE 128
+#define GExQF_GExQ2_BLOCKSIZE 64
 
 // gebd2/gebrd
 #define GEBRD_GEBD2_SWITCHSIZE 32

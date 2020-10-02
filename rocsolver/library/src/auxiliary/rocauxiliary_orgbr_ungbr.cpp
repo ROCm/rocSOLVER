@@ -29,15 +29,11 @@ rocsolver_orgbr_ungbr_impl(rocblas_handle handle, const rocblas_storev storev,
   rocblas_int batch_count = 1;
 
   // memory workspace sizes:
-  // size for constants in rocblas calls
+  // requirements for calling ORGQR/UNGQR or ORGLQ/UNGLQ
   size_t size_scalars;
-  // size of arrays of pointers (for batched cases)
   size_t size_workArr;
-  // size of re-usable workspace
   size_t size_work;
-  // extra requirements for calling ORGL2/UNGL2 and LARFB
   size_t size_Abyx_tmptr;
-  // size of temporary array for triangular factor
   size_t size_trfact;
   rocsolver_orgbr_ungbr_getMemorySize<T, false>(
       storev, m, n, k, batch_count, &size_scalars, &size_work, &size_Abyx_tmptr,

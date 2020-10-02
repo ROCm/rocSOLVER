@@ -47,7 +47,7 @@ void rocsolver_orgql_ungql_getMemorySize(
 
     // size of workspace is maximum of what is needed by larft and larfb.
     // size of Abyx_tmptr is maximum of what is needed by org2r/ung2r and larfb.
-    rocsolver_larft_getMemorySize<T, BATCHED>(jb, batch_count, &unused, &s1,
+    rocsolver_larft_getMemorySize<T, BATCHED>(m, jb, batch_count, &unused, &s1,
                                               &unused);
     rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_left, m, n - jb, jb,
                                               batch_count, &s2, &s3, &unused);

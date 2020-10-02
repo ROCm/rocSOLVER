@@ -107,12 +107,12 @@ __global__ void set_tau(const rocblas_int k, T *tau,
 }
 
 template <typename T, bool BATCHED>
-void rocsolver_larft_getMemorySize(const rocblas_int k,
+void rocsolver_larft_getMemorySize(const rocblas_int n, const rocblas_int k,
                                    const rocblas_int batch_count,
                                    size_t *size_scalars, size_t *size_work,
                                    size_t *size_workArr) {
   // if quick return, no workspace is needed
-  if (batch_count == 0) {
+  if (n == 0 || batch_count == 0) {
     size_scalars = 0;
     size_work = 0;
     size_workArr = 0;
