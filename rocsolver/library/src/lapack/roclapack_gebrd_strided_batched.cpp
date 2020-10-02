@@ -22,54 +22,56 @@ rocblas_status rocsolver_gebrd_strided_batched_impl(
   if (st != rocblas_status_continue)
     return st;
 
+  // working with unshifted arrays
+  rocblas_int shiftA = 0;
+  rocblas_int shiftX = 0;
+  rocblas_int shiftY = 0;
+
+  // strided_batched execution
   rocblas_stride strideX = m * GEBRD_GEBD2_SWITCHSIZE;
   rocblas_stride strideY = n * GEBRD_GEBD2_SWITCHSIZE;
 
-  // memory managment
-  size_t size_1; // size of constants
-  size_t size_2; // size of workspace
-  size_t size_3; // size of array of pointers to workspace
-  size_t size_4; // size of cache for norms and diag elements
-  size_t size_5; // size of matrix X
-  size_t size_6; // size of matrix Y
-  rocsolver_gebrd_getMemorySize<T, false>(m, n, batch_count, &size_1, &size_2,
-                                          &size_3, &size_4, &size_5, &size_6);
+  // memory workspace sizes:
+  // size for constants in rocblas calls
+  size_t size_scalars;
+  // size of arrays of pointers (for batched cases) and re-usable workspace
+  size_t size_work_workArr;
+  // extra requirements for calling GEDB2 and LABRD
+  size_t size_Abyx_norms;
+  // size for temporary resulting orthogonal matrices when calling LABRD
+  size_t size_X;
+  size_t size_Y;
+  rocsolver_gebrd_getMemorySize<T, false>(m, n, batch_count, &size_scalars,
+                                          &size_work_workArr, &size_Abyx_norms,
+                                          &size_X, &size_Y);
 
-  // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-  void *scalars, *work, *workArr, *diag, *X, *Y;
-  hipMalloc(&scalars, size_1);
-  hipMalloc(&work, size_2);
-  hipMalloc(&workArr, size_3);
-  hipMalloc(&diag, size_4);
-  hipMalloc(&X, size_5);
-  hipMalloc(&Y, size_6);
-  if (!scalars || (size_2 && !work) || (size_3 && !workArr) ||
-      (size_4 && !diag) || (size_5 && !X) || (size_6 && !Y))
+  if (rocblas_is_device_memory_size_query(handle))
+    return rocblas_set_optimal_device_memory_size(
+        handle, size_scalars, size_work_workArr, size_Abyx_norms, size_X,
+        size_Y);
+
+  // memory workspace allocation
+  void *scalars, *work_workArr, *Abyx_norms, *X, *Y;
+  rocblas_device_malloc mem(handle, size_scalars, size_work_workArr,
+                            size_Abyx_norms, size_X, size_Y);
+
+  if (!mem)
     return rocblas_status_memory_error;
 
-  // scalar constants for rocblas functions calls
-  // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
+  scalars = mem[0];
+  work_workArr = mem[1];
+  Abyx_norms = mem[2];
+  X = mem[3];
+  Y = mem[4];
   T sca[] = {-1, 0, 1};
-  RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
+  RETURN_IF_HIP_ERROR(
+      hipMemcpy((T *)scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
   // execution
-  rocblas_status status = rocsolver_gebrd_template<false, true, S, T>(
-      handle, m, n, A,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      lda, strideA, D, strideD, E, strideE, tauq, strideQ, taup, strideP, (U)X,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      m, strideX, (U)Y,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      n, strideY, batch_count, (T *)scalars, (T *)work, (T **)workArr,
-      (T *)diag);
-
-  hipFree(scalars);
-  hipFree(work);
-  hipFree(workArr);
-  hipFree(diag);
-  hipFree(X);
-  hipFree(Y);
-  return status;
+  return rocsolver_gebrd_template<false, true, S, T>(
+      handle, m, n, A, shiftA, lda, strideA, D, strideD, E, strideE, tauq,
+      strideQ, taup, strideP, (T *)X, shiftX, m, strideX, (T *)Y, shiftY, n,
+      strideY, batch_count, (T *)scalars, work_workArr, (T *)Abyx_norms);
 }
 
 /*

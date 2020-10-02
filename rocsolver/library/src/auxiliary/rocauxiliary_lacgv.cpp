@@ -17,17 +17,20 @@ rocblas_status rocsolver_lacgv_impl(rocblas_handle handle, const rocblas_int n,
   if (st != rocblas_status_continue)
     return st;
 
+  // working with unshifted arrays
+  rocblas_int shiftx = 0;
+
+  // normal (non-batched non-strided) execution
   rocblas_stride stridex = 0;
   rocblas_int batch_count = 1;
 
-  // memory managment
   // this function does not requiere memory work space
-  // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
+  if (rocblas_is_device_memory_size_query(handle))
+    return rocblas_status_size_unchanged;
 
   // execution
-  return rocsolver_lacgv_template<T>(handle, n, x,
-                                     0, // vector shifted 0 entries
-                                     incx, stridex, batch_count);
+  return rocsolver_lacgv_template<T>(handle, n, x, shiftx, incx, stridex,
+                                     batch_count);
 }
 
 /*

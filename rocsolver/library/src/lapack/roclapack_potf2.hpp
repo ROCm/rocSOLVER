@@ -23,14 +23,16 @@ __global__ void sqrtDiagOnward(U A, const rocblas_int shiftA,
   T *M = load_ptr_batch<T>(A, id, shiftA, strideA);
   T t = M[loc] - res[id];
 
-  // error for non-positive definiteness
   if (t <= 0.0) {
+    // error for non-positive definiteness
     if (info[id] == 0)
       info[id] = j + 1; // use fortran 1-based index
     M[loc] = t;
     res[id] = 0;
+  }
+
+  else {
     // minor is positive definite
-  } else {
     M[loc] = sqrt(t);
     res[id] = 1 / M[loc];
   }
@@ -45,14 +47,16 @@ __global__ void sqrtDiagOnward(U A, const rocblas_int shiftA,
   T *M = load_ptr_batch<T>(A, id, shiftA, strideA);
   auto t = M[loc].real() - res[id].real();
 
-  // error for non-positive definiteness
   if (t <= 0.0) {
+    // error for non-positive definiteness
     if (info[id] == 0)
       info[id] = j + 1; // use fortran 1-based index
     M[loc] = t;
     res[id] = 0;
+  }
+
+  else {
     // minor is positive definite
-  } else {
     M[loc] = sqrt(t);
     res[id] = 1 / M[loc];
   }
@@ -61,16 +65,24 @@ __global__ void sqrtDiagOnward(U A, const rocblas_int shiftA,
 template <typename T>
 void rocsolver_potf2_getMemorySize(const rocblas_int n,
                                    const rocblas_int batch_count,
-                                   size_t *size_1, size_t *size_2,
-                                   size_t *size_3) {
+                                   size_t *size_scalars, size_t *size_work,
+                                   size_t *size_pivots) {
+  // if quick return no need of workspace
+  if (n == 0 || batch_count == 0) {
+    *size_scalars = 0;
+    *size_work = 0;
+    *size_pivots = 0;
+    return;
+  }
+
   // size of scalars (constants)
-  *size_1 = sizeof(T) * 3;
+  *size_scalars = sizeof(T) * 3;
 
   // size of workspace
-  *size_2 = sizeof(T) * ((n - 1) / ROCBLAS_DOT_NB + 2) * batch_count;
+  *size_work = sizeof(T) * ((n - 1) / ROCBLAS_DOT_NB + 2) * batch_count;
 
-  // size of array of pivots
-  *size_3 = sizeof(T) * batch_count;
+  // size of array to store pivots
+  *size_pivots = sizeof(T) * batch_count;
 }
 
 template <typename T>
@@ -101,7 +113,7 @@ rocsolver_potf2_template(rocblas_handle handle, const rocblas_fill uplo,
                          const rocblas_int n, U A, const rocblas_int shiftA,
                          const rocblas_int lda, const rocblas_stride strideA,
                          rocblas_int *info, const rocblas_int batch_count,
-                         T *scalars, T *work, T *pivotGPU) {
+                         T *scalars, T *work, T *pivots) {
   // quick return if zero instances in batch
   if (batch_count == 0)
     return rocblas_status_success;
@@ -126,17 +138,17 @@ rocsolver_potf2_template(rocblas_handle handle, const rocblas_fill uplo,
   rocblas_get_pointer_mode(handle, &old_mode);
   rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
-  if (uplo ==
-      rocblas_fill_upper) { // Compute the Cholesky factorization A = U'*U.
+  if (uplo == rocblas_fill_upper) {
+    // Compute the Cholesky factorization A = U'*U.
     for (rocblas_int j = 0; j < n; ++j) {
       // Compute U(J,J) and test for non-positive-definiteness.
       rocblasCall_dot<COMPLEX, T>(handle, j, A, shiftA + idx2D(0, j, lda), 1,
                                   strideA, A, shiftA + idx2D(0, j, lda), 1,
-                                  strideA, batch_count, pivotGPU, work);
+                                  strideA, batch_count, pivots, work);
 
       hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0,
                          stream, A, shiftA, strideA, idx2D(j, j, lda), j,
-                         pivotGPU, info);
+                         pivots, info);
 
       // Compute elements J+1:N of row J
       if (j < n - 1) {
@@ -154,22 +166,24 @@ rocsolver_potf2_template(rocblas_handle handle, const rocblas_fill uplo,
           rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(0, j, lda),
                                       1, strideA, batch_count);
 
-        rocblasCall_scal<T>(handle, n - j - 1, pivotGPU, 1, A,
+        rocblasCall_scal<T>(handle, n - j - 1, pivots, 1, A,
                             shiftA + idx2D(j, j + 1, lda), lda, strideA,
                             batch_count);
       }
     }
+  }
 
-  } else { // Compute the Cholesky factorization A = L'*L.
+  else {
+    // Compute the Cholesky factorization A = L'*L.
     for (rocblas_int j = 0; j < n; ++j) {
       // Compute L(J,J) and test for non-positive-definiteness.
       rocblasCall_dot<COMPLEX, T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda,
                                   strideA, A, shiftA + idx2D(j, 0, lda), lda,
-                                  strideA, batch_count, pivotGPU, work);
+                                  strideA, batch_count, pivots, work);
 
       hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0,
                          stream, A, shiftA, strideA, idx2D(j, j, lda), j,
-                         pivotGPU, info);
+                         pivots, info);
 
       // Compute elements J+1:N of row J
       if (j < n - 1) {
@@ -187,7 +201,7 @@ rocsolver_potf2_template(rocblas_handle handle, const rocblas_fill uplo,
           rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(j, 0, lda),
                                       lda, strideA, batch_count);
 
-        rocblasCall_scal<T>(handle, n - j - 1, pivotGPU, 1, A,
+        rocblasCall_scal<T>(handle, n - j - 1, pivots, 1, A,
                             shiftA + idx2D(j + 1, j, lda), 1, strideA,
                             batch_count);
       }

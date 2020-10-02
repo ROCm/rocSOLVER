@@ -21,41 +21,47 @@ rocblas_status rocsolver_larf_impl(rocblas_handle handle,
   if (st != rocblas_status_continue)
     return st;
 
+  // working with unshifted arrays
+  rocblas_int shiftA = 0;
+  rocblas_int shiftx = 0;
+
+  // normal (non-batched non-strided) execution
   rocblas_stride stridex = 0;
   rocblas_stride stridea = 0;
   rocblas_stride stridep = 0;
   rocblas_int batch_count = 1;
 
-  // memory managment
-  size_t size_1; // size of constants
-  size_t size_2; // size of workspace
-  size_t size_3; // size of array of pointers to workspace
-  rocsolver_larf_getMemorySize<T, false>(side, m, n, batch_count, &size_1,
-                                         &size_2, &size_3);
+  // memory workspace sizes:
+  // size for constants in rocblas calls
+  size_t size_scalars;
+  // size for temporary results in generation of Householder matrix
+  size_t size_Abyx;
+  // size of arrays of pointers (for batched cases)
+  size_t size_workArr;
+  rocsolver_larf_getMemorySize<T, false>(side, m, n, batch_count, &size_scalars,
+                                         &size_Abyx, &size_workArr);
 
-  // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-  void *scalars, *work, *workArr;
-  hipMalloc(&scalars, size_1);
-  hipMalloc(&work, size_2);
-  hipMalloc(&workArr, size_3);
-  if (!scalars || (size_2 && !work) || (size_3 && !workArr))
+  if (rocblas_is_device_memory_size_query(handle))
+    return rocblas_set_optimal_device_memory_size(handle, size_scalars,
+                                                  size_Abyx, size_workArr);
+
+  // memory workspace allocation
+  void *scalars, *Abyx, *workArr;
+  rocblas_device_malloc mem(handle, size_scalars, size_Abyx, size_workArr);
+  if (!mem)
     return rocblas_status_memory_error;
 
-  // scalar constants for rocblas functions calls
-  // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
+  scalars = mem[0];
+  Abyx = mem[1];
+  workArr = mem[2];
   T sca[] = {-1, 0, 1};
-  RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
+  RETURN_IF_HIP_ERROR(
+      hipMemcpy((T *)scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
   // execution
-  rocblas_status status = rocsolver_larf_template<T>(
-      handle, side, m, n, x, 0,            // vector shifted 0 entries
-      incx, stridex, alpha, stridep, A, 0, // matrix shifted 0 entries
-      lda, stridea, batch_count, (T *)scalars, (T *)work, (T **)workArr);
-
-  hipFree(scalars);
-  hipFree(work);
-  hipFree(workArr);
-  return status;
+  return rocsolver_larf_template<T>(
+      handle, side, m, n, x, shiftx, incx, stridex, alpha, stridep, A, shiftA,
+      lda, stridea, batch_count, (T *)scalars, (T *)Abyx, (T **)workArr);
 }
 
 /*
