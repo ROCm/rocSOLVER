@@ -20,59 +20,53 @@ rocblas_status rocsolver_potrf_strided_batched_impl(
   if (st != rocblas_status_continue)
     return st;
 
-  // memory managment
-  size_t size_1; // size of constants
-  size_t size_2; // size of workspace
-  size_t size_3;
-  size_t size_4;
-  size_t size_5; // for TRSM
-  size_t size_6; // for TRSM
-  size_t size_7; // for TRSM
-  size_t size_8; // for TRSM
-  rocsolver_potrf_getMemorySize<false, T>(n, uplo, batch_count, &size_1,
-                                          &size_2, &size_3, &size_4, &size_5,
-                                          &size_6, &size_7, &size_8);
+  // working with unshifted arrays
+  rocblas_int shiftA = 0;
 
-  // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-  void *scalars, *work, *pivotGPU, *iinfo, *x_temp, *x_temp_arr, *invA,
-      *invA_arr;
+  // memory workspace sizes:
+  // size for constants in rocblas calls
+  size_t size_scalars;
+  // size of reusable workspace (and for calling TRSM)
+  size_t size_work1, size_work2, size_work3, size_work4;
+  // extra requirements for calling POTF2
+  size_t size_pivots;
+  // size to store info about positiveness of each subblock
+  size_t size_iinfo;
+  rocsolver_potrf_getMemorySize<false, T>(
+      n, uplo, batch_count, &size_scalars, &size_work1, &size_work2,
+      &size_work3, &size_work4, &size_pivots, &size_iinfo);
+
+  if (rocblas_is_device_memory_size_query(handle))
+    return rocblas_set_optimal_device_memory_size(
+        handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
+        size_pivots, size_iinfo);
+
   // always allocate all required memory for TRSM optimal performance
   bool optim_mem = true;
 
-  hipMalloc(&scalars, size_1);
-  hipMalloc(&work, size_2);
-  hipMalloc(&pivotGPU, size_3);
-  hipMalloc(&iinfo, size_4);
-  hipMalloc(&x_temp, size_5);
-  hipMalloc(&x_temp_arr, size_6);
-  hipMalloc(&invA, size_7);
-  hipMalloc(&invA_arr, size_8);
-  if (!scalars || (size_2 && !work) || (size_3 && !pivotGPU) ||
-      (size_4 && !iinfo) || (size_5 && !x_temp) || (size_6 && !x_temp_arr) ||
-      (size_7 && !invA) || (size_8 && !invA_arr))
+  // memory workspace allocation
+  void *scalars, *work1, *work2, *work3, *work4, *pivots, *iinfo;
+  rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2,
+                            size_work3, size_work4, size_pivots, size_iinfo);
+
+  if (!mem)
     return rocblas_status_memory_error;
 
-  // scalar constants for rocblas functions calls
-  // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
+  scalars = mem[0];
+  work1 = mem[1];
+  work2 = mem[2];
+  work3 = mem[3];
+  work4 = mem[4];
+  pivots = mem[5];
+  iinfo = mem[6];
   T sca[] = {-1, 0, 1};
-  RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
+  RETURN_IF_HIP_ERROR(
+      hipMemcpy((T *)scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
   // execution
-  rocblas_status status = rocsolver_potrf_template<false, S, T>(
-      handle, uplo, n, A,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      lda, strideA, info, batch_count, (T *)scalars, (T *)work, (T *)pivotGPU,
-      (rocblas_int *)iinfo, x_temp, x_temp_arr, invA, invA_arr, optim_mem);
-
-  hipFree(scalars);
-  hipFree(work);
-  hipFree(pivotGPU);
-  hipFree(iinfo);
-  hipFree(x_temp);
-  hipFree(x_temp_arr);
-  hipFree(invA);
-  hipFree(invA_arr);
-  return status;
+  return rocsolver_potrf_template<false, S, T>(
+      handle, uplo, n, A, shiftA, lda, strideA, info, batch_count, (T *)scalars,
+      work1, work2, work3, work4, (T *)pivots, (rocblas_int *)iinfo, optim_mem);
 }
 
 /*

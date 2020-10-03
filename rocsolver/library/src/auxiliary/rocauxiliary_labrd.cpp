@@ -21,6 +21,12 @@ rocsolver_labrd_impl(rocblas_handle handle, const rocblas_int m,
   if (st != rocblas_status_continue)
     return st;
 
+  // working with unshifted arrays
+  rocblas_int shiftA = 0;
+  rocblas_int shiftX = 0;
+  rocblas_int shiftY = 0;
+
+  // normal (non-batched non-strided) execution
   rocblas_stride strideA = 0;
   rocblas_stride strideX = 0;
   rocblas_stride strideY = 0;
@@ -30,42 +36,40 @@ rocsolver_labrd_impl(rocblas_handle handle, const rocblas_int m,
   rocblas_stride strideP = 0;
   rocblas_int batch_count = 1;
 
-  // memory managment
-  size_t size_1; // size of constants
-  size_t size_2; // size of workspace
-  size_t size_3; // size of array of pointers to workspace
-  size_t size_4; // size of cache for norms
-  rocsolver_labrd_getMemorySize<T, false>(m, n, batch_count, &size_1, &size_2,
-                                          &size_3, &size_4);
+  // memory workspace sizes:
+  // size for constants in rocblas calls
+  size_t size_scalars;
+  // size of arrays of pointers (for batched cases) and re-usable workspace
+  size_t size_work_workArr;
+  // extra requirements for calling LARFG
+  size_t size_norms;
+  rocsolver_labrd_getMemorySize<T, false>(m, n, k, batch_count, &size_scalars,
+                                          &size_work_workArr, &size_norms);
 
-  // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-  void *scalars, *work, *workArr, *norms;
-  hipMalloc(&scalars, size_1);
-  hipMalloc(&work, size_2);
-  hipMalloc(&workArr, size_3);
-  hipMalloc(&norms, size_4);
-  if (!scalars || (size_2 && !work) || (size_3 && !workArr) ||
-      (size_4 && !norms))
+  if (rocblas_is_device_memory_size_query(handle))
+    return rocblas_set_optimal_device_memory_size(
+        handle, size_scalars, size_work_workArr, size_norms);
+
+  // memory workspace allocation
+  void *scalars, *work_workArr, *norms;
+  rocblas_device_malloc mem(handle, size_scalars, size_work_workArr,
+                            size_norms);
+
+  if (!mem)
     return rocblas_status_memory_error;
 
-  // scalar constants for rocblas functions calls
-  // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
+  scalars = mem[0];
+  work_workArr = mem[1];
+  norms = mem[2];
   T sca[] = {-1, 0, 1};
-  RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
+  RETURN_IF_HIP_ERROR(
+      hipMemcpy((T *)scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
   // execution
-  rocblas_status status = rocsolver_labrd_template<S, T>(
-      handle, m, n, k, A,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      lda, strideA, D, strideD, E, strideE, tauq, strideQ, taup, strideP, X, 0,
-      ldx, strideX, Y, 0, ldy, strideY, batch_count, (T *)scalars, (T *)work,
-      (T **)workArr, (T *)norms);
-
-  hipFree(scalars);
-  hipFree(work);
-  hipFree(workArr);
-  hipFree(norms);
-  return status;
+  return rocsolver_labrd_template<S, T>(
+      handle, m, n, k, A, shiftA, lda, strideA, D, strideD, E, strideE, tauq,
+      strideQ, taup, strideP, X, shiftX, ldx, strideX, Y, shiftY, ldy, strideY,
+      batch_count, (T *)scalars, work_workArr, (T *)norms);
 }
 
 /*

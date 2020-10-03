@@ -19,10 +19,9 @@
 #include "rocsolver.h"
 
 #ifdef OPTIMAL
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//          SERIES OF OPTIMIZED KERNELS FOR LU FACTORIZATION OF SMALL/MEDIUM
-//          SIZE MATRICES                    //
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+// SERIES OF OPTIMIZED KERNELS FOR LU FACTORIZATION OF SMALL/MEDIUM SIZE MATRICES //
+////////////////////////////////////////////////////////////////////////////////////
 
 /*************************************************************************
     LUfact_panel_kernel takes care of of matrices with
@@ -671,7 +670,7 @@ rocblas_status LUfact_small(rocblas_handle handle, const rocblas_int m,
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-//                      END OF OPTIMIZED KERNELS //
+//                      END OF OPTIMIZED KERNELS                                        //
 //////////////////////////////////////////////////////////////////////////////////////////
 #endif // OPTIMAL
 
@@ -702,23 +701,45 @@ __global__ void getf2_check_singularity(
     pivot_val[id] = 1.0 / A[idx];
 }
 
-template <typename T, typename S>
-void rocsolver_getf2_getMemorySize(const rocblas_int m,
+template <bool ISBATCHED, typename T, typename S>
+void rocsolver_getf2_getMemorySize(const rocblas_int m, const rocblas_int n,
                                    const rocblas_int batch_count,
-                                   size_t *size_1, size_t *size_2,
-                                   size_t *size_3, size_t *size_4) {
+                                   size_t *size_scalars, size_t *size_work,
+                                   size_t *size_pivotval,
+                                   size_t *size_pivotidx) {
+  // if quick return no workspace needed
+  if (m == 0 || n == 0 || batch_count == 0) {
+    *size_scalars = 0;
+    *size_work = 0;
+    *size_pivotval = 0;
+    *size_pivotidx = 0;
+  }
+
+#ifdef OPTIMAL
+  // if using optimized algorithm for small sizes, no workspace needed
+  if (n <= WAVESIZE) {
+    if (m <= GETF2_MAX_THDS || (m <= GETF2_OPTIM_MAX_SIZE && !ISBATCHED) ||
+        (m <= GETF2_BATCH_OPTIM_MAX_SIZE && ISBATCHED)) {
+      *size_scalars = 0;
+      *size_work = 0;
+      *size_pivotval = 0;
+      *size_pivotidx = 0;
+    }
+  }
+#endif
+
   // for scalars
-  *size_1 = sizeof(T) * 3;
+  *size_scalars = sizeof(T) * 3;
 
   // for pivot values
-  *size_2 = sizeof(T) * batch_count;
+  *size_pivotval = sizeof(T) * batch_count;
 
   // for pivot indices
-  *size_3 = sizeof(rocblas_int) * batch_count;
+  *size_pivotidx = sizeof(rocblas_int) * batch_count;
 
   // for workspace
-  *size_4 = sizeof(rocblas_index_value_t<S>) *
-            ((m - 1) / ROCBLAS_IAMAX_NB + 2) * batch_count;
+  *size_work = sizeof(rocblas_index_value_t<S>) *
+               ((m - 1) / ROCBLAS_IAMAX_NB + 2) * batch_count;
 }
 
 template <typename T>
@@ -748,7 +769,7 @@ rocblas_status rocsolver_getf2_template(
     const rocblas_stride strideA, rocblas_int *ipiv, const rocblas_int shiftP,
     const rocblas_stride strideP, rocblas_int *info,
     const rocblas_int batch_count, const rocblas_int pivot, T *scalars,
-    T *pivot_val, rocblas_int *pivot_idx, rocblas_index_value_t<S> *work) {
+    rocblas_index_value_t<S> *work, T *pivotval, rocblas_int *pivotidx) {
   // quick return if zero instances in batch
   if (batch_count == 0)
     return rocblas_status_success;
@@ -760,7 +781,6 @@ rocblas_status rocsolver_getf2_template(
   dim3 gridReset(blocksReset, 1, 1);
   dim3 threads(BLOCKSIZE, 1, 1);
   rocblas_int dim = min(m, n); // total number of pivots
-  T *M;
 
   // info=0 (starting with a nonsingular matrix)
   hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info,
@@ -795,12 +815,12 @@ rocblas_status rocsolver_getf2_template(
       // does that as well!
       rocblasCall_iamax<ISBATCHED, T, S>(handle, m - j, A,
                                          shiftA + idx2D(j, j, lda), 1, strideA,
-                                         batch_count, pivot_idx, work);
+                                         batch_count, pivotidx, work);
 
     // adjust pivot indices and check singularity
     hipLaunchKernelGGL(getf2_check_singularity<T>, dim3(batch_count), dim3(1),
                        0, stream, A, shiftA, strideA, ipiv, shiftP, strideP, j,
-                       lda, pivot_val, pivot_idx, info, pivot);
+                       lda, pivotval, pivotidx, info, pivot);
 
     if (pivot)
       // Swap pivot row and j-th row
@@ -808,7 +828,7 @@ rocblas_status rocsolver_getf2_template(
                                   j + 1, ipiv, shiftP, strideP, 1, batch_count);
 
     // Compute elements J+1:M of J'th column
-    rocblasCall_scal<T>(handle, m - j - 1, pivot_val, 1, A,
+    rocblasCall_scal<T>(handle, m - j - 1, pivotval, 1, A,
                         shiftA + idx2D(j + 1, j, lda), 1, strideA, batch_count);
 
     // update trailing submatrix

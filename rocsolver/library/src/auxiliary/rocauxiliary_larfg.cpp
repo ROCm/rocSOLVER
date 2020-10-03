@@ -18,31 +18,39 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle, const rocblas_int n,
   if (st != rocblas_status_continue)
     return st;
 
+  // working with unshifted arrays
+  rocblas_int shifta = 0;
+  rocblas_int shiftx = 0;
+
+  // normal (non-batched non-strided) execution
   rocblas_stride stridex = 0;
   rocblas_stride strideP = 0;
   rocblas_int batch_count = 1;
 
-  // memory managment
-  size_t size_1; // size to store the norms
-  size_t size_2; // size of workspace
-  rocsolver_larfg_getMemorySize<T>(n, batch_count, &size_1, &size_2);
+  // memory workspace sizes:
+  // size of re-usable workspace
+  size_t size_work;
+  // size to store the norms
+  size_t size_norms;
+  rocsolver_larfg_getMemorySize<T>(n, batch_count, &size_work, &size_norms);
 
-  // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-  void *norms, *work;
-  hipMalloc(&norms, size_1);
-  hipMalloc(&work, size_2);
-  if (!norms || (size_2 && !work))
+  if (rocblas_is_device_memory_size_query(handle))
+    return rocblas_set_optimal_device_memory_size(handle, size_work,
+                                                  size_norms);
+
+  // memory workspace allocation
+  void *work, *norms;
+  rocblas_device_malloc mem(handle, size_work, size_norms);
+  if (!mem)
     return rocblas_status_memory_error;
 
-  // execution
-  rocblas_status status = rocsolver_larfg_template<T>(
-      handle, n, alpha, 0, // The pivot is the first pointed element
-      x, 0,                // the vector is shifted 0 entries,
-      incx, stridex, tau, strideP, batch_count, (T *)norms, (T *)work);
+  work = mem[0];
+  norms = mem[1];
 
-  hipFree(norms);
-  hipFree(work);
-  return status;
+  // execution
+  return rocsolver_larfg_template<T>(handle, n, alpha, shifta, x, shiftx, incx,
+                                     stridex, tau, strideP, batch_count,
+                                     (T *)work, (T *)norms);
 }
 
 /*

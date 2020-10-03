@@ -35,27 +35,55 @@ getrf_check_singularity(const rocblas_int n, const rocblas_int j,
   }
 }
 
-template <bool BATCHED, typename T, typename S>
+template <bool BATCHED, bool STRIDED, typename T, typename S>
 void rocsolver_getrf_getMemorySize(const rocblas_int m, const rocblas_int n,
                                    const rocblas_int batch_count,
-                                   size_t *size_1, size_t *size_2,
-                                   size_t *size_3, size_t *size_4,
-                                   size_t *size_5, size_t *size_6,
-                                   size_t *size_7, size_t *size_8,
-                                   size_t *size_9) {
-  rocsolver_getf2_getMemorySize<T, S>(m, batch_count, size_1, size_2, size_3,
-                                      size_5);
+                                   size_t *size_scalars, size_t *size_work,
+                                   size_t *size_work1, size_t *size_work2,
+                                   size_t *size_work3, size_t *size_work4,
+                                   size_t *size_pivotval, size_t *size_pivotidx,
+                                   size_t *size_iinfo) {
+  static constexpr bool ISBATCHED = BATCHED || STRIDED;
+
+  // if quick return, no need of workspace
+  if (m == 0 || n == 0 || batch_count == 0) {
+    *size_scalars = 0;
+    *size_work = 0;
+    *size_work1 = 0;
+    *size_work2 = 0;
+    *size_work3 = 0;
+    *size_work4 = 0;
+    *size_pivotval = 0;
+    *size_pivotidx = 0;
+    *size_iinfo = 0;
+    return;
+  }
+
   if (m < GETRF_GETF2_SWITCHSIZE || n < GETRF_GETF2_SWITCHSIZE) {
-    *size_4 = 0;
-    *size_6 = 0;
-    *size_7 = 0;
-    *size_8 = 0;
-    *size_9 = 0;
+    // requirements for one single GETF2
+    rocsolver_getf2_getMemorySize<ISBATCHED, T, S>(
+        m, n, batch_count, size_scalars, size_work, size_pivotval,
+        size_pivotidx);
+    *size_work1 = 0;
+    *size_work2 = 0;
+    *size_work3 = 0;
+    *size_work4 = 0;
+    *size_iinfo = 0;
   } else {
-    *size_4 = sizeof(rocblas_int) * batch_count;
     rocblas_int jb = GETRF_GETF2_SWITCHSIZE;
+
+    // requirements for calling GETF2 for the sub blocks
+    rocsolver_getf2_getMemorySize<ISBATCHED, T, S>(
+        m, jb, batch_count, size_scalars, size_work, size_pivotval,
+        size_pivotidx);
+
+    // to store info about singularity of sub blocks
+    *size_iinfo = sizeof(rocblas_int) * batch_count;
+
+    // extra workspace (for calling TRSM)
     rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, jb, n - jb, batch_count,
-                                     size_6, size_7, size_8, size_9);
+                                     size_work1, size_work2, size_work3,
+                                     size_work4);
   }
 }
 
@@ -66,11 +94,28 @@ rocblas_status rocsolver_getrf_template(
     const rocblas_stride strideA, rocblas_int *ipiv, const rocblas_int shiftP,
     const rocblas_stride strideP, rocblas_int *info,
     const rocblas_int batch_count, const rocblas_int pivot, T *scalars,
-    T *pivot_val, rocblas_int *pivot_idx, rocblas_int *iinfo,
-    rocblas_index_value_t<S> *work, void *x_temp, void *x_temp_arr, void *invA,
-    void *invA_arr, bool optim_mem) {
+    rocblas_index_value_t<S> *work, void *work1, void *work2, void *work3,
+    void *work4, T *pivotval, rocblas_int *pivotidx, rocblas_int *iinfo,
+    bool optim_mem) {
   // quick return
-  if (m == 0 || n == 0 || batch_count == 0)
+  if (batch_count == 0)
+    return rocblas_status_success;
+
+  hipStream_t stream;
+  rocblas_get_stream(handle, &stream);
+
+  rocblas_int blocksPivot;
+  rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+  dim3 gridPivot;
+  dim3 gridReset(blocksReset, 1, 1);
+  dim3 threads(BLOCKSIZE, 1, 1);
+
+  // info=0 (starting with a nonsingular matrix)
+  hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info,
+                     batch_count, 0);
+
+  // quick return if no dimensions
+  if (m == 0 || n == 0)
     return rocblas_status_success;
 
   static constexpr bool ISBATCHED = BATCHED || STRIDED;
@@ -80,10 +125,7 @@ rocblas_status rocsolver_getrf_template(
   if (m < GETRF_GETF2_SWITCHSIZE || n < GETRF_GETF2_SWITCHSIZE)
     return rocsolver_getf2_template<ISBATCHED, T>(
         handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
-        batch_count, pivot, scalars, pivot_val, pivot_idx, work);
-
-  hipStream_t stream;
-  rocblas_get_stream(handle, &stream);
+        batch_count, pivot, scalars, work, pivotval, pivotidx);
 
   // everything must be executed with scalars on the host
   rocblas_pointer_mode old_mode;
@@ -94,18 +136,8 @@ rocblas_status rocsolver_getrf_template(
   T one = 1;     // constant 1 in host
   T minone = -1; // constant -1 in host
 
-  rocblas_int blocksPivot;
-  rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
-  dim3 gridPivot;
-  dim3 gridReset(blocksReset, 1, 1);
-  dim3 threads(BLOCKSIZE, 1, 1);
   rocblas_int dim = min(m, n); // total number of pivots
-  T *M;
   rocblas_int jb, sizePivot;
-
-  // info=0 (starting with a nonsingular matrix)
-  hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info,
-                     batch_count, 0);
 
   for (rocblas_int j = 0; j < dim; j += GETRF_GETF2_SWITCHSIZE) {
     // Factor diagonal and subdiagonal blocks
@@ -114,8 +146,8 @@ rocblas_status rocsolver_getrf_template(
                        batch_count, 0);
     rocsolver_getf2_template<ISBATCHED, T>(
         handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, ipiv,
-        shiftP + j, strideP, iinfo, batch_count, pivot, scalars, pivot_val,
-        pivot_idx, work);
+        shiftP + j, strideP, iinfo, batch_count, pivot, scalars, work, pivotval,
+        pivotidx);
 
     // adjust pivot indices and check singularity
     sizePivot = min(m - j, jb); // number of pivots in the block
@@ -145,7 +177,7 @@ rocblas_status rocsolver_getrf_template(
           rocblas_diagonal_unit, jb, (n - j - jb), &one, A,
           shiftA + idx2D(j, j, lda), lda, strideA, A,
           shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count, optim_mem,
-          x_temp, x_temp_arr, invA, invA_arr);
+          work1, work2, work3, work4);
 
       // update trailing submatrix
       if (j + jb < m) {
