@@ -235,6 +235,7 @@ rocsolver_<type>orgbr()
 rocsolver_<type>orgtr()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_dorgtr
+   :outline:
 .. doxygenfunction:: rocsolver_sorgtr
 
 rocsolver_<type>orm2r()
@@ -315,6 +316,7 @@ rocsolver_<type>ungbr()
 rocsolver_<type>ungtr()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_zungtr
+   :outline:
 .. doxygenfunction:: rocsolver_cungtr
 
 rocsolver_<type>unm2r()

@@ -16,21 +16,36 @@
 #include "rocsolver.h"
 
 template <typename T, bool BATCHED>
-void rocsolver_orgtr_ungtr_getMemorySize(const rocblas_fill uplo,
-                                         const rocblas_int n,
-                                         const rocblas_int batch_count,
-                                         size_t *size_1, size_t *size_2,
-                                         size_t *size_3, size_t *size_4,
-                                         size_t *size_5) {
-  size_t s2a = sizeof(T) * batch_count * (n - 1) * n / 2;
-  size_t s2b;
-  if (uplo == rocblas_fill_upper)
+void rocsolver_orgtr_ungtr_getMemorySize(
+    const rocblas_fill uplo, const rocblas_int n, const rocblas_int batch_count,
+    size_t *size_scalars, size_t *size_work, size_t *size_Abyx_tmptr,
+    size_t *size_trfact, size_t *size_workArr) {
+  // if quick return no workspace needed
+  if (n == 0 || batch_count == 0) {
+    *size_scalars = 0;
+    *size_work = 0;
+    *size_Abyx_tmptr = 0;
+    *size_trfact = 0;
+    *size_workArr = 0;
+    return;
+  }
+
+  size_t w1 = sizeof(T) * batch_count * (n - 1) * n / 2;
+  size_t w2;
+  if (uplo == rocblas_fill_upper) {
+    // requirements for calling orgql/ungql
     rocsolver_orgql_ungql_getMemorySize<T, BATCHED>(
-        n - 1, n - 1, n - 1, batch_count, size_1, &s2b, size_3, size_4, size_5);
-  else
+        n - 1, n - 1, n - 1, batch_count, size_scalars, &w2, size_Abyx_tmptr,
+        size_trfact, size_workArr);
+  }
+
+  else {
+    // requirements for calling orgqr/ungqr
     rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(
-        n - 1, n - 1, n - 1, batch_count, size_1, &s2b, size_3, size_4, size_5);
-  *size_2 = max(s2a, s2b);
+        n - 1, n - 1, n - 1, batch_count, size_scalars, &w2, size_Abyx_tmptr,
+        size_trfact, size_workArr);
+  }
+  *size_work = max(w1, w2);
 }
 
 template <typename T, typename U>
@@ -59,8 +74,8 @@ rocblas_status rocsolver_orgtr_ungtr_template(
     rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n, U A,
     const rocblas_int shiftA, const rocblas_int lda,
     const rocblas_stride strideA, T *ipiv, const rocblas_stride strideP,
-    const rocblas_int batch_count, T *scalars, T *work, T **workArr, T *trfact,
-    T *workTrmm) {
+    const rocblas_int batch_count, T *scalars, T *work, T *Abyx_tmptr,
+    T *trfact, T **workArr) {
   // quick return
   if (!n || !batch_count)
     return rocblas_status_success;
@@ -90,7 +105,7 @@ rocblas_status rocsolver_orgtr_ungtr_template(
     // result
     rocsolver_orgql_ungql_template<BATCHED, STRIDED, T>(
         handle, n - 1, n - 1, n - 1, A, shiftA, lda, strideA, ipiv, strideP,
-        batch_count, scalars, work, workArr, trfact, workTrmm);
+        batch_count, scalars, work, Abyx_tmptr, trfact, workArr);
   }
 
   else {
@@ -110,7 +125,7 @@ rocblas_status rocsolver_orgtr_ungtr_template(
     // result
     rocsolver_orgqr_ungqr_template<BATCHED, STRIDED, T>(
         handle, n - 1, n - 1, n - 1, A, shiftA + idx2D(1, 1, lda), lda, strideA,
-        ipiv, strideP, batch_count, scalars, work, workArr, trfact, workTrmm);
+        ipiv, strideP, batch_count, scalars, work, Abyx_tmptr, trfact, workArr);
   }
 
   return rocblas_status_success;
