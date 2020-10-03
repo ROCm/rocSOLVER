@@ -259,9 +259,6 @@ rocblas_status rocsolver_gesvd_template(
   hipStream_t stream;
   rocblas_get_stream(handle, &stream);
 
-  // (TODO: BIDIAGONALIZATIONS ARE, FOR NOW, ALWAYS EXECUTED WITH GEBD2 AS
-  //  MEMORY REQUIREMENTS AND WORKSPACE ARRAYS FOR GEBRD NEED TO BE REVIEWED)
-
   // booleans used to determine the path that the execution will follow:
   const bool leftvS = (left_svect == rocblas_svect_singular);
   const bool leftvO = (left_svect == rocblas_svect_overwrite);

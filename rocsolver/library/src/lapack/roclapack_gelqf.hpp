@@ -57,7 +57,7 @@ void rocsolver_gelqf_getMemorySize(const rocblas_int m, const rocblas_int n,
                                               size_workArr);
 
     // requirements for calling LARFB
-    rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_left, m - jb, n, jb,
+    rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_right, m - jb, n, jb,
                                               batch_count, &w3, &s2, &unused);
 
     *size_work_workArr = max(w1, max(w2, w3));
