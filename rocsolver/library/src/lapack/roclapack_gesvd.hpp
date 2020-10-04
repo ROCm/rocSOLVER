@@ -186,7 +186,11 @@ void rocsolver_gesvd_getMemorySize(
   rocblas_int nu = leftvN ? 0 : m;
   rocblas_int nv = rightvN ? 0 : n;
 
-  *size_workArr = 0;
+  // size of array of pointers to workspace
+  if (BATCHED)
+    *size_workArr = sizeof(T *) * batch_count;
+  else
+    *size_workArr = 0;
 
   // workspace required for the bidiagonalization
   rocsolver_gebrd_getMemorySize<T, BATCHED>(
@@ -206,7 +210,7 @@ void rocsolver_gesvd_getMemorySize(
       k = m;
     rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(rocblas_column_wise, m, k,
                                                     n, batch_count, &unused, &w,
-                                                    &s, &t, size_workArr);
+                                                    &s, &t, &unused);
     if (w > *size_work_workArr)
       *size_work_workArr = w;
     if (s > *size_Abyx_norms_tmptr)
@@ -223,7 +227,7 @@ void rocsolver_gesvd_getMemorySize(
       k = n;
     rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(rocblas_row_wise, k, n, m,
                                                     batch_count, &unused, &w,
-                                                    &s, &t, size_workArr);
+                                                    &s, &t, &unused);
 
     if (w > *size_work_workArr)
       *size_work_workArr = w;
@@ -273,6 +277,12 @@ rocblas_status rocsolver_gesvd_template(
   rocblas_int mn, nu, nv;
   rocblas_fill uplo;
   const rocblas_int k = min(m, n);
+  rocblas_stride strideX = m * GEBRD_GEBD2_SWITCHSIZE;
+  rocblas_stride strideY = n * GEBRD_GEBD2_SWITCHSIZE;
+  rocblas_int shiftX = 0;
+  rocblas_int shiftY = 0;
+  rocblas_int ldx = m;
+  rocblas_int ldy = n;
 
   // common block sizes and number of threads for internal kernels
   constexpr rocblas_int thread_count = 32;
@@ -308,7 +318,8 @@ rocblas_status rocsolver_gesvd_template(
     // 1. Bidiagonalize A.
     rocsolver_gebrd_template<BATCHED, STRIDED>(
         handle, m, n, A, shiftA, lda, strideA, S, strideS, E, strideE, tau, k,
-        (tau + k * batch_count), k, X_trfact, 0, m, m * k, Y, 0, n, n * k,
+        (tau + k * batch_count), k, X_trfact, shiftX, ldx, strideX, 
+        Y, shiftY, ldy, strideY,
         batch_count, scalars, work_workArr, Abyx_norms_tmptr);
 
     // 2. Generate corresponding orthonormal/unitary matrices when required
