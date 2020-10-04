@@ -225,9 +225,8 @@ void rocsolver_gesvd_getMemorySize(
       k = m;
     else
       k = n;
-    rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(rocblas_row_wise, k, n, m,
-                                                    batch_count, &unused, &w,
-                                                    &s, &t, &unused);
+    rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(
+        rocblas_row_wise, k, n, m, batch_count, &unused, &w, &s, &t, &unused);
 
     if (w > *size_work_workArr)
       *size_work_workArr = w;
@@ -318,9 +317,8 @@ rocblas_status rocsolver_gesvd_template(
     // 1. Bidiagonalize A.
     rocsolver_gebrd_template<BATCHED, STRIDED>(
         handle, m, n, A, shiftA, lda, strideA, S, strideS, E, strideE, tau, k,
-        (tau + k * batch_count), k, X_trfact, shiftX, ldx, strideX, 
-        Y, shiftY, ldy, strideY,
-        batch_count, scalars, work_workArr, Abyx_norms_tmptr);
+        (tau + k * batch_count), k, X_trfact, shiftX, ldx, strideX, Y, shiftY,
+        ldy, strideY, batch_count, scalars, work_workArr, Abyx_norms_tmptr);
 
     // 2. Generate corresponding orthonormal/unitary matrices when required
     if (leftvS || leftvA) {
