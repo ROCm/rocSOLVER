@@ -381,7 +381,7 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
       }
     }
   }
-  
+
   info[bid] = 0;
 
   // re-arrange singular values/vectors if algorithm converged
