@@ -15,10 +15,11 @@
 #include "rocsolver.h"
 
 template <typename U>
-__global__ void chk_positive(rocblas_int *iinfo, rocblas_int *info, int j) {
-  int id = hipBlockIdx_x;
+__global__ void chk_positive(rocblas_int *iinfo, rocblas_int *info, int j,
+                             rocblas_int batch_count) {
+  int id = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
-  if (info[id] == 0 && iinfo[id] > 0)
+  if (id < batch_count && info[id] == 0 && iinfo[id] > 0)
     info[id] = iinfo[id] + j;
 }
 
@@ -133,7 +134,7 @@ rocblas_status rocsolver_potrf_template(
 
       // test for non-positive-definiteness.
       hipLaunchKernelGGL(chk_positive<U>, gridReset, threads, 0, stream, iinfo,
-                         info, j);
+                         info, j, batch_count);
 
       if (j + jb < n) {
         // update trailing submatrix
@@ -164,7 +165,7 @@ rocblas_status rocsolver_potrf_template(
 
       // test for non-positive-definiteness.
       hipLaunchKernelGGL(chk_positive<U>, gridReset, threads, 0, stream, iinfo,
-                         info, j);
+                         info, j, batch_count);
 
       if (j + jb < n) {
         // update trailing submatrix

@@ -382,7 +382,9 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
     }
   }
 
-  // re-arange singular values/vectors if algorithm converged
+  info[bid] = 0;
+
+  // re-arrange singular values/vectors if algorithm converged
   if (k == 0) {
     // all positive
     for (rocblas_int ii = 0; ii < n; ++ii) {
@@ -393,7 +395,7 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
       }
     }
 
-    // in drecreasing order
+    // in decreasing order
     rocblas_int idx;
     for (rocblas_int ii = 0; ii < n - 1; ++ii) {
       idx = ii;
@@ -421,7 +423,6 @@ bdsqrKernel(const rocblas_int n, const rocblas_int nv, const rocblas_int nu,
 
   // if not, set value of info
   else {
-    info[bid] = 0;
     for (rocblas_int i = 0; i < n - 1; ++i)
       if (E[i] != 0)
         info[bid] += 1;
