@@ -255,7 +255,7 @@ void testing_ormxl_unmxl(Arguments argus) {
 
   // determine sizes
   bool left = (side == rocblas_side_left);
-  size_t size_A = left ? size_t(lda) * m : size_t(lda) * n;
+  size_t size_A = size_t(lda) * k;
   size_t size_P = size_t(k);
   size_t size_C = size_t(ldc) * n;
   double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;

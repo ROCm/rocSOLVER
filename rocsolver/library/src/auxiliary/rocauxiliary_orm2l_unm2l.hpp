@@ -126,7 +126,8 @@ rocblas_status rocsolver_orm2l_unm2l_template(
       ncol = n - k + i + 1;
     }
 
-    // insert one in A(i,i) tobuild/apply the householder matrix
+    // insert one in A(nq-k+i,i), i.e. the i-th element of the (nq-k)-th
+    // subdiagonal, to build/apply the householder matrix
     hipLaunchKernelGGL(
         set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag, 0,
         1, A, shiftA + idx2D(nq - k + i, i, lda), lda, strideA, 1, true);
@@ -137,7 +138,7 @@ rocblas_status rocsolver_orm2l_unm2l_template(
                             strideP, C, shiftC, ldc, strideC, batch_count,
                             scalars, Abyx, workArr);
 
-    // restore original value of A(i,i)
+    // restore original value of A(nq-k+i,i)
     hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1),
                        0, stream, diag, 0, 1, A,
                        shiftA + idx2D(nq - k + i, i, lda), lda, strideA, 1);

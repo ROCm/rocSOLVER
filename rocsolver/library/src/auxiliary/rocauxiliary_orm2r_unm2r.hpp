@@ -128,7 +128,8 @@ rocblas_status rocsolver_orm2r_unm2r_template(
       jc = i;
     }
 
-    // insert one in A(i,i) tobuild/apply the householder matrix
+    // insert one in A(i,i), i.e. the i-th element along the main diagonal,
+    // to build/apply the householder matrix
     hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
                        stream, diag, 0, 1, A, shiftA + idx2D(i, i, lda), lda,
                        strideA, 1, true);

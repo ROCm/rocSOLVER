@@ -80,7 +80,7 @@ Arguments ormql_setup_arguments(ormql_tuple tup) {
   arg.N = size[1];
   arg.K = size[2];
   arg.ldc = arg.M + op[1] * 10;
-  arg.lda = (op[3] == 0 ? arg.M : arg.N) + op[0] * 10;
+  arg.lda = (op[2] == 0 ? arg.M : arg.N) + op[0] * 10;
 
   arg.transA_option = (op[3] == 0 ? 'N' : (op[3] == 1 ? 'T' : 'C'));
   arg.side_option = op[2] == 0 ? 'L' : 'R';

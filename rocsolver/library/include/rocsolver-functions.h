@@ -1916,7 +1916,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
                         The i-th column has the Householder vector v(i)
-                        associated with H(i) as returned by GEQLF in the first k columns of its
+                        associated with H(i) as returned by GEQLF in the last k columns of its
                         argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
@@ -1992,7 +1992,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2l(
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
                         The i-th column has the Householder vector v(i)
-                        associated with H(i) as returned by GEQLF in the first k columns of its
+                        associated with H(i) as returned by GEQLF in the last k columns of its
                         argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
@@ -2071,7 +2071,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2l(
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
                         The i-th column has the Householder vector v(i)
-                        associated with H(i) as returned by GEQLF in the first k columns of its
+                        associated with H(i) as returned by GEQLF in the last k columns of its
                         argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
@@ -2147,7 +2147,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormql(
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
                         The i-th column has the Householder vector v(i)
-                        associated with H(i) as returned by GEQLF in the first k columns of its
+                        associated with H(i) as returned by GEQLF in the last k columns of its
                         argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
