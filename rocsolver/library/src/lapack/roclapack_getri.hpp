@@ -704,6 +704,7 @@ rocblas_status rocsolver_getri_template(
                        dim3(batch_count, blocks, blocks), dim3(1, 32, 32), 0,
                        stream, n, A, shiftA, lda, strideA, tmpcopy, 0, ldw,
                        strideW, info);
+
   } else // out-of-place trtri
   {
     // check for singularities

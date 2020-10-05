@@ -232,8 +232,13 @@ void getri_getPerfData(const rocblas_handle handle, const rocblas_int n,
 
 template <bool BATCHED, bool STRIDED, typename T>
 void testing_getri(Arguments argus) {
-  // get arguments
   rocblas_local_handle handle;
+  /* Set handle memory size to a large enough value for all tests to pass.
+   (TODO: Investigate why rocblas is not automatically increasing the size of
+   the memory stack in rocblas_handle)*/
+  rocblas_set_device_memory_size(handle, 80000000);
+
+  // get arguments
   rocblas_int n = argus.N;
   rocblas_int lda = argus.lda;
   rocblas_stride stA = argus.bsa;
