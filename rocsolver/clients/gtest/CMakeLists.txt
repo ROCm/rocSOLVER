@@ -62,6 +62,7 @@ set(roclapack_test_source
     orgtr_ungtr_gtest.cpp
     ormxr_unmxr_gtest.cpp
     ormlx_unmlx_gtest.cpp
+    ormxl_unmxl_gtest.cpp
     ormbr_unmbr_gtest.cpp
     # bidiagonal matrices and svd
     labrd_gtest.cpp

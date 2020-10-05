@@ -7,17 +7,17 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORMQR_UNMQR_HPP
-#define ROCLAPACK_ORMQR_UNMQR_HPP
+#ifndef ROCLAPACK_ORMQL_UNMQL_HPP
+#define ROCLAPACK_ORMQL_UNMQL_HPP
 
 #include "rocauxiliary_larfb.hpp"
 #include "rocauxiliary_larft.hpp"
-#include "rocauxiliary_orm2r_unm2r.hpp"
+#include "rocauxiliary_orm2l_unm2l.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
 template <typename T, bool BATCHED>
-void rocsolver_ormqr_unmqr_getMemorySize(
+void rocsolver_ormql_unmql_getMemorySize(
     const rocblas_side side, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, const rocblas_int batch_count, size_t *size_scalars,
     size_t *size_AbyxORwork, size_t *size_diagORtmptr, size_t *size_trfact,
@@ -33,7 +33,7 @@ void rocsolver_ormqr_unmqr_getMemorySize(
   }
 
   size_t s1, s2, unused;
-  rocsolver_orm2r_unm2r_getMemorySize<T, BATCHED>(
+  rocsolver_orm2l_unm2l_getMemorySize<T, BATCHED>(
       side, m, n, k, batch_count, size_scalars, size_AbyxORwork,
       size_diagORtmptr, size_workArr);
 
@@ -58,7 +58,7 @@ void rocsolver_ormqr_unmqr_getMemorySize(
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status rocsolver_ormqr_unmqr_template(
+rocblas_status rocsolver_ormql_unmql_template(
     rocblas_handle handle, const rocblas_side side,
     const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda,
@@ -75,7 +75,7 @@ rocblas_status rocsolver_ormqr_unmqr_template(
 
   // if the matrix is small, use the unblocked variant of the algorithm
   if (k <= ORMxx_ORMxx_BLOCKSIZE)
-    return rocsolver_orm2r_unm2r_template<T>(
+    return rocsolver_orm2l_unm2l_template<T>(
         handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C,
         shiftC, ldc, strideC, batch_count, scalars, AbyxORwork, diagORtmptr,
         workArr);
@@ -86,12 +86,11 @@ rocblas_status rocsolver_ormqr_unmqr_template(
   // determine limits and indices
   bool left = (side == rocblas_side_left);
   bool transpose = (trans != rocblas_operation_none);
-  rocblas_int start, step, nq, ncol, nrow, ic, jc;
+  rocblas_int start, step, nq, ncol, nrow;
   if (left) {
     nq = m;
     ncol = n;
-    jc = 0;
-    if (transpose) {
+    if (!transpose) {
       start = 0;
       step = 1;
     } else {
@@ -101,8 +100,7 @@ rocblas_status rocsolver_ormqr_unmqr_template(
   } else {
     nq = n;
     nrow = m;
-    ic = 0;
-    if (transpose) {
+    if (!transpose) {
       start = (k - 1) / ldw * ldw;
       step = -1;
     } else {
@@ -116,25 +114,24 @@ rocblas_status rocsolver_ormqr_unmqr_template(
     i = start + step * j; // current householder block
     ib = min(ldw, k - i);
     if (left) {
-      nrow = m - i;
-      ic = i;
+      nrow = m - k + i + ib;
     } else {
-      ncol = n - i;
-      jc = i;
+      ncol = n - k + i + ib;
     }
 
     // generate triangular factor of current block reflector
-    rocsolver_larft_template<T>(
-        handle, rocblas_forward_direction, rocblas_column_wise, nq - i, ib, A,
-        shiftA + idx2D(i, i, lda), lda, strideA, ipiv + i, strideP, trfact, ldw,
-        strideW, batch_count, scalars, AbyxORwork, workArr);
+    rocsolver_larft_template<T>(handle, rocblas_backward_direction,
+                                rocblas_column_wise, nq - k + i + ib, ib, A,
+                                shiftA + idx2D(0, i, lda), lda, strideA,
+                                ipiv + i, strideP, trfact, ldw, strideW,
+                                batch_count, scalars, AbyxORwork, workArr);
 
     // apply current block reflector
     rocsolver_larfb_template<BATCHED, STRIDED, T>(
-        handle, side, trans, rocblas_forward_direction, rocblas_column_wise,
-        nrow, ncol, ib, A, shiftA + idx2D(i, i, lda), lda, strideA, trfact, 0,
-        ldw, strideW, C, shiftC + idx2D(ic, jc, ldc), ldc, strideC, batch_count,
-        AbyxORwork, diagORtmptr, workArr);
+        handle, side, trans, rocblas_backward_direction, rocblas_column_wise,
+        nrow, ncol, ib, A, shiftA + idx2D(0, i, lda), lda, strideA, trfact, 0,
+        ldw, strideW, C, shiftC, ldc, strideC, batch_count, AbyxORwork,
+        diagORtmptr, workArr);
   }
 
   return rocblas_status_success;

@@ -26,6 +26,7 @@
 #include "testing_orgxr_ungxr.hpp"
 #include "testing_ormbr_unmbr.hpp"
 #include "testing_ormlx_unmlx.hpp"
+#include "testing_ormxl_unmxl.hpp"
 #include "testing_ormxr_unmxr.hpp"
 #include "testing_potf2_potrf.hpp"
 #include <boost/program_options.hpp>
@@ -993,6 +994,38 @@ int main(int argc, char *argv[]) try {
       testing_ormlx_unmlx<rocblas_float_complex, 1>(argus);
     else if (precision == 'z')
       testing_ormlx_unmlx<rocblas_double_complex, 1>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "orm2l") {
+    if (precision == 's')
+      testing_ormxl_unmxl<float, 0>(argus);
+    else if (precision == 'd')
+      testing_ormxl_unmxl<double, 0>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "unm2l") {
+    if (precision == 'c')
+      testing_ormxl_unmxl<rocblas_float_complex, 0>(argus);
+    else if (precision == 'z')
+      testing_ormxl_unmxl<rocblas_double_complex, 0>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "ormql") {
+    if (precision == 's')
+      testing_ormxl_unmxl<float, 1>(argus);
+    else if (precision == 'd')
+      testing_ormxl_unmxl<double, 1>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "unmql") {
+    if (precision == 'c')
+      testing_ormxl_unmxl<rocblas_float_complex, 1>(argus);
+    else if (precision == 'z')
+      testing_ormxl_unmxl<rocblas_double_complex, 1>(argus);
     else
       throw std::invalid_argument(
           "This function does not support the given --precision");
