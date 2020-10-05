@@ -59,6 +59,7 @@ set(roclapack_test_source
     orglx_unglx_gtest.cpp
     orgxl_ungxl_gtest.cpp
     orgbr_ungbr_gtest.cpp
+    orgtr_ungtr_gtest.cpp
     ormxr_unmxr_gtest.cpp
     ormlx_unmlx_gtest.cpp
     ormbr_unmbr_gtest.cpp

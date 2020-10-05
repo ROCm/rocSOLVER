@@ -172,4 +172,108 @@ __global__ void set_zero(const rocblas_int m, const rocblas_int n, U A,
   }
 }
 
+template <typename T, typename U>
+__global__ void copyshift_right(const bool copy, const rocblas_int dim, U A,
+                                const rocblas_int shiftA, const rocblas_int lda,
+                                const rocblas_stride strideA, T *W,
+                                const rocblas_int shiftW, const rocblas_int ldw,
+                                const rocblas_stride strideW) {
+  const auto b = hipBlockIdx_z;
+  const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+  const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+  if (i < dim && j < dim && j <= i) {
+    rocblas_int offset = j * (j + 1) / 2; // to acommodate in smaller array W
+
+    T *Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+    T *Wp = load_ptr_batch<T>(W, b, shiftW, strideW);
+
+    if (copy) {
+      // copy columns
+      Wp[i + j * ldw - offset] = (j == 0 ? 0.0 : Ap[i + 1 + (j - 1) * lda]);
+
+    } else {
+      // shift columns to the right
+      Ap[i + 1 + j * lda] = Wp[i + j * ldw - offset];
+
+      // make first row the identity
+      if (i == j) {
+        Ap[(j + 1) * lda] = 0.0;
+        if (i == 0)
+          Ap[0] = 1.0;
+      }
+    }
+  }
+}
+
+template <typename T, typename U>
+__global__ void copyshift_left(const bool copy, const rocblas_int dim, U A,
+                               const rocblas_int shiftA, const rocblas_int lda,
+                               const rocblas_stride strideA, T *W,
+                               const rocblas_int shiftW, const rocblas_int ldw,
+                               const rocblas_stride strideW) {
+  const auto b = hipBlockIdx_z;
+  const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+  const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+  if (i < dim && j < dim && i <= j) {
+    rocblas_int offset =
+        j * ldw - j * (j + 1) / 2; // to acommodate in smaller array W
+
+    T *Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+    T *Wp = load_ptr_batch<T>(W, b, shiftW, strideW);
+
+    if (copy) {
+      // copy columns
+      Wp[i + j * ldw - offset] = (j == dim - 1 ? 0.0 : Ap[i + (j + 2) * lda]);
+
+    } else {
+      // shift columns to the left
+      Ap[i + (j + 1) * lda] = Wp[i + j * ldw - offset];
+
+      // make last row the identity
+      if (i == j) {
+        Ap[dim + j * lda] = 0.0;
+        if (i == 0)
+          Ap[dim + dim * lda] = 1.0;
+      }
+    }
+  }
+}
+
+template <typename T, typename U>
+__global__ void copyshift_down(const bool copy, const rocblas_int dim, U A,
+                               const rocblas_int shiftA, const rocblas_int lda,
+                               const rocblas_stride strideA, T *W,
+                               const rocblas_int shiftW, const rocblas_int ldw,
+                               const rocblas_stride strideW) {
+  const auto b = hipBlockIdx_z;
+  const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+  const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+  if (i < dim && j < dim && i <= j) {
+    rocblas_int offset =
+        j * ldw - j * (j + 1) / 2; // to acommodate in smaller array W
+
+    T *Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+    T *Wp = load_ptr_batch<T>(W, b, shiftW, strideW);
+
+    if (copy) {
+      // copy rows
+      Wp[i + j * ldw - offset] = (i == 0 ? 0.0 : Ap[i - 1 + (j + 1) * lda]);
+
+    } else {
+      // shift rows downward
+      Ap[i + (j + 1) * lda] = Wp[i + j * ldw - offset];
+
+      // make first column the identity
+      if (i == j) {
+        Ap[i + 1] = 0.0;
+        if (j == 0)
+          Ap[0] = 1.0;
+      }
+    }
+  }
+}
+
 #endif

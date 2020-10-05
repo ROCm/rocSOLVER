@@ -44,6 +44,7 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_org2l_ung2l.cpp
   auxiliary/rocauxiliary_orgql_ungql.cpp
   auxiliary/rocauxiliary_orgbr_ungbr.cpp
+  auxiliary/rocauxiliary_orgtr_ungtr.cpp
   auxiliary/rocauxiliary_orm2r_unm2r.cpp
   auxiliary/rocauxiliary_ormqr_unmqr.cpp
   auxiliary/rocauxiliary_orml2_unml2.cpp

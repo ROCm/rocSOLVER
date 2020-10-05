@@ -312,6 +312,17 @@ void zungbr_(char *vect, int *m, int *n, int *k, rocblas_double_complex *A,
              int *lda, rocblas_double_complex *Ipiv,
              rocblas_double_complex *work, int *size_w, int *info);
 
+void sorgtr_(char *uplo, int *n, float *A, int *lda, float *Ipiv, float *work,
+             int *size_w, int *info);
+void dorgtr_(char *uplo, int *n, double *A, int *lda, double *Ipiv,
+             double *work, int *size_w, int *info);
+void cungtr_(char *uplo, int *n, rocblas_float_complex *A, int *lda,
+             rocblas_float_complex *Ipiv, rocblas_float_complex *work,
+             int *size_w, int *info);
+void zungtr_(char *uplo, int *n, rocblas_double_complex *A, int *lda,
+             rocblas_double_complex *Ipiv, rocblas_double_complex *work,
+             int *size_w, int *info);
+
 void sorm2r_(char *side, char *trans, int *m, int *n, int *k, float *A,
              int *lda, float *ipiv, float *C, int *ldc, float *work, int *info);
 void dorm2r_(char *side, char *trans, int *m, int *n, int *k, double *A,
@@ -406,6 +417,17 @@ void zgebrd_(int *m, int *n, rocblas_double_complex *A, int *lda, double *D,
              double *E, rocblas_double_complex *tauq,
              rocblas_double_complex *taup, rocblas_double_complex *work,
              int *size_w, int *info);
+
+void ssytrd_(char *uplo, int *n, float *A, int *lda, float *D, float *E,
+             float *tau, float *work, int *size_w, int *info);
+void dsytrd_(char *uplo, int *n, double *A, int *lda, double *D, double *E,
+             double *tau, double *work, int *size_w, int *info);
+void chetrd_(char *uplo, int *n, rocblas_float_complex *A, int *lda, float *D,
+             float *E, rocblas_float_complex *tau, rocblas_float_complex *work,
+             int *size_w, int *info);
+void zhetrd_(char *uplo, int *n, rocblas_double_complex *A, int *lda, double *D,
+             double *E, rocblas_double_complex *tau,
+             rocblas_double_complex *work, int *size_w, int *info);
 
 void sgesvd_(char *jobu, char *jobv, int *m, int *n, float *A, int *lda,
              float *S, float *U, int *ldu, float *V, int *ldv, float *E,
@@ -1044,6 +1066,49 @@ void cblas_orgbr_ungbr<rocblas_double_complex>(
   else
     vect = 'P';
   zungbr_(&vect, &m, &n, &k, A, &lda, Ipiv, work, &size_w, &info);
+}
+
+// orgtr & ungtr
+template <>
+void cblas_orgtr_ungtr<float>(rocblas_fill uplo, rocblas_int n, float *A,
+                              rocblas_int lda, float *Ipiv, float *work,
+                              rocblas_int size_w) {
+  int info;
+  char uploC = rocblas2char_fill(uplo);
+  sorgtr_(&uploC, &n, A, &lda, Ipiv, work, &size_w, &info);
+}
+
+template <>
+void cblas_orgtr_ungtr<double>(rocblas_fill uplo, rocblas_int n, double *A,
+                               rocblas_int lda, double *Ipiv, double *work,
+                               rocblas_int size_w) {
+  int info;
+  char uploC = rocblas2char_fill(uplo);
+  dorgtr_(&uploC, &n, A, &lda, Ipiv, work, &size_w, &info);
+}
+
+template <>
+void cblas_orgtr_ungtr<rocblas_float_complex>(rocblas_fill uplo, rocblas_int n,
+                                              rocblas_float_complex *A,
+                                              rocblas_int lda,
+                                              rocblas_float_complex *Ipiv,
+                                              rocblas_float_complex *work,
+                                              rocblas_int size_w) {
+  int info;
+  char uploC = rocblas2char_fill(uplo);
+  cungtr_(&uploC, &n, A, &lda, Ipiv, work, &size_w, &info);
+}
+
+template <>
+void cblas_orgtr_ungtr<rocblas_double_complex>(rocblas_fill uplo, rocblas_int n,
+                                               rocblas_double_complex *A,
+                                               rocblas_int lda,
+                                               rocblas_double_complex *Ipiv,
+                                               rocblas_double_complex *work,
+                                               rocblas_int size_w) {
+  int info;
+  char uploC = rocblas2char_fill(uplo);
+  zungtr_(&uploC, &n, A, &lda, Ipiv, work, &size_w, &info);
 }
 
 // ormqr & unmqr
@@ -2499,4 +2564,45 @@ void cblas_gebrd<double, rocblas_double_complex>(
     rocblas_int size_w) {
   int info;
   zgebrd_(&m, &n, A, &lda, D, E, tauq, taup, work, &size_w, &info);
+}
+
+// sytrd & hetrd
+template <>
+void cblas_sytrd_hetrd<float, float>(rocblas_fill uplo, rocblas_int n, float *A,
+                                     rocblas_int lda, float *D, float *E,
+                                     float *tau, float *work,
+                                     rocblas_int size_w) {
+  int info;
+  char uploC = rocblas2char_fill(uplo);
+  ssytrd_(&uploC, &n, A, &lda, D, E, tau, work, &size_w, &info);
+}
+
+template <>
+void cblas_sytrd_hetrd<double, double>(rocblas_fill uplo, rocblas_int n,
+                                       double *A, rocblas_int lda, double *D,
+                                       double *E, double *tau, double *work,
+                                       rocblas_int size_w) {
+  int info;
+  char uploC = rocblas2char_fill(uplo);
+  dsytrd_(&uploC, &n, A, &lda, D, E, tau, work, &size_w, &info);
+}
+
+template <>
+void cblas_sytrd_hetrd<float, rocblas_float_complex>(
+    rocblas_fill uplo, rocblas_int n, rocblas_float_complex *A, rocblas_int lda,
+    float *D, float *E, rocblas_float_complex *tau, rocblas_float_complex *work,
+    rocblas_int size_w) {
+  int info;
+  char uploC = rocblas2char_fill(uplo);
+  chetrd_(&uploC, &n, A, &lda, D, E, tau, work, &size_w, &info);
+}
+
+template <>
+void cblas_sytrd_hetrd<double, rocblas_double_complex>(
+    rocblas_fill uplo, rocblas_int n, rocblas_double_complex *A,
+    rocblas_int lda, double *D, double *E, rocblas_double_complex *tau,
+    rocblas_double_complex *work, rocblas_int size_w) {
+  int info;
+  char uploC = rocblas2char_fill(uplo);
+  zhetrd_(&uploC, &n, A, &lda, D, E, tau, work, &size_w, &info);
 }
