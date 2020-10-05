@@ -7,8 +7,8 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORM2R_UNM2R_HPP
-#define ROCLAPACK_ORM2R_UNM2R_HPP
+#ifndef ROCLAPACK_ORM2L_UNM2L_HPP
+#define ROCLAPACK_ORM2L_UNM2L_HPP
 
 #include "rocauxiliary_lacgv.hpp"
 #include "rocauxiliary_larf.hpp"
@@ -16,7 +16,7 @@
 #include "rocsolver.h"
 
 template <typename T, bool BATCHED>
-void rocsolver_orm2r_unm2r_getMemorySize(
+void rocsolver_orm2l_unm2l_getMemorySize(
     const rocblas_side side, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, const rocblas_int batch_count, size_t *size_scalars,
     size_t *size_Abyx, size_t *size_diag, size_t *size_workArr) {
@@ -32,13 +32,13 @@ void rocsolver_orm2r_unm2r_getMemorySize(
   // size of temporary array for diagonal elements
   *size_diag = sizeof(T) * batch_count;
 
-  // extra memory requirements for calling LARF
+  // memory requirements to call larf
   rocsolver_larf_getMemorySize<T, BATCHED>(
       side, m, n, batch_count, size_scalars, size_Abyx, size_workArr);
 }
 
 template <bool COMPLEX, typename T, typename U>
-rocblas_status rocsolver_orm2r_ormqr_argCheck(
+rocblas_status rocsolver_orm2l_ormql_argCheck(
     const rocblas_side side, const rocblas_operation trans, const rocblas_int m,
     const rocblas_int n, const rocblas_int k, const rocblas_int lda,
     const rocblas_int ldc, T A, T C, U ipiv) {
@@ -58,9 +58,9 @@ rocblas_status rocsolver_orm2r_ormqr_argCheck(
   // 2. invalid size
   if (m < 0 || n < 0 || k < 0 || ldc < m)
     return rocblas_status_invalid_size;
-  if (left && (k > m || lda < m))
+  if (left && (lda < m || k > m))
     return rocblas_status_invalid_size;
-  if (!left && (k > n || lda < n))
+  if (!left && (lda < n || k > n))
     return rocblas_status_invalid_size;
 
   // 3. invalid pointers
@@ -72,7 +72,7 @@ rocblas_status rocsolver_orm2r_ormqr_argCheck(
 }
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
-rocblas_status rocsolver_orm2r_unm2r_template(
+rocblas_status rocsolver_orm2l_unm2l_template(
     rocblas_handle handle, const rocblas_side side,
     const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, U A, const rocblas_int shiftA, const rocblas_int lda,
@@ -90,11 +90,11 @@ rocblas_status rocsolver_orm2r_unm2r_template(
   // determine limits and indices
   bool left = (side == rocblas_side_left);
   bool transpose = (trans != rocblas_operation_none);
-  rocblas_int start, step, ncol, nrow, ic, jc;
+  rocblas_int start, step, nq, ncol, nrow;
   if (left) {
+    nq = m;
     ncol = n;
-    jc = 0;
-    if (transpose) {
+    if (!transpose) {
       start = -1;
       step = 1;
     } else {
@@ -102,9 +102,9 @@ rocblas_status rocsolver_orm2r_unm2r_template(
       step = -1;
     }
   } else {
+    nq = n;
     nrow = m;
-    ic = 0;
-    if (transpose) {
+    if (!transpose) {
       start = k;
       step = -1;
     } else {
@@ -121,29 +121,27 @@ rocblas_status rocsolver_orm2r_unm2r_template(
   for (rocblas_int j = 1; j <= k; ++j) {
     i = start + step * j; // current householder vector
     if (left) {
-      nrow = m - i;
-      ic = i;
+      nrow = m - k + i + 1;
     } else {
-      ncol = n - i;
-      jc = i;
+      ncol = n - k + i + 1;
     }
 
-    // insert one in A(i,i), i.e. the i-th element along the main diagonal,
-    // to build/apply the householder matrix
-    hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
-                       stream, diag, 0, 1, A, shiftA + idx2D(i, i, lda), lda,
-                       strideA, 1, true);
+    // insert one in A(nq-k+i,i), i.e. the i-th element of the (nq-k)-th
+    // subdiagonal, to build/apply the householder matrix
+    hipLaunchKernelGGL(
+        set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag, 0,
+        1, A, shiftA + idx2D(nq - k + i, i, lda), lda, strideA, 1, true);
 
     // Apply current Householder reflector
     rocsolver_larf_template(handle, side, nrow, ncol, A,
-                            shiftA + idx2D(i, i, lda), 1, strideA, (ipiv + i),
-                            strideP, C, shiftC + idx2D(ic, jc, ldc), ldc,
-                            strideC, batch_count, scalars, Abyx, workArr);
+                            shiftA + idx2D(0, i, lda), 1, strideA, (ipiv + i),
+                            strideP, C, shiftC, ldc, strideC, batch_count,
+                            scalars, Abyx, workArr);
 
-    // restore original value of A(i,i)
+    // restore original value of A(nq-k+i,i)
     hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1),
-                       0, stream, diag, 0, 1, A, shiftA + idx2D(i, i, lda), lda,
-                       strideA, 1);
+                       0, stream, diag, 0, 1, A,
+                       shiftA + idx2D(nq - k + i, i, lda), lda, strideA, 1);
   }
 
   // restore tau

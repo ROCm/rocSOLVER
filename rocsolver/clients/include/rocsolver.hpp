@@ -598,6 +598,54 @@ rocsolver_ormlx_unmlx(bool MLQ, rocblas_handle handle, rocblas_side side,
 }
 /***************************************************************/
 
+/******************** ORMxL_UNMxL ********************/
+inline rocblas_status
+rocsolver_ormxl_unmxl(bool MQL, rocblas_handle handle, rocblas_side side,
+                      rocblas_operation trans, rocblas_int m, rocblas_int n,
+                      rocblas_int k, float *A, rocblas_int lda, float *Ipiv,
+                      float *C, rocblas_int ldc) {
+  return MQL ? rocsolver_sormql(handle, side, trans, m, n, k, A, lda, Ipiv, C,
+                                ldc)
+             : rocsolver_sorm2l(handle, side, trans, m, n, k, A, lda, Ipiv, C,
+                                ldc);
+}
+
+inline rocblas_status
+rocsolver_ormxl_unmxl(bool MQL, rocblas_handle handle, rocblas_side side,
+                      rocblas_operation trans, rocblas_int m, rocblas_int n,
+                      rocblas_int k, double *A, rocblas_int lda, double *Ipiv,
+                      double *C, rocblas_int ldc) {
+  return MQL ? rocsolver_dormql(handle, side, trans, m, n, k, A, lda, Ipiv, C,
+                                ldc)
+             : rocsolver_dorm2l(handle, side, trans, m, n, k, A, lda, Ipiv, C,
+                                ldc);
+}
+
+inline rocblas_status
+rocsolver_ormxl_unmxl(bool MQL, rocblas_handle handle, rocblas_side side,
+                      rocblas_operation trans, rocblas_int m, rocblas_int n,
+                      rocblas_int k, rocblas_float_complex *A, rocblas_int lda,
+                      rocblas_float_complex *Ipiv, rocblas_float_complex *C,
+                      rocblas_int ldc) {
+  return MQL ? rocsolver_cunmql(handle, side, trans, m, n, k, A, lda, Ipiv, C,
+                                ldc)
+             : rocsolver_cunm2l(handle, side, trans, m, n, k, A, lda, Ipiv, C,
+                                ldc);
+}
+
+inline rocblas_status
+rocsolver_ormxl_unmxl(bool MQL, rocblas_handle handle, rocblas_side side,
+                      rocblas_operation trans, rocblas_int m, rocblas_int n,
+                      rocblas_int k, rocblas_double_complex *A, rocblas_int lda,
+                      rocblas_double_complex *Ipiv, rocblas_double_complex *C,
+                      rocblas_int ldc) {
+  return MQL ? rocsolver_zunmql(handle, side, trans, m, n, k, A, lda, Ipiv, C,
+                                ldc)
+             : rocsolver_zunm2l(handle, side, trans, m, n, k, A, lda, Ipiv, C,
+                                ldc);
+}
+/***************************************************************/
+
 /******************** ORMBR_UNMBR ********************/
 inline rocblas_status
 rocsolver_ormbr_unmbr(rocblas_handle handle, rocblas_storev storev,

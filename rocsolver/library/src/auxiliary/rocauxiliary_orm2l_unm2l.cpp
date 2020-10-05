@@ -2,11 +2,11 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "rocauxiliary_orm2r_unm2r.hpp"
+#include "rocauxiliary_orm2l_unm2l.hpp"
 
 template <typename T, bool COMPLEX = is_complex<T>>
 rocblas_status
-rocsolver_orm2r_unm2r_impl(rocblas_handle handle, const rocblas_side side,
+rocsolver_orm2l_unm2l_impl(rocblas_handle handle, const rocblas_side side,
                            const rocblas_operation trans, const rocblas_int m,
                            const rocblas_int n, const rocblas_int k, T *A,
                            const rocblas_int lda, T *ipiv, T *C,
@@ -17,7 +17,7 @@ rocsolver_orm2r_unm2r_impl(rocblas_handle handle, const rocblas_side side,
   // logging is missing ???
 
   // argument checking
-  rocblas_status st = rocsolver_orm2r_ormqr_argCheck<COMPLEX>(
+  rocblas_status st = rocsolver_orm2l_ormql_argCheck<COMPLEX>(
       side, trans, m, n, k, lda, ldc, A, C, ipiv);
   if (st != rocblas_status_continue)
     return st;
@@ -41,7 +41,7 @@ rocsolver_orm2r_unm2r_impl(rocblas_handle handle, const rocblas_side side,
   size_t size_diag;
   // size of arrays of pointers (for batched cases)
   size_t size_workArr;
-  rocsolver_orm2r_unm2r_getMemorySize<T, false>(side, m, n, k, batch_count,
+  rocsolver_orm2l_unm2l_getMemorySize<T, false>(side, m, n, k, batch_count,
                                                 &size_scalars, &size_Abyx,
                                                 &size_diag, &size_workArr);
 
@@ -65,7 +65,7 @@ rocsolver_orm2r_unm2r_impl(rocblas_handle handle, const rocblas_side side,
       hipMemcpy((T *)scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
   // execution
-  return rocsolver_orm2r_unm2r_template<T>(
+  return rocsolver_orm2l_unm2l_template<T>(
       handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C,
       shiftC, ldc, strideC, batch_count, (T *)scalars, (T *)Abyx, (T *)diag,
       (T **)workArr);
@@ -79,27 +79,27 @@ rocsolver_orm2r_unm2r_impl(rocblas_handle handle, const rocblas_side side,
 
 extern "C" {
 
-rocblas_status rocsolver_sorm2r(rocblas_handle handle, const rocblas_side side,
+rocblas_status rocsolver_sorm2l(rocblas_handle handle, const rocblas_side side,
                                 const rocblas_operation trans,
                                 const rocblas_int m, const rocblas_int n,
                                 const rocblas_int k, float *A,
                                 const rocblas_int lda, float *ipiv, float *C,
                                 const rocblas_int ldc) {
-  return rocsolver_orm2r_unm2r_impl<float>(handle, side, trans, m, n, k, A, lda,
+  return rocsolver_orm2l_unm2l_impl<float>(handle, side, trans, m, n, k, A, lda,
                                            ipiv, C, ldc);
 }
 
-rocblas_status rocsolver_dorm2r(rocblas_handle handle, const rocblas_side side,
+rocblas_status rocsolver_dorm2l(rocblas_handle handle, const rocblas_side side,
                                 const rocblas_operation trans,
                                 const rocblas_int m, const rocblas_int n,
                                 const rocblas_int k, double *A,
                                 const rocblas_int lda, double *ipiv, double *C,
                                 const rocblas_int ldc) {
-  return rocsolver_orm2r_unm2r_impl<double>(handle, side, trans, m, n, k, A,
+  return rocsolver_orm2l_unm2l_impl<double>(handle, side, trans, m, n, k, A,
                                             lda, ipiv, C, ldc);
 }
 
-rocblas_status rocsolver_cunm2r(rocblas_handle handle, const rocblas_side side,
+rocblas_status rocsolver_cunm2l(rocblas_handle handle, const rocblas_side side,
                                 const rocblas_operation trans,
                                 const rocblas_int m, const rocblas_int n,
                                 const rocblas_int k, rocblas_float_complex *A,
@@ -107,11 +107,11 @@ rocblas_status rocsolver_cunm2r(rocblas_handle handle, const rocblas_side side,
                                 rocblas_float_complex *ipiv,
                                 rocblas_float_complex *C,
                                 const rocblas_int ldc) {
-  return rocsolver_orm2r_unm2r_impl<rocblas_float_complex>(
+  return rocsolver_orm2l_unm2l_impl<rocblas_float_complex>(
       handle, side, trans, m, n, k, A, lda, ipiv, C, ldc);
 }
 
-rocblas_status rocsolver_zunm2r(rocblas_handle handle, const rocblas_side side,
+rocblas_status rocsolver_zunm2l(rocblas_handle handle, const rocblas_side side,
                                 const rocblas_operation trans,
                                 const rocblas_int m, const rocblas_int n,
                                 const rocblas_int k, rocblas_double_complex *A,
@@ -119,7 +119,7 @@ rocblas_status rocsolver_zunm2r(rocblas_handle handle, const rocblas_side side,
                                 rocblas_double_complex *ipiv,
                                 rocblas_double_complex *C,
                                 const rocblas_int ldc) {
-  return rocsolver_orm2r_unm2r_impl<rocblas_double_complex>(
+  return rocsolver_orm2l_unm2l_impl<rocblas_double_complex>(
       handle, side, trans, m, n, k, A, lda, ipiv, C, ldc);
 }
 
