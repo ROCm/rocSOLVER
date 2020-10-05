@@ -216,6 +216,10 @@ void cblas_orgbr_ungbr(rocblas_storev storev, rocblas_int m, rocblas_int n,
                        rocblas_int size_w);
 
 template <typename T>
+void cblas_orgtr_ungtr(rocblas_fill uplo, rocblas_int n, T *A, rocblas_int lda,
+                       T *Ipiv, T *work, rocblas_int size_w);
+
+template <typename T>
 void cblas_orm2r_unm2r(rocblas_side side, rocblas_operation trans,
                        rocblas_int m, rocblas_int n, rocblas_int k, T *A,
                        rocblas_int lda, T *Ipiv, T *C, rocblas_int ldc,
@@ -252,6 +256,10 @@ void cblas_gebd2(rocblas_int m, rocblas_int n, T *A, rocblas_int lda, S *D,
 template <typename S, typename T>
 void cblas_gebrd(rocblas_int m, rocblas_int n, T *A, rocblas_int lda, S *D,
                  S *E, T *tauq, T *taup, T *work, rocblas_int size_w);
+
+template <typename S, typename T>
+void cblas_sytrd_hetrd(rocblas_fill uplo, rocblas_int n, T *A, rocblas_int lda,
+                       S *D, S *E, T *tau, T *work, rocblas_int size_w);
 
 template <typename T, typename W>
 void cblas_gesvd(rocblas_svect leftv, rocblas_svect rightv, rocblas_int m,
