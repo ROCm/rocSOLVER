@@ -89,8 +89,8 @@ rocblas_status rocsolver_orgtr_ungtr_template(
   rocblas_int blocks = (n - 2) / BS + 1;
 
   if (uplo == rocblas_fill_upper) {
-    // shift the householder vectors provided by gebrd as they come below the
-    // first subdiagonal
+    // shift the householder vectors provided by gebrd as they come above the
+    // first superdiagonal and must be shifted left
 
     // copy
     hipLaunchKernelGGL(copyshift_left<T>, dim3(blocks, blocks, batch_count),
@@ -109,8 +109,8 @@ rocblas_status rocsolver_orgtr_ungtr_template(
   }
 
   else {
-    // shift the householder vectors provided by gebrd as they come above the
-    // first superdiagonal
+    // shift the householder vectors provided by gebrd as they come below the
+    // first subdiagonal and must be shifted right
 
     // copy
     hipLaunchKernelGGL(copyshift_right<T>, dim3(blocks, blocks, batch_count),
