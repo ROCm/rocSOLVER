@@ -280,6 +280,12 @@ rocsolver_<type>ormbr()
    :outline:
 .. doxygenfunction:: rocsolver_sormbr
 
+rocsolver_<type>ormtr()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dormtr
+   :outline:
+.. doxygenfunction:: rocsolver_sormtr
+
 Unitary matrices
 ---------------------------
 
@@ -372,6 +378,12 @@ rocsolver_<type>unmbr()
 .. doxygenfunction:: rocsolver_zunmbr
    :outline:
 .. doxygenfunction:: rocsolver_cunmbr
+
+rocsolver_<type>unmtr()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zunmtr
+   :outline:
+.. doxygenfunction:: rocsolver_cunmtr
 
 
 

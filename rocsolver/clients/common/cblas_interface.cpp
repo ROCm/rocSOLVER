@@ -422,6 +422,21 @@ void zunmbr_(char *vect, char *side, char *trans, int *m, int *n, int *k,
              rocblas_double_complex *C, int *ldc, rocblas_double_complex *work,
              int *sizeW, int *info);
 
+void sormtr_(char *side, char *uplo, char *trans, int *m, int *n, float *A,
+             int *lda, float *ipiv, float *C, int *ldc, float *work, int *sizeW,
+             int *info);
+void dormtr_(char *side, char *uplo, char *trans, int *m, int *n, double *A,
+             int *lda, double *ipiv, double *C, int *ldc, double *work,
+             int *sizeW, int *info);
+void cunmtr_(char *side, char *uplo, char *trans, int *m, int *n,
+             rocblas_float_complex *A, int *lda, rocblas_float_complex *ipiv,
+             rocblas_float_complex *C, int *ldc, rocblas_float_complex *work,
+             int *sizeW, int *info);
+void zunmtr_(char *side, char *uplo, char *trans, int *m, int *n,
+             rocblas_double_complex *A, int *lda, rocblas_double_complex *ipiv,
+             rocblas_double_complex *C, int *ldc, rocblas_double_complex *work,
+             int *sizeW, int *info);
+
 void sgebd2_(int *m, int *n, float *A, int *lda, float *D, float *E,
              float *tauq, float *taup, float *work, int *info);
 void dgebd2_(int *m, int *n, double *A, int *lda, double *D, double *E,
@@ -1536,6 +1551,67 @@ void cblas_ormbr_unmbr<rocblas_double_complex>(
 
   zunmbr_(&vect, &sideC, &transC, &m, &n, &k, A, &lda, ipiv, C, &ldc, work,
           &lwork, &info);
+}
+
+// ormtr & unmtr
+template <>
+void cblas_ormtr_unmtr<float>(rocblas_side side, rocblas_fill uplo,
+                              rocblas_operation trans, rocblas_int m,
+                              rocblas_int n, float *A, rocblas_int lda,
+                              float *ipiv, float *C, rocblas_int ldc,
+                              float *work, rocblas_int lwork) {
+  int info;
+  char sideC = rocblas2char_side(side);
+  char uploC = rocblas2char_fill(uplo);
+  char transC = rocblas2char_operation(trans);
+
+  sormtr_(&sideC, &uploC, &transC, &m, &n, A, &lda, ipiv, C, &ldc, work, &lwork,
+          &info);
+}
+
+template <>
+void cblas_ormtr_unmtr<double>(rocblas_side side, rocblas_fill uplo,
+                               rocblas_operation trans, rocblas_int m,
+                               rocblas_int n, double *A, rocblas_int lda,
+                               double *ipiv, double *C, rocblas_int ldc,
+                               double *work, rocblas_int lwork) {
+  int info;
+  char sideC = rocblas2char_side(side);
+  char uploC = rocblas2char_fill(uplo);
+  char transC = rocblas2char_operation(trans);
+
+  dormtr_(&sideC, &uploC, &transC, &m, &n, A, &lda, ipiv, C, &ldc, work, &lwork,
+          &info);
+}
+
+template <>
+void cblas_ormtr_unmtr<rocblas_float_complex>(
+    rocblas_side side, rocblas_fill uplo, rocblas_operation trans,
+    rocblas_int m, rocblas_int n, rocblas_float_complex *A, rocblas_int lda,
+    rocblas_float_complex *ipiv, rocblas_float_complex *C, rocblas_int ldc,
+    rocblas_float_complex *work, rocblas_int lwork) {
+  int info;
+  char sideC = rocblas2char_side(side);
+  char uploC = rocblas2char_fill(uplo);
+  char transC = rocblas2char_operation(trans);
+
+  cunmtr_(&sideC, &uploC, &transC, &m, &n, A, &lda, ipiv, C, &ldc, work, &lwork,
+          &info);
+}
+
+template <>
+void cblas_ormtr_unmtr<rocblas_double_complex>(
+    rocblas_side side, rocblas_fill uplo, rocblas_operation trans,
+    rocblas_int m, rocblas_int n, rocblas_double_complex *A, rocblas_int lda,
+    rocblas_double_complex *ipiv, rocblas_double_complex *C, rocblas_int ldc,
+    rocblas_double_complex *work, rocblas_int lwork) {
+  int info;
+  char sideC = rocblas2char_side(side);
+  char uploC = rocblas2char_fill(uplo);
+  char transC = rocblas2char_operation(trans);
+
+  zunmtr_(&sideC, &uploC, &transC, &m, &n, A, &lda, ipiv, C, &ldc, work, &lwork,
+          &info);
 }
 
 // scal

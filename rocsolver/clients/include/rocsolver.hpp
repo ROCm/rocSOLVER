@@ -686,6 +686,46 @@ rocsolver_ormbr_unmbr(rocblas_handle handle, rocblas_storev storev,
 }
 /***************************************************************/
 
+/******************** ORMTR_UNMTR ********************/
+inline rocblas_status
+rocsolver_ormtr_unmtr(rocblas_handle handle, rocblas_side side,
+                      rocblas_fill uplo, rocblas_operation trans, rocblas_int m,
+                      rocblas_int n, float *A, rocblas_int lda, float *Ipiv,
+                      float *C, rocblas_int ldc) {
+  return rocsolver_sormtr(handle, side, uplo, trans, m, n, A, lda, Ipiv, C,
+                          ldc);
+}
+
+inline rocblas_status
+rocsolver_ormtr_unmtr(rocblas_handle handle, rocblas_side side,
+                      rocblas_fill uplo, rocblas_operation trans, rocblas_int m,
+                      rocblas_int n, double *A, rocblas_int lda, double *Ipiv,
+                      double *C, rocblas_int ldc) {
+  return rocsolver_dormtr(handle, side, uplo, trans, m, n, A, lda, Ipiv, C,
+                          ldc);
+}
+
+inline rocblas_status
+rocsolver_ormtr_unmtr(rocblas_handle handle, rocblas_side side,
+                      rocblas_fill uplo, rocblas_operation trans, rocblas_int m,
+                      rocblas_int n, rocblas_float_complex *A, rocblas_int lda,
+                      rocblas_float_complex *Ipiv, rocblas_float_complex *C,
+                      rocblas_int ldc) {
+  return rocsolver_cunmtr(handle, side, uplo, trans, m, n, A, lda, Ipiv, C,
+                          ldc);
+}
+
+inline rocblas_status
+rocsolver_ormtr_unmtr(rocblas_handle handle, rocblas_side side,
+                      rocblas_fill uplo, rocblas_operation trans, rocblas_int m,
+                      rocblas_int n, rocblas_double_complex *A, rocblas_int lda,
+                      rocblas_double_complex *Ipiv, rocblas_double_complex *C,
+                      rocblas_int ldc) {
+  return rocsolver_zunmtr(handle, side, uplo, trans, m, n, A, lda, Ipiv, C,
+                          ldc);
+}
+/***************************************************************/
+
 /******************** POTF2_POTRF ********************/
 // normal and strided_batched
 inline rocblas_status

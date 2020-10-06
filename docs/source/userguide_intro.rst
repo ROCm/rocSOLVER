@@ -49,6 +49,7 @@ LAPACK Auxiliary Function       single double single complex double complex
 **rocsolver_orm2l**             x      x
 **rocsolver_ormql**             x      x
 **rocsolver_ormbr**             x      x
+**rocsolver_ormtr**             x      x
 **rocsolver_ung2r**                              x              x
 **rocsolver_ungqr**                              x              x
 **rocsolver_ungl2**                              x              x
@@ -64,6 +65,7 @@ LAPACK Auxiliary Function       single double single complex double complex
 **rocsolver_unm2l**                              x              x
 **rocsolver_unmql**                              x              x
 **rocsolver_unmbr**                              x              x
+**rocsolver_unmtr**                              x              x
 =============================== ====== ====== ============== ==============
 
 =============================== ====== ====== ============== ==============
