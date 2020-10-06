@@ -2042,7 +2042,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -2118,7 +2118,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2l(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -2197,7 +2197,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2l(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -2273,7 +2273,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormql(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
