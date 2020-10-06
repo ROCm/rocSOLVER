@@ -52,6 +52,7 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_orm2l_unm2l.cpp
   auxiliary/rocauxiliary_ormql_unmql.cpp
   auxiliary/rocauxiliary_ormbr_unmbr.cpp
+  auxiliary/rocauxiliary_ormtr_unmtr.cpp
   # bidiagonal matrices and svd
   auxiliary/rocauxiliary_bdsqr.cpp
   auxiliary/rocauxiliary_labrd.cpp

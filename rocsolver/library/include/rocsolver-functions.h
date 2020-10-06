@@ -2042,7 +2042,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -2118,7 +2118,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2l(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -2197,7 +2197,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2l(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -2273,7 +2273,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormql(
                         On input, the matrix C. On output it is overwritten with
                         Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    lda                 rocblas_int. ldc >= m.\n
+    ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
 
     ****************************************************************************/
@@ -2469,6 +2469,174 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(
     rocblas_handle handle, const rocblas_storev storev, const rocblas_side side,
     const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
     const rocblas_int k, rocblas_double_complex *A, const rocblas_int lda,
+    rocblas_double_complex *ipiv, rocblas_double_complex *C,
+    const rocblas_int ldc);
+//! @}
+
+/*! @{
+    \brief ORMTR applies an orthogonal matrix Q to a general m-by-n matrix C.
+
+    \details
+    The matrix Q is applied in one of the following forms, depending on
+    the values of side and trans:
+
+        Q  * C  (No transpose from the left)
+        Q' * C  (Transpose from the left)
+        C * Q   (No transpose from the right), and
+        C * Q'  (Transpose from the right)
+
+    The order nq of orthogonal matrix Q is nq = m if applying from the left, or
+    nq = n if applying from the right.
+
+    Q is defined as the product of nq-1 Householder reflectors of order nq. If
+    uplo indicates upper, then Q has the form
+
+        Q = H(nq-1) * H(nq-2) * ... * H(1).
+
+    On the other hand, if uplo indicates lower, then Q has the form
+
+        Q = H(1) * H(2) * ... * H(nq-1)
+
+    The Householder matrices H(i) are never stored, they are computed from its
+    corresponding Householder vectors v(i) and scalars ipiv_i as returned by
+    SYTRD in its arguments A and tau.
+
+    @param[in]
+    handle              rocblas_handle.
+    @param[in]
+    side                rocblas_side.\n
+                        Specifies from which side to apply Q.
+    @param[in]
+    uplo                rocblas_fill.\n
+                        Specifies whether the SYTRD factorization was upper or
+                        lower triangular. If uplo indicates lower (or upper), then the upper (or
+                        lower) part of A is not used.
+    @param[in]
+    trans               rocblas_operation.\n
+                        Specifies whether the matrix Q or its transpose is to be
+                        applied.
+    @param[in]
+    m                   rocblas_int. m >= 0.\n
+                        Number of rows of matrix C.
+    @param[in]
+    n                   rocblas_int. n >= 0.\n
+                        Number of columns of matrix C.
+    @param[in]
+    A                   pointer to type. Array on the GPU of size lda*nq.\n
+                        On entry, the (i+1)-th column (if uplo indicates upper)
+                        or i-th column (if uplo indicates lower) has the Householder vector v(i) as
+                        returned by SYTRD.
+    @param[in]
+    lda                 rocblas_int. lda >= nq.\n
+                        Leading dimension of A.
+    @param[in]
+    ipiv                pointer to type. Array on the GPU of dimension at least nq-1.\n
+                        The scalar factors of the Householder matrices H(i) as returned by
+                        SYTRD.
+    @param[inout]
+    C                   pointer to type. Array on the GPU of size ldc*n.\n
+                        On input, the matrix C. On output it is overwritten with
+                        Q*C, C*Q, Q'*C, or C*Q'.
+    @param[in]
+    ldc                 rocblas_int. ldc >= m.\n
+                        Leading dimension of C.
+
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sormtr(
+    rocblas_handle handle, const rocblas_side side, const rocblas_fill uplo,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    float *A, const rocblas_int lda, float *ipiv, float *C,
+    const rocblas_int ldc);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dormtr(
+    rocblas_handle handle, const rocblas_side side, const rocblas_fill uplo,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    double *A, const rocblas_int lda, double *ipiv, double *C,
+    const rocblas_int ldc);
+//! @}
+
+/*! @{
+    \brief UNMTR applies a unitary matrix Q to a general m-by-n matrix C.
+
+    \details
+    The matrix Q is applied in one of the following forms, depending on
+    the values of side and trans:
+
+        Q  * C  (No transpose from the left)
+        Q' * C  (Conjugate transpose from the left)
+        C * Q   (No transpose from the right), and
+        C * Q'  (Conjugate transpose from the right)
+
+    The order nq of unitary matrix Q is nq = m if applying from the left, or
+    nq = n if applying from the right.
+
+    Q is defined as the product of nq-1 Householder reflectors of order nq. If
+    uplo indicates upper, then Q has the form
+
+        Q = H(nq-1) * H(nq-2) * ... * H(1).
+
+    On the other hand, if uplo indicates lower, then Q has the form
+
+        Q = H(1) * H(2) * ... * H(nq-1)
+
+    The Householder matrices H(i) are never stored, they are computed from its
+    corresponding Householder vectors v(i) and scalars ipiv_i as returned by
+    HETRD in its arguments A and tau.
+
+    @param[in]
+    handle              rocblas_handle.
+    @param[in]
+    side                rocblas_side.\n
+                        Specifies from which side to apply Q.
+    @param[in]
+    uplo                rocblas_fill.\n
+                        Specifies whether the SYTRD factorization was upper or
+                        lower triangular. If uplo indicates lower (or upper), then the upper (or
+                        lower) part of A is not used.
+    @param[in]
+    trans               rocblas_operation.\n
+                        Specifies whether the matrix Q or its conjugate
+                        transpose is to be applied.
+    @param[in]
+    m                   rocblas_int. m >= 0.\n
+                        Number of rows of matrix C.
+    @param[in]
+    n                   rocblas_int. n >= 0.\n
+                        Number of columns of matrix C.
+    @param[in]
+    A                   pointer to type. Array on the GPU of size lda*nq.\n
+                        On entry, the (i+1)-th column (if uplo indicates upper)
+                        or i-th column (if uplo indicates lower) has the Householder vector v(i) as
+                        returned by HETRD.
+    @param[in]
+    lda                 rocblas_int. lda >= nq.\n
+                        Leading dimension of A.
+    @param[in]
+    ipiv                pointer to type. Array on the GPU of dimension at least nq-1.\n
+                        The scalar factors of the Householder matrices H(i) as returned by
+                        HETRD.
+    @param[inout]
+    C                   pointer to type. Array on the GPU of size ldc*n.\n
+                        On input, the matrix C. On output it is overwritten with
+                        Q*C, C*Q, Q'*C, or C*Q'.
+    @param[in]
+    ldc                 rocblas_int. ldc >= m.\n
+                        Leading dimension of C.
+
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cunmtr(
+    rocblas_handle handle, const rocblas_side side, const rocblas_fill uplo,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    rocblas_float_complex *A, const rocblas_int lda,
+    rocblas_float_complex *ipiv, rocblas_float_complex *C,
+    const rocblas_int ldc);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zunmtr(
+    rocblas_handle handle, const rocblas_side side, const rocblas_fill uplo,
+    const rocblas_operation trans, const rocblas_int m, const rocblas_int n,
+    rocblas_double_complex *A, const rocblas_int lda,
     rocblas_double_complex *ipiv, rocblas_double_complex *C,
     const rocblas_int ldc);
 //! @}

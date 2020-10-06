@@ -26,6 +26,7 @@
 #include "testing_orgxr_ungxr.hpp"
 #include "testing_ormbr_unmbr.hpp"
 #include "testing_ormlx_unmlx.hpp"
+#include "testing_ormtr_unmtr.hpp"
 #include "testing_ormxl_unmxl.hpp"
 #include "testing_ormxr_unmxr.hpp"
 #include "testing_potf2_potrf.hpp"
@@ -1042,6 +1043,22 @@ int main(int argc, char *argv[]) try {
       testing_ormbr_unmbr<rocblas_float_complex>(argus);
     else if (precision == 'z')
       testing_ormbr_unmbr<rocblas_double_complex>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "ormtr") {
+    if (precision == 's')
+      testing_ormtr_unmtr<float>(argus);
+    else if (precision == 'd')
+      testing_ormtr_unmtr<double>(argus);
+    else
+      throw std::invalid_argument(
+          "This function does not support the given --precision");
+  } else if (function == "unmtr") {
+    if (precision == 'c')
+      testing_ormtr_unmtr<rocblas_float_complex>(argus);
+    else if (precision == 'z')
+      testing_ormtr_unmtr<rocblas_double_complex>(argus);
     else
       throw std::invalid_argument(
           "This function does not support the given --precision");
