@@ -86,7 +86,6 @@ Arguments ormtr_setup_arguments(ormtr_tuple tup) {
   arg.uplo_option = store[4] == 0 ? 'U' : 'L';
   arg.side_option = store[2] == 0 ? 'L' : 'R';
 
-  arg.K = size[2];
   arg.N = size[1];
   arg.M = size[0];
 
