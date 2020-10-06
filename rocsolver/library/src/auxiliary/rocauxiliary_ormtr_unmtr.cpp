@@ -20,52 +20,52 @@ rocblas_status rocsolver_ormtr_unmtr_impl(
   if (st != rocblas_status_continue)
     return st;
 
-  // the matrices are shifted 0 entries (will work on the entire matrix)
+  // working with unshifted arrays
   rocblas_int shiftA = 0;
   rocblas_int shiftC = 0;
+
+  // normal (non-batched non-strided) execution
   rocblas_int strideA = 0;
   rocblas_int strideP = 0;
   rocblas_int strideC = 0;
   rocblas_int batch_count = 1;
 
-  // memory managment
-  size_t size_1; // size of constants
-  size_t size_2; // size of workspace
-  size_t size_3; // size of array of pointers to workspace
-  size_t size_4; // size of temporary array for triangular factor
-  size_t size_5; // workspace for TRMM calls
-  rocsolver_ormtr_unmtr_getMemorySize<T, false>(side, uplo, m, n, batch_count,
-                                                &size_1, &size_2, &size_3,
-                                                &size_4, &size_5);
+  // memory workspace sizes:
+  // requirements for calling ORMQL/UNMQL or ORMQR/UNMQR
+  size_t size_scalars;
+  size_t size_AbyxORwork, size_diagORtmptr;
+  size_t size_trfact;
+  size_t size_workArr;
+  rocsolver_ormtr_unmtr_getMemorySize<T, false>(
+      side, uplo, m, n, batch_count, &size_scalars, &size_AbyxORwork,
+      &size_diagORtmptr, &size_trfact, &size_workArr);
 
-  // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-  void *scalars, *work, *workArr, *trfact, *workTrmm;
-  hipMalloc(&scalars, size_1);
-  hipMalloc(&work, size_2);
-  hipMalloc(&workArr, size_3);
-  hipMalloc(&trfact, size_4);
-  hipMalloc(&workTrmm, size_5);
-  if (!scalars || (size_2 && !work) || (size_3 && !workArr) ||
-      (size_4 && !trfact) || (size_5 && !workTrmm))
+  if (rocblas_is_device_memory_size_query(handle))
+    return rocblas_set_optimal_device_memory_size(
+        handle, size_scalars, size_AbyxORwork, size_diagORtmptr, size_trfact,
+        size_workArr);
+
+  // memory workspace allocation
+  void *scalars, *AbyxORwork, *diagORtmptr, *trfact, *workArr;
+  rocblas_device_malloc mem(handle, size_scalars, size_AbyxORwork,
+                            size_diagORtmptr, size_trfact, size_workArr);
+  if (!mem)
     return rocblas_status_memory_error;
 
-  // scalar constants for rocblas functions calls
-  // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
+  scalars = mem[0];
+  AbyxORwork = mem[1];
+  diagORtmptr = mem[2];
+  trfact = mem[3];
+  workArr = mem[4];
   T sca[] = {-1, 0, 1};
-  RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
+  RETURN_IF_HIP_ERROR(
+      hipMemcpy((T *)scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
   // execution
-  rocblas_status status = rocsolver_ormtr_unmtr_template<false, false, T>(
+  return rocsolver_ormtr_unmtr_template<false, false, T>(
       handle, side, uplo, trans, m, n, A, shiftA, lda, strideA, ipiv, strideP,
-      C, shiftC, ldc, strideC, batch_count, (T *)scalars, (T *)work,
-      (T **)workArr, (T *)trfact, (T *)workTrmm);
-
-  hipFree(scalars);
-  hipFree(work);
-  hipFree(workArr);
-  hipFree(trfact);
-  hipFree(workTrmm);
-  return status;
+      C, shiftC, ldc, strideC, batch_count, (T *)scalars, (T *)AbyxORwork,
+      (T *)diagORtmptr, (T *)trfact, (T **)workArr);
 }
 
 /*

@@ -18,15 +18,31 @@
 template <typename T, bool BATCHED>
 void rocsolver_ormtr_unmtr_getMemorySize(
     const rocblas_side side, const rocblas_fill uplo, const rocblas_int m,
-    const rocblas_int n, const rocblas_int batch_count, size_t *size_1,
-    size_t *size_2, size_t *size_3, size_t *size_4, size_t *size_5) {
+    const rocblas_int n, const rocblas_int batch_count, size_t *size_scalars,
+    size_t *size_AbyxORwork, size_t *size_diagORtmptr, size_t *size_trfact,
+    size_t *size_workArr) {
+  // if quick return no workspace needed
+  if (m == 0 || n == 0 || batch_count == 0) {
+    *size_scalars = 0;
+    *size_AbyxORwork = 0;
+    *size_diagORtmptr = 0;
+    *size_trfact = 0;
+    *size_workArr = 0;
+    return;
+  }
+
   rocblas_int nq = side == rocblas_side_left ? m : n;
+
+  // requirements for calling ORMQL/UNMQL or ORMQR/UNMQR
   if (uplo == rocblas_fill_upper)
     rocsolver_ormql_unmql_getMemorySize<T, BATCHED>(
-        side, m, n, nq, batch_count, size_1, size_2, size_3, size_4, size_5);
+        side, m, n, nq, batch_count, size_scalars, size_AbyxORwork,
+        size_diagORtmptr, size_trfact, size_workArr);
+
   else
     rocsolver_ormqr_unmqr_getMemorySize<T, BATCHED>(
-        side, m, n, nq, batch_count, size_1, size_2, size_3, size_4, size_5);
+        side, m, n, nq, batch_count, size_scalars, size_AbyxORwork,
+        size_diagORtmptr, size_trfact, size_workArr);
 }
 
 template <bool COMPLEX, typename T, typename U>
@@ -71,7 +87,7 @@ rocblas_status rocsolver_ormtr_unmtr_template(
     const rocblas_stride strideA, T *ipiv, const rocblas_stride strideP, U C,
     const rocblas_int shiftC, const rocblas_int ldc,
     const rocblas_stride strideC, const rocblas_int batch_count, T *scalars,
-    T *work, T **workArr, T *trfact, T *workTrmm) {
+    T *AbyxORwork, T *diagORtmptr, T *trfact, T **workArr) {
   // quick return
   if (!n || !m || !batch_count)
     return rocblas_status_success;
@@ -97,12 +113,13 @@ rocblas_status rocsolver_ormtr_unmtr_template(
     rocsolver_ormql_unmql_template<BATCHED, STRIDED, T>(
         handle, side, trans, rows, cols, nq - 1, A, shiftA + idx2D(0, 1, lda),
         lda, strideA, ipiv, strideP, C, shiftC, ldc, strideC, batch_count,
-        scalars, work, workArr, trfact, workTrmm);
+        scalars, AbyxORwork, diagORtmptr, trfact, workArr);
   } else {
     rocsolver_ormqr_unmqr_template<BATCHED, STRIDED, T>(
         handle, side, trans, rows, cols, nq - 1, A, shiftA + idx2D(1, 0, lda),
         lda, strideA, ipiv, strideP, C, shiftC + idx2D(rowC, colC, ldc), ldc,
-        strideC, batch_count, scalars, work, workArr, trfact, workTrmm);
+        strideC, batch_count, scalars, AbyxORwork, diagORtmptr, trfact,
+        workArr);
   }
 
   return rocblas_status_success;
