@@ -35,8 +35,8 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
                         const rocblas_int shiftP, const rocblas_stride strideP,
                         rocblas_int *infoA, const rocblas_int batch_count,
                         const int pivot) {
-  int myrow = hipThreadIdx_x;
-  int id = hipBlockIdx_x;
+  const int myrow = hipThreadIdx_x;
+  const int id = hipBlockIdx_x;
 
   // batch instance
   T *A = load_ptr_batch<T>(AA, id, shiftA, strideA);
@@ -156,8 +156,8 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
                             rocblas_int *ipivA, const rocblas_int shiftP,
                             const rocblas_stride strideP, rocblas_int *infoA,
                             const rocblas_int batch_count, const int pivot) {
-  int myrow = hipThreadIdx_x;
-  int id = hipBlockIdx_x;
+  const int myrow = hipThreadIdx_x;
+  const int id = hipBlockIdx_x;
 
   // batch instance
   T *A = load_ptr_batch<T>(AA, id, shiftA, strideA);
@@ -345,9 +345,9 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
                         rocblas_int *ipivA, const rocblas_int shiftP,
                         const rocblas_stride strideP, rocblas_int *infoA,
                         const rocblas_int batch_count, const int pivot) {
-  int ty = hipThreadIdx_y;
   int myrow = hipThreadIdx_x;
-  int id = hipBlockIdx_x * hipBlockDim_y + ty;
+  const int ty = hipThreadIdx_y;
+  const int id = hipBlockIdx_x * hipBlockDim_y + ty;
 
   if (id >= batch_count)
     return;
@@ -680,7 +680,7 @@ __global__ void getf2_check_singularity(
     rocblas_int *ipivA, const rocblas_int shiftP, const rocblas_stride strideP,
     const rocblas_int j, const rocblas_int lda, T *pivot_val,
     rocblas_int *pivot_idx, rocblas_int *info, const int pivot) {
-  int id = hipBlockIdx_x;
+  const int id = hipBlockIdx_x;
   rocblas_int idx;
 
   T *A = load_ptr_batch<T>(AA, id, shiftA, strideA);
