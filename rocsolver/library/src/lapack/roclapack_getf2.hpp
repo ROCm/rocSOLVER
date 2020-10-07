@@ -743,9 +743,11 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m, const rocblas_int n,
 }
 
 template <typename T>
-rocblas_status rocsolver_getf2_getrf_argCheck(
-    const rocblas_int m, const rocblas_int n, const rocblas_int lda, T A,
-    rocblas_int *ipiv, rocblas_int *info, const rocblas_int batch_count = 1) {
+rocblas_status
+rocsolver_getf2_getrf_argCheck(const rocblas_int m, const rocblas_int n,
+                               const rocblas_int lda, T A, rocblas_int *ipiv,
+                               rocblas_int *info, const rocblas_int pivot,
+                               const rocblas_int batch_count = 1) {
   // order is important for unit tests:
 
   // 1. invalid/non-supported values
@@ -756,7 +758,7 @@ rocblas_status rocsolver_getf2_getrf_argCheck(
     return rocblas_status_invalid_size;
 
   // 3. invalid pointers
-  if ((m * n && !A) || (m * n && !ipiv) || (batch_count && !info))
+  if ((m * n && !A) || (m * n && pivot && !ipiv) || (batch_count && !info))
     return rocblas_status_invalid_pointer;
 
   return rocblas_status_continue;
