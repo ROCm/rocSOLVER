@@ -35,6 +35,8 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
                         const rocblas_int shiftP, const rocblas_stride strideP,
                         rocblas_int *infoA, const rocblas_int batch_count,
                         const int pivot) {
+  using S = decltype(std::real(T{}));
+
   const int myrow = hipThreadIdx_x;
   const int id = hipBlockIdx_x;
 
@@ -99,8 +101,8 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
     }
 
     // check singularity and scale value for current column
-    if (pivot_value != T(0.0))
-      pivot_value = 1.0 / pivot_value;
+    if (pivot_value != T(0))
+      pivot_value = S(1) / pivot_value;
     else if (myinfo == 0)
       myinfo = k + 1;
 
@@ -156,6 +158,8 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
                             rocblas_int *ipivA, const rocblas_int shiftP,
                             const rocblas_stride strideP, rocblas_int *infoA,
                             const rocblas_int batch_count, const int pivot) {
+  using S = decltype(std::real(T{}));
+
   const int myrow = hipThreadIdx_x;
   const int id = hipBlockIdx_x;
 
@@ -222,8 +226,8 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
     }
 
     // check singularity and scale value for current column
-    if (pivot_value != T(0.0))
-      pivot_value = 1.0 / pivot_value;
+    if (pivot_value != T(0))
+      pivot_value = S(1) / pivot_value;
     else if (myinfo == 0)
       myinfo = k + 1;
 
@@ -345,6 +349,8 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
                         rocblas_int *ipivA, const rocblas_int shiftP,
                         const rocblas_stride strideP, rocblas_int *infoA,
                         const rocblas_int batch_count, const int pivot) {
+  using S = decltype(std::real(T{}));
+
   int myrow = hipThreadIdx_x;
   const int ty = hipThreadIdx_y;
   const int id = hipBlockIdx_x * hipBlockDim_y + ty;
@@ -400,8 +406,8 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
     }
 
     // check singularity and scale value for current column
-    if (pivot_value != T(0.0))
-      pivot_value = 1.0 / pivot_value;
+    if (pivot_value != T(0))
+      pivot_value = S(1) / pivot_value;
     else if (myinfo == 0)
       myinfo = k + 1;
 
@@ -680,6 +686,8 @@ __global__ void getf2_check_singularity(
     rocblas_int *ipivA, const rocblas_int shiftP, const rocblas_stride strideP,
     const rocblas_int j, const rocblas_int lda, T *pivot_val,
     rocblas_int *pivot_idx, rocblas_int *info, const int pivot) {
+  using S = decltype(std::real(T{}));
+
   const int id = hipBlockIdx_x;
   rocblas_int idx;
 
@@ -694,11 +702,11 @@ __global__ void getf2_check_singularity(
     idx = j * lda + j;
 
   if (A[idx] == 0) {
-    pivot_val[id] = 1.0;
+    pivot_val[id] = 1;
     if (info[id] == 0)
       info[id] = j + 1; // use Fortran 1-based indexing
   } else
-    pivot_val[id] = 1.0 / A[idx];
+    pivot_val[id] = S(1) / A[idx];
 }
 
 template <bool ISBATCHED, typename T, typename S>
