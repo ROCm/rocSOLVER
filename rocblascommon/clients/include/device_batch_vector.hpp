@@ -176,7 +176,7 @@ public:
     //!
     //! @brief Cast of the data on host.
     //!
-    operator T* *()
+    operator T**()
     {
         return this->m_data;
     }

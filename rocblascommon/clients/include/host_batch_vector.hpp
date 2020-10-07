@@ -127,7 +127,7 @@ public:
     //!
     //! @brief Cast to a double pointer.
     //!
-    operator T* *()
+    operator T**()
     {
         return this->m_data;
     }
