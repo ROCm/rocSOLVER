@@ -17,8 +17,8 @@ rocblas_status rocsolver_getrf_batched_impl(
   // logging is missing ???
 
   // argument checking
-  rocblas_status st =
-      rocsolver_getf2_getrf_argCheck(m, n, lda, A, ipiv, info, batch_count);
+  rocblas_status st = rocsolver_getf2_getrf_argCheck(m, n, lda, A, ipiv, info,
+                                                     pivot, batch_count);
   if (st != rocblas_status_continue)
     return st;
 
@@ -134,7 +134,7 @@ rocsolver_sgetrf_npvt_batched(rocblas_handle handle, const rocblas_int m,
                               const rocblas_int n, float *const A[],
                               const rocblas_int lda, rocblas_int *info,
                               const rocblas_int batch_count) {
-  rocblas_int *ipiv;
+  rocblas_int *ipiv = nullptr;
   return rocsolver_getrf_batched_impl<float>(handle, m, n, A, lda, ipiv, 0,
                                              info, batch_count, 0);
 }
@@ -144,7 +144,7 @@ rocsolver_dgetrf_npvt_batched(rocblas_handle handle, const rocblas_int m,
                               const rocblas_int n, double *const A[],
                               const rocblas_int lda, rocblas_int *info,
                               const rocblas_int batch_count) {
-  rocblas_int *ipiv;
+  rocblas_int *ipiv = nullptr;
   return rocsolver_getrf_batched_impl<double>(handle, m, n, A, lda, ipiv, 0,
                                               info, batch_count, 0);
 }
@@ -153,7 +153,7 @@ rocblas_status rocsolver_cgetrf_npvt_batched(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     rocblas_float_complex *const A[], const rocblas_int lda, rocblas_int *info,
     const rocblas_int batch_count) {
-  rocblas_int *ipiv;
+  rocblas_int *ipiv = nullptr;
   return rocsolver_getrf_batched_impl<rocblas_float_complex>(
       handle, m, n, A, lda, ipiv, 0, info, batch_count, 0);
 }
@@ -162,7 +162,7 @@ rocblas_status rocsolver_zgetrf_npvt_batched(
     rocblas_handle handle, const rocblas_int m, const rocblas_int n,
     rocblas_double_complex *const A[], const rocblas_int lda, rocblas_int *info,
     const rocblas_int batch_count) {
-  rocblas_int *ipiv;
+  rocblas_int *ipiv = nullptr;
   return rocsolver_getrf_batched_impl<rocblas_double_complex>(
       handle, m, n, A, lda, ipiv, 0, info, batch_count, 0);
 }

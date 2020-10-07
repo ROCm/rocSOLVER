@@ -169,6 +169,11 @@ endif( )
 set( ARMOR_LEVEL "${DEFAULT_ARMOR_LEVEL}" CACHE STRING "Enables increasingly expensive runtime correctness checks" )
 include( armor-config )
 
+# set the optimization level for debug mode
+if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
+  add_compile_options( -O0 )
+endif( )
+
 # BUILD_SHARED_LIBS is a cmake built-in; we make it an explicit option such that it shows in cmake-gui
 option( BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON )
 

@@ -35,8 +35,10 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
                         const rocblas_int shiftP, const rocblas_stride strideP,
                         rocblas_int *infoA, const rocblas_int batch_count,
                         const int pivot) {
-  int myrow = hipThreadIdx_x;
-  int id = hipBlockIdx_x;
+  using S = decltype(std::real(T{}));
+
+  const int myrow = hipThreadIdx_x;
+  const int id = hipBlockIdx_x;
 
   // batch instance
   T *A = load_ptr_batch<T>(AA, id, shiftA, strideA);
@@ -99,8 +101,8 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
     }
 
     // check singularity and scale value for current column
-    if (pivot_value != T(0.0))
-      pivot_value = 1.0 / pivot_value;
+    if (pivot_value != T(0))
+      pivot_value = S(1) / pivot_value;
     else if (myinfo == 0)
       myinfo = k + 1;
 
@@ -156,8 +158,10 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
                             rocblas_int *ipivA, const rocblas_int shiftP,
                             const rocblas_stride strideP, rocblas_int *infoA,
                             const rocblas_int batch_count, const int pivot) {
-  int myrow = hipThreadIdx_x;
-  int id = hipBlockIdx_x;
+  using S = decltype(std::real(T{}));
+
+  const int myrow = hipThreadIdx_x;
+  const int id = hipBlockIdx_x;
 
   // batch instance
   T *A = load_ptr_batch<T>(AA, id, shiftA, strideA);
@@ -222,8 +226,8 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
     }
 
     // check singularity and scale value for current column
-    if (pivot_value != T(0.0))
-      pivot_value = 1.0 / pivot_value;
+    if (pivot_value != T(0))
+      pivot_value = S(1) / pivot_value;
     else if (myinfo == 0)
       myinfo = k + 1;
 
@@ -345,9 +349,11 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
                         rocblas_int *ipivA, const rocblas_int shiftP,
                         const rocblas_stride strideP, rocblas_int *infoA,
                         const rocblas_int batch_count, const int pivot) {
-  int ty = hipThreadIdx_y;
+  using S = decltype(std::real(T{}));
+
   int myrow = hipThreadIdx_x;
-  int id = hipBlockIdx_x * hipBlockDim_y + ty;
+  const int ty = hipThreadIdx_y;
+  const int id = hipBlockIdx_x * hipBlockDim_y + ty;
 
   if (id >= batch_count)
     return;
@@ -400,8 +406,8 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
     }
 
     // check singularity and scale value for current column
-    if (pivot_value != T(0.0))
-      pivot_value = 1.0 / pivot_value;
+    if (pivot_value != T(0))
+      pivot_value = S(1) / pivot_value;
     else if (myinfo == 0)
       myinfo = k + 1;
 
@@ -680,7 +686,9 @@ __global__ void getf2_check_singularity(
     rocblas_int *ipivA, const rocblas_int shiftP, const rocblas_stride strideP,
     const rocblas_int j, const rocblas_int lda, T *pivot_val,
     rocblas_int *pivot_idx, rocblas_int *info, const int pivot) {
-  int id = hipBlockIdx_x;
+  using S = decltype(std::real(T{}));
+
+  const int id = hipBlockIdx_x;
   rocblas_int idx;
 
   T *A = load_ptr_batch<T>(AA, id, shiftA, strideA);
@@ -694,11 +702,11 @@ __global__ void getf2_check_singularity(
     idx = j * lda + j;
 
   if (A[idx] == 0) {
-    pivot_val[id] = 1.0;
+    pivot_val[id] = 1;
     if (info[id] == 0)
       info[id] = j + 1; // use Fortran 1-based indexing
   } else
-    pivot_val[id] = 1.0 / A[idx];
+    pivot_val[id] = S(1) / A[idx];
 }
 
 template <bool ISBATCHED, typename T, typename S>
@@ -743,9 +751,11 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m, const rocblas_int n,
 }
 
 template <typename T>
-rocblas_status rocsolver_getf2_getrf_argCheck(
-    const rocblas_int m, const rocblas_int n, const rocblas_int lda, T A,
-    rocblas_int *ipiv, rocblas_int *info, const rocblas_int batch_count = 1) {
+rocblas_status
+rocsolver_getf2_getrf_argCheck(const rocblas_int m, const rocblas_int n,
+                               const rocblas_int lda, T A, rocblas_int *ipiv,
+                               rocblas_int *info, const rocblas_int pivot,
+                               const rocblas_int batch_count = 1) {
   // order is important for unit tests:
 
   // 1. invalid/non-supported values
@@ -756,7 +766,7 @@ rocblas_status rocsolver_getf2_getrf_argCheck(
     return rocblas_status_invalid_size;
 
   // 3. invalid pointers
-  if ((m * n && !A) || (m * n && !ipiv) || (batch_count && !info))
+  if ((m * n && !A) || (m * n && pivot && !ipiv) || (batch_count && !info))
     return rocblas_status_invalid_pointer;
 
   return rocblas_status_continue;

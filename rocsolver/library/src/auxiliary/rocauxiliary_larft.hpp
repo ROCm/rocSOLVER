@@ -113,9 +113,9 @@ void rocsolver_larft_getMemorySize(const rocblas_int n, const rocblas_int k,
                                    size_t *size_workArr) {
   // if quick return, no workspace is needed
   if (n == 0 || batch_count == 0) {
-    size_scalars = 0;
-    size_work = 0;
-    size_workArr = 0;
+    *size_scalars = 0;
+    *size_work = 0;
+    *size_workArr = 0;
     return;
   }
 
