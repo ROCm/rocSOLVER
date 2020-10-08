@@ -54,85 +54,87 @@ const vector<vector<int>> opt_range = {
     {0, 0, 0, 1}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_size_range = {{152, 152, 152, 152},
-                                              {640, 640, 656, 700},
-                                              {1000, 1024, 1000, 80},
-                                              {2000, 0, 0, 0}};
+const vector<vector<int>> large_size_range
+    = {{152, 152, 152, 152}, {640, 640, 656, 700}, {1000, 1024, 1000, 80}, {2000, 0, 0, 0}};
 
-const vector<vector<int>> large_opt_range = {
-    {0, 0, 0, 0}, {1, 0, 1, 0}, {0, 1, 0, 1}, {1, 0, 0, 0}};
+const vector<vector<int>> large_opt_range = {{0, 0, 0, 0}, {1, 0, 1, 0}, {0, 1, 0, 1}, {1, 0, 0, 0}};
 
-Arguments bdsqr_setup_arguments(bdsqr_tuple tup) {
-  vector<int> size = std::get<0>(tup);
-  vector<int> opt = std::get<1>(tup);
+Arguments bdsqr_setup_arguments(bdsqr_tuple tup)
+{
+    vector<int> size = std::get<0>(tup);
+    vector<int> opt = std::get<1>(tup);
 
-  Arguments arg;
+    Arguments arg;
 
-  arg.M = size[0];  // n
-  arg.N = size[1];  // nv
-  arg.K = size[2];  // nu
-  arg.S4 = size[3]; // nc
+    arg.M = size[0]; // n
+    arg.N = size[1]; // nv
+    arg.K = size[2]; // nu
+    arg.S4 = size[3]; // nc
 
-  arg.uplo_option = opt[0] ? 'L' : 'U';
+    arg.uplo_option = opt[0] ? 'L' : 'U';
 
-  arg.lda = (arg.N > 0) ? arg.M : 1; // ldv
-  arg.lda += opt[1] * 10;
-  arg.ldb = (arg.K > 0) ? arg.K : 1; // ldu
-  arg.ldb += opt[2] * 10;
-  arg.ldc = (arg.S4 > 0) ? arg.M : 1; // ldc
-  arg.ldc += opt[3] * 10;
+    arg.lda = (arg.N > 0) ? arg.M : 1; // ldv
+    arg.lda += opt[1] * 10;
+    arg.ldb = (arg.K > 0) ? arg.K : 1; // ldu
+    arg.ldb += opt[2] * 10;
+    arg.ldc = (arg.S4 > 0) ? arg.M : 1; // ldc
+    arg.ldc += opt[3] * 10;
 
-  arg.timing = 0;
+    arg.timing = 0;
 
-  return arg;
+    return arg;
 }
 
-class BDSQR : public ::TestWithParam<bdsqr_tuple> {
+class BDSQR : public ::TestWithParam<bdsqr_tuple>
+{
 protected:
-  BDSQR() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    BDSQR() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-TEST_P(BDSQR, __float) {
-  Arguments arg = bdsqr_setup_arguments(GetParam());
+TEST_P(BDSQR, __float)
+{
+    Arguments arg = bdsqr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.uplo_option == 'L')
-    testing_bdsqr_bad_arg<float>();
+    if(arg.M == 0 && arg.uplo_option == 'L')
+        testing_bdsqr_bad_arg<float>();
 
-  testing_bdsqr<float>(arg);
+    testing_bdsqr<float>(arg);
 }
 
-TEST_P(BDSQR, __double) {
-  Arguments arg = bdsqr_setup_arguments(GetParam());
+TEST_P(BDSQR, __double)
+{
+    Arguments arg = bdsqr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.uplo_option == 'L')
-    testing_bdsqr_bad_arg<double>();
+    if(arg.M == 0 && arg.uplo_option == 'L')
+        testing_bdsqr_bad_arg<double>();
 
-  testing_bdsqr<double>(arg);
+    testing_bdsqr<double>(arg);
 }
 
-TEST_P(BDSQR, __float_complex) {
-  Arguments arg = bdsqr_setup_arguments(GetParam());
+TEST_P(BDSQR, __float_complex)
+{
+    Arguments arg = bdsqr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.uplo_option == 'L')
-    testing_bdsqr_bad_arg<rocblas_float_complex>();
+    if(arg.M == 0 && arg.uplo_option == 'L')
+        testing_bdsqr_bad_arg<rocblas_float_complex>();
 
-  testing_bdsqr<rocblas_float_complex>(arg);
+    testing_bdsqr<rocblas_float_complex>(arg);
 }
 
-TEST_P(BDSQR, __double_complex) {
-  Arguments arg = bdsqr_setup_arguments(GetParam());
+TEST_P(BDSQR, __double_complex)
+{
+    Arguments arg = bdsqr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.uplo_option == 'L')
-    testing_bdsqr_bad_arg<rocblas_double_complex>();
+    if(arg.M == 0 && arg.uplo_option == 'L')
+        testing_bdsqr_bad_arg<rocblas_double_complex>();
 
-  testing_bdsqr<rocblas_double_complex>(arg);
+    testing_bdsqr<rocblas_double_complex>(arg);
 }
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, BDSQR,
-                         Combine(ValuesIn(large_size_range),
-                                 ValuesIn(large_opt_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         BDSQR,
+                         Combine(ValuesIn(large_size_range), ValuesIn(large_opt_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, BDSQR,
-                         Combine(ValuesIn(size_range), ValuesIn(opt_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, BDSQR, Combine(ValuesIn(size_range), ValuesIn(opt_range)));

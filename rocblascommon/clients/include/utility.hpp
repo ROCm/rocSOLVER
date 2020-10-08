@@ -53,10 +53,9 @@
 #if defined(GOOGLE_TEST) || defined(ROCBLAS_BENCH)
 #undef stdout
 #undef stderr
-#pragma GCC poison cout cerr clog stdout stderr gets puts putchar fputs        \
-    fprintf printf sprintf vfprintf vprintf vsprintf perror strerror strtok    \
-        gmtime ctime asctime localtime tmpnam putenv clearenv fcloseall ecvt   \
-            fcvt sleep
+#pragma GCC poison cout cerr clog stdout stderr gets puts putchar fputs fprintf printf sprintf    \
+    vfprintf vprintf vsprintf perror strerror strtok gmtime ctime asctime localtime tmpnam putenv \
+        clearenv fcloseall ecvt fcvt sleep
 #define BOOST_ASSERT_MSG_OSTREAM rocblas_cerr
 // Suppress warnings about hipMalloc(), hipFree() except in rocblas-test and
 // rocblas-bench
@@ -64,34 +63,47 @@
 #undef hipFree
 #endif
 
-static constexpr char LIMITED_MEMORY_STRING[] =
-    "Error: Attempting to allocate more memory than available.";
+static constexpr char LIMITED_MEMORY_STRING[]
+    = "Error: Attempting to allocate more memory than available.";
 
 // TODO: This is dependent on internal gtest behaviour.
 // Compared with result.message() when a test ended. Note that "Succeeded\n" is
 // added to the beginning of the message automatically by gtest, so this must be
 // compared.
-static constexpr char LIMITED_MEMORY_STRING_GTEST[] =
-    "Succeeded\nError: Attempting to allocate more memory than available.";
+static constexpr char LIMITED_MEMORY_STRING_GTEST[]
+    = "Succeeded\nError: Attempting to allocate more memory than available.";
 
 /* ============================================================================================
  */
 /*! \brief  local handle which is automatically created and destroyed  */
-class rocblas_local_handle {
-  rocblas_handle m_handle;
+class rocblas_local_handle
+{
+    rocblas_handle m_handle;
 
 public:
-  rocblas_local_handle() { rocblas_create_handle(&m_handle); }
-  ~rocblas_local_handle() { rocblas_destroy_handle(m_handle); }
+    rocblas_local_handle()
+    {
+        rocblas_create_handle(&m_handle);
+    }
+    ~rocblas_local_handle()
+    {
+        rocblas_destroy_handle(m_handle);
+    }
 
-  rocblas_local_handle(const rocblas_local_handle &) = delete;
-  rocblas_local_handle(rocblas_local_handle &&) = delete;
-  rocblas_local_handle &operator=(const rocblas_local_handle &) = delete;
-  rocblas_local_handle &operator=(rocblas_local_handle &&) = delete;
+    rocblas_local_handle(const rocblas_local_handle&) = delete;
+    rocblas_local_handle(rocblas_local_handle&&) = delete;
+    rocblas_local_handle& operator=(const rocblas_local_handle&) = delete;
+    rocblas_local_handle& operator=(rocblas_local_handle&&) = delete;
 
-  // Allow rocblas_local_handle to be used anywhere rocblas_handle is expected
-  operator rocblas_handle &() { return m_handle; }
-  operator const rocblas_handle &() const { return m_handle; }
+    // Allow rocblas_local_handle to be used anywhere rocblas_handle is expected
+    operator rocblas_handle&()
+    {
+        return m_handle;
+    }
+    operator const rocblas_handle&() const
+    {
+        return m_handle;
+    }
 };
 
 /* ============================================================================================
@@ -129,25 +141,27 @@ std::string rocblas_exepath();
 /*! \brief  Debugging purpose, print out CPU and GPU result matrix, not valid in
  * complex number  */
 template <typename T>
-inline void rocblas_print_matrix(T *CPU_result, T *GPU_result, size_t m,
-                                 size_t n, size_t lda) {
-  for (size_t i = 0; i < m; i++)
-    for (size_t j = 0; j < n; j++) {
-      rocblas_cout << "matrix  col " << i << ", row " << j
-                   << ", CPU result=" << CPU_result[j + i * lda]
-                   << ", GPU result=" << GPU_result[j + i * lda] << "\n";
-    }
+inline void rocblas_print_matrix(T* CPU_result, T* GPU_result, size_t m, size_t n, size_t lda)
+{
+    for(size_t i = 0; i < m; i++)
+        for(size_t j = 0; j < n; j++)
+        {
+            rocblas_cout << "matrix  col " << i << ", row " << j
+                         << ", CPU result=" << CPU_result[j + i * lda]
+                         << ", GPU result=" << GPU_result[j + i * lda] << "\n";
+        }
 }
 
 template <typename T>
-void rocblas_print_matrix(const char *name, T *A, size_t m, size_t n,
-                          size_t lda) {
-  rocblas_cout << "---------- " << name << " ----------\n";
-  for (size_t i = 0; i < m; i++) {
-    for (size_t j = 0; j < n; j++)
-      rocblas_cout << A[i + j * lda] << " ";
-    rocblas_cout << std::endl;
-  }
+void rocblas_print_matrix(const char* name, T* A, size_t m, size_t n, size_t lda)
+{
+    rocblas_cout << "---------- " << name << " ----------\n";
+    for(size_t i = 0; i < m; i++)
+    {
+        for(size_t j = 0; j < n; j++)
+            rocblas_cout << A[i + j * lda] << " ";
+        rocblas_cout << std::endl;
+    }
 }
 
 /* =============================================================================
@@ -313,25 +327,34 @@ char char_uplo)
 }*/
 
 template <typename T>
-void print_strided_batched(const char *name, T *A, rocblas_int n1,
-                           rocblas_int n2, rocblas_int n3, rocblas_int s1,
-                           rocblas_int s2, rocblas_int s3) {
-  // n1, n2, n3 are matrix dimensions, sometimes called m, n, batch_count
-  // s1, s1, s3 are matrix strides, sometimes called 1, lda, stride_a
-  rocblas_cout << "---------- " << name << " ----------\n";
-  int max_size = 8;
+void print_strided_batched(const char* name,
+                           T* A,
+                           rocblas_int n1,
+                           rocblas_int n2,
+                           rocblas_int n3,
+                           rocblas_int s1,
+                           rocblas_int s2,
+                           rocblas_int s3)
+{
+    // n1, n2, n3 are matrix dimensions, sometimes called m, n, batch_count
+    // s1, s1, s3 are matrix strides, sometimes called 1, lda, stride_a
+    rocblas_cout << "---------- " << name << " ----------\n";
+    int max_size = 8;
 
-  for (int i3 = 0; i3 < n3 && i3 < max_size; i3++) {
-    for (int i1 = 0; i1 < n1 && i1 < max_size; i1++) {
-      for (int i2 = 0; i2 < n2 && i2 < max_size; i2++) {
-        rocblas_cout << A[(i1 * s1) + (i2 * s2) + (i3 * s3)] << "|";
-      }
-      rocblas_cout << "\n";
+    for(int i3 = 0; i3 < n3 && i3 < max_size; i3++)
+    {
+        for(int i1 = 0; i1 < n1 && i1 < max_size; i1++)
+        {
+            for(int i2 = 0; i2 < n2 && i2 < max_size; i2++)
+            {
+                rocblas_cout << A[(i1 * s1) + (i2 * s2) + (i3 * s3)] << "|";
+            }
+            rocblas_cout << "\n";
+        }
+        if(i3 < (n3 - 1) && i3 < (max_size - 1))
+            rocblas_cout << "\n";
     }
-    if (i3 < (n3 - 1) && i3 < (max_size - 1))
-      rocblas_cout << "\n";
-  }
-  rocblas_cout << std::flush;
+    rocblas_cout << std::flush;
 }
 
 #endif
