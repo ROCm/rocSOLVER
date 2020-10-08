@@ -124,6 +124,7 @@ public:
         return this->m_data[batch_index];
     }
 
+    // clang-format off
     //!
     //! @brief Cast to a double pointer.
     //!
@@ -131,6 +132,7 @@ public:
     {
         return this->m_data;
     }
+    // clang-format on
 
     //!
     //! @brief Constant cast to a double pointer.

@@ -173,6 +173,7 @@ public:
         return this->m_data;
     }
 
+    // clang-format off
     //!
     //! @brief Cast of the data on host.
     //!
@@ -180,6 +181,7 @@ public:
     {
         return this->m_data;
     }
+    // clang-format on
 
     //!
     //! @brief Tell whether ressources allocation failed.
