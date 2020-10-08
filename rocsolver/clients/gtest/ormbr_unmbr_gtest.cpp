@@ -75,102 +75,107 @@ const vector<vector<int>> size_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range = {
-    {200, 150, 100}, {270, 270, 270},   {400, 400, 405},
-    {800, 500, 300}, {1500, 1000, 300},
+    {200, 150, 100}, {270, 270, 270}, {400, 400, 405}, {800, 500, 300}, {1500, 1000, 300},
 };
 
-Arguments ormbr_setup_arguments(ormbr_tuple tup) {
-  vector<int> size = std::get<0>(tup);
-  vector<int> store = std::get<1>(tup);
+Arguments ormbr_setup_arguments(ormbr_tuple tup)
+{
+    vector<int> size = std::get<0>(tup);
+    vector<int> store = std::get<1>(tup);
 
-  Arguments arg;
+    Arguments arg;
 
-  arg.storev = store[4] == 0 ? 'C' : 'R';
-  arg.transA_option = (store[3] == 0 ? 'N' : (store[3] == 1 ? 'T' : 'C'));
-  arg.side_option = store[2] == 0 ? 'L' : 'R';
+    arg.storev = store[4] == 0 ? 'C' : 'R';
+    arg.transA_option = (store[3] == 0 ? 'N' : (store[3] == 1 ? 'T' : 'C'));
+    arg.side_option = store[2] == 0 ? 'L' : 'R';
 
-  arg.K = size[2];
-  arg.N = size[1];
-  arg.M = size[0];
+    arg.K = size[2];
+    arg.N = size[1];
+    arg.M = size[0];
 
-  arg.ldc = arg.M + store[1] * 10;
+    arg.ldc = arg.M + store[1] * 10;
 
-  int nq = arg.side_option == 'L' ? arg.M : arg.N;
-  if (arg.storev == 'C') {
-    arg.lda = nq;
-  } else {
-    arg.lda = min(nq, arg.K);
-  }
+    int nq = arg.side_option == 'L' ? arg.M : arg.N;
+    if(arg.storev == 'C')
+    {
+        arg.lda = nq;
+    }
+    else
+    {
+        arg.lda = min(nq, arg.K);
+    }
 
-  arg.lda += store[0] * 10;
+    arg.lda += store[0] * 10;
 
-  arg.timing = 0;
+    arg.timing = 0;
 
-  return arg;
+    return arg;
 }
 
-class ORMBR : public ::TestWithParam<ormbr_tuple> {
+class ORMBR : public ::TestWithParam<ormbr_tuple>
+{
 protected:
-  ORMBR() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    ORMBR() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-class UNMBR : public ::TestWithParam<ormbr_tuple> {
+class UNMBR : public ::TestWithParam<ormbr_tuple>
+{
 protected:
-  UNMBR() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    UNMBR() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-TEST_P(ORMBR, __float) {
-  Arguments arg = ormbr_setup_arguments(GetParam());
+TEST_P(ORMBR, __float)
+{
+    Arguments arg = ormbr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' &&
-      arg.transA_option == 'T' && arg.storev == 'C')
-    testing_ormbr_unmbr_bad_arg<float>();
+    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
+       && arg.storev == 'C')
+        testing_ormbr_unmbr_bad_arg<float>();
 
-  testing_ormbr_unmbr<float>(arg);
+    testing_ormbr_unmbr<float>(arg);
 }
 
-TEST_P(ORMBR, __double) {
-  Arguments arg = ormbr_setup_arguments(GetParam());
+TEST_P(ORMBR, __double)
+{
+    Arguments arg = ormbr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' &&
-      arg.transA_option == 'T' && arg.storev == 'C')
-    testing_ormbr_unmbr_bad_arg<double>();
+    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
+       && arg.storev == 'C')
+        testing_ormbr_unmbr_bad_arg<double>();
 
-  testing_ormbr_unmbr<double>(arg);
+    testing_ormbr_unmbr<double>(arg);
 }
 
-TEST_P(UNMBR, __float_complex) {
-  Arguments arg = ormbr_setup_arguments(GetParam());
+TEST_P(UNMBR, __float_complex)
+{
+    Arguments arg = ormbr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' &&
-      arg.transA_option == 'T' && arg.storev == 'C')
-    testing_ormbr_unmbr_bad_arg<rocblas_float_complex>();
+    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
+       && arg.storev == 'C')
+        testing_ormbr_unmbr_bad_arg<rocblas_float_complex>();
 
-  testing_ormbr_unmbr<rocblas_float_complex>(arg);
+    testing_ormbr_unmbr<rocblas_float_complex>(arg);
 }
 
-TEST_P(UNMBR, __double_complex) {
-  Arguments arg = ormbr_setup_arguments(GetParam());
+TEST_P(UNMBR, __double_complex)
+{
+    Arguments arg = ormbr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' &&
-      arg.transA_option == 'T' && arg.storev == 'C')
-    testing_ormbr_unmbr_bad_arg<rocblas_double_complex>();
+    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
+       && arg.storev == 'C')
+        testing_ormbr_unmbr_bad_arg<rocblas_double_complex>();
 
-  testing_ormbr_unmbr<rocblas_double_complex>(arg);
+    testing_ormbr_unmbr<rocblas_double_complex>(arg);
 }
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, ORMBR,
-                         Combine(ValuesIn(large_size_range), ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, ORMBR, Combine(ValuesIn(large_size_range), ValuesIn(store)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORMBR,
-                         Combine(ValuesIn(size_range), ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORMBR, Combine(ValuesIn(size_range), ValuesIn(store)));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, UNMBR,
-                         Combine(ValuesIn(large_size_range), ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, UNMBR, Combine(ValuesIn(large_size_range), ValuesIn(store)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNMBR,
-                         Combine(ValuesIn(size_range), ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNMBR, Combine(ValuesIn(size_range), ValuesIn(store)));

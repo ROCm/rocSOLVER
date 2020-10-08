@@ -64,156 +64,154 @@ const vector<vector<int>> size_range = {
     {50, 50, 20}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_size_range = {{100, 100, 100},
-                                              {150, 100, 80},
-                                              {300, 400, 300},
-                                              {1024, 1000, 950},
-                                              {1500, 1500, 1000}};
+const vector<vector<int>> large_size_range
+    = {{100, 100, 100}, {150, 100, 80}, {300, 400, 300}, {1024, 1000, 950}, {1500, 1500, 1000}};
 
-Arguments ormlq_setup_arguments(ormlq_tuple tup) {
-  vector<int> size = std::get<0>(tup);
-  vector<int> op = std::get<1>(tup);
+Arguments ormlq_setup_arguments(ormlq_tuple tup)
+{
+    vector<int> size = std::get<0>(tup);
+    vector<int> op = std::get<1>(tup);
 
-  Arguments arg;
+    Arguments arg;
 
-  arg.M = size[0];
-  arg.N = size[1];
-  arg.K = size[2];
-  arg.ldc = arg.M + op[1] * 10;
-  arg.lda = arg.K + op[0] * 10;
+    arg.M = size[0];
+    arg.N = size[1];
+    arg.K = size[2];
+    arg.ldc = arg.M + op[1] * 10;
+    arg.lda = arg.K + op[0] * 10;
 
-  arg.transA_option = (op[3] == 0 ? 'N' : (op[3] == 1 ? 'T' : 'C'));
-  arg.side_option = op[2] == 0 ? 'L' : 'R';
+    arg.transA_option = (op[3] == 0 ? 'N' : (op[3] == 1 ? 'T' : 'C'));
+    arg.side_option = op[2] == 0 ? 'L' : 'R';
 
-  arg.timing = 0;
+    arg.timing = 0;
 
-  return arg;
+    return arg;
 }
 
-class ORML2 : public ::TestWithParam<ormlq_tuple> {
+class ORML2 : public ::TestWithParam<ormlq_tuple>
+{
 protected:
-  ORML2() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    ORML2() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-class UNML2 : public ::TestWithParam<ormlq_tuple> {
+class UNML2 : public ::TestWithParam<ormlq_tuple>
+{
 protected:
-  UNML2() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    UNML2() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-class ORMLQ : public ::TestWithParam<ormlq_tuple> {
+class ORMLQ : public ::TestWithParam<ormlq_tuple>
+{
 protected:
-  ORMLQ() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    ORMLQ() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-class UNMLQ : public ::TestWithParam<ormlq_tuple> {
+class UNMLQ : public ::TestWithParam<ormlq_tuple>
+{
 protected:
-  UNMLQ() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    UNMLQ() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-TEST_P(ORML2, __float) {
-  Arguments arg = ormlq_setup_arguments(GetParam());
+TEST_P(ORML2, __float)
+{
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormlx_unmlx_bad_arg<float, 0>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormlx_unmlx_bad_arg<float, 0>();
 
-  testing_ormlx_unmlx<float, 0>(arg);
+    testing_ormlx_unmlx<float, 0>(arg);
 }
 
-TEST_P(ORML2, __double) {
-  Arguments arg = ormlq_setup_arguments(GetParam());
+TEST_P(ORML2, __double)
+{
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormlx_unmlx_bad_arg<double, 0>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormlx_unmlx_bad_arg<double, 0>();
 
-  testing_ormlx_unmlx<double, 0>(arg);
+    testing_ormlx_unmlx<double, 0>(arg);
 }
 
-TEST_P(UNML2, __float_complex) {
-  Arguments arg = ormlq_setup_arguments(GetParam());
+TEST_P(UNML2, __float_complex)
+{
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormlx_unmlx_bad_arg<rocblas_float_complex, 0>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormlx_unmlx_bad_arg<rocblas_float_complex, 0>();
 
-  testing_ormlx_unmlx<rocblas_float_complex, 0>(arg);
+    testing_ormlx_unmlx<rocblas_float_complex, 0>(arg);
 }
 
-TEST_P(UNML2, __double_complex) {
-  Arguments arg = ormlq_setup_arguments(GetParam());
+TEST_P(UNML2, __double_complex)
+{
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormlx_unmlx_bad_arg<rocblas_double_complex, 0>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormlx_unmlx_bad_arg<rocblas_double_complex, 0>();
 
-  testing_ormlx_unmlx<rocblas_double_complex, 0>(arg);
+    testing_ormlx_unmlx<rocblas_double_complex, 0>(arg);
 }
 
-TEST_P(ORMLQ, __float) {
-  Arguments arg = ormlq_setup_arguments(GetParam());
+TEST_P(ORMLQ, __float)
+{
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormlx_unmlx_bad_arg<float, 1>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormlx_unmlx_bad_arg<float, 1>();
 
-  testing_ormlx_unmlx<float, 1>(arg);
+    testing_ormlx_unmlx<float, 1>(arg);
 }
 
-TEST_P(ORMLQ, __double) {
-  Arguments arg = ormlq_setup_arguments(GetParam());
+TEST_P(ORMLQ, __double)
+{
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormlx_unmlx_bad_arg<double, 1>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormlx_unmlx_bad_arg<double, 1>();
 
-  testing_ormlx_unmlx<double, 1>(arg);
+    testing_ormlx_unmlx<double, 1>(arg);
 }
 
-TEST_P(UNMLQ, __float_complex) {
-  Arguments arg = ormlq_setup_arguments(GetParam());
+TEST_P(UNMLQ, __float_complex)
+{
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormlx_unmlx_bad_arg<rocblas_float_complex, 1>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormlx_unmlx_bad_arg<rocblas_float_complex, 1>();
 
-  testing_ormlx_unmlx<rocblas_float_complex, 1>(arg);
+    testing_ormlx_unmlx<rocblas_float_complex, 1>(arg);
 }
 
-TEST_P(UNMLQ, __double_complex) {
-  Arguments arg = ormlq_setup_arguments(GetParam());
+TEST_P(UNMLQ, __double_complex)
+{
+    Arguments arg = ormlq_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormlx_unmlx_bad_arg<rocblas_double_complex, 1>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormlx_unmlx_bad_arg<rocblas_double_complex, 1>();
 
-  testing_ormlx_unmlx<rocblas_double_complex, 1>(arg);
+    testing_ormlx_unmlx<rocblas_double_complex, 1>(arg);
 }
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, ORML2,
-                         Combine(ValuesIn(large_size_range),
-                                 ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, ORML2, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORML2,
-                         Combine(ValuesIn(size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORML2, Combine(ValuesIn(size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, UNML2,
-                         Combine(ValuesIn(large_size_range),
-                                 ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, UNML2, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNML2,
-                         Combine(ValuesIn(size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNML2, Combine(ValuesIn(size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, ORMLQ,
-                         Combine(ValuesIn(large_size_range),
-                                 ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, ORMLQ, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORMLQ,
-                         Combine(ValuesIn(size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORMLQ, Combine(ValuesIn(size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, UNMLQ,
-                         Combine(ValuesIn(large_size_range),
-                                 ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, UNMLQ, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNMLQ,
-                         Combine(ValuesIn(size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNMLQ, Combine(ValuesIn(size_range), ValuesIn(op_range)));

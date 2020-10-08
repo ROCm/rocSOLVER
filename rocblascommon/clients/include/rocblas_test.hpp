@@ -36,43 +36,49 @@
 #define CHECK_HIP_ERROR2(ERROR) ASSERT_EQ(ERROR, hipSuccess)
 #define CHECK_HIP_ERROR(ERROR) CHECK_HIP_ERROR2(ERROR)
 
-#define CHECK_DEVICE_ALLOCATION(ERROR)                                         \
-  do {                                                                         \
-    auto error = ERROR;                                                        \
-    if (error == hipErrorOutOfMemory) {                                        \
-      SUCCEED() << LIMITED_MEMORY_STRING;                                      \
-      return;                                                                  \
-    } else if (error != hipSuccess) {                                          \
-      fprintf(stderr, "error: '%s'(%d) at %s:%d\n", hipGetErrorString(error),  \
-              error, __FILE__, __LINE__);                                      \
-      return;                                                                  \
-    }                                                                          \
-  } while (0)
+#define CHECK_DEVICE_ALLOCATION(ERROR)                                                     \
+    do                                                                                     \
+    {                                                                                      \
+        auto error = ERROR;                                                                \
+        if(error == hipErrorOutOfMemory)                                                   \
+        {                                                                                  \
+            SUCCEED() << LIMITED_MEMORY_STRING;                                            \
+            return;                                                                        \
+        }                                                                                  \
+        else if(error != hipSuccess)                                                       \
+        {                                                                                  \
+            fprintf(stderr, "error: '%s'(%d) at %s:%d\n", hipGetErrorString(error), error, \
+                    __FILE__, __LINE__);                                                   \
+            return;                                                                        \
+        }                                                                                  \
+    } while(0)
 
 #define EXPECT_ROCBLAS_STATUS ASSERT_EQ
 
 #else // GOOGLE_TEST
 
-inline void rocblas_expect_status(rocblas_status status,
-                                  rocblas_status expect) {
-  if (status != expect) {
-    rocblas_cerr << "rocBLAS status error: Expected "
-                 << rocblas_status_to_string(expect) << ", received "
-                 << rocblas_status_to_string(status) << std::endl;
-    if (expect == rocblas_status_success)
-      exit(EXIT_FAILURE);
-  }
+inline void rocblas_expect_status(rocblas_status status, rocblas_status expect)
+{
+    if(status != expect)
+    {
+        rocblas_cerr << "rocBLAS status error: Expected " << rocblas_status_to_string(expect)
+                     << ", received " << rocblas_status_to_string(status) << std::endl;
+        if(expect == rocblas_status_success)
+            exit(EXIT_FAILURE);
+    }
 }
 
-#define CHECK_HIP_ERROR(ERROR)                                                 \
-  do {                                                                         \
-    auto error = ERROR;                                                        \
-    if (error != hipSuccess) {                                                 \
-      rocblas_cerr << "error: " << hipGetErrorString(error) << " (" << error   \
-                   << ") at " __FILE__ ":" << __LINE__ << std::endl;           \
-      rocblas_abort();                                                         \
-    }                                                                          \
-  } while (0)
+#define CHECK_HIP_ERROR(ERROR)                                                     \
+    do                                                                             \
+    {                                                                              \
+        auto error = ERROR;                                                        \
+        if(error != hipSuccess)                                                    \
+        {                                                                          \
+            rocblas_cerr << "error: " << hipGetErrorString(error) << " (" << error \
+                         << ") at " __FILE__ ":" << __LINE__ << std::endl;         \
+            rocblas_abort();                                                       \
+        }                                                                          \
+    } while(0)
 
 #define CHECK_DEVICE_ALLOCATION(ERROR)
 
@@ -80,8 +86,7 @@ inline void rocblas_expect_status(rocblas_status status,
 
 #endif // GOOGLE_TEST
 
-#define CHECK_ROCBLAS_ERROR2(STATUS)                                           \
-  EXPECT_ROCBLAS_STATUS(STATUS, rocblas_status_success)
+#define CHECK_ROCBLAS_ERROR2(STATUS) EXPECT_ROCBLAS_STATUS(STATUS, rocblas_status_success)
 #define CHECK_ROCBLAS_ERROR(STATUS) CHECK_ROCBLAS_ERROR2(STATUS)
 
 /*

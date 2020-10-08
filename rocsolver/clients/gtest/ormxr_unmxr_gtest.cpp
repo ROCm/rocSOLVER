@@ -64,161 +64,162 @@ const vector<vector<int>> size_range = {
     {50, 50, 20}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_size_range = {{100, 100, 100},
-                                              {150, 100, 80},
-                                              {300, 400, 300},
-                                              {1024, 1000, 950},
-                                              {1500, 1500, 1000}};
+const vector<vector<int>> large_size_range
+    = {{100, 100, 100}, {150, 100, 80}, {300, 400, 300}, {1024, 1000, 950}, {1500, 1500, 1000}};
 
-Arguments ormqr_setup_arguments(ormqr_tuple tup) {
-  vector<int> size = std::get<0>(tup);
-  vector<int> op = std::get<1>(tup);
+Arguments ormqr_setup_arguments(ormqr_tuple tup)
+{
+    vector<int> size = std::get<0>(tup);
+    vector<int> op = std::get<1>(tup);
 
-  Arguments arg;
+    Arguments arg;
 
-  arg.M = size[0];
-  arg.N = size[1];
-  arg.K = size[2];
-  arg.ldc = arg.M + op[1] * 10;
+    arg.M = size[0];
+    arg.N = size[1];
+    arg.K = size[2];
+    arg.ldc = arg.M + op[1] * 10;
 
-  arg.transA_option = (op[3] == 0 ? 'N' : (op[3] == 1 ? 'T' : 'C'));
-  arg.side_option = op[2] == 0 ? 'L' : 'R';
+    arg.transA_option = (op[3] == 0 ? 'N' : (op[3] == 1 ? 'T' : 'C'));
+    arg.side_option = op[2] == 0 ? 'L' : 'R';
 
-  if (op[2]) {
-    arg.lda = arg.N + op[0] * 10;
-  } else {
-    arg.lda = arg.M + op[0] * 10;
-  }
+    if(op[2])
+    {
+        arg.lda = arg.N + op[0] * 10;
+    }
+    else
+    {
+        arg.lda = arg.M + op[0] * 10;
+    }
 
-  arg.timing = 0;
+    arg.timing = 0;
 
-  return arg;
+    return arg;
 }
 
-class ORM2R : public ::TestWithParam<ormqr_tuple> {
+class ORM2R : public ::TestWithParam<ormqr_tuple>
+{
 protected:
-  ORM2R() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    ORM2R() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-class UNM2R : public ::TestWithParam<ormqr_tuple> {
+class UNM2R : public ::TestWithParam<ormqr_tuple>
+{
 protected:
-  UNM2R() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    UNM2R() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-class ORMQR : public ::TestWithParam<ormqr_tuple> {
+class ORMQR : public ::TestWithParam<ormqr_tuple>
+{
 protected:
-  ORMQR() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    ORMQR() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-class UNMQR : public ::TestWithParam<ormqr_tuple> {
+class UNMQR : public ::TestWithParam<ormqr_tuple>
+{
 protected:
-  UNMQR() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    UNMQR() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-TEST_P(ORM2R, __float) {
-  Arguments arg = ormqr_setup_arguments(GetParam());
+TEST_P(ORM2R, __float)
+{
+    Arguments arg = ormqr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormxr_unmxr_bad_arg<float, 0>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormxr_unmxr_bad_arg<float, 0>();
 
-  testing_ormxr_unmxr<float, 0>(arg);
+    testing_ormxr_unmxr<float, 0>(arg);
 }
 
-TEST_P(ORM2R, __double) {
-  Arguments arg = ormqr_setup_arguments(GetParam());
+TEST_P(ORM2R, __double)
+{
+    Arguments arg = ormqr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormxr_unmxr_bad_arg<double, 0>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormxr_unmxr_bad_arg<double, 0>();
 
-  testing_ormxr_unmxr<double, 0>(arg);
+    testing_ormxr_unmxr<double, 0>(arg);
 }
 
-TEST_P(UNM2R, __float_complex) {
-  Arguments arg = ormqr_setup_arguments(GetParam());
+TEST_P(UNM2R, __float_complex)
+{
+    Arguments arg = ormqr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormxr_unmxr_bad_arg<rocblas_float_complex, 0>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormxr_unmxr_bad_arg<rocblas_float_complex, 0>();
 
-  testing_ormxr_unmxr<rocblas_float_complex, 0>(arg);
+    testing_ormxr_unmxr<rocblas_float_complex, 0>(arg);
 }
 
-TEST_P(UNM2R, __double_complex) {
-  Arguments arg = ormqr_setup_arguments(GetParam());
+TEST_P(UNM2R, __double_complex)
+{
+    Arguments arg = ormqr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormxr_unmxr_bad_arg<rocblas_double_complex, 0>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormxr_unmxr_bad_arg<rocblas_double_complex, 0>();
 
-  testing_ormxr_unmxr<rocblas_double_complex, 0>(arg);
+    testing_ormxr_unmxr<rocblas_double_complex, 0>(arg);
 }
 
-TEST_P(ORMQR, __float) {
-  Arguments arg = ormqr_setup_arguments(GetParam());
+TEST_P(ORMQR, __float)
+{
+    Arguments arg = ormqr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormxr_unmxr_bad_arg<float, 1>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormxr_unmxr_bad_arg<float, 1>();
 
-  testing_ormxr_unmxr<float, 1>(arg);
+    testing_ormxr_unmxr<float, 1>(arg);
 }
 
-TEST_P(ORMQR, __double) {
-  Arguments arg = ormqr_setup_arguments(GetParam());
+TEST_P(ORMQR, __double)
+{
+    Arguments arg = ormqr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormxr_unmxr_bad_arg<double, 1>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormxr_unmxr_bad_arg<double, 1>();
 
-  testing_ormxr_unmxr<double, 1>(arg);
+    testing_ormxr_unmxr<double, 1>(arg);
 }
 
-TEST_P(UNMQR, __float_complex) {
-  Arguments arg = ormqr_setup_arguments(GetParam());
+TEST_P(UNMQR, __float_complex)
+{
+    Arguments arg = ormqr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormxr_unmxr_bad_arg<rocblas_float_complex, 1>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormxr_unmxr_bad_arg<rocblas_float_complex, 1>();
 
-  testing_ormxr_unmxr<rocblas_float_complex, 1>(arg);
+    testing_ormxr_unmxr<rocblas_float_complex, 1>(arg);
 }
 
-TEST_P(UNMQR, __double_complex) {
-  Arguments arg = ormqr_setup_arguments(GetParam());
+TEST_P(UNMQR, __double_complex)
+{
+    Arguments arg = ormqr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-    testing_ormxr_unmxr_bad_arg<rocblas_double_complex, 1>();
+    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        testing_ormxr_unmxr_bad_arg<rocblas_double_complex, 1>();
 
-  testing_ormxr_unmxr<rocblas_double_complex, 1>(arg);
+    testing_ormxr_unmxr<rocblas_double_complex, 1>(arg);
 }
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, ORM2R,
-                         Combine(ValuesIn(large_size_range),
-                                 ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, ORM2R, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORM2R,
-                         Combine(ValuesIn(size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORM2R, Combine(ValuesIn(size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, UNM2R,
-                         Combine(ValuesIn(large_size_range),
-                                 ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, UNM2R, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNM2R,
-                         Combine(ValuesIn(size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNM2R, Combine(ValuesIn(size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, ORMQR,
-                         Combine(ValuesIn(large_size_range),
-                                 ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, ORMQR, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORMQR,
-                         Combine(ValuesIn(size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORMQR, Combine(ValuesIn(size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, UNMQR,
-                         Combine(ValuesIn(large_size_range),
-                                 ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, UNMQR, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNMQR,
-                         Combine(ValuesIn(size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNMQR, Combine(ValuesIn(size_range), ValuesIn(op_range)));

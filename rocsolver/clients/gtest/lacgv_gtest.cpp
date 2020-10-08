@@ -33,41 +33,45 @@ const vector<vector<int>> range = {
     {30, -3}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_range = {{192, 10}, {192, -10}, {250, 20},
-                                         {500, 30}, {1500, 40}, {1500, -40}};
+const vector<vector<int>> large_range
+    = {{192, 10}, {192, -10}, {250, 20}, {500, 30}, {1500, 40}, {1500, -40}};
 
-Arguments lacgv_setup_arguments(lacgv_tuple tup) {
-  Arguments arg;
+Arguments lacgv_setup_arguments(lacgv_tuple tup)
+{
+    Arguments arg;
 
-  arg.N = tup[0];
-  arg.incx = tup[1];
+    arg.N = tup[0];
+    arg.incx = tup[1];
 
-  return arg;
+    return arg;
 }
 
-class LACGV : public ::TestWithParam<lacgv_tuple> {
+class LACGV : public ::TestWithParam<lacgv_tuple>
+{
 protected:
-  LACGV() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    LACGV() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-TEST_P(LACGV, __float_complex) {
-  Arguments arg = lacgv_setup_arguments(GetParam());
+TEST_P(LACGV, __float_complex)
+{
+    Arguments arg = lacgv_setup_arguments(GetParam());
 
-  if (arg.N == 0)
-    testing_lacgv_bad_arg<rocblas_float_complex>();
+    if(arg.N == 0)
+        testing_lacgv_bad_arg<rocblas_float_complex>();
 
-  testing_lacgv<rocblas_float_complex>(arg);
+    testing_lacgv<rocblas_float_complex>(arg);
 }
 
-TEST_P(LACGV, __double_complex) {
-  Arguments arg = lacgv_setup_arguments(GetParam());
+TEST_P(LACGV, __double_complex)
+{
+    Arguments arg = lacgv_setup_arguments(GetParam());
 
-  if (arg.N == 0)
-    testing_lacgv_bad_arg<rocblas_double_complex>();
+    if(arg.N == 0)
+        testing_lacgv_bad_arg<rocblas_double_complex>();
 
-  testing_lacgv<rocblas_double_complex>(arg);
+    testing_lacgv<rocblas_double_complex>(arg);
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, LACGV, ValuesIn(large_range));

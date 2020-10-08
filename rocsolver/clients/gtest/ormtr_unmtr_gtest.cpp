@@ -76,93 +76,96 @@ const vector<vector<int>> large_size_range = {
     {200, 150}, {270, 270}, {400, 400}, {800, 500}, {1500, 1000},
 };
 
-Arguments ormtr_setup_arguments(ormtr_tuple tup) {
-  vector<int> size = std::get<0>(tup);
-  vector<int> store = std::get<1>(tup);
+Arguments ormtr_setup_arguments(ormtr_tuple tup)
+{
+    vector<int> size = std::get<0>(tup);
+    vector<int> store = std::get<1>(tup);
 
-  Arguments arg;
+    Arguments arg;
 
-  arg.transA_option = (store[3] == 0 ? 'N' : (store[3] == 1 ? 'T' : 'C'));
-  arg.uplo_option = store[4] == 0 ? 'U' : 'L';
-  arg.side_option = store[2] == 0 ? 'L' : 'R';
+    arg.transA_option = (store[3] == 0 ? 'N' : (store[3] == 1 ? 'T' : 'C'));
+    arg.uplo_option = store[4] == 0 ? 'U' : 'L';
+    arg.side_option = store[2] == 0 ? 'L' : 'R';
 
-  arg.N = size[1];
-  arg.M = size[0];
+    arg.N = size[1];
+    arg.M = size[0];
 
-  arg.ldc = arg.M + store[1] * 10;
+    arg.ldc = arg.M + store[1] * 10;
 
-  int nq = arg.side_option == 'L' ? arg.M : arg.N;
-  arg.lda = nq;
+    int nq = arg.side_option == 'L' ? arg.M : arg.N;
+    arg.lda = nq;
 
-  arg.lda += store[0] * 10;
+    arg.lda += store[0] * 10;
 
-  arg.timing = 0;
+    arg.timing = 0;
 
-  return arg;
+    return arg;
 }
 
-class ORMTR : public ::TestWithParam<ormtr_tuple> {
+class ORMTR : public ::TestWithParam<ormtr_tuple>
+{
 protected:
-  ORMTR() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    ORMTR() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-class UNMTR : public ::TestWithParam<ormtr_tuple> {
+class UNMTR : public ::TestWithParam<ormtr_tuple>
+{
 protected:
-  UNMTR() {}
-  virtual void SetUp() {}
-  virtual void TearDown() {}
+    UNMTR() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
-TEST_P(ORMTR, __float) {
-  Arguments arg = ormtr_setup_arguments(GetParam());
+TEST_P(ORMTR, __float)
+{
+    Arguments arg = ormtr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' &&
-      arg.transA_option == 'T' && arg.uplo_option == 'U')
-    testing_ormtr_unmtr_bad_arg<float>();
+    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
+       && arg.uplo_option == 'U')
+        testing_ormtr_unmtr_bad_arg<float>();
 
-  testing_ormtr_unmtr<float>(arg);
+    testing_ormtr_unmtr<float>(arg);
 }
 
-TEST_P(ORMTR, __double) {
-  Arguments arg = ormtr_setup_arguments(GetParam());
+TEST_P(ORMTR, __double)
+{
+    Arguments arg = ormtr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' &&
-      arg.transA_option == 'T' && arg.uplo_option == 'U')
-    testing_ormtr_unmtr_bad_arg<double>();
+    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
+       && arg.uplo_option == 'U')
+        testing_ormtr_unmtr_bad_arg<double>();
 
-  testing_ormtr_unmtr<double>(arg);
+    testing_ormtr_unmtr<double>(arg);
 }
 
-TEST_P(UNMTR, __float_complex) {
-  Arguments arg = ormtr_setup_arguments(GetParam());
+TEST_P(UNMTR, __float_complex)
+{
+    Arguments arg = ormtr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' &&
-      arg.transA_option == 'T' && arg.uplo_option == 'U')
-    testing_ormtr_unmtr_bad_arg<rocblas_float_complex>();
+    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
+       && arg.uplo_option == 'U')
+        testing_ormtr_unmtr_bad_arg<rocblas_float_complex>();
 
-  testing_ormtr_unmtr<rocblas_float_complex>(arg);
+    testing_ormtr_unmtr<rocblas_float_complex>(arg);
 }
 
-TEST_P(UNMTR, __double_complex) {
-  Arguments arg = ormtr_setup_arguments(GetParam());
+TEST_P(UNMTR, __double_complex)
+{
+    Arguments arg = ormtr_setup_arguments(GetParam());
 
-  if (arg.M == 0 && arg.N == 1 && arg.side_option == 'L' &&
-      arg.transA_option == 'T' && arg.uplo_option == 'U')
-    testing_ormtr_unmtr_bad_arg<rocblas_double_complex>();
+    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
+       && arg.uplo_option == 'U')
+        testing_ormtr_unmtr_bad_arg<rocblas_double_complex>();
 
-  testing_ormtr_unmtr<rocblas_double_complex>(arg);
+    testing_ormtr_unmtr<rocblas_double_complex>(arg);
 }
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, ORMTR,
-                         Combine(ValuesIn(large_size_range), ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, ORMTR, Combine(ValuesIn(large_size_range), ValuesIn(store)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORMTR,
-                         Combine(ValuesIn(size_range), ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORMTR, Combine(ValuesIn(size_range), ValuesIn(store)));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, UNMTR,
-                         Combine(ValuesIn(large_size_range), ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, UNMTR, Combine(ValuesIn(large_size_range), ValuesIn(store)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNMTR,
-                         Combine(ValuesIn(size_range), ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNMTR, Combine(ValuesIn(size_range), ValuesIn(store)));

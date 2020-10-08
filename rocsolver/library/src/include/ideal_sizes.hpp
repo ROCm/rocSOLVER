@@ -27,9 +27,8 @@
 #define GETRF_GETF2_SWITCHSIZE 64
 #define GETF2_MAX_THDS 256
 #define GETRF_GETF2_BLOCKSIZE 64
-#define GETF2_OPTIM_NGRP                                                       \
-  16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, \
-      2, 2, 2, 2, 2, 2, 2
+#define GETF2_OPTIM_NGRP \
+    16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
 #define GETF2_BATCH_OPTIM_MAX_SIZE 2048
 #define GETF2_OPTIM_MAX_SIZE 1024
 
