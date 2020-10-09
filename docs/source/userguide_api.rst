@@ -16,7 +16,7 @@ rocSOLVER Types
 -----------------
 
 Most rocSOLVER types are aliases of rocBLAS types.
-See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html>`_.
+See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_.
 
 rocsolver_int
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -988,7 +988,7 @@ Auxiliary Functions
 ---------------------
 
 rocSOLVER auxiliary functions are aliases of rocBLAS auxiliary functions.
-See the `rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/api.html#auxiliary>`_.
+See the `rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/functions.html#auxiliary>`_.
 
 rocsolver_create_handle()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
