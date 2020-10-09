@@ -111,6 +111,9 @@ if( NOT ROCM_PATH )
   set( ROCM_PATH /opt/rocm )
 endif( )
 
+# CMake list of machine targets
+set( AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific machine types for library to target" )
+
 find_package( ROCM CONFIG QUIET PATHS ${ROCM_PATH} )
 if( NOT ROCM_FOUND )
   set( rocm_cmake_tag "master" CACHE STRING "rocm-cmake tag to download" )
@@ -197,9 +200,6 @@ endif( )
 find_package( rocblas REQUIRED CONFIG PATHS ${ROCM_PATH} )
 include_directories( ${rocblas_INCLUDE_DIR} )
 
-
-# CMake list of machine targets
-set( AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific machine types for library to target" )
 
 add_subdirectory( rocsolver/library )
 
