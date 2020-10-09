@@ -167,7 +167,7 @@ install_msgpack_from_source( )
       cd "${build_dir}/deps"
       git clone -b cpp-3.0.1 https://github.com/msgpack/msgpack-c.git
       cd msgpack-c
-      ${cmake_executable} -DMSGPACK_BUILD_TESTS=OFF .
+      CXX=${cxx} CC=${cc} ${cmake_executable} -DMSGPACK_BUILD_TESTS=OFF .
       make
       elevate_if_not_root make install
       popd
@@ -426,6 +426,22 @@ case "${ID}" in
   ;;
 esac
 
+if [[ "${build_hcc}" == false ]]; then
+  cxx="hipcc"
+  cc="hipcc"
+else
+  cxx="hcc"
+  cc="hcc"
+fi
+
+# We append customary rocm path; if user provides custom rocm path in ${path}, our
+# hard-coded path has lesser priority
+if [[ "${build_hcc}" == false ]]; then
+  export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}"
+else
+  export PATH="${PATH}:${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/hcc/bin"
+fi
+
 # #################################################
 # dependencies
 # #################################################
@@ -437,19 +453,11 @@ if [[ "${install_dependencies}" == true ]]; then
     pushd .
     printf "\033[32mBuilding \033[33mgoogletest & lapack\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
     mkdir -p "${build_dir}/deps" && cd "${build_dir}/deps"
-    ${cmake_executable} -lpthread -DBUILD_BOOST=OFF "${main}/rocblascommon/deps"
+    CXX=${cxx} CC=${cc} ${cmake_executable} -lpthread -DBUILD_BOOST=OFF "${main}/rocblascommon/deps"
     make -j$(nproc)
     elevate_if_not_root make install
     popd
   fi
-fi
-
-# We append customary rocm path; if user provides custom rocm path in ${path}, our
-# hard-coded path has lesser priority
-if [[ "${build_hcc}" == false ]]; then
-  export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}"
-else
-  export PATH="${PATH}:${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/hcc/bin"
 fi
 
 # #################################################
@@ -506,11 +514,6 @@ if [[ "${build_relocatable}" == true ]]; then
     cmake_common_options="${cmake_common_options} -DROCM_DISABLE_LDCONFIG=ON"
 fi
 
-compiler="hipcc"
-if [[ "${build_hcc}" == true ]]; then
-  compiler="hcc"
-fi
-
 case "${ID}" in
   centos|rhel)
     if [[ ( "${VERSION_ID}" -ge 7 ) ]]; then
@@ -519,7 +522,7 @@ case "${ID}" in
     ;;
 esac
 
-CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
+CXX=${cxx} CC=${cc} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
 check_exit_code "$?"
 
 make -j$(nproc) install
