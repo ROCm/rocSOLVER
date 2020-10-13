@@ -5,85 +5,79 @@
 #include "roclapack_gebrd.hpp"
 
 template <typename S, typename T, typename U>
-rocblas_status rocsolver_gebrd_batched_impl(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n, U A,
-    const rocblas_int lda, S *D, const rocblas_stride strideD, S *E,
-    const rocblas_stride strideE, T *tauq, const rocblas_stride strideQ,
-    T *taup, const rocblas_stride strideP, const rocblas_int batch_count) {
-  if (!handle)
-    return rocblas_status_invalid_handle;
+rocblas_status rocsolver_gebrd_batched_impl(rocblas_handle handle,
+                                            const rocblas_int m,
+                                            const rocblas_int n,
+                                            U A,
+                                            const rocblas_int lda,
+                                            S* D,
+                                            const rocblas_stride strideD,
+                                            S* E,
+                                            const rocblas_stride strideE,
+                                            T* tauq,
+                                            const rocblas_stride strideQ,
+                                            T* taup,
+                                            const rocblas_stride strideP,
+                                            const rocblas_int batch_count)
+{
+    if(!handle)
+        return rocblas_status_invalid_handle;
 
-  // logging is missing ???
+    // logging is missing ???
 
-  // argument checking
-  rocblas_status st = rocsolver_gebd2_gebrd_argCheck(m, n, lda, A, D, E, tauq,
-                                                     taup, batch_count);
-  if (st != rocblas_status_continue)
-    return st;
+    // argument checking
+    rocblas_status st = rocsolver_gebd2_gebrd_argCheck(m, n, lda, A, D, E, tauq, taup, batch_count);
+    if(st != rocblas_status_continue)
+        return st;
 
-  rocblas_stride strideA = 0;
-  rocblas_stride strideX = m * GEBRD_GEBD2_SWITCHSIZE;
-  rocblas_stride strideY = n * GEBRD_GEBD2_SWITCHSIZE;
+    // working with unshifted arrays
+    rocblas_int shiftA = 0;
+    rocblas_int shiftX = 0;
+    rocblas_int shiftY = 0;
 
-  hipStream_t stream;
-  rocblas_get_stream(handle, &stream);
+    // batched execution
+    rocblas_stride strideA = 0;
+    rocblas_stride strideX = m * GEBRD_GEBD2_SWITCHSIZE;
+    rocblas_stride strideY = n * GEBRD_GEBD2_SWITCHSIZE;
 
-  // memory managment
-  size_t size_1; // size of constants
-  size_t size_2; // size of workspace
-  size_t size_3; // size of array of pointers to workspace
-  size_t size_4; // size of cache for norms and diag elements
-  size_t size_5; // size of matrix X
-  size_t size_6; // size of matrix Y
-  rocsolver_gebrd_getMemorySize<T, true>(m, n, batch_count, &size_1, &size_2,
-                                         &size_3, &size_4, &size_5, &size_6);
+    // memory workspace sizes:
+    // size for constants in rocblas calls
+    size_t size_scalars;
+    // size of arrays of pointers (for batched cases) and re-usable workspace
+    size_t size_work_workArr;
+    // extra requirements for calling GEDB2 and LABRD
+    size_t size_Abyx_norms;
+    // size for temporary resulting orthogonal matrices when calling LABRD
+    size_t size_X;
+    size_t size_Y;
+    rocsolver_gebrd_getMemorySize<T, true>(m, n, batch_count, &size_scalars, &size_work_workArr,
+                                           &size_Abyx_norms, &size_X, &size_Y);
 
-  // (TODO) MEMORY SIZE QUERIES AND ALLOCATIONS TO BE DONE WITH ROCBLAS HANDLE
-  void *scalars, *work, *workArr, *diag, *X, *Y, *XArr, *YArr;
-  hipMalloc(&scalars, size_1);
-  hipMalloc(&work, size_2);
-  hipMalloc(&workArr, size_3);
-  hipMalloc(&diag, size_4);
-  hipMalloc(&X, size_5);
-  hipMalloc(&Y, size_6);
-  if (!scalars || (size_2 && !work) || (size_3 && !workArr) ||
-      (size_4 && !diag) || (size_5 && !X) || (size_6 && !Y))
-    return rocblas_status_memory_error;
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_workArr,
+                                                      size_Abyx_norms, size_X, size_Y);
 
-  rocblas_int blocks = (batch_count - 1) / 32 + 1;
-  hipMalloc(&XArr, sizeof(T *) * batch_count);
-  hipMalloc(&YArr, sizeof(T *) * batch_count);
-  hipLaunchKernelGGL(get_array, dim3(blocks, 1, 1), dim3(32, 1, 1), 0, stream,
-                     (T **)XArr, (T *)X, strideX, batch_count);
-  hipLaunchKernelGGL(get_array, dim3(blocks, 1, 1), dim3(32, 1, 1), 0, stream,
-                     (T **)YArr, (T *)Y, strideY, batch_count);
+    // memory workspace allocation
+    void *scalars, *work_workArr, *Abyx_norms, *X, *Y;
+    rocblas_device_malloc mem(handle, size_scalars, size_work_workArr, size_Abyx_norms, size_X,
+                              size_Y);
 
-  // scalar constants for rocblas functions calls
-  // (to standarize and enable re-use, size_1 always equals 3*sizeof(T))
-  T sca[] = {-1, 0, 1};
-  RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_1, hipMemcpyHostToDevice));
+    if(!mem)
+        return rocblas_status_memory_error;
 
-  // execution
-  rocblas_status status = rocsolver_gebrd_template<true, false, S, T>(
-      handle, m, n, A,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      lda, strideA, D, strideD, E, strideE, tauq, strideQ, taup, strideP,
-      (U)XArr,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      m, strideX, (U)YArr,
-      0, // the matrix is shifted 0 entries (will work on the entire matrix)
-      n, strideY, batch_count, (T *)scalars, (T *)work, (T **)workArr,
-      (T *)diag);
+    scalars = mem[0];
+    work_workArr = mem[1];
+    Abyx_norms = mem[2];
+    X = mem[3];
+    Y = mem[4];
+    T sca[] = {-1, 0, 1};
+    RETURN_IF_HIP_ERROR(hipMemcpy((T*)scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
-  hipFree(scalars);
-  hipFree(work);
-  hipFree(workArr);
-  hipFree(diag);
-  hipFree(X);
-  hipFree(Y);
-  hipFree(XArr);
-  hipFree(YArr);
-  return status;
+    // execution
+    return rocsolver_gebrd_template<true, false, S, T>(
+        handle, m, n, A, shiftA, lda, strideA, D, strideD, E, strideE, tauq, strideQ, taup, strideP,
+        (T*)X, shiftX, m, strideX, (T*)Y, shiftY, n, strideY, batch_count, (T*)scalars,
+        work_workArr, (T*)Abyx_norms);
 }
 
 /*
@@ -94,50 +88,80 @@ rocblas_status rocsolver_gebrd_batched_impl(
 
 extern "C" {
 
-rocblas_status rocsolver_sgebrd_batched(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    float *const A[], const rocblas_int lda, float *D,
-    const rocblas_stride strideD, float *E, const rocblas_stride strideE,
-    float *tauq, const rocblas_stride strideQ, float *taup,
-    const rocblas_stride strideP, const rocblas_int batch_count) {
-  return rocsolver_gebrd_batched_impl<float, float>(
-      handle, m, n, A, lda, D, strideD, E, strideE, tauq, strideQ, taup,
-      strideP, batch_count);
+rocblas_status rocsolver_sgebrd_batched(rocblas_handle handle,
+                                        const rocblas_int m,
+                                        const rocblas_int n,
+                                        float* const A[],
+                                        const rocblas_int lda,
+                                        float* D,
+                                        const rocblas_stride strideD,
+                                        float* E,
+                                        const rocblas_stride strideE,
+                                        float* tauq,
+                                        const rocblas_stride strideQ,
+                                        float* taup,
+                                        const rocblas_stride strideP,
+                                        const rocblas_int batch_count)
+{
+    return rocsolver_gebrd_batched_impl<float, float>(handle, m, n, A, lda, D, strideD, E, strideE,
+                                                      tauq, strideQ, taup, strideP, batch_count);
 }
 
-rocblas_status rocsolver_dgebrd_batched(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    double *const A[], const rocblas_int lda, double *D,
-    const rocblas_stride strideD, double *E, const rocblas_stride strideE,
-    double *tauq, const rocblas_stride strideQ, double *taup,
-    const rocblas_stride strideP, const rocblas_int batch_count) {
-  return rocsolver_gebrd_batched_impl<double, double>(
-      handle, m, n, A, lda, D, strideD, E, strideE, tauq, strideQ, taup,
-      strideP, batch_count);
+rocblas_status rocsolver_dgebrd_batched(rocblas_handle handle,
+                                        const rocblas_int m,
+                                        const rocblas_int n,
+                                        double* const A[],
+                                        const rocblas_int lda,
+                                        double* D,
+                                        const rocblas_stride strideD,
+                                        double* E,
+                                        const rocblas_stride strideE,
+                                        double* tauq,
+                                        const rocblas_stride strideQ,
+                                        double* taup,
+                                        const rocblas_stride strideP,
+                                        const rocblas_int batch_count)
+{
+    return rocsolver_gebrd_batched_impl<double, double>(handle, m, n, A, lda, D, strideD, E, strideE,
+                                                        tauq, strideQ, taup, strideP, batch_count);
 }
 
-rocblas_status rocsolver_cgebrd_batched(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    rocblas_float_complex *const A[], const rocblas_int lda, float *D,
-    const rocblas_stride strideD, float *E, const rocblas_stride strideE,
-    rocblas_float_complex *tauq, const rocblas_stride strideQ,
-    rocblas_float_complex *taup, const rocblas_stride strideP,
-    const rocblas_int batch_count) {
-  return rocsolver_gebrd_batched_impl<float, rocblas_float_complex>(
-      handle, m, n, A, lda, D, strideD, E, strideE, tauq, strideQ, taup,
-      strideP, batch_count);
+rocblas_status rocsolver_cgebrd_batched(rocblas_handle handle,
+                                        const rocblas_int m,
+                                        const rocblas_int n,
+                                        rocblas_float_complex* const A[],
+                                        const rocblas_int lda,
+                                        float* D,
+                                        const rocblas_stride strideD,
+                                        float* E,
+                                        const rocblas_stride strideE,
+                                        rocblas_float_complex* tauq,
+                                        const rocblas_stride strideQ,
+                                        rocblas_float_complex* taup,
+                                        const rocblas_stride strideP,
+                                        const rocblas_int batch_count)
+{
+    return rocsolver_gebrd_batched_impl<float, rocblas_float_complex>(
+        handle, m, n, A, lda, D, strideD, E, strideE, tauq, strideQ, taup, strideP, batch_count);
 }
 
-rocblas_status rocsolver_zgebrd_batched(
-    rocblas_handle handle, const rocblas_int m, const rocblas_int n,
-    rocblas_double_complex *const A[], const rocblas_int lda, double *D,
-    const rocblas_stride strideD, double *E, const rocblas_stride strideE,
-    rocblas_double_complex *tauq, const rocblas_stride strideQ,
-    rocblas_double_complex *taup, const rocblas_stride strideP,
-    const rocblas_int batch_count) {
-  return rocsolver_gebrd_batched_impl<double, rocblas_double_complex>(
-      handle, m, n, A, lda, D, strideD, E, strideE, tauq, strideQ, taup,
-      strideP, batch_count);
+rocblas_status rocsolver_zgebrd_batched(rocblas_handle handle,
+                                        const rocblas_int m,
+                                        const rocblas_int n,
+                                        rocblas_double_complex* const A[],
+                                        const rocblas_int lda,
+                                        double* D,
+                                        const rocblas_stride strideD,
+                                        double* E,
+                                        const rocblas_stride strideE,
+                                        rocblas_double_complex* tauq,
+                                        const rocblas_stride strideQ,
+                                        rocblas_double_complex* taup,
+                                        const rocblas_stride strideP,
+                                        const rocblas_int batch_count)
+{
+    return rocsolver_gebrd_batched_impl<double, rocblas_double_complex>(
+        handle, m, n, A, lda, D, strideD, E, strideE, tauq, strideQ, taup, strideP, batch_count);
 }
 
 } // extern C

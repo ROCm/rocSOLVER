@@ -16,38 +16,37 @@
 // laswp
 #define LASWP_BLOCKSIZE 256
 
-// ormqr/orm2r & ormlq_orml2
-#define ORMQR_ORM2R_BLOCKSIZE 32
-#define ORMLQ_ORML2_BLOCKSIZE 32
+// orgxx/ungxx
+#define ORGxx_UNGxx_SWITCHSIZE 128
+#define ORGxx_UNGxx_BLOCKSIZE 64
+
+// ormxx/unmxx
+#define ORMxx_ORMxx_BLOCKSIZE 32
 
 // getf2/getfr
 #define GETRF_GETF2_SWITCHSIZE 64
 #define GETF2_MAX_THDS 256
 #define GETRF_GETF2_BLOCKSIZE 64
-#define GETF2_OPTIM_NGRP                                                       \
-  16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, \
-      2, 2, 2, 2, 2, 2, 2
+#define GETF2_OPTIM_NGRP \
+    16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
 #define GETF2_BATCH_OPTIM_MAX_SIZE 2048
 #define GETF2_OPTIM_MAX_SIZE 1024
 
 // getri
 #define GETRI_SWITCHSIZE_MID 64
-#define GETRI_SWITCHSIZE_LARGE 64
+#define GETRI_SWITCHSIZE_LARGE 320
 #define GETRI_BLOCKSIZE 64
-#define TRTRI_SWITCHSIZE_MID 128
-#define TRTRI_SWITCHSIZE_LARGE 512
-#define TRTRI_BLOCKSIZE 128
 
 // potf2/potrf
 #define POTRF_POTF2_SWITCHSIZE 64
 
-// geqr2/geqrf
-#define GEQRF_GEQR2_SWITCHSIZE 128
-#define GEQRF_GEQR2_BLOCKSIZE 64
+// geqx2/geqxf
+#define GEQxF_GEQx2_SWITCHSIZE 128
+#define GEQxF_GEQx2_BLOCKSIZE 64
 
-// geql2/geqlf
-#define GEQLF_GEQL2_SWITCHSIZE 128
-#define GEQLF_GEQL2_BLOCKSIZE 64
+// gexq2/gexqf
+#define GExQF_GExQ2_SWITCHSIZE 128
+#define GExQF_GExQ2_BLOCKSIZE 64
 
 // gebd2/gebrd
 #define GEBRD_GEBD2_SWITCHSIZE 32

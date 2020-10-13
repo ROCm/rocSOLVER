@@ -153,7 +153,7 @@ message (STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
 # keeping versioning according to ROCm release
-set ( VERSION_STRING "3.9.0" )
+set ( VERSION_STRING "3.10.0" )
 rocm_setup_version( VERSION ${VERSION_STRING} )
 
 # NOTE:  workaround until hcc & hip cmake modules fixes symlink logic in their config files; remove when fixed
@@ -168,6 +168,11 @@ else( )
 endif( )
 set( ARMOR_LEVEL "${DEFAULT_ARMOR_LEVEL}" CACHE STRING "Enables increasingly expensive runtime correctness checks" )
 include( armor-config )
+
+# set the optimization level for debug mode
+if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
+  add_compile_options( -O0 )
+endif( )
 
 # BUILD_SHARED_LIBS is a cmake built-in; we make it an explicit option such that it shows in cmake-gui
 option( BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON )

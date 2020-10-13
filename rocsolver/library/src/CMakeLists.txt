@@ -41,12 +41,18 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_orgqr_ungqr.cpp
   auxiliary/rocauxiliary_orgl2_ungl2.cpp
   auxiliary/rocauxiliary_orglq_unglq.cpp
+  auxiliary/rocauxiliary_org2l_ung2l.cpp
+  auxiliary/rocauxiliary_orgql_ungql.cpp
   auxiliary/rocauxiliary_orgbr_ungbr.cpp
+  auxiliary/rocauxiliary_orgtr_ungtr.cpp
   auxiliary/rocauxiliary_orm2r_unm2r.cpp
   auxiliary/rocauxiliary_ormqr_unmqr.cpp
   auxiliary/rocauxiliary_orml2_unml2.cpp
   auxiliary/rocauxiliary_ormlq_unmlq.cpp
+  auxiliary/rocauxiliary_orm2l_unm2l.cpp
+  auxiliary/rocauxiliary_ormql_unmql.cpp
   auxiliary/rocauxiliary_ormbr_unmbr.cpp
+  auxiliary/rocauxiliary_ormtr_unmtr.cpp
   # bidiagonal matrices and svd
   auxiliary/rocauxiliary_bdsqr.cpp
   auxiliary/rocauxiliary_labrd.cpp

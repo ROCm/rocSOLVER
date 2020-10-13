@@ -67,9 +67,8 @@ Options:
 EOF
 }
 
-#Adding pre-commit hook
-/bin/ln -fs ../../.githooks/pre-commit "$(dirname "$0")/.git/hooks/"
-
+# Find project root directory
+main=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
 # true is a system command that completes successfully, function returns success
@@ -168,7 +167,7 @@ install_msgpack_from_source( )
       cd "${build_dir}/deps"
       git clone -b cpp-3.0.1 https://github.com/msgpack/msgpack-c.git
       cd msgpack-c
-      ${cmake_executable} -DMSGPACK_BUILD_TESTS=OFF .
+      CXX=${cxx} CC=${cc} ${cmake_executable} -DMSGPACK_BUILD_TESTS=OFF -DMSGPACK_BUILD_EXAMPLES=OFF .
       make
       elevate_if_not_root make install
       popd
@@ -427,7 +426,23 @@ case "${ID}" in
   ;;
 esac
 
-main=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+if [[ "${build_hcc}" == false ]]; then
+  cxx="hipcc"
+  cc="hipcc"
+  fc="gfortran"
+else
+  cxx="hcc"
+  cc="hcc"
+  fc="gfortran"
+fi
+
+# We append customary rocm path; if user provides custom rocm path in ${path}, our
+# hard-coded path has lesser priority
+if [[ "${build_hcc}" == false ]]; then
+  export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}"
+else
+  export PATH="${PATH}:${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/hcc/bin"
+fi
 
 # #################################################
 # dependencies
@@ -440,19 +455,11 @@ if [[ "${install_dependencies}" == true ]]; then
     pushd .
     printf "\033[32mBuilding \033[33mgoogletest & lapack\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
     mkdir -p "${build_dir}/deps" && cd "${build_dir}/deps"
-    ${cmake_executable} -lpthread -DBUILD_BOOST=OFF "${main}/rocblascommon/deps"
+    CXX=${cxx} CC=${cc} FC=${fc} ${cmake_executable} -lpthread -DBUILD_BOOST=OFF "${main}/rocblascommon/deps"
     make -j$(nproc)
     elevate_if_not_root make install
     popd
   fi
-fi
-
-# We append customary rocm path; if user provides custom rocm path in ${path}, our
-# hard-coded path has lesser priority
-if [[ "${build_hcc}" == false ]]; then
-  export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}"
-else
-  export PATH="${PATH}:${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/hcc/bin"
 fi
 
 # #################################################
@@ -467,10 +474,14 @@ mkdir -p "$build_dir"
 # build documentation
 if [[ "${build_docs}" == true ]]; then
   container_name="build_$(head -c 10 /dev/urandom | base32)"
-  docs_build_command='cp -r /mnt/rocsolver /home/docs/ && cd /home/docs/rocsolver/rocsolver/docs && ./run_doc.sh'
+  docs_build_command='cp -r /mnt/rocsolver /home/docs/ && /home/docs/rocsolver/docs/run_doc.sh'
   docker build -t rocsolver:docs -f docker/dockerfile-docs .
   docker run -v "$main:/mnt/rocsolver:ro" --name "$container_name" rocsolver:docs /bin/sh -c "$docs_build_command"
-  docker cp "$container_name:/home/docs/rocsolver/rocsolver/docs/build" "$build_dir/docs"
+  docker cp "$container_name:/home/docs/rocsolver/docs/build" "$main/docs/"
+  docker cp "$container_name:/home/docs/rocsolver/docs/docBin" "$main/docs/"
+  mkdir -p "$build_dir/docs"
+  ln -sr "$main/docs/docBin" "$build_dir/docs/doxygen"
+  ln -sr "$main/docs/build" "$build_dir/docs/sphinx"
   exit
 fi
 
@@ -505,11 +516,6 @@ if [[ "${build_relocatable}" == true ]]; then
     cmake_common_options="${cmake_common_options} -DROCM_DISABLE_LDCONFIG=ON"
 fi
 
-compiler="hipcc"
-if [[ "${build_hcc}" == true ]]; then
-  compiler="hcc"
-fi
-
 case "${ID}" in
   centos|rhel)
     if [[ ( "${VERSION_ID}" -ge 7 ) ]]; then
@@ -518,7 +524,7 @@ case "${ID}" in
     ;;
 esac
 
-CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
+CXX=${cxx} CC=${cc} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
 check_exit_code "$?"
 
 make -j$(nproc) install
