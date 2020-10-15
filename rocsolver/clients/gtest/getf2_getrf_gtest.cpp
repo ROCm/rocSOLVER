@@ -67,8 +67,8 @@ Arguments getrf_setup_arguments(getrf_tuple tup)
     arg.N = n_size;
     arg.lda = matrix_size[1];
 
-  arg.timing = 0;
-  arg.singular = matrix_size[2];
+    arg.timing = 0;
+    arg.singular = matrix_size[2];
 
     // only testing standard use case for strides
     // strides are ignored in normal and batched tests
@@ -118,9 +118,9 @@ TEST_P(GETF2_NPVT, __float)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, false, 0, float>();
 
-  arg.batch_count = 1;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, false, 0, float>(arg);
+    arg.batch_count = 1;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, false, 0, float>(arg);
 }
 
 TEST_P(GETF2_NPVT, __double)
@@ -130,9 +130,9 @@ TEST_P(GETF2_NPVT, __double)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, false, 0, double>();
 
-  arg.batch_count = 1;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, false, 0, double>(arg);
+    arg.batch_count = 1;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, false, 0, double>(arg);
 }
 
 TEST_P(GETF2_NPVT, __float_complex)
@@ -142,9 +142,9 @@ TEST_P(GETF2_NPVT, __float_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, false, 0, rocblas_float_complex>();
 
-  arg.batch_count = 1;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, false, 0, rocblas_float_complex>(arg);
+    arg.batch_count = 1;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, false, 0, rocblas_float_complex>(arg);
 }
 
 TEST_P(GETF2_NPVT, __double_complex)
@@ -154,9 +154,9 @@ TEST_P(GETF2_NPVT, __double_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, false, 0, rocblas_double_complex>();
 
-  arg.batch_count = 1;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, false, 0, rocblas_double_complex>(arg);
+    arg.batch_count = 1;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, false, 0, rocblas_double_complex>(arg);
 }
 
 TEST_P(GETRF_NPVT, __float)
@@ -166,9 +166,9 @@ TEST_P(GETRF_NPVT, __float)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, false, 1, float>();
 
-  arg.batch_count = 1;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, false, 1, float>(arg);
+    arg.batch_count = 1;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, false, 1, float>(arg);
 }
 
 TEST_P(GETRF_NPVT, __double)
@@ -178,9 +178,9 @@ TEST_P(GETRF_NPVT, __double)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, false, 1, double>();
 
-  arg.batch_count = 1;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, false, 1, double>(arg);
+    arg.batch_count = 1;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, false, 1, double>(arg);
 }
 
 TEST_P(GETRF_NPVT, __float_complex)
@@ -190,9 +190,9 @@ TEST_P(GETRF_NPVT, __float_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, false, 1, rocblas_float_complex>();
 
-  arg.batch_count = 1;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, false, 1, rocblas_float_complex>(arg);
+    arg.batch_count = 1;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, false, 1, rocblas_float_complex>(arg);
 }
 
 TEST_P(GETRF_NPVT, __double_complex)
@@ -202,9 +202,9 @@ TEST_P(GETRF_NPVT, __double_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, false, 1, rocblas_double_complex>();
 
-  arg.batch_count = 1;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, false, 1, rocblas_double_complex>(arg);
+    arg.batch_count = 1;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, false, 1, rocblas_double_complex>(arg);
 }
 
 TEST_P(GETF2, __float)
@@ -214,12 +214,12 @@ TEST_P(GETF2, __float)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, false, 0, float>();
 
-  arg.batch_count = 1;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, false, 0, float>(arg);
+    arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 0, float>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, false, 0, float>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, false, 0, float>(arg);
 }
 
 TEST_P(GETF2, __double)
@@ -229,12 +229,12 @@ TEST_P(GETF2, __double)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, false, 0, double>();
 
-  arg.batch_count = 1;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, false, 0, double>(arg);
+    arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 0, double>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, false, 0, double>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, false, 0, double>(arg);
 }
 
 TEST_P(GETF2, __float_complex)
@@ -244,12 +244,12 @@ TEST_P(GETF2, __float_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, false, 0, rocblas_float_complex>();
 
-  arg.batch_count = 1;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, false, 0, rocblas_float_complex>(arg);
+    arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 0, rocblas_float_complex>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, false, 0, rocblas_float_complex>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, false, 0, rocblas_float_complex>(arg);
 }
 
 TEST_P(GETF2, __double_complex)
@@ -259,12 +259,12 @@ TEST_P(GETF2, __double_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, false, 0, rocblas_double_complex>();
 
-  arg.batch_count = 1;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, false, 0, rocblas_double_complex>(arg);
+    arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 0, rocblas_double_complex>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, false, 0, rocblas_double_complex>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, false, 0, rocblas_double_complex>(arg);
 }
 
 TEST_P(GETRF, __float)
@@ -274,12 +274,12 @@ TEST_P(GETRF, __float)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, false, 1, float>();
 
-  arg.batch_count = 1;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, false, 1, float>(arg);
+    arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 1, float>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, false, 1, float>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, false, 1, float>(arg);
 }
 
 TEST_P(GETRF, __double)
@@ -289,12 +289,12 @@ TEST_P(GETRF, __double)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, false, 1, double>();
 
-  arg.batch_count = 1;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, false, 1, double>(arg);
+    arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 1, double>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, false, 1, double>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, false, 1, double>(arg);
 }
 
 TEST_P(GETRF, __float_complex)
@@ -304,12 +304,12 @@ TEST_P(GETRF, __float_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, false, 1, rocblas_float_complex>();
 
-  arg.batch_count = 1;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, false, 1, rocblas_float_complex>(arg);
+    arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 1, rocblas_float_complex>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, false, 1, rocblas_float_complex>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, false, 1, rocblas_float_complex>(arg);
 }
 
 TEST_P(GETRF, __double_complex)
@@ -319,12 +319,12 @@ TEST_P(GETRF, __double_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, false, 1, rocblas_double_complex>();
 
-  arg.batch_count = 1;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, false, 1, rocblas_double_complex>(arg);
+    arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 1, rocblas_double_complex>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, false, 1, rocblas_double_complex>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, false, 1, rocblas_double_complex>(arg);
 }
 
 // batched tests
@@ -335,9 +335,9 @@ TEST_P(GETF2_NPVT, batched__float)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<true, true, 0, float>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<true, true, 0, float>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<true, true, 0, float>(arg);
 }
 
 TEST_P(GETF2_NPVT, batched__double)
@@ -347,9 +347,9 @@ TEST_P(GETF2_NPVT, batched__double)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<true, true, 0, double>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<true, true, 0, double>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<true, true, 0, double>(arg);
 }
 
 TEST_P(GETF2_NPVT, batched__float_complex)
@@ -359,9 +359,9 @@ TEST_P(GETF2_NPVT, batched__float_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<true, true, 0, rocblas_float_complex>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<true, true, 0, rocblas_float_complex>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<true, true, 0, rocblas_float_complex>(arg);
 }
 
 TEST_P(GETF2_NPVT, batched__double_complex)
@@ -371,9 +371,9 @@ TEST_P(GETF2_NPVT, batched__double_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<true, true, 0, rocblas_double_complex>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<true, true, 0, rocblas_double_complex>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<true, true, 0, rocblas_double_complex>(arg);
 }
 
 TEST_P(GETRF_NPVT, batched__float)
@@ -383,9 +383,9 @@ TEST_P(GETRF_NPVT, batched__float)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<true, true, 1, float>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<true, true, 1, float>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<true, true, 1, float>(arg);
 }
 
 TEST_P(GETRF_NPVT, batched__double)
@@ -395,9 +395,9 @@ TEST_P(GETRF_NPVT, batched__double)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<true, true, 1, double>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<true, true, 1, double>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<true, true, 1, double>(arg);
 }
 
 TEST_P(GETRF_NPVT, batched__float_complex)
@@ -407,9 +407,9 @@ TEST_P(GETRF_NPVT, batched__float_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<true, true, 1, rocblas_float_complex>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<true, true, 1, rocblas_float_complex>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<true, true, 1, rocblas_float_complex>(arg);
 }
 
 TEST_P(GETRF_NPVT, batched__double_complex)
@@ -419,9 +419,9 @@ TEST_P(GETRF_NPVT, batched__double_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<true, true, 1, rocblas_double_complex>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<true, true, 1, rocblas_double_complex>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<true, true, 1, rocblas_double_complex>(arg);
 }
 
 TEST_P(GETF2, batched__float)
@@ -431,12 +431,12 @@ TEST_P(GETF2, batched__float)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<true, true, 0, float>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<true, true, 0, float>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 0, float>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<true, true, 0, float>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<true, true, 0, float>(arg);
 }
 
 TEST_P(GETF2, batched__double)
@@ -446,12 +446,12 @@ TEST_P(GETF2, batched__double)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<true, true, 0, double>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<true, true, 0, double>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 0, double>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<true, true, 0, double>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<true, true, 0, double>(arg);
 }
 
 TEST_P(GETF2, batched__float_complex)
@@ -461,12 +461,12 @@ TEST_P(GETF2, batched__float_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<true, true, 0, rocblas_float_complex>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<true, true, 0, rocblas_float_complex>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 0, rocblas_float_complex>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<true, true, 0, rocblas_float_complex>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<true, true, 0, rocblas_float_complex>(arg);
 }
 
 TEST_P(GETF2, batched__double_complex)
@@ -476,12 +476,12 @@ TEST_P(GETF2, batched__double_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<true, true, 0, rocblas_double_complex>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<true, true, 0, rocblas_double_complex>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 0, rocblas_double_complex>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<true, true, 0, rocblas_double_complex>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<true, true, 0, rocblas_double_complex>(arg);
 }
 
 TEST_P(GETRF, batched__float)
@@ -491,12 +491,12 @@ TEST_P(GETRF, batched__float)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<true, true, 1, float>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<true, true, 1, float>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 1, float>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<true, true, 1, float>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<true, true, 1, float>(arg);
 }
 
 TEST_P(GETRF, batched__double)
@@ -506,12 +506,12 @@ TEST_P(GETRF, batched__double)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<true, true, 1, double>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<true, true, 1, double>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 1, double>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<true, true, 1, double>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<true, true, 1, double>(arg);
 }
 
 TEST_P(GETRF, batched__float_complex)
@@ -521,12 +521,12 @@ TEST_P(GETRF, batched__float_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<true, true, 1, rocblas_float_complex>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<true, true, 1, rocblas_float_complex>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 1, rocblas_float_complex>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<true, true, 1, rocblas_float_complex>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<true, true, 1, rocblas_float_complex>(arg);
 }
 
 TEST_P(GETRF, batched__double_complex)
@@ -536,12 +536,12 @@ TEST_P(GETRF, batched__double_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<true, true, 1, rocblas_double_complex>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<true, true, 1, rocblas_double_complex>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 1, rocblas_double_complex>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<true, true, 1, rocblas_double_complex>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<true, true, 1, rocblas_double_complex>(arg);
 }
 
 // strided_batched cases
@@ -552,9 +552,9 @@ TEST_P(GETF2_NPVT, strided_batched__float)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, true, 0, float>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, true, 0, float>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, true, 0, float>(arg);
 }
 
 TEST_P(GETF2_NPVT, strided_batched__double)
@@ -564,9 +564,9 @@ TEST_P(GETF2_NPVT, strided_batched__double)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, true, 0, double>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, true, 0, double>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, true, 0, double>(arg);
 }
 
 TEST_P(GETF2_NPVT, strided_batched__float_complex)
@@ -576,9 +576,9 @@ TEST_P(GETF2_NPVT, strided_batched__float_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, true, 0, rocblas_float_complex>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, true, 0, rocblas_float_complex>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, true, 0, rocblas_float_complex>(arg);
 }
 
 TEST_P(GETF2_NPVT, strided_batched__double_complex)
@@ -588,9 +588,9 @@ TEST_P(GETF2_NPVT, strided_batched__double_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, true, 0, rocblas_double_complex>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, true, 0, rocblas_double_complex>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, true, 0, rocblas_double_complex>(arg);
 }
 
 TEST_P(GETRF_NPVT, strided_batched__float)
@@ -600,9 +600,9 @@ TEST_P(GETRF_NPVT, strided_batched__float)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, true, 1, float>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, true, 1, float>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, true, 1, float>(arg);
 }
 
 TEST_P(GETRF_NPVT, strided_batched__double)
@@ -612,9 +612,9 @@ TEST_P(GETRF_NPVT, strided_batched__double)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, true, 1, double>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, true, 1, double>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, true, 1, double>(arg);
 }
 
 TEST_P(GETRF_NPVT, strided_batched__float_complex)
@@ -624,9 +624,9 @@ TEST_P(GETRF_NPVT, strided_batched__float_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, true, 1, rocblas_float_complex>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, true, 1, rocblas_float_complex>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, true, 1, rocblas_float_complex>(arg);
 }
 
 TEST_P(GETRF_NPVT, strided_batched__double_complex)
@@ -636,9 +636,9 @@ TEST_P(GETRF_NPVT, strided_batched__double_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_npvt_bad_arg<false, true, 1, rocblas_double_complex>();
 
-  arg.batch_count = 3;
-  arg.singular = 0;
-  testing_getf2_getrf_npvt<false, true, 1, rocblas_double_complex>(arg);
+    arg.batch_count = 3;
+    arg.singular = 0;
+    testing_getf2_getrf_npvt<false, true, 1, rocblas_double_complex>(arg);
 }
 
 TEST_P(GETF2, strided_batched__float)
@@ -648,12 +648,12 @@ TEST_P(GETF2, strided_batched__float)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, true, 0, float>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, true, 0, float>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 0, float>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, true, 0, float>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, true, 0, float>(arg);
 }
 
 TEST_P(GETF2, strided_batched__double)
@@ -663,12 +663,12 @@ TEST_P(GETF2, strided_batched__double)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, true, 0, double>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, true, 0, double>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 0, double>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, true, 0, double>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, true, 0, double>(arg);
 }
 
 TEST_P(GETF2, strided_batched__float_complex)
@@ -678,12 +678,12 @@ TEST_P(GETF2, strided_batched__float_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, true, 0, rocblas_float_complex>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, true, 0, rocblas_float_complex>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 0, rocblas_float_complex>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, true, 0, rocblas_float_complex>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, true, 0, rocblas_float_complex>(arg);
 }
 
 TEST_P(GETF2, strided_batched__double_complex)
@@ -693,12 +693,12 @@ TEST_P(GETF2, strided_batched__double_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, true, 0, rocblas_double_complex>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, true, 0, rocblas_double_complex>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 0, rocblas_double_complex>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, true, 0, rocblas_double_complex>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, true, 0, rocblas_double_complex>(arg);
 }
 
 TEST_P(GETRF, strided_batched__float)
@@ -708,12 +708,12 @@ TEST_P(GETRF, strided_batched__float)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, true, 1, float>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, true, 1, float>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 1, float>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, true, 1, float>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, true, 1, float>(arg);
 }
 
 TEST_P(GETRF, strided_batched__double)
@@ -723,12 +723,12 @@ TEST_P(GETRF, strided_batched__double)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, true, 1, double>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, true, 1, double>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 1, double>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, true, 1, double>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, true, 1, double>(arg);
 }
 
 TEST_P(GETRF, strided_batched__float_complex)
@@ -738,12 +738,12 @@ TEST_P(GETRF, strided_batched__float_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, true, 1, rocblas_float_complex>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, true, 1, rocblas_float_complex>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 1, rocblas_float_complex>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, true, 1, rocblas_float_complex>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, true, 1, rocblas_float_complex>(arg);
 }
 
 TEST_P(GETRF, strided_batched__double_complex)
@@ -753,12 +753,12 @@ TEST_P(GETRF, strided_batched__double_complex)
     if(arg.M == 0 && arg.N == 0)
         testing_getf2_getrf_bad_arg<false, true, 1, rocblas_double_complex>();
 
-  arg.batch_count = 3;
-  if (arg.singular == 1)
-    testing_getf2_getrf<false, true, 1, rocblas_double_complex>(arg);
+    arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 1, rocblas_double_complex>(arg);
 
-  arg.singular = 0;
-  testing_getf2_getrf<false, true, 1, rocblas_double_complex>(arg);
+    arg.singular = 0;
+    testing_getf2_getrf<false, true, 1, rocblas_double_complex>(arg);
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

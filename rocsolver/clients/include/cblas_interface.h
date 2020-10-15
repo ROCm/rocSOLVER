@@ -124,8 +124,13 @@ void cblas_getrs(rocblas_operation trans,
                  rocblas_int ldb);
 
 template <typename T>
-void cblas_getri(rocblas_int n, T *A, rocblas_int lda, rocblas_int *ipiv,
-                 T *work, rocblas_int *lwork, rocblas_int *info);
+void cblas_getri(rocblas_int n,
+                 T* A,
+                 rocblas_int lda,
+                 rocblas_int* ipiv,
+                 T* work,
+                 rocblas_int* lwork,
+                 rocblas_int* info);
 
 // template <typename T>
 // rocblas_int cblas_potrf(char uplo, rocblas_int m, T *A, rocblas_int lda);
