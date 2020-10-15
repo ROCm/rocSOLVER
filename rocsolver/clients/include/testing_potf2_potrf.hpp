@@ -102,27 +102,31 @@ void potf2_potrf_initData(const rocblas_handle handle, const rocblas_fill uplo,
                           const rocblas_int n, Td &dA, const rocblas_int lda,
                           const rocblas_stride stA, Ud &dInfo,
                           const rocblas_int bc, Th &hA, Th &hATmp, Uh &hInfo,
-                          const bool singular) {
-  if (CPU) {
-    rocblas_init<T>(hATmp, true);
+                          const bool singular) 
+{
+    if (CPU) 
+    {
+        rocblas_init<T>(hATmp, true);
 
-    // make A hermitian and scale to ensure positive definiteness
-    for (rocblas_int b = 0; b < bc; ++b) {
-      // add some singularities
-      // always the same row(s) for debugging purposes
-      if (singular) {
-        rocblas_int i = n / 2;
-        for (rocblas_int j = 0; j < n; j++)
-          hATmp[b][i + j * lda] = 0;
-      }
+        // make A hermitian and scale to ensure positive definiteness
+        for (rocblas_int b = 0; b < bc; ++b) 
+        {
+            // add some singularities
+            // always the same row(s) for debugging purposes
+            if (singular) {
+                rocblas_int i = n / 2;
+                for (rocblas_int j = 0; j < n; j++)
+                    hATmp[b][i + j * lda] = 0;
+            }
 
-      cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose,
-                 n, n, n, (T)1.0, hATmp[b], lda, hATmp[b], lda, (T)0.0, hA[b],
-                 lda);
+            cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose,
+                         n, n, n, (T)1.0, hATmp[b], lda, hATmp[b], lda, (T)0.0, hA[b],
+                         lda);
 
-      if (!singular)
-        for (rocblas_int i = 0; i < n; i++)
-          hA[b][i + i * lda] += 400;
+            if (!singular)
+                for (rocblas_int i = 0; i < n; i++)
+                    hA[b][i + i * lda] += 400;
+        }
     }
 
     if(GPU)

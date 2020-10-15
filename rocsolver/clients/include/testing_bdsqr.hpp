@@ -174,86 +174,99 @@ void bdsqr_getError(const rocblas_handle handle, const rocblas_fill uplo,
                     const rocblas_int ldu, Td &dC, const rocblas_int ldc,
                     Ud &dInfo, Sh &hD, Sh &hDRes, Sh &hE, Sh &hERes, Th &hV,
                     Th &hU, Th &hC, Uh &hInfo, Uh &hInfoRes, double *max_err,
-                    double *max_errv, const bool singular) {
-  using S = decltype(std::real(T{}));
-  std::vector<S> hW(4 * n);
-  std::vector<S> D(nv);
-  std::vector<S> E(nv);
-
-  // input data initialization
-  bdsqr_initData<true, true, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv,
-                                   dU, ldu, dC, ldc, dInfo, hD, hE, hV, hU, hC,
-                                   hInfo, D, E, singular);
-
-  // execute computations
-  // CPU lapack
-  cblas_bdsqr<T>(uplo, n, nv, nu, nc, hD[0], hE[0], hV[0], ldv, hU[0], ldu,
-                 hC[0], ldc, hW.data(), hInfo[0]);
-
-  // GPU lapack
-  CHECK_ROCBLAS_ERROR(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(),
-                                      dE.data(), dV.data(), ldv, dU.data(), ldu,
-                                      dC.data(), ldc, dInfo.data()));
-  CHECK_HIP_ERROR(hDRes.transfer_from(dD));
-  CHECK_HIP_ERROR(hERes.transfer_from(dE));
-  CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
-  if (nv > 0)
-    CHECK_HIP_ERROR(hV.transfer_from(dV));
-  if (nu > 0)
-    CHECK_HIP_ERROR(hU.transfer_from(dU));
-  if (nc > 0)
-    CHECK_HIP_ERROR(hC.transfer_from(dC));
-
-  // error is ||hD - hDRes||
-  // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
-  // IT MIGHT BE REVISITED IN THE FUTURE)
-  double err;
-  T tmp;
-  *max_err = 0;
-  *max_errv = 0;
-  err = norm_error('F', 1, n, 1, hD[0], hDRes[0]);
-  *max_err = err > *max_err ? err : *max_err;
-
-  // if algorithm converged, check the singular vectors if required
-  // otherwise, check E
-  if (hInfo[0][0] > 0) {
-    err = norm_error('F', 1, n - 1, 1, hE[0], hERes[0]);
+                    double *max_errv, const bool singular) 
+{
+    using S = decltype(std::real(T{}));
+    std::vector<S> hW(4 * n);
+    std::vector<S> D(nv);
+    std::vector<S> E(nv);
+  
+    // input data initialization
+    bdsqr_initData<true, true, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv,
+                                     dU, ldu, dC, ldc, dInfo, hD, hE, hV, hU, hC,
+                                     hInfo, D, E, singular);
+  
+    // execute computations
+    // CPU lapack
+    cblas_bdsqr<T>(uplo, n, nv, nu, nc, hD[0], hE[0], hV[0], ldv, hU[0], ldu,
+                   hC[0], ldc, hW.data(), hInfo[0]);
+  
+    // GPU lapack
+    CHECK_ROCBLAS_ERROR(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(),
+                                        dE.data(), dV.data(), ldv, dU.data(), ldu,
+                                        dC.data(), ldc, dInfo.data()));
+    CHECK_HIP_ERROR(hDRes.transfer_from(dD));
+    CHECK_HIP_ERROR(hERes.transfer_from(dE));
+    CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
+    if (nv > 0)
+      CHECK_HIP_ERROR(hV.transfer_from(dV));
+    if (nu > 0)
+      CHECK_HIP_ERROR(hU.transfer_from(dU));
+    if (nc > 0)
+      CHECK_HIP_ERROR(hC.transfer_from(dC));
+  
+    // error is ||hD - hDRes||
+    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
+    // IT MIGHT BE REVISITED IN THE FUTURE)
+    double err;
+    T tmp;
+    *max_err = 0;
+    *max_errv = 0;
+    err = norm_error('F', 1, n, 1, hD[0], hDRes[0]);
     *max_err = err > *max_err ? err : *max_err;
-  }
-
-  else if (nv || nu || nc) {
-    err = 0;
-
-    if (uplo == rocblas_fill_upper) {
-      // check singular vectors implicitely (A'*u_i = s_i*v_i)
-      for (rocblas_int i = 0; i < nv; ++i) {
-        for (rocblas_int j = 0; j < n; ++j) {
-          if (i > 0)
-            tmp = D[i] * hU[0][i + j * ldu] +
-                  E[i - 1] * hU[0][(i - 1) + j * ldu] -
-                  hDRes[0][j] * hV[0][j + i * ldv];
-          else
-            tmp = D[i] * hU[0][i + j * ldu] - hDRes[0][j] * hV[0][j + i * ldv];
-          err += std::abs(tmp) * std::abs(tmp);
+  
+    // if algorithm converged, check the singular vectors if required
+    // otherwise, check E
+    if (hInfo[0][0] > 0) 
+    {
+        err = norm_error('F', 1, n - 1, 1, hE[0], hERes[0]);
+        *max_err = err > *max_err ? err : *max_err;
+    }
+  
+    else if (nv || nu || nc) 
+    {
+        err = 0;
+  
+        if (uplo == rocblas_fill_upper) 
+        {
+            // check singular vectors implicitely (A'*u_i = s_i*v_i)
+            for (rocblas_int i = 0; i < nv; ++i) 
+            {
+                for (rocblas_int j = 0; j < n; ++j) 
+                {
+                    if (i > 0)
+                        tmp = D[i] * hU[0][i + j * ldu] +
+                              E[i - 1] * hU[0][(i - 1) + j * ldu] -
+                              hDRes[0][j] * hV[0][j + i * ldv];
+                    else
+                        tmp = D[i] * hU[0][i + j * ldu] - hDRes[0][j] * hV[0][j + i * ldv];
+                    err += std::abs(tmp) * std::abs(tmp);
+                }
+            }
+        } 
+        else 
+        {
+            // check singular vectors implicitely (A*v_i = s_i*u_i)
+            for (rocblas_int i = 0; i < nv; ++i) 
+            {
+                for (rocblas_int j = 0; j < n; ++j) 
+                {
+                    if (i > 0)
+                        tmp = D[i] * hV[0][j + i * ldv] +
+                              E[i - 1] * hV[0][j + (i - 1) * ldv] -
+                              hDRes[0][j] * hU[0][i + j * ldu];
+                    else
+                        tmp = D[i] * hV[0][j + i * ldv] - hDRes[0][j] * hU[0][i + j * ldu];
+                    err += std::abs(tmp) * std::abs(tmp);
+                }
+            }
         }
-      }
-    } else {
-      // check singular vectors implicitely (A*v_i = s_i*u_i)
-      for (rocblas_int i = 0; i < nv; ++i) {
-        for (rocblas_int j = 0; j < n; ++j) {
-          if (i > 0)
-            tmp = D[i] * hV[0][j + i * ldv] +
-                  E[i - 1] * hV[0][j + (i - 1) * ldv] -
-                  hDRes[0][j] * hU[0][i + j * ldu];
-          else
-            tmp = D[i] * hV[0][j + i * ldv] - hDRes[0][j] * hU[0][i + j * ldu];
-          err += std::abs(tmp) * std::abs(tmp);
-        }
+         
         double normD = double(snorm('F', 1, n, D.data(), 1));
         double normE = double(snorm('F', 1, n - 1, E.data(), 1));
         err = std::sqrt(err) / std::sqrt(normD * normD + normE * normE);
         *max_errv = err > *max_errv ? err : *max_errv;
-
+  
         // C should be the transpose of U
         if(nc)
         {
@@ -270,16 +283,15 @@ void bdsqr_getError(const rocblas_handle handle, const rocblas_fill uplo,
             *max_errv = err > *max_errv ? err : *max_errv;
         }
     }
-
-  // also check info for singularities
-  err = 0;
-  if (hInfo[0][0] < singular) // || hInfo[0][0] != hInfoRes[0][0])
-    err++;
-  *max_err = err > *max_err ? err : *max_err;
+  
+    // also check info for singularities
+    err = 0;
+    if (hInfo[0][0] < singular) // || hInfo[0][0] != hInfoRes[0][0])
+      err++;
+    *max_err = err > *max_err ? err : *max_err;
 }
 
-template <typename T, typename Sd, typename Td, typename Ud, typename Sh,
-          typename Th, typename Uh>
+template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void bdsqr_getPerfData(const rocblas_handle handle, const rocblas_fill uplo,
                        const rocblas_int n, const rocblas_int nv,
                        const rocblas_int nu, const rocblas_int nc, Sd &dD,
@@ -288,72 +300,79 @@ void bdsqr_getPerfData(const rocblas_handle handle, const rocblas_fill uplo,
                        Ud &dInfo, Sh &hD, Sh &hE, Th &hV, Th &hU, Th &hC,
                        Uh &hInfo, double *gpu_time_used, double *cpu_time_used,
                        const rocblas_int hot_calls, const bool perf,
-                       const bool singular) {
-  using S = decltype(std::real(T{}));
-  std::vector<S> hW(4 * n);
-  std::vector<S> D(nv);
-  std::vector<S> E(nv);
+                       const bool singular) 
+{
+    using S = decltype(std::real(T{}));
+    std::vector<S> hW(4 * n);
+    std::vector<S> D(nv);
+    std::vector<S> E(nv);
 
-  if (!perf) {
+    if (!perf) 
+    {
+        bdsqr_initData<true, false, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV,
+                                          ldv, dU, ldu, dC, ldc, dInfo, hD, hE, hV,
+                                          hU, hC, hInfo, D, E, singular);
+
+        // cpu-lapack performance (only if not in perf mode)
+        *cpu_time_used = get_time_us();
+        cblas_bdsqr<T>(uplo, n, nv, nu, nc, hD[0], hE[0], hV[0], ldv, hU[0], ldu,
+                       hC[0], ldc, hW.data(), hInfo[0]);
+        *cpu_time_used = get_time_us() - *cpu_time_used;
+    }
+
     bdsqr_initData<true, false, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV,
                                       ldv, dU, ldu, dC, ldc, dInfo, hD, hE, hV,
                                       hU, hC, hInfo, D, E, singular);
 
-    // cpu-lapack performance (only if not in perf mode)
-    *cpu_time_used = get_time_us();
-    cblas_bdsqr<T>(uplo, n, nv, nu, nc, hD[0], hE[0], hV[0], ldv, hU[0], ldu,
-                   hC[0], ldc, hW.data(), hInfo[0]);
-    *cpu_time_used = get_time_us() - *cpu_time_used;
-  }
+    // cold calls
+    for (int iter = 0; iter < 2; iter++) 
+    {
+        bdsqr_initData<false, true, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV,
+                                          ldv, dU, ldu, dC, ldc, dInfo, hD, hE, hV,
+                                          hU, hC, hInfo, D, E, singular);
 
-  bdsqr_initData<true, false, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV,
-                                    ldv, dU, ldu, dC, ldc, dInfo, hD, hE, hV,
-                                    hU, hC, hInfo, D, E, singular);
+        CHECK_ROCBLAS_ERROR(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(),
+                                            dE.data(), dV.data(), ldv, dU.data(),
+                                            ldu, dC.data(), ldc, dInfo.data()));
+    }
 
-  // cold calls
-  for (int iter = 0; iter < 2; iter++) {
-    bdsqr_initData<false, true, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV,
-                                      ldv, dU, ldu, dC, ldc, dInfo, hD, hE, hV,
-                                      hU, hC, hInfo, D, E, singular);
+    // gpu-lapack performance
+    double start;
+    for (rocblas_int iter = 0; iter < hot_calls; iter++) 
+    {
+        bdsqr_initData<false, true, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV,
+                                          ldv, dU, ldu, dC, ldc, dInfo, hD, hE, hV,
+                                          hU, hC, hInfo, D, E, singular);
 
-    CHECK_ROCBLAS_ERROR(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(),
-                                        dE.data(), dV.data(), ldv, dU.data(),
-                                        ldu, dC.data(), ldc, dInfo.data()));
-  }
-
-  // gpu-lapack performance
-  double start;
-  for (rocblas_int iter = 0; iter < hot_calls; iter++) {
-    bdsqr_initData<false, true, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV,
-                                      ldv, dU, ldu, dC, ldc, dInfo, hD, hE, hV,
-                                      hU, hC, hInfo, D, E, singular);
-
-    start = get_time_us();
-    rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(),
-                    dV.data(), ldv, dU.data(), ldu, dC.data(), ldc,
-                    dInfo.data());
-    *gpu_time_used += get_time_us() - start;
-  }
-  *gpu_time_used /= hot_calls;
+        start = get_time_us();
+        rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(),
+                        dV.data(), ldv, dU.data(), ldu, dC.data(), ldc,
+                        dInfo.data());
+        *gpu_time_used += get_time_us() - start;
+    }
+    *gpu_time_used /= hot_calls;
 }
 
-template <typename T> void testing_bdsqr(Arguments argus) {
-  using S = decltype(std::real(T{}));
+template <typename T> 
+void testing_bdsqr(Arguments argus) 
+{
+    using S = decltype(std::real(T{}));
 
-  // get arguments
-  rocblas_local_handle handle;
-  rocblas_int n = argus.M;
-  rocblas_int nv = argus.N;
-  rocblas_int nu = argus.K;
-  rocblas_int nc = argus.S4;
-  rocblas_int ldv = argus.lda;
-  rocblas_int ldu = argus.ldb;
-  rocblas_int ldc = argus.ldc;
-  char uploC = argus.uplo_option;
-  rocblas_fill uplo = char2rocblas_fill(uploC);
-  rocblas_int hot_calls = argus.iters;
-  rocblas_int nT, nvT = 0, nuT = 0, ncT = 0, lduT = 1, ldcT = 1,
-                  ldvT = 1; // size for testing singular vectors
+    // get arguments
+    rocblas_local_handle handle;
+    rocblas_int n = argus.M;
+    rocblas_int nv = argus.N;
+    rocblas_int nu = argus.K;
+    rocblas_int nc = argus.S4;
+    rocblas_int ldv = argus.lda;
+    rocblas_int ldu = argus.ldb;
+    rocblas_int ldc = argus.ldc;
+    char uploC = argus.uplo_option;
+    rocblas_fill uplo = char2rocblas_fill(uploC);
+    rocblas_int hot_calls = argus.iters;
+
+    // size for testing singular vectors
+    rocblas_int nT, nvT = 0, nuT = 0, ncT = 0, lduT = 1, ldcT = 1, ldvT = 1; 
 
   // check non-supported values
   if (uplo != rocblas_fill_upper && uplo != rocblas_fill_lower) {
