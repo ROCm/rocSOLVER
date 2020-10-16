@@ -134,6 +134,10 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     S s_minone = -1;
 
     rocblas_int jb;
+    
+    // (TODO: When the matrix is detected to be non positive definite, we need to
+    //  prevent TRSM and HERK to modify further the input matrix; ideally with no
+    //  synchronizations.) 
 
     if(uplo == rocblas_fill_upper)
     {

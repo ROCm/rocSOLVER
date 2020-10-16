@@ -114,24 +114,31 @@ void potf2_potrf_initData(const rocblas_handle handle,
     {
         rocblas_init<T>(hATmp, true);
 
-        // make A hermitian and scale to ensure positive definiteness
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            // add some singularities
-            // always the same row(s) for debugging purposes
-            if(singular)
-            {
-                rocblas_int i = n / 2;
-                for(rocblas_int j = 0; j < n; j++)
-                    hATmp[b][i + j * lda] = 0;
-            }
-
+            // make A hermitian and scale to ensure positive definiteness
             cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, n, n,
                        (T)1.0, hATmp[b], lda, hATmp[b], lda, (T)0.0, hA[b], lda);
-
-            if(!singular)
-                for(rocblas_int i = 0; i < n; i++)
-                    hA[b][i + i * lda] += 400;
+            
+            for(rocblas_int i = 0; i < n; i++)
+                hA[b][i + i * lda] += 400;
+            
+            if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
+            {
+                // make some matrices not positive definite
+                // always the same elements for debugging purposes
+                // the algorithm must detect the lower order of the principal minors <= 0
+                // in those matrices in the batch that are non positive definite
+                rocblas_int i = n / 4 + b;
+                i -= (i / n) * n;
+                hA[b][i + i * lda] = 0;
+                i = n / 2 + b;
+                i -= (i / n) * n;
+                hA[b][i + i * lda] = 0;
+                i = n - 1 + b;
+                i -= (i / n) * n;
+                hA[b][i + i * lda] = 0;
+            }
         }
     }
 
@@ -181,22 +188,24 @@ void potf2_potrf_getError(const rocblas_handle handle,
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
     double err;
+    rocblas_int nn;
     *max_err = 0;
-    if(!singular)
+    for(rocblas_int b = 0; b < bc; ++b)
     {
-        for(rocblas_int b = 0; b < bc; ++b)
-        {
-            err = norm_error('F', n, n, lda, hA[b], hARes[b]);
-            *max_err = err > *max_err ? err : *max_err;
-        }
+        nn = hInfoRes[b][0] == 0 ? n : hInfoRes[b][0];
+        // (TODO: For now, the algorithm is modifying the whole input matrix even when 
+        //  it is not positive definite. So we only check the principal nn-by-nn submatrix.
+        //  Once this is corrected, nn could be always equal to n.)
+        err = norm_error('F', nn, nn, lda, hA[b], hARes[b]);
+        *max_err = err > *max_err ? err : *max_err;
     }
 
     // also check info for singularities
     err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
-        if(hInfo[b][0] < singular || hInfo[b][0] != hInfoRes[b][0])
+        if(hInfo[b][0] != hInfoRes[b][0])
             err++;
-    *max_err = err > *max_err ? err : *max_err;
+    *max_err += err;
 }
 
 template <bool STRIDED, bool POTRF, typename T, typename Td, typename Ud, typename Th, typename Uh>

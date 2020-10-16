@@ -14,6 +14,7 @@ using namespace std;
 typedef vector<int> getri_tuple;
 
 // each matrix_size_range vector is a {n, lda, singular}
+// if singular = 1, then the used matrix for the tests is singular
 
 // case when n = 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
@@ -33,7 +34,7 @@ const vector<vector<int>> matrix_size_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range
-    = {{192, 192, 0}, {500, 600, 1}, {640, 640, 0}, {1000, 1024, 1}, {1200, 1230, 0}};
+    = {{192, 192, 1}, {500, 600, 1}, {640, 640, 0}, {1000, 1024, 0}, {1200, 1230, 0}};
 
 Arguments getri_setup_arguments(getri_tuple tup)
 {

@@ -14,6 +14,7 @@ using namespace std;
 typedef std::tuple<vector<int>, char> potrf_tuple;
 
 // each size_range vector is a {N, lda, singular}
+// if singular = 1, then the used matrix for the tests is not positive definite
 
 // each uplo_range is a {uplo}
 

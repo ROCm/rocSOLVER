@@ -154,17 +154,24 @@ void getf2_getrf_initData(const rocblas_handle handle,
                 }
             }
 
-            // add some singularities
-            // always the same row(s) and column(s) for debugging purposes
-            if(singular)
+            if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
             {
-                rocblas_int k = n / 2;
+                // When required, add some singularities
+                // (always the same elements for debugging purposes).
+                // The algorithm must detect the first zero pivot in those
+                // matrices in the batch that are singular
+                rocblas_int j = n / 4 + b;
+                j -= (j / n) * n;
                 for(rocblas_int i = 0; i < m; i++)
-                    hA[b][i + k * lda] = 0;
-
-                k = m / 2;
-                for(rocblas_int j = 0; j < n; j++)
-                    hA[b][k + j * lda] = 0;
+                    hA[b][i + j * lda] = 0;
+                j = n / 2 + b;
+                j -= (j / n) * n;
+                for(rocblas_int i = 0; i < m; i++)
+                    hA[b][i + j * lda] = 0;
+                j = n - 1 + b;
+                j -= (j / n) * n;
+                for(rocblas_int i = 0; i < m; i++)
+                    hA[b][i + j * lda] = 0;
             }
         }
     }
@@ -238,9 +245,9 @@ void getf2_getrf_getError(const rocblas_handle handle,
     // also check info for singularities
     err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
-        if(hInfo[b][0] < singular || hInfo[b][0] != hInfoRes[b][0])
+        if(hInfo[b][0] != hInfoRes[b][0])
             err++;
-    *max_err = err > *max_err ? err : *max_err;
+    *max_err += err;
 }
 
 template <bool STRIDED, bool GETRF, typename T, typename Td, typename Ud, typename Th, typename Uh>

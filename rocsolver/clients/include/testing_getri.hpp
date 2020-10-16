@@ -153,11 +153,20 @@ void getri_initData(const rocblas_handle handle,
             // do the LU decomposition of matrix A w/ the reference LAPACK routine
             cblas_getrf<T>(n, n, hA[b], lda, hIpiv[b], hInfo[b]);
 
-            // add some singularities
-            // always the same element(s) for debugging purposes
-            if(singular)
+            if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
             {
-                rocblas_int i = n / 2;
+                // add some singularities
+                // always the same elements for debugging purposes
+                // the algorithm must detect the first zero pivot in those
+                // matrices in the batch that are singular
+                rocblas_int i = n / 4 + b;
+                i -= (i / n) * n; 
+                hA[b][i + i * lda] = 0;
+                i = n / 2 + b;
+                i -= (i / n) * n; 
+                hA[b][i + i * lda] = 0;
+                i = n - 1 + b;
+                i -= (i / n) * n; 
                 hA[b][i + i * lda] = 0;
             }
         }
@@ -229,9 +238,9 @@ void getri_getError(const rocblas_handle handle,
     // also check info for singularities
     err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
-        if(hInfo[b][0] < singular || hInfo[b][0] != hInfoRes[b][0])
+        if(hInfo[b][0] != hInfoRes[b][0])
             err++;
-    *max_err = err > *max_err ? err : *max_err;
+    *max_err += err;
 }
 
 template <bool STRIDED, typename T, typename Td, typename Ud, typename Th, typename Uh>
