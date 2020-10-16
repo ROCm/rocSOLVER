@@ -1271,6 +1271,9 @@ void zgesvd_(char* jobu,
              double* E,
              int* info);
 
+void ssterf_(int* n, float* D, float* E, int* info);
+void dsterf_(int* n, double* D, double* E, int* info);
+
 #ifdef __cplusplus
 }
 #endif
@@ -4517,4 +4520,19 @@ void cblas_sytd2_hetd2<double, rocblas_double_complex>(rocblas_fill uplo,
     int info;
     char uploC = rocblas2char_fill(uplo);
     zhetd2_(&uploC, &n, A, &lda, D, E, tau, &info);
+}
+
+// sterf
+template <>
+void cblas_sterf<float>(rocblas_int n, float* D, float* E)
+{
+    int info;
+    ssterf_(&n, D, E, &info);
+}
+
+template <>
+void cblas_sterf<double>(rocblas_int n, double* D, double* E)
+{
+    int info;
+    dsterf_(&n, D, E, &info);
 }

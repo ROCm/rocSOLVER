@@ -30,6 +30,7 @@
 #include "testing_ormxl_unmxl.hpp"
 #include "testing_ormxr_unmxr.hpp"
 #include "testing_potf2_potrf.hpp"
+#include "testing_sterf.hpp"
 #include "testing_sytxx_hetxx.hpp"
 #include <boost/program_options.hpp>
 
@@ -1330,6 +1331,15 @@ try
             testing_sytxx_hetxx<false, true, 1, rocblas_float_complex>(argus);
         else if(precision == 'z')
             testing_sytxx_hetxx<false, true, 1, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sterf")
+    {
+        if(precision == 's')
+            testing_sterf<float>(argus);
+        else if(precision == 'd')
+            testing_sterf<double>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
     }
