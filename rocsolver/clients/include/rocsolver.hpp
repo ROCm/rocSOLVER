@@ -1135,13 +1135,13 @@ inline rocblas_status rocsolver_ormtr_unmtr(rocblas_handle handle,
 inline rocblas_status
     rocsolver_sterf(rocblas_handle handle, rocblas_int n, float* D, float* E, rocblas_int* info)
 {
-    return rocblas_status_not_implemented; // rocsolver_ssterf(handle, n, D, E, info);
+    return rocsolver_ssterf(handle, n, D, E, info);
 }
 
 inline rocblas_status
     rocsolver_sterf(rocblas_handle handle, rocblas_int n, double* D, double* E, rocblas_int* info)
 {
-    return rocblas_status_not_implemented; // rocsolver_dsterf(handle, n, D, E, info);
+    return rocsolver_dsterf(handle, n, D, E, info);
 }
 /********************************************************/
 

@@ -56,6 +56,8 @@ set( rocsolver_auxiliary_source
   # bidiagonal matrices and svd
   auxiliary/rocauxiliary_bdsqr.cpp
   auxiliary/rocauxiliary_labrd.cpp
+  # eigensolvers
+  auxiliary/rocauxiliary_sterf.cpp
 )
 
 set( rocsolver_lapack_source

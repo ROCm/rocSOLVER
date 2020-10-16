@@ -329,6 +329,15 @@ rocsolver_<type>unmtr()
    :outline:
 .. doxygenfunction:: rocsolver_cunmtr
 
+Eigensolvers
+--------------------------
+
+rocsolver_<type>sterf()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsterf
+   :outline:
+.. doxygenfunction:: rocsolver_ssterf
+
 
 
 LAPACK Functions
