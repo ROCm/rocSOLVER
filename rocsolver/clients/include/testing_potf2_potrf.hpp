@@ -200,7 +200,7 @@ void potf2_potrf_getError(const rocblas_handle handle,
         *max_err = err > *max_err ? err : *max_err;
     }
 
-    // also check info for singularities
+    // also check info for non positive definite cases
     err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
         if(hInfo[b][0] != hInfoRes[b][0])
