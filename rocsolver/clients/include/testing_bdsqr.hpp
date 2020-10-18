@@ -93,8 +93,6 @@ void testing_bdsqr_bad_arg()
     CHECK_HIP_ERROR(dinfo.memcheck());
 
     // check bad arguments
-//    rocblas_cerr << " " << std::flush; // this is to identify in the output which test
-//        // case is running the bad arguments check.
     bdsqr_checkBadArgs(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(), dV.data(), ldv, dU.data(),
                        ldu, dC.data(), ldc, dinfo.data());
 }
