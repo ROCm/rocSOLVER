@@ -167,13 +167,13 @@ void getf2_getrf_npvt_getError(const rocblas_handle handle,
                                Th& hARes,
                                Uh& hIpiv,
                                Uh& hinfo,
-                               Uh& hInfoRes, 
+                               Uh& hInfoRes,
                                double* max_err,
                                const bool singular)
 {
     // input data initialization
     getf2_getrf_npvt_initData<true, true, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA, hinfo,
-                                            singular);
+                                             singular);
 
     // execute computations
     // GPU lapack
@@ -230,7 +230,7 @@ void getf2_getrf_npvt_getPerfData(const rocblas_handle handle,
 {
     if(!perf)
     {
-        getf2_getrf_npvt_initData<true, false, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA, 
+        getf2_getrf_npvt_initData<true, false, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA,
                                                   singular, hinfo);
 
         // cpu-lapack performance (only if no perf mode)
@@ -243,13 +243,13 @@ void getf2_getrf_npvt_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
 
-    getf2_getrf_npvt_initData<true, false, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA, 
-                                              singular, hinfo);
+    getf2_getrf_npvt_initData<true, false, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA, singular,
+                                              hinfo);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        getf2_getrf_npvt_initData<false, true, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA, 
+        getf2_getrf_npvt_initData<false, true, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA,
                                                   singular, hinfo);
 
         CHECK_ROCBLAS_ERROR(rocsolver_getf2_getrf_npvt(STRIDED, GETRF, handle, m, n, dA.data(), lda,
@@ -260,7 +260,7 @@ void getf2_getrf_npvt_getPerfData(const rocblas_handle handle,
     double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        getf2_getrf_npvt_initData<false, true, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA, 
+        getf2_getrf_npvt_initData<false, true, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA,
                                                   singular, hinfo);
 
         start = get_time_us();
@@ -350,10 +350,9 @@ void testing_getf2_getrf_npvt(Arguments argus)
 
         // collect performance data
         if(argus.timing)
-            getf2_getrf_npvt_getPerfData<STRIDED, GETRF, T>(handle, m, n, dA, lda, stA, dinfo, bc,
-                                                            hA, hIpiv, hinfo, &gpu_time_used,
-                                                            &cpu_time_used, hot_calls, 
-                                                            argus.perf, argus.singular);
+            getf2_getrf_npvt_getPerfData<STRIDED, GETRF, T>(
+                handle, m, n, dA, lda, stA, dinfo, bc, hA, hIpiv, hinfo, &gpu_time_used,
+                &cpu_time_used, hot_calls, argus.perf, argus.singular);
     }
 
     else
@@ -390,10 +389,9 @@ void testing_getf2_getrf_npvt(Arguments argus)
 
         // collect performance data
         if(argus.timing)
-            getf2_getrf_npvt_getPerfData<STRIDED, GETRF, T>(handle, m, n, dA, lda, stA, dinfo, bc,
-                                                            hA, hIpiv, hinfo, &gpu_time_used,
-                                                            &cpu_time_used, hot_calls, 
-                                                            argus.perf, argus.singular);
+            getf2_getrf_npvt_getPerfData<STRIDED, GETRF, T>(
+                handle, m, n, dA, lda, stA, dinfo, bc, hA, hIpiv, hinfo, &gpu_time_used,
+                &cpu_time_used, hot_calls, argus.perf, argus.singular);
     }
 
     // validate results for rocsolver-test

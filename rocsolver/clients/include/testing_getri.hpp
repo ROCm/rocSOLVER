@@ -160,13 +160,13 @@ void getri_initData(const rocblas_handle handle,
                 // the algorithm must detect the first zero pivot in those
                 // matrices in the batch that are singular
                 rocblas_int i = n / 4 + b;
-                i -= (i / n) * n; 
+                i -= (i / n) * n;
                 hA[b][i + i * lda] = 0;
                 i = n / 2 + b;
-                i -= (i / n) * n; 
+                i -= (i / n) * n;
                 hA[b][i + i * lda] = 0;
                 i = n - 1 + b;
-                i -= (i / n) * n; 
+                i -= (i / n) * n;
                 hA[b][i + i * lda] = 0;
             }
         }

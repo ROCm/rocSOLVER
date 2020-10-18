@@ -678,8 +678,8 @@ void testing_gesvd(Arguments argus)
             gesvd_getError<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU, ldu,
                                        stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, leftvT, rightvT,
                                        mT, nT, dUT, lduT, stUT, dVT, ldvT, stVT, hA, hS, hSres, hU,
-                                       Ures, ldures, hV, Vres, ldvres, hE, hEres, hinfo, hinfoRes, &max_error,
-                                       &max_errorv);
+                                       Ures, ldures, hV, Vres, ldvres, hE, hEres, hinfo, hinfoRes,
+                                       &max_error, &max_errorv);
         }
 
         // collect performance data
@@ -720,8 +720,8 @@ void testing_gesvd(Arguments argus)
             gesvd_getError<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU, ldu,
                                        stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, leftvT, rightvT,
                                        mT, nT, dUT, lduT, stUT, dVT, ldvT, stVT, hA, hS, hSres, hU,
-                                       Ures, ldures, hV, Vres, ldvres, hE, hEres, hinfo, hinfoRes, &max_error,
-                                       &max_errorv);
+                                       Ures, ldures, hV, Vres, ldvres, hE, hEres, hinfo, hinfoRes,
+                                       &max_error, &max_errorv);
         }
 
         // collect performance data

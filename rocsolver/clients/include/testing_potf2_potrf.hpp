@@ -119,10 +119,10 @@ void potf2_potrf_initData(const rocblas_handle handle,
             // make A hermitian and scale to ensure positive definiteness
             cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, n, n,
                        (T)1.0, hATmp[b], lda, hATmp[b], lda, (T)0.0, hA[b], lda);
-            
+
             for(rocblas_int i = 0; i < n; i++)
                 hA[b][i + i * lda] += 400;
-            
+
             if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
             {
                 // make some matrices not positive definite
@@ -193,7 +193,7 @@ void potf2_potrf_getError(const rocblas_handle handle,
     for(rocblas_int b = 0; b < bc; ++b)
     {
         nn = hInfoRes[b][0] == 0 ? n : hInfoRes[b][0];
-        // (TODO: For now, the algorithm is modifying the whole input matrix even when 
+        // (TODO: For now, the algorithm is modifying the whole input matrix even when
         //  it is not positive definite. So we only check the principal nn-by-nn submatrix.
         //  Once this is corrected, nn could be always equal to n.)
         err = norm_error('F', nn, nn, lda, hA[b], hARes[b]);

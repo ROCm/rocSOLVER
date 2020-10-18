@@ -136,10 +136,10 @@ void bdsqr_initData(const rocblas_handle handle,
         hD[0][n - 1] -= 4;
 
         // (Forcing non-convergence expecting lapack and rocsolver to give
-        // the same orthogonal equivalent matrix is not possible. Testing 
+        // the same orthogonal equivalent matrix is not possible. Testing
         // implicitly the equivalent matrix is very complicated and it boils
-        // down to essentially run the algorithm again and until convergence is achieved). 
-        
+        // down to essentially run the algorithm again and until convergence is achieved).
+
         // make copy of original data to test vectors if required
         if(nv || nu || nc)
         {
@@ -246,11 +246,11 @@ void bdsqr_getError(const rocblas_handle handle,
     *max_err = 0;
     if(hInfo[0][0] != hInfoRes[0][0])
         *max_err = 1;
-   
+
     // (We expect the used input matrices to always converge. Testing
     // implicitely the equivalent non-converged matrix is very complicated and it boils
     // down to essentially run the algorithm again and until convergence is achieved).
- 
+
     // error is ||hD - hDRes||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)

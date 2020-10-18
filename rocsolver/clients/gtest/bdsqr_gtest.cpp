@@ -57,8 +57,7 @@ const vector<vector<int>> opt_range = {
 const vector<vector<int>> large_size_range
     = {{152, 152, 152, 152}, {640, 640, 656, 700}, {1000, 1024, 1000, 80}, {2000, 0, 0, 0}};
 
-const vector<vector<int>> large_opt_range
-    = {{0, 0, 0, 0}, {1, 0, 1, 0}, {0, 1, 0, 1}, {1, 0, 0, 0}};
+const vector<vector<int>> large_opt_range = {{0, 0, 0, 0}, {1, 0, 1, 0}, {0, 1, 0, 1}, {1, 0, 0, 0}};
 
 Arguments bdsqr_setup_arguments(bdsqr_tuple tup)
 {
