@@ -338,6 +338,16 @@ rocsolver_<type>sterf()
    :outline:
 .. doxygenfunction:: rocsolver_ssterf
 
+rocsolver_<type>steqr()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zsteqr
+   :outline:
+.. doxygenfunction:: rocsolver_csteqr
+   :outline:
+.. doxygenfunction:: rocsolver_dsteqr
+   :outline:
+.. doxygenfunction:: rocsolver_ssteqr
+
 
 
 LAPACK Functions

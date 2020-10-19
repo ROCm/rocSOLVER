@@ -58,6 +58,7 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_labrd.cpp
   # eigensolvers
   auxiliary/rocauxiliary_sterf.cpp
+  auxiliary/rocauxiliary_steqr.cpp
 )
 
 set( rocsolver_lapack_source
