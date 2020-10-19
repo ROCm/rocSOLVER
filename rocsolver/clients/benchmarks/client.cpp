@@ -214,6 +214,10 @@ try
 
         ("rightsv",
          po::value<char>(&argus.right_svect)->default_value('N'),
+         "Only applicable to certain routines")
+
+        ("evect",
+         po::value<char>(&argus.evect)->default_value('N'),
          "Only applicable to certain routines");
     // clang-format on
 
@@ -281,7 +285,11 @@ try
        && argus.right_svect != 'N')
         throw std::invalid_argument("Invalid value for --rightsv");
 
-    // rightsv
+    // evect
+    if(argus.evect != 'V' && argus.evect != 'I' && argus.evect != 'N')
+        throw std::invalid_argument("Invalid value for --evect");
+
+    // workmode
     if(argus.workmode != 'O' && argus.workmode != 'I')
         throw std::invalid_argument("Invalid value for --workmode");
 
