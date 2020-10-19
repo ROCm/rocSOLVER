@@ -194,6 +194,10 @@ try
          po::value<rocblas_int>(&argus.perf)->default_value(0),
          "If equal 1, only GPU timing results are collected and printed (default is 0)")
 
+        ("singular",
+         po::value<rocblas_int>(&argus.singular)->default_value(0),
+         "If equal 1, test with singular matrices (default is 0)")
+
         ("device",
          po::value<rocblas_int>(&device_id)->default_value(0),
          "Set default device to be used for subsequent program runs")
