@@ -62,6 +62,7 @@ public:
     rocblas_int unit_check = 1;
     rocblas_int timing = 0;
     rocblas_int perf = 0;
+    rocblas_int singular = 0;
 
     rocblas_int iters = 5;
     char workmode = 'O';

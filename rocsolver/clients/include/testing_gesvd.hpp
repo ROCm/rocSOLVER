@@ -263,6 +263,7 @@ void gesvd_getError(const rocblas_handle handle,
                     Th& hE,
                     Th& hEres,
                     Ih& hinfo,
+                    Ih& hinfoRes,
                     double* max_err,
                     double* max_errv)
 {
@@ -298,6 +299,7 @@ void gesvd_getError(const rocblas_handle handle,
 
     CHECK_HIP_ERROR(hSres.transfer_from(dS));
     CHECK_HIP_ERROR(hEres.transfer_from(dE));
+    CHECK_HIP_ERROR(hinfoRes.transfer_from(dinfo));
 
     if(left_svect == rocblas_svect_singular || left_svect == rocblas_svect_all)
         CHECK_HIP_ERROR(Ures.transfer_from(dU));
@@ -329,9 +331,18 @@ void gesvd_getError(const rocblas_handle handle,
         }
     }
 
+    // Check info for non-covergence
+    *max_err = 0;
+    for(rocblas_int b = 0; b < bc; ++b)
+        if(hinfo[b][0] != hinfoRes[b][0])
+            *max_err += 1;
+
+    // (We expect the used input matrices to always converge. Testing
+    // implicitely the equivalent non-converged matrix is very complicated and it boils
+    // down to essentially run the algorithm again and until convergence is achieved).
+
     double err;
     T tmp;
-    *max_err = 0;
     *max_errv = 0;
 
     for(rocblas_int b = 0; b < bc; ++b)
@@ -340,15 +351,8 @@ void gesvd_getError(const rocblas_handle handle,
         err = norm_error('F', 1, min(m, n), 1, hS[b], hSres[b]);
         *max_err = err > *max_err ? err : *max_err;
 
-        // if algorithm converged, check the singular vectors if required
-        // otherwise, check E
-        if(hinfo[b][0] > 0)
-        {
-            err = norm_error('F', 1, min(m, n) - 1, 1, hE[b], hEres[b]);
-            *max_err = err > *max_err ? err : *max_err;
-        }
-
-        else if(left_svect != rocblas_svect_none || right_svect != rocblas_svect_none)
+        // Check the singular vectors if required
+        if(hinfo[b][0] == 0 && (left_svect != rocblas_svect_none || right_svect != rocblas_svect_none))
         {
             err = 0;
             // check singular vectors implicitely (A*v_k = s_k*u_k)
@@ -619,6 +623,7 @@ void testing_gesvd(Arguments argus)
     host_strided_batch_vector<T> hV(size_V, 1, stV, bc);
     host_strided_batch_vector<T> hU(size_U, 1, stU, bc);
     host_strided_batch_vector<rocblas_int> hinfo(1, 1, 1, bc);
+    host_strided_batch_vector<rocblas_int> hinfoRes(1, 1, 1, bc);
     host_strided_batch_vector<S> hSres(size_Sres, 1, stS, bc);
     host_strided_batch_vector<S> hEres(size_Eres, 1, stE, bc);
     host_strided_batch_vector<T> Vres(size_Vres, 1, stVres, bc);
@@ -673,8 +678,8 @@ void testing_gesvd(Arguments argus)
             gesvd_getError<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU, ldu,
                                        stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, leftvT, rightvT,
                                        mT, nT, dUT, lduT, stUT, dVT, ldvT, stVT, hA, hS, hSres, hU,
-                                       Ures, ldures, hV, Vres, ldvres, hE, hEres, hinfo, &max_error,
-                                       &max_errorv);
+                                       Ures, ldures, hV, Vres, ldvres, hE, hEres, hinfo, hinfoRes,
+                                       &max_error, &max_errorv);
         }
 
         // collect performance data
@@ -715,8 +720,8 @@ void testing_gesvd(Arguments argus)
             gesvd_getError<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU, ldu,
                                        stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, leftvT, rightvT,
                                        mT, nT, dUT, lduT, stUT, dVT, ldvT, stVT, hA, hS, hSres, hU,
-                                       Ures, ldures, hV, Vres, ldvres, hE, hEres, hinfo, &max_error,
-                                       &max_errorv);
+                                       Ures, ldures, hV, Vres, ldvres, hE, hEres, hinfo, hinfoRes,
+                                       &max_error, &max_errorv);
         }
 
         // collect performance data

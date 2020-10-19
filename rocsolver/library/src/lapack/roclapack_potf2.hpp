@@ -164,6 +164,10 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
+    // (TODO: When the matrix is detected to be non positive definite, we need to
+    //  prevent GEMV and SCAL to modify further the input matrix; ideally with no
+    //  synchronizations.)
+
     if(uplo == rocblas_fill_upper)
     {
         // Compute the Cholesky factorization A = U'*U.

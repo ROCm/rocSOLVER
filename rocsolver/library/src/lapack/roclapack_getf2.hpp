@@ -15,6 +15,7 @@
 #define ROCLAPACK_GETF2_H
 
 #include "../auxiliary/rocauxiliary_laswp.hpp"
+#include "common_device.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
@@ -103,7 +104,7 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS) LUfact_panel_kernel(const rocb
             for(int i = k + 1; i < m; ++i)
             {
                 test_value = common[i];
-                if(std::abs(pivot_value) < std::abs(test_value))
+                if(aabs<S>(pivot_value) < aabs<S>(test_value))
                 {
                     pivot_value = test_value;
                     pivot_index = i;
@@ -249,7 +250,7 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
             for(int i = k + 1; i < m; ++i)
             {
                 test_value = common[i];
-                if(std::abs(pivot_value) < std::abs(test_value))
+                if(aabs<S>(pivot_value) < aabs<S>(test_value))
                 {
                     pivot_value = test_value;
                     pivot_index = i;
@@ -438,7 +439,7 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS) LUfact_small_kernel(const rocb
             for(int i = k + 1; i < m; ++i)
             {
                 test_value = common[i];
-                if(std::abs(pivot_value) < std::abs(test_value))
+                if(aabs<S>(pivot_value) < aabs<S>(test_value))
                 {
                     pivot_value = test_value;
                     pivot_index = i;
