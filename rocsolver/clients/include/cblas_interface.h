@@ -481,4 +481,7 @@ void cblas_gesvd(rocblas_svect leftv,
 template <typename T>
 void cblas_sterf(rocblas_int n, T* D, T* E);
 
+template <typename S, typename T>
+void cblas_steqr(rocblas_evect compc, rocblas_int n, S* D, S* E, T* C, rocblas_int ldc, S* work);
+
 #endif /* _CBLAS_INTERFACE_ */

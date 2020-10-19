@@ -1274,6 +1274,25 @@ void zgesvd_(char* jobu,
 void ssterf_(int* n, float* D, float* E, int* info);
 void dsterf_(int* n, double* D, double* E, int* info);
 
+void ssteqr_(char* compc, int* n, float* D, float* E, float* C, int* ldc, float* work, int* info);
+void dsteqr_(char* compc, int* n, double* D, double* E, double* C, int* ldc, double* work, int* info);
+void csteqr_(char* compc,
+             int* n,
+             float* D,
+             float* E,
+             rocblas_float_complex* C,
+             int* ldc,
+             float* work,
+             int* info);
+void zsteqr_(char* compc,
+             int* n,
+             double* D,
+             double* E,
+             rocblas_double_complex* C,
+             int* ldc,
+             double* work,
+             int* info);
+
 #ifdef __cplusplus
 }
 #endif
@@ -4535,4 +4554,60 @@ void cblas_sterf<double>(rocblas_int n, double* D, double* E)
 {
     int info;
     dsterf_(&n, D, E, &info);
+}
+
+// steqr
+template <>
+void cblas_steqr<float, float>(rocblas_evect compc,
+                               rocblas_int n,
+                               float* D,
+                               float* E,
+                               float* C,
+                               rocblas_int ldc,
+                               float* work)
+{
+    rocblas_int info;
+    char compcC = rocblas2char_evect(compc);
+    ssteqr_(&compcC, &n, D, E, C, &ldc, work, &info);
+}
+
+template <>
+void cblas_steqr<double, double>(rocblas_evect compc,
+                                 rocblas_int n,
+                                 double* D,
+                                 double* E,
+                                 double* C,
+                                 rocblas_int ldc,
+                                 double* work)
+{
+    rocblas_int info;
+    char compcC = rocblas2char_evect(compc);
+    dsteqr_(&compcC, &n, D, E, C, &ldc, work, &info);
+}
+template <>
+void cblas_steqr<float, rocblas_float_complex>(rocblas_evect compc,
+                                               rocblas_int n,
+                                               float* D,
+                                               float* E,
+                                               rocblas_float_complex* C,
+                                               rocblas_int ldc,
+                                               float* work)
+{
+    rocblas_int info;
+    char compcC = rocblas2char_evect(compc);
+    csteqr_(&compcC, &n, D, E, C, &ldc, work, &info);
+}
+
+template <>
+void cblas_steqr<double, rocblas_double_complex>(rocblas_evect compc,
+                                                 rocblas_int n,
+                                                 double* D,
+                                                 double* E,
+                                                 rocblas_double_complex* C,
+                                                 rocblas_int ldc,
+                                                 double* work)
+{
+    rocblas_int info;
+    char compcC = rocblas2char_evect(compc);
+    zsteqr_(&compcC, &n, D, E, C, &ldc, work, &info);
 }

@@ -1145,6 +1145,56 @@ inline rocblas_status
 }
 /********************************************************/
 
+/******************** STEQR ********************/
+inline rocblas_status rocsolver_steqr(rocblas_handle handle,
+                                      rocblas_evect compc,
+                                      rocblas_int n,
+                                      float* D,
+                                      float* E,
+                                      float* C,
+                                      rocblas_int ldc,
+                                      rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_ssteqr(handle, compc, n, D, E, C, ldc, info);
+}
+
+inline rocblas_status rocsolver_steqr(rocblas_handle handle,
+                                      rocblas_evect compc,
+                                      rocblas_int n,
+                                      double* D,
+                                      double* E,
+                                      double* C,
+                                      rocblas_int ldc,
+                                      rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_dsteqr(handle, compc, n, D, E, C, ldc, info);
+}
+
+inline rocblas_status rocsolver_steqr(rocblas_handle handle,
+                                      rocblas_evect compc,
+                                      rocblas_int n,
+                                      float* D,
+                                      float* E,
+                                      rocblas_float_complex* C,
+                                      rocblas_int ldc,
+                                      rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_csteqr(handle, compc, n, D, E, C, ldc, info);
+}
+
+inline rocblas_status rocsolver_steqr(rocblas_handle handle,
+                                      rocblas_evect compc,
+                                      rocblas_int n,
+                                      double* D,
+                                      double* E,
+                                      rocblas_double_complex* C,
+                                      rocblas_int ldc,
+                                      rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_zsteqr(handle, compc, n, D, E, C, ldc, info);
+}
+/********************************************************/
+
 /******************** POTF2_POTRF ********************/
 // normal and strided_batched
 inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
