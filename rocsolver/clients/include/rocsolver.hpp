@@ -2812,4 +2812,198 @@ inline rocblas_status rocsolver_gebd2_gebrd(bool STRIDED,
 }
 /********************************************************/
 
+
+/******************** SYTD2/SYTRD_HETD2/HETRD ********************/
+// normal and strided_batched
+inline rocblas_status rocsolver_sytxx_hetxx(bool STRIDED,
+                                            bool SYTRD,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            float* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float* D,
+                                            rocblas_stride stD,
+                                            float* E,
+                                            rocblas_stride stE,
+                                            float* tau,
+                                            rocblas_stride stP,
+                                            rocblas_int bc)
+{
+    if(STRIDED)
+        return SYTRD ? rocsolver_ssytrd_strided_batched(handle, uplo, n, A, lda, stA, D, stD, E, stE,
+                                                        tau, stP, bc)
+                     : rocsolver_ssytd2_strided_batched(handle, uplo, n, A, lda, stA, D, stD, E, stE,
+                                                        tau, stP, bc);
+    else
+        return SYTRD ? rocsolver_ssytrd(handle, uplo, n, A, lda, D, E, tau)
+                     : rocsolver_ssytd2(handle, uplo, n, A, lda, D, E, tau);
+}
+
+inline rocblas_status rocsolver_sytxx_hetxx(bool STRIDED,
+                                            bool SYTRD,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            double* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double* D,
+                                            rocblas_stride stD,
+                                            double* E,
+                                            rocblas_stride stE,
+                                            double* tau,
+                                            rocblas_stride stP,
+                                            rocblas_int bc)
+{
+    if(STRIDED)
+        return SYTRD ? rocsolver_dsytrd_strided_batched(handle, uplo, n, A, lda, stA, D, stD, E, stE,
+                                                        tau, stP, bc)
+                     : rocsolver_dsytd2_strided_batched(handle, uplo, n, A, lda, stA, D, stD, E, stE,
+                                                        tau, stP, bc);
+    else
+        return SYTRD ? rocsolver_dsytrd(handle, uplo, n, A, lda, D, E, tau)
+                     : rocsolver_dsytd2(handle, uplo, n, A, lda, D, E, tau);
+}
+
+inline rocblas_status rocsolver_sytxx_hetxx(bool STRIDED,
+                                            bool SYTRD,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_float_complex* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float* D,
+                                            rocblas_stride stD,
+                                            float* E,
+                                            rocblas_stride stE,
+                                            rocblas_float_complex* tau,
+                                            rocblas_stride stP,
+                                            rocblas_int bc)
+{
+    if(STRIDED)
+        return SYTRD ? rocsolver_chetrd_strided_batched(handle, uplo, n, A, lda, stA, D, stD, E, stE,
+                                                        tau, stP, bc)
+                     : rocsolver_chetd2_strided_batched(handle, uplo, n, A, lda, stA, D, stD, E, stE,
+                                                        tau, stP, bc);
+    else
+        return SYTRD ? rocsolver_chetrd(handle, uplo, n, A, lda, D, E, tau)
+                     : rocsolver_chetd2(handle, uplo, n, A, lda, D, E, tau);
+}
+
+inline rocblas_status rocsolver_sytxx_hetxx(bool STRIDED,
+                                            bool SYTRD,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_double_complex* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double* D,
+                                            rocblas_stride stD,
+                                            double* E,
+                                            rocblas_stride stE,
+                                            rocblas_double_complex* tau,
+                                            rocblas_stride stP,
+                                            rocblas_int bc)
+{
+    if(STRIDED)
+        return SYTRD ? rocsolver_zhetrd_strided_batched(handle, uplo, n, A, lda, stA, D, stD, E, stE,
+                                                        tau, stP, bc)
+                     : rocsolver_zhetd2_strided_batched(handle, uplo, n, A, lda, stA, D, stD, E, stE,
+                                                        tau, stP, bc);
+    else
+        return SYTRD ? rocsolver_zhetrd(handle, uplo, n, A, lda, D, E, tau)
+                     : rocsolver_zhetd2(handle, uplo, n, A, lda, D, E, tau);
+}
+
+// batched
+inline rocblas_status rocsolver_sytxx_hetxx(bool STRIDED,
+                                            bool SYTRD,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            float* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float* D,
+                                            rocblas_stride stD,
+                                            float* E,
+                                            rocblas_stride stE,
+                                            float* tau,
+                                            rocblas_stride stP,
+                                            rocblas_int bc)
+{
+    return SYTRD
+        ? rocsolver_ssytrd_batched(handle, uplo, n, A, lda, D, stD, E, stE, tau, stP, bc)
+        : rocsolver_ssytd2_batched(handle, uplo, n, A, lda, D, stD, E, stE, tau, stP, bc);
+}
+
+inline rocblas_status rocsolver_sytxx_hetxx(bool STRIDED,
+                                            bool SYTRD,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            double* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double* D,
+                                            rocblas_stride stD,
+                                            double* E,
+                                            rocblas_stride stE,
+                                            double* tau,
+                                            rocblas_stride stP,
+                                            rocblas_int bc)
+{
+    return SYTRD
+        ? rocsolver_dsytrd_batched(handle, uplo, n, A, lda, D, stD, E, stE, tau, stP, bc)
+        : rocsolver_dsytd2_batched(handle, uplo, n, A, lda, D, stD, E, stE, tau, stP, bc);
+}
+
+inline rocblas_status rocsolver_sytxx_hetxx(bool STRIDED,
+                                            bool SYTRD,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_float_complex* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float* D,
+                                            rocblas_stride stD,
+                                            float* E,
+                                            rocblas_stride stE,
+                                            rocblas_float_complex* tau,
+                                            rocblas_stride stP,
+                                            rocblas_int bc)
+{
+    return SYTRD
+        ? rocsolver_chetrd_batched(handle, uplo, n, A, lda, D, stD, E, stE, tau, stP, bc)
+        : rocsolver_chetd2_batched(handle, uplo, n, A, lda, D, stD, E, stE, tau, stP, bc);
+}
+
+inline rocblas_status rocsolver_sytxx_hetxx(bool STRIDED,
+                                            bool SYTRD,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_double_complex* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double* D,
+                                            rocblas_stride stD,
+                                            double* E,
+                                            rocblas_stride stE,
+                                            rocblas_double_complex* tau,
+                                            rocblas_stride stP,
+                                            rocblas_int bc)
+{
+    return SYTRD
+        ? rocsolver_zhetrd_batched(handle, uplo, n, A, lda, D, stD, E, stE, tau, stP, bc)
+        : rocsolver_zhetd2_batched(handle, uplo, n, A, lda, D, stD, E, stE, tau, stP, bc);
+}
+/********************************************************/
+
+
 #endif /* ROCSOLVER_HPP */

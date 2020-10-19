@@ -1193,6 +1193,41 @@ void zhetrd_(char* uplo,
              int* size_w,
              int* info);
 
+
+void ssytd2_(char* uplo,
+             int* n,
+             float* A,
+             int* lda,
+             float* D,
+             float* E,
+             float* tau,
+             int* info);
+void dsytd2_(char* uplo,
+             int* n,
+             double* A,
+             int* lda,
+             double* D,
+             double* E,
+             double* tau,
+             int* info);
+void chetd2_(char* uplo,
+             int* n,
+             rocblas_float_complex* A,
+             int* lda,
+             float* D,
+             float* E,
+             rocblas_float_complex* tau,
+             int* info);
+void zhetd2_(char* uplo,
+             int* n,
+             rocblas_double_complex* A,
+             int* lda,
+             double* D,
+             double* E,
+             rocblas_double_complex* tau,
+             int* info);
+
+
 void sgesvd_(char* jobu,
              char* jobv,
              int* m,
@@ -4441,4 +4476,62 @@ void cblas_sytrd_hetrd<double, rocblas_double_complex>(rocblas_fill uplo,
     int info;
     char uploC = rocblas2char_fill(uplo);
     zhetrd_(&uploC, &n, A, &lda, D, E, tau, work, &size_w, &info);
+}
+
+
+// sytd2 & hetd2
+template <>
+void cblas_sytd2_hetd2<float, float>(rocblas_fill uplo,
+                                     rocblas_int n,
+                                     float* A,
+                                     rocblas_int lda,
+                                     float* D,
+                                     float* E,
+                                     float* tau)
+{
+    int info;
+    char uploC = rocblas2char_fill(uplo);
+    ssytd2_(&uploC, &n, A, &lda, D, E, tau, &info);
+}
+
+template <>
+void cblas_sytd2_hetd2<double, double>(rocblas_fill uplo,
+                                       rocblas_int n,
+                                       double* A,
+                                       rocblas_int lda,
+                                       double* D,
+                                       double* E,
+                                       double* tau)
+{
+    int info;
+    char uploC = rocblas2char_fill(uplo);
+    dsytd2_(&uploC, &n, A, &lda, D, E, tau, &info);
+}
+
+template <>
+void cblas_sytd2_hetd2<float, rocblas_float_complex>(rocblas_fill uplo,
+                                                     rocblas_int n,
+                                                     rocblas_float_complex* A,
+                                                     rocblas_int lda,
+                                                     float* D,
+                                                     float* E,
+                                                     rocblas_float_complex* tau)
+{
+    int info;
+    char uploC = rocblas2char_fill(uplo);
+    chetd2_(&uploC, &n, A, &lda, D, E, tau, &info);
+}
+
+template <>
+void cblas_sytd2_hetd2<double, rocblas_double_complex>(rocblas_fill uplo,
+                                                       rocblas_int n,
+                                                       rocblas_double_complex* A,
+                                                       rocblas_int lda,
+                                                       double* D,
+                                                       double* E,
+                                                       rocblas_double_complex* tau)
+{
+    int info;
+    char uploC = rocblas2char_fill(uplo);
+    zhetd2_(&uploC, &n, A, &lda, D, E, tau, &info);
 }

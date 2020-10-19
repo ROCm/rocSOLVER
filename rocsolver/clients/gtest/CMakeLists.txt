@@ -56,6 +56,8 @@ set(roclapack_test_source
     gesvd_gtest.cpp
     labrd_gtest.cpp
     bdsqr_gtest.cpp
+    # tridiagonal matrices and eigensolvers
+    sytxx_hetxx_gtest.cpp
     # orthogonal factorizations
     geqr2_geqrf_gtest.cpp
     geql2_geqlf_gtest.cpp
