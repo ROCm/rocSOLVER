@@ -284,7 +284,7 @@ This is equivalent to ``./install.sh -p``.
     CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/package/install/path ../..
     make install
     make package
-    sudo dpkg -i rocsolver-*.deb
+    sudo dpkg -i rocsolver[-\_]*.deb
 
 On an Ubuntu system, for example, this would be equivalent to ``./install.sh -i --install_dir /package/install/path``.
 
