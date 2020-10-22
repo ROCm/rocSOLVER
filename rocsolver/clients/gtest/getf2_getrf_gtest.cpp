@@ -14,24 +14,23 @@ using namespace std;
 
 typedef std::tuple<vector<int>, int> getrf_tuple;
 
-// each matrix_size_range vector is a {m, lda}
+// each matrix_size_range vector is a {m, lda, singular}
+// if singular = 1, then the used matrix for the tests is singular
 
 // case when m = n = 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
-// ONLY FUNCTIONALITY WITH ROW INTERCHANGE (PARTIAL PIVOTING) IS TESTED HERE.
-
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
     // quick return
-    {0, 1},
+    {0, 1, 0},
     // invalid
-    {-1, 1},
-    {20, 5},
+    {-1, 1, 0},
+    {20, 5, 0},
     // normal (valid) samples
-    {32, 32},
-    {50, 50},
-    {70, 100}};
+    {32, 32, 0},
+    {50, 50, 1},
+    {70, 100, 0}};
 
 const vector<int> n_size_range = {
     // quick return
@@ -47,9 +46,9 @@ const vector<int> n_size_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
-    {192, 192},
-    {640, 640},
-    {1000, 1024},
+    {192, 192, 0},
+    {640, 640, 1},
+    {1000, 1024, 0},
 };
 
 const vector<int> large_n_size_range = {
@@ -68,6 +67,7 @@ Arguments getrf_setup_arguments(getrf_tuple tup)
     arg.lda = matrix_size[1];
 
     arg.timing = 0;
+    arg.singular = matrix_size[2];
 
     // only testing standard use case for strides
     // strides are ignored in normal and batched tests
@@ -118,6 +118,10 @@ TEST_P(GETF2_NPVT, __float)
         testing_getf2_getrf_npvt_bad_arg<false, false, 0, float>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, false, 0, float>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, false, 0, float>(arg);
 }
 
@@ -129,6 +133,10 @@ TEST_P(GETF2_NPVT, __double)
         testing_getf2_getrf_npvt_bad_arg<false, false, 0, double>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, false, 0, double>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, false, 0, double>(arg);
 }
 
@@ -140,6 +148,10 @@ TEST_P(GETF2_NPVT, __float_complex)
         testing_getf2_getrf_npvt_bad_arg<false, false, 0, rocblas_float_complex>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, false, 0, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, false, 0, rocblas_float_complex>(arg);
 }
 
@@ -151,6 +163,10 @@ TEST_P(GETF2_NPVT, __double_complex)
         testing_getf2_getrf_npvt_bad_arg<false, false, 0, rocblas_double_complex>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, false, 0, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, false, 0, rocblas_double_complex>(arg);
 }
 
@@ -162,6 +178,10 @@ TEST_P(GETRF_NPVT, __float)
         testing_getf2_getrf_npvt_bad_arg<false, false, 1, float>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, false, 1, float>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, false, 1, float>(arg);
 }
 
@@ -173,6 +193,10 @@ TEST_P(GETRF_NPVT, __double)
         testing_getf2_getrf_npvt_bad_arg<false, false, 1, double>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, false, 1, double>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, false, 1, double>(arg);
 }
 
@@ -184,6 +208,10 @@ TEST_P(GETRF_NPVT, __float_complex)
         testing_getf2_getrf_npvt_bad_arg<false, false, 1, rocblas_float_complex>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, false, 1, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, false, 1, rocblas_float_complex>(arg);
 }
 
@@ -195,6 +223,10 @@ TEST_P(GETRF_NPVT, __double_complex)
         testing_getf2_getrf_npvt_bad_arg<false, false, 1, rocblas_double_complex>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, false, 1, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, false, 1, rocblas_double_complex>(arg);
 }
 
@@ -206,6 +238,10 @@ TEST_P(GETF2, __float)
         testing_getf2_getrf_bad_arg<false, false, 0, float>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 0, float>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, false, 0, float>(arg);
 }
 
@@ -217,6 +253,10 @@ TEST_P(GETF2, __double)
         testing_getf2_getrf_bad_arg<false, false, 0, double>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 0, double>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, false, 0, double>(arg);
 }
 
@@ -228,6 +268,10 @@ TEST_P(GETF2, __float_complex)
         testing_getf2_getrf_bad_arg<false, false, 0, rocblas_float_complex>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 0, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, false, 0, rocblas_float_complex>(arg);
 }
 
@@ -239,6 +283,10 @@ TEST_P(GETF2, __double_complex)
         testing_getf2_getrf_bad_arg<false, false, 0, rocblas_double_complex>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 0, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, false, 0, rocblas_double_complex>(arg);
 }
 
@@ -250,6 +298,10 @@ TEST_P(GETRF, __float)
         testing_getf2_getrf_bad_arg<false, false, 1, float>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 1, float>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, false, 1, float>(arg);
 }
 
@@ -261,6 +313,10 @@ TEST_P(GETRF, __double)
         testing_getf2_getrf_bad_arg<false, false, 1, double>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 1, double>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, false, 1, double>(arg);
 }
 
@@ -272,6 +328,10 @@ TEST_P(GETRF, __float_complex)
         testing_getf2_getrf_bad_arg<false, false, 1, rocblas_float_complex>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 1, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, false, 1, rocblas_float_complex>(arg);
 }
 
@@ -283,6 +343,10 @@ TEST_P(GETRF, __double_complex)
         testing_getf2_getrf_bad_arg<false, false, 1, rocblas_double_complex>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, false, 1, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, false, 1, rocblas_double_complex>(arg);
 }
 
@@ -295,6 +359,10 @@ TEST_P(GETF2_NPVT, batched__float)
         testing_getf2_getrf_npvt_bad_arg<true, true, 0, float>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<true, true, 0, float>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<true, true, 0, float>(arg);
 }
 
@@ -306,6 +374,10 @@ TEST_P(GETF2_NPVT, batched__double)
         testing_getf2_getrf_npvt_bad_arg<true, true, 0, double>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<true, true, 0, double>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<true, true, 0, double>(arg);
 }
 
@@ -317,6 +389,10 @@ TEST_P(GETF2_NPVT, batched__float_complex)
         testing_getf2_getrf_npvt_bad_arg<true, true, 0, rocblas_float_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<true, true, 0, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<true, true, 0, rocblas_float_complex>(arg);
 }
 
@@ -328,6 +404,10 @@ TEST_P(GETF2_NPVT, batched__double_complex)
         testing_getf2_getrf_npvt_bad_arg<true, true, 0, rocblas_double_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<true, true, 0, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<true, true, 0, rocblas_double_complex>(arg);
 }
 
@@ -339,6 +419,10 @@ TEST_P(GETRF_NPVT, batched__float)
         testing_getf2_getrf_npvt_bad_arg<true, true, 1, float>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<true, true, 1, float>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<true, true, 1, float>(arg);
 }
 
@@ -350,6 +434,10 @@ TEST_P(GETRF_NPVT, batched__double)
         testing_getf2_getrf_npvt_bad_arg<true, true, 1, double>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<true, true, 1, double>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<true, true, 1, double>(arg);
 }
 
@@ -361,6 +449,10 @@ TEST_P(GETRF_NPVT, batched__float_complex)
         testing_getf2_getrf_npvt_bad_arg<true, true, 1, rocblas_float_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<true, true, 1, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<true, true, 1, rocblas_float_complex>(arg);
 }
 
@@ -372,6 +464,10 @@ TEST_P(GETRF_NPVT, batched__double_complex)
         testing_getf2_getrf_npvt_bad_arg<true, true, 1, rocblas_double_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<true, true, 1, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<true, true, 1, rocblas_double_complex>(arg);
 }
 
@@ -383,6 +479,10 @@ TEST_P(GETF2, batched__float)
         testing_getf2_getrf_bad_arg<true, true, 0, float>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 0, float>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<true, true, 0, float>(arg);
 }
 
@@ -394,6 +494,10 @@ TEST_P(GETF2, batched__double)
         testing_getf2_getrf_bad_arg<true, true, 0, double>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 0, double>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<true, true, 0, double>(arg);
 }
 
@@ -405,6 +509,10 @@ TEST_P(GETF2, batched__float_complex)
         testing_getf2_getrf_bad_arg<true, true, 0, rocblas_float_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 0, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<true, true, 0, rocblas_float_complex>(arg);
 }
 
@@ -416,6 +524,10 @@ TEST_P(GETF2, batched__double_complex)
         testing_getf2_getrf_bad_arg<true, true, 0, rocblas_double_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 0, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<true, true, 0, rocblas_double_complex>(arg);
 }
 
@@ -427,6 +539,10 @@ TEST_P(GETRF, batched__float)
         testing_getf2_getrf_bad_arg<true, true, 1, float>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 1, float>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<true, true, 1, float>(arg);
 }
 
@@ -438,6 +554,10 @@ TEST_P(GETRF, batched__double)
         testing_getf2_getrf_bad_arg<true, true, 1, double>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 1, double>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<true, true, 1, double>(arg);
 }
 
@@ -449,6 +569,10 @@ TEST_P(GETRF, batched__float_complex)
         testing_getf2_getrf_bad_arg<true, true, 1, rocblas_float_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 1, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<true, true, 1, rocblas_float_complex>(arg);
 }
 
@@ -460,6 +584,10 @@ TEST_P(GETRF, batched__double_complex)
         testing_getf2_getrf_bad_arg<true, true, 1, rocblas_double_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<true, true, 1, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<true, true, 1, rocblas_double_complex>(arg);
 }
 
@@ -472,6 +600,10 @@ TEST_P(GETF2_NPVT, strided_batched__float)
         testing_getf2_getrf_npvt_bad_arg<false, true, 0, float>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, true, 0, float>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, true, 0, float>(arg);
 }
 
@@ -483,6 +615,10 @@ TEST_P(GETF2_NPVT, strided_batched__double)
         testing_getf2_getrf_npvt_bad_arg<false, true, 0, double>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, true, 0, double>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, true, 0, double>(arg);
 }
 
@@ -494,6 +630,10 @@ TEST_P(GETF2_NPVT, strided_batched__float_complex)
         testing_getf2_getrf_npvt_bad_arg<false, true, 0, rocblas_float_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, true, 0, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, true, 0, rocblas_float_complex>(arg);
 }
 
@@ -505,6 +645,10 @@ TEST_P(GETF2_NPVT, strided_batched__double_complex)
         testing_getf2_getrf_npvt_bad_arg<false, true, 0, rocblas_double_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, true, 0, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, true, 0, rocblas_double_complex>(arg);
 }
 
@@ -516,6 +660,10 @@ TEST_P(GETRF_NPVT, strided_batched__float)
         testing_getf2_getrf_npvt_bad_arg<false, true, 1, float>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, true, 1, float>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, true, 1, float>(arg);
 }
 
@@ -527,6 +675,10 @@ TEST_P(GETRF_NPVT, strided_batched__double)
         testing_getf2_getrf_npvt_bad_arg<false, true, 1, double>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, true, 1, double>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, true, 1, double>(arg);
 }
 
@@ -538,6 +690,10 @@ TEST_P(GETRF_NPVT, strided_batched__float_complex)
         testing_getf2_getrf_npvt_bad_arg<false, true, 1, rocblas_float_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, true, 1, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, true, 1, rocblas_float_complex>(arg);
 }
 
@@ -549,6 +705,10 @@ TEST_P(GETRF_NPVT, strided_batched__double_complex)
         testing_getf2_getrf_npvt_bad_arg<false, true, 1, rocblas_double_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf_npvt<false, true, 1, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf_npvt<false, true, 1, rocblas_double_complex>(arg);
 }
 
@@ -560,6 +720,10 @@ TEST_P(GETF2, strided_batched__float)
         testing_getf2_getrf_bad_arg<false, true, 0, float>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 0, float>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, true, 0, float>(arg);
 }
 
@@ -571,6 +735,10 @@ TEST_P(GETF2, strided_batched__double)
         testing_getf2_getrf_bad_arg<false, true, 0, double>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 0, double>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, true, 0, double>(arg);
 }
 
@@ -582,6 +750,10 @@ TEST_P(GETF2, strided_batched__float_complex)
         testing_getf2_getrf_bad_arg<false, true, 0, rocblas_float_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 0, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, true, 0, rocblas_float_complex>(arg);
 }
 
@@ -593,6 +765,10 @@ TEST_P(GETF2, strided_batched__double_complex)
         testing_getf2_getrf_bad_arg<false, true, 0, rocblas_double_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 0, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, true, 0, rocblas_double_complex>(arg);
 }
 
@@ -604,6 +780,10 @@ TEST_P(GETRF, strided_batched__float)
         testing_getf2_getrf_bad_arg<false, true, 1, float>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 1, float>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, true, 1, float>(arg);
 }
 
@@ -615,6 +795,10 @@ TEST_P(GETRF, strided_batched__double)
         testing_getf2_getrf_bad_arg<false, true, 1, double>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 1, double>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, true, 1, double>(arg);
 }
 
@@ -626,6 +810,10 @@ TEST_P(GETRF, strided_batched__float_complex)
         testing_getf2_getrf_bad_arg<false, true, 1, rocblas_float_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 1, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, true, 1, rocblas_float_complex>(arg);
 }
 
@@ -637,6 +825,10 @@ TEST_P(GETRF, strided_batched__double_complex)
         testing_getf2_getrf_bad_arg<false, true, 1, rocblas_double_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_getf2_getrf<false, true, 1, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_getf2_getrf<false, true, 1, rocblas_double_complex>(arg);
 }
 

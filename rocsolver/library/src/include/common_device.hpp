@@ -13,6 +13,18 @@
 // device functions that are used by many kernels
 // **********************************************************
 
+template <typename S, typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+__device__ S aabs(T val)
+{
+    return std::abs(val);
+}
+
+template <typename S, typename T, std::enable_if_t<is_complex<T>, int> = 0>
+__device__ S aabs(T val)
+{
+    return asum(val);
+}
+
 template <typename T>
 __device__ void swap(const rocblas_int n, T* a, const rocblas_int inca, T* b, const rocblas_int incb)
 {

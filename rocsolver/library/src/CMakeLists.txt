@@ -126,13 +126,7 @@ add_library( rocsolver
 
 add_library( roc::rocsolver ALIAS rocsolver )
 
-# Remove this check when we no longer build with older rocm stack(ie < 1.8.2)
-if(CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
-  target_link_libraries( rocsolver PRIVATE hip::device )
-else()
-  target_link_libraries( rocsolver PRIVATE hip::device hcc::hccshared )
-endif()
-
+target_link_libraries( rocsolver PRIVATE hip::device --rtlib=compiler-rt --unwindlib=libgcc )
 set_target_properties( rocsolver PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
 
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )

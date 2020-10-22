@@ -103,24 +103,42 @@ void potf2_potrf_initData(const rocblas_handle handle,
                           Td& dA,
                           const rocblas_int lda,
                           const rocblas_stride stA,
-                          Ud& dinfo,
+                          Ud& dInfo,
                           const rocblas_int bc,
                           Th& hA,
                           Th& hATmp,
-                          Uh& hinfo)
+                          Uh& hInfo,
+                          const bool singular)
 {
     if(CPU)
     {
         rocblas_init<T>(hATmp, true);
 
-        // make A hermitian and scale to ensure positive definiteness
         for(rocblas_int b = 0; b < bc; ++b)
         {
+            // make A hermitian and scale to ensure positive definiteness
             cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, n, n,
                        (T)1.0, hATmp[b], lda, hATmp[b], lda, (T)0.0, hA[b], lda);
 
             for(rocblas_int i = 0; i < n; i++)
                 hA[b][i + i * lda] += 400;
+
+            if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
+            {
+                // make some matrices not positive definite
+                // always the same elements for debugging purposes
+                // the algorithm must detect the lower order of the principal minors <= 0
+                // in those matrices in the batch that are non positive definite
+                rocblas_int i = n / 4 + b;
+                i -= (i / n) * n;
+                hA[b][i + i * lda] = 0;
+                i = n / 2 + b;
+                i -= (i / n) * n;
+                hA[b][i + i * lda] = 0;
+                i = n - 1 + b;
+                i -= (i / n) * n;
+                hA[b][i + i * lda] = 0;
+            }
         }
     }
 
@@ -138,27 +156,31 @@ void potf2_potrf_getError(const rocblas_handle handle,
                           Td& dA,
                           const rocblas_int lda,
                           const rocblas_stride stA,
-                          Ud& dinfo,
+                          Ud& dInfo,
                           const rocblas_int bc,
                           Th& hA,
                           Th& hARes,
-                          Uh& hinfo,
-                          double* max_err)
+                          Uh& hInfo,
+                          Uh& hInfoRes,
+                          double* max_err,
+                          const bool singular)
 {
     // input data initialization
-    potf2_potrf_initData<true, true, T>(handle, uplo, n, dA, lda, stA, dinfo, bc, hA, hARes, hinfo);
+    potf2_potrf_initData<true, true, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hARes, hInfo,
+                                        singular);
 
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_potf2_potrf(STRIDED, POTRF, handle, uplo, n, dA.data(), lda, stA,
-                                              dinfo.data(), bc));
+                                              dInfo.data(), bc));
     CHECK_HIP_ERROR(hARes.transfer_from(dA));
+    CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        POTRF ? cblas_potrf<T>(uplo, n, hA[b], lda, hinfo[b])
-              : cblas_potf2<T>(uplo, n, hA[b], lda, hinfo[b]);
+        POTRF ? cblas_potrf<T>(uplo, n, hA[b], lda, hInfo[b])
+              : cblas_potf2<T>(uplo, n, hA[b], lda, hInfo[b]);
     }
 
     // error is ||hA - hARes|| / ||hA|| (ideally ||LL' - Lres Lres'|| / ||LL'||)
@@ -166,12 +188,24 @@ void potf2_potrf_getError(const rocblas_handle handle,
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
     double err;
+    rocblas_int nn;
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        err = norm_error('F', n, n, lda, hA[b], hARes[b]);
+        nn = hInfoRes[b][0] == 0 ? n : hInfoRes[b][0];
+        // (TODO: For now, the algorithm is modifying the whole input matrix even when
+        //  it is not positive definite. So we only check the principal nn-by-nn submatrix.
+        //  Once this is corrected, nn could be always equal to n.)
+        err = norm_error('F', nn, nn, lda, hA[b], hARes[b]);
         *max_err = err > *max_err ? err : *max_err;
     }
+
+    // also check info for non positive definite cases
+    err = 0;
+    for(rocblas_int b = 0; b < bc; ++b)
+        if(hInfo[b][0] != hInfoRes[b][0])
+            err++;
+    *max_err += err;
 }
 
 template <bool STRIDED, bool POTRF, typename T, typename Td, typename Ud, typename Th, typename Uh>
@@ -181,52 +215,54 @@ void potf2_potrf_getPerfData(const rocblas_handle handle,
                              Td& dA,
                              const rocblas_int lda,
                              const rocblas_stride stA,
-                             Ud& dinfo,
+                             Ud& dInfo,
                              const rocblas_int bc,
                              Th& hA,
                              Th& hATmp,
-                             Uh& hinfo,
+                             Uh& hInfo,
                              double* gpu_time_used,
                              double* cpu_time_used,
                              const rocblas_int hot_calls,
-                             const bool perf)
+                             const bool perf,
+                             const bool singular)
 {
     if(!perf)
     {
-        potf2_potrf_initData<true, false, T>(handle, uplo, n, dA, lda, stA, dinfo, bc, hA, hATmp,
-                                             hinfo);
+        potf2_potrf_initData<true, false, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hATmp,
+                                             hInfo, singular);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            POTRF ? cblas_potrf<T>(uplo, n, hA[b], lda, hinfo[b])
-                  : cblas_potf2<T>(uplo, n, hA[b], lda, hinfo[b]);
+            POTRF ? cblas_potrf<T>(uplo, n, hA[b], lda, hInfo[b])
+                  : cblas_potf2<T>(uplo, n, hA[b], lda, hInfo[b]);
         }
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
 
-    potf2_potrf_initData<true, false, T>(handle, uplo, n, dA, lda, stA, dinfo, bc, hA, hATmp, hinfo);
+    potf2_potrf_initData<true, false, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hATmp, hInfo,
+                                         singular);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        potf2_potrf_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dinfo, bc, hA, hATmp,
-                                             hinfo);
+        potf2_potrf_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hATmp,
+                                             hInfo, singular);
 
         CHECK_ROCBLAS_ERROR(rocsolver_potf2_potrf(STRIDED, POTRF, handle, uplo, n, dA.data(), lda,
-                                                  stA, dinfo.data(), bc));
+                                                  stA, dInfo.data(), bc));
     }
 
     // gpu-lapack performance
     double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        potf2_potrf_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dinfo, bc, hA, hATmp,
-                                             hinfo);
+        potf2_potrf_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hATmp,
+                                             hInfo, singular);
 
         start = get_time_us();
-        rocsolver_potf2_potrf(STRIDED, POTRF, handle, uplo, n, dA.data(), lda, stA, dinfo.data(), bc);
+        rocsolver_potf2_potrf(STRIDED, POTRF, handle, uplo, n, dA.data(), lda, stA, dInfo.data(), bc);
         *gpu_time_used += get_time_us() - start;
     }
     *gpu_time_used /= hot_calls;
@@ -297,18 +333,19 @@ void testing_potf2_potrf(Arguments argus)
         // memory allocations
         host_batch_vector<T> hA(size_A, 1, bc);
         host_batch_vector<T> hARes(size_ARes, 1, bc);
-        host_strided_batch_vector<rocblas_int> hinfo(1, 1, 1, bc);
+        host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
+        host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
         device_batch_vector<T> dA(size_A, 1, bc);
-        device_strided_batch_vector<rocblas_int> dinfo(1, 1, 1, bc);
+        device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
         if(size_A)
             CHECK_HIP_ERROR(dA.memcheck());
-        CHECK_HIP_ERROR(dinfo.memcheck());
+        CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check quick return
         if(n == 0 || bc == 0)
         {
             EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED, POTRF, handle, uplo, n, dA.data(),
-                                                        lda, stA, dinfo.data(), bc),
+                                                        lda, stA, dInfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 ROCSOLVER_BENCH_INFORM(0);
@@ -318,14 +355,15 @@ void testing_potf2_potrf(Arguments argus)
 
         // check computations
         if(argus.unit_check || argus.norm_check)
-            potf2_potrf_getError<STRIDED, POTRF, T>(handle, uplo, n, dA, lda, stA, dinfo, bc, hA,
-                                                    hARes, hinfo, &max_error);
+            potf2_potrf_getError<STRIDED, POTRF, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA,
+                                                    hARes, hInfo, hInfoRes, &max_error,
+                                                    argus.singular);
 
         // collect performance data
         if(argus.timing)
-            potf2_potrf_getPerfData<STRIDED, POTRF, T>(handle, uplo, n, dA, lda, stA, dinfo, bc, hA,
-                                                       hARes, hinfo, &gpu_time_used, &cpu_time_used,
-                                                       hot_calls, argus.perf);
+            potf2_potrf_getPerfData<STRIDED, POTRF, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA,
+                                                       hARes, hInfo, &gpu_time_used, &cpu_time_used,
+                                                       hot_calls, argus.perf, argus.singular);
     }
 
     else
@@ -333,18 +371,19 @@ void testing_potf2_potrf(Arguments argus)
         // memory allocations
         host_strided_batch_vector<T> hA(size_A, 1, stA, bc);
         host_strided_batch_vector<T> hARes(size_ARes, 1, stARes, bc);
-        host_strided_batch_vector<rocblas_int> hinfo(1, 1, 1, bc);
+        host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
+        host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
         device_strided_batch_vector<T> dA(size_A, 1, stA, bc);
-        device_strided_batch_vector<rocblas_int> dinfo(1, 1, 1, bc);
+        device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
         if(size_A)
             CHECK_HIP_ERROR(dA.memcheck());
-        CHECK_HIP_ERROR(dinfo.memcheck());
+        CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check quick return
         if(n == 0 || bc == 0)
         {
             EXPECT_ROCBLAS_STATUS(rocsolver_potf2_potrf(STRIDED, POTRF, handle, uplo, n, dA.data(),
-                                                        lda, stA, dinfo.data(), bc),
+                                                        lda, stA, dInfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 ROCSOLVER_BENCH_INFORM(0);
@@ -354,14 +393,15 @@ void testing_potf2_potrf(Arguments argus)
 
         // check computations
         if(argus.unit_check || argus.norm_check)
-            potf2_potrf_getError<STRIDED, POTRF, T>(handle, uplo, n, dA, lda, stA, dinfo, bc, hA,
-                                                    hARes, hinfo, &max_error);
+            potf2_potrf_getError<STRIDED, POTRF, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA,
+                                                    hARes, hInfo, hInfoRes, &max_error,
+                                                    argus.singular);
 
         // collect performance data
         if(argus.timing)
-            potf2_potrf_getPerfData<STRIDED, POTRF, T>(handle, uplo, n, dA, lda, stA, dinfo, bc, hA,
-                                                       hARes, hinfo, &gpu_time_used, &cpu_time_used,
-                                                       hot_calls, argus.perf);
+            potf2_potrf_getPerfData<STRIDED, POTRF, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA,
+                                                       hARes, hInfo, &gpu_time_used, &cpu_time_used,
+                                                       hot_calls, argus.perf, argus.singular);
     }
 
     // validate results for rocsolver-test
