@@ -12,6 +12,7 @@
 
 #include "common_device.hpp"
 #include "rocblas.hpp"
+#include "rocblas_device_functions.hpp"
 #include "rocsolver.h"
 
 /****************************************************************************
@@ -25,12 +26,12 @@
   and vector operations
 ***************************************************************************/
 
-/** LARTG device function computes the sine (s) and cosine (c) values
+/** BDSQR_LARTG device function computes the sine (s) and cosine (c) values
     to create a givens rotation such that:
     [  c s ]' * [ f ] = [ r ]
     [ -s c ]    [ g ]   [ 0 ] **/
 template <typename T>
-__device__ void lartg(T& f, T& g, T& c, T& s, T& r)
+__device__ void bdsqr_lartg(T& f, T& g, T& c, T& s, T& r)
 {
     if(g == 0)
     {
@@ -56,19 +57,19 @@ __device__ void lartg(T& f, T& g, T& c, T& s, T& r)
     r = c * f - s * g;
 }
 
-/** LASR device function applies a sequence of rotations P(i) i=1,2,...z
+/** BDSQR_LASR device function applies a sequence of rotations P(i) i=1,2,...z
     to a m-by-n matrix A from either the left (P*A with z=m) or the right (A*P'
-   with z=n). P = P(z-1)*...*P(1) if forward direction, P = P(1)*...*P(z-1) if
-   backward direction. **/
+    with z=n). P = P(z-1)*...*P(1) if forward direction, P = P(1)*...*P(z-1) if
+    backward direction. **/
 template <typename T, typename W>
-__device__ void lasr(const rocblas_side side,
-                     const rocblas_direct direc,
-                     const rocblas_int m,
-                     const rocblas_int n,
-                     W* c,
-                     W* s,
-                     T* A,
-                     const rocblas_int lda)
+__device__ void bdsqr_lasr(const rocblas_side side,
+                           const rocblas_direct direc,
+                           const rocblas_int m,
+                           const rocblas_int n,
+                           W* c,
+                           W* s,
+                           T* A,
+                           const rocblas_int lda)
 {
     T temp;
     W cs, sn;
@@ -221,7 +222,7 @@ __device__ void t2bQRstep(const rocblas_int n,
     for(rocblas_int k = 0; k < n - 1; ++k)
     {
         // first apply rotation by columns
-        lartg(f, g, c, s, r);
+        bdsqr_lartg(f, g, c, s, r);
         if(k > 0)
             E[k - 1] = r;
         f = c * D[k] - s * E[k];
@@ -236,7 +237,7 @@ __device__ void t2bQRstep(const rocblas_int n,
         }
 
         // then apply rotation by rows
-        lartg(f, g, c, s, r);
+        bdsqr_lartg(f, g, c, s, r);
         D[k] = r;
         f = c * E[k] - s * D[k + 1];
         D[k + 1] = c * D[k + 1] + s * E[k];
@@ -256,13 +257,13 @@ __device__ void t2bQRstep(const rocblas_int n,
 
     // update singular vectors
     if(nv)
-        lasr(rocblas_side_left, rocblas_forward_direction, n, nv, rots, rots + n - 1, V, ldv);
+        bdsqr_lasr(rocblas_side_left, rocblas_forward_direction, n, nv, rots, rots + n - 1, V, ldv);
     if(nu)
-        lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots + nr, rots + nr + n - 1, U,
-             ldu);
+        bdsqr_lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots + nr,
+                   rots + nr + n - 1, U, ldu);
     if(nc)
-        lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots + nr, rots + nr + n - 1, C,
-             ldc);
+        bdsqr_lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots + nr,
+                   rots + nr + n - 1, C, ldc);
 }
 
 /** B2TQRSTEP device function applies implicit QR interation to
@@ -297,7 +298,7 @@ __device__ void b2tQRstep(const rocblas_int n,
     for(rocblas_int k = n - 1; k > 0; --k)
     {
         // first apply rotation by rows
-        lartg(f, g, c, s, r);
+        bdsqr_lartg(f, g, c, s, r);
         if(k < n - 1)
             E[k] = r;
         f = c * D[k] - s * E[k - 1];
@@ -312,7 +313,7 @@ __device__ void b2tQRstep(const rocblas_int n,
         }
 
         // then apply rotation by columns
-        lartg(f, g, c, s, r);
+        bdsqr_lartg(f, g, c, s, r);
         D[k] = r;
         f = c * E[k - 1] - s * D[k - 1];
         D[k - 1] = c * D[k - 1] + s * E[k - 1];
@@ -332,13 +333,13 @@ __device__ void b2tQRstep(const rocblas_int n,
 
     // update singular vectors
     if(nv)
-        lasr(rocblas_side_left, rocblas_backward_direction, n, nv, rots, rots + n - 1, V, ldv);
+        bdsqr_lasr(rocblas_side_left, rocblas_backward_direction, n, nv, rots, rots + n - 1, V, ldv);
     if(nu)
-        lasr(rocblas_side_right, rocblas_backward_direction, nu, n, rots + nr, rots + nr + n - 1, U,
-             ldu);
+        bdsqr_lasr(rocblas_side_right, rocblas_backward_direction, nu, n, rots + nr,
+                   rots + nr + n - 1, U, ldu);
     if(nc)
-        lasr(rocblas_side_left, rocblas_backward_direction, n, nc, rots + nr, rots + nr + n - 1, C,
-             ldc);
+        bdsqr_lasr(rocblas_side_left, rocblas_backward_direction, n, nc, rots + nr,
+                   rots + nr + n - 1, C, ldc);
 }
 
 /** BDSQRKERNEL implements the main loop of the bdsqr algorithm
@@ -562,7 +563,7 @@ __global__ void lower2upper(const rocblas_int n,
     for(rocblas_int i = 0; i < n - 1; ++i)
     {
         // apply rotations by rows
-        lartg(f, g, c, s, r);
+        bdsqr_lartg(f, g, c, s, r);
         D[i] = r;
         E[i] = -s * D[i + 1];
         f = c * D[i + 1];
@@ -579,9 +580,9 @@ __global__ void lower2upper(const rocblas_int n,
 
     // update singular vectors
     if(nu)
-        lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots, rots + n - 1, U, ldu);
+        bdsqr_lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots, rots + n - 1, U, ldu);
     if(nc)
-        lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots, rots + n - 1, C, ldc);
+        bdsqr_lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots, rots + n - 1, C, ldc);
 }
 
 template <typename T>
