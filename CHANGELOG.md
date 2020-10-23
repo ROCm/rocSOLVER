@@ -10,6 +10,7 @@ __anchor__CB
 
 __anchor__JZ
 - Extended test coverage for functions returning info 
+- Changelog file
 
 ### Optimizations
 __anchor__TA
@@ -24,6 +25,7 @@ __anchor__TA
 __anchor__CB
 
 __anchor__JZ
+- Switched to use semantic versioning for the library
 
 ### Deprecated
 __anchor__TA
