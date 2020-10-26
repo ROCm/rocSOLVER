@@ -541,7 +541,7 @@ if [[ "${build_package}" == true ]]; then
   if [[ "${install_package}" == true ]]; then
     case "${ID}" in
       ubuntu)
-        elevate_if_not_root dpkg -i rocsolver-*.deb
+        elevate_if_not_root dpkg -i rocsolver[-\_]*.deb
         ;;
       centos|rhel)
         elevate_if_not_root yum -y localinstall rocsolver-*.rpm
