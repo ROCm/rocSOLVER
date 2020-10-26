@@ -14,12 +14,14 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T>
+template <typename T, bool BATCHED>
 void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
                                    const rocblas_int batch_count,
                                    size_t* size_scalars,
                                    size_t* size_work,
-                                   size_t* size_norms)
+                                   size_t* size_norms,
+                                   size_t* size_tmptau,
+                                   size_t* size_workArr)
 {
     // if quick return no workspace needed
     if(n == 0 || batch_count == 0)
@@ -27,11 +29,14 @@ void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
         *size_scalars = 0;
         *size_work = 0;
         *size_norms = 0;
+        *size_tmptau = 0;
+        *size_workArr = 0;
         return;
     }
 
     // extra requirements to call SYTD2/HETD2
-    rocsolver_sytd2_hetd2_getMemorySize<T>(n, batch_count, size_scalars, size_work, size_norms);
+    rocsolver_sytd2_hetd2_getMemorySize<T,BATCHED>(n, batch_count, size_scalars, size_work, size_norms,
+                                           size_tmptau, size_workArr);
 }
 
 template <typename S, typename T, typename U>
@@ -78,7 +83,9 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
                                         const rocblas_int batch_count,
                                         T* scalars,
                                         T* work,
-                                        T* norms)
+                                        T* norms,
+                                        T* tmptau,
+                                        T** workArr)
 {
     // quick return
     if(n == 0 || batch_count == 0)

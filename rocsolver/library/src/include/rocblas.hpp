@@ -60,12 +60,42 @@ rocblas_status rocblasCall_dot(rocblas_handle handle,
                                rocblas_stride stridey,
                                rocblas_int batch_count,
                                T* results,
-                               T* workspace)
+                               T* workspace,
+                               T** work = nullptr)
 {
     return rocblas_dot_template<ROCBLAS_DOT_NB, CONJ, T>(
         handle, n, cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(y), offsety,
         incy, stridey, batch_count, results, workspace);
 }
+
+// dot overload
+template <bool CONJ, typename T>
+rocblas_status rocblasCall_dot(rocblas_handle handle,
+                               rocblas_int n,
+                               T* x,
+                               rocblas_int offsetx,
+                               rocblas_int incx,
+                               rocblas_stride stridex,
+                               T *const y[],
+                               rocblas_int offsety,
+                               rocblas_int incy,
+                               rocblas_stride stridey,
+                               rocblas_int batch_count,
+                               T* results,
+                               T* workspace,
+                               T** work = nullptr)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex, batch_count);
+    
+    return rocblas_dot_template<ROCBLAS_DOT_NB, CONJ, T>(
+        handle, n, cast2constType<T>(work), offsetx, incx, stridex, cast2constType<T>(y), offsety,
+        incy, stridey, batch_count, results, workspace);
+}
+
 
 // ger
 template <bool CONJ, typename T, typename U, typename V>
@@ -571,8 +601,9 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
     constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
     constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
 
-    // adding offsets directly to the arrays A and B until rocblas_trmm
-    // supports offset arguments
+    // TODO: adding offsets directly to the arrays A and B until rocblas_trmm
+    // supports offset arguments.
+    // (JIRA ticket: SWDEV-249061)
     return rocblas_trmm_template<BATCHED, nb, nb, T>(
         handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha),
         cast2constType<T>(A + offsetA), lda, strideA, B + offsetB, ldb, strideB, batch_count, work,
@@ -610,8 +641,9 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, work, strideW,
                        batch_count);
 
-    // until rocblas_trmm support offset arguments,
-    // we need to manually offset A and B and store in temporary arrays AA and BB
+    // TODO: until rocblas_trmm support offset arguments,
+    // we need to manually offset A and B and store in temporary arrays AA and BB.
+    // (JIRA ticket: SWDEV-249061)   
     T **AA, **BB;
     hipMalloc(&AA, sizeof(T*) * batch_count);
     hipMalloc(&BB, sizeof(T*) * batch_count);
@@ -658,15 +690,17 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
 
-    // adding offsets directly to the array B until rocblas_trmm
-    // supports offset arguments
+    // TODO: adding offsets directly to the array B until rocblas_trmm
+    // supports offset arguments.
+    // (JIRA ticket: SWDEV-249061)   
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, B + offsetB, strideB,
                        batch_count);
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr + batch_count, work,
                        strideW, batch_count);
 
-    // until rocblas_trmm support offset arguments,
-    // we need to manually offset A and store in temporary array AA
+    // TODO: until rocblas_trmm support offset arguments,
+    // we need to manually offset A and store in temporary array AA.
+    // (JIRA ticket: SWDEV-249061)   
     T** AA;
     hipMalloc(&AA, sizeof(T*) * batch_count);
     hipLaunchKernelGGL(shift_array, dim3(blocks), dim3(256), 0, stream, AA, A, offsetA, batch_count);
@@ -681,33 +715,128 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
     return status;
 }
 
-// syrk
-template <typename T, typename U, typename V>
-rocblas_status rocblasCall_syrk(rocblas_handle handle,
-                                rocblas_fill uplo,
-                                rocblas_operation transA,
-                                rocblas_int n,
-                                rocblas_int k,
-                                U alpha,
-                                V A,
-                                rocblas_int offsetA,
-                                rocblas_int lda,
-                                rocblas_stride strideA,
-                                U beta,
-                                V C,
-                                rocblas_int offsetC,
-                                rocblas_int ldc,
-                                rocblas_stride strideC,
-                                rocblas_int batch_count)
+// syr2
+template <typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
+rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
+                                     rocblas_fill uplo,
+                                     rocblas_int n,
+                                     U alpha, 
+                                     V x,
+                                     rocblas_int offsetx,
+                                     rocblas_int incx,
+                                     rocblas_stride stridex,
+                                     V y, 
+                                     rocblas_int offsety,
+                                     rocblas_int incy,
+                                     rocblas_stride stridey,
+                                     V A, 
+                                     rocblas_int lda,
+                                     rocblas_int offsetA,
+                                     rocblas_stride strideA,
+                                     rocblas_int batch_count,
+                                     T** work)
 {
-    return rocblas_syrk_template(handle, uplo, transA, n, k, cast2constType<T>(alpha),
-                                 cast2constType<T>(A), offsetA, lda, strideA,
-                                 cast2constType<T>(beta), C, offsetC, ldc, strideC, batch_count);
+    return rocblas_syr2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x), 
+                                offsetx, incx, stridex, cast2constType<T>(y), offsety, incy, 
+                                stridey, A, lda, offsetA, strideA, batch_count);
+}
+                            
+// syr2 overload
+template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
+                                     rocblas_fill uplo,
+                                     rocblas_int n,
+                                     U alpha, 
+                                     T *const x[],
+                                     rocblas_int offsetx,
+                                     rocblas_int incx,
+                                     rocblas_stride stridex,
+                                     T* y, 
+                                     rocblas_int offsety,
+                                     rocblas_int incy,
+                                     rocblas_stride stridey,
+                                     T *const A[], 
+                                     rocblas_int lda,
+                                     rocblas_int offsetA,
+                                     rocblas_stride strideA,
+                                     rocblas_int batch_count,
+                                     T** work)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
+
+    return rocblas_syr2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x), 
+                                offsetx, incx, stridex, cast2constType<T>(work), offsety, incy, 
+                                stridey, A, lda, offsetA, strideA, batch_count);
 }
 
-// herk
+// her2
+template <typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
+rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
+                                     rocblas_fill uplo,
+                                     rocblas_int n,
+                                     U alpha, 
+                                     V x,
+                                     rocblas_int offsetx,
+                                     rocblas_int incx,
+                                     rocblas_stride stridex,
+                                     V y, 
+                                     rocblas_int offsety,
+                                     rocblas_int incy,
+                                     rocblas_stride stridey,
+                                     V A, 
+                                     rocblas_int lda,
+                                     rocblas_int offsetA,
+                                     rocblas_stride strideA,
+                                     rocblas_int batch_count,
+                                     T** work)
+{
+    /*return rocblas_her2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x), 
+                                offsetx, incx, stridex, cast2constType<T>(y), offsety, incy, 
+                                stridey, A, lda, offsetA, strideA, batch_count);*/
+    return rocblas_status_success;
+}
+                            
+// her2 overload
+template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
+                                     rocblas_fill uplo,
+                                     rocblas_int n,
+                                     U alpha, 
+                                     T *const x[],
+                                     rocblas_int offsetx,
+                                     rocblas_int incx,
+                                     rocblas_stride stridex,
+                                     T* y, 
+                                     rocblas_int offsety,
+                                     rocblas_int incy,
+                                     rocblas_stride stridey,
+                                     T *const A[], 
+                                     rocblas_int lda,
+                                     rocblas_int offsetA,
+                                     rocblas_stride strideA,
+                                     rocblas_int batch_count,
+                                     T** work)
+{
+    /*hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
+
+    return rocblas_her2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x), 
+                                offsetx, incx, stridex, cast2constPointer<T>(work), offsety, incy, 
+                                stridey, A, lda, offsetA, strideA, batch_count);*/
+    return rocblas_status_success;
+}
+
+
+// syrk
 template <typename S, typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
-rocblas_status rocblasCall_herk(rocblas_handle handle,
+rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                 rocblas_fill uplo,
                                 rocblas_operation transA,
                                 rocblas_int n,
@@ -729,8 +858,9 @@ rocblas_status rocblasCall_herk(rocblas_handle handle,
                                  cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
 }
 
+// herk
 template <typename S, typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
-rocblas_status rocblasCall_herk(rocblas_handle handle,
+rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                 rocblas_fill uplo,
                                 rocblas_operation transA,
                                 rocblas_int n,
@@ -750,6 +880,135 @@ rocblas_status rocblasCall_herk(rocblas_handle handle,
     return rocblas_herk_template(handle, uplo, transA, n, k, cast2constType<S>(alpha),
                                  cast2constType<T>(A), offsetA, lda, strideA,
                                  cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
+}
+
+
+// symv
+template <typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
+rocblas_status rocblasCall_symv_hemv(rocblas_handle handle, 
+                                    rocblas_fill uplo,
+                                    rocblas_int n,
+                                    U alpha, 
+                                    rocblas_stride stridea,
+                                    V A, 
+                                    rocblas_int offsetA,
+                                    rocblas_int lda,
+                                    rocblas_stride strideA,
+                                    V x,
+                                    rocblas_int offsetx,
+                                    rocblas_int incx,
+                                    rocblas_stride stridex,
+                                    U beta,
+                                    rocblas_stride strideb,
+                                    V y,
+                                    rocblas_int offsety,
+                                    rocblas_int incy,
+                                    rocblas_stride stridey,
+                                    rocblas_int batch_count,
+                                    T** work)
+{
+    return rocblas_symv_template<T>(handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda, strideA,
+                                    cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb, y, offsety,
+                                    incy, stridey, batch_count);
+}
+
+// symv overload
+template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+rocblas_status rocblasCall_symv_hemv(rocblas_handle handle, 
+                                    rocblas_fill uplo,
+                                    rocblas_int n,
+                                    U alpha, 
+                                    rocblas_stride stridea,
+                                    T *const A[], 
+                                    rocblas_int offsetA,
+                                    rocblas_int lda,
+                                    rocblas_stride strideA,
+                                    T *const x[],
+                                    rocblas_int offsetx,
+                                    rocblas_int incx,
+                                    rocblas_stride stridex,
+                                    U beta,
+                                    rocblas_stride strideb,
+                                    T* y,
+                                    rocblas_int offsety,
+                                    rocblas_int incy,
+                                    rocblas_stride stridey,
+                                    rocblas_int batch_count,
+                                    T** work)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
+
+    return rocblas_symv_template<T>(handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda, strideA,
+                                    cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb, cast2constPointer<T>(work), offsety,
+                                    incy, stridey, batch_count);
+}
+
+// hemv
+template <typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
+rocblas_status rocblasCall_symv_hemv(rocblas_handle handle, 
+                                    rocblas_fill uplo,
+                                    rocblas_int n,
+                                    U alpha, 
+                                    rocblas_stride stridea,
+                                    V A, 
+                                    rocblas_int offsetA,
+                                    rocblas_int lda,
+                                    rocblas_stride strideA,
+                                    V x,
+                                    rocblas_int offsetx,
+                                    rocblas_int incx,
+                                    rocblas_stride stridex,
+                                    U beta,
+                                    rocblas_stride strideb,
+                                    V y,
+                                    rocblas_int offsety,
+                                    rocblas_int incy,
+                                    rocblas_stride stridey,
+                                    rocblas_int batch_count,
+                                    T** work)
+{
+    return rocblas_hemv_template<T>(handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda, strideA,
+                                    cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb, y, offsety,
+                                    incy, stridey, batch_count);
+}
+
+// hemv overload
+template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+rocblas_status rocblasCall_symv_hemv(rocblas_handle handle, 
+                                    rocblas_fill uplo,
+                                    rocblas_int n,
+                                    U alpha, 
+                                    rocblas_stride stridea,
+                                    T *const A[], 
+                                    rocblas_int offsetA,
+                                    rocblas_int lda,
+                                    rocblas_stride strideA,
+                                    T *const x[],
+                                    rocblas_int offsetx,
+                                    rocblas_int incx,
+                                    rocblas_stride stridex,
+                                    U beta,
+                                    rocblas_stride strideb,
+                                    T* y,
+                                    rocblas_int offsety,
+                                    rocblas_int incy,
+                                    rocblas_stride stridey,
+                                    rocblas_int batch_count,
+                                    T** work)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
+
+    return rocblas_hemv_template<T>(handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda, strideA,
+                                    cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb, cast2constPointer<T>(work), offsety,
+                                    incy, stridey, batch_count);
 }
 
 // trsm memory sizes

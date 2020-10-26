@@ -38,17 +38,19 @@ rocblas_status rocsolver_sytrd_hetrd_batched_impl(rocblas_handle handle,
     // size for constants in rocblas calls
     size_t size_scalars;
     // extra requirements for calling SYTD2/HETD2
-    size_t size_norms, size_work;
-    rocsolver_sytrd_hetrd_getMemorySize<T>(n, batch_count, &size_scalars, &size_work,
-                                            &size_norms);
+    size_t size_norms, size_work, size_tmptau;
+    // size of array of pointers to workspace (batched case)
+    size_t size_workArr;
+    rocsolver_sytrd_hetrd_getMemorySize<T,true>(n, batch_count, &size_scalars, &size_work,
+                                            &size_norms, &size_tmptau, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
-                                                      size_norms);
+                                                      size_norms, size_tmptau, size_workArr);
 
     // memory workspace allocation
-    void *scalars, *work, *norms;
-    rocblas_device_malloc mem(handle, size_scalars, size_work, size_norms);
+    void *scalars, *work, *norms, *tmptau, *workArr;
+    rocblas_device_malloc mem(handle, size_scalars, size_work, size_norms, size_tmptau, size_workArr);
 
     if(!mem)
         return rocblas_status_memory_error;
@@ -56,13 +58,15 @@ rocblas_status rocsolver_sytrd_hetrd_batched_impl(rocblas_handle handle,
     scalars = mem[0];
     work = mem[1];
     norms = mem[2];
+    tmptau = mem[3];
+    workArr = mem[4];
     T sca[] = {-1, 0, 1};
     RETURN_IF_HIP_ERROR(hipMemcpy((T*)scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
     // execution
     return rocsolver_sytrd_hetrd_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E,
                                           strideE, tau, strideP, batch_count,
-                                          (T*)scalars, (T*)work, (T*)norms);
+                                          (T*)scalars, (T*)work, (T*)norms, (T*)tmptau, (T**)workArr);
 }
 
 /*

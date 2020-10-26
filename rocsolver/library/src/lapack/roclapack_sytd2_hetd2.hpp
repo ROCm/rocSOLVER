@@ -14,12 +14,82 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T>
+template <typename T, typename U, typename S, std::enable_if_t<!is_complex<T>, int> = 0>
+__global__ void set_offdiag(const rocblas_int batch_count,
+                            U A,
+                            const rocblas_int shiftA,
+                            const rocblas_stride strideA,
+                            S* E,
+                            const rocblas_stride strideE)
+{
+    rocblas_int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if(b < batch_count) 
+    {
+        T* a = load_ptr_batch<T>(A, b, shiftA, strideA);
+        S* e = E + b*strideE;
+
+        e[0] = a[0]; 
+        a[0] = T(1);
+    } 
+}
+
+template <typename T, typename U, typename S, std::enable_if_t<is_complex<T>, int> = 0>
+__global__ void set_offdiag(const rocblas_int batch_count,
+                            U A,
+                            const rocblas_int shiftA,
+                            const rocblas_stride strideA,
+                            S* E,
+                            const rocblas_stride strideE)
+{
+    rocblas_int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if(b < batch_count) 
+    {
+        T* a = load_ptr_batch<T>(A, b, shiftA, strideA);
+        S* e = E + b*strideE;
+
+        e[0] = a[0].real();
+        a[0] = T(1);
+    } 
+}
+
+template <typename T, typename U>
+__global__ void scale_axpy(const rocblas_int n,
+                           T* tmptau, 
+                           T* norms, 
+                           T* tau, 
+                           const rocblas_stride strideP,
+                           U A, 
+                           const rocblas_int shiftA, 
+                           const rocblas_stride strideA)
+{
+    rocblas_int b = hipBlockIdx_y;
+    rocblas_int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if(i < n)
+    {
+        T* v = load_ptr_batch<T>(A, b, shiftA, strideA);
+        T* t = tau + b*strideP;
+
+        // scale
+        T alpha =  -0.5 * tau[b] * norms[b];
+
+        // axpy
+        t[i] = alpha * v[i] + t[i];
+    }
+}
+
+
+
+template <typename T, bool BATCHED>
 void rocsolver_sytd2_hetd2_getMemorySize(const rocblas_int n,
                                    const rocblas_int batch_count,
                                    size_t* size_scalars,
                                    size_t* size_work,
-                                   size_t* size_norms)
+                                   size_t* size_norms,
+                                   size_t* size_tmptau,
+                                   size_t* size_workArr)
 {
     // if quick return no workspace needed
     if(n == 0 || batch_count == 0)
@@ -27,11 +97,22 @@ void rocsolver_sytd2_hetd2_getMemorySize(const rocblas_int n,
         *size_scalars = 0;
         *size_work = 0;
         *size_norms = 0;
+        *size_tmptau = 0;
+        *size_workArr = 0;
         return;
     }
 
     // size of scalars (constants)
     *size_scalars = sizeof(T) * 3;
+    
+    // size of array to store temporary householder scalars
+    *size_tmptau = sizeof(T) * batch_count;
+
+    // size of array of pointers to workspace
+    if(BATCHED)
+        *size_workArr = sizeof(T*) * batch_count;
+    else
+        *size_workArr = 0;
 
     // extra requirements to call LARFG
     rocsolver_larfg_getMemorySize<T>(n, batch_count, size_work, size_norms);
@@ -81,7 +162,9 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
                                         const rocblas_int batch_count,
                                         T* scalars,
                                         T* work,
-                                        T* norms)
+                                        T* norms,
+                                        T* tmptau,
+                                        T** workArr)
 {
     // quick return
     if(n == 0 || batch_count == 0)
@@ -95,6 +178,107 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
+    // configure kernels
+    rocblas_int blocks = (n - 1) / BLOCKSIZE + 1;
+    dim3 grid_n(blocks, batch_count);
+    dim3 threads(BLOCKSIZE, 1, 1);
+    blocks = (batch_count - 1) / BLOCKSIZE + 1;
+    dim3 grid_b(blocks, 1);
+
+    rocblas_stride stridet = 1; //stride for tmptau
+    
+    if(uplo == rocblas_fill_lower)
+    {
+        // reduce the lower part of A
+        // main loop running forwards (for each column)
+        for(rocblas_int j = 0; j < n - 1; ++j)
+        {
+            // 1. generate Householder reflector to annihilate A(j+2:n-1,j)
+            rocsolver_larfg_template<T>(handle, n-1-j, A, shiftA + idx2D(j+1,j,lda), A, 
+                                        shiftA + idx2D(min(j+2,n-1),j,lda), 1, strideA, tmptau,
+                                        stridet, batch_count, work, norms);         
+
+            // 2. copy to E(j) the corresponding off-diagonal element of A, which is set to 1
+            hipLaunchKernelGGL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A, 
+                               shiftA + idx2D(j+1,j,lda), strideA, E+j, strideE);  
+
+            // 3. overwrite tau with w = tmptau*A*v - 1/2*tmptau*(tmptau*v'*A*v)*v
+            // a. compute tmptau*A*v -> tau
+            rocblasCall_symv_hemv<T>(handle, uplo, n-1-j, tmptau, stridet, A, 
+                                shiftA + idx2D(j+1,j+1,lda), lda, strideA, A, 
+                                shiftA + idx2D(j+1,j,lda), 1, strideA, scalars+1, 0,       
+                                tau, j, 1, strideP, batch_count, workArr);
+            
+            // b. compute scalar tmptau*v'*A*v=tau'*v -> norms
+            rocblasCall_dot<COMPLEX, T>(handle, n-1-j, tau, j, 1, strideP, A,
+                                        shiftA + idx2D(j+1,j,lda), 1, strideA,
+                                        batch_count, norms, work, workArr); 
+
+            // c. finally update tau as an axpy: -1/2*tmptau*norms*v + tau -> tau
+            // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes 
+            //  available, we can use it instead of the scale_axpy kernel, if it provides 
+            //  better performance.)
+            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, n-1-j, 
+                                tmptau, norms, tau + j, strideP, 
+                                A, shiftA + idx2D(j+1,j,lda), strideA);   
+
+            // 4. apply the Householder reflector to A as a rank-2 update:
+            // A = A - v*w' - w*v'
+            rocblasCall_syr2_her2<T>(handle, uplo, n-1-j, scalars, A, shiftA + idx2D(j+1,j,lda),
+                                    1, strideA, tau, j, 1, strideP, A, lda, 
+                                    shiftA + idx2D(j+1,j+1,lda), strideA, batch_count, workArr);
+
+            // 5. Save the used housedholder scalar
+        }
+    }
+    
+    else
+    {
+        // reduce the upper part of A
+        // main loop running backwards (for each column)
+        for(rocblas_int j = n - 1; j > 0; --j) 
+        {
+            // 1. generate Householder reflector to annihilate A(0:j-2,j) 
+            rocsolver_larfg_template<T>(handle, j, A, shiftA + idx2D(j-1,j,lda), A, 
+                                        shiftA + idx2D(0,j,lda), 1, strideA, tmptau, 1,
+                                        batch_count, work, norms);         
+            
+            // 2. copy to E(j-1) the corresponding off-diagonal element of A, which is set to 1 
+            hipLaunchKernelGGL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
+                                shiftA + idx2D(j-1,j,lda), strideA, E+j-1, strideE);  
+            
+            // 3. overwrite tau with w = tmptau*A*v - 1/2*tmptau*tmptau*(v'*A*v*)v
+            // a. compute tmptau*A*v -> tau
+            rocblasCall_symv_hemv<T>(handle, uplo, j, tmptau, stridet, A, 
+                                shiftA, lda, strideA, A,  
+                                shiftA + idx2D(0,j,lda), 1, strideA, scalars+1, 0,       
+                                tau, 0, 1, strideP, batch_count, workArr);
+            
+            // b. compute scalar tmptau*v'*A*v=tau'*v -> norms
+            rocblasCall_dot<COMPLEX, T>(handle, j, tau, 0, 1, strideP, A,
+                                        shiftA + idx2D(0,j,lda), 1, strideA,
+                                        batch_count, norms, work, workArr); 
+
+            // c. finally update tau as an axpy: -1/2*tmptau*norms*v + tau -> tau
+            // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes 
+            //  available, we can use it instead of the scale_axpy kernel if it provides 
+            //  better performance.) 
+            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, j, 
+                                tmptau, norms, tau, strideP, 
+                                A, shiftA + idx2D(0,j,lda), strideA);   
+
+            // 4. apply the Householder reflector to A as a rank-2 update:
+            // A = A - v*w' - w*v'
+            rocblasCall_syr2_her2<T>(handle, uplo, j, scalars, A, shiftA + idx2D(0,j,lda),
+                                    1, strideA, tau, 0, 1, strideP, A, lda, 
+                                    shiftA, strideA, batch_count, workArr);
+            
+            // 5. Save the used housedholder scalar
+        }
+    }
+
+    // Copy results
+    
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
