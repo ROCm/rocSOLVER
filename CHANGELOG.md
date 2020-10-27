@@ -97,13 +97,15 @@ __anchor__JZ
 ## [rocSOLVER 3.8.0 for ROCm 3.8.0]
 ### Added
 - Sample codes for C, C++ and FORTRAN
-- LU factorization without pivoting routines:
+- LU factorization without pivoting routines: 
     - GETF2\_NPVT, GETRF\_NPVT (with batched and strided\_batched versions)
 
 ### Optimizations
 - Improved performance of LU factorization of mid-size matrices (64 < n <= 2048)
 - Improved performance of small-size matrix inversion (n <= 64)
 
+### Fixed
+- Ensure the public API is C compatible
 
 
 ## [rocSOLVER 3.7.0 for ROCm 3.7.0]
