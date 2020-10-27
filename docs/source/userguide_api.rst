@@ -768,6 +768,47 @@ rocsolver_<type>gebrd_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgebrd_strided_batched
 
+
+Symmetric Matrix Diagonalizations
+---------------------------------
+
+rocsolver_<type>sytd2()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsytd2
+   :outline:
+.. doxygenfunction:: rocsolver_ssytd2
+
+rocsolver_<type>sytd2_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsytd2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssytd2_batched
+
+rocsolver_<type>sytd2_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsytd2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssytd2_strided_batched
+
+rocsolver_<type>hetd2()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhetd2
+   :outline:
+.. doxygenfunction:: rocsolver_chetd2
+
+rocsolver_<type>hetd2_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhetd2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chetd2_batched
+
+rocsolver_<type>hetd2_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhetd2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chetd2_strided_batched
+
+
 General Matrix Inversion
 --------------------------
 
