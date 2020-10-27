@@ -794,10 +794,9 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_int batch_count,
                                      T** work)
 {
-    /*return rocblas_her2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x), 
+    return rocblas_her2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x), 
                                 offsetx, incx, stridex, cast2constType<T>(y), offsety, incy, 
-                                stridey, A, lda, offsetA, strideA, batch_count);*/
-    return rocblas_status_success;
+                                stridey, A, lda, offsetA, strideA, batch_count);
 }
                             
 // her2 overload
@@ -821,16 +820,15 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_int batch_count,
                                      T** work)
 {
-    /*hipStream_t stream;
+    hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
 
     return rocblas_her2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x), 
-                                offsetx, incx, stridex, cast2constPointer<T>(work), offsety, incy, 
-                                stridey, A, lda, offsetA, strideA, batch_count);*/
-    return rocblas_status_success;
+                                offsetx, incx, stridex, cast2constType<T>(work), offsety, incy, 
+                                stridey, A, lda, offsetA, strideA, batch_count);
 }
 
 
