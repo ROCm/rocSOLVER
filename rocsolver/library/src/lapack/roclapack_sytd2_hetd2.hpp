@@ -14,6 +14,9 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
+/** set_offdiag kernel copies the off-diagonal element of A, which is the non-zero element
+    resulting by applying the Householder reflector to the working column, to E. Then set it
+    to 1 to prepare for the application of the Householder reflector to the rest of the matrix **/     
 template <typename T, typename U, typename S, std::enable_if_t<!is_complex<T>, int> = 0>
 __global__ void set_offdiag(const rocblas_int batch_count,
                             U A,
@@ -54,6 +57,8 @@ __global__ void set_offdiag(const rocblas_int batch_count,
     } 
 }
 
+/** scale_axpy kernel executes axpy to update tau computing the scalar alpha with other 
+    results in different memopry locations **/
 template <typename T, typename U>
 __global__ void scale_axpy(const rocblas_int n,
                            T* tmptau, 
@@ -73,12 +78,93 @@ __global__ void scale_axpy(const rocblas_int n,
         T* t = tau + b*strideP;
 
         // scale
-        T alpha =  -0.5 * tau[b] * norms[b];
+        T alpha =  -0.5 * tmptau[b] * norms[b];
 
         // axpy
         t[i] = alpha * v[i] + t[i];
     }
 }
+
+/** set_tau kernel copies to tau the corresponding Householder scalars **/
+template <typename T>
+__global__ void set_tau(const rocblas_int batch_count,
+                        T* tmptau,
+                        T* tau,
+                        const rocblas_stride strideP)
+{
+    rocblas_int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if(b < batch_count)
+    {
+        T* t = tau + b*strideP;
+
+        t[0] = tmptau[b];
+    }
+}
+
+/** set_tridiag kernel copies results to set tridiagonal form in A, diagonal elements in D
+    and off-diagonal elements in E **/
+template <typename S, typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+__global__ void set_tridiag(const rocblas_fill uplo, const rocblas_int n, 
+                            U A, const rocblas_int shiftA,
+                            const rocblas_int lda, const rocblas_stride strideA,
+                            S* D, const rocblas_stride strideD,
+                            S* E, const rocblas_stride strideE)
+{
+    rocblas_int b = hipBlockIdx_y;
+    rocblas_int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    bool lower = (uplo == rocblas_fill_lower);
+
+    if(i < n) 
+    {
+        T* a = load_ptr_batch<T>(A, b, shiftA, strideA);
+        S* d = D + b*strideD;
+        S* e = E + b*strideE;
+
+        // diagonal
+        d[i] = a[i + i * lda];
+
+        // off-diagonal
+        if(i < n - 1) 
+        {
+            if(lower)
+                a[i+1 + i*lda] = T(e[i]);
+            else
+                a[i + (i+1)*lda] = T(e[i]);
+        }
+    }
+} 
+
+template <typename S, typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+__global__ void set_tridiag(const rocblas_fill uplo, const rocblas_int n, 
+                            U A, const rocblas_int shiftA,
+                            const rocblas_int lda, const rocblas_stride strideA,
+                            S* D, const rocblas_stride strideD,
+                            S* E, const rocblas_stride strideE)
+{
+    rocblas_int b = hipBlockIdx_y;
+    rocblas_int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    bool lower = (uplo == rocblas_fill_lower);
+
+    if(i < n) 
+    {
+        T* a = load_ptr_batch<T>(A, b, shiftA, strideA);
+        S* d = D + b*strideD;
+        S* e = E + b*strideE;
+
+        // diagonal
+        d[i] = a[i + i * lda].real();
+
+        // off-diagonal
+        if(i < n - 1) 
+        {
+            if(lower)
+                a[i+1 + i*lda] = T(e[i]);
+            else
+                a[i + (i+1)*lda] = T(e[i]);
+        }
+    }
+} 
 
 
 
@@ -191,7 +277,7 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
     {
         // reduce the lower part of A
         // main loop running forwards (for each column)
-        for(rocblas_int j = 0; j < n - 1; ++j)
+        for(rocblas_int j = 0; j < n-1; ++j)  
         {
             // 1. generate Householder reflector to annihilate A(j+2:n-1,j)
             rocsolver_larfg_template<T>(handle, n-1-j, A, shiftA + idx2D(j+1,j,lda), A, 
@@ -229,6 +315,8 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
                                     shiftA + idx2D(j+1,j+1,lda), strideA, batch_count, workArr);
 
             // 5. Save the used housedholder scalar
+            hipLaunchKernelGGL(set_tau<T>, grid_b, threads, 0, stream, batch_count, 
+                                tmptau, tau + j, strideP);
         }
     }
     
@@ -274,11 +362,14 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
                                     shiftA, strideA, batch_count, workArr);
             
             // 5. Save the used housedholder scalar
+            hipLaunchKernelGGL(set_tau<T>, grid_b, threads, 0, stream, batch_count, 
+                                tmptau, tau + j - 1, strideP);
         }
     }
 
-    // Copy results
-    
+    // Copy results (set tridiagonal form in A)
+    hipLaunchKernelGGL((set_tridiag<S,T>), grid_n, threads, 0, stream, uplo, n, A, shiftA, 
+                        lda, strideA, D, strideD, E, strideE);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
