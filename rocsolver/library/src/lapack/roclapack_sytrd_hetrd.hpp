@@ -10,18 +10,18 @@
 #ifndef ROCLAPACK_TRD_H
 #define ROCLAPACK_TRD_H
 
-#include "roclapack_sytd2_hetd2.hpp"
 #include "rocblas.hpp"
+#include "roclapack_sytd2_hetd2.hpp"
 #include "rocsolver.h"
 
 template <typename T, bool BATCHED>
 void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
-                                   const rocblas_int batch_count,
-                                   size_t* size_scalars,
-                                   size_t* size_work,
-                                   size_t* size_norms,
-                                   size_t* size_tmptau,
-                                   size_t* size_workArr)
+                                         const rocblas_int batch_count,
+                                         size_t* size_scalars,
+                                         size_t* size_work,
+                                         size_t* size_norms,
+                                         size_t* size_tmptau,
+                                         size_t* size_workArr)
 {
     // if quick return no workspace needed
     if(n == 0 || batch_count == 0)
@@ -35,8 +35,8 @@ void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
     }
 
     // extra requirements to call SYTD2/HETD2
-    rocsolver_sytd2_hetd2_getMemorySize<T,BATCHED>(n, batch_count, size_scalars, size_work, size_norms,
-                                           size_tmptau, size_workArr);
+    rocsolver_sytd2_hetd2_getMemorySize<T, BATCHED>(n, batch_count, size_scalars, size_work,
+                                                    size_norms, size_tmptau, size_workArr);
 }
 
 template <typename S, typename T, typename U>
@@ -68,24 +68,24 @@ rocblas_status rocsolver_sytrd_hetrd_argCheck(const rocblas_fill uplo,
 
 template <typename S, typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
-                                        const rocblas_fill uplo,
-                                        const rocblas_int n,
-                                        U A,
-                                        const rocblas_int shiftA,
-                                        const rocblas_int lda,
-                                        const rocblas_stride strideA,
-                                        S* D,
-                                        const rocblas_stride strideD,
-                                        S* E,
-                                        const rocblas_stride strideE,
-                                        T* tau,
-                                        const rocblas_stride strideP,
-                                        const rocblas_int batch_count,
-                                        T* scalars,
-                                        T* work,
-                                        T* norms,
-                                        T* tmptau,
-                                        T** workArr)
+                                              const rocblas_fill uplo,
+                                              const rocblas_int n,
+                                              U A,
+                                              const rocblas_int shiftA,
+                                              const rocblas_int lda,
+                                              const rocblas_stride strideA,
+                                              S* D,
+                                              const rocblas_stride strideD,
+                                              S* E,
+                                              const rocblas_stride strideE,
+                                              T* tau,
+                                              const rocblas_stride strideP,
+                                              const rocblas_int batch_count,
+                                              T* scalars,
+                                              T* work,
+                                              T* norms,
+                                              T* tmptau,
+                                              T** workArr)
 {
     // quick return
     if(n == 0 || batch_count == 0)
@@ -94,4 +94,4 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
     return rocblas_status_not_implemented;
 }
 
-#endif 
+#endif

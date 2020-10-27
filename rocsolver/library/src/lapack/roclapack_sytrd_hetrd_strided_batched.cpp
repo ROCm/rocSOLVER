@@ -6,18 +6,18 @@
 
 template <typename S, typename T, typename U>
 rocblas_status rocsolver_sytrd_hetrd_strided_batched_impl(rocblas_handle handle,
-                                    const rocblas_fill uplo,
-                                    const rocblas_int n,
-                                    U A,
-                                    const rocblas_int lda,
-                                    const rocblas_stride strideA,
-                                    S* D,
-                                    const rocblas_stride strideD,
-                                    S* E,
-                                    const rocblas_stride strideE,
-                                    T* tau,
-                                    const rocblas_stride strideP,
-                                    const rocblas_int batch_count)
+                                                          const rocblas_fill uplo,
+                                                          const rocblas_int n,
+                                                          U A,
+                                                          const rocblas_int lda,
+                                                          const rocblas_stride strideA,
+                                                          S* D,
+                                                          const rocblas_stride strideD,
+                                                          S* E,
+                                                          const rocblas_stride strideE,
+                                                          T* tau,
+                                                          const rocblas_stride strideP,
+                                                          const rocblas_int batch_count)
 {
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -39,12 +39,12 @@ rocblas_status rocsolver_sytrd_hetrd_strided_batched_impl(rocblas_handle handle,
     size_t size_norms, size_work, size_tmptau;
     // size of array of pointers to workspace (batched case)
     size_t size_workArr;
-    rocsolver_sytrd_hetrd_getMemorySize<T,false>(n, batch_count, &size_scalars, &size_work,
-                                            &size_norms, &size_tmptau, &size_workArr);
+    rocsolver_sytrd_hetrd_getMemorySize<T, false>(n, batch_count, &size_scalars, &size_work,
+                                                  &size_norms, &size_tmptau, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
-                                                      size_norms, size_tmptau, size_workArr);
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_norms,
+                                                      size_tmptau, size_workArr);
 
     // memory workspace allocation
     void *scalars, *work, *norms, *tmptau, *workArr;
@@ -63,8 +63,8 @@ rocblas_status rocsolver_sytrd_hetrd_strided_batched_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_sytrd_hetrd_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E,
-                                          strideE, tau, strideP, batch_count,
-                                          (T*)scalars, (T*)work, (T*)norms, (T*)tmptau, (T**)workArr);
+                                          strideE, tau, strideP, batch_count, (T*)scalars, (T*)work,
+                                          (T*)norms, (T*)tmptau, (T**)workArr);
 }
 
 /*
@@ -76,71 +76,75 @@ rocblas_status rocsolver_sytrd_hetrd_strided_batched_impl(rocblas_handle handle,
 extern "C" {
 
 rocblas_status rocsolver_ssytrd_strided_batched(rocblas_handle handle,
-                                const rocblas_fill uplo,
-                                const rocblas_int n,
-                                float* A,
-                                const rocblas_int lda,
-                                const rocblas_stride strideA,
-                                float* D,
-                                const rocblas_stride strideD,
-                                float* E,
-                                const rocblas_stride strideE,
-                                float* tau,
-                                const rocblas_stride strideP,
-                                const rocblas_int batch_count)
+                                                const rocblas_fill uplo,
+                                                const rocblas_int n,
+                                                float* A,
+                                                const rocblas_int lda,
+                                                const rocblas_stride strideA,
+                                                float* D,
+                                                const rocblas_stride strideD,
+                                                float* E,
+                                                const rocblas_stride strideE,
+                                                float* tau,
+                                                const rocblas_stride strideP,
+                                                const rocblas_int batch_count)
 {
-    return rocsolver_sytrd_hetrd_strided_batched_impl<float, float>(handle, uplo, n, A, lda, strideA, D, strideD, E, strideE, tau, strideP, batch_count);
+    return rocsolver_sytrd_hetrd_strided_batched_impl<float, float>(
+        handle, uplo, n, A, lda, strideA, D, strideD, E, strideE, tau, strideP, batch_count);
 }
 
 rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle handle,
-                                const rocblas_fill uplo,
-                                const rocblas_int n,
-                                double* A,
-                                const rocblas_int lda,
-                                const rocblas_stride strideA,
-                                double* D,
-                                const rocblas_stride strideD,
-                                double* E,
-                                const rocblas_stride strideE,
-                                double* tau,
-                                const rocblas_stride strideP,
-                                const rocblas_int batch_count)
+                                                const rocblas_fill uplo,
+                                                const rocblas_int n,
+                                                double* A,
+                                                const rocblas_int lda,
+                                                const rocblas_stride strideA,
+                                                double* D,
+                                                const rocblas_stride strideD,
+                                                double* E,
+                                                const rocblas_stride strideE,
+                                                double* tau,
+                                                const rocblas_stride strideP,
+                                                const rocblas_int batch_count)
 {
-    return rocsolver_sytrd_hetrd_strided_batched_impl<double, double>(handle, uplo, n, A, lda, strideA, D, strideD, E, strideE, tau, strideP, batch_count);
+    return rocsolver_sytrd_hetrd_strided_batched_impl<double, double>(
+        handle, uplo, n, A, lda, strideA, D, strideD, E, strideE, tau, strideP, batch_count);
 }
 
 rocblas_status rocsolver_chetrd_strided_batched(rocblas_handle handle,
-                                const rocblas_fill uplo,
-                                const rocblas_int n,
-                                rocblas_float_complex* A,
-                                const rocblas_int lda,
-                                const rocblas_stride strideA,
-                                float* D,
-                                const rocblas_stride strideD,
-                                float* E,
-                                const rocblas_stride strideE,
-                                rocblas_float_complex* tau,
-                                const rocblas_stride strideP,
-                                const rocblas_int batch_count)
+                                                const rocblas_fill uplo,
+                                                const rocblas_int n,
+                                                rocblas_float_complex* A,
+                                                const rocblas_int lda,
+                                                const rocblas_stride strideA,
+                                                float* D,
+                                                const rocblas_stride strideD,
+                                                float* E,
+                                                const rocblas_stride strideE,
+                                                rocblas_float_complex* tau,
+                                                const rocblas_stride strideP,
+                                                const rocblas_int batch_count)
 {
-    return rocsolver_sytrd_hetrd_strided_batched_impl<float, rocblas_float_complex>(handle, uplo, n, A, lda, strideA, D, strideD, E, strideE, tau, strideP, batch_count);
+    return rocsolver_sytrd_hetrd_strided_batched_impl<float, rocblas_float_complex>(
+        handle, uplo, n, A, lda, strideA, D, strideD, E, strideE, tau, strideP, batch_count);
 }
 
 rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle handle,
-                                const rocblas_fill uplo,
-                                const rocblas_int n,
-                                rocblas_double_complex* A,
-                                const rocblas_int lda,
-                                const rocblas_stride strideA,
-                                double* D,
-                                const rocblas_stride strideD,
-                                double* E,
-                                const rocblas_stride strideE,
-                                rocblas_double_complex* tau,
-                                const rocblas_stride strideP,
-                                const rocblas_int batch_count)
+                                                const rocblas_fill uplo,
+                                                const rocblas_int n,
+                                                rocblas_double_complex* A,
+                                                const rocblas_int lda,
+                                                const rocblas_stride strideA,
+                                                double* D,
+                                                const rocblas_stride strideD,
+                                                double* E,
+                                                const rocblas_stride strideE,
+                                                rocblas_double_complex* tau,
+                                                const rocblas_stride strideP,
+                                                const rocblas_int batch_count)
 {
-    return rocsolver_sytrd_hetrd_strided_batched_impl<double, rocblas_double_complex>(handle, uplo, n, A, lda, strideA, D, strideD, E, strideE, tau, strideP, batch_count);
+    return rocsolver_sytrd_hetrd_strided_batched_impl<double, rocblas_double_complex>(
+        handle, uplo, n, A, lda, strideA, D, strideD, E, strideE, tau, strideP, batch_count);
 }
 
 } // extern C

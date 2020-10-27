@@ -7,7 +7,7 @@ Welcome to rocSOLVER's documentation!
    :maxdepth: 4
    :caption: Contents:
 
-   disclaimer 
+   disclaimer
    userguidedocu
    designdocu
 

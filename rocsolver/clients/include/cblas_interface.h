@@ -453,13 +453,7 @@ void cblas_sytrd_hetrd(rocblas_fill uplo,
                        rocblas_int size_w);
 
 template <typename S, typename T>
-void cblas_sytd2_hetd2(rocblas_fill uplo,
-                       rocblas_int n,
-                       T* A,
-                       rocblas_int lda,
-                       S* D,
-                       S* E,
-                       T* tau);
+void cblas_sytd2_hetd2(rocblas_fill uplo, rocblas_int n, T* A, rocblas_int lda, S* D, S* E, T* tau);
 
 template <typename T, typename W>
 void cblas_gesvd(rocblas_svect leftv,

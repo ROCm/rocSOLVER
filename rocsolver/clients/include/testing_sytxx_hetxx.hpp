@@ -30,39 +30,40 @@ void sytxx_hetxx_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, rocblas_fill_full, n, dA, lda, stA, dD,
-                                                stD, dE, stE, dTau, stP, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, rocblas_fill_full, n, dA,
+                                                lda, stA, dD, stD, dE, stE, dTau, stP, bc),
                           rocblas_status_invalid_value);
 
     // sizes (only check batch_count if applicable)
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, dA, lda, stA, dD,
-                                                    stD, dE, stE, dTau, stP, -1),
+        EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, dA, lda, stA,
+                                                    dD, stD, dE, stE, dTau, stP, -1),
                               rocblas_status_invalid_size);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, (T) nullptr, lda, stA,
-                                                dD, stD, dE, stE, dTau, stP, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, (T) nullptr, lda,
+                                                stA, dD, stD, dE, stE, dTau, stP, bc),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, dA, lda, stA,
                                                 (S) nullptr, stD, dE, stE, dTau, stP, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, dA, lda, stA, dD, stD,
-                                                (S) nullptr, stE, dTau, stP, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, dA, lda, stA, dD,
+                                                stD, (S) nullptr, stE, dTau, stP, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, dA, lda, stA, dD, stD,
-                                                dE, stE, (U) nullptr, stP, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, dA, lda, stA, dD,
+                                                stD, dE, stE, (U) nullptr, stP, bc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, 0, (T) nullptr, lda, stA,
-                                                (S) nullptr, stD, (S) nullptr, stE, (U) nullptr, stP, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, 0, (T) nullptr, lda,
+                                                stA, (S) nullptr, stD, (S) nullptr, stE,
+                                                (U) nullptr, stP, bc),
                           rocblas_status_success);
 
     // quick return with zero batch_count if applicable
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, dA, lda, stA, dD,
-                                                    stD, dE, stE, dTau, stP, 0),
+        EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, dA, lda, stA,
+                                                    dD, stD, dE, stE, dTau, stP, 0),
                               rocblas_status_success);
 }
 
@@ -95,8 +96,8 @@ void testing_sytxx_hetxx_bad_arg()
         CHECK_HIP_ERROR(dTau.memcheck());
 
         // check bad arguments
-        sytxx_hetxx_checkBadArgs<STRIDED, SYTRD>(handle, uplo, n, dA.data(), lda, stA, dD.data(), stD,
-                                                 dE.data(), stE, dTau.data(), stP, bc);
+        sytxx_hetxx_checkBadArgs<STRIDED, SYTRD>(handle, uplo, n, dA.data(), lda, stA, dD.data(),
+                                                 stD, dE.data(), stE, dTau.data(), stP, bc);
     }
     else
     {
@@ -111,8 +112,8 @@ void testing_sytxx_hetxx_bad_arg()
         CHECK_HIP_ERROR(dTau.memcheck());
 
         // check bad arguments
-        sytxx_hetxx_checkBadArgs<STRIDED, SYTRD>(handle, uplo, n, dA.data(), lda, stA, dD.data(), stD,
-                                                 dE.data(), stE, dTau.data(), stP, bc);
+        sytxx_hetxx_checkBadArgs<STRIDED, SYTRD>(handle, uplo, n, dA.data(), lda, stA, dD.data(),
+                                                 stD, dE.data(), stE, dTau.data(), stP, bc);
     }
 }
 
@@ -135,8 +136,8 @@ void sytxx_hetxx_initData(const rocblas_handle handle,
             {
                 for(rocblas_int j = 0; j < n; j++)
                 {
-                    if(i == j || i == j+1 || i == j-1)
-                        hA[b][i + j * lda] += 400; 
+                    if(i == j || i == j + 1 || i == j - 1)
+                        hA[b][i + j * lda] += 400;
                     else
                         hA[b][i + j * lda] -= 4;
                 }
@@ -170,10 +171,10 @@ void sytxx_hetxx_initData(const rocblas_handle handle,
             {
                 for(rocblas_int j = 0; j < n; j++)
                 {
-                    if(i == j) 
-                        hA[b][i + j * lda] = hA[b][i + j * lda].real()+400;
-                    else if(i == j+1 || i == j-1)
-                        hA[b][i + j * lda] += 400; 
+                    if(i == j)
+                        hA[b][i + j * lda] = hA[b][i + j * lda].real() + 400;
+                    else if(i == j + 1 || i == j - 1)
+                        hA[b][i + j * lda] += 400;
                     else
                         hA[b][i + j * lda] -= 4;
                 }
@@ -212,35 +213,15 @@ void sytxx_hetxx_getError(const rocblas_handle handle,
     using S = decltype(std::real(T{}));
     constexpr bool COMPLEX = is_complex<T>;
 
-    std::vector<T> hW(32*n);
+    std::vector<T> hW(32 * n);
 
     // input data initialization
     sytxx_hetxx_initData<true, true, T>(handle, n, dA, lda, bc, hA);
 
-/*rocblas_cout<<"\n";
-for(int i=0;i<n;++i) {
-    for (int j=0;j<n;++j)
-        rocblas_cout<<hA[0][i+j*lda]<<" ";
-    rocblas_cout<<"\n";
-}*/
-/*for(rocblas_int b = 0; b < bc; ++b)
-{
-    memcpy(hARes[b], hA[b], lda * n * sizeof(T));
-    SYTRD
-    ? cblas_sytrd_hetrd<S,T>(uplo, n, hARes[b], lda, hD[b], hE[b], hTau[b], hW.data(), 32*n)
-    : cblas_sytd2_hetd2<S,T>(uplo, n, hARes[b], lda, hD[b], hE[b], hTau[b]);
-}*/
-/*rocblas_cout<<"\n";
-for(int i=0;i<n;++i) {
-    for (int j=0;j<n;++j)
-        rocblas_cout<<hARes[0][i+j*lda]<<" ";
-    rocblas_cout<<"\n";
-}*/
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, dA.data(), lda, stA,
-                                              dD.data(), stD, dE.data(), stE, 
-                                              dTau.data(), stP, bc));
+                                              dD.data(), stD, dE.data(), stE, dTau.data(), stP, bc));
     CHECK_HIP_ERROR(hARes.transfer_from(dA));
     CHECK_HIP_ERROR(hTau.transfer_from(dTau));
 
@@ -255,140 +236,74 @@ for(int i=0;i<n;++i) {
 
         if(uplo == rocblas_fill_lower)
         {
-            for(rocblas_int i=0; i<n-2; ++i)
-                a[i + (n-1)*lda] = 0;
-            a[n-2 + (n-1)*lda] = a[n-1 + (n-2)*lda];    
+            for(rocblas_int i = 0; i < n - 2; ++i)
+                a[i + (n - 1) * lda] = 0;
+            a[n - 2 + (n - 1) * lda] = a[n - 1 + (n - 2) * lda];
 
             // for each column
-            for(rocblas_int j=n-2; j>=0; --j)
+            for(rocblas_int j = n - 2; j >= 0; --j)
             {
                 // prepare T and v
-                for(rocblas_int i=0; i<j-1; ++i)
-                    a[i + j*lda] = 0;
+                for(rocblas_int i = 0; i < j - 1; ++i)
+                    a[i + j * lda] = 0;
                 if(j > 0)
-                    a[j-1 + j*lda] = a[j + (j-1)*lda];
-                for(rocblas_int i=j+2; i<n; ++i)
+                    a[j - 1 + j * lda] = a[j + (j - 1) * lda];
+                for(rocblas_int i = j + 2; i < n; ++i)
                 {
-                    v[i-j-1] = a[i + j*lda];
-                    a[i + j*lda] = 0;
+                    v[i - j - 1] = a[i + j * lda];
+                    a[i + j * lda] = 0;
                 }
                 v[0] = 1;
 
-/*rocblas_cout<<"\n";
-for(int i=0;i<n;++i) 
-    rocblas_cout<<v[i]<<" ";
-rocblas_cout<<"\n";
-rocblas_cout<<t[j]<<"\n";
-*/
                 // apply householder reflector
                 cblas_larf(rocblas_side_left, n - 1 - j, n - j, v.data(), 1, t + j,
-                               a + j + 1 + j*lda, lda, hW.data());   
+                           a + j + 1 + j * lda, lda, hW.data());
                 if(COMPLEX)
-                    cblas_lacgv(1, t + j, 1);             
+                    cblas_lacgv(1, t + j, 1);
                 cblas_larf(rocblas_side_right, n - j, n - 1 - j, v.data(), 1, t + j,
-                               a + j + (j + 1)*lda, lda, hW.data());
-
-/*rocblas_cout<<"\n";
-for(int i=0;i<n;++i) {
-    for (int j=0;j<n;++j)
-        rocblas_cout<<hARes[0][i+j*lda]<<" ";
-    rocblas_cout<<"\n";
-}
-*/
-
-
-            }        
+                           a + j + (j + 1) * lda, lda, hW.data());
+            }
         }
 
         else
         {
             a[1] = a[lda];
-            for(rocblas_int i=2; i<n; ++i)
+            for(rocblas_int i = 2; i < n; ++i)
                 a[i] = 0;
 
             // for each column
-            for(rocblas_int j=1; j<=n-1; ++j)
+            for(rocblas_int j = 1; j <= n - 1; ++j)
             {
                 // prepare T and v
-                for(rocblas_int i=0; i<j-1; ++i)
+                for(rocblas_int i = 0; i < j - 1; ++i)
                 {
-                    v[i] = a[i + j*lda];
-                    a[i + j*lda] = 0;
+                    v[i] = a[i + j * lda];
+                    a[i + j * lda] = 0;
                 }
-                v[j-1] = 1;
-                if(j < n-1)
-                    a[j+1 +j*lda] = a[j + (j+1)*lda];
-                for(rocblas_int i=j+2; i<n; ++i)
-                    a[i + j*lda] = 0;    
+                v[j - 1] = 1;
+                if(j < n - 1)
+                    a[j + 1 + j * lda] = a[j + (j + 1) * lda];
+                for(rocblas_int i = j + 2; i < n; ++i)
+                    a[i + j * lda] = 0;
 
                 // apply householder reflector
-                cblas_larf(rocblas_side_left, j, j + 1, v.data(), 1, t + j - 1,
-                               a, lda, hW.data());                
+                cblas_larf(rocblas_side_left, j, j + 1, v.data(), 1, t + j - 1, a, lda, hW.data());
                 if(COMPLEX)
                     cblas_lacgv(1, t + j - 1, 1);
-                cblas_larf(rocblas_side_right, j + 1, j, v.data(), 1, t + j - 1,
-                               a, lda, hW.data());                
-            } 
+                cblas_larf(rocblas_side_right, j + 1, j, v.data(), 1, t + j - 1, a, lda, hW.data());
+            }
         }
-    } 
+    }
 
-
-/*rocblas_cout<<"\n";
-for(int i=0;i<n;++i) {
-    for (int j=0;j<n;++j)
-        rocblas_cout<<hARes[0][i+j*lda]<<" ";
-    rocblas_cout<<"\n";
-}*/
-/*rocblas_cout<<"\n";
-for(int i=0;i<n;++i) 
-    rocblas_cout<<hD[0][i]<<" ";
-rocblas_cout<<"\n";
-rocblas_cout<<"\n";
-for(int i=0;i<n-1;++i) 
-    rocblas_cout<<hE[0][i]<<" ";
-rocblas_cout<<"\n";
-rocblas_cout<<"\n";
-for(int i=0;i<n-1;++i) 
-    rocblas_cout<<hTau[0][i]<<" ";
-rocblas_cout<<"\n";
-*/
-
-
-
-
-    // CPU lapack
-
-/*
-rocblas_cout<<"\n";
-for(int i=0;i<n;++i) {
-    for (int j=0;j<n;++j)
-        rocblas_cout<<hA[0][i+j*lda]<<" ";
-    rocblas_cout<<"\n";
-}
-rocblas_cout<<"\n";
-for(int i=0;i<n;++i) 
-    rocblas_cout<<hD[0][i]<<" ";
-rocblas_cout<<"\n";
-rocblas_cout<<"\n";
-for(int i=0;i<n-1;++i) 
-    rocblas_cout<<hE[0][i]<<" ";
-rocblas_cout<<"\n";
-rocblas_cout<<"\n";
-for(int i=0;i<n-1;++i) 
-    rocblas_cout<<hTau[0][i]<<" ";
-rocblas_cout<<"\n";
-*/
-
-    
     // error is ||hA - hARes|| / ||hA||
     // using frobenius norm
     double err;
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        *max_err = (uplo == rocblas_fill_lower) 
-        ? norm_error_lowerTr('F', n, n, lda, hA[b], hARes[b])
-        : norm_error_upperTr('F', n, n, lda, hA[b], hARes[b]);
+        *max_err = (uplo == rocblas_fill_lower)
+            ? norm_error_lowerTr('F', n, n, lda, hA[b], hARes[b])
+            : norm_error_upperTr('F', n, n, lda, hA[b], hARes[b]);
     }
 }
 
@@ -416,8 +331,8 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
                              const bool perf)
 {
     using S = decltype(std::real(T{}));
-    
-    std::vector<T> hW(32*n);
+
+    std::vector<T> hW(32 * n);
 
     if(!perf)
     {
@@ -427,8 +342,9 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            SYTRD ? cblas_sytrd_hetrd<S,T>(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b], hW.data(), 32*n)
-                  : cblas_sytd2_hetd2<S,T>(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b]);
+            SYTRD ? cblas_sytrd_hetrd<S, T>(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b], hW.data(),
+                                            32 * n)
+                  : cblas_sytd2_hetd2<S, T>(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b]);
         }
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
@@ -440,9 +356,9 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
     {
         sytxx_hetxx_initData<false, true, T>(handle, n, dA, lda, bc, hA);
 
-        CHECK_ROCBLAS_ERROR(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, dA.data(), lda, stA,
-                                                  dD.data(), stD, dE.data(), stE, 
-                                                  dTau.data(), stP, bc));
+        CHECK_ROCBLAS_ERROR(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, dA.data(), lda,
+                                                  stA, dD.data(), stD, dE.data(), stE, dTau.data(),
+                                                  stP, bc));
     }
 
     // gpu-lapack performance
@@ -489,8 +405,8 @@ void testing_sytxx_hetxx(Arguments argus)
                                   rocblas_status_invalid_value);
         else
             EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n,
-                                                        (T*)nullptr, lda, stA, (S*)nullptr,
-                                                        stD, (S*)nullptr, stE, (T*)nullptr, stP, bc),
+                                                        (T*)nullptr, lda, stA, (S*)nullptr, stD,
+                                                        (S*)nullptr, stE, (T*)nullptr, stP, bc),
                                   rocblas_status_invalid_value);
 
         if(argus.timing)
@@ -518,9 +434,9 @@ void testing_sytxx_hetxx(Arguments argus)
                                                         stD, (S*)nullptr, stE, (T*)nullptr, stP, bc),
                                   rocblas_status_invalid_size);
         else
-            EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, (T*)nullptr,
-                                                        lda, stA, (S*)nullptr, stD, (S*)nullptr,
-                                                        stE, (T*)nullptr, stP, bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n,
+                                                        (T*)nullptr, lda, stA, (S*)nullptr, stD,
+                                                        (S*)nullptr, stE, (T*)nullptr, stP, bc),
                                   rocblas_status_invalid_size);
 
         if(argus.timing)
@@ -570,14 +486,14 @@ void testing_sytxx_hetxx(Arguments argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
             sytxx_hetxx_getError<STRIDED, SYTRD, T>(handle, uplo, n, dA, lda, stA, dD, stD, dE, stE,
-                                                       dTau, stP, bc, hA, hARes, hD,
-                                                       hE, hTau, &max_error);
+                                                    dTau, stP, bc, hA, hARes, hD, hE, hTau,
+                                                    &max_error);
 
         // collect performance data
         if(argus.timing)
             sytxx_hetxx_getPerfData<STRIDED, SYTRD, T>(
-                handle, uplo, n, dA, lda, stA, dD, stD, dE, stE, dTau, stP, bc, hA, hD,
-                hE, hTau, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
+                handle, uplo, n, dA, lda, stA, dD, stD, dE, stE, dTau, stP, bc, hA, hD, hE, hTau,
+                &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     else
@@ -605,14 +521,14 @@ void testing_sytxx_hetxx(Arguments argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
             sytxx_hetxx_getError<STRIDED, SYTRD, T>(handle, uplo, n, dA, lda, stA, dD, stD, dE, stE,
-                                                       dTau, stP, bc, hA, hARes, hD,
-                                                       hE, hTau, &max_error);
+                                                    dTau, stP, bc, hA, hARes, hD, hE, hTau,
+                                                    &max_error);
 
         // collect performance data
         if(argus.timing)
             sytxx_hetxx_getPerfData<STRIDED, SYTRD, T>(
-                handle, uplo, n, dA, lda, stA, dD, stD, dE, stE, dTau, stP, bc, hA, hD,
-                hE, hTau, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
+                handle, uplo, n, dA, lda, stA, dD, stD, dE, stE, dTau, stP, bc, hA, hD, hE, hTau,
+                &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
     }
 
     // validate results for rocsolver-test

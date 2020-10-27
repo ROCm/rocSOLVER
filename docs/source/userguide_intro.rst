@@ -116,12 +116,12 @@ rocsolver_gebrd_strided_batched x      x          x             x
 **rocsolver_gesvd**             x      x          x             x
 rocsolver_gesvd_batched         x      x          x             x
 rocsolver_gesvd_strided_batched x      x          x             x
-**rocsolver_sytd2**             x      x                       
-rocsolver_sytd2_batched         x      x                       
-rocsolver_sytd2_strided_batched x      x                       
-**rocsolver_hetd2**                               x             x                       
-rocsolver_hetd2_batched                           x             x                       
-rocsolver_hetd2_strided_batched                   x             x                       
+**rocsolver_sytd2**             x      x
+rocsolver_sytd2_batched         x      x
+rocsolver_sytd2_strided_batched x      x
+**rocsolver_hetd2**                               x             x
+rocsolver_hetd2_batched                           x             x
+rocsolver_hetd2_strided_batched                   x             x
 =============================== ====== ====== ============== ==============
 
 ==================================== ====== ====== ============== ==============

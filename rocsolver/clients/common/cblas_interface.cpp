@@ -1193,23 +1193,8 @@ void zhetrd_(char* uplo,
              int* size_w,
              int* info);
 
-
-void ssytd2_(char* uplo,
-             int* n,
-             float* A,
-             int* lda,
-             float* D,
-             float* E,
-             float* tau,
-             int* info);
-void dsytd2_(char* uplo,
-             int* n,
-             double* A,
-             int* lda,
-             double* D,
-             double* E,
-             double* tau,
-             int* info);
+void ssytd2_(char* uplo, int* n, float* A, int* lda, float* D, float* E, float* tau, int* info);
+void dsytd2_(char* uplo, int* n, double* A, int* lda, double* D, double* E, double* tau, int* info);
 void chetd2_(char* uplo,
              int* n,
              rocblas_float_complex* A,
@@ -1226,7 +1211,6 @@ void zhetd2_(char* uplo,
              double* E,
              rocblas_double_complex* tau,
              int* info);
-
 
 void sgesvd_(char* jobu,
              char* jobv,
@@ -4477,7 +4461,6 @@ void cblas_sytrd_hetrd<double, rocblas_double_complex>(rocblas_fill uplo,
     char uploC = rocblas2char_fill(uplo);
     zhetrd_(&uploC, &n, A, &lda, D, E, tau, work, &size_w, &info);
 }
-
 
 // sytd2 & hetd2
 template <>

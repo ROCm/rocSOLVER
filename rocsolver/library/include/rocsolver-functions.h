@@ -8211,7 +8211,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
                                                                  rocblas_int* info,
                                                                  const rocblas_int batch_count);
 
-
 /*! @{
     \brief SYTD2 computes the tridiagonal form of a real symmetric matrix A.
 
@@ -8222,19 +8221,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
 
         T = Q' * A * Q
 
-    where T is symmetric tribidiagonal and Q is an orthogonal matrix represented as the product 
+    where T is symmetric tribidiagonal and Q is an orthogonal matrix represented as the product
     of Householder matrices
 
         Q = H(1) * H(2) * ... *  H(n-1) if uplo indicates lower, or
-        Q = H(n-1) * H(n-2) * ... * H(1) if uplo indicates upper. 
+        Q = H(n-1) * H(n-2) * ... * H(1) if uplo indicates upper.
 
     Each Householder matrix H(i) is given by
 
         H(i) = I - tau[i] * v(i) * v(i)'
 
-    where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i 
-    elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1. If uplo indicates upper, 
-    the last n-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
+    where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
+    elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1. If uplo indicates upper,
+    the last n-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -8249,10 +8248,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the matrix to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal 
+              On exit, if upper, then the elements on the diagonal and superdiagonal
               contain the tridiagonal form T; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v(i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal  
+              If lower, then the elements on the diagonal and subdiagonal
               contain the tridiagonal form T; the elements below the sudiagonal contain
               the n-i-1 non-zero elements of vectors v(i) stored as columns.
     @param[in]
@@ -8299,19 +8298,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2(rocblas_handle handle,
 
         T = Q' * A * Q
 
-    where T is symmetric tribidiagonal and Q is an unitary matrix represented as the product 
+    where T is symmetric tribidiagonal and Q is an unitary matrix represented as the product
     of Householder matrices
 
         Q = H(1) * H(2) * ... *  H(n-1) if uplo indicates lower, or
-        Q = H(n-1) * H(n-2) * ... * H(1) if uplo indicates upper. 
+        Q = H(n-1) * H(n-2) * ... * H(1) if uplo indicates upper.
 
     Each Householder matrix H(i) is given by
 
         H(i) = I - tau[i] * v(i) * v(i)'
 
-    where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i 
-    elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1. If uplo indicates upper, 
-    the last n-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
+    where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
+    elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1. If uplo indicates upper,
+    the last n-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -8326,10 +8325,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2(rocblas_handle handle,
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the matrix to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal 
+              On exit, if upper, then the elements on the diagonal and superdiagonal
               contain the tridiagonal form T; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v(i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal  
+              If lower, then the elements on the diagonal and subdiagonal
               contain the tridiagonal form T; the elements below the sudiagonal contain
               the n-i-1 non-zero elements of vectors v(i) stored as columns.
     @param[in]
@@ -8367,7 +8366,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2(rocblas_handle handle,
 
 //! @}
 
-
 /*! @{
     \brief SYTD2_BATCHED computes the tridiagonal form of a batch of real symmetric matrices A_j.
 
@@ -8378,19 +8376,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2(rocblas_handle handle,
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is an orthogonal matrix represented as the product 
+    where T_j is symmetric tribidiagonal and Q_j is an orthogonal matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
-        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper. 
+        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper.
 
     Each Householder matrix H_j(i) is given by
 
         H_j(i) = I - tau_j[i] * v_j(i) * v_j(i)'
 
-    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i 
-    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper, 
-    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
+    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper,
+    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -8408,7 +8406,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2(rocblas_handle handle,
               On exit, if upper, then the elements on the diagonal and superdiagonal of A_j
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal  
+              If lower, then the elements on the diagonal and subdiagonal
               contain the tridiagonal form T_j; the elements below the sudiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
@@ -8444,30 +8442,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2(rocblas_handle handle,
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssytd2_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 float *const A[],
-                                                 const rocblas_int lda,
-                                                 float* D,
-                                                 const rocblas_stride strideD,   
-                                                 float* E,
-                                                 const rocblas_stride strideE,   
-                                                 float* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         float* const A[],
+                                                         const rocblas_int lda,
+                                                         float* D,
+                                                         const rocblas_stride strideD,
+                                                         float* E,
+                                                         const rocblas_stride strideE,
+                                                         float* tau,
+                                                         const rocblas_stride strideP,
+                                                         const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 double *const A[],
-                                                 const rocblas_int lda,
-                                                 double* D,
-                                                 const rocblas_stride strideD,   
-                                                 double* E,
-                                                 const rocblas_stride strideE,   
-                                                 double* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         double* const A[],
+                                                         const rocblas_int lda,
+                                                         double* D,
+                                                         const rocblas_stride strideD,
+                                                         double* E,
+                                                         const rocblas_stride strideE,
+                                                         double* tau,
+                                                         const rocblas_stride strideP,
+                                                         const rocblas_int batch_count);
 //! @}
 
 /*! @{
@@ -8480,19 +8478,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is a unitary  matrix represented as the product 
+    where T_j is symmetric tribidiagonal and Q_j is a unitary  matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
-        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper. 
+        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper.
 
     Each Householder matrix H_j(i) is given by
 
         H_j(i) = I - tau_j[i] * v_j(i) * v_j(i)'
 
-    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i 
-    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper, 
-    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
+    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper,
+    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -8510,7 +8508,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
               On exit, if upper, then the elements on the diagonal and superdiagonal of A_j
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal  
+              If lower, then the elements on the diagonal and subdiagonal
               contain the tridiagonal form T_j; the elements below the sudiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
@@ -8546,32 +8544,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chetd2_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 rocblas_float_complex *const A[],
-                                                 const rocblas_int lda,
-                                                 float* D,
-                                                 const rocblas_stride strideD,   
-                                                 float* E,
-                                                 const rocblas_stride strideE,   
-                                                 rocblas_float_complex* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_float_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         float* D,
+                                                         const rocblas_stride strideD,
+                                                         float* E,
+                                                         const rocblas_stride strideE,
+                                                         rocblas_float_complex* tau,
+                                                         const rocblas_stride strideP,
+                                                         const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 rocblas_double_complex *const A[],
-                                                 const rocblas_int lda,
-                                                 double* D,
-                                                 const rocblas_stride strideD,   
-                                                 double* E,
-                                                 const rocblas_stride strideE,   
-                                                 rocblas_double_complex* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_double_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         double* D,
+                                                         const rocblas_stride strideD,
+                                                         double* E,
+                                                         const rocblas_stride strideE,
+                                                         rocblas_double_complex* tau,
+                                                         const rocblas_stride strideP,
+                                                         const rocblas_int batch_count);
 //! @}
-
 
 /*! @{
     \brief SYTD2_STRIDED_BATCHED computes the tridiagonal form of a batch of real symmetric matrices A_j.
@@ -8583,19 +8580,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_batched(rocblas_handle handle,
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is an orthogonal matrix represented as the product 
+    where T_j is symmetric tribidiagonal and Q_j is an orthogonal matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
-        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper. 
+        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper.
 
     Each Householder matrix H_j(i) is given by
 
         H_j(i) = I - tau_j[i] * v_j(i) * v_j(i)'
 
-    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i 
-    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper, 
-    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
+    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper,
+    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -8613,7 +8610,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_batched(rocblas_handle handle,
               On exit, if upper, then the elements on the diagonal and superdiagonal of A_j
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal  
+              If lower, then the elements on the diagonal and subdiagonal
               contain the tridiagonal form T_j; the elements below the sudiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
@@ -8653,32 +8650,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_batched(rocblas_handle handle,
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssytd2_strided_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 float *A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_stride strideA,   
-                                                 float* D,
-                                                 const rocblas_stride strideD,   
-                                                 float* E,
-                                                 const rocblas_stride strideE,   
-                                                 float* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 float* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 float* D,
+                                                                 const rocblas_stride strideD,
+                                                                 float* E,
+                                                                 const rocblas_stride strideE,
+                                                                 float* tau,
+                                                                 const rocblas_stride strideP,
+                                                                 const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_strided_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 double *A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_stride strideA,   
-                                                 double* D,
-                                                 const rocblas_stride strideD,   
-                                                 double* E,
-                                                 const rocblas_stride strideE,   
-                                                 double* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 double* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 double* D,
+                                                                 const rocblas_stride strideD,
+                                                                 double* E,
+                                                                 const rocblas_stride strideE,
+                                                                 double* tau,
+                                                                 const rocblas_stride strideP,
+                                                                 const rocblas_int batch_count);
 //! @}
 
 /*! @{
@@ -8691,19 +8688,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_strided_batched(rocblas_handle 
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is a unitary  matrix represented as the product 
+    where T_j is symmetric tribidiagonal and Q_j is a unitary  matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
-        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper. 
+        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper.
 
     Each Householder matrix H_j(i) is given by
 
         H_j(i) = I - tau_j[i] * v_j(i) * v_j(i)'
 
-    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i 
-    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper, 
-    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
+    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper,
+    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -8721,7 +8718,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_strided_batched(rocblas_handle 
               On exit, if upper, then the elements on the diagonal and superdiagonal of A_j
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal  
+              If lower, then the elements on the diagonal and subdiagonal
               contain the tridiagonal form T_j; the elements below the sudiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
@@ -8761,34 +8758,33 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_strided_batched(rocblas_handle 
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chetd2_strided_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 rocblas_float_complex *A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_stride strideA,   
-                                                 float* D,
-                                                 const rocblas_stride strideD,   
-                                                 float* E,
-                                                 const rocblas_stride strideE,   
-                                                 rocblas_float_complex* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_float_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 float* D,
+                                                                 const rocblas_stride strideD,
+                                                                 float* E,
+                                                                 const rocblas_stride strideE,
+                                                                 rocblas_float_complex* tau,
+                                                                 const rocblas_stride strideP,
+                                                                 const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_strided_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 rocblas_double_complex *A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_stride strideA,   
-                                                 double* D,
-                                                 const rocblas_stride strideD,   
-                                                 double* E,
-                                                 const rocblas_stride strideE,   
-                                                 rocblas_double_complex* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_double_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 double* D,
+                                                                 const rocblas_stride strideD,
+                                                                 double* E,
+                                                                 const rocblas_stride strideE,
+                                                                 rocblas_double_complex* tau,
+                                                                 const rocblas_stride strideP,
+                                                                 const rocblas_int batch_count);
 //! @}
-
 
 /*! @{
     \brief SYTRD computes the tridiagonal form of a real symmetric matrix A.
@@ -8800,19 +8796,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_strided_batched(rocblas_handle 
 
         T = Q' * A * Q
 
-    where T is symmetric tribidiagonal and Q is an orthogonal matrix represented as the product 
+    where T is symmetric tribidiagonal and Q is an orthogonal matrix represented as the product
     of Householder matrices
 
         Q = H(1) * H(2) * ... *  H(n-1) if uplo indicates lower, or
-        Q = H(n-1) * H(n-2) * ... * H(1) if uplo indicates upper. 
+        Q = H(n-1) * H(n-2) * ... * H(1) if uplo indicates upper.
 
     Each Householder matrix H(i) is given by
 
         H(i) = I - tau[i] * v(i) * v(i)'
 
-    where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i 
-    elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1. If uplo indicates upper, 
-    the last n-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
+    where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
+    elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1. If uplo indicates upper,
+    the last n-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -8827,10 +8823,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_strided_batched(rocblas_handle 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the matrix to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal 
+              On exit, if upper, then the elements on the diagonal and superdiagonal
               contain the tridiagonal form T; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v(i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal  
+              If lower, then the elements on the diagonal and subdiagonal
               contain the tridiagonal form T; the elements below the sudiagonal contain
               the n-i-1 non-zero elements of vectors v(i) stored as columns.
     @param[in]
@@ -8877,19 +8873,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd(rocblas_handle handle,
 
         T = Q' * A * Q
 
-    where T is symmetric tribidiagonal and Q is an unitary matrix represented as the product 
+    where T is symmetric tribidiagonal and Q is an unitary matrix represented as the product
     of Householder matrices
 
         Q = H(1) * H(2) * ... *  H(n-1) if uplo indicates lower, or
-        Q = H(n-1) * H(n-2) * ... * H(1) if uplo indicates upper. 
+        Q = H(n-1) * H(n-2) * ... * H(1) if uplo indicates upper.
 
     Each Householder matrix H(i) is given by
 
         H(i) = I - tau[i] * v(i) * v(i)'
 
-    where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i 
-    elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1. If uplo indicates upper, 
-    the last n-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1. 
+    where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
+    elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1. If uplo indicates upper,
+    the last n-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -8904,10 +8900,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd(rocblas_handle handle,
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the matrix to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal 
+              On exit, if upper, then the elements on the diagonal and superdiagonal
               contain the tridiagonal form T; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v(i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal  
+              If lower, then the elements on the diagonal and subdiagonal
               contain the tridiagonal form T; the elements below the sudiagonal contain
               the n-i-1 non-zero elements of vectors v(i) stored as columns.
     @param[in]
@@ -8945,7 +8941,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd(rocblas_handle handle,
 
 //! @}
 
-
 /*! @{
     \brief SYTRD_BATCHED computes the tridiagonal form of a batch of real symmetric matrices A_j.
 
@@ -8956,19 +8951,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd(rocblas_handle handle,
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is an orthogonal matrix represented as the product 
+    where T_j is symmetric tribidiagonal and Q_j is an orthogonal matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
-        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper. 
+        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper.
 
     Each Householder matrix H_j(i) is given by
 
         H_j(i) = I - tau_j[i] * v_j(i) * v_j(i)'
 
-    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i 
-    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper, 
-    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
+    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper,
+    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -8986,7 +8981,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd(rocblas_handle handle,
               On exit, if upper, then the elements on the diagonal and superdiagonal of A_j
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal  
+              If lower, then the elements on the diagonal and subdiagonal
               contain the tridiagonal form T_j; the elements below the sudiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
@@ -9022,30 +9017,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd(rocblas_handle handle,
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssytrd_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 float *const A[],
-                                                 const rocblas_int lda,
-                                                 float* D,
-                                                 const rocblas_stride strideD,   
-                                                 float* E,
-                                                 const rocblas_stride strideE,   
-                                                 float* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         float* const A[],
+                                                         const rocblas_int lda,
+                                                         float* D,
+                                                         const rocblas_stride strideD,
+                                                         float* E,
+                                                         const rocblas_stride strideE,
+                                                         float* tau,
+                                                         const rocblas_stride strideP,
+                                                         const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 double *const A[],
-                                                 const rocblas_int lda,
-                                                 double* D,
-                                                 const rocblas_stride strideD,   
-                                                 double* E,
-                                                 const rocblas_stride strideE,   
-                                                 double* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         double* const A[],
+                                                         const rocblas_int lda,
+                                                         double* D,
+                                                         const rocblas_stride strideD,
+                                                         double* E,
+                                                         const rocblas_stride strideE,
+                                                         double* tau,
+                                                         const rocblas_stride strideP,
+                                                         const rocblas_int batch_count);
 //! @}
 
 /*! @{
@@ -9058,19 +9053,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is a unitary  matrix represented as the product 
+    where T_j is symmetric tribidiagonal and Q_j is a unitary  matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
-        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper. 
+        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper.
 
     Each Householder matrix H_j(i) is given by
 
         H_j(i) = I - tau_j[i] * v_j(i) * v_j(i)'
 
-    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i 
-    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper, 
-    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
+    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper,
+    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -9088,7 +9083,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
               On exit, if upper, then the elements on the diagonal and superdiagonal of A_j
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal  
+              If lower, then the elements on the diagonal and subdiagonal
               contain the tridiagonal form T_j; the elements below the sudiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
@@ -9124,32 +9119,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chetrd_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 rocblas_float_complex *const A[],
-                                                 const rocblas_int lda,
-                                                 float* D,
-                                                 const rocblas_stride strideD,   
-                                                 float* E,
-                                                 const rocblas_stride strideE,   
-                                                 rocblas_float_complex* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_float_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         float* D,
+                                                         const rocblas_stride strideD,
+                                                         float* E,
+                                                         const rocblas_stride strideE,
+                                                         rocblas_float_complex* tau,
+                                                         const rocblas_stride strideP,
+                                                         const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 rocblas_double_complex *const A[],
-                                                 const rocblas_int lda,
-                                                 double* D,
-                                                 const rocblas_stride strideD,   
-                                                 double* E,
-                                                 const rocblas_stride strideE,   
-                                                 rocblas_double_complex* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_double_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         double* D,
+                                                         const rocblas_stride strideD,
+                                                         double* E,
+                                                         const rocblas_stride strideE,
+                                                         rocblas_double_complex* tau,
+                                                         const rocblas_stride strideP,
+                                                         const rocblas_int batch_count);
 //! @}
-
 
 /*! @{
     \brief SYTRD_STRIDED_BATCHED computes the tridiagonal form of a batch of real symmetric matrices A_j.
@@ -9161,19 +9155,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_batched(rocblas_handle handle,
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is an orthogonal matrix represented as the product 
+    where T_j is symmetric tribidiagonal and Q_j is an orthogonal matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
-        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper. 
+        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper.
 
     Each Householder matrix H_j(i) is given by
 
         H_j(i) = I - tau_j[i] * v_j(i) * v_j(i)'
 
-    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i 
-    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper, 
-    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
+    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper,
+    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -9191,7 +9185,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_batched(rocblas_handle handle,
               On exit, if upper, then the elements on the diagonal and superdiagonal of A_j
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal  
+              If lower, then the elements on the diagonal and subdiagonal
               contain the tridiagonal form T_j; the elements below the sudiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
@@ -9231,32 +9225,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_batched(rocblas_handle handle,
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssytrd_strided_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 float *A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_stride strideA,   
-                                                 float* D,
-                                                 const rocblas_stride strideD,   
-                                                 float* E,
-                                                 const rocblas_stride strideE,   
-                                                 float* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 float* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 float* D,
+                                                                 const rocblas_stride strideD,
+                                                                 float* E,
+                                                                 const rocblas_stride strideE,
+                                                                 float* tau,
+                                                                 const rocblas_stride strideP,
+                                                                 const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 double *A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_stride strideA,   
-                                                 double* D,
-                                                 const rocblas_stride strideD,   
-                                                 double* E,
-                                                 const rocblas_stride strideE,   
-                                                 double* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 double* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 double* D,
+                                                                 const rocblas_stride strideD,
+                                                                 double* E,
+                                                                 const rocblas_stride strideE,
+                                                                 double* tau,
+                                                                 const rocblas_stride strideP,
+                                                                 const rocblas_int batch_count);
 //! @}
 
 /*! @{
@@ -9269,19 +9263,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle 
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is a unitary  matrix represented as the product 
+    where T_j is symmetric tribidiagonal and Q_j is a unitary  matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
-        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper. 
+        Q_j = H_j(n-1) * H_j(n-2) * ... * H_j(1) if uplo indicates upper.
 
     Each Householder matrix H_j(i) is given by
 
         H_j(i) = I - tau_j[i] * v_j(i) * v_j(i)'
 
-    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i 
-    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper, 
-    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1. 
+    where tau_j[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
+    elements of the Householder vector v_j(i) are zero, and v_j(i)[i+1] = 1. If uplo indicates upper,
+    the last n-i elements of the Householder vector v_j(i) are zero, and v_j(i)[i] = 1.
 
     @param[in]
     handle    rocblas_handle.
@@ -9299,7 +9293,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle 
               On exit, if upper, then the elements on the diagonal and superdiagonal of A_j
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal  
+              If lower, then the elements on the diagonal and subdiagonal
               contain the tridiagonal form T_j; the elements below the sudiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
@@ -9339,32 +9333,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle 
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chetrd_strided_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 rocblas_float_complex *A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_stride strideA,   
-                                                 float* D,
-                                                 const rocblas_stride strideD,   
-                                                 float* E,
-                                                 const rocblas_stride strideE,   
-                                                 rocblas_float_complex* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_float_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 float* D,
+                                                                 const rocblas_stride strideD,
+                                                                 float* E,
+                                                                 const rocblas_stride strideE,
+                                                                 rocblas_float_complex* tau,
+                                                                 const rocblas_stride strideP,
+                                                                 const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle handle,
-                                                 const rocblas_fill uplo,
-                                                 const rocblas_int n,
-                                                 rocblas_double_complex *A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_stride strideA,   
-                                                 double* D,
-                                                 const rocblas_stride strideD,   
-                                                 double* E,
-                                                 const rocblas_stride strideE,   
-                                                 rocblas_double_complex* tau,
-                                                 const rocblas_stride strideP,  
-                                                 const rocblas_int batch_count); 
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_double_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 double* D,
+                                                                 const rocblas_stride strideD,
+                                                                 double* E,
+                                                                 const rocblas_stride strideE,
+                                                                 rocblas_double_complex* tau,
+                                                                 const rocblas_stride strideP,
+                                                                 const rocblas_int batch_count);
 //! @}
 
 #ifdef __cplusplus

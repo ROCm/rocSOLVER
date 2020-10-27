@@ -6,13 +6,13 @@
 
 template <typename S, typename T, typename U>
 rocblas_status rocsolver_sytrd_hetrd_impl(rocblas_handle handle,
-                                    const rocblas_fill uplo,
-                                    const rocblas_int n,
-                                    U A,
-                                    const rocblas_int lda,
-                                    S* D,
-                                    S* E,
-                                    T* tau)
+                                          const rocblas_fill uplo,
+                                          const rocblas_int n,
+                                          U A,
+                                          const rocblas_int lda,
+                                          S* D,
+                                          S* E,
+                                          T* tau)
 {
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -41,12 +41,11 @@ rocblas_status rocsolver_sytrd_hetrd_impl(rocblas_handle handle,
     size_t size_norms, size_work, size_tmptau;
     // size of array of pointers to workspace (batched case)
     size_t size_workArr;
-    rocsolver_sytrd_hetrd_getMemorySize<T,false>(n, batch_count, &size_scalars, &size_work,
-                                            &size_norms, &size_tmptau, &size_workArr);
+    rocsolver_sytrd_hetrd_getMemorySize<T, false>(n, batch_count, &size_scalars, &size_work,
+                                                  &size_norms, &size_tmptau, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
-                                                      size_norms);
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_norms);
 
     // memory workspace allocation
     void *scalars, *work, *norms, *tmptau, *workArr;
@@ -65,8 +64,8 @@ rocblas_status rocsolver_sytrd_hetrd_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_sytrd_hetrd_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E,
-                                          strideE, tau, strideP, batch_count,
-                                          (T*)scalars, (T*)work, (T*)norms, (T*)tmptau, (T**)workArr);
+                                          strideE, tau, strideP, batch_count, (T*)scalars, (T*)work,
+                                          (T*)norms, (T*)tmptau, (T**)workArr);
 }
 
 /*
@@ -110,7 +109,8 @@ rocblas_status rocsolver_chetrd(rocblas_handle handle,
                                 float* E,
                                 rocblas_float_complex* tau)
 {
-    return rocsolver_sytrd_hetrd_impl<float, rocblas_float_complex>(handle, uplo, n, A, lda, D, E, tau);
+    return rocsolver_sytrd_hetrd_impl<float, rocblas_float_complex>(handle, uplo, n, A, lda, D, E,
+                                                                    tau);
 }
 
 rocblas_status rocsolver_zhetrd(rocblas_handle handle,
@@ -122,7 +122,8 @@ rocblas_status rocsolver_zhetrd(rocblas_handle handle,
                                 double* E,
                                 rocblas_double_complex* tau)
 {
-    return rocsolver_sytrd_hetrd_impl<double, rocblas_double_complex>(handle, uplo, n, A, lda, D, E, tau);
+    return rocsolver_sytrd_hetrd_impl<double, rocblas_double_complex>(handle, uplo, n, A, lda, D, E,
+                                                                      tau);
 }
 
 } // extern C
