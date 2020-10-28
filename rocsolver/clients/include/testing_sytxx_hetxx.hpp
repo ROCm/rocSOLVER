@@ -238,7 +238,7 @@ void sytxx_hetxx_getError(const rocblas_handle handle,
         {
             for(rocblas_int i = 0; i < n - 2; ++i)
                 a[i + (n - 1) * lda] = 0;
-            a[n - 2 + (n - 1) * lda] = a[n - 1 + (n - 2) * lda];
+            a[(n - 2) + (n - 1) * lda] = a[(n - 1) + (n - 2) * lda];
 
             // for each column
             for(rocblas_int j = n - 2; j >= 0; --j)
@@ -247,7 +247,7 @@ void sytxx_hetxx_getError(const rocblas_handle handle,
                 for(rocblas_int i = 0; i < j - 1; ++i)
                     a[i + j * lda] = 0;
                 if(j > 0)
-                    a[j - 1 + j * lda] = a[j + (j - 1) * lda];
+                    a[(j - 1) + j * lda] = a[j + (j - 1) * lda];
                 for(rocblas_int i = j + 2; i < n; ++i)
                 {
                     v[i - j - 1] = a[i + j * lda];
@@ -257,7 +257,7 @@ void sytxx_hetxx_getError(const rocblas_handle handle,
 
                 // apply householder reflector
                 cblas_larf(rocblas_side_left, n - 1 - j, n - j, v.data(), 1, t + j,
-                           a + j + 1 + j * lda, lda, hW.data());
+                           a + (j + 1) + j * lda, lda, hW.data());
                 if(COMPLEX)
                     cblas_lacgv(1, t + j, 1);
                 cblas_larf(rocblas_side_right, n - j, n - 1 - j, v.data(), 1, t + j,
@@ -282,7 +282,7 @@ void sytxx_hetxx_getError(const rocblas_handle handle,
                 }
                 v[j - 1] = 1;
                 if(j < n - 1)
-                    a[j + 1 + j * lda] = a[j + (j + 1) * lda];
+                    a[(j + 1) + j * lda] = a[j + (j + 1) * lda];
                 for(rocblas_int i = j + 2; i < n; ++i)
                     a[i + j * lda] = 0;
 

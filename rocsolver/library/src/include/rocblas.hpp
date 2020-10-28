@@ -83,7 +83,7 @@ rocblas_status rocblasCall_dot(rocblas_handle handle,
                                rocblas_int batch_count,
                                T* results,
                                T* workspace,
-                               T** work = nullptr)
+                               T** work)
 {
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);

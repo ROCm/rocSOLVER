@@ -8221,7 +8221,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
 
         T = Q' * A * Q
 
-    where T is symmetric tribidiagonal and Q is an orthogonal matrix represented as the product
+    where T is symmetric tridiagonal and Q is an orthogonal matrix represented as the product
     of Householder matrices
 
         Q = H(1) * H(2) * ... *  H(n-1) if uplo indicates lower, or
@@ -8252,7 +8252,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
               contain the tridiagonal form T; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v(i) stored as columns.
               If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T; the elements below the sudiagonal contain
+              contain the tridiagonal form T; the elements below the subdiagonal contain
               the n-i-1 non-zero elements of vectors v(i) stored as columns.
     @param[in]
     lda       rocblas_int. lda >= n.\n
@@ -8298,7 +8298,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2(rocblas_handle handle,
 
         T = Q' * A * Q
 
-    where T is symmetric tribidiagonal and Q is an unitary matrix represented as the product
+    where T is hermitian tridiagonal and Q is an unitary matrix represented as the product
     of Householder matrices
 
         Q = H(1) * H(2) * ... *  H(n-1) if uplo indicates lower, or
@@ -8316,7 +8316,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2(rocblas_handle handle,
     handle    rocblas_handle.
     @param[in]
     uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the symmetric matrix A is stored.
+              Specifies whether the upper or lower part of the hermitian matrix A is stored.
               If uplo indicates lower (or upper), then the upper (or lower)
               part of A is not used.
     @param[in]
@@ -8329,7 +8329,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2(rocblas_handle handle,
               contain the tridiagonal form T; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v(i) stored as columns.
               If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T; the elements below the sudiagonal contain
+              contain the tridiagonal form T; the elements below the subdiagonal contain
               the n-i-1 non-zero elements of vectors v(i) stored as columns.
     @param[in]
     lda       rocblas_int. lda >= n.\n
@@ -8338,7 +8338,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2(rocblas_handle handle,
     D         pointer to real type. Array on the GPU of dimension n.\n
               The diagonal elements of T.
     @param[out]
-    E         pointer to realtype. Array on the GPU of dimension n-1.\n
+    E         pointer to real type. Array on the GPU of dimension n-1.\n
               The off-diagonal elements of T.
     @param[out]
     tau       pointer to type. Array on the GPU of dimension n-1.\n
@@ -8376,7 +8376,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2(rocblas_handle handle,
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is an orthogonal matrix represented as the product
+    where T_j is symmetric tridiagonal and Q_j is an orthogonal matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
@@ -8407,7 +8407,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2(rocblas_handle handle,
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
               If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the sudiagonal contain
+              contain the tridiagonal form T_j; the elements below the subdiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
     lda       rocblas_int. lda >= n.\n
@@ -8478,7 +8478,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is a unitary  matrix represented as the product
+    where T_j is hermitian tridiagonal and Q_j is a unitary  matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
@@ -8496,7 +8496,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
     handle    rocblas_handle.
     @param[in]
     uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the symmetric matrix A_j is stored.
+              Specifies whether the upper or lower part of the hermitian matrix A_j is stored.
               If uplo indicates lower (or upper), then the upper (or lower)
               part of A is not used.
     @param[in]
@@ -8509,7 +8509,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
               If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the sudiagonal contain
+              contain the tridiagonal form T_j; the elements below the subdiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
     lda       rocblas_int. lda >= n.\n
@@ -8580,7 +8580,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_batched(rocblas_handle handle,
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is an orthogonal matrix represented as the product
+    where T_j is symmetric tridiagonal and Q_j is an orthogonal matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
@@ -8611,7 +8611,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_batched(rocblas_handle handle,
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
               If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the sudiagonal contain
+              contain the tridiagonal form T_j; the elements below the subdiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
     lda       rocblas_int. lda >= n.\n
@@ -8619,7 +8619,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_batched(rocblas_handle handle,
     @param[in]
     strideA   rocblas_stride.\n
               Stride from the start of one matrix A_j and the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideD >= lda*n.
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
     D         pointer to type. Array on the GPU (the size depends on the value of strideD).\n
               The diagonal elements of T_j.
@@ -8688,7 +8688,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_strided_batched(rocblas_handle 
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is a unitary  matrix represented as the product
+    where T_j is hermitian tridiagonal and Q_j is a unitary  matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
@@ -8706,7 +8706,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_strided_batched(rocblas_handle 
     handle    rocblas_handle.
     @param[in]
     uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the symmetric matrix A_j is stored.
+              Specifies whether the upper or lower part of the hermitian matrix A_j is stored.
               If uplo indicates lower (or upper), then the upper (or lower)
               part of A is not used.
     @param[in]
@@ -8719,7 +8719,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_strided_batched(rocblas_handle 
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
               If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the sudiagonal contain
+              contain the tridiagonal form T_j; the elements below the subdiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
     lda       rocblas_int. lda >= n.\n
@@ -8727,7 +8727,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_strided_batched(rocblas_handle 
     @param[in]
     strideA   rocblas_stride.\n
               Stride from the start of one matrix A_j and the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideD >= lda*n.
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
     D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
               The diagonal elements of T_j.
@@ -8796,7 +8796,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_strided_batched(rocblas_handle 
 
         T = Q' * A * Q
 
-    where T is symmetric tribidiagonal and Q is an orthogonal matrix represented as the product
+    where T is symmetric tridiagonal and Q is an orthogonal matrix represented as the product
     of Householder matrices
 
         Q = H(1) * H(2) * ... *  H(n-1) if uplo indicates lower, or
@@ -8827,7 +8827,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_strided_batched(rocblas_handle 
               contain the tridiagonal form T; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v(i) stored as columns.
               If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T; the elements below the sudiagonal contain
+              contain the tridiagonal form T; the elements below the subdiagonal contain
               the n-i-1 non-zero elements of vectors v(i) stored as columns.
     @param[in]
     lda       rocblas_int. lda >= n.\n
@@ -8873,7 +8873,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd(rocblas_handle handle,
 
         T = Q' * A * Q
 
-    where T is symmetric tribidiagonal and Q is an unitary matrix represented as the product
+    where T is hermitian tridiagonal and Q is an unitary matrix represented as the product
     of Householder matrices
 
         Q = H(1) * H(2) * ... *  H(n-1) if uplo indicates lower, or
@@ -8891,7 +8891,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd(rocblas_handle handle,
     handle    rocblas_handle.
     @param[in]
     uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the symmetric matrix A is stored.
+              Specifies whether the upper or lower part of the hermitian matrix A is stored.
               If uplo indicates lower (or upper), then the upper (or lower)
               part of A is not used.
     @param[in]
@@ -8904,7 +8904,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd(rocblas_handle handle,
               contain the tridiagonal form T; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v(i) stored as columns.
               If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T; the elements below the sudiagonal contain
+              contain the tridiagonal form T; the elements below the subdiagonal contain
               the n-i-1 non-zero elements of vectors v(i) stored as columns.
     @param[in]
     lda       rocblas_int. lda >= n.\n
@@ -8913,7 +8913,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd(rocblas_handle handle,
     D         pointer to real type. Array on the GPU of dimension n.\n
               The diagonal elements of T.
     @param[out]
-    E         pointer to realtype. Array on the GPU of dimension n-1.\n
+    E         pointer to real type. Array on the GPU of dimension n-1.\n
               The off-diagonal elements of T.
     @param[out]
     tau       pointer to type. Array on the GPU of dimension n-1.\n
@@ -8951,7 +8951,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd(rocblas_handle handle,
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is an orthogonal matrix represented as the product
+    where T_j is symmetric tridiagonal and Q_j is an orthogonal matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
@@ -8982,7 +8982,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd(rocblas_handle handle,
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
               If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the sudiagonal contain
+              contain the tridiagonal form T_j; the elements below the subdiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
     lda       rocblas_int. lda >= n.\n
@@ -9053,7 +9053,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is a unitary  matrix represented as the product
+    where T_j is hermitian tridiagonal and Q_j is a unitary  matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
@@ -9071,7 +9071,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
     handle    rocblas_handle.
     @param[in]
     uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the symmetric matrix A_j is stored.
+              Specifies whether the upper or lower part of the hermitian matrix A_j is stored.
               If uplo indicates lower (or upper), then the upper (or lower)
               part of A is not used.
     @param[in]
@@ -9084,7 +9084,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
               If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the sudiagonal contain
+              contain the tridiagonal form T_j; the elements below the subdiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
     lda       rocblas_int. lda >= n.\n
@@ -9155,7 +9155,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_batched(rocblas_handle handle,
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is an orthogonal matrix represented as the product
+    where T_j is symmetric tridiagonal and Q_j is an orthogonal matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
@@ -9186,7 +9186,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_batched(rocblas_handle handle,
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
               If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the sudiagonal contain
+              contain the tridiagonal form T_j; the elements below the subdiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
     lda       rocblas_int. lda >= n.\n
@@ -9194,7 +9194,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_batched(rocblas_handle handle,
     @param[in]
     strideA   rocblas_stride.\n
               Stride from the start of one matrix A_j and the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideD >= lda*n.
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
     D         pointer to type. Array on the GPU (the size depends on the value of strideD).\n
               The diagonal elements of T_j.
@@ -9263,7 +9263,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle 
 
         T_j = Q_j' * A_j * Q_j, for j = 1,2,...,batch_count
 
-    where T_j is symmetric tribidiagonal and Q_j is a unitary  matrix represented as the product
+    where T_j is hermitian tridiagonal and Q_j is a unitary  matrix represented as the product
     of Householder matrices
 
         Q_j = H_j(1) * H_j(2) * ... *  H_j(n-1) if uplo indicates lower, or
@@ -9281,7 +9281,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle 
     handle    rocblas_handle.
     @param[in]
     uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the symmetric matrix A_j is stored.
+              Specifies whether the upper or lower part of the hermitian matrix A_j is stored.
               If uplo indicates lower (or upper), then the upper (or lower)
               part of A is not used.
     @param[in]
@@ -9294,7 +9294,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle 
               contain the tridiagonal form T_j; the elements above the superdiagonal contain
               the i-1 non-zero elements of vectors v_j(i) stored as columns.
               If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the sudiagonal contain
+              contain the tridiagonal form T_j; the elements below the subdiagonal contain
               the n-i-1 non-zero elements of vectors v_j(i) stored as columns.
     @param[in]
     lda       rocblas_int. lda >= n.\n
@@ -9302,7 +9302,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle 
     @param[in]
     strideA   rocblas_stride.\n
               Stride from the start of one matrix A_j and the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideD >= lda*n.
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
     D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
               The diagonal elements of T_j.

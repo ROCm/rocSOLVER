@@ -130,7 +130,7 @@ __global__ void set_tridiag(const rocblas_fill uplo,
         if(i < n - 1)
         {
             if(lower)
-                a[i + 1 + i * lda] = T(e[i]);
+                a[(i + 1) + i * lda] = T(e[i]);
             else
                 a[i + (i + 1) * lda] = T(e[i]);
         }
@@ -166,7 +166,7 @@ __global__ void set_tridiag(const rocblas_fill uplo,
         if(i < n - 1)
         {
             if(lower)
-                a[i + 1 + i * lda] = T(e[i]);
+                a[(i + 1) + i * lda] = T(e[i]);
             else
                 a[i + (i + 1) * lda] = T(e[i]);
         }
