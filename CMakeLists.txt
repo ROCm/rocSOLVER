@@ -111,9 +111,6 @@ if( NOT ROCM_PATH )
   set( ROCM_PATH /opt/rocm )
 endif( )
 
-# CMake list of machine targets
-set( AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific machine types for library to target" )
-
 find_package( ROCM CONFIG QUIET PATHS ${ROCM_PATH} )
 if( NOT ROCM_FOUND )
   set( rocm_cmake_tag "master" CACHE STRING "rocm-cmake tag to download" )
@@ -189,6 +186,10 @@ message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
 
 # force library install path to lib (CentOS 7 defaults to lib64)
 set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for libraries" FORCE)
+
+# Set this before finding hip so that hip::device has the required arch flags
+# added as usage requirements on its interface
+set( AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific machine types for library to target" )
 
 # Find HCC/HIP dependencies
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
