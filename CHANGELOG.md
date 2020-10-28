@@ -2,7 +2,7 @@
  
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
  
-## [(Unreleased) rocSOLVER x.y.z for ROCm 4.0.0]
+## [(Unreleased) rocSOLVER for ROCm 4.0.0]
 ### Added
 __anchor__TA
 
