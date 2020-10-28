@@ -320,7 +320,7 @@ build_type=Release
 build_relocatable=false
 build_docs=false
 optimal=true
-architecture=all
+architecture=
 
 rocm_path=/opt/rocm
 if ! [ -z ${ROCM_PATH+x} ]; then
