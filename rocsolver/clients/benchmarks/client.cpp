@@ -30,6 +30,7 @@
 #include "testing_ormxl_unmxl.hpp"
 #include "testing_ormxr_unmxr.hpp"
 #include "testing_potf2_potrf.hpp"
+#include "testing_sytxx_hetxx.hpp"
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
@@ -1223,6 +1224,114 @@ try
             testing_bdsqr<rocblas_float_complex>(argus);
         else if(precision == 'z')
             testing_bdsqr<rocblas_double_complex>(argus);
+    }
+    else if(function == "sytd2")
+    {
+        if(precision == 's')
+            testing_sytxx_hetxx<false, false, 0, float>(argus);
+        else if(precision == 'd')
+            testing_sytxx_hetxx<false, false, 0, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sytd2_batched")
+    {
+        if(precision == 's')
+            testing_sytxx_hetxx<true, true, 0, float>(argus);
+        else if(precision == 'd')
+            testing_sytxx_hetxx<true, true, 0, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sytd2_strided_batched")
+    {
+        if(precision == 's')
+            testing_sytxx_hetxx<false, true, 0, float>(argus);
+        else if(precision == 'd')
+            testing_sytxx_hetxx<false, true, 0, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sytrd")
+    {
+        if(precision == 's')
+            testing_sytxx_hetxx<false, false, 1, float>(argus);
+        else if(precision == 'd')
+            testing_sytxx_hetxx<false, false, 1, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sytrd_batched")
+    {
+        if(precision == 's')
+            testing_sytxx_hetxx<true, true, 1, float>(argus);
+        else if(precision == 'd')
+            testing_sytxx_hetxx<true, true, 1, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sytrd_strided_batched")
+    {
+        if(precision == 's')
+            testing_sytxx_hetxx<false, true, 1, float>(argus);
+        else if(precision == 'd')
+            testing_sytxx_hetxx<false, true, 1, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hetd2")
+    {
+        if(precision == 'c')
+            testing_sytxx_hetxx<false, false, 0, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sytxx_hetxx<false, false, 0, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hetd2_batched")
+    {
+        if(precision == 'c')
+            testing_sytxx_hetxx<true, true, 0, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sytxx_hetxx<true, true, 0, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hetd2_strided_batched")
+    {
+        if(precision == 'c')
+            testing_sytxx_hetxx<false, true, 0, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sytxx_hetxx<false, true, 0, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hetrd")
+    {
+        if(precision == 'c')
+            testing_sytxx_hetxx<false, false, 1, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sytxx_hetxx<false, false, 1, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hetrd_batched")
+    {
+        if(precision == 'c')
+            testing_sytxx_hetxx<true, true, 1, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sytxx_hetxx<true, true, 1, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hetrd_strided_batched")
+    {
+        if(precision == 'c')
+            testing_sytxx_hetxx<false, true, 1, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sytxx_hetxx<false, true, 1, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
     }
     else
         throw std::invalid_argument("Invalid value for --function");
