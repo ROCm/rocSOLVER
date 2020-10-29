@@ -8210,6 +8210,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
                                                                  const rocblas_workmode fast_alg,
                                                                  rocblas_int* info,
                                                                  const rocblas_int batch_count);
+//! @}
+
 
 /*! @{
     \brief SYTD2 computes the tridiagonal form of a real symmetric matrix A.
