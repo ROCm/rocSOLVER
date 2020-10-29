@@ -59,6 +59,10 @@ Options:
 
   -n | --no-optimizations     Pass this flag to disable optimizations for small sizes.
 
+  -a | --architecture         Set GPU architecture target, e.g. "gfx803;gfx900;gfx906;gfx908".
+                              If you don't know the architecture of the GPU in your local machine, it can be
+                              queried by running "mygpu".
+
   --docs                      (experimental) Pass this flag to build the documentation from source.
                               Official documentation is available online at https://rocsolver.readthedocs.io/
                               Building locally with this flag will require docker on your machine. If you are
@@ -316,6 +320,7 @@ build_type=Release
 build_relocatable=false
 build_docs=false
 optimal=true
+architecture=
 
 rocm_path=/opt/rocm
 if ! [ -z ${ROCM_PATH+x} ]; then
@@ -329,7 +334,7 @@ fi
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,hcc,build_dir:,rocblas_dir:,lib_dir:,install_dir:,static,relocatable,no-optimizations,docs --options hipcdgsrn -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,hcc,build_dir:,rocblas_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrna: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -387,6 +392,9 @@ while true; do
         shift 2 ;;
     --rocblas_dir)
         rocblas_dir=${2}
+        shift 2 ;;
+    -a|--architecture)
+        architecture=${2}
         shift 2 ;;
     --docs)
         build_docs=true
@@ -501,6 +509,10 @@ fi
 
 if [[ "${optimal}" == true ]]; then
   cmake_common_options="${cmake_common_options} -DOPTIMAL=ON"
+fi
+
+if [[ -n "${architecture}" ]]; then
+  cmake_common_options="${cmake_common_options} -DAMDGPU_TARGETS=${architecture}"
 fi
 
 if [[ "${build_clients}" == true ]]; then
