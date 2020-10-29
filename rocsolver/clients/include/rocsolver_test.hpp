@@ -65,4 +65,11 @@ inline T sconj(T scalar)
     return std::conj(scalar);
 }
 
+// gtest printers
+
+inline std::ostream& operator<<(std::ostream& os, rocblas_status x)
+{
+    return os << rocblas_status_to_string(x);
+}
+
 #endif
