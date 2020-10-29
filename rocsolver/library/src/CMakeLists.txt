@@ -109,6 +109,13 @@ set( rocsolver_lapack_source
   lapack/roclapack_gesvd.cpp
   lapack/roclapack_gesvd_batched.cpp
   lapack/roclapack_gesvd_strided_batched.cpp
+  # tridiagonalization and symmetric eigenvalues
+  lapack/roclapack_sytd2_hetd2.cpp
+  lapack/roclapack_sytd2_hetd2_batched.cpp
+  lapack/roclapack_sytd2_hetd2_strided_batched.cpp
+  lapack/roclapack_sytrd_hetrd.cpp
+  lapack/roclapack_sytrd_hetrd_batched.cpp
+  lapack/roclapack_sytrd_hetrd_strided_batched.cpp
 )
 
 set( auxiliaries

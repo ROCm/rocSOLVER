@@ -39,10 +39,6 @@ const vector<int> n_size_range = {
     // normal (valid) samples
     16, 20, 120, 150};
 
-// for daily_lapack tests
-// (HOT-FIX: SIZE OF SOME TESTS WERE CHANGED TO AVOID FALIURES WHEN COMPARING
-// DIRECTLY TO LAPACK
-//  TODO: WE MAY NEED TO CHANGE THIS TO USE IMPLICT TESTING)
 const vector<vector<int>> large_matrix_size_range = {
     {152, 152},
     {640, 640},
