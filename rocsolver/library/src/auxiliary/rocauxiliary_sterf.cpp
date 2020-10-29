@@ -27,13 +27,25 @@ rocblas_status
     rocblas_stride strideE = 0;
     rocblas_int batch_count = 1;
 
-    // this function does not require memory work space
+    // memory workspace sizes:
+    // size for lasrt stack
+    size_t size_stack;
+    rocsolver_sterf_getMemorySize<T>(n, batch_count, &size_stack);
+
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_status_size_unchanged;
+        return rocblas_set_optimal_device_memory_size(handle, size_stack);
+
+    // memory workspace allocation
+    void* stack;
+    rocblas_device_malloc mem(handle, size_stack);
+    if(!mem)
+        return rocblas_status_memory_error;
+
+    stack = mem[0];
 
     // execution
     return rocsolver_sterf_template<T>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
-                                       batch_count);
+                                       batch_count, (rocblas_int*)stack);
 }
 
 /*
