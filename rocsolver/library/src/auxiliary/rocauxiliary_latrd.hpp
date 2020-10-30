@@ -70,7 +70,7 @@ rocblas_status rocsolver_latrd_argCheck(const rocblas_fill uplo,
         return rocblas_status_invalid_value;
 
     // 2. invalid size
-    if(n < 0 || k < 0 || k > n || lda < k || ldw < n || batch_count < 0)
+    if(n < 0 || k < 0 || k > n || lda < n || ldw < n || batch_count < 0)
         return rocblas_status_invalid_size;
 
     // 3. invalid pointers

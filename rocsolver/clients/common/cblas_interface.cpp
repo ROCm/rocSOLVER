@@ -275,6 +275,47 @@ void zlarfb_(char* side,
              rocblas_double_complex* W,
              int* ldw);
 
+
+void slatrd_(char* uplo,
+             int* n,
+             int* k,
+             float* A,
+             int* lda,
+             float* E,
+             float* tau,
+             float* W,
+             int* ldw);
+
+void dlatrd_(char* uplo,
+             int* n,
+             int* k,
+             double* A,
+             int* lda,
+             double* E,
+             double* tau,
+             double* W,
+             int* ldw);
+
+void clatrd_(char* uplo,
+             int* n,
+             int* k,
+             rocblas_float_complex* A,
+             int* lda,
+             float* E,
+             rocblas_float_complex* tau,
+             rocblas_float_complex* W,
+             int* ldw);
+
+void zlatrd_(char* uplo,
+             int* n,
+             int* k,
+             rocblas_double_complex* A,
+             int* lda,
+             double* E,
+             rocblas_double_complex* tau,
+             rocblas_double_complex* W,
+             int* ldw);
+
 void slabrd_(int* m,
              int* n,
              int* nb,
@@ -288,6 +329,7 @@ void slabrd_(int* m,
              int* ldx,
              float* Y,
              int* ldy);
+
 void dlabrd_(int* m,
              int* n,
              int* nb,
@@ -301,6 +343,7 @@ void dlabrd_(int* m,
              int* ldx,
              double* Y,
              int* ldy);
+
 void clabrd_(int* m,
              int* n,
              int* nb,
@@ -314,6 +357,7 @@ void clabrd_(int* m,
              int* ldx,
              rocblas_float_complex* Y,
              int* ldy);
+
 void zlabrd_(int* m,
              int* n,
              int* nb,
@@ -1772,6 +1816,69 @@ void cblas_gesvd(rocblas_svect leftv,
     char jobv = rocblas2char_svect(rightv);
     zgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, E, info);
 }
+
+
+// latrd
+template <>
+void cblas_latrd<float, float>(rocblas_fill uplo,
+                               rocblas_int n,
+                               rocblas_int k,
+                               float* A,
+                               rocblas_int lda,
+                               float* E,
+                               float* tau,
+                               float* W,
+                               rocblas_int ldw)
+{
+    char uploC = rocblas2char_fill(uplo);
+    slatrd_(&uploC, &n, &k, A, &lda, E, tau, W, &ldw);
+}
+
+template <>
+void cblas_latrd<double, double>(rocblas_fill uplo,
+                               rocblas_int n,
+                               rocblas_int k,
+                               double* A,
+                               rocblas_int lda,
+                               double* E,
+                               double* tau,
+                               double* W,
+                               rocblas_int ldw)
+{
+    char uploC = rocblas2char_fill(uplo);
+    dlatrd_(&uploC, &n, &k, A, &lda, E, tau, W, &ldw);
+}
+
+template <>
+void cblas_latrd<float, rocblas_float_complex>(rocblas_fill uplo,
+                                               rocblas_int n,
+                                               rocblas_int k,
+                                               rocblas_float_complex* A,
+                                               rocblas_int lda,
+                                               float* E,
+                                               rocblas_float_complex* tau,
+                                               rocblas_float_complex* W,
+                                               rocblas_int ldw)
+{
+    char uploC = rocblas2char_fill(uplo);
+    clatrd_(&uploC, &n, &k, A, &lda, E, tau, W, &ldw);
+}
+
+template <>
+void cblas_latrd<double, rocblas_double_complex>(rocblas_fill uplo,
+                                               rocblas_int n,
+                                               rocblas_int k,
+                                               rocblas_double_complex* A,
+                                               rocblas_int lda,
+                                               double* E,
+                                               rocblas_double_complex* tau,
+                                               rocblas_double_complex* W,
+                                               rocblas_int ldw)
+{
+    char uploC = rocblas2char_fill(uplo);
+    zlatrd_(&uploC, &n, &k, A, &lda, E, tau, W, &ldw);
+}
+
 
 // labrd
 template <>
