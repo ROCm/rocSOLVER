@@ -85,6 +85,11 @@ void sterf_initData(const rocblas_handle handle,
         // compute sytrd/hetrd
         cblas_sytrd_hetrd<T, T>(rocblas_fill_upper, n, hA[0], lda, hD[0], hE[0], ipiv.data(),
                                 hW.data(), size_W);
+
+        // add a split in the matrix to test split handling
+        rocblas_int k = n / 2;
+        hE[0][k] = 0;
+        hE[0][k - 1] = 0;
     }
 
     if(GPU)

@@ -25,9 +25,9 @@
 template <typename T>
 __device__ void sterf_find_max(const rocblas_int start, const rocblas_int end, T* D, T* E, T& anorm)
 {
-    anorm = abs(D[end - 1]);
+    anorm = abs(D[end]);
     for(int i = start; i < end; i++)
-        anorm = max(anorm, max(abs(D[i - 1]), abs(E[i - 1])));
+        anorm = max(anorm, max(abs(D[i]), abs(E[i])));
 }
 
 /** STERF_SCALE scales the elements of the tridiagonal matrix by a given
@@ -35,11 +35,11 @@ __device__ void sterf_find_max(const rocblas_int start, const rocblas_int end, T
 template <typename T>
 __device__ void sterf_scale(const rocblas_int start, const rocblas_int end, T* D, T* E, T scale)
 {
-    D[end - 1] *= scale;
+    D[end] *= scale;
     for(int i = start; i < end; i++)
     {
-        D[i - 1] *= scale;
-        E[i - 1] *= scale;
+        D[i] *= scale;
+        E[i] *= scale;
     }
 }
 
@@ -48,7 +48,7 @@ template <typename T>
 __device__ void sterf_sq_e(const rocblas_int start, const rocblas_int end, T* E)
 {
     for(int i = start; i < end; i++)
-        E[i - 1] = E[i - 1] * E[i - 1];
+        E[i] = E[i] * E[i];
 }
 
 /** STERF_KERNEL implements the main loop of the sterf algorithm
@@ -73,20 +73,20 @@ __global__ void sterf_kernel(const rocblas_int n,
     T* E = EE + (bid * strideE);
 
     rocblas_int m, l, lsv, lend, lendsv;
-    rocblas_int l1 = 1;
+    rocblas_int l1 = 0;
     rocblas_int iters = 0;
     T sigma, gamma, anorm, bb, p, r_oldgam, rte_oldc, rt1_c, rt2_s;
 
-    while(l1 <= n && iters < max_iters)
+    while(l1 < n && iters < max_iters)
     {
         // Determine submatrix indices
-        if(l1 > 1)
-            E[l1 - 1 - 1] = 0;
-        for(m = l1; m <= n - 1; m++)
+        if(l1 > 0)
+            E[l1 - 1] = 0;
+        for(m = l1; m < n - 1; m++)
         {
-            if(abs(E[m - 1]) <= sqrt(abs(D[m - 1])) * sqrt(abs(D[m + 1 - 1])) * eps)
+            if(abs(E[m]) <= sqrt(abs(D[m])) * sqrt(abs(D[m + 1])) * eps)
             {
-                E[m - 1] = 0;
+                E[m] = 0;
                 break;
             }
         }
@@ -108,7 +108,7 @@ __global__ void sterf_kernel(const rocblas_int n,
         sterf_sq_e(l, lend, E);
 
         // Choose iteration type (QL or QR)
-        if(abs(D[lend - 1]) < abs(D[l - 1]))
+        if(abs(D[lend]) < abs(D[l]))
         {
             lend = lsv;
             l = lendsv;
@@ -121,25 +121,25 @@ __global__ void sterf_kernel(const rocblas_int n,
             {
                 // Find small subdiagonal element
                 for(m = l; m <= lend - 1; m++)
-                    if(abs(E[m - 1]) <= eps * eps * abs(D[m - 1] * D[m + 1 - 1]))
+                    if(abs(E[m]) <= eps * eps * abs(D[m] * D[m + 1]))
                         break;
 
                 if(m < lend)
-                    E[m - 1] = 0;
-                p = D[l - 1];
+                    E[m] = 0;
+                p = D[l];
                 if(m == l)
                 {
-                    D[l - 1] = p;
+                    D[l] = p;
                     l++;
                 }
                 else if(m == l + 1)
                 {
                     // Use lae2 to compute 2x2 eigenvalues. Using rte, rt1, rt2.
-                    rte_oldc = sqrt(E[l - 1]);
-                    lae2(D[l - 1], rte_oldc, D[l + 1 - 1], rt1_c, rt2_s);
-                    D[l - 1] = rt1_c;
-                    D[l + 1 - 1] = rt2_s;
-                    E[l - 1] = 0;
+                    rte_oldc = sqrt(E[l]);
+                    lae2(D[l], rte_oldc, D[l + 1], rt1_c, rt2_s);
+                    D[l] = rt1_c;
+                    D[l + 1] = rt2_s;
+                    E[l] = 0;
                     l = l + 2;
                 }
                 else
@@ -149,8 +149,8 @@ __global__ void sterf_kernel(const rocblas_int n,
                     iters++;
 
                     // Form shift. Using rte, r, c, s.
-                    rte_oldc = sqrt(E[l - 1]);
-                    sigma = (D[l + 1 - 1] - p) / (2 * rte_oldc);
+                    rte_oldc = sqrt(E[l]);
+                    sigma = (D[l + 1] - p) / (2 * rte_oldc);
                     if(sigma >= 0)
                         r_oldgam = abs(sqrt(1 + sigma * sigma));
                     else
@@ -159,15 +159,15 @@ __global__ void sterf_kernel(const rocblas_int n,
 
                     rt1_c = 1;
                     rt2_s = 0;
-                    gamma = D[m - 1] - sigma;
+                    gamma = D[m] - sigma;
                     p = gamma * gamma;
 
                     for(int i = m - 1; i >= l; i--)
                     {
-                        bb = E[i - 1];
+                        bb = E[i];
                         r_oldgam = p + bb;
                         if(i != m - 1)
-                            E[i + 1 - 1] = rt2_s * r_oldgam;
+                            E[i + 1] = rt2_s * r_oldgam;
 
                         // Using oldc, r, c, s.
                         rte_oldc = rt1_c;
@@ -176,16 +176,16 @@ __global__ void sterf_kernel(const rocblas_int n,
 
                         // Using oldc, oldgam, c, s.
                         r_oldgam = gamma;
-                        gamma = rt1_c * (D[i - 1] - sigma) - rt2_s * r_oldgam;
-                        D[i + 1 - 1] = r_oldgam + (D[i - 1] - gamma);
+                        gamma = rt1_c * (D[i] - sigma) - rt2_s * r_oldgam;
+                        D[i + 1] = r_oldgam + (D[i] - gamma);
                         if(rt1_c != 0)
                             p = (gamma * gamma) / rt1_c;
                         else
                             p = rte_oldc * bb;
                     }
 
-                    E[l - 1] = rt2_s * p;
-                    D[l - 1] = sigma + gamma;
+                    E[l] = rt2_s * p;
+                    D[l] = sigma + gamma;
                 }
             }
         }
@@ -197,25 +197,25 @@ __global__ void sterf_kernel(const rocblas_int n,
             {
                 // Find small subdiagonal element
                 for(m = l; m >= lend + 1; m--)
-                    if(abs(E[m - 1 - 1]) <= eps * eps * abs(D[m - 1] * D[m - 1 - 1]))
+                    if(abs(E[m - 1]) <= eps * eps * abs(D[m] * D[m - 1]))
                         break;
 
                 if(m > lend)
-                    E[m - 1 - 1] = 0;
-                p = D[l - 1];
+                    E[m - 1] = 0;
+                p = D[l];
                 if(m == l)
                 {
-                    D[l - 1] = p;
+                    D[l] = p;
                     l--;
                 }
                 else if(m == l - 1)
                 {
                     // Use lae2 to compute 2x2 eigenvalues. Using rte, rt1, rt2.
-                    rte_oldc = sqrt(E[l - 1 - 1]);
-                    lae2(D[l - 1], rte_oldc, D[l - 1 - 1], rt1_c, rt2_s);
-                    D[l - 1] = rt1_c;
-                    D[l - 1 - 1] = rt2_s;
-                    E[l - 1 - 1] = 0;
+                    rte_oldc = sqrt(E[l - 1]);
+                    lae2(D[l], rte_oldc, D[l - 1], rt1_c, rt2_s);
+                    D[l] = rt1_c;
+                    D[l - 1] = rt2_s;
+                    E[l - 1] = 0;
                     l = l - 2;
                 }
                 else
@@ -225,8 +225,8 @@ __global__ void sterf_kernel(const rocblas_int n,
                     iters++;
 
                     // Form shift. Using rte, r, c, s.
-                    rte_oldc = sqrt(E[l - 1 - 1]);
-                    sigma = (D[l - 1 - 1] - p) / (2 * rte_oldc);
+                    rte_oldc = sqrt(E[l - 1]);
+                    sigma = (D[l - 1] - p) / (2 * rte_oldc);
                     if(sigma >= 0)
                         r_oldgam = abs(sqrt(1 + sigma * sigma));
                     else
@@ -235,15 +235,15 @@ __global__ void sterf_kernel(const rocblas_int n,
 
                     rt1_c = 1;
                     rt2_s = 0;
-                    gamma = D[m - 1] - sigma;
+                    gamma = D[m] - sigma;
                     p = gamma * gamma;
 
                     for(int i = m; i <= l - 1; i++)
                     {
-                        bb = E[i - 1];
+                        bb = E[i];
                         r_oldgam = p + bb;
                         if(i != m)
-                            E[i - 1 - 1] = rt2_s * r_oldgam;
+                            E[i - 1] = rt2_s * r_oldgam;
 
                         // Using oldc, r, c, s.
                         rte_oldc = rt1_c;
@@ -252,16 +252,16 @@ __global__ void sterf_kernel(const rocblas_int n,
 
                         // Using oldc, oldgam, c, s.
                         r_oldgam = gamma;
-                        gamma = rt1_c * (D[i + 1 - 1] - sigma) - rt2_s * r_oldgam;
-                        D[i - 1] = r_oldgam + (D[i + 1 - 1] - gamma);
+                        gamma = rt1_c * (D[i + 1] - sigma) - rt2_s * r_oldgam;
+                        D[i] = r_oldgam + (D[i + 1] - gamma);
                         if(rt1_c != 0)
                             p = (gamma * gamma) / rt1_c;
                         else
                             p = rte_oldc * bb;
                     }
 
-                    E[l - 1 - 1] = rt2_s * p;
-                    D[l - 1] = sigma + gamma;
+                    E[l - 1] = rt2_s * p;
+                    D[l] = sigma + gamma;
                 }
             }
         }
@@ -274,8 +274,8 @@ __global__ void sterf_kernel(const rocblas_int n,
     }
 
     // Check for convergence
-    for(int i = 1; i <= n - 1; i++)
-        if(E[i - 1] != 0)
+    for(int i = 0; i < n - 1; i++)
+        if(E[i] != 0)
             info[bid]++;
 
     // Sort eigenvalues
