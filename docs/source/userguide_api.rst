@@ -928,9 +928,8 @@ Deprecated
 Types
 -----------------
 
-See the documentation for the
-`rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_.
-for information on the suggested replacements for these types.
+See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_
+documentation for information on the suggested replacements.
 
 rocsolver_int
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -990,9 +989,8 @@ rocsolver_status
 Auxiliary Functions
 ---------------------
 
-See the documentation for the
-`rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/functions.html#auxiliary>`_
-for information on the suggested replacements for these functions.
+See the `rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/functions.html#auxiliary>`_
+documentation for information on the suggested replacements.
 
 rocsolver_create_handle()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
