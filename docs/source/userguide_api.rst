@@ -7,74 +7,15 @@ rocSOLVER API
    :maxdepth: 4
    :caption: Contents:
 
-This section provides details of the rocSOLVER library API as in last ROCm release.
+This section provides details of the rocSOLVER library API.
 
 Types
 =====
 
-rocSOLVER Types
------------------
-
-Most rocSOLVER types are aliases of rocBLAS types.
-See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_.
-
-rocsolver_int
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygentypedef:: rocsolver_int
-.. deprecated:: 3.5
-   Use :c:type:`rocblas_int`.
-
-rocsolver_handle
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygentypedef:: rocsolver_handle
-.. deprecated:: 3.5
-   Use :c:type:`rocblas_handle`.
-
-rocsolver_direction
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygentypedef:: rocsolver_direction
-.. deprecated:: 3.5
-   Use :c:enum:`rocblas_direct`.
-
-rocsolver_storev
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygentypedef:: rocsolver_storev
-.. deprecated:: 3.5
-   Use :c:enum:`rocblas_storev`.
-
-rocsolver_operation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygentypedef:: rocsolver_operation
-.. deprecated:: 3.5
-   Use :c:enum:`rocblas_operation`.
-
-rocsolver_fill
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygentypedef:: rocsolver_fill
-.. deprecated:: 3.5
-   Use :c:enum:`rocblas_fill`.
-
-rocsolver_diagonal
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygentypedef:: rocsolver_diagonal
-.. deprecated:: 3.5
-   Use :c:enum:`rocblas_diagonal`.
-
-rocsolver_side
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygentypedef:: rocsolver_side
-.. deprecated:: 3.5
-   Use :c:enum:`rocblas_side`.
-
-rocsolver_status
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygentypedef:: rocsolver_status
-.. deprecated:: 3.5
-   Use :c:enum:`rocblas_status`.
-
-
 Additional Types
 -------------------
+
+These are types that extend the rocBLAS API.
 
 rocblas_direct
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -981,14 +922,77 @@ rocsolver_<type>getrf_npvt_strided_batched()
 
 
 
-Auxiliaries
-=========================
+Deprecated
+==========
+
+Types
+-----------------
+
+See the documentation for the
+`rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_.
+for information on the suggested replacements for these types.
+
+rocsolver_int
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygentypedef:: rocsolver_int
+.. deprecated:: 3.5
+   Use :c:type:`rocblas_int`.
+
+rocsolver_handle
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygentypedef:: rocsolver_handle
+.. deprecated:: 3.5
+   Use :c:type:`rocblas_handle`.
+
+rocsolver_direction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygentypedef:: rocsolver_direction
+.. deprecated:: 3.5
+   Use :c:enum:`rocblas_direct`.
+
+rocsolver_storev
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygentypedef:: rocsolver_storev
+.. deprecated:: 3.5
+   Use :c:enum:`rocblas_storev`.
+
+rocsolver_operation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygentypedef:: rocsolver_operation
+.. deprecated:: 3.5
+   Use :c:enum:`rocblas_operation`.
+
+rocsolver_fill
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygentypedef:: rocsolver_fill
+.. deprecated:: 3.5
+   Use :c:enum:`rocblas_fill`.
+
+rocsolver_diagonal
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygentypedef:: rocsolver_diagonal
+.. deprecated:: 3.5
+   Use :c:enum:`rocblas_diagonal`.
+
+rocsolver_side
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygentypedef:: rocsolver_side
+.. deprecated:: 3.5
+   Use :c:enum:`rocblas_side`.
+
+rocsolver_status
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygentypedef:: rocsolver_status
+.. deprecated:: 3.5
+   Use :c:enum:`rocblas_status`.
+
 
 Auxiliary Functions
 ---------------------
 
-rocSOLVER auxiliary functions are aliases of rocBLAS auxiliary functions.
-See the `rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/functions.html#auxiliary>`_.
+See the documentation for the
+`rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/functions.html#auxiliary>`_
+for information on the suggested replacements for these functions.
 
 rocsolver_create_handle()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
