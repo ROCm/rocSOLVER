@@ -1621,7 +1621,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungtr(rocblas_handle handle,
 
 /*! @{
     \brief ORM2R applies a matrix Q with orthonormal columns to a general m-by-n
-   matrix C.
+    matrix C.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -2647,7 +2647,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmql(rocblas_handle handle,
 
 /*! @{
     \brief ORMBR applies a matrix Q with orthonormal rows or columns to a
-   general m-by-n matrix C.
+    general m-by-n matrix C.
 
     \details
     If storev is column-wise, then the matrix Q has orthonormal columns.
@@ -7625,7 +7625,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle 
 
     The computation of the singular vectors is optional and it is controlled by
     the function arguments left_svect and right_svect as described below. When
-    computed, this function returns the tranpose (or transpose conjugate) of the
+    computed, this function returns the transpose (or transpose conjugate) of the
     right singular vectors, i.e. the rows of V'.
 
     left_svect and right_svect are #rocblas_svect enums that can take the
@@ -7690,14 +7690,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle 
                 The leading dimension of U.
     @param[out]
     V           pointer to type. Array on the GPU of dimension ldv*n. \n
-                The matrix of right singular vectors stored as rows (transposed / conjugate-tranposed).
+                The matrix of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to overwrite or none.
     @param[in]
     ldv         rocblas_int. ldv >= n if right_svect is all; ldv >= min(m,n) if right_svect is
                 set to singular; or ldv >= 1 otherwise.\n The leading dimension of V.
     @param[out]
     E           pointer to real type. Array on the GPU of dimension min(m,n)-1.\n
-                This array is used to work internaly with the bidiagonal matrix
+                This array is used to work internally with the bidiagonal matrix
                 B associated to A (using BDSQR). On exit, if info > 0, it contains the
                 unconverged off-diagonal elements of B (or properly speaking, a bidiagonal
                 matrix orthogonally equivalent to B). The diagonal elements of this matrix
@@ -7796,7 +7796,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
 
     The computation of the singular vectors is optional and it is controlled by
     the function arguments left_svect and right_svect as described below. When
-    computed, this function returns the tranpose (or transpose conjugate) of the
+    computed, this function returns the transpose (or transpose conjugate) of the
     right singular vectors, i.e. the rows of V_j'.
 
     left_svect and right_svect are #rocblas_svect enums that can take the
@@ -7824,7 +7824,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
     workspace. The parameter fast_alg controls whether the fast algorithm is
     executed or not. For more details see the sections
     "Tuning rocSOLVER performance" and "Memory model" on the User's guide.
-@param[in]
+
+    @param[in]
     handle      rocblas_handle.
     @param[in]
     left_svect  #rocblas_svect.\n
@@ -7871,7 +7872,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
                 or strideU >= ldu*m when left_svect is equal to all.
     @param[out]
     V           pointer to type. Array on the GPU (the size depends on the value of strideV). \n
-                The matrices V_j of right singular vectors stored as rows (transposed / conjugate-tranposed).
+                The matrices V_j of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to overwrite or none.
     @param[in]
     ldv         rocblas_int. ldv >= n if right_svect is all; ldv >= min(m,n) if
@@ -7884,7 +7885,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
                 Normal use case is strideV >= ldv*n.
     @param[out]
     E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-                This array is used to work internaly with the bidiagonal matrix B_j associated to A_j (using BDSQR).
+                This array is used to work internally with the bidiagonal matrix B_j associated to A_j (using BDSQR).
                 On exit, if info > 0, it contains the unconverged off-diagonal elements of B_j (or properly speaking,
                 a bidiagonal matrix orthogonally equivalent to B_j). The diagonal elements of this matrix are in S_j;
                 those that converged correspond to a subset of the singular values of A_j (not necessarily ordered).
@@ -8008,7 +8009,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
 
     The computation of the singular vectors is optional and it is controlled by
     the function arguments left_svect and right_svect as described below. When
-    computed, this function returns the tranpose (or transpose conjugate) of the
+    computed, this function returns the transpose (or transpose conjugate) of the
     right singular vectors, i.e. the rows of V_j'.
 
     left_svect and right_svect are #rocblas_svect enums that can take the
@@ -8087,7 +8088,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
                 or strideU >= ldu*m when left_svect is equal to all.
     @param[out]
     V           pointer to type. Array on the GPU (the size depends on the value of strideV). \n
-                The matrices V_j of right singular vectors stored as rows (transposed / conjugate-tranposed).
+                The matrices V_j of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to overwrite or none.
     @param[in]
     ldv         rocblas_int. ldv >= n if right_svect is all; ldv >= min(m,n) if right_svect is
@@ -8100,7 +8101,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
                 Normal use case is strideV >= ldv*n.
     @param[out]
     E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-                This array is used to work internaly with the bidiagonal matrix B_j associated to A_j (using BDSQR).
+                This array is used to work internally with the bidiagonal matrix B_j associated to A_j (using BDSQR).
                 On exit, if info > 0, it contains the unconverged off-diagonal elements of B_j (or properly speaking,
                 a bidiagonal matrix orthogonally equivalent to B_j). The diagonal elements of this matrix are in S_j;
                 those that converged correspond to a subset of the singular values of A_j (not necessarily ordered).
