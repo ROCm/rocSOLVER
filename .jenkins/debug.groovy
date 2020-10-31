@@ -32,6 +32,15 @@ def runCI =
         commonGroovy.runCompileCommand(platform, project, jobName)
     }
 
+    def testCommand =
+    {
+        platform, project->
+
+        // Skip the SVD tests as they're too slow in debug mode
+        def gfilter = '*checkin_lapack*-*SVD*'
+        commonGroovy.runTestCommand(platform, project, gfilter)
+    }
+
     def packageCommand =
     {
         platform, project->
@@ -39,7 +48,7 @@ def runCI =
         commonGroovy.runPackageCommand(platform, project)
     }
 
-    buildProject(prj, formatCheck, nodes.dockerArray, compileCommand, null, packageCommand)
+    buildProject(prj, formatCheck, nodes.dockerArray, compileCommand, testCommand, packageCommand)
 
 }
 
