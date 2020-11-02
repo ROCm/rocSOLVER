@@ -11,79 +11,10 @@
 #define ROCLAPACK_TD2_H
 
 #include "../auxiliary/rocauxiliary_larfg.hpp"
+#include "common_device.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-/** set_offdiag kernel copies the off-diagonal element of A, which is the non-zero element
-    resulting by applying the Householder reflector to the working column, to E. Then set it
-    to 1 to prepare for the application of the Householder reflector to the rest of the matrix **/
-template <typename T, typename U, typename S, std::enable_if_t<!is_complex<T>, int> = 0>
-__global__ void set_offdiag(const rocblas_int batch_count,
-                            U A,
-                            const rocblas_int shiftA,
-                            const rocblas_stride strideA,
-                            S* E,
-                            const rocblas_stride strideE)
-{
-    rocblas_int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-
-    if(b < batch_count)
-    {
-        T* a = load_ptr_batch<T>(A, b, shiftA, strideA);
-        S* e = E + b * strideE;
-
-        e[0] = a[0];
-        a[0] = T(1);
-    }
-}
-
-template <typename T, typename U, typename S, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void set_offdiag(const rocblas_int batch_count,
-                            U A,
-                            const rocblas_int shiftA,
-                            const rocblas_stride strideA,
-                            S* E,
-                            const rocblas_stride strideE)
-{
-    rocblas_int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-
-    if(b < batch_count)
-    {
-        T* a = load_ptr_batch<T>(A, b, shiftA, strideA);
-        S* e = E + b * strideE;
-
-        e[0] = a[0].real();
-        a[0] = T(1);
-    }
-}
-
-/** scale_axpy kernel executes axpy to update tau computing the scalar alpha with other
-    results in different memopry locations **/
-template <typename T, typename U>
-__global__ void scale_axpy(const rocblas_int n,
-                           T* tmptau,
-                           T* norms,
-                           T* tau,
-                           const rocblas_stride strideP,
-                           U A,
-                           const rocblas_int shiftA,
-                           const rocblas_stride strideA)
-{
-    rocblas_int b = hipBlockIdx_y;
-    rocblas_int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-
-    if(i < n)
-    {
-        T* v = load_ptr_batch<T>(A, b, shiftA, strideA);
-        T* t = tau + b * strideP;
-
-        // scale
-        T alpha = -0.5 * tmptau[b] * norms[b];
-
-        // axpy
-        t[i] = alpha * v[i] + t[i];
-    }
-}
 
 /** set_tau kernel copies to tau the corresponding Householder scalars **/
 template <typename T>
@@ -309,8 +240,8 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
             // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes
             //  available, we can use it instead of the scale_axpy kernel, if it provides
             //  better performance.)
-            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, n - 1 - j, tmptau, norms,
-                               tau + j, strideP, A, shiftA + idx2D(j + 1, j, lda), strideA);
+            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, n - 1 - j, norms, tmptau, stridet,
+                               A, shiftA + idx2D(j + 1, j, lda), strideA, tau, j, strideP);
 
             // 4. apply the Householder reflector to A as a rank-2 update:
             // A = A - v*w' - w*v'
@@ -354,8 +285,8 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
             // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes
             //  available, we can use it instead of the scale_axpy kernel if it provides
             //  better performance.)
-            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, j, tmptau, norms, tau,
-                               strideP, A, shiftA + idx2D(0, j, lda), strideA);
+            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, j, norms, tmptau, stridet, 
+                               A, shiftA + idx2D(0, j, lda), strideA, tau, 0, strideP);
 
             // 4. apply the Householder reflector to A as a rank-2 update:
             // A = A - v*w' - w*v'

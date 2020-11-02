@@ -21,34 +21,31 @@ void rocsolver_latrd_getMemorySize(const rocblas_int n,
                                    const rocblas_int k,
                                    const rocblas_int batch_count,
                                    size_t* size_scalars,
-                                   size_t* size_work_workArr,
-                                   size_t* size_norms)
+                                   size_t* size_work,
+                                   size_t* size_norms,
+                                   size_t* size_workArr)
 {
     // if quick return no workspace needed
     if(n == 0 || k == 0 || batch_count == 0)
     {
         *size_scalars = 0;
-        *size_work_workArr = 0;
+        *size_work = 0;
         *size_norms = 0;
+        *size_workArr = 0;
         return;
     }
 
     // size of scalars (constants) for rocblas calls
     *size_scalars = sizeof(T) * 3;
 
-    size_t s1, s2;
-
     // size of array of pointers (batched cases)
     if(BATCHED)
-        s1 = 2 * sizeof(T*) * batch_count;
+        *size_workArr = 2 * sizeof(T*) * batch_count;
     else
-        s1 = 0;
+        *size_workArr = 0;
 
     // extra requirements for calling larfg
-    rocsolver_larfg_getMemorySize<T>(n, batch_count, &s2, size_norms);
-
-    // size_work_workArr is maximum of re-usable work space and array of pointers to workspace
-    *size_work_workArr = max(s1, s2);
+    rocsolver_larfg_getMemorySize<T>(n, batch_count, size_work, size_norms);
 }
 
 template <typename S, typename T, typename U>
@@ -99,8 +96,9 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                         const rocblas_stride strideW,
                                         const rocblas_int batch_count,
                                         T* scalars,
-                                        void* work_workArr,
-                                        T* norms)
+                                        T* work,
+                                        T* norms,
+                                        T** workArr)
 {
     // quick return
     if(n == 0 || k == 0 || batch_count == 0)
@@ -113,311 +111,116 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
-/*
-    if(m >= n)
+
+    // configure kernels
+    rocblas_int blocks = (n - 1) / BLOCKSIZE + 1;
+    dim3 grid_n(blocks, batch_count);
+    dim3 threads(BLOCKSIZE, 1, 1);
+    blocks = (batch_count - 1) / BLOCKSIZE + 1;
+    dim3 grid_b(blocks, 1);
+
+
+    if(uplo == rocblas_fill_lower)
     {
-        // generate upper bidiagonal form
+        // reduce the first k columns of A
+        // main loop running forwards (for each column)
         for(rocblas_int j = 0; j < k; ++j)
         {
-            // update column j of A
+            // update column j of A with reflector computed in step j-1
             if(COMPLEX)
-                rocsolver_lacgv_template<T>(handle, j, Y, shiftY + idx2D(j, 0, ldy), ldy, strideY,
+                rocsolver_lacgv_template<T>(handle, j, W, shiftW + idx2D(j, 0, ldw), ldw, strideW,
                                             batch_count);
 
-            rocblasCall_gemv<T>(handle, rocblas_operation_none, m - j, j,
+            rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j, j,
                                 cast2constType<T>(scalars), 0, A, shiftA + idx2D(j, 0, lda), lda,
-                                strideA, Y, shiftY + idx2D(j, 0, ldy), ldy, strideY,
+                                strideA, W, shiftW + idx2D(j, 0, ldw), ldw, strideW,
                                 cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(j, j, lda), 1,
-                                strideA, batch_count, (T**)work_workArr);
+                                strideA, batch_count, workArr);
 
             if(COMPLEX)
-                rocsolver_lacgv_template<T>(handle, j, Y, shiftY + idx2D(j, 0, ldy), ldy, strideY,
+            {
+                rocsolver_lacgv_template<T>(handle, j, W, shiftW + idx2D(j, 0, ldw), ldw, strideW,
                                             batch_count);
-            rocblasCall_gemv<T>(handle, rocblas_operation_none, m - j, j,
-                                cast2constType<T>(scalars), 0, X, shiftX + idx2D(j, 0, lda), ldx,
-                                strideX, A, shiftA + idx2D(0, j, lda), 1, strideA,
+                rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda, strideA,
+                                            batch_count);
+            }
+            
+            rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j, j,
+                                cast2constType<T>(scalars), 0, W, shiftW + idx2D(j, 0, ldw), ldw,
+                                strideW, A, shiftA + idx2D(j, 0, lda), lda, strideA,
                                 cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(j, j, lda), 1,
-                                strideA, batch_count, (T**)work_workArr);
+                                strideA, batch_count, workArr);
+
+            if(COMPLEX)
+                rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda, strideA,
+                                            batch_count);
 
             // generate Householder reflector to work on column j
             rocsolver_larfg_template(handle,
-                                     m - j, // order of reflector
-                                     A, shiftA + idx2D(j, j, lda), // value of alpha
-                                     A, shiftA + idx2D(min(j + 1, m - 1), j, lda), // vector x to work on
-                                     1, strideA, // inc of x
-                                     (tauq + j), strideQ, // tau
-                                     batch_count, (T*)work_workArr, norms);
+                                     n - j - 1, A, shiftA + idx2D(j+1, j, lda), 
+                                     A, shiftA + idx2D(min(j + 2, n - 1), j, lda), 
+                                     1, strideA, 
+                                     (tau + j), strideP, 
+                                     batch_count, work, norms);
 
-            hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, D, j,
-                               strideD, A, shiftA + idx2D(j, j, lda), lda, strideA, 1, j < n - 1);
+            // copy to E(j) the corresponding off-diagonal element of A, which is set to 1
+            hipLaunchKernelGGL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
+                               shiftA + idx2D(j + 1, j, lda), strideA, (E + j), strideE);
 
-            if(j < n - 1)
-            {
-                // compute column j of Y
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_conjugate_transpose, m - j, n - j - 1,
-                    cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(j, j + 1, lda), lda, strideA,
-                    A, shiftA + idx2D(j, j, lda), 1, strideA, cast2constType<T>(scalars + 1), 0, Y,
-                    shiftY + idx2D(j + 1, j, ldy), 1, strideY, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, m - j, j,
-                                    cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(j, 0, lda),
-                                    lda, strideA, A, shiftA + idx2D(j, j, lda), 1, strideA,
-                                    cast2constType<T>(scalars + 1), 0, Y, shiftY + idx2D(0, j, ldy),
-                                    1, strideY, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_none, n - j - 1, j, cast2constType<T>(scalars), 0, Y,
-                    shiftY + idx2D(j + 1, 0, ldy), ldy, strideY, Y, shiftY + idx2D(0, j, ldy), 1,
-                    strideY, cast2constType<T>(scalars + 2), 0, Y, shiftY + idx2D(j + 1, j, ldy), 1,
-                    strideY, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, m - j, j,
-                                    cast2constType<T>(scalars + 2), 0, X, shiftX + idx2D(j, 0, ldx),
-                                    ldx, strideX, A, shiftA + idx2D(j, j, lda), 1, strideA,
-                                    cast2constType<T>(scalars + 1), 0, Y, shiftY + idx2D(0, j, ldy),
-                                    1, strideY, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_conjugate_transpose, j, n - j - 1,
-                    cast2constType<T>(scalars), 0, A, shiftA + idx2D(0, j + 1, lda), lda, strideA,
-                    Y, shiftY + idx2D(0, j, ldy), 1, strideY, cast2constType<T>(scalars + 2), 0, Y,
-                    shiftY + idx2D(j + 1, j, ldy), 1, strideY, batch_count, (T**)work_workArr);
-                rocblasCall_scal<T>(handle, n - j - 1, (tauq + j), strideQ, Y,
-                                    shiftY + idx2D(j + 1, j, ldy), 1, strideY, batch_count);
+            // compute/update column j of W
+            rocblasCall_symv_hemv<T>(handle, uplo, n - 1 - j, (scalars + 2), 0, A,
+                                     shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, A,
+                                     shiftA + idx2D(j + 1, j, lda), 1, strideA, (scalars + 1), 0, 
+                                     W, shiftW + idx2D(j+1, j, ldw), 1, strideW, batch_count, 
+                                     workArr);
 
-                // update row j of A
-                if(COMPLEX)
-                    rocsolver_lacgv_template<T>(handle, n, A, shiftA + idx2D(j, 0, lda), lda,
-                                                strideA, batch_count);
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_none, n - j - 1, j + 1, cast2constType<T>(scalars), 0,
-                    Y, shiftY + idx2D(j + 1, 0, ldy), ldy, strideY, A, shiftA + idx2D(j, 0, lda),
-                    lda, strideA, cast2constType<T>(scalars + 2), 0, A,
-                    shiftA + idx2D(j, j + 1, lda), lda, strideA, batch_count, (T**)work_workArr);
+            rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, n - j - 1, j,
+                                cast2constType<T>(scalars + 2), 0, W, shiftW + idx2D(j+1, 0, ldw),
+                                ldw, strideW, A, shiftA + idx2D(j+1, j, lda), 1, strideA,
+                                cast2constType<T>(scalars + 1), 0, W, shiftW + idx2D(0, j, ldw),
+                                1, strideW, batch_count, workArr);
+            
+            rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j - 1, j, 
+                                cast2constType<T>(scalars), 0, A,
+                                shiftA + idx2D(j + 1, 0, lda), lda, strideA, W, 
+                                shiftW + idx2D(0, j, ldw), 1,
+                                strideW, cast2constType<T>(scalars + 2), 0, W, 
+                                shiftW + idx2D(j + 1, j, ldw), 1,
+                                strideW, batch_count, workArr);
+            
+            rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, n - j - 1, j,
+                                cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(j+1, 0, lda),
+                                lda, strideA, A, shiftA + idx2D(j+1, j, lda), 1, strideA,
+                                cast2constType<T>(scalars + 1), 0, W, shiftW + idx2D(0, j, ldw),
+                                1, strideW, batch_count, workArr);
 
-                if(COMPLEX)
-                {
-                    rocsolver_lacgv_template<T>(handle, j + 1, A, shiftA + idx2D(j, 0, lda), lda,
-                                                strideA, batch_count);
-                    rocsolver_lacgv_template<T>(handle, j, X, shiftX + idx2D(j, 0, ldx), ldx,
-                                                strideX, batch_count);
-                }
+            rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j - 1, j,
+                                cast2constType<T>(scalars), 0, W, shiftW + idx2D(j + 1, 0, ldw), 
+                                ldw, strideW, W, shiftW + idx2D(0, j, ldw), 1, strideW, 
+                                cast2constType<T>(scalars + 2), 0, W, shiftW + idx2D(j + 1, j, ldw), 
+                                1, strideW, batch_count, workArr);
+                
+            rocblasCall_scal<T>(handle, n - j - 1, (tau + j), strideP, W,
+                                shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count);
 
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_conjugate_transpose, j, n - j - 1,
-                    cast2constType<T>(scalars), 0, A, shiftA + idx2D(0, j + 1, lda), lda, strideA,
-                    X, shiftX + idx2D(j, 0, ldx), ldx, strideX, cast2constType<T>(scalars + 2), 0,
-                    A, shiftA + idx2D(j, j + 1, lda), lda, strideA, batch_count, (T**)work_workArr);
+            rocblasCall_dot<COMPLEX, T>(handle, n - 1 - j, W, shiftW + idx2D(j+1, j, ldw), 1, 
+                                        strideW, A, shiftA + idx2D(j + 1, j, lda), 1, strideA, 
+                                        batch_count, norms, work, workArr);
 
-                if(COMPLEX)
-                    rocsolver_lacgv_template<T>(handle, j, X, shiftX + idx2D(j, 0, ldx), ldx,
-                                                strideX, batch_count);
-
-                // generate Householder reflector to work on row j
-                rocsolver_larfg_template(
-                    handle,
-                    n - j - 1, // order of reflector
-                    A, shiftA + idx2D(j, j + 1, lda), // value of alpha
-                    A, shiftA + idx2D(j, min(j + 2, n - 1), lda), // vector x to work on
-                    lda, strideA, // inc of x
-                    (taup + j), strideP, // tau
-                    batch_count, (T*)work_workArr, norms);
-
-                hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
-                                   E, j, strideE, A, shiftA + idx2D(j, j + 1, lda), lda, strideA, 1,
-                                   true);
-
-                // compute column j of X
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_none, m - j - 1, n - j - 1,
-                    cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(j + 1, j + 1, lda), lda,
-                    strideA, A, shiftA + idx2D(j, j + 1, lda), lda, strideA,
-                    cast2constType<T>(scalars + 1), 0, X, shiftX + idx2D(j + 1, j, ldx), 1, strideX,
-                    batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, n - j - 1, j + 1,
-                                    cast2constType<T>(scalars + 2), 0, Y,
-                                    shiftY + idx2D(j + 1, 0, ldy), ldy, strideY, A,
-                                    shiftA + idx2D(j, j + 1, lda), lda, strideA,
-                                    cast2constType<T>(scalars + 1), 0, X, shiftX + idx2D(0, j, ldx),
-                                    1, strideX, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_none, m - j - 1, j + 1, cast2constType<T>(scalars), 0,
-                    A, shiftA + idx2D(j + 1, 0, lda), lda, strideA, X, shiftX + idx2D(0, j, ldx), 1,
-                    strideX, cast2constType<T>(scalars + 2), 0, X, shiftX + idx2D(j + 1, j, ldx), 1,
-                    strideX, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_none, j, n - j - 1, cast2constType<T>(scalars + 2), 0,
-                    A, shiftA + idx2D(0, j + 1, lda), lda, strideA, A,
-                    shiftA + idx2D(j, j + 1, lda), lda, strideA, cast2constType<T>(scalars + 1), 0,
-                    X, shiftX + idx2D(0, j, ldx), 1, strideX, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_none, m - j - 1, j, cast2constType<T>(scalars), 0, X,
-                    shiftX + idx2D(j + 1, 0, ldx), ldx, strideX, X, shiftX + idx2D(0, j, ldx), 1,
-                    strideX, cast2constType<T>(scalars + 2), 0, X, shiftX + idx2D(j + 1, j, ldx), 1,
-                    strideX, batch_count, (T**)work_workArr);
-                rocblasCall_scal<T>(handle, m - j - 1, (taup + j), strideP, X,
-                                    shiftX + idx2D(j + 1, j, ldx), 1, strideX, batch_count);
-
-                if(COMPLEX)
-                    rocsolver_lacgv_template<T>(handle, n - j - 1, A, shiftA + idx2D(j, j + 1, lda),
-                                                lda, strideA, batch_count);
-            }
+            // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes
+            //  available, we can use it instead of the scale_axpy kernel, if it provides
+            //  better performance.)
+            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, n - 1 - j, norms,
+                               tau + j, strideP, A, shiftA + idx2D(j + 1, j, lda), strideA,
+                               W, shiftW + idx2D(j+1, j, ldw), strideW);
         }
     }
 
     else
     {
         // generate lower bidiagonal form
-        for(rocblas_int j = 0; j < k; ++j)
-        {
-            // update row j of A
-            if(COMPLEX)
-                rocsolver_lacgv_template<T>(handle, n, A, shiftA + idx2D(j, 0, lda), lda, strideA,
-                                            batch_count);
-
-            rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j, j,
-                                cast2constType<T>(scalars), 0, Y, shiftY + idx2D(j, 0, ldy), ldy,
-                                strideY, A, shiftA + idx2D(j, 0, lda), lda, strideA,
-                                cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(j, j, lda),
-                                lda, strideA, batch_count, (T**)work_workArr);
-
-            if(COMPLEX)
-            {
-                rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda, strideA,
-                                            batch_count);
-                rocsolver_lacgv_template<T>(handle, j, X, shiftX + idx2D(j, 0, ldx), ldx, strideX,
-                                            batch_count);
-            }
-            rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, j, n - j,
-                                cast2constType<T>(scalars), 0, A, shiftA + idx2D(0, j, lda), lda,
-                                strideA, X, shiftX + idx2D(j, 0, ldx), ldx, strideX,
-                                cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(j, j, lda),
-                                lda, strideA, batch_count, (T**)work_workArr);
-
-            if(COMPLEX)
-                rocsolver_lacgv_template<T>(handle, j, X, shiftX + idx2D(j, 0, ldx), ldx, strideX,
-                                            batch_count);
-
-            // generate Householder reflector to work on row j
-            rocsolver_larfg_template(handle,
-                                     n - j, // order of reflector
-                                     A, shiftA + idx2D(j, j, lda), // value of alpha
-                                     A, shiftA + idx2D(j, min(j + 1, n - 1), lda), // vector x to work on
-                                     lda, strideA, // inc of x
-                                     (taup + j), strideP, // tau
-                                     batch_count, (T*)work_workArr, norms);
-
-            hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, D, j,
-                               strideD, A, shiftA + idx2D(j, j, lda), lda, strideA, 1, j < m - 1);
-
-            if(j < m - 1)
-            {
-                // compute column j of X
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_none, m - j - 1, n - j, cast2constType<T>(scalars + 2),
-                    0, A, shiftA + idx2D(j + 1, j, lda), lda, strideA, A, shiftA + idx2D(j, j, lda),
-                    lda, strideA, cast2constType<T>(scalars + 1), 0, X,
-                    shiftX + idx2D(j + 1, j, ldx), 1, strideX, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, n - j, j,
-                                    cast2constType<T>(scalars + 2), 0, Y, shiftY + idx2D(j, 0, ldy),
-                                    ldy, strideY, A, shiftA + idx2D(j, j, lda), lda, strideA,
-                                    cast2constType<T>(scalars + 1), 0, X, shiftX + idx2D(0, j, ldx),
-                                    1, strideX, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_none, m - j - 1, j, cast2constType<T>(scalars), 0, A,
-                    shiftA + idx2D(j + 1, 0, lda), lda, strideA, X, shiftX + idx2D(0, j, ldx), 1,
-                    strideX, cast2constType<T>(scalars + 2), 0, X, shiftX + idx2D(j + 1, j, ldx), 1,
-                    strideX, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(handle, rocblas_operation_none, j, n - j,
-                                    cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(0, j, lda),
-                                    lda, strideA, A, shiftA + idx2D(j, j, lda), lda, strideA,
-                                    cast2constType<T>(scalars + 1), 0, X, shiftX + idx2D(0, j, ldx),
-                                    1, strideX, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_none, m - j - 1, j, cast2constType<T>(scalars), 0, X,
-                    shiftX + idx2D(j + 1, 0, ldx), ldx, strideX, X, shiftX + idx2D(0, j, ldx), 1,
-                    strideX, cast2constType<T>(scalars + 2), 0, X, shiftX + idx2D(j + 1, j, ldx), 1,
-                    strideX, batch_count, (T**)work_workArr);
-                rocblasCall_scal<T>(handle, m - j - 1, (taup + j), strideP, X,
-                                    shiftX + idx2D(j + 1, j, ldx), 1, strideX, batch_count);
-
-                if(COMPLEX)
-                    rocsolver_lacgv_template<T>(handle, n - j, A, shiftA + idx2D(j, j, lda), lda,
-                                                strideA, batch_count);
-
-                // update column j of A
-                if(COMPLEX)
-                    rocsolver_lacgv_template<T>(handle, j, Y, shiftY + idx2D(j, 0, ldy), ldy,
-                                                strideY, batch_count);
-
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_none, m - j - 1, j, cast2constType<T>(scalars), 0, A,
-                    shiftA + idx2D(j + 1, 0, lda), lda, strideA, Y, shiftY + idx2D(j, 0, ldy), ldy,
-                    strideY, cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(j + 1, j, lda), 1,
-                    strideA, batch_count, (T**)work_workArr);
-
-                if(COMPLEX)
-                    rocsolver_lacgv_template<T>(handle, j, Y, shiftY + idx2D(j, 0, ldy), ldy,
-                                                strideY, batch_count);
-
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_none, m - j - 1, j + 1, cast2constType<T>(scalars), 0,
-                    X, shiftX + idx2D(j + 1, 0, lda), ldx, strideX, A, shiftA + idx2D(0, j, lda), 1,
-                    strideA, cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(j + 1, j, lda), 1,
-                    strideA, batch_count, (T**)work_workArr);
-
-                // generate Householder reflector to work on column j
-                rocsolver_larfg_template(
-                    handle,
-                    m - j - 1, // order of reflector
-                    A, shiftA + idx2D(j + 1, j, lda), // value of alpha
-                    A, shiftA + idx2D(min(j + 2, m - 1), j, lda), // vector x to work on
-                    1, strideA, // inc of x
-                    (tauq + j), strideQ, // tau
-                    batch_count, (T*)work_workArr, norms);
-
-                hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
-                                   E, j, strideE, A, shiftA + idx2D(j + 1, j, lda), lda, strideA, 1,
-                                   true);
-
-                // compute column j of Y
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_conjugate_transpose, m - j - 1, n - j - 1,
-                    cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(j + 1, j + 1, lda), lda,
-                    strideA, A, shiftA + idx2D(j + 1, j, lda), 1, strideA,
-                    cast2constType<T>(scalars + 1), 0, Y, shiftY + idx2D(j + 1, j, ldy), 1, strideY,
-                    batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, m - j - 1, j,
-                                    cast2constType<T>(scalars + 2), 0, A,
-                                    shiftA + idx2D(j + 1, 0, lda), lda, strideA, A,
-                                    shiftA + idx2D(j + 1, j, lda), 1, strideA,
-                                    cast2constType<T>(scalars + 1), 0, Y, shiftY + idx2D(0, j, ldy),
-                                    1, strideY, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_none, n - j - 1, j, cast2constType<T>(scalars), 0, Y,
-                    shiftY + idx2D(j + 1, 0, ldy), ldy, strideY, Y, shiftY + idx2D(0, j, ldy), 1,
-                    strideY, cast2constType<T>(scalars + 2), 0, Y, shiftY + idx2D(j + 1, j, ldy), 1,
-                    strideY, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, m - j - 1, j + 1,
-                                    cast2constType<T>(scalars + 2), 0, X,
-                                    shiftX + idx2D(j + 1, 0, ldx), ldx, strideX, A,
-                                    shiftA + idx2D(j + 1, j, lda), 1, strideA,
-                                    cast2constType<T>(scalars + 1), 0, Y, shiftY + idx2D(0, j, ldy),
-                                    1, strideY, batch_count, (T**)work_workArr);
-                rocblasCall_gemv<T>(
-                    handle, rocblas_operation_conjugate_transpose, j + 1, n - j - 1,
-                    cast2constType<T>(scalars), 0, A, shiftA + idx2D(0, j + 1, lda), lda, strideA,
-                    Y, shiftY + idx2D(0, j, ldy), 1, strideY, cast2constType<T>(scalars + 2), 0, Y,
-                    shiftY + idx2D(j + 1, j, ldy), 1, strideY, batch_count, (T**)work_workArr);
-                rocblasCall_scal<T>(handle, n - j - 1, (tauq + j), strideQ, Y,
-                                    shiftY + idx2D(j + 1, j, ldy), 1, strideY, batch_count);
-            }
-            else
-            {
-                if(COMPLEX)
-                    rocsolver_lacgv_template<T>(handle, n - j, A, shiftA + idx2D(j, j, lda), lda,
-                                                strideA, batch_count);
-            }
-        }
     }
-*/
+    
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }

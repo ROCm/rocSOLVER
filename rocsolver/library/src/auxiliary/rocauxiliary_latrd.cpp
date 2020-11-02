@@ -41,33 +41,35 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
     // size for constants in rocblas calls
     size_t size_scalars;
     // size of arrays of pointers (for batched cases) and re-usable workspace
-    size_t size_work_workArr;
+    size_t size_workArr;
     // extra requirements for calling LARFG
-    size_t size_norms;
-    rocsolver_latrd_getMemorySize<T, false>(n, k, batch_count, &size_scalars, &size_work_workArr,
-                                            &size_norms);
+    size_t size_work, size_norms;
+    rocsolver_latrd_getMemorySize<T, false>(n, k, batch_count, &size_scalars, &size_work,
+                                            &size_norms, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_workArr,
-                                                      size_norms);
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
+                                                      size_norms, size_workArr);
 
     // memory workspace allocation
-    void *scalars, *work_workArr, *norms;
-    rocblas_device_malloc mem(handle, size_scalars, size_work_workArr, size_norms);
+    void *scalars, *work, *norms, *workArr;
+    rocblas_device_malloc mem(handle, size_scalars, size_work, size_norms, size_workArr);
 
     if(!mem)
         return rocblas_status_memory_error;
 
     scalars = mem[0];
-    work_workArr = mem[1];
+    work = mem[1];
     norms = mem[2];
+    workArr = mem[3];
     T sca[] = {-1, 0, 1};
     RETURN_IF_HIP_ERROR(hipMemcpy((T*)scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
     // execution
     return rocsolver_latrd_template(handle, uplo, n, k, A, shiftA, lda, strideA, E,
                                     strideE, tau, strideP, W, shiftW, ldw, strideW, 
-                                    batch_count, (T*)scalars, work_workArr, (T*)norms);
+                                    batch_count, (T*)scalars, (T*)work, 
+                                    (T*)norms, (T**)workArr);
 }
 
 /*
