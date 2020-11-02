@@ -113,11 +113,16 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
     // configure kernels
-    rocblas_int blocks = (n - 1) / BLOCKSIZE + 1;
-    dim3 grid_n(blocks, batch_count);
-    dim3 threads(BLOCKSIZE, 1, 1);
-    blocks = (batch_count - 1) / BLOCKSIZE + 1;
+    rocblas_int blocks = (batch_count - 1) / BLOCKSIZE + 1;
     dim3 grid_b(blocks, 1);
+    dim3 threads(BLOCKSIZE, 1, 1);
+    blocks = (n - 1) / BLOCKSIZE + 1;
+    dim3 grid_n(blocks, batch_count);
+    
+    // set W to zero 
+    blocks = (ldw * k - 1) / BLOCKSIZE + 1;
+    hipLaunchKernelGGL(reset_batch_info<T>, dim3(blocks, batch_count, 1), dim3(BLOCKSIZE, 1, 1), 0, stream,
+                       W + shiftW, strideW, ldw * k, 0);
 
 
     if(uplo == rocblas_fill_lower)
@@ -159,8 +164,7 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
             rocsolver_larfg_template(handle,
                                      n - j - 1, A, shiftA + idx2D(j+1, j, lda), 
                                      A, shiftA + idx2D(min(j + 2, n - 1), j, lda), 
-                                     1, strideA, 
-                                     (tau + j), strideP, 
+                                     1, strideA, (tau + j), strideP, 
                                      batch_count, work, norms);
 
             // copy to E(j) the corresponding off-diagonal element of A, which is set to 1

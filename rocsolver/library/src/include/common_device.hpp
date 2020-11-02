@@ -9,6 +9,8 @@
 #include "libcommon.hpp"
 #include <hip/hip_runtime.h>
 
+#define HIP_ENABLE_PRINTF
+
 // **********************************************************
 // device functions that are used by many kernels
 // **********************************************************
@@ -211,7 +213,7 @@ __global__ void set_zero(const rocblas_int m,
     {
         T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
 
-        Ap[i + j * lda] = 0.0;
+        Ap[i + j * lda] = T(0.0);
     }
 }
 

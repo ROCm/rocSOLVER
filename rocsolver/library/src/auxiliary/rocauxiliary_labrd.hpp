@@ -127,6 +127,13 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
+    rocblas_int blocks = (ldx * k - 1) / 64 + 1;
+    hipLaunchKernelGGL(reset_batch_info<T>, dim3(blocks, batch_count, 1), dim3(64, 1, 1), 0, stream,
+                       X + shiftX, strideX, ldx * k, 0);
+    blocks = (ldy * k - 1) / 64 + 1;
+    hipLaunchKernelGGL(reset_batch_info<T>, dim3(blocks, batch_count, 1), dim3(64, 1, 1), 0, stream,
+                       Y + shiftY, strideY, ldy * k, 0);
+
     if(m >= n)
     {
         // generate upper bidiagonal form

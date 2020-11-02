@@ -139,7 +139,7 @@ void latrd_initData(const rocblas_handle handle,
             }
         }
     }
-
+    
     if(GPU)
     {
         // now copy to the GPU
@@ -171,6 +171,16 @@ void latrd_getError(const rocblas_handle handle,
     // input data initialization
     latrd_initData<true, true, T>(handle, n, dA, lda, hA);
 
+//CHECK_HIP_ERROR(dW.transfer_from(hW));
+
+/*rocblas_cout<<"\n";
+for(int i=0;i<n;++i) {
+    for(int j=0;j<n;++j)
+        rocblas_cout<<hA[0][i+j*lda]<<" ";
+    rocblas_cout<<"\n";
+}*/
+
+
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_latrd(handle, uplo, n, k, dA.data(), lda, dE.data(),
@@ -179,9 +189,49 @@ void latrd_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hWRes.transfer_from(dW));
 
     // CPU lapack
+    memset(hW[0], 0, ldw * k * sizeof(T));
     cblas_latrd(uplo, n, k, hA[0], lda, hE[0], hTau[0], hW[0], ldw);
 
-    // error is max(||hA - hARes|| / ||hA||, ||hW - hWRes||) 
+
+/*rocblas_cout<<"\n";
+for(int i=0;i<n;++i) {
+    for(int j=0;j<n;++j)
+        rocblas_cout<<hA[0][i+j*lda]<<" ";
+    rocblas_cout<<"\n";
+}
+
+rocblas_cout<<"\n";
+for(int i=0;i<n;++i) {
+    for(int j=0;j<n;++j)
+        rocblas_cout<<hARes[0][i+j*lda]<<" ";
+    rocblas_cout<<"\n";
+}
+
+rocblas_cout<<"\n";
+for(int i=0;i<n;++i) {
+    for(int j=0;j<k;++j)
+        rocblas_cout<<hW[0][i+j*ldw]<<" ";
+    rocblas_cout<<"\n";
+}
+
+rocblas_cout<<"\n";
+for(int i=0;i<n;++i) {
+    for(int j=0;j<k;++j)
+        rocblas_cout<<hWRes[0][i+j*ldw]<<" ";
+    rocblas_cout<<"\n";
+}*/
+/*rocblas_cout<<"\n";
+for(int i=0;i<n-1;++i) 
+    rocblas_cout<<hE[0][i]<<" ";
+rocblas_cout<<"\n";
+
+rocblas_cout<<"\n";
+for(int i=0;i<n-1;++i) 
+    rocblas_cout<<hTau[0][i]<<" ";
+rocblas_cout<<"\n";
+*/
+
+    // error is max(||hA - hARes|| / ||hA||, ||hW - hWRes|| / ||hW||) 
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY
     // ISSUES. IT MIGHT BE REVISITED IN THE FUTURE) using frobenius norm
     double err;
@@ -218,6 +268,7 @@ void latrd_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance
         *cpu_time_used = get_time_us();
+        memset(hW[0], 0, ldw * k * sizeof(T));
         cblas_latrd(uplo, n, k, hA[0], lda, hE[0], hTau[0], hW[0], ldw);
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
@@ -343,9 +394,9 @@ void testing_latrd(Arguments argus)
                                 hot_calls, argus.perf);
 
     // validate results for rocsolver-test
-    // using k * machine_precision as tolerance
+    // using k*n * machine_precision as tolerance
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, n);
+        rocsolver_test_check<T>(max_error, k*n);
 
     // output results for rocsolver-bench
     if(argus.timing)

@@ -142,18 +142,12 @@ void labrd_initData(const rocblas_handle handle,
                     hA[0][i + j * lda] -= 4;
             }
         }
-
-        // zero X and Y
-        memset(hX[0], 0, ldx * nb * sizeof(T));
-        memset(hY[0], 0, ldy * nb * sizeof(T));
     }
 
     if(GPU)
     {
         // now copy to the GPU
         CHECK_HIP_ERROR(dA.transfer_from(hA));
-        CHECK_HIP_ERROR(dX.transfer_from(hX));
-        CHECK_HIP_ERROR(dY.transfer_from(hY));
     }
 }
 
@@ -197,6 +191,8 @@ void labrd_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hYRes.transfer_from(dY));
 
     // CPU lapack
+    memset(hX[0], 0, ldx * nb * sizeof(T));
+    memset(hY[0], 0, ldy * nb * sizeof(T));
     cblas_labrd<S, T>(m, n, nb, hA[0], lda, hD[0], hE[0], hTauq[0], hTaup[0], hX[0], ldx, hY[0], ldy);
 
     // error is max(||hA - hARes|| / ||hA||, ||hX - hXRes|| / ||hX||, ||hY -
@@ -246,6 +242,8 @@ void labrd_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance
         *cpu_time_used = get_time_us();
+        memset(hX[0], 0, ldx * nb * sizeof(T));
+        memset(hY[0], 0, ldy * nb * sizeof(T));
         cblas_labrd<S, T>(m, n, nb, hA[0], lda, hD[0], hE[0], hTauq[0], hTaup[0], hX[0], ldx, hY[0],
                           ldy);
         *cpu_time_used = get_time_us() - *cpu_time_used;
