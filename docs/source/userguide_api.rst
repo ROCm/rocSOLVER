@@ -187,6 +187,21 @@ rocsolver_<type>bdsqr()
 .. doxygenfunction:: rocsolver_sbdsqr
 
 
+Tridiagonal forms
+--------------------------
+
+rocsolver_<type>latrd()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zlatrd
+   :outline:
+.. doxygenfunction:: rocsolver_clatrd
+   :outline:
+.. doxygenfunction:: rocsolver_dlatrd
+   :outline:
+.. doxygenfunction:: rocsolver_slatrd
+
+
+
 Orthonormal matrices
 ---------------------------
 

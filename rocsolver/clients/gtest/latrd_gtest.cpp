@@ -17,14 +17,14 @@ typedef std::tuple<vector<int>, vector<int>> latrd_tuple;
 
 // each op_range is a {k, ul}
 // if ul = 0, then uplo = 'L'
-// if ul = 1, then uplo = 'U' 
+// if ul = 1, then uplo = 'U'
 
 // case when n = 0 and k = 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
-    // quick return 
+    // quick return
     {0, 1, 1},
     // invalid
     {-1, 1, 1},
@@ -49,13 +49,10 @@ const vector<vector<int>> op_range = {
     {30, 1}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_matrix_size_range = {
-    {152, 152, 152},
-    {640, 640, 656},
-    {1000, 1024, 1000}};
+const vector<vector<int>> large_matrix_size_range
+    = {{152, 152, 152}, {640, 640, 656}, {1000, 1024, 1000}};
 
-const vector<vector<int>> large_op_range
-    = {{64, 0}, {98, 1}, {130, 0}, {150, 1}};
+const vector<vector<int>> large_op_range = {{64, 0}, {98, 1}, {130, 0}, {150, 1}};
 
 Arguments latrd_setup_arguments(latrd_tuple tup)
 {

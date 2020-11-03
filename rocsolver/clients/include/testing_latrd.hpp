@@ -22,37 +22,29 @@ void latrd_checkBadArgs(const rocblas_handle handle,
                         const rocblas_int ldw)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_latrd(nullptr, uplo, n, k, dA, lda, dE, dTau, dW, ldw),
-        rocblas_status_invalid_handle);
+    EXPECT_ROCBLAS_STATUS(rocsolver_latrd(nullptr, uplo, n, k, dA, lda, dE, dTau, dW, ldw),
+                          rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_latrd(handle, rocblas_fill_full, n, k, dA, lda, dE, dTau, dW, ldw),
-        rocblas_status_invalid_value); 
+    EXPECT_ROCBLAS_STATUS(rocsolver_latrd(handle, rocblas_fill_full, n, k, dA, lda, dE, dTau, dW, ldw),
+                          rocblas_status_invalid_value);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_latrd(handle, uplo, n, k, (T) nullptr, lda, dE, dTau, dW, ldw),
-        rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_latrd(handle, uplo, n, k, dA, lda, (S) nullptr, dTau, dW, ldw),
-        rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_latrd(handle, uplo, n, k, dA, lda, dE, (T) nullptr, dW, ldw),
-        rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_latrd(handle, uplo, n, k, dA, lda, dE, dTau, (T) nullptr, ldw),
-        rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_latrd(handle, uplo, n, k, (T) nullptr, lda, dE, dTau, dW, ldw),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_latrd(handle, uplo, n, k, dA, lda, (S) nullptr, dTau, dW, ldw),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_latrd(handle, uplo, n, k, dA, lda, dE, (T) nullptr, dW, ldw),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_latrd(handle, uplo, n, k, dA, lda, dE, dTau, (T) nullptr, ldw),
+                          rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_latrd(handle, uplo, n, 0, dA, lda, dE, dTau, (T) nullptr, ldw),
-        rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_latrd(handle, uplo, 0, 0, (T) nullptr, lda, (S) nullptr, (T) nullptr, 
-                            (T) nullptr, ldw),
-        rocblas_status_success);
+    EXPECT_ROCBLAS_STATUS(rocsolver_latrd(handle, uplo, n, 0, dA, lda, dE, dTau, (T) nullptr, ldw),
+                          rocblas_status_success);
+    EXPECT_ROCBLAS_STATUS(rocsolver_latrd(handle, uplo, 0, 0, (T) nullptr, lda, (S) nullptr,
+                                          (T) nullptr, (T) nullptr, ldw),
+                          rocblas_status_success);
 }
 
 template <typename T>
@@ -79,8 +71,7 @@ void testing_latrd_bad_arg()
     CHECK_HIP_ERROR(dW.memcheck());
 
     // check bad arguments
-    latrd_checkBadArgs(handle, uplo, n, k, dA.data(), lda, dE.data(), dTau.data(),
-                       dW.data(), ldw);
+    latrd_checkBadArgs(handle, uplo, n, k, dA.data(), lda, dE.data(), dTau.data(), dW.data(), ldw);
 }
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Th, std::enable_if_t<!is_complex<T>, int> = 0>
@@ -139,15 +130,13 @@ void latrd_initData(const rocblas_handle handle,
             }
         }
     }
-    
+
     if(GPU)
     {
         // now copy to the GPU
         CHECK_HIP_ERROR(dA.transfer_from(hA));
     }
 }
-
-
 
 template <typename T, typename Sd, typename Td, typename Sh, typename Th>
 void latrd_getError(const rocblas_handle handle,
@@ -171,20 +160,10 @@ void latrd_getError(const rocblas_handle handle,
     // input data initialization
     latrd_initData<true, true, T>(handle, n, dA, lda, hA);
 
-//CHECK_HIP_ERROR(dW.transfer_from(hW));
-
-/*rocblas_cout<<"\n";
-for(int i=0;i<n;++i) {
-    for(int j=0;j<n;++j)
-        rocblas_cout<<hA[0][i+j*lda]<<" ";
-    rocblas_cout<<"\n";
-}*/
-
-
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_latrd(handle, uplo, n, k, dA.data(), lda, dE.data(),
-                                        dTau.data(), dW.data(), ldw));
+    CHECK_ROCBLAS_ERROR(rocsolver_latrd(handle, uplo, n, k, dA.data(), lda, dE.data(), dTau.data(),
+                                        dW.data(), ldw));
     CHECK_HIP_ERROR(hARes.transfer_from(dA));
     CHECK_HIP_ERROR(hWRes.transfer_from(dW));
 
@@ -192,47 +171,7 @@ for(int i=0;i<n;++i) {
     memset(hW[0], 0, ldw * k * sizeof(T));
     cblas_latrd(uplo, n, k, hA[0], lda, hE[0], hTau[0], hW[0], ldw);
 
-/*
-rocblas_cout<<"\n";
-for(int i=0;i<n;++i) {
-    for(int j=0;j<n;++j)
-        rocblas_cout<<hA[0][i+j*lda]<<" ";
-    rocblas_cout<<"\n";
-}
-
-rocblas_cout<<"\n";
-for(int i=0;i<n;++i) {
-    for(int j=0;j<n;++j)
-        rocblas_cout<<hARes[0][i+j*lda]<<" ";
-    rocblas_cout<<"\n";
-}
-
-rocblas_cout<<"\n";
-for(int i=0;i<n;++i) {
-    for(int j=0;j<k;++j)
-        rocblas_cout<<hW[0][i+j*ldw]<<" ";
-    rocblas_cout<<"\n";
-}
-
-rocblas_cout<<"\n";
-for(int i=0;i<n;++i) {
-    for(int j=0;j<k;++j)
-        rocblas_cout<<hWRes[0][i+j*ldw]<<" ";
-    rocblas_cout<<"\n";
-}
-*/
-/*rocblas_cout<<"\n";
-for(int i=0;i<n-1;++i) 
-    rocblas_cout<<hE[0][i]<<" ";
-rocblas_cout<<"\n";
-
-rocblas_cout<<"\n";
-for(int i=0;i<n-1;++i) 
-    rocblas_cout<<hTau[0][i]<<" ";
-rocblas_cout<<"\n";
-*/
-
-    // error is max(||hA - hARes|| / ||hA||, ||hW - hWRes|| / ||hW||) 
+    // error is max(||hA - hARes|| / ||hA||, ||hW - hWRes|| / ||hW||)
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY
     // ISSUES. IT MIGHT BE REVISITED IN THE FUTURE) using frobenius norm
     double err;
@@ -292,8 +231,7 @@ void latrd_getPerfData(const rocblas_handle handle,
         latrd_initData<false, true, T>(handle, n, dA, lda, hA);
 
         start = get_time_us();
-        rocsolver_latrd(handle, uplo, n, k, dA.data(), lda, dE.data(),
-                        dTau.data(), dW.data(), ldw);
+        rocsolver_latrd(handle, uplo, n, k, dA.data(), lda, dE.data(), dTau.data(), dW.data(), ldw);
         *gpu_time_used += get_time_us() - start;
     }
     *gpu_time_used /= hot_calls;
@@ -317,9 +255,9 @@ void testing_latrd(Arguments argus)
     // check non-supported values
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_latrd(handle, uplo, n, k, (T*)nullptr, lda, (S*)nullptr, 
+        EXPECT_ROCBLAS_STATUS(rocsolver_latrd(handle, uplo, n, k, (T*)nullptr, lda, (S*)nullptr,
                                               (T*)nullptr, (T*)nullptr, ldw),
-                                  rocblas_status_invalid_value);
+                              rocblas_status_invalid_value);
 
         if(argus.timing)
             ROCSOLVER_BENCH_INFORM(2);
@@ -374,8 +312,8 @@ void testing_latrd(Arguments argus)
     // check quick return
     if(k == 0 || n == 0)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_latrd(handle, uplo, n, k, dA.data(), lda, 
-                                              dE.data(), dTau.data(), dW.data(), ldw),
+        EXPECT_ROCBLAS_STATUS(rocsolver_latrd(handle, uplo, n, k, dA.data(), lda, dE.data(),
+                                              dTau.data(), dW.data(), ldw),
                               rocblas_status_success);
         if(argus.timing)
             ROCSOLVER_BENCH_INFORM(0);
@@ -385,19 +323,18 @@ void testing_latrd(Arguments argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        latrd_getError<T>(handle, uplo, n, k, dA, lda, dE, dTau, dW, ldw, hA,
-                             hARes, hE, hTau, hW, hWRes, &max_error);
+        latrd_getError<T>(handle, uplo, n, k, dA, lda, dE, dTau, dW, ldw, hA, hARes, hE, hTau, hW,
+                          hWRes, &max_error);
 
     // collect performance data
     if(argus.timing)
-        latrd_getPerfData<T>(handle, uplo, n, k, dA, lda, dE, dTau, dW, ldw,
-                                hA, hE, hTau, hW, &gpu_time_used, &cpu_time_used,
-                                hot_calls, argus.perf);
+        latrd_getPerfData<T>(handle, uplo, n, k, dA, lda, dE, dTau, dW, ldw, hA, hE, hTau, hW,
+                             &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
 
     // validate results for rocsolver-test
     // using k*n * machine_precision as tolerance
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, k*n);
+        rocsolver_test_check<T>(max_error, k * n);
 
     // output results for rocsolver-bench
     if(argus.timing)

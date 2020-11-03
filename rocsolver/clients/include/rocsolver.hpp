@@ -465,7 +465,6 @@ inline rocblas_status rocsolver_bdsqr(rocblas_handle handle,
 }
 /***************************************************************/
 
-
 /******************** LATRD ********************/
 inline rocblas_status rocsolver_latrd(rocblas_handle handle,
                                       rocblas_fill uplo,
@@ -523,8 +522,6 @@ inline rocblas_status rocsolver_latrd(rocblas_handle handle,
     return rocsolver_zlatrd(handle, uplo, n, k, A, lda, E, tau, W, ldw);
 }
 /***************************************************************/
-
-
 
 /******************** LABRD ********************/
 inline rocblas_status rocsolver_labrd(rocblas_handle handle,

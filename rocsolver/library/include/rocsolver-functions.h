@@ -682,10 +682,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
                                                  const rocblas_int ldy);
 //! @}
 
-
 /*! @{
     \brief LATRD computes the tridiagonal form of k rows and columns of
-    a symmetric/hermitian matrix A, as well as the matrix W needed to reduce
+    a symmetric/hermitian matrix A, as well as the matrix W needed to update
     the remaining part of A.
 
     \details
@@ -693,8 +692,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
 
         T = Q' * A * Q
 
-    If uplo is lower, the first k rows and columns of T form a tridiagonal block, if uplo is upper, then the last 
-    k rows and columns of T form the tridiagonal block. Q is an orthogonal/unitary matrix represented as the 
+    If uplo is lower, the first k rows and columns of T form a tridiagonal block, if uplo is upper, then the last
+    k rows and columns of T form the tridiagonal block. Q is an orthogonal/unitary matrix represented as the
     product of Householder matrices
 
         Q = H(1) * H(2) * ... *  H(k)  if uplo indicates lower, or
@@ -704,8 +703,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
 
         H(i) = I - tau[i] * v(i) * v(i)'
 
-    where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i 
-    elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1. If uplo is upper, 
+    where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
+    elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1. If uplo is upper,
     the last n-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1.
 
     The unreduced part of the matrix A can be updated using a rank update of the form:
@@ -731,10 +730,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the n-by-n matrix to be reduced.
               On exit, if uplo is lower, the first k columns have been reduced to tridiagonal form
-              (given in the diagonal elements of A and the array E), the elements below the diagonal 
+              (given in the diagonal elements of A and the array E), the elements below the diagonal
               contain the vectors v(i) stored as columns.
               If uplo is upper, the last k columns have been reduced to tridiagonal form
-              (given in the diagonal elements of A and the array E), the elements above the diagonal 
+              (given in the diagonal elements of A and the array E), the elements above the diagonal
               contain the vectors v(i) stored as columns.
     @param[in]
     lda       rocblas_int. lda >= m.\n
@@ -745,7 +744,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
               computed tridiagonal block.
     @param[out]
     tau       pointer to type. Array on the GPU of dimension n-1.\n
-              If upper (lower), the last (first) k elements of tau are the scalar factors of the Householder 
+              If upper (lower), the last (first) k elements of tau are the scalar factors of the Householder
               matrices H(i).
     @param[out]
     W         pointer to type. Array on the GPU of dimension ldw*k.\n
@@ -800,7 +799,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlatrd(rocblas_handle handle,
                                                  rocblas_double_complex* W,
                                                  const rocblas_int ldw);
 //! @}
-
 
 /*! @{
     \brief ORG2R generates a m-by-n Matrix Q with orthonormal columns.
@@ -8331,7 +8329,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
                                                                  rocblas_int* info,
                                                                  const rocblas_int batch_count);
 //! @}
-
 
 /*! @{
     \brief SYTD2 computes the tridiagonal form of a real symmetric matrix A.

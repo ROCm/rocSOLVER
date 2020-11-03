@@ -48,8 +48,8 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
                                             &size_norms, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
-                                                      size_norms, size_workArr);
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_norms,
+                                                      size_workArr);
 
     // memory workspace allocation
     void *scalars, *work, *norms, *workArr;
@@ -66,10 +66,9 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
     RETURN_IF_HIP_ERROR(hipMemcpy((T*)scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
     // execution
-    return rocsolver_latrd_template(handle, uplo, n, k, A, shiftA, lda, strideA, E,
-                                    strideE, tau, strideP, W, shiftW, ldw, strideW, 
-                                    batch_count, (T*)scalars, (T*)work, 
-                                    (T*)norms, (T**)workArr);
+    return rocsolver_latrd_template(handle, uplo, n, k, A, shiftA, lda, strideA, E, strideE, tau,
+                                    strideP, W, shiftW, ldw, strideW, batch_count, (T*)scalars,
+                                    (T*)work, (T*)norms, (T**)workArr);
 }
 
 /*
@@ -119,7 +118,8 @@ rocblas_status rocsolver_clatrd(rocblas_handle handle,
                                 rocblas_float_complex* W,
                                 const rocblas_int ldw)
 {
-    return rocsolver_latrd_impl<float, rocblas_float_complex>(handle, uplo, n, k, A, lda, E, tau, W, ldw);
+    return rocsolver_latrd_impl<float, rocblas_float_complex>(handle, uplo, n, k, A, lda, E, tau, W,
+                                                              ldw);
 }
 
 rocblas_status rocsolver_zlatrd(rocblas_handle handle,
@@ -133,7 +133,8 @@ rocblas_status rocsolver_zlatrd(rocblas_handle handle,
                                 rocblas_double_complex* W,
                                 const rocblas_int ldw)
 {
-    return rocsolver_latrd_impl<double, rocblas_double_complex>(handle, uplo, n, k, A, lda, E, tau, W, ldw);
+    return rocsolver_latrd_impl<double, rocblas_double_complex>(handle, uplo, n, k, A, lda, E, tau,
+                                                                W, ldw);
 }
 
 } // extern C

@@ -15,7 +15,6 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-
 /** set_tau kernel copies to tau the corresponding Householder scalars **/
 template <typename T>
 __global__ void set_tau(const rocblas_int batch_count, T* tmptau, T* tau, const rocblas_stride strideP)
@@ -240,8 +239,8 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
             // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes
             //  available, we can use it instead of the scale_axpy kernel, if it provides
             //  better performance.)
-            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, n - 1 - j, norms, tmptau, stridet,
-                               A, shiftA + idx2D(j + 1, j, lda), strideA, tau, j, strideP);
+            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, n - 1 - j, norms, tmptau,
+                               stridet, A, shiftA + idx2D(j + 1, j, lda), strideA, tau, j, strideP);
 
             // 4. apply the Householder reflector to A as a rank-2 update:
             // A = A - v*w' - w*v'
@@ -285,7 +284,7 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
             // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes
             //  available, we can use it instead of the scale_axpy kernel if it provides
             //  better performance.)
-            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, j, norms, tmptau, stridet, 
+            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, j, norms, tmptau, stridet,
                                A, shiftA + idx2D(0, j, lda), strideA, tau, 0, strideP);
 
             // 4. apply the Householder reflector to A as a rank-2 update:
