@@ -67,7 +67,7 @@ Options:
                               Official documentation is available online at https://rocsolver.readthedocs.io/
                               Building locally with this flag will require docker on your machine. If you are
                               familiar with doxygen, sphinx and documentation tools, you can alternatively
-                              use the scripts provided in rocsolver/docs.
+                              use the scripts provided in the docs directory.
 EOF
 }
 
@@ -278,6 +278,11 @@ install_packages( )
   esac
 }
 
+# given a relative path, returns the absolute path
+make_absolute_path( ) {
+  (cd "$1" && pwd -P)
+}
+
 # #################################################
 # Pre-requisites check
 # #################################################
@@ -483,13 +488,18 @@ mkdir -p "$build_dir"
 if [[ "${build_docs}" == true ]]; then
   container_name="build_$(head -c 10 /dev/urandom | base32)"
   docs_build_command='cp -r /mnt/rocsolver /home/docs/ && /home/docs/rocsolver/docs/run_doc.sh'
-  docker build -t rocsolver:docs -f docker/dockerfile-docs .
+  docker build -t rocsolver:docs -f "$main/docker/dockerfile-docs" "$main/docker"
   docker run -v "$main:/mnt/rocsolver:ro" --name "$container_name" rocsolver:docs /bin/sh -c "$docs_build_command"
   docker cp "$container_name:/home/docs/rocsolver/docs/build" "$main/docs/"
   docker cp "$container_name:/home/docs/rocsolver/docs/docBin" "$main/docs/"
   mkdir -p "$build_dir/docs"
   ln -sr "$main/docs/docBin" "$build_dir/docs/doxygen"
   ln -sr "$main/docs/build" "$build_dir/docs/sphinx"
+  absolute_build_dir=$(make_absolute_path "$build_dir")
+  set +x
+  echo 'Documentation Built:'
+  echo "HTML: file://$absolute_build_dir/docs/sphinx/html/index.html"
+  echo "PDF:  file://$absolute_build_dir/docs/sphinx/latex/rocSOLVER.pdf"
   exit
 fi
 
