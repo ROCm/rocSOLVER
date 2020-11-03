@@ -192,8 +192,8 @@ for(int i=0;i<n;++i) {
     memset(hW[0], 0, ldw * k * sizeof(T));
     cblas_latrd(uplo, n, k, hA[0], lda, hE[0], hTau[0], hW[0], ldw);
 
-
-/*rocblas_cout<<"\n";
+/*
+rocblas_cout<<"\n";
 for(int i=0;i<n;++i) {
     for(int j=0;j<n;++j)
         rocblas_cout<<hA[0][i+j*lda]<<" ";
@@ -219,7 +219,8 @@ for(int i=0;i<n;++i) {
     for(int j=0;j<k;++j)
         rocblas_cout<<hWRes[0][i+j*ldw]<<" ";
     rocblas_cout<<"\n";
-}*/
+}
+*/
 /*rocblas_cout<<"\n";
 for(int i=0;i<n-1;++i) 
     rocblas_cout<<hE[0][i]<<" ";
