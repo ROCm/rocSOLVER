@@ -12,6 +12,9 @@ This section provides details of the rocSOLVER library API.
 Types
 =====
 
+rocSOLVER uses types and enumerations defined by the rocBLAS API. For more information, see the
+`rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_.
+
 Additional Types
 -------------------
 
