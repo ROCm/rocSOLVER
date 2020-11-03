@@ -36,8 +36,7 @@ def runCI =
     {
         platform, project->
 
-        // Skip the SVD tests as they're too slow in debug mode
-        def gfilter = '*checkin_lapack*-*SVD*'
+        def gfilter = '*checkin_lapack*'
         commonGroovy.runTestCommand(platform, project, gfilter)
     }
 
