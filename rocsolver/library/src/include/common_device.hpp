@@ -56,6 +56,29 @@ __device__ void
 // **********************************************************
 
 template <typename T, typename U>
+__global__ void init_ident(const rocblas_int m,
+                           const rocblas_int n,
+                           U A,
+                           const rocblas_int shiftA,
+                           const rocblas_int lda,
+                           const rocblas_stride strideA)
+{
+    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const auto b = hipBlockIdx_z;
+
+    if(i < m && j < n)
+    {
+        T* a = load_ptr_batch<T>(A, b, shiftA, strideA);
+
+        if(i == j)
+            a[i + j * lda] = 1.0;
+        else
+            a[i + j * lda] = 0.0;
+    }
+}
+
+template <typename T, typename U>
 __global__ void reset_info(T* info, const rocblas_int n, U val)
 {
     int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;

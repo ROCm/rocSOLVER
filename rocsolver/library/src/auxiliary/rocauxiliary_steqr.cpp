@@ -35,13 +35,25 @@ rocblas_status rocsolver_steqr_impl(rocblas_handle handle,
     rocblas_stride strideC = 0;
     rocblas_int batch_count = 1;
 
-    // this function does not require memory work space
+    // memory workspace sizes:
+    // size for lasrt stack/steqr workspace
+    size_t size_work_stack;
+    rocsolver_steqr_getMemorySize<S, T>(compc, n, batch_count, &size_work_stack);
+
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_status_size_unchanged;
+        return rocblas_set_optimal_device_memory_size(handle, size_work_stack);
+
+    // memory workspace allocation
+    void* work_stack;
+    rocblas_device_malloc mem(handle, size_work_stack);
+    if(!mem)
+        return rocblas_status_memory_error;
+
+    work_stack = mem[0];
 
     // execution
     return rocsolver_steqr_template<S, T>(handle, compc, n, D, shiftD, strideD, E, shiftE, strideE,
-                                          C, shiftC, ldc, strideC, info, batch_count);
+                                          C, shiftC, ldc, strideC, info, batch_count, work_stack);
 }
 
 /*

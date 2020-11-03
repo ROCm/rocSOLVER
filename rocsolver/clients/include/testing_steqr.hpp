@@ -108,6 +108,11 @@ void steqr_initData(const rocblas_handle handle,
         if(compc == rocblas_evect_original)
             cblas_orgtr_ungtr<T>(rocblas_fill_upper, n, hC[0], ldc_valid, ipiv.data(), hW.data(),
                                  size_W);
+
+        // add a split in the matrix to test split handling
+        rocblas_int k = n / 2;
+        hE[0][k] = 0;
+        hE[0][k - 1] = 0;
     }
 
     if(GPU)
