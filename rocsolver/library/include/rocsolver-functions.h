@@ -724,7 +724,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
     n         rocblas_int. n >= 0.\n
               The number of rows and columns of the matrix A.
     @param[in]
-    k         rocblas_int. min(m,n) >= k >= 0.\n
+    k         rocblas_int. 0 <= k <= n.\n
               The number of rows and columns of the matrix A to be reduced.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
@@ -736,7 +736,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
               (given in the diagonal elements of A and the array E), the elements above the diagonal
               contain the vectors v(i) stored as columns.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
+    lda       rocblas_int. lda >= n.\n
               specifies the leading dimension of A.
     @param[out]
     E         pointer to real type. Array on the GPU of dimension n-1.\n
