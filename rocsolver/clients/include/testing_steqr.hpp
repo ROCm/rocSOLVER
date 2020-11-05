@@ -75,6 +75,7 @@ void steqr_initData(const rocblas_handle handle,
                     Td& dC,
                     const rocblas_int ldc,
                     Ud& dInfo,
+                    Th& hA,
                     Sh& hD,
                     Sh& hE,
                     Th& hC,
@@ -84,35 +85,70 @@ void steqr_initData(const rocblas_handle handle,
 {
     if(CPU)
     {
+        rocblas_int lda = n;
         std::vector<T> ipiv(n - 1);
-        int ldc_valid = max(n, ldc);
 
-        rocblas_init<T>(hC, true);
+        rocblas_init<T>(hA, true);
 
-        // scale C to avoid singularities
-        for(rocblas_int i = 0; i < n; i++)
+        if(compc == rocblas_evect_none)
         {
-            for(rocblas_int j = 0; j < n; j++)
+            // scale A to avoid singularities
+            for(rocblas_int i = 0; i < n; i++)
             {
-                if(i == j)
-                    hC[0][i + j * ldc_valid] += 400;
-                else
-                    hC[0][i + j * ldc_valid] -= 4;
+                for(rocblas_int j = 0; j < n; j++)
+                {
+                    if(i == j)
+                        hA[0][i + j * lda] += 400;
+                    else
+                        hA[0][i + j * lda] -= 4;
+                }
+            }
+
+            // compute sytrd/hetrd on A
+            cblas_sytrd_hetrd<S, T>(rocblas_fill_upper, n, hA[0], lda, hD[0], hE[0], ipiv.data(),
+                                    hW.data(), size_W);
+
+            // C is ignored
+        }
+        else
+        {
+            // scale A to avoid singularities
+            for(rocblas_int i = 0; i < n; i++)
+            {
+                for(rocblas_int j = 0; j < n; j++)
+                {
+                    if(i == j)
+                        hC[0][i + j * ldc] = hA[0][i + j * lda] += 400;
+                    else
+                        hC[0][i + j * ldc] = hA[0][i + j * lda] -= 4;
+                }
+            }
+
+            // compute sytrd/hetrd on C
+            cblas_sytrd_hetrd<S, T>(rocblas_fill_upper, n, hC[0], ldc, hD[0], hE[0], ipiv.data(),
+                                    hW.data(), size_W);
+
+            if(compc == rocblas_evect_original)
+            {
+                // A is the original matrix
+                cblas_orgtr_ungtr<T>(rocblas_fill_upper, n, hC[0], ldc, ipiv.data(), hW.data(),
+                                     size_W);
+            }
+            else
+            {
+                // A is the tridiagonal matrix
+                for(rocblas_int i = 0; i < n; i++)
+                {
+                    for(rocblas_int j = 0; j < n; j++)
+                    {
+                        if(i + 1 >= j)
+                            hA[0][i + j * lda] = hC[0][i + j * ldc];
+                        else
+                            hA[0][i + j * lda] = 0;
+                    }
+                }
             }
         }
-
-        // compute sytrd/hetrd
-        cblas_sytrd_hetrd<S, T>(rocblas_fill_upper, n, hC[0], ldc_valid, hD[0], hE[0], ipiv.data(),
-                                hW.data(), size_W);
-
-        if(compc == rocblas_evect_original)
-            cblas_orgtr_ungtr<T>(rocblas_fill_upper, n, hC[0], ldc_valid, ipiv.data(), hW.data(),
-                                 size_W);
-
-        // add a split in the matrix to test split handling
-        rocblas_int k = n / 2;
-        hE[0][k] = 0;
-        hE[0][k - 1] = 0;
     }
 
     if(GPU)
@@ -135,6 +171,7 @@ void steqr_getError(const rocblas_handle handle,
                     Td& dC,
                     const rocblas_int ldc,
                     Ud& dInfo,
+                    Th& hA,
                     Sh& hD,
                     Sh& hDRes,
                     Sh& hE,
@@ -145,14 +182,11 @@ void steqr_getError(const rocblas_handle handle,
                     double* max_err)
 {
     size_t size_W = n * 32;
-    size_t size_W2 = (compc == rocblas_evect_none ? 0 : 2 * n - 2);
     std::vector<T> hW(size_W);
-    std::vector<S> hW2(size_W2);
-    int ldc_valid = max(n, ldc);
 
     // input data initialization
-    steqr_initData<true, true, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo,
-                                     hW, size_W);
+    steqr_initData<true, true, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hA, hD, hE, hC,
+                                     hInfo, hW, size_W);
 
     // execute computations
     // GPU lapack
@@ -164,7 +198,7 @@ void steqr_getError(const rocblas_handle handle,
         CHECK_HIP_ERROR(hCRes.transfer_from(dC));
 
     // CPU lapack
-    cblas_steqr<S, T>(compc, n, hD[0], hE[0], hC[0], ldc_valid, hW2.data());
+    cblas_sterf<S>(n, hD[0], hE[0]);
 
     // error is ||hD - hDRes|| / ||hD||
     // using frobenius norm
@@ -172,6 +206,15 @@ void steqr_getError(const rocblas_handle handle,
     *max_err = norm_error('F', 1, n, 1, hD[0], hDRes[0]);
     if(compc != rocblas_evect_none)
     {
+        rocblas_int lda = n;
+        T alpha;
+        T beta = 0;
+        for(int j = 0; j < n; j++)
+        {
+            alpha = T(1) / hD[0][j];
+            cblas_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hCRes[0] + j * ldc, 1, beta,
+                            hC[0] + j * ldc, 1);
+        }
         err = norm_error('F', n, n, ldc, hC[0], hCRes[0]);
         *max_err = err > *max_err ? err : *max_err;
     }
@@ -186,6 +229,7 @@ void steqr_getPerfData(const rocblas_handle handle,
                        Td& dC,
                        const rocblas_int ldc,
                        Ud& dInfo,
+                       Th& hA,
                        Sh& hD,
                        Sh& hE,
                        Th& hC,
@@ -199,26 +243,25 @@ void steqr_getPerfData(const rocblas_handle handle,
     size_t size_W2 = (compc == rocblas_evect_none ? 0 : 2 * n - 2);
     std::vector<T> hW(size_W);
     std::vector<S> hW2(size_W2);
-    int ldc_valid = max(n, ldc);
 
     if(!perf)
     {
-        steqr_initData<true, false, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
+        steqr_initData<true, false, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hA, hD, hE, hC,
                                           hInfo, hW, size_W);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
-        cblas_steqr<S, T>(compc, n, hD[0], hE[0], hC[0], ldc_valid, hW2.data());
+        cblas_steqr<S, T>(compc, n, hD[0], hE[0], hC[0], ldc, hW2.data());
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
 
-    steqr_initData<true, false, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo,
-                                      hW, size_W);
+    steqr_initData<true, false, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hA, hD, hE, hC,
+                                      hInfo, hW, size_W);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        steqr_initData<false, true, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
+        steqr_initData<false, true, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hA, hD, hE, hC,
                                           hInfo, hW, size_W);
 
         CHECK_ROCBLAS_ERROR(
@@ -229,7 +272,7 @@ void steqr_getPerfData(const rocblas_handle handle,
     double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        steqr_initData<false, true, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
+        steqr_initData<false, true, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hA, hD, hE, hC,
                                           hInfo, hW, size_W);
 
         start = get_time_us();
@@ -245,6 +288,7 @@ void testing_steqr(Arguments argus)
     // get arguments
     rocblas_local_handle handle;
     rocblas_int n = argus.N;
+    rocblas_int lda = argus.N;
     rocblas_int ldc = argus.ldc;
     rocblas_int hot_calls = argus.iters;
     char compcC = argus.evect;
@@ -254,9 +298,10 @@ void testing_steqr(Arguments argus)
     // N/A
 
     // determine sizes
+    size_t size_A = lda * n;
     size_t size_D = n;
     size_t size_E = n;
-    size_t size_C = max(n, ldc) * n;
+    size_t size_C = ldc * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_DRes = (argus.unit_check || argus.norm_check) ? size_D : 0;
@@ -278,6 +323,7 @@ void testing_steqr(Arguments argus)
     }
 
     // memory allocations
+    host_strided_batch_vector<T> hA(size_A, 1, size_A, 1);
     host_strided_batch_vector<S> hD(size_D, 1, size_D, 1);
     host_strided_batch_vector<S> hDRes(size_DRes, 1, size_DRes, 1);
     host_strided_batch_vector<S> hE(size_E, 1, size_E, 1);
@@ -311,12 +357,12 @@ void testing_steqr(Arguments argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        steqr_getError<S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hDRes, hE, hERes, hC,
+        steqr_getError<S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hA, hD, hDRes, hE, hERes, hC,
                              hCRes, hInfo, &max_error);
 
     // collect performance data
     if(argus.timing)
-        steqr_getPerfData<S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo,
+        steqr_getPerfData<S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hA, hD, hE, hC, hInfo,
                                 &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
 
     // validate results for rocsolver-test
