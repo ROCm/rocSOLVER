@@ -1,7 +1,7 @@
 # Change Log for rocSOLVER
- 
+
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
- 
+
 ## [(Unreleased) rocSOLVER for ROCm 4.0.0]
 ### Added
 __anchor__TA
@@ -9,7 +9,7 @@ __anchor__TA
 __anchor__CB
 
 __anchor__JZ
-- Extended test coverage for functions returning info 
+- Extended test coverage for functions returning info
 - Changelog file
 
 ### Optimizations
@@ -76,7 +76,7 @@ __anchor__JZ
 ### Changed
 - Major library refactoring to adopt rocBLAS memory model
 
-### Fixed 
+### Fixed
 - Returned values in parameter info of functions dealing with singularities
 
 
@@ -97,7 +97,7 @@ __anchor__JZ
 ## [rocSOLVER 3.8.0 for ROCm 3.8.0]
 ### Added
 - Sample codes for C, C++ and FORTRAN
-- LU factorization without pivoting routines: 
+- LU factorization without pivoting routines:
     - GETF2\_NPVT, GETRF\_NPVT (with batched and strided\_batched versions)
 
 ### Optimizations
