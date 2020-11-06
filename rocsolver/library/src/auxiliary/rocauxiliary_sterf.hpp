@@ -17,7 +17,7 @@
 /****************************************************************************
 (TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS
   FOR THE BATCHED VERSIONS (A DIFFERENT THREAD WORKS ON EACH INSTANCE OF THE
-  BATCH).
+  BATCH).)
 ***************************************************************************/
 
 /** STERF_FIND_MAX finds the element with the largest magnitude in the
@@ -75,7 +75,7 @@ __global__ void sterf_kernel(const rocblas_int n,
     rocblas_int m, l, lsv, lend, lendsv;
     rocblas_int l1 = 0;
     rocblas_int iters = 0;
-    T sigma, gamma, anorm, bb, p, r_oldgam, rte_oldc, rt1_c, rt2_s;
+    T anorm, p;
 
     while(l1 < n && iters < max_iters)
     {
@@ -135,10 +135,11 @@ __global__ void sterf_kernel(const rocblas_int n,
                 else if(m == l + 1)
                 {
                     // Use lae2 to compute 2x2 eigenvalues. Using rte, rt1, rt2.
-                    rte_oldc = sqrt(E[l]);
-                    lae2(D[l], rte_oldc, D[l + 1], rt1_c, rt2_s);
-                    D[l] = rt1_c;
-                    D[l + 1] = rt2_s;
+                    T rte, rt1, rt2;
+                    rte = sqrt(E[l]);
+                    lae2(D[l], rte, D[l + 1], rt1, rt2);
+                    D[l] = rt1;
+                    D[l + 1] = rt2;
                     E[l] = 0;
                     l = l + 2;
                 }
@@ -148,43 +149,42 @@ __global__ void sterf_kernel(const rocblas_int n,
                         break;
                     iters++;
 
-                    // Form shift. Using rte, r, c, s.
-                    rte_oldc = sqrt(E[l]);
-                    sigma = (D[l + 1] - p) / (2 * rte_oldc);
-                    if(sigma >= 0)
-                        r_oldgam = abs(sqrt(1 + sigma * sigma));
-                    else
-                        r_oldgam = -abs(sqrt(1 + sigma * sigma));
-                    sigma = p - (rte_oldc / (sigma + r_oldgam));
+                    T sigma, gamma, r, rte, c, s;
 
-                    rt1_c = 1;
-                    rt2_s = 0;
+                    // Form shift
+                    rte = sqrt(E[l]);
+                    sigma = (D[l + 1] - p) / (2 * rte);
+                    if(sigma >= 0)
+                        r = abs(sqrt(1 + sigma * sigma));
+                    else
+                        r = -abs(sqrt(1 + sigma * sigma));
+                    sigma = p - (rte / (sigma + r));
+
+                    c = 1;
+                    s = 0;
                     gamma = D[m] - sigma;
                     p = gamma * gamma;
 
                     for(int i = m - 1; i >= l; i--)
                     {
-                        bb = E[i];
-                        r_oldgam = p + bb;
+                        T bb = E[i];
+                        r = p + bb;
                         if(i != m - 1)
-                            E[i + 1] = rt2_s * r_oldgam;
+                            E[i + 1] = s * r;
 
-                        // Using oldc, r, c, s.
-                        rte_oldc = rt1_c;
-                        rt1_c = p / r_oldgam;
-                        rt2_s = bb / r_oldgam;
-
-                        // Using oldc, oldgam, c, s.
-                        r_oldgam = gamma;
-                        gamma = rt1_c * (D[i] - sigma) - rt2_s * r_oldgam;
-                        D[i + 1] = r_oldgam + (D[i] - gamma);
-                        if(rt1_c != 0)
-                            p = (gamma * gamma) / rt1_c;
+                        T oldc = c;
+                        c = p / r;
+                        s = bb / r;
+                        T oldgam = gamma;
+                        gamma = c * (D[i] - sigma) - s * oldgam;
+                        D[i + 1] = oldgam + (D[i] - gamma);
+                        if(c != 0)
+                            p = (gamma * gamma) / c;
                         else
-                            p = rte_oldc * bb;
+                            p = oldc * bb;
                     }
 
-                    E[l] = rt2_s * p;
+                    E[l] = s * p;
                     D[l] = sigma + gamma;
                 }
             }
@@ -211,10 +211,11 @@ __global__ void sterf_kernel(const rocblas_int n,
                 else if(m == l - 1)
                 {
                     // Use lae2 to compute 2x2 eigenvalues. Using rte, rt1, rt2.
-                    rte_oldc = sqrt(E[l - 1]);
-                    lae2(D[l], rte_oldc, D[l - 1], rt1_c, rt2_s);
-                    D[l] = rt1_c;
-                    D[l - 1] = rt2_s;
+                    T rte, rt1, rt2;
+                    rte = sqrt(E[l - 1]);
+                    lae2(D[l], rte, D[l - 1], rt1, rt2);
+                    D[l] = rt1;
+                    D[l - 1] = rt2;
                     E[l - 1] = 0;
                     l = l - 2;
                 }
@@ -224,43 +225,42 @@ __global__ void sterf_kernel(const rocblas_int n,
                         break;
                     iters++;
 
-                    // Form shift. Using rte, r, c, s.
-                    rte_oldc = sqrt(E[l - 1]);
-                    sigma = (D[l - 1] - p) / (2 * rte_oldc);
-                    if(sigma >= 0)
-                        r_oldgam = abs(sqrt(1 + sigma * sigma));
-                    else
-                        r_oldgam = -abs(sqrt(1 + sigma * sigma));
-                    sigma = p - (rte_oldc / (sigma + r_oldgam));
+                    T sigma, gamma, r, rte, c, s;
 
-                    rt1_c = 1;
-                    rt2_s = 0;
+                    // Form shift. Using rte, r, c, s.
+                    rte = sqrt(E[l - 1]);
+                    sigma = (D[l - 1] - p) / (2 * rte);
+                    if(sigma >= 0)
+                        r = abs(sqrt(1 + sigma * sigma));
+                    else
+                        r = -abs(sqrt(1 + sigma * sigma));
+                    sigma = p - (rte / (sigma + r));
+
+                    c = 1;
+                    s = 0;
                     gamma = D[m] - sigma;
                     p = gamma * gamma;
 
                     for(int i = m; i <= l - 1; i++)
                     {
-                        bb = E[i];
-                        r_oldgam = p + bb;
+                        T bb = E[i];
+                        r = p + bb;
                         if(i != m)
-                            E[i - 1] = rt2_s * r_oldgam;
+                            E[i - 1] = s * r;
 
-                        // Using oldc, r, c, s.
-                        rte_oldc = rt1_c;
-                        rt1_c = p / r_oldgam;
-                        rt2_s = bb / r_oldgam;
-
-                        // Using oldc, oldgam, c, s.
-                        r_oldgam = gamma;
-                        gamma = rt1_c * (D[i + 1] - sigma) - rt2_s * r_oldgam;
-                        D[i] = r_oldgam + (D[i + 1] - gamma);
-                        if(rt1_c != 0)
-                            p = (gamma * gamma) / rt1_c;
+                        T oldc = c;
+                        c = p / r;
+                        s = bb / r;
+                        T oldgam = gamma;
+                        gamma = c * (D[i + 1] - sigma) - s * oldgam;
+                        D[i] = oldgam + (D[i + 1] - gamma);
+                        if(c != 0)
+                            p = (gamma * gamma) / c;
                         else
-                            p = rte_oldc * bb;
+                            p = oldc * bb;
                     }
 
-                    E[l - 1] = rt2_s * p;
+                    E[l - 1] = s * p;
                     D[l] = sigma + gamma;
                 }
             }

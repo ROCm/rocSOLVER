@@ -206,15 +206,21 @@ void steqr_getError(const rocblas_handle handle,
     *max_err = norm_error('F', 1, n, 1, hD[0], hDRes[0]);
     if(compc != rocblas_evect_none)
     {
+        // need to implicitly test eigenvectors due to non-uniqueness of eigenvectors
+        // under scaling
         rocblas_int lda = n;
         T alpha;
         T beta = 0;
+
+        // multiply A with each of the n eigenvectors and divide by corresponding
+        // eigenvalues
         for(int j = 0; j < n; j++)
         {
             alpha = T(1) / hD[0][j];
             cblas_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hCRes[0] + j * ldc, 1, beta,
                             hC[0] + j * ldc, 1);
         }
+
         err = norm_error('F', n, n, ldc, hC[0], hCRes[0]);
         *max_err = err > *max_err ? err : *max_err;
     }

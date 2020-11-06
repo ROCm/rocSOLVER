@@ -36,25 +36,25 @@ typedef enum rocblas_svect_
     rocblas_svect_none = 194, /**< No singular vectors are computed. */
 } rocblas_svect;
 
-/*! \brief Used to specify how the eigenvectors are to be computed
- ********************************************************************************/
-typedef enum rocblas_evect_
-{
-    rocblas_evect_original = 201, /**< Compute eigenvectors for the original symmetric/Hermitian
-                                    matrix. */
-    rocblas_evect_tridiagonal = 202, /**< Compute eigenvectors for the symmetric tridiagonal
-                                    matrix. */
-    rocblas_evect_none = 203, /**< No eigenvectors are computed. */
-} rocblas_evect;
-
 /*! \brief Used to enable the use of fast algorithms (with out-of-place
  *computations) in some of the routines
  ********************************************************************************/
 typedef enum rocblas_workmode_
 {
-    rocblas_outofplace = 211, /**< Out-of-place computations are allowed; this
+    rocblas_outofplace = 201, /**< Out-of-place computations are allowed; this
                                requires enough free memory. */
-    rocblas_inplace = 212, /**< When not enough memory, this forces in-place computations  */
+    rocblas_inplace = 202, /**< When not enough memory, this forces in-place computations  */
 } rocblas_workmode;
+
+/*! \brief Used to specify how the eigenvectors are to be computed
+ ********************************************************************************/
+typedef enum rocblas_evect_
+{
+    rocblas_evect_original = 211, /**< Compute eigenvectors for the original symmetric/Hermitian
+                                    matrix. */
+    rocblas_evect_tridiagonal = 212, /**< Compute eigenvectors for the symmetric tridiagonal
+                                    matrix. */
+    rocblas_evect_none = 213, /**< No eigenvectors are computed. */
+} rocblas_evect;
 
 #endif

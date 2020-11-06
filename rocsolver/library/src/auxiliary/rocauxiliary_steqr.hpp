@@ -18,7 +18,7 @@
 /****************************************************************************
 (TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS
   FOR THE BATCHED VERSIONS (A DIFFERENT THREAD WORKS ON EACH INSTANCE OF THE
-  BATCH).
+  BATCH).)
 ***************************************************************************/
 
 /** STEQR_INF_NORM finds the infinity norm of the tridiagonal matrix **/
@@ -73,7 +73,7 @@ __global__ void steqr_kernel(const rocblas_int n,
     rocblas_int m, l, lsv, lend, lendsv;
     rocblas_int l1 = 0;
     rocblas_int iters = 0;
-    S b, f, g, anorm, p, r, c, s;
+    S anorm, p;
 
     while(l1 < n && iters < max_iters)
     {
@@ -132,14 +132,15 @@ __global__ void steqr_kernel(const rocblas_int n,
                 else if(m == l + 1)
                 {
                     // Use laev2 to compute 2x2 eigenvalues and eigenvectors
-                    laev2(D[l], E[l], D[l + 1], f, g, c, s);
+                    S rt1, rt2, c, s;
+                    laev2(D[l], E[l], D[l + 1], rt1, rt2, c, s);
                     work[l] = c;
                     work[n - 1 + l] = s;
                     lasr(rocblas_side_right, rocblas_backward_direction, n, 2, work + l,
                          work + n - 1 + l, C + 0 + l * ldc, ldc);
 
-                    D[l] = f;
-                    D[l + 1] = g;
+                    D[l] = rt1;
+                    D[l + 1] = rt2;
                     E[l] = 0;
                     l = l + 2;
                 }
@@ -148,6 +149,8 @@ __global__ void steqr_kernel(const rocblas_int n,
                     if(iters == max_iters)
                         break;
                     iters++;
+
+                    S f, g, c, s, b, r;
 
                     // Form shift
                     g = (D[l + 1] - p) / (2 * E[l]);
@@ -211,14 +214,15 @@ __global__ void steqr_kernel(const rocblas_int n,
                 else if(m == l - 1)
                 {
                     // Use laev2 to compute 2x2 eigenvalues and eigenvectors
-                    laev2(D[l - 1], E[l - 1], D[l], f, g, c, s);
+                    S rt1, rt2, c, s;
+                    laev2(D[l - 1], E[l - 1], D[l], rt1, rt2, c, s);
                     work[m] = c;
                     work[n - 1 + m] = s;
                     lasr(rocblas_side_right, rocblas_forward_direction, n, 2, work + m,
                          work + n - 1 + m, C + 0 + (l - 1) * ldc, ldc);
 
-                    D[l - 1] = f;
-                    D[l] = g;
+                    D[l - 1] = rt1;
+                    D[l] = rt2;
                     E[l - 1] = 0;
                     l = l - 2;
                 }
@@ -227,6 +231,8 @@ __global__ void steqr_kernel(const rocblas_int n,
                     if(iters == max_iters)
                         break;
                     iters++;
+
+                    S f, g, c, s, b, r;
 
                     // Form shift
                     g = (D[l - 1] - p) / (2 * E[l - 1]);
