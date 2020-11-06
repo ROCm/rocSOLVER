@@ -119,11 +119,6 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
     blocks = (n - 1) / BLOCKSIZE + 1;
     dim3 grid_n(blocks, batch_count);
 
-    // set W to zero
-    blocks = (ldw * k - 1) / BLOCKSIZE + 1;
-    hipLaunchKernelGGL(reset_batch_info<T>, dim3(blocks, batch_count, 1), dim3(BLOCKSIZE, 1, 1), 0,
-                       stream, W + shiftW, strideW, ldw * k, 0);
-
     if(uplo == rocblas_fill_lower)
     {
         // reduce the first k columns of A

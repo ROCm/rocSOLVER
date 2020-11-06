@@ -191,8 +191,6 @@ void labrd_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hYRes.transfer_from(dY));
 
     // CPU lapack
-    memset(hX[0], 0, ldx * nb * sizeof(T));
-    memset(hY[0], 0, ldy * nb * sizeof(T));
     cblas_labrd<S, T>(m, n, nb, hA[0], lda, hD[0], hE[0], hTauq[0], hTaup[0], hX[0], ldx, hY[0], ldy);
 
     // error is max(||hA - hARes|| / ||hA||, ||hX - hXRes|| / ||hX||, ||hY -
@@ -202,9 +200,9 @@ void labrd_getError(const rocblas_handle handle,
     *max_err = 0;
     err = norm_error('F', m, n, lda, hA[0], hARes[0]);
     *max_err = err > *max_err ? err : *max_err;
-    err = norm_error('F', m, nb, ldx, hX[0], hXRes[0]);
+    err = norm_error('F', m - nb, nb, ldx, hX[0] + nb, hXRes[0] + nb);
     *max_err = err > *max_err ? err : *max_err;
-    err = norm_error('F', n, nb, ldy, hY[0], hYRes[0]);
+    err = norm_error('F', n - nb, nb, ldy, hY[0] + nb, hYRes[0] + nb);
     *max_err = err > *max_err ? err : *max_err;
 }
 

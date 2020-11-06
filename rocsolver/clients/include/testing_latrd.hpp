@@ -168,17 +168,17 @@ void latrd_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hWRes.transfer_from(dW));
 
     // CPU lapack
-    memset(hW[0], 0, ldw * k * sizeof(T));
     cblas_latrd(uplo, n, k, hA[0], lda, hE[0], hTau[0], hW[0], ldw);
 
     // error is max(||hA - hARes|| / ||hA||, ||hW - hWRes|| / ||hW||)
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY
     // ISSUES. IT MIGHT BE REVISITED IN THE FUTURE) using frobenius norm
     double err;
+    rocblas_int offset = (uplo == rocblas_fill_lower) ? k : 0;
     *max_err = 0;
     err = norm_error('F', n, n, lda, hA[0], hARes[0]);
     *max_err = err > *max_err ? err : *max_err;
-    err = norm_error('F', n, k, ldw, hW[0], hWRes[0]);
+    err = norm_error('F', n - k, k, ldw, hW[0] + offset, hWRes[0] + offset);
     *max_err = err > *max_err ? err : *max_err;
 }
 
