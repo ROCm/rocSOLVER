@@ -11,6 +11,10 @@ __anchor__CB
 __anchor__JZ
 - Extended test coverage for functions returning info
 - Changelog file
+- Tridiagonalization routines for symmetric and hermitian matrices:
+    - LATRD
+    - SYTD2, SYTRD (with batched and strided\_batched versions)
+    - HETD2, HETRD (with batched and strided\_batched versions)
 
 ### Optimizations
 __anchor__TA

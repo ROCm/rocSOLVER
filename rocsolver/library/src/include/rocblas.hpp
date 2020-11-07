@@ -714,6 +714,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
     return status;
 }
 
+
 // syr2
 template <typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
@@ -877,6 +878,140 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                  cast2constType<T>(A), offsetA, lda, strideA,
                                  cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
 }
+
+
+// syr2k
+template <typename T, typename Ua, typename Ub, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
+rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
+                                     rocblas_fill uplo,
+                                     rocblas_operation trans,
+                                     rocblas_int n,
+                                     rocblas_int k,
+                                     Ua alpha,
+                                     V A,
+                                     rocblas_int offsetA,
+                                     rocblas_int lda,
+                                     rocblas_stride strideA,
+                                     V B,
+                                     rocblas_int offsetB,
+                                     rocblas_int ldb,
+                                     rocblas_stride strideB,
+                                     Ub beta,
+                                     V C,
+                                     rocblas_int offsetC,
+                                     rocblas_int ldc,
+                                     rocblas_stride strideC,
+                                     rocblas_int batch_count,
+                                     T** work = nullptr)
+{
+    return rocblas_syr2k_template<true>(handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A),
+                                 offsetA, lda, strideA, cast2constType<T>(B), offsetB, ldb,
+                                 strideB, cast2constType<T>(beta), C, offsetC, ldc, strideC, batch_count);
+}
+
+// syr2k overload
+template <typename T, typename Ua, typename Ub, std::enable_if_t<!is_complex<T>, int> = 0>
+rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
+                                     rocblas_fill uplo,
+                                     rocblas_operation trans,
+                                     rocblas_int n,
+                                     rocblas_int k,
+                                     Ua alpha,
+                                     T *const A[],
+                                     rocblas_int offsetA,
+                                     rocblas_int lda,
+                                     rocblas_stride strideA,
+                                     T* B,
+                                     rocblas_int offsetB,
+                                     rocblas_int ldb,
+                                     rocblas_stride strideB,
+                                     Ub beta,
+                                     T *const C[],
+                                     rocblas_int offsetC,
+                                     rocblas_int ldc,
+                                     rocblas_stride strideC,
+                                     rocblas_int batch_count,
+                                     T** work = nullptr)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, strideB, batch_count);
+
+    return rocblas_syr2k_template<true>(handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A),
+                                 offsetA, lda, strideA, cast2constType<T>(work), offsetB, ldb,
+                                 strideB, cast2constType<T>(beta), C, offsetC, ldc, strideC, batch_count);
+}
+
+
+// her2k
+template <typename T, typename Ua, typename Ub, typename V, std::enable_if_t<is_complex<T>, int> = 0>
+rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
+                                     rocblas_fill uplo,
+                                     rocblas_operation trans,
+                                     rocblas_int n,
+                                     rocblas_int k,
+                                     Ua alpha,
+                                     V A,
+                                     rocblas_int offsetA,
+                                     rocblas_int lda,
+                                     rocblas_stride strideA,
+                                     V B,
+                                     rocblas_int offsetB,
+                                     rocblas_int ldb,
+                                     rocblas_stride strideB,
+                                     Ub beta,
+                                     V C,
+                                     rocblas_int offsetC,
+                                     rocblas_int ldc,
+                                     rocblas_stride strideC,
+                                     rocblas_int batch_count,
+                                     T** work = nullptr)
+{
+    using S = decltype(std::real(T{}));
+    return rocblas_her2k_template<true>(handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A),
+                                 offsetA, lda, strideA, cast2constType<T>(B), offsetB, ldb,
+                                 strideB, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
+}
+
+// her2k overload
+template <typename T, typename Ua, typename Ub, std::enable_if_t<is_complex<T>, int> = 0>
+rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
+                                     rocblas_fill uplo,
+                                     rocblas_operation trans,
+                                     rocblas_int n,
+                                     rocblas_int k,
+                                     Ua alpha,
+                                     T *const A[],
+                                     rocblas_int offsetA,
+                                     rocblas_int lda,
+                                     rocblas_stride strideA,
+                                     T* B,
+                                     rocblas_int offsetB,
+                                     rocblas_int ldb,
+                                     rocblas_stride strideB,
+                                     Ub beta,
+                                     T *const C[],
+                                     rocblas_int offsetC,
+                                     rocblas_int ldc,
+                                     rocblas_stride strideC,
+                                     rocblas_int batch_count,
+                                     T** work = nullptr)
+{
+    using S = decltype(std::real(T{}));
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, strideB, batch_count);
+
+    return rocblas_her2k_template<true>(handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A),
+                                 offsetA, lda, strideA, cast2constType<T>(work), offsetB, ldb,
+                                 strideB, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
+}
+
 
 // symv
 template <typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
