@@ -10,10 +10,10 @@
 #ifndef ROCLAPACK_TRD_H
 #define ROCLAPACK_TRD_H
 
-#include "roclapack_sytd2_hetd2.hpp"
 #include "../auxiliary/rocauxiliary_latrd.hpp"
 #include "common_device.hpp"
 #include "rocblas.hpp"
+#include "roclapack_sytd2_hetd2.hpp"
 #include "rocsolver.h"
 
 template <typename T, bool BATCHED>
@@ -41,9 +41,9 @@ void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
     // size required to store temporary matrix W
     if(n > xxTRD_xxTD2_SWITCHSIZE)
     {
-        s1 = n * xxTRD_xxTD2_BLOCKSIZE;   
+        s1 = n * xxTRD_xxTD2_BLOCKSIZE;
         s1 *= sizeof(T) * batch_count;
-    } 
+    }
 
     // extra requirements to call SYTD2/HETD2
     rocsolver_sytd2_hetd2_getMemorySize<T, BATCHED>(n, batch_count, size_scalars, size_work,
@@ -112,9 +112,9 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
 
     // if the matrix is too small, use the unblocked variant of the algorithm
     if(n <= kk)
-        return rocsolver_sytd2_hetd2_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, 
-                                            E, strideE, tau, strideP, batch_count, scalars, work,
-                                            norms, tmptau_W, workArr);
+        return rocsolver_sytd2_hetd2_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
+                                              E, strideE, tau, strideP, batch_count, scalars, work,
+                                              norms, tmptau_W, workArr);
 
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
@@ -123,10 +123,10 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
 
     // scalars for rocblas calls
     T minonej = -1; //complex -1
-    S one = 1;      //real 1
+    S one = 1; //real 1
 
     rocblas_int ldw = n;
-    rocblas_stride strideW = n*k;
+    rocblas_stride strideW = n * k;
     rocblas_int j;
 
     if(uplo == rocblas_fill_lower)
@@ -138,25 +138,25 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
         while(j < n - kk)
         {
             // reduce columns j:j+k-1
-            rocsolver_latrd_template(handle, uplo, n-j, k, A, shiftA + idx2D(j, j, lda), lda, 
-                                    strideA, (E + j), strideE, (tau + j), strideP, tmptau_W, 0, 
-                                    ldw, strideW, batch_count, scalars, work, norms, workArr); 
+            rocsolver_latrd_template(handle, uplo, n - j, k, A, shiftA + idx2D(j, j, lda), lda,
+                                     strideA, (E + j), strideE, (tau + j), strideP, tmptau_W, 0,
+                                     ldw, strideW, batch_count, scalars, work, norms, workArr);
 
             // update unreduced block as a rank-2k update
             // A = A - V*W' - W*V'
-            rocblasCall_syr2k_her2k<T>(handle, uplo, rocblas_operation_none, n-j-k, k, &minonej,
-                                        A, shiftA + idx2D(j+k,j,lda), lda, strideA, tmptau_W,
-                                        idx2D(k,0,ldw), ldw, strideW, &one, A, 
-                                        shiftA + idx2D(j+k,j+k,lda), lda, strideA, 
-                                        batch_count, workArr);
+            rocblasCall_syr2k_her2k<T>(handle, uplo, rocblas_operation_none, n - j - k, k, &minonej,
+                                       A, shiftA + idx2D(j + k, j, lda), lda, strideA, tmptau_W,
+                                       idx2D(k, 0, ldw), ldw, strideW, &one, A,
+                                       shiftA + idx2D(j + k, j + k, lda), lda, strideA, batch_count,
+                                       workArr);
 
             j += k;
         }
 
         // reduce last columns of A
-        rocsolver_sytd2_hetd2_template(handle, uplo, n-j, A, shiftA + idx2D(j, j, lda), lda, strideA, 
-                                        (D + j), strideD, (E + j), strideE, (tau + j), strideP, 
-                                        batch_count, scalars, work, norms, tmptau_W, workArr);        
+        rocsolver_sytd2_hetd2_template(handle, uplo, n - j, A, shiftA + idx2D(j, j, lda), lda,
+                                       strideA, (D + j), strideD, (E + j), strideE, (tau + j),
+                                       strideP, batch_count, scalars, work, norms, tmptau_W, workArr);
     }
 
     else
@@ -169,30 +169,28 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
         while(j >= upkk)
         {
             // reduce columns j:j+k-1
-            rocsolver_latrd_template(handle, uplo, j+k, k, A, shiftA, lda,
-                                    strideA, E, strideE, tau, strideP, tmptau_W, 0,
-                                    ldw, strideW, batch_count, scalars, work, norms, workArr);
+            rocsolver_latrd_template(handle, uplo, j + k, k, A, shiftA, lda, strideA, E, strideE,
+                                     tau, strideP, tmptau_W, 0, ldw, strideW, batch_count, scalars,
+                                     work, norms, workArr);
 
             // update unreduced block as a rank-2k update
             // A = A - V*W' - W*V'
-            rocblasCall_syr2k_her2k<T>(handle, uplo, rocblas_operation_none, j, k, &minonej,
-                                        A, shiftA + idx2D(0,j,lda), lda, strideA, tmptau_W,
-                                        0, ldw, strideW, &one, A, shiftA, lda, strideA, 
-                                        batch_count, workArr);
+            rocblasCall_syr2k_her2k<T>(handle, uplo, rocblas_operation_none, j, k, &minonej, A,
+                                       shiftA + idx2D(0, j, lda), lda, strideA, tmptau_W, 0, ldw,
+                                       strideW, &one, A, shiftA, lda, strideA, batch_count, workArr);
             j -= k;
         }
 
         // reduce first columns of A
-        rocsolver_sytd2_hetd2_template(handle, uplo, upkk, A, shiftA, lda, strideA,
-                                        D, strideD, E, strideE, tau, strideP,
-                                        batch_count, scalars, work, norms, tmptau_W, workArr);
+        rocsolver_sytd2_hetd2_template(handle, uplo, upkk, A, shiftA, lda, strideA, D, strideD, E,
+                                       strideE, tau, strideP, batch_count, scalars, work, norms,
+                                       tmptau_W, workArr);
     }
 
     // Copy results (set tridiagonal form in A)
     rocblas_int blocks = (n - 1) / BLOCKSIZE + 1;
-    hipLaunchKernelGGL((set_tridiag<S, T>), dim3(blocks,batch_count), dim3(BLOCKSIZE), 0, stream, 
-                        uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE);
-
+    hipLaunchKernelGGL((set_tridiag<S, T>), dim3(blocks, batch_count), dim3(BLOCKSIZE), 0, stream,
+                       uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;

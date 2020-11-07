@@ -48,7 +48,8 @@ rocblas_status rocsolver_sytrd_hetrd_strided_batched_impl(rocblas_handle handle,
 
     // memory workspace allocation
     void *scalars, *work, *norms, *tmptau_W, *workArr;
-    rocblas_device_malloc mem(handle, size_scalars, size_work, size_norms, size_tmptau_W, size_workArr);
+    rocblas_device_malloc mem(handle, size_scalars, size_work, size_norms, size_tmptau_W,
+                              size_workArr);
 
     if(!mem)
         return rocblas_status_memory_error;
