@@ -169,6 +169,7 @@ __global__ void steqr_kernel(const rocblas_int n,
                         f = s * E[i];
                         b = c * E[i];
                         lartg(g, f, c, s, r);
+                        s = -s; //get the transpose of the rotation
                         if(i != m - 1)
                             E[i + 1] = r;
 
@@ -251,6 +252,7 @@ __global__ void steqr_kernel(const rocblas_int n,
                         f = s * E[i];
                         b = c * E[i];
                         lartg(g, f, c, s, r);
+                        s = -s; //get the transpose of the rotation
                         if(i != m)
                             E[i - 1] = r;
 
