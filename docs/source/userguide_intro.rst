@@ -120,9 +120,15 @@ rocsolver_gesvd_strided_batched x      x          x             x
 **rocsolver_sytd2**             x      x
 rocsolver_sytd2_batched         x      x
 rocsolver_sytd2_strided_batched x      x
+**rocsolver_sytrd**             x      x
+rocsolver_sytrd_batched         x      x
+rocsolver_sytrd_strided_batched x      x
 **rocsolver_hetd2**                               x             x
 rocsolver_hetd2_batched                           x             x
 rocsolver_hetd2_strided_batched                   x             x
+**rocsolver_hetrd**                               x             x
+rocsolver_hetrd_batched                           x             x
+rocsolver_hetrd_strided_batched                   x             x
 =============================== ====== ====== ============== ==============
 
 ==================================== ====== ====== ============== ==============
