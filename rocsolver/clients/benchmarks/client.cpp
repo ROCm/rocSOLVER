@@ -1362,8 +1362,6 @@ try
             testing_steqr<float, rocblas_float_complex>(argus);
         else if(precision == 'z')
             testing_steqr<double, rocblas_double_complex>(argus);
-        else
-            throw std::invalid_argument("This function does not support the given --precision");
     }
     else
         throw std::invalid_argument("Invalid value for --function");

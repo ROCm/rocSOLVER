@@ -146,11 +146,11 @@ __device__ void t2bQRstep(const rocblas_int n,
     if(nv)
         lasr(rocblas_side_left, rocblas_forward_direction, n, nv, rots, rots + n - 1, V, ldv);
     if(nu)
-        lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots + nr,
-                   rots + nr + n - 1, U, ldu);
+        lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots + nr, rots + nr + n - 1, U,
+             ldu);
     if(nc)
-        lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots + nr,
-                   rots + nr + n - 1, C, ldc);
+        lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots + nr, rots + nr + n - 1, C,
+             ldc);
 }
 
 /** B2TQRSTEP device function applies implicit QR interation to
@@ -195,8 +195,8 @@ __device__ void b2tQRstep(const rocblas_int n,
         // save rotations to update singular vectors
         if(nu || nc)
         {
-            rots[(k-1) + nr] = c;
-            rots[(k-1) + nr + n - 1] = s;
+            rots[(k - 1) + nr] = c;
+            rots[(k - 1) + nr + n - 1] = s;
         }
 
         // then apply rotation by columns
@@ -212,8 +212,8 @@ __device__ void b2tQRstep(const rocblas_int n,
         // save rotations to update singular vectors
         if(nv)
         {
-            rots[k-1] = c;
-            rots[(k-1) + n - 1] = s;
+            rots[k - 1] = c;
+            rots[(k - 1) + n - 1] = s;
         }
     }
     E[0] = f;
@@ -222,11 +222,11 @@ __device__ void b2tQRstep(const rocblas_int n,
     if(nv)
         lasr(rocblas_side_left, rocblas_backward_direction, n, nv, rots, rots + n - 1, V, ldv);
     if(nu)
-        lasr(rocblas_side_right, rocblas_backward_direction, nu, n, rots + nr,
-                   rots + nr + n - 1, U, ldu);
+        lasr(rocblas_side_right, rocblas_backward_direction, nu, n, rots + nr, rots + nr + n - 1, U,
+             ldu);
     if(nc)
-        lasr(rocblas_side_left, rocblas_backward_direction, n, nc, rots + nr,
-                   rots + nr + n - 1, C, ldc);
+        lasr(rocblas_side_left, rocblas_backward_direction, n, nc, rots + nr, rots + nr + n - 1, C,
+             ldc);
 }
 
 /** BDSQRKERNEL implements the main loop of the bdsqr algorithm
