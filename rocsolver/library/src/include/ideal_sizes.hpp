@@ -51,6 +51,10 @@
 // gebd2/gebrd
 #define GEBRD_GEBD2_SWITCHSIZE 32
 
+// xxtd2/xxtrd
+#define xxTRD_xxTD2_BLOCKSIZE 32
+#define xxTRD_xxTD2_SWITCHSIZE 64
+
 // gesvd
 // This value should be ~1.6 (to be tuned).
 // For now, it is set to a very high value until the thin-SVD algorithm is

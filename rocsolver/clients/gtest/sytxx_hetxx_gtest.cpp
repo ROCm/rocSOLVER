@@ -379,7 +379,7 @@ INSTANTIATE_TEST_SUITE_P(daily_lapack,
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          HETD2,
                          Combine(ValuesIn(matrix_size_range), ValuesIn(uplo_range)));
-/*
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          SYTRD,
                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(uplo_range)));
@@ -395,4 +395,3 @@ INSTANTIATE_TEST_SUITE_P(daily_lapack,
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          HETRD,
                          Combine(ValuesIn(matrix_size_range), ValuesIn(uplo_range)));
-*/
