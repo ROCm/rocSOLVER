@@ -285,20 +285,24 @@ __device__ void lartg(T& f, T& g, T& c, T& s, T& r)
     {
         c = 0;
         s = 1;
-        r = g;
+        r = -g;
     }
     else
     {
-        r = sqrt(f * f + g * g);
-        c = f / r;
-        s = g / r;
-
-        if(abs(f) > abs(g) && c < 0)
+        T t;
+        if(std::abs(g) > std::abs(f))
         {
-            r = -r;
-            c = -c;
-            s = -s;
+            t = -f / g;
+            s = 1 / T(std::sqrt(1 + t * t));
+            c = s * t;
         }
+        else
+        {
+            t = -g / f;
+            c = 1 / T(std::sqrt(1 + t * t));
+            s = c * t;
+        }
+        r = c * f - s * g;
     }
 }
 

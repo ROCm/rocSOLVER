@@ -26,119 +26,6 @@
   and vector operations
 ***************************************************************************/
 
-/** BDSQR_LARTG device function computes the sine (s) and cosine (c) values
-    to create a givens rotation such that:
-    [  c s ]' * [ f ] = [ r ]
-    [ -s c ]    [ g ]   [ 0 ] **/
-template <typename T>
-__device__ void bdsqr_lartg(T& f, T& g, T& c, T& s, T& r)
-{
-    if(g == 0)
-    {
-        c = 1;
-        s = 0;
-    }
-    else
-    {
-        T t;
-        if(std::abs(g) > std::abs(f))
-        {
-            t = -f / g;
-            s = 1 / T(std::sqrt(1 + t * t));
-            c = s * t;
-        }
-        else
-        {
-            t = -g / f;
-            c = 1 / T(std::sqrt(1 + t * t));
-            s = c * t;
-        }
-    }
-    r = c * f - s * g;
-}
-
-/** BDSQR_LASR device function applies a sequence of rotations P(i) i=1,2,...z
-    to a m-by-n matrix A from either the left (P*A with z=m) or the right (A*P'
-    with z=n). P = P(z-1)*...*P(1) if forward direction, P = P(1)*...*P(z-1) if
-    backward direction. **/
-template <typename T, typename W>
-__device__ void bdsqr_lasr(const rocblas_side side,
-                           const rocblas_direct direc,
-                           const rocblas_int m,
-                           const rocblas_int n,
-                           W* c,
-                           W* s,
-                           T* A,
-                           const rocblas_int lda)
-{
-    T temp;
-    W cs, sn;
-
-    if(side == rocblas_side_left)
-    {
-        if(direc == rocblas_forward_direction)
-        {
-            for(rocblas_int i = 0; i < m - 1; ++i)
-            {
-                for(rocblas_int j = 0; j < n; ++j)
-                {
-                    temp = A[i + j * lda];
-                    cs = c[i];
-                    sn = s[i];
-                    A[i + j * lda] = cs * temp + sn * A[i + 1 + j * lda];
-                    A[i + 1 + j * lda] = cs * A[i + 1 + j * lda] - sn * temp;
-                }
-            }
-        }
-        else
-        {
-            for(rocblas_int i = m - 1; i > 0; --i)
-            {
-                for(rocblas_int j = 0; j < n; ++j)
-                {
-                    temp = A[i + j * lda];
-                    cs = c[i];
-                    sn = s[i];
-                    A[i + j * lda] = cs * temp - sn * A[i - 1 + j * lda];
-                    A[i - 1 + j * lda] = cs * A[i - 1 + j * lda] + sn * temp;
-                }
-            }
-        }
-    }
-
-    else
-    {
-        if(direc == rocblas_forward_direction)
-        {
-            for(rocblas_int j = 0; j < n - 1; ++j)
-            {
-                for(rocblas_int i = 0; i < m; ++i)
-                {
-                    temp = A[i + j * lda];
-                    cs = c[j];
-                    sn = s[j];
-                    A[i + j * lda] = cs * temp + sn * A[i + (j + 1) * lda];
-                    A[i + (j + 1) * lda] = cs * A[i + (j + 1) * lda] - sn * temp;
-                }
-            }
-        }
-        else
-        {
-            for(rocblas_int j = n - 1; j > 0; --j)
-            {
-                for(rocblas_int i = 0; i < m; ++i)
-                {
-                    temp = A[i + j * lda];
-                    cs = c[j];
-                    sn = s[j];
-                    A[i + j * lda] = cs * temp - sn * A[i + (j - 1) * lda];
-                    A[i + (j - 1) * lda] = cs * A[i + (j - 1) * lda] + sn * temp;
-                }
-            }
-        }
-    }
-}
-
 /** ESTIMATE device function computes an estimate of the smallest
     singular value of a n-by-n upper bidiagonal matrix given by D and E
     It also applies convergence test if conver = 1 **/
@@ -222,7 +109,7 @@ __device__ void t2bQRstep(const rocblas_int n,
     for(rocblas_int k = 0; k < n - 1; ++k)
     {
         // first apply rotation by columns
-        bdsqr_lartg(f, g, c, s, r);
+        lartg(f, g, c, s, r);
         if(k > 0)
             E[k - 1] = r;
         f = c * D[k] - s * E[k];
@@ -237,7 +124,7 @@ __device__ void t2bQRstep(const rocblas_int n,
         }
 
         // then apply rotation by rows
-        bdsqr_lartg(f, g, c, s, r);
+        lartg(f, g, c, s, r);
         D[k] = r;
         f = c * E[k] - s * D[k + 1];
         D[k + 1] = c * D[k + 1] + s * E[k];
@@ -257,12 +144,12 @@ __device__ void t2bQRstep(const rocblas_int n,
 
     // update singular vectors
     if(nv)
-        bdsqr_lasr(rocblas_side_left, rocblas_forward_direction, n, nv, rots, rots + n - 1, V, ldv);
+        lasr(rocblas_side_left, rocblas_forward_direction, n, nv, rots, rots + n - 1, V, ldv);
     if(nu)
-        bdsqr_lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots + nr,
+        lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots + nr,
                    rots + nr + n - 1, U, ldu);
     if(nc)
-        bdsqr_lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots + nr,
+        lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots + nr,
                    rots + nr + n - 1, C, ldc);
 }
 
@@ -298,7 +185,7 @@ __device__ void b2tQRstep(const rocblas_int n,
     for(rocblas_int k = n - 1; k > 0; --k)
     {
         // first apply rotation by rows
-        bdsqr_lartg(f, g, c, s, r);
+        lartg(f, g, c, s, r);
         if(k < n - 1)
             E[k] = r;
         f = c * D[k] - s * E[k - 1];
@@ -308,12 +195,12 @@ __device__ void b2tQRstep(const rocblas_int n,
         // save rotations to update singular vectors
         if(nu || nc)
         {
-            rots[k + nr] = c;
-            rots[k + nr + n - 1] = s;
+            rots[(k-1) + nr] = c;
+            rots[(k-1) + nr + n - 1] = s;
         }
 
         // then apply rotation by columns
-        bdsqr_lartg(f, g, c, s, r);
+        lartg(f, g, c, s, r);
         D[k] = r;
         f = c * E[k - 1] - s * D[k - 1];
         D[k - 1] = c * D[k - 1] + s * E[k - 1];
@@ -325,20 +212,20 @@ __device__ void b2tQRstep(const rocblas_int n,
         // save rotations to update singular vectors
         if(nv)
         {
-            rots[k] = c;
-            rots[k + n - 1] = s;
+            rots[k-1] = c;
+            rots[(k-1) + n - 1] = s;
         }
     }
     E[0] = f;
 
     // update singular vectors
     if(nv)
-        bdsqr_lasr(rocblas_side_left, rocblas_backward_direction, n, nv, rots, rots + n - 1, V, ldv);
+        lasr(rocblas_side_left, rocblas_backward_direction, n, nv, rots, rots + n - 1, V, ldv);
     if(nu)
-        bdsqr_lasr(rocblas_side_right, rocblas_backward_direction, nu, n, rots + nr,
+        lasr(rocblas_side_right, rocblas_backward_direction, nu, n, rots + nr,
                    rots + nr + n - 1, U, ldu);
     if(nc)
-        bdsqr_lasr(rocblas_side_left, rocblas_backward_direction, n, nc, rots + nr,
+        lasr(rocblas_side_left, rocblas_backward_direction, n, nc, rots + nr,
                    rots + nr + n - 1, C, ldc);
 }
 
@@ -563,7 +450,7 @@ __global__ void lower2upper(const rocblas_int n,
     for(rocblas_int i = 0; i < n - 1; ++i)
     {
         // apply rotations by rows
-        bdsqr_lartg(f, g, c, s, r);
+        lartg(f, g, c, s, r);
         D[i] = r;
         E[i] = -s * D[i + 1];
         f = c * D[i + 1];
@@ -580,9 +467,9 @@ __global__ void lower2upper(const rocblas_int n,
 
     // update singular vectors
     if(nu)
-        bdsqr_lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots, rots + n - 1, U, ldu);
+        lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots, rots + n - 1, U, ldu);
     if(nc)
-        bdsqr_lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots, rots + n - 1, C, ldc);
+        lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots, rots + n - 1, C, ldc);
 }
 
 template <typename T>
