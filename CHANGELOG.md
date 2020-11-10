@@ -27,7 +27,7 @@ __anchor__JZ
 __anchor__TA
 
 __anchor__CB
-- Bumped CMake minimum requirements for building rocSOLVER from source to CMake 3.8
+- Raised minimum requirement for building rocSOLVER from source to CMake 3.8
 
 __anchor__JZ
 - Switched to use semantic versioning for the library
