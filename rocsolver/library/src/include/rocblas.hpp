@@ -600,13 +600,9 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
     constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
     constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
 
-    // TODO: adding offsets directly to the arrays A and B until rocblas_trmm
-    // supports offset arguments.
-    // (JIRA ticket: SWDEV-249061)
     return rocblas_trmm_template<BATCHED, nb, nb, T>(
-        handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha),
-        cast2constType<T>(A + offsetA), lda, strideA, B + offsetB, ldb, strideB, batch_count, work,
-        strideW);
+        handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), cast2constType<T>(A),
+        offsetA, lda, strideA, B, offsetB, ldb, strideB, batch_count, work, strideW);
 }
 
 // trmm overload
@@ -640,24 +636,10 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, work, strideW,
                        batch_count);
 
-    // TODO: until rocblas_trmm support offset arguments,
-    // we need to manually offset A and B and store in temporary arrays AA and BB.
-    // (JIRA ticket: SWDEV-249061)
-    T **AA, **BB;
-    hipMalloc(&AA, sizeof(T*) * batch_count);
-    hipMalloc(&BB, sizeof(T*) * batch_count);
-    hipLaunchKernelGGL(shift_array, dim3(blocks), dim3(256), 0, stream, AA, A, offsetA, batch_count);
-    hipLaunchKernelGGL(shift_array, dim3(blocks), dim3(256), 0, stream, BB, B, offsetB, batch_count);
-
-    rocblas_status status = rocblas_trmm_template<BATCHED, nb, nb, T>(
-        handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha),
-        cast2constType<T>(cast2constPointer<T>(AA)), lda, strideA, cast2constPointer<T>(BB), ldb,
-        strideB, batch_count, cast2constPointer<T>(workArr), strideW);
-
-    hipFree(AA);
-    hipFree(BB);
-
-    return status;
+    return rocblas_trmm_template<BATCHED, nb, nb, T>(
+        handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), cast2constType<T>(A),
+        offsetA, lda, strideA, B, offsetB, ldb, strideB, batch_count, cast2constPointer<T>(workArr),
+        strideW);
 }
 
 // trmm overload
@@ -689,29 +671,15 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
 
-    // TODO: adding offsets directly to the array B until rocblas_trmm
-    // supports offset arguments.
-    // (JIRA ticket: SWDEV-249061)
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, B + offsetB, strideB,
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, B, strideB,
                        batch_count);
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr + batch_count, work,
                        strideW, batch_count);
 
-    // TODO: until rocblas_trmm support offset arguments,
-    // we need to manually offset A and store in temporary array AA.
-    // (JIRA ticket: SWDEV-249061)
-    T** AA;
-    hipMalloc(&AA, sizeof(T*) * batch_count);
-    hipLaunchKernelGGL(shift_array, dim3(blocks), dim3(256), 0, stream, AA, A, offsetA, batch_count);
-
-    rocblas_status status = rocblas_trmm_template<BATCHED, nb, nb, T>(
-        handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha),
-        cast2constType<T>(cast2constPointer<T>(AA)), lda, strideA, cast2constPointer<T>(workArr),
-        ldb, strideB, batch_count, cast2constPointer<T>(workArr + batch_count), strideW);
-
-    hipFree(AA);
-
-    return status;
+    return rocblas_trmm_template<BATCHED, nb, nb, T>(
+        handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), cast2constType<T>(A),
+        offsetA, lda, strideA, cast2constPointer<T>(workArr), offsetB, ldb, strideB, batch_count,
+        cast2constPointer<T>(workArr + batch_count), strideW);
 }
 
 // syr2
