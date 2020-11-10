@@ -4,6 +4,7 @@
 #pragma once
 
 #include "rocblas_init.hpp"
+#include <assert.h>
 #include <string.h>
 
 //
@@ -111,6 +112,7 @@ public:
     //!
     T* operator[](rocblas_int batch_index)
     {
+        assert(this->m_data || batch_index == 0);
         return this->m_data[batch_index];
     }
 
@@ -121,6 +123,7 @@ public:
     //!
     const T* operator[](rocblas_int batch_index) const
     {
+        assert(this->m_data || batch_index == 0);
         return this->m_data[batch_index];
     }
 

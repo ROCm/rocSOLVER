@@ -3,6 +3,8 @@
 //
 #pragma once
 
+#include <assert.h>
+
 //
 // Local declaration of the host strided batch vector.
 //
@@ -153,9 +155,11 @@ public:
     //!
     T* operator[](rocblas_int batch_index)
     {
-        return (this->m_stride >= 0)
-            ? this->m_data + batch_index * this->m_stride
-            : this->m_data + (batch_index + 1 - this->m_batch_count) * this->m_stride;
+        auto offset = (this->m_stride >= 0)
+            ? batch_index * this->m_stride
+            : (batch_index + 1 - this->m_batch_count) * this->m_stride;
+        assert(this->m_data || offset == 0);
+        return this->m_data + offset;
     }
 
     //!
@@ -165,9 +169,11 @@ public:
     //!
     const T* operator[](rocblas_int batch_index) const
     {
-        return (this->m_stride >= 0)
-            ? this->m_data + batch_index * this->m_stride
-            : this->m_data + (batch_index + 1 - this->m_batch_count) * this->m_stride;
+        auto offset = (this->m_stride >= 0)
+            ? batch_index * this->m_stride
+            : (batch_index + 1 - this->m_batch_count) * this->m_stride;
+        assert(this->m_data || offset == 0);
+        return this->m_data + offset;
     }
 
     //!
