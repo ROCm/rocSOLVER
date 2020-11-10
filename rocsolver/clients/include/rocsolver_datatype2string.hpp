@@ -53,6 +53,17 @@ constexpr auto rocblas2char_svect(rocblas_svect value)
     return '\0';
 }
 
+constexpr auto rocblas2char_evect(rocblas_evect value)
+{
+    switch(value)
+    {
+    case rocblas_evect_original: return 'V';
+    case rocblas_evect_tridiagonal: return 'I';
+    case rocblas_evect_none: return 'N';
+    }
+    return '\0';
+}
+
 /*  Convert lapack char constants to rocblas type. */
 
 constexpr rocblas_direct char2rocblas_direct(char value)
@@ -94,6 +105,17 @@ constexpr rocblas_svect char2rocblas_svect(char value)
     case 'O': return rocblas_svect_overwrite;
     case 'N': return rocblas_svect_none;
     default: return static_cast<rocblas_svect>(-1);
+    }
+}
+
+constexpr rocblas_evect char2rocblas_evect(char value)
+{
+    switch(value)
+    {
+    case 'V': return rocblas_evect_original;
+    case 'I': return rocblas_evect_tridiagonal;
+    case 'N': return rocblas_evect_none;
+    default: return static_cast<rocblas_evect>(-1);
     }
 }
 

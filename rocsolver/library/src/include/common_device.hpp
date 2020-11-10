@@ -51,9 +51,56 @@ __device__ void
     }
 }
 
+/** FIND_MAX_TRIDIAG finds the element with the largest magnitude in the
+    tridiagonal matrix **/
+template <typename T>
+__device__ T find_max_tridiag(const rocblas_int start, const rocblas_int end, T* D, T* E)
+{
+    T anorm = abs(D[end]);
+    for(int i = start; i < end; i++)
+        anorm = max(anorm, max(abs(D[i]), abs(E[i])));
+    return anorm;
+}
+
+/** SCALE_TRIDIAG scales the elements of the tridiagonal matrix by a given
+    scale factor **/
+template <typename T>
+__device__ void scale_tridiag(const rocblas_int start, const rocblas_int end, T* D, T* E, T scale)
+{
+    D[end] *= scale;
+    for(int i = start; i < end; i++)
+    {
+        D[i] *= scale;
+        E[i] *= scale;
+    }
+}
+
 // **********************************************************
 // GPU kernels that are used by many rocsolver functions
 // **********************************************************
+
+template <typename T, typename U>
+__global__ void init_ident(const rocblas_int m,
+                           const rocblas_int n,
+                           U A,
+                           const rocblas_int shiftA,
+                           const rocblas_int lda,
+                           const rocblas_stride strideA)
+{
+    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const auto b = hipBlockIdx_z;
+
+    if(i < m && j < n)
+    {
+        T* a = load_ptr_batch<T>(A, b, shiftA, strideA);
+
+        if(i == j)
+            a[i + j * lda] = 1.0;
+        else
+            a[i + j * lda] = 0.0;
+    }
+}
 
 template <typename T, typename U>
 __global__ void reset_info(T* info, const rocblas_int n, U val)

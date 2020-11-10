@@ -148,7 +148,7 @@ inline void rocblas_print_matrix(T* CPU_result, T* GPU_result, size_t m, size_t 
         {
             rocblas_cout << "matrix  col " << i << ", row " << j
                          << ", CPU result=" << CPU_result[j + i * lda]
-                         << ", GPU result=" << GPU_result[j + i * lda] << "\n";
+                         << ", GPU result=" << GPU_result[j + i * lda] << std::endl;
         }
 }
 

@@ -48,6 +48,7 @@ public:
     char storev = 'C';
     char left_svect = 'N';
     char right_svect = 'N';
+    char evect = 'N';
 
     rocblas_int apiCallCount = 1;
     rocblas_int batch_count = 5;
