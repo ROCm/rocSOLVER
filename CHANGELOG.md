@@ -5,6 +5,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ## [(Unreleased) rocSOLVER for ROCm 4.0.0]
 ### Added
 __anchor__TA
+- Eigensolver routines for symmetric/hermitian matrices:
+    - STERF, STEQR
 
 __anchor__CB
 

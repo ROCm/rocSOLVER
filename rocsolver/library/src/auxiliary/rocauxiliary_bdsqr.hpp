@@ -12,6 +12,7 @@
 
 #include "common_device.hpp"
 #include "rocblas.hpp"
+#include "rocblas_device_functions.hpp"
 #include "rocsolver.h"
 
 /****************************************************************************
@@ -24,119 +25,6 @@
   2. for each block, multiple threads can accelerate some of the reductions
   and vector operations
 ***************************************************************************/
-
-/** LARTG device function computes the sine (s) and cosine (c) values
-    to create a givens rotation such that:
-    [  c s ]' * [ f ] = [ r ]
-    [ -s c ]    [ g ]   [ 0 ] **/
-template <typename T>
-__device__ void lartg(T& f, T& g, T& c, T& s, T& r)
-{
-    if(g == 0)
-    {
-        c = 1;
-        s = 0;
-    }
-    else
-    {
-        T t;
-        if(std::abs(g) > std::abs(f))
-        {
-            t = -f / g;
-            s = 1 / T(std::sqrt(1 + t * t));
-            c = s * t;
-        }
-        else
-        {
-            t = -g / f;
-            c = 1 / T(std::sqrt(1 + t * t));
-            s = c * t;
-        }
-    }
-    r = c * f - s * g;
-}
-
-/** LASR device function applies a sequence of rotations P(i) i=1,2,...z
-    to a m-by-n matrix A from either the left (P*A with z=m) or the right (A*P'
-   with z=n). P = P(z-1)*...*P(1) if forward direction, P = P(1)*...*P(z-1) if
-   backward direction. **/
-template <typename T, typename W>
-__device__ void lasr(const rocblas_side side,
-                     const rocblas_direct direc,
-                     const rocblas_int m,
-                     const rocblas_int n,
-                     W* c,
-                     W* s,
-                     T* A,
-                     const rocblas_int lda)
-{
-    T temp;
-    W cs, sn;
-
-    if(side == rocblas_side_left)
-    {
-        if(direc == rocblas_forward_direction)
-        {
-            for(rocblas_int i = 0; i < m - 1; ++i)
-            {
-                for(rocblas_int j = 0; j < n; ++j)
-                {
-                    temp = A[i + j * lda];
-                    cs = c[i];
-                    sn = s[i];
-                    A[i + j * lda] = cs * temp + sn * A[i + 1 + j * lda];
-                    A[i + 1 + j * lda] = cs * A[i + 1 + j * lda] - sn * temp;
-                }
-            }
-        }
-        else
-        {
-            for(rocblas_int i = m - 1; i > 0; --i)
-            {
-                for(rocblas_int j = 0; j < n; ++j)
-                {
-                    temp = A[i + j * lda];
-                    cs = c[i];
-                    sn = s[i];
-                    A[i + j * lda] = cs * temp - sn * A[i - 1 + j * lda];
-                    A[i - 1 + j * lda] = cs * A[i - 1 + j * lda] + sn * temp;
-                }
-            }
-        }
-    }
-
-    else
-    {
-        if(direc == rocblas_forward_direction)
-        {
-            for(rocblas_int j = 0; j < n - 1; ++j)
-            {
-                for(rocblas_int i = 0; i < m; ++i)
-                {
-                    temp = A[i + j * lda];
-                    cs = c[j];
-                    sn = s[j];
-                    A[i + j * lda] = cs * temp + sn * A[i + (j + 1) * lda];
-                    A[i + (j + 1) * lda] = cs * A[i + (j + 1) * lda] - sn * temp;
-                }
-            }
-        }
-        else
-        {
-            for(rocblas_int j = n - 1; j > 0; --j)
-            {
-                for(rocblas_int i = 0; i < m; ++i)
-                {
-                    temp = A[i + j * lda];
-                    cs = c[j];
-                    sn = s[j];
-                    A[i + j * lda] = cs * temp - sn * A[i + (j - 1) * lda];
-                    A[i + (j - 1) * lda] = cs * A[i + (j - 1) * lda] + sn * temp;
-                }
-            }
-        }
-    }
-}
 
 /** ESTIMATE device function computes an estimate of the smallest
     singular value of a n-by-n upper bidiagonal matrix given by D and E
@@ -164,18 +52,6 @@ __device__ T estimate(const rocblas_int n, T* D, T* E, int t2b, T tol, int conve
     }
 
     return smin;
-}
-
-/** MAXVAL device function extracts the maximum absolute value
-    element of all the n elements of vector V **/
-template <typename T>
-__device__ T maxval(const rocblas_int n, T* V)
-{
-    T maxv = std::abs(V[0]);
-    for(rocblas_int i = 1; i < n; ++i)
-        maxv = (std::abs(V[i]) > maxv) ? std::abs(V[i]) : maxv;
-
-    return maxv;
 }
 
 /** NEGVECT device function multiply a vector x of dimension n by -1**/
@@ -307,8 +183,8 @@ __device__ void b2tQRstep(const rocblas_int n,
         // save rotations to update singular vectors
         if(nu || nc)
         {
-            rots[k + nr] = c;
-            rots[k + nr + n - 1] = s;
+            rots[(k - 1) + nr] = c;
+            rots[(k - 1) + nr + n - 1] = s;
         }
 
         // then apply rotation by columns
@@ -324,8 +200,8 @@ __device__ void b2tQRstep(const rocblas_int n,
         // save rotations to update singular vectors
         if(nv)
         {
-            rots[k] = c;
-            rots[k + n - 1] = s;
+            rots[k - 1] = c;
+            rots[(k - 1) + n - 1] = s;
         }
     }
     E[0] = f;
@@ -438,9 +314,7 @@ __global__ void bdsqrKernel(const rocblas_int n,
                 sh = std::abs(D[k]);
             }
             smin = estimate<S>(k - i + 1, D + i, E + i, t2b, tol, 1); // shift
-            smax = std::max(maxval<S>(k - i + 1, D + i),
-                            maxval<S>(k - i,
-                                      E + i)); // estimate of the largest singular value in the block
+            smax = find_max_tridiag(i, k, D, E); // estimate of the largest singular value in the block
 
             // check for gaps, if none then continue
             if(smin >= 0)

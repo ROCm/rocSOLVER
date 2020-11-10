@@ -46,4 +46,15 @@ typedef enum rocblas_workmode_
     rocblas_inplace = 202, /**< When not enough memory, this forces in-place computations  */
 } rocblas_workmode;
 
+/*! \brief Used to specify how the eigenvectors are to be computed
+ ********************************************************************************/
+typedef enum rocblas_evect_
+{
+    rocblas_evect_original = 211, /**< Compute eigenvectors for the original symmetric/Hermitian
+                                    matrix. */
+    rocblas_evect_tridiagonal = 212, /**< Compute eigenvectors for the symmetric tridiagonal
+                                    matrix. */
+    rocblas_evect_none = 213, /**< No eigenvectors are computed. */
+} rocblas_evect;
+
 #endif

@@ -3296,13 +3296,160 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
                                                  rocblas_double_complex* C,
                                                  const rocblas_int ldc,
                                                  rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief STERF computes the eigenvalues of a symmetric tridiagonal matrix.
+
+    \details
+    The eigenvalues of the symmetric tridiagonal matrix are computed by the
+    Pal-Walker-Kahan variant of the QL/QR algorithm, and returned in
+    increasing order.
+
+    The matrix is not represented explicitly, but rather as the array of
+    diagonal elements D and the array of symmetric off-diagonal elements E
+    as returned by, e.g., SYTRD or HETRD.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of the tridiagonal matrix.
+    @param[inout]
+    D         pointer to real type. Array on the GPU of dimension n.\n
+              On entry, the diagonal elements of the matrix.
+              On exit, if info = 0, the eigenvalues in increasing order.
+              If info > 0, the diagonal elements of a tridiagonal matrix
+              that is similar to the original matrix (i.e. has the same
+              eigenvalues).
+    @param[inout]
+    E         pointer to real type. Array on the GPU of dimension n-1.\n
+              On entry, the off-diagonal elements of the matrix.
+              On exit, if info = 0, this array converges to zero.
+              If info > 0, the off-diagonal elements of a tridiagonal matrix
+              that is similar to the original matrix (i.e. has the same
+              eigenvalues).
+    @param[out]
+    info      pointer to a rocblas_int on the GPU.\n
+              If info = 0, successful exit.
+              If info = i > 0, STERF did not converge. i elements of E did not
+              converge to zero.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssterf(rocblas_handle handle,
+                                                 const rocblas_int n,
+                                                 float* D,
+                                                 float* E,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsterf(rocblas_handle handle,
+                                                 const rocblas_int n,
+                                                 double* D,
+                                                 double* E,
+                                                 rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief STEQR computes the eigenvalues and (optionally) eigenvectors of
+    a symmetric tridiagonal matrix.
+
+    \details
+    The eigenvalues of the symmetric tridiagonal matrix are computed by the
+    implicit QL/QR algorithm, and returned in increasing order.
+
+    The matrix is not represented explicitly, but rather as the array of
+    diagonal elements D and the array of symmetric off-diagonal elements E
+    as returned by, e.g., SYTRD or HETRD. If the tridiagonal matrix is the
+    reduced form of a full symmetric/Hermitian matrix as returned by, e.g.,
+    SYTRD or HETRD, then the eigenvectors of the original matrix can also
+    be computed, depending on the value of compC.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    compC     #rocblas_evect.\n
+              Specifies how the eigenvectors are computed.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of the tridiagonal matrix.
+    @param[inout]
+    D         pointer to real type. Array on the GPU of dimension n.\n
+              On entry, the diagonal elements of the matrix.
+              On exit, if info = 0, the eigenvalues in increasing order.
+              If info > 0, the diagonal elements of a tridiagonal matrix
+              that is similar to the original matrix (i.e. has the same
+              eigenvalues).
+    @param[inout]
+    E         pointer to real type. Array on the GPU of dimension n-1.\n
+              On entry, the off-diagonal elements of the matrix.
+              On exit, if info = 0, this array converges to zero.
+              If info > 0, the off-diagonal elements of a tridiagonal matrix
+              that is similar to the original matrix (i.e. has the same
+              eigenvalues).
+    @param[inout]
+    C         pointer to type. Array on the GPU of dimension ldc*n.\n
+              On entry, if compC is original, the orthogonal/unitary matrix
+              used for the reduction to tridiagonal form as returned by, e.g.,
+              ORGTR or UNGTR.
+              On exit, it is overwritten with the eigenvectors of the original
+              symmetric/Hermitian matrix (if compC is original), or the
+              eigenvectors of the tridiagonal matrix (if compC is tridiagonal).
+              (Not referenced if compC is none).
+    @param[in]
+    ldc       rocblas_int. ldc >= n if compc is original or tridiagonal.\n
+              Specifies the leading dimension of C.
+              (Not referenced if compC is none).
+    @param[out]
+    info      pointer to a rocblas_int on the GPU.\n
+              If info = 0, successful exit.
+              If info = i > 0, STEQR did not converge. i elements of E did not
+              converge to zero.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssteqr(rocblas_handle handle,
+                                                 const rocblas_evect compC,
+                                                 const rocblas_int n,
+                                                 float* D,
+                                                 float* E,
+                                                 float* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsteqr(rocblas_handle handle,
+                                                 const rocblas_evect compC,
+                                                 const rocblas_int n,
+                                                 double* D,
+                                                 double* E,
+                                                 double* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_csteqr(rocblas_handle handle,
+                                                 const rocblas_evect compC,
+                                                 const rocblas_int n,
+                                                 float* D,
+                                                 float* E,
+                                                 rocblas_float_complex* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zsteqr(rocblas_handle handle,
+                                                 const rocblas_evect compC,
+                                                 const rocblas_int n,
+                                                 double* D,
+                                                 double* E,
+                                                 rocblas_double_complex* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int* info);
+//! @}
 
 /*
  * ===========================================================================
  *      LAPACK functions
  * ===========================================================================
  */
-//! @}
 
 /*! @{
     \brief GETF2_NPVT computes the LU factorization of a general m-by-n matrix A

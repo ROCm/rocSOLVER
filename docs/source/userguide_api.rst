@@ -32,6 +32,10 @@ rocblas_svect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenenum:: rocblas_svect
 
+rocblas_evect
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocblas_evect
+
 rocblas_workmode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenenum:: rocblas_workmode
@@ -343,6 +347,25 @@ rocsolver_<type>unmtr()
 .. doxygenfunction:: rocsolver_zunmtr
    :outline:
 .. doxygenfunction:: rocsolver_cunmtr
+
+Eigensolvers
+--------------------------
+
+rocsolver_<type>sterf()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsterf
+   :outline:
+.. doxygenfunction:: rocsolver_ssterf
+
+rocsolver_<type>steqr()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zsteqr
+   :outline:
+.. doxygenfunction:: rocsolver_csteqr
+   :outline:
+.. doxygenfunction:: rocsolver_dsteqr
+   :outline:
+.. doxygenfunction:: rocsolver_ssteqr
 
 
 
