@@ -9,6 +9,8 @@ __anchor__TA
     - STERF, STEQR
 
 __anchor__CB
+- Least-squares solver for overdetermined linear systems:
+    - GELS (overdetermined, nontransposed case with batched and strided\_batched versions)
 
 __anchor__JZ
 - Extended test coverage for functions returning info
