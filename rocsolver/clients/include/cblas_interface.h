@@ -180,6 +180,17 @@ void cblas_larfb(rocblas_side side,
                  rocblas_int ldw);
 
 template <typename S, typename T>
+void cblas_latrd(rocblas_fill uplo,
+                 rocblas_int n,
+                 rocblas_int k,
+                 T* A,
+                 rocblas_int lda,
+                 S* E,
+                 T* tau,
+                 T* W,
+                 rocblas_int ldw);
+
+template <typename S, typename T>
 void cblas_labrd(rocblas_int m,
                  rocblas_int n,
                  rocblas_int nb,

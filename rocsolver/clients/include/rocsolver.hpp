@@ -465,6 +465,64 @@ inline rocblas_status rocsolver_bdsqr(rocblas_handle handle,
 }
 /***************************************************************/
 
+/******************** LATRD ********************/
+inline rocblas_status rocsolver_latrd(rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int k,
+                                      float* A,
+                                      rocblas_int lda,
+                                      float* E,
+                                      float* tau,
+                                      float* W,
+                                      rocblas_int ldw)
+{
+    return rocsolver_slatrd(handle, uplo, n, k, A, lda, E, tau, W, ldw);
+}
+
+inline rocblas_status rocsolver_latrd(rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int k,
+                                      double* A,
+                                      rocblas_int lda,
+                                      double* E,
+                                      double* tau,
+                                      double* W,
+                                      rocblas_int ldw)
+{
+    return rocsolver_dlatrd(handle, uplo, n, k, A, lda, E, tau, W, ldw);
+}
+
+inline rocblas_status rocsolver_latrd(rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int k,
+                                      rocblas_float_complex* A,
+                                      rocblas_int lda,
+                                      float* E,
+                                      rocblas_float_complex* tau,
+                                      rocblas_float_complex* W,
+                                      rocblas_int ldw)
+{
+    return rocsolver_clatrd(handle, uplo, n, k, A, lda, E, tau, W, ldw);
+}
+
+inline rocblas_status rocsolver_latrd(rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int k,
+                                      rocblas_double_complex* A,
+                                      rocblas_int lda,
+                                      double* E,
+                                      rocblas_double_complex* tau,
+                                      rocblas_double_complex* W,
+                                      rocblas_int ldw)
+{
+    return rocsolver_zlatrd(handle, uplo, n, k, A, lda, E, tau, W, ldw);
+}
+/***************************************************************/
+
 /******************** LABRD ********************/
 inline rocblas_status rocsolver_labrd(rocblas_handle handle,
                                       rocblas_int m,

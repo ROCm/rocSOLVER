@@ -19,6 +19,7 @@
 #include "testing_larfg.hpp"
 #include "testing_larft.hpp"
 #include "testing_laswp.hpp"
+#include "testing_latrd.hpp"
 #include "testing_orgbr_ungbr.hpp"
 #include "testing_orglx_unglx.hpp"
 #include "testing_orgtr_ungtr.hpp"
@@ -942,6 +943,17 @@ try
             testing_larfb<rocblas_float_complex>(argus);
         else if(precision == 'z')
             testing_larfb<rocblas_double_complex>(argus);
+    }
+    else if(function == "latrd")
+    {
+        if(precision == 's')
+            testing_latrd<float>(argus);
+        else if(precision == 'd')
+            testing_latrd<double>(argus);
+        else if(precision == 'c')
+            testing_latrd<rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_latrd<rocblas_double_complex>(argus);
     }
     else if(function == "labrd")
     {

@@ -135,6 +135,21 @@ rocsolver_<type>bdsqr()
 .. doxygenfunction:: rocsolver_sbdsqr
 
 
+Tridiagonal forms
+--------------------------
+
+rocsolver_<type>latrd()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zlatrd
+   :outline:
+.. doxygenfunction:: rocsolver_clatrd
+   :outline:
+.. doxygenfunction:: rocsolver_dlatrd
+   :outline:
+.. doxygenfunction:: rocsolver_slatrd
+
+
+
 Orthonormal matrices
 ---------------------------
 
@@ -774,6 +789,42 @@ rocsolver_<type>hetd2_strided_batched()
 .. doxygenfunction:: rocsolver_zhetd2_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_chetd2_strided_batched
+
+rocsolver_<type>sytrd()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsytrd
+   :outline:
+.. doxygenfunction:: rocsolver_ssytrd
+
+rocsolver_<type>sytrd_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsytrd_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssytrd_batched
+
+rocsolver_<type>sytrd_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsytrd_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssytrd_strided_batched
+
+rocsolver_<type>hetrd()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhetrd
+   :outline:
+.. doxygenfunction:: rocsolver_chetrd
+
+rocsolver_<type>hetrd_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhetrd_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chetrd_batched
+
+rocsolver_<type>hetrd_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhetrd_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chetrd_strided_batched
 
 
 General Matrix Inversion

@@ -56,9 +56,10 @@ set( rocsolver_auxiliary_source
   # bidiagonal matrices and svd
   auxiliary/rocauxiliary_bdsqr.cpp
   auxiliary/rocauxiliary_labrd.cpp
-  # eigensolvers
+  # tridiagonal matrices and eigensolvers
   auxiliary/rocauxiliary_sterf.cpp
   auxiliary/rocauxiliary_steqr.cpp
+  auxiliary/rocauxiliary_latrd.cpp
 )
 
 set( rocsolver_lapack_source
@@ -171,7 +172,7 @@ if( NOT BUILD_SHARED_LIBS )
 endif( )
 
 if(OPTIMAL)
-  target_compile_definitions(rocsolver PUBLIC OPTIMAL)
+  target_compile_definitions(rocsolver PRIVATE OPTIMAL)
 endif( )
 
 add_armor_flags( rocsolver "${ARMOR_LEVEL}" )

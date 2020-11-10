@@ -60,6 +60,7 @@ set(roclapack_test_source
     sytxx_hetxx_gtest.cpp
     sterf_gtest.cpp
     steqr_gtest.cpp
+    latrd_gtest.cpp
     # orthogonal factorizations
     geqr2_geqrf_gtest.cpp
     geql2_geqlf_gtest.cpp

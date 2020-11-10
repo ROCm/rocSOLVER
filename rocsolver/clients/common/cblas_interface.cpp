@@ -5,15 +5,14 @@
 #include "cblas_interface.h"
 #include "cblas.h"
 #include "rocblas.h"
-//#include "rocsolver.h"
-//#include "utility.h"
-//#include <memory>
-//#include <typeinfo>
 
 /*!\file
- * \brief provide template functions interfaces to CBLAS C89 interfaces, it is
- * only used for testing not part of the GPU library
+ * \brief provide template functions interfaces to BLAS and LAPACK interfaces, it is
+ * only used for testing, not part of the GPU library
  */
+
+/*************************************************************************/
+// These are C wrapper calls to CBLAS and fortran LAPACK
 
 #ifdef __cplusplus
 extern "C" {
@@ -316,6 +315,27 @@ void zlarfb_(char* side,
              rocblas_double_complex* W,
              int* ldw);
 
+void slatrd_(char* uplo, int* n, int* k, float* A, int* lda, float* E, float* tau, float* W, int* ldw);
+void dlatrd_(char* uplo, int* n, int* k, double* A, int* lda, double* E, double* tau, double* W, int* ldw);
+void clatrd_(char* uplo,
+             int* n,
+             int* k,
+             rocblas_float_complex* A,
+             int* lda,
+             float* E,
+             rocblas_float_complex* tau,
+             rocblas_float_complex* W,
+             int* ldw);
+void zlatrd_(char* uplo,
+             int* n,
+             int* k,
+             rocblas_double_complex* A,
+             int* lda,
+             double* E,
+             rocblas_double_complex* tau,
+             rocblas_double_complex* W,
+             int* ldw);
+
 void slabrd_(int* m,
              int* n,
              int* nb,
@@ -385,6 +405,7 @@ void zgeqr2_(int* m,
              rocblas_double_complex* ipiv,
              rocblas_double_complex* work,
              int* info);
+
 void sgeqrf_(int* m, int* n, float* A, int* lda, float* ipiv, float* work, int* lwork, int* info);
 void dgeqrf_(int* m, int* n, double* A, int* lda, double* ipiv, double* work, int* lwork, int* info);
 void cgeqrf_(int* m,
@@ -420,6 +441,7 @@ void zgeql2_(int* m,
              rocblas_double_complex* ipiv,
              rocblas_double_complex* work,
              int* info);
+
 void sgeqlf_(int* m, int* n, float* A, int* lda, float* ipiv, float* work, int* lwork, int* info);
 void dgeqlf_(int* m, int* n, double* A, int* lda, double* ipiv, double* work, int* lwork, int* info);
 void cgeqlf_(int* m,
@@ -455,6 +477,7 @@ void zgelq2_(int* m,
              rocblas_double_complex* ipiv,
              rocblas_double_complex* work,
              int* info);
+
 void sgelqf_(int* m, int* n, float* A, int* lda, float* ipiv, float* work, int* lwork, int* info);
 void dgelqf_(int* m, int* n, double* A, int* lda, double* ipiv, double* work, int* lwork, int* info);
 void cgelqf_(int* m,
@@ -490,6 +513,7 @@ void zgerq2_(int* m,
              rocblas_double_complex* ipiv,
              rocblas_double_complex* work,
              int* info);
+
 void sgerqf_(int* m, int* n, float* A, int* lda, float* ipiv, float* work, int* lwork, int* info);
 void dgerqf_(int* m, int* n, double* A, int* lda, double* ipiv, double* work, int* lwork, int* info);
 void cgerqf_(int* m,
@@ -535,6 +559,7 @@ void zung2r_(int* m,
              rocblas_double_complex* ipiv,
              rocblas_double_complex* work,
              int* info);
+
 void sorgqr_(int* m, int* n, int* k, float* A, int* lda, float* ipiv, float* work, int* lwork, int* info);
 void dorgqr_(int* m, int* n, int* k, double* A, int* lda, double* ipiv, double* work, int* lwork, int* info);
 void cungqr_(int* m,
@@ -574,6 +599,7 @@ void zungl2_(int* m,
              rocblas_double_complex* ipiv,
              rocblas_double_complex* work,
              int* info);
+
 void sorglq_(int* m, int* n, int* k, float* A, int* lda, float* ipiv, float* work, int* lwork, int* info);
 void dorglq_(int* m, int* n, int* k, double* A, int* lda, double* ipiv, double* work, int* lwork, int* info);
 void cunglq_(int* m,
@@ -613,6 +639,7 @@ void zung2l_(int* m,
              rocblas_double_complex* ipiv,
              rocblas_double_complex* work,
              int* info);
+
 void sorgql_(int* m, int* n, int* k, float* A, int* lda, float* ipiv, float* work, int* lwork, int* info);
 void dorgql_(int* m, int* n, int* k, double* A, int* lda, double* ipiv, double* work, int* lwork, int* info);
 void cungql_(int* m,
@@ -742,6 +769,7 @@ void zunm2r_(char* side,
              int* ldc,
              rocblas_double_complex* work,
              int* info);
+
 void sormqr_(char* side,
              char* trans,
              int* m,
@@ -843,6 +871,7 @@ void zunml2_(char* side,
              int* ldc,
              rocblas_double_complex* work,
              int* info);
+
 void sormlq_(char* side,
              char* trans,
              int* m,
@@ -944,6 +973,7 @@ void zunm2l_(char* side,
              int* ldc,
              rocblas_double_complex* work,
              int* info);
+
 void sormql_(char* side,
              char* trans,
              int* m,
@@ -1337,6 +1367,10 @@ void zsteqr_(char* compc,
 #ifdef __cplusplus
 }
 #endif
+/************************************************************************/
+
+/************************************************************************/
+// These are templated functions used in rocSOLVER clients code
 
 // lacgv
 
@@ -1834,6 +1868,67 @@ void cblas_gesvd(rocblas_svect leftv,
     char jobu = rocblas2char_svect(leftv);
     char jobv = rocblas2char_svect(rightv);
     zgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, E, info);
+}
+
+// latrd
+template <>
+void cblas_latrd<float, float>(rocblas_fill uplo,
+                               rocblas_int n,
+                               rocblas_int k,
+                               float* A,
+                               rocblas_int lda,
+                               float* E,
+                               float* tau,
+                               float* W,
+                               rocblas_int ldw)
+{
+    char uploC = rocblas2char_fill(uplo);
+    slatrd_(&uploC, &n, &k, A, &lda, E, tau, W, &ldw);
+}
+
+template <>
+void cblas_latrd<double, double>(rocblas_fill uplo,
+                                 rocblas_int n,
+                                 rocblas_int k,
+                                 double* A,
+                                 rocblas_int lda,
+                                 double* E,
+                                 double* tau,
+                                 double* W,
+                                 rocblas_int ldw)
+{
+    char uploC = rocblas2char_fill(uplo);
+    dlatrd_(&uploC, &n, &k, A, &lda, E, tau, W, &ldw);
+}
+
+template <>
+void cblas_latrd<float, rocblas_float_complex>(rocblas_fill uplo,
+                                               rocblas_int n,
+                                               rocblas_int k,
+                                               rocblas_float_complex* A,
+                                               rocblas_int lda,
+                                               float* E,
+                                               rocblas_float_complex* tau,
+                                               rocblas_float_complex* W,
+                                               rocblas_int ldw)
+{
+    char uploC = rocblas2char_fill(uplo);
+    clatrd_(&uploC, &n, &k, A, &lda, E, tau, W, &ldw);
+}
+
+template <>
+void cblas_latrd<double, rocblas_double_complex>(rocblas_fill uplo,
+                                                 rocblas_int n,
+                                                 rocblas_int k,
+                                                 rocblas_double_complex* A,
+                                                 rocblas_int lda,
+                                                 double* E,
+                                                 rocblas_double_complex* tau,
+                                                 rocblas_double_complex* W,
+                                                 rocblas_int ldw)
+{
+    char uploC = rocblas2char_fill(uplo);
+    zlatrd_(&uploC, &n, &k, A, &lda, E, tau, W, &ldw);
 }
 
 // labrd
