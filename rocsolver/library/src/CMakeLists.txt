@@ -170,7 +170,7 @@ if( NOT BUILD_SHARED_LIBS )
 endif( )
 
 if(OPTIMAL)
-  target_compile_definitions(rocsolver PUBLIC OPTIMAL)
+  target_compile_definitions(rocsolver PRIVATE OPTIMAL)
 endif( )
 
 add_armor_flags( rocsolver "${ARMOR_LEVEL}" )
