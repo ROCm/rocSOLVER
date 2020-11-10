@@ -87,7 +87,7 @@ rocblas_status rocsolver_gels_argCheck(rocblas_operation trans,
         return rocblas_status_invalid_size;
 
     // 3. invalid pointers
-    if((m * n && !A) || ((m * nrhs || n * nrhs) && !C) || (bc && !info))
+    if((m * n && !A) || ((m * nrhs || n * nrhs) && !C) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
