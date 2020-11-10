@@ -27,6 +27,7 @@ __anchor__JZ
 __anchor__TA
 
 __anchor__CB
+- Raised minimum requirement for building rocSOLVER from source to CMake 3.8
 
 __anchor__JZ
 - Switched to use semantic versioning for the library
@@ -42,6 +43,8 @@ __anchor__JZ
 __anchor__TA
 
 __anchor__CB
+- Removed `-DOPTIMAL` from the `roc::rocsolver` CMake usage requirements. This is an internal
+  rocSOLVER definition, and does not need to be defined by library users
 
 __anchor__JZ
 
