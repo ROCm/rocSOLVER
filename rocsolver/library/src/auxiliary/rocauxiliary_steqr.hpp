@@ -21,7 +21,7 @@
   BATCH).)
 ***************************************************************************/
 
-/** STERF_KERNEL implements the main loop of the sterf algorithm
+/** STEQR_KERNEL implements the main loop of the sterf algorithm
     to compute the eigenvalues of a symmetric tridiagonal matrix given by D
     and E **/
 template <typename S, typename T, typename U>
