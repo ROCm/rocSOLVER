@@ -30,7 +30,7 @@ const vector<vector<int>> matrix_size_range = {
     {35}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_matrix_size_range = {{192}, {640}, {1024}};
+const vector<vector<int>> large_matrix_size_range = {{192}, {256}, {300}};
 
 Arguments sterf_setup_arguments(sterf_tuple tup)
 {

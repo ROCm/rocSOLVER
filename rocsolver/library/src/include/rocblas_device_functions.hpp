@@ -293,13 +293,13 @@ __device__ void lartg(T& f, T& g, T& c, T& s, T& r)
         if(std::abs(g) > std::abs(f))
         {
             t = -f / g;
-            s = 1 / T(std::sqrt(1 + t * t));
+            s = 1 / std::sqrt(1 + t * t);
             c = s * t;
         }
         else
         {
             t = -g / f;
-            c = 1 / T(std::sqrt(1 + t * t));
+            c = 1 / std::sqrt(1 + t * t);
             s = c * t;
         }
         r = c * f - s * g;

@@ -21,27 +21,6 @@
   BATCH).)
 ***************************************************************************/
 
-/** STEQR_INF_NORM finds the infinity norm of the tridiagonal matrix **/
-template <typename T>
-__device__ void steqr_inf_norm(const rocblas_int start, const rocblas_int end, T* D, T* E, T& anorm)
-{
-    if(start == end)
-        anorm = abs(D[start]);
-    else
-    {
-        anorm = abs(D[start]) + abs(E[start]);
-        T sum = abs(E[end - 1]) + abs(D[end]);
-        if(anorm < sum)
-            anorm = sum;
-        for(int i = start + 1; i < end; i++)
-        {
-            sum = abs(D[i]) + abs(E[i]) + abs(E[i - 1]);
-            if(anorm < sum)
-                anorm = sum;
-        }
-    }
-}
-
 /** STERF_KERNEL implements the main loop of the sterf algorithm
     to compute the eigenvalues of a symmetric tridiagonal matrix given by D
     and E **/
@@ -96,13 +75,13 @@ __global__ void steqr_kernel(const rocblas_int n,
             continue;
 
         // Scale submatrix
-        steqr_inf_norm(l, lend, D, E, anorm);
+        anorm = find_max_tridiag(l, lend, D, E);
         if(anorm == 0)
             continue;
         else if(anorm > ssfmax)
-            sterf_scale(l, lend, D, E, anorm / ssfmax);
+            scale_tridiag(l, lend, D, E, anorm / ssfmax);
         else if(anorm < ssfmin)
-            sterf_scale(l, lend, D, E, anorm / ssfmin);
+            scale_tridiag(l, lend, D, E, anorm / ssfmin);
 
         // Choose iteration type (QL or QR)
         if(abs(D[lend]) < abs(D[l]))
@@ -279,9 +258,9 @@ __global__ void steqr_kernel(const rocblas_int n,
 
         // Undo scaling
         if(anorm > ssfmax)
-            sterf_scale(lsv, lendsv, D, E, ssfmax / anorm);
+            scale_tridiag(lsv, lendsv, D, E, ssfmax / anorm);
         if(anorm < ssfmin)
-            sterf_scale(lsv, lendsv, D, E, ssfmin / anorm);
+            scale_tridiag(lsv, lendsv, D, E, ssfmin / anorm);
     }
 
     // Check for convergence

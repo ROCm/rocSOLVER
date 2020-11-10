@@ -54,18 +54,6 @@ __device__ T estimate(const rocblas_int n, T* D, T* E, int t2b, T tol, int conve
     return smin;
 }
 
-/** MAXVAL device function extracts the maximum absolute value
-    element of all the n elements of vector V **/
-template <typename T>
-__device__ T maxval(const rocblas_int n, T* V)
-{
-    T maxv = std::abs(V[0]);
-    for(rocblas_int i = 1; i < n; ++i)
-        maxv = (std::abs(V[i]) > maxv) ? std::abs(V[i]) : maxv;
-
-    return maxv;
-}
-
 /** NEGVECT device function multiply a vector x of dimension n by -1**/
 template <typename T>
 __device__ void negvect(const rocblas_int n, T* x, const rocblas_int incx)
@@ -326,9 +314,7 @@ __global__ void bdsqrKernel(const rocblas_int n,
                 sh = std::abs(D[k]);
             }
             smin = estimate<S>(k - i + 1, D + i, E + i, t2b, tol, 1); // shift
-            smax = std::max(maxval<S>(k - i + 1, D + i),
-                            maxval<S>(k - i,
-                                      E + i)); // estimate of the largest singular value in the block
+            smax = find_max_tridiag(i, k, D, E); // estimate of the largest singular value in the block
 
             // check for gaps, if none then continue
             if(smin >= 0)

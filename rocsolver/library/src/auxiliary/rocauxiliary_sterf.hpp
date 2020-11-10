@@ -20,29 +20,6 @@
   BATCH).)
 ***************************************************************************/
 
-/** STERF_FIND_MAX finds the element with the largest magnitude in the
-    tridiagonal matrix **/
-template <typename T>
-__device__ void sterf_find_max(const rocblas_int start, const rocblas_int end, T* D, T* E, T& anorm)
-{
-    anorm = abs(D[end]);
-    for(int i = start; i < end; i++)
-        anorm = max(anorm, max(abs(D[i]), abs(E[i])));
-}
-
-/** STERF_SCALE scales the elements of the tridiagonal matrix by a given
-    scale factor **/
-template <typename T>
-__device__ void sterf_scale(const rocblas_int start, const rocblas_int end, T* D, T* E, T scale)
-{
-    D[end] *= scale;
-    for(int i = start; i < end; i++)
-    {
-        D[i] *= scale;
-        E[i] *= scale;
-    }
-}
-
 /** STERF_SQ_E squares the elements of E **/
 template <typename T>
 __device__ void sterf_sq_e(const rocblas_int start, const rocblas_int end, T* E)
@@ -98,13 +75,13 @@ __global__ void sterf_kernel(const rocblas_int n,
             continue;
 
         // Scale submatrix
-        sterf_find_max(l, lend, D, E, anorm);
+        anorm = find_max_tridiag(l, lend, D, E);
         if(anorm == 0)
             continue;
         else if(anorm > ssfmax)
-            sterf_scale(l, lend, D, E, anorm / ssfmax);
+            scale_tridiag(l, lend, D, E, anorm / ssfmax);
         else if(anorm < ssfmin)
-            sterf_scale(l, lend, D, E, anorm / ssfmin);
+            scale_tridiag(l, lend, D, E, anorm / ssfmin);
         sterf_sq_e(l, lend, E);
 
         // Choose iteration type (QL or QR)
@@ -268,9 +245,9 @@ __global__ void sterf_kernel(const rocblas_int n,
 
         // Undo scaling
         if(anorm > ssfmax)
-            sterf_scale(lsv, lendsv, D, E, ssfmax / anorm);
+            scale_tridiag(lsv, lendsv, D, E, ssfmax / anorm);
         if(anorm < ssfmin)
-            sterf_scale(lsv, lendsv, D, E, ssfmin / anorm);
+            scale_tridiag(lsv, lendsv, D, E, ssfmin / anorm);
     }
 
     // Check for convergence

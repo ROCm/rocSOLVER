@@ -50,43 +50,29 @@ void testing_sterf_bad_arg()
     sterf_checkBadArgs(handle, n, dD.data(), dE.data(), dInfo.data());
 }
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh, typename Vh>
+template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
 void sterf_initData(const rocblas_handle handle,
                     const rocblas_int n,
                     Td& dD,
                     Td& dE,
                     Ud& dInfo,
-                    Vh& hA,
                     Th& hD,
                     Th& hE,
-                    Uh& hInfo,
-                    std::vector<T>& hW,
-                    size_t size_W)
+                    Uh& hInfo)
 {
     if(CPU)
     {
-        rocblas_int lda = n;
-        std::vector<T> ipiv(n - 1);
+        rocblas_init<T>(hD, true);
+        rocblas_init<T>(hE, true);
 
-        rocblas_init<T>(hA, true);
-
-        // scale A to avoid singularities
+        // scale matrix and add random splits
         for(rocblas_int i = 0; i < n; i++)
         {
-            for(rocblas_int j = 0; j < n; j++)
-            {
-                if(i == j)
-                    hA[0][i + j * lda] += 400;
-                else
-                    hA[0][i + j * lda] -= 4;
-            }
+            hD[0][i] += 400;
+            hE[0][i] -= 5;
         }
 
-        // compute sytrd/hetrd
-        cblas_sytrd_hetrd<T, T>(rocblas_fill_upper, n, hA[0], lda, hD[0], hE[0], ipiv.data(),
-                                hW.data(), size_W);
-
-        // add a split in the matrix to test split handling
+        // add fixed splits in the matrix to test split handling
         rocblas_int k = n / 2;
         hE[0][k] = 0;
         hE[0][k - 1] = 0;
@@ -100,13 +86,12 @@ void sterf_initData(const rocblas_handle handle,
     }
 }
 
-template <typename T, typename Td, typename Ud, typename Th, typename Uh, typename Vh>
+template <typename T, typename Td, typename Ud, typename Th, typename Uh>
 void sterf_getError(const rocblas_handle handle,
                     const rocblas_int n,
                     Td& dD,
                     Td& dE,
                     Ud& dInfo,
-                    Vh& hA,
                     Th& hD,
                     Th& hDRes,
                     Th& hE,
@@ -114,11 +99,8 @@ void sterf_getError(const rocblas_handle handle,
                     Uh& hInfo,
                     double* max_err)
 {
-    size_t size_W = n * 32;
-    std::vector<T> hW(size_W);
-
     // input data initialization
-    sterf_initData<true, true, T>(handle, n, dD, dE, dInfo, hA, hD, hE, hInfo, hW, size_W);
+    sterf_initData<true, true, T>(handle, n, dD, dE, dInfo, hD, hE, hInfo);
 
     // execute computations
     // GPU lapack
@@ -134,13 +116,12 @@ void sterf_getError(const rocblas_handle handle,
     *max_err = norm_error('F', 1, n, 1, hD[0], hDRes[0]);
 }
 
-template <typename T, typename Td, typename Ud, typename Th, typename Uh, typename Vh>
+template <typename T, typename Td, typename Ud, typename Th, typename Uh>
 void sterf_getPerfData(const rocblas_handle handle,
                        const rocblas_int n,
                        Td& dD,
                        Td& dE,
                        Ud& dInfo,
-                       Vh& hA,
                        Th& hD,
                        Th& hE,
                        Uh& hInfo,
@@ -149,12 +130,9 @@ void sterf_getPerfData(const rocblas_handle handle,
                        const rocblas_int hot_calls,
                        const bool perf)
 {
-    size_t size_W = n * 32;
-    std::vector<T> hW(size_W);
-
     if(!perf)
     {
-        sterf_initData<true, false, T>(handle, n, dD, dE, dInfo, hA, hD, hE, hInfo, hW, size_W);
+        sterf_initData<true, false, T>(handle, n, dD, dE, dInfo, hD, hE, hInfo);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
@@ -162,12 +140,12 @@ void sterf_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
 
-    sterf_initData<true, false, T>(handle, n, dD, dE, dInfo, hA, hD, hE, hInfo, hW, size_W);
+    sterf_initData<true, false, T>(handle, n, dD, dE, dInfo, hD, hE, hInfo);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        sterf_initData<false, true, T>(handle, n, dD, dE, dInfo, hA, hD, hE, hInfo, hW, size_W);
+        sterf_initData<false, true, T>(handle, n, dD, dE, dInfo, hD, hE, hInfo);
 
         CHECK_ROCBLAS_ERROR(rocsolver_sterf(handle, n, dD.data(), dE.data(), dInfo.data()));
     }
@@ -176,7 +154,7 @@ void sterf_getPerfData(const rocblas_handle handle,
     double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        sterf_initData<false, true, T>(handle, n, dD, dE, dInfo, hA, hD, hE, hInfo, hW, size_W);
+        sterf_initData<false, true, T>(handle, n, dD, dE, dInfo, hD, hE, hInfo);
 
         start = get_time_us();
         rocsolver_sterf(handle, n, dD.data(), dE.data(), dInfo.data());
@@ -191,14 +169,12 @@ void testing_sterf(Arguments argus)
     // get arguments
     rocblas_local_handle handle;
     rocblas_int n = argus.N;
-    rocblas_int lda = argus.N;
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
     // N/A
 
     // determine sizes
-    size_t size_A = lda * n;
     size_t size_D = n;
     size_t size_E = n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
@@ -221,7 +197,6 @@ void testing_sterf(Arguments argus)
     }
 
     // memory allocations
-    host_strided_batch_vector<T> hA(size_A, 1, size_A, 1);
     host_strided_batch_vector<T> hD(size_D, 1, size_D, 1);
     host_strided_batch_vector<T> hDRes(size_DRes, 1, size_DRes, 1);
     host_strided_batch_vector<T> hE(size_E, 1, size_E, 1);
@@ -249,11 +224,11 @@ void testing_sterf(Arguments argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        sterf_getError<T>(handle, n, dD, dE, dInfo, hA, hD, hDRes, hE, hERes, hInfo, &max_error);
+        sterf_getError<T>(handle, n, dD, dE, dInfo, hD, hDRes, hE, hERes, hInfo, &max_error);
 
     // collect performance data
     if(argus.timing)
-        sterf_getPerfData<T>(handle, n, dD, dE, dInfo, hA, hD, hE, hInfo, &gpu_time_used,
+        sterf_getPerfData<T>(handle, n, dD, dE, dInfo, hD, hE, hInfo, &gpu_time_used,
                              &cpu_time_used, hot_calls, argus.perf);
 
     // validate results for rocsolver-test

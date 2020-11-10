@@ -3319,10 +3319,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
     D         pointer to real type. Array on the GPU of dimension n.\n
               On entry, the diagonal elements of the matrix.
               On exit, if info = 0, the eigenvalues in increasing order.
+              If info > 0, the diagonal elements of a tridiagonal matrix
+              that is similar to the original matrix (i.e. has the same
+              eigenvalues).
     @param[inout]
     E         pointer to real type. Array on the GPU of dimension n-1.\n
               On entry, the off-diagonal elements of the matrix.
-              On exit, if info = 0, this matrix converges to zero.
+              On exit, if info = 0, this array converges to zero.
+              If info > 0, the off-diagonal elements of a tridiagonal matrix
+              that is similar to the original matrix (i.e. has the same
+              eigenvalues).
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
               If info = 0, successful exit.
@@ -3357,7 +3363,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsterf(rocblas_handle handle,
     as returned by, e.g., SYTRD or HETRD. If the tridiagonal matrix is the
     reduced form of a full symmetric/Hermitian matrix as returned by, e.g.,
     SYTRD or HETRD, then the eigenvectors of the original matrix can also
-    be found.
+    be computed, depending on the value of compC.
 
     @param[in]
     handle    rocblas_handle.
@@ -3371,10 +3377,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsterf(rocblas_handle handle,
     D         pointer to real type. Array on the GPU of dimension n.\n
               On entry, the diagonal elements of the matrix.
               On exit, if info = 0, the eigenvalues in increasing order.
+              If info > 0, the diagonal elements of a tridiagonal matrix
+              that is similar to the original matrix (i.e. has the same
+              eigenvalues).
     @param[inout]
     E         pointer to real type. Array on the GPU of dimension n-1.\n
               On entry, the off-diagonal elements of the matrix.
-              On exit, if info = 0, this matrix converges to zero.
+              On exit, if info = 0, this array converges to zero.
+              If info > 0, the off-diagonal elements of a tridiagonal matrix
+              that is similar to the original matrix (i.e. has the same
+              eigenvalues).
     @param[inout]
     C         pointer to type. Array on the GPU of dimension ldc*n.\n
               On entry, if compC is original, the orthogonal/unitary matrix

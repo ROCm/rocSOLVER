@@ -39,7 +39,7 @@ const vector<vector<int>> matrix_size_range = {
     {35, 40}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_matrix_size_range = {{192, 192}};
+const vector<vector<int>> large_matrix_size_range = {{192, 192}, {256, 270}, {300, 300}};
 
 Arguments steqr_setup_arguments(steqr_tuple tup)
 {

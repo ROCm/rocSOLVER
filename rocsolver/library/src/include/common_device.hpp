@@ -51,6 +51,30 @@ __device__ void
     }
 }
 
+/** FIND_MAX_TRIDIAG finds the element with the largest magnitude in the
+    tridiagonal matrix **/
+template <typename T>
+__device__ T find_max_tridiag(const rocblas_int start, const rocblas_int end, T* D, T* E)
+{
+    T anorm = abs(D[end]);
+    for(int i = start; i < end; i++)
+        anorm = max(anorm, max(abs(D[i]), abs(E[i])));
+    return anorm;
+}
+
+/** SCALE_TRIDIAG scales the elements of the tridiagonal matrix by a given
+    scale factor **/
+template <typename T>
+__device__ void scale_tridiag(const rocblas_int start, const rocblas_int end, T* D, T* E, T scale)
+{
+    D[end] *= scale;
+    for(int i = start; i < end; i++)
+    {
+        D[i] *= scale;
+        E[i] *= scale;
+    }
+}
+
 // **********************************************************
 // GPU kernels that are used by many rocsolver functions
 // **********************************************************
