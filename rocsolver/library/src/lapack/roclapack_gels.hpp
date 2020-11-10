@@ -149,8 +149,8 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
         handle, m, n, A, shiftA, lda, strideA, ipiv, strideP, batch_count, scalars, (T*)work_x_temp,
         (T*)workArr_temp_arr, (T*)diag_trfac_invA, (T**)trfact_workTrmm_invA_arr);
     rocsolver_ormqr_unmqr_template<BATCHED, STRIDED>(
-        handle, rocblas_side_left, rocblas_operation_transpose, m, nrhs, n, A, shiftA, lda, strideA,
-        ipiv, strideP, C, shiftC, ldc, strideC, batch_count, scalars, (T*)work_x_temp,
+        handle, rocblas_side_left, rocblas_operation_conjugate_transpose, m, nrhs, n, A, shiftA,
+        lda, strideA, ipiv, strideP, C, shiftC, ldc, strideC, batch_count, scalars, (T*)work_x_temp,
         (T*)workArr_temp_arr, (T*)diag_trfac_invA, (T**)trfact_workTrmm_invA_arr);
 
     // do the equivalent of strtrs
