@@ -2,8 +2,7 @@
 # Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
-# The ROCm platform requires Ubuntu 16.04 or Fedora 24, which has cmake 3.5
-cmake_minimum_required( VERSION 3.5 )
+cmake_minimum_required( VERSION 3.8 )
 
 # We use C++14 features, this will add compile option: -std=c++14
 set( CMAKE_CXX_STANDARD 14 )
@@ -15,11 +14,6 @@ set( CMAKE_CXX_EXTENSIONS OFF )
 if( NOT DEFINED CMAKE_CONFIGURATION_TYPES AND NOT DEFINED CMAKE_BUILD_TYPE )
   set( CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." )
 endif()
-
-# Honor per-config flags in try_compile() source-file signature. cmake v3.7 and up
-if( POLICY CMP0066 )
-  cmake_policy( SET CMP0066 NEW )
-endif( )
 
 if ( NOT DEFINED CMAKE_Fortran_COMPILER AND NOT DEFINED ENV{FC} )
   set( CMAKE_Fortran_COMPILER  "gfortran" )
