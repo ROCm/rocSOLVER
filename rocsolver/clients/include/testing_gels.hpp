@@ -158,7 +158,7 @@ void gels_initData(const rocblas_handle handle,
         {
             for(rocblas_int i = 0; i < m; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(rocblas_int j = 0; j < m; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] += 400;
