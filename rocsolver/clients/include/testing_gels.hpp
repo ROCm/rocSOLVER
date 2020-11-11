@@ -339,8 +339,7 @@ void testing_gels(Arguments argus)
     size_t size_CRes = (argus.unit_check || argus.norm_check) ? size_C : 0;
 
     // check invalid sizes
-    bool invalid_size
-        = (m < 0 || n < 0 || nrhs < 0 || lda < m || ldc < m || ldc < n || bc < 0);
+    bool invalid_size = (m < 0 || n < 0 || nrhs < 0 || lda < m || ldc < m || ldc < n || bc < 0);
     if(invalid_size)
     {
         if(BATCHED)
@@ -443,7 +442,7 @@ void testing_gels(Arguments argus)
     // validate results for rocsolver-test
     // using max(m,n) * machine_precision as tolerance
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, max(m,n));
+        rocsolver_test_check<T>(max_error, max(m, n));
 
     // output results for rocsolver-bench
     if(argus.timing)
