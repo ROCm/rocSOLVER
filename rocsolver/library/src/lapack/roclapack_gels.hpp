@@ -111,15 +111,14 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                        const rocblas_int shiftC,
                                        const rocblas_int ldc,
                                        const rocblas_stride strideC,
-                                       T* ipiv,
-                                       const rocblas_stride strideP,
                                        rocblas_int* info,
                                        const rocblas_int batch_count,
                                        T* scalars,
-                                       void* work_x_temp,
-                                       void* workArr_temp_arr,
-                                       void* diag_trfac_invA,
-                                       void* trfact_workTrmm_invA_arr,
+                                       T* work_x_temp,
+                                       T* workArr_temp_arr,
+                                       T* diag_trfac_invA,
+                                       T** trfact_workTrmm_invA_arr,
+                                       T* ipiv,
                                        bool optim_mem)
 {
     // quick return if zero instances in batch
@@ -149,9 +148,10 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
 
     // note: m >= n
     // compute QR factorization of A
+    const rocblas_stride strideP = std::min(m, n);
     rocsolver_geqrf_template<BATCHED, STRIDED>(
-        handle, m, n, A, shiftA, lda, strideA, ipiv, strideP, batch_count, scalars, (T*)work_x_temp,
-        (T*)workArr_temp_arr, (T*)diag_trfac_invA, (T**)trfact_workTrmm_invA_arr);
+        handle, m, n, A, shiftA, lda, strideA, ipiv, strideP, batch_count, scalars, work_x_temp,
+        workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
     rocsolver_ormqr_unmqr_template<BATCHED, STRIDED>(
         handle, rocblas_side_left, rocblas_operation_conjugate_transpose, m, nrhs, n, A, shiftA,
         lda, strideA, ipiv, strideP, C, shiftC, ldc, strideC, batch_count, scalars, (T*)work_x_temp,

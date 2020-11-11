@@ -33,7 +33,6 @@ rocblas_status rocsolver_gels_impl(rocblas_handle handle,
     // normal (non-batched non-strided) execution
     const rocblas_stride strideA = 0;
     const rocblas_stride strideC = 0;
-    const rocblas_stride strideP = 0;
     const rocblas_int batch_count = 1;
 
     size_t size_scalars, size_work_x_temp, size_workArr_temp_arr, size_diag_trfac_invA,
@@ -67,9 +66,9 @@ rocblas_status rocsolver_gels_impl(rocblas_handle handle,
     RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
     return rocsolver_gels_template<false, false, T>(
-        handle, trans, m, n, nrhs, A, shiftA, lda, strideA, C, shiftC, ldc, strideC, (T*)ipiv,
-        strideP, info, batch_count, (T*)scalars, work, workArr, diag_trfac_invA,
-        trfact_workTrmm_invA, optim_mem);
+        handle, trans, m, n, nrhs, A, shiftA, lda, strideA, C, shiftC, ldc, strideC, info,
+        batch_count, (T*)scalars, (T*)work, (T*)workArr, (T*)diag_trfac_invA,
+        (T**)trfact_workTrmm_invA, (T*)ipiv, optim_mem);
 }
 
 /*
