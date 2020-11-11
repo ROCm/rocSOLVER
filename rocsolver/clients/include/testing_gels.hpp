@@ -67,7 +67,7 @@ void gels_checkBadArgs(const rocblas_handle handle,
     // quick return with invalid pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, 0, n, nrhs, (U) nullptr, lda, stA,
                                          dC, ldc, stC, info, bc),
-                          rocblas_status_success)
+                          rocblas_status_not_implemented) // TODO: replace with success
         << "Matrix A may be null when m is 0 (empty matrix)";
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, 0, nrhs, (U) nullptr, lda, stA,
                                          dC, ldc, stC, info, bc),

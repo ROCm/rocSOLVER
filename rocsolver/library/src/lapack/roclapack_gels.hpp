@@ -78,15 +78,19 @@ rocblas_status rocsolver_gels_argCheck(rocblas_operation trans,
                                        const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
-    // 1. invalid/non-supported values
+    // 1. non-supported values
+    if(m < n || trans == rocblas_operation_transpose || trans == rocblas_operation_conjugate_transpose)
+        return rocblas_status_not_implemented;
+
+    // 2. invalid values
     if(trans != rocblas_operation_none)
         return rocblas_status_invalid_value;
 
-    // 2. invalid size
-    if(m < 0 || n < 0 || nrhs < 0 || m < n || lda < m || ldc < m || ldc < n || batch_count < 0)
+    // 3. invalid size
+    if(m < 0 || n < 0 || nrhs < 0 || lda < m || ldc < m || ldc < n || batch_count < 0)
         return rocblas_status_invalid_size;
 
-    // 3. invalid pointers
+    // 4. invalid pointers
     if((m * n && !A) || ((m * nrhs || n * nrhs) && !C) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
 
