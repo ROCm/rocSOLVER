@@ -34,14 +34,6 @@ void gels_checkBadArgs(const rocblas_handle handle,
                                          lda, stA, dC, ldc, stC, info, bc),
                           rocblas_status_invalid_value)
         << "Must report error when operation is invalid";
-    EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, rocblas_operation_transpose, m, n, nrhs,
-                                         dA, lda, stA, dC, ldc, stC, info, bc),
-                          rocblas_status_not_implemented)
-        << "Must report error when operation is transpose (unsupported)";
-    EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, rocblas_operation_conjugate_transpose, m,
-                                         n, nrhs, dA, lda, stA, dC, ldc, stC, info, bc),
-                          rocblas_status_not_implemented)
-        << "Must report error when opration is conjugate transpose (unsupported)";
 
     // sizes (only check batch_count if applicable)
     if(STRIDED)
@@ -166,7 +158,7 @@ void gels_initData(const rocblas_handle handle,
         {
             for(rocblas_int i = 0; i < m; i++)
             {
-                for(rocblas_int j = 0; j < m; j++)
+                for(rocblas_int j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] += 400;
