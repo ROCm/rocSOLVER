@@ -7434,51 +7434,66 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
                                                                  const rocblas_int batch_count);
 //! @}
 
-///@{
-/*! \brief GELS solves overdetermined linear systems defined by an m-by-n matrix A,
-    and an n-by-nrhs matrix C.
+/*! @{
+    \brief GELS solves an overdetermined (or underdetermined) linear system defined by an m-by-n
+    matrix A, and an n-by-nrhs matrix C, using the QR factorization computed by GEQRF (or the
+    LQ factorization computed by GELQF).
 
     \details
-    The problem solved by this function is of the form
+    The problem solved by this function is either of the form
 
-        min X | C - A * X |
+        A  * X = C (no transpose), or
+        A' * X = C (transpose/conjugate transpose)
 
-    where X is the least-squares solution of the minimization problem.
+    depending on the value of trans.
+
+    If m >= n (or n < m in the case of transpose/conjugate transpose), the system is overdetermined
+    and a least-squares solution approximating X is found minimizing
+
+        || C - A  * X || (no transpose), or
+        || C - A' * X || (transpose/conjugate transpose)
+
+    If n < m (or m >= n in the case of transpose/conjugate transpose), the system is underdetermined
+    and a unique solution for X is chosen minimizing || X ||
+
+    \note
+    The current implementation only supports the overdetermined, no transpose case.
+    \p rocblas_status_not_implemented will be returned if m < n or trans is
+    \p rocblas_operation_transpose or \p rocblas_operation_conjugate_transpose.
 
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    trans     rocblas_operation. Must be rocblas_operation_none.\n
+    trans     rocblas_operation.\n
+              Specifies the form of the system of equations.
     @param[in]
     m         rocblas_int. m >= 0.\n
               The number of rows of all matrices A in the batch.
     @param[in]
-    n         rocblas_int. m >= n >= 0.\n
-              The number of columns of all matrices A in the batch;
-              also the number of rows of all matrices C in the batch.
+    n         rocblas_int. n >= 0.\n
+              The number of columns of matrix A;
+              also the number of rows of C.
     @param[in]
     nrhs      rocblas_int. nrhs >= 0.\n
-              The number of columns of all matrices C and X in the batch;
-              i.e., the matrices on the right hand side.
+              The number of columns of matrices C and X;
+              i.e., the columns on the right hand side.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the
-              GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A.
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the m-by-n matrix A.
               On exit, the QR factorization of A as returned by GEQRF.
     @param[in]
     lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A.
+              Specifies the leading dimension of matrix A.
     @param[inout]
-    C         array of pointers to type. Each pointer points to an array on the
-              GPU of dimension ldc*nrhs.\n
-              On entry, the m-by-nrhs matrices C.
+    C         pointer to type. Array on the GPU of dimension ldc*nrhs.\n
+              On entry, the m-by-nrhs matrix C.
               On exit, the first n rows of each matrix contain the solution vectors.
     @param[in]
     ldc       rocblas_int. ldc >= max(m,n).\n
-              Specifies the leading dimension of matrices C.
+              Specifies the leading dimension of matrix C.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info = 0, successful exit for solution of A.
+    info      pointer to rocblas_int on the GPU.\n
+              If info = 0, successful exit.
               If info = j > 0, the solution for A could not be computed because
               the diagonal element at A(j,j) is 0.
 
