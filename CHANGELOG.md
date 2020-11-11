@@ -9,8 +9,10 @@ __anchor__TA
     - STERF, STEQR
 
 __anchor__CB
-- Least-squares solver for overdetermined linear systems:
-    - GELS (overdetermined, nontransposed case with batched and strided\_batched versions)
+- Linear solvers for general non-square systems:
+    - GELS (API added with batched and strided\_batched versions. Only the overdetermined
+      non-transpose case is implemented in this release. Other cases will return
+      `rocblas_status_not_implemented` status for now.)
 
 __anchor__JZ
 - Extended test coverage for functions returning info

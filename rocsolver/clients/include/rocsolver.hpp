@@ -14,8 +14,8 @@
 // and strided_batched cases (T*).
 //
 // The normal and strided_batched cases are distinguished from each other by passing a boolean
-// parameter, STRIDED. Variants such as the the blocked and unblocked versions of algorithms,
-// may be provided in similar ways.
+// parameter, STRIDED. Variants such as the blocked and unblocked versions of algorithms, may be
+// provided in similar ways.
 
 // The following functions are not included in the public API and must be
 // declared

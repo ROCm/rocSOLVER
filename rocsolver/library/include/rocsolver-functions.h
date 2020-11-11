@@ -7468,11 +7468,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
               Specifies the form of the system of equations.
     @param[in]
     m         rocblas_int. m >= 0.\n
-              The number of rows of all matrices A in the batch.
+              The number of rows of matrix A.
     @param[in]
     n         rocblas_int. n >= 0.\n
-              The number of columns of matrix A;
-              also the number of rows of C.
+              The number of columns of matrix A.
     @param[in]
     nrhs      rocblas_int. nrhs >= 0.\n
               The number of columns of matrices C and X;

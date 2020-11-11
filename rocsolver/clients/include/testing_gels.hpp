@@ -321,12 +321,12 @@ void testing_gels(Arguments argus)
     rocblas_stride stCRes = (argus.unit_check || argus.norm_check) ? stC : 0;
 
     // check non-supported values
-    if(trans == rocblas_operation_transpose || trans == rocblas_operation_conjugate_transpose)
+    if(m < n || trans == rocblas_operation_transpose || trans == rocblas_operation_conjugate_transpose)
     {
         EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, (T* const*)nullptr,
                                              lda, stA, (T* const*)nullptr, ldc, stC,
                                              (rocblas_int*)nullptr, bc),
-                              rocblas_status_invalid_value);
+                              rocblas_status_not_implemented);
 
         if(argus.timing)
             ROCSOLVER_BENCH_INFORM(2);

@@ -32,14 +32,13 @@ const vector<gels_params_A> matrix_sizeA_range = {
     // invalid
     {-1, 1, 1, 1},
     {1, -1, 1, 1},
-    {1, 1, -1, 1},
-    {1, 1, 1, -1},
     {10, 10, 10, 1},
     {10, 10, 1, 10},
-    {10, 1, 10, 10},
-    /// normal (valid) samples
-    {20, 20, 20, 20},
     {40, 20, 40, 20},
+    // not yet implemented
+    {10, 1, 10, 10},
+    // normal (valid) samples
+    {20, 20, 20, 20},
     {30, 20, 40, 30},
 };
 const vector<gels_params_B> matrix_sizeB_range = {
@@ -47,6 +46,7 @@ const vector<gels_params_B> matrix_sizeB_range = {
     {0, 'N'},
     // invalid
     {-1, 'N'},
+    // not yet implemented
     {1, 'T'},
     {1, 'C'},
     // normal (valid) samples
@@ -57,10 +57,10 @@ const vector<gels_params_B> matrix_sizeB_range = {
 
 // for daily_lapack tests
 const vector<gels_params_A> large_matrix_sizeA_range = {
-    {75, 25, 75, 25},
+    {75, 25, 75, 75},
     {150, 150, 150, 150},
-    {500, 50, 600, 60},
-    {1000, 500, 1000, 500},
+    {500, 50, 600, 600},
+    {1000, 500, 1000, 1000},
 };
 const vector<gels_params_B> large_matrix_sizeB_range = {
     {100, 'N'},
@@ -88,7 +88,7 @@ Arguments gels_setup_arguments(gels_tuple tup)
 
     // only testing standard use case for strides
     // strides are ignored in normal and batched tests
-    arg.bsa = arg.lda * arg.M;
+    arg.bsa = arg.lda * arg.N;
     arg.bsc = arg.ldc * arg.K;
 
     return arg;
