@@ -16,13 +16,9 @@ typedef std::tuple<int, rocsolver_op_char> gels_params_B;
 
 typedef std::tuple<gels_params_A, gels_params_B> gels_tuple;
 
-// clang-format off
-// each A_range tuple is
-namespace A_range { enum { M, N, lda, ldc }; }
+// each A_range tuple is a {M, N, lda, ldc};
 
-// each B_range tuple is
-namespace B_range { enum { nrhs, trans }; }
-// clang-format on
+// each B_range tuple is a {nrhs, trans};
 
 // case when N = nrhs = 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
@@ -80,13 +76,13 @@ Arguments gels_setup_arguments(gels_tuple tup)
 
     Arguments arg;
 
-    arg.M = std::get<A_range::M>(matrix_sizeA);
-    arg.N = std::get<A_range::N>(matrix_sizeA);
-    arg.lda = std::get<A_range::lda>(matrix_sizeA);
-    arg.ldc = std::get<A_range::ldc>(matrix_sizeA);
+    arg.M = std::get<0>(matrix_sizeA);
+    arg.N = std::get<1>(matrix_sizeA);
+    arg.lda = std::get<2>(matrix_sizeA);
+    arg.ldc = std::get<3>(matrix_sizeA);
 
-    arg.K = std::get<B_range::nrhs>(matrix_sizeB);
-    arg.transA_option = std::get<B_range::trans>(matrix_sizeB);
+    arg.K = std::get<0>(matrix_sizeB);
+    arg.transA_option = std::get<1>(matrix_sizeB);
 
     arg.timing = 0;
 
