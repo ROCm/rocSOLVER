@@ -7479,22 +7479,22 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix A.
-              On exit, the QR factorization of A as returned by GEQRF.
+              On exit, the QR factorization of A as returned by GEQRF (or GELQF).
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrix A.
     @param[inout]
     C         pointer to type. Array on the GPU of dimension ldc*nrhs.\n
-              On entry, the m-by-nrhs matrix C.
-              On exit, the first n rows of each matrix contain the solution vectors.
+              On entry, the m-by-nrhs matrix C if non-transposed, or n-by-nrhs if transposed.
+              On exit, when info = 0, C is overwritten by the solution vectors stored as columns.
     @param[in]
     ldc       rocblas_int. ldc >= max(m,n).\n
               Specifies the leading dimension of matrix C.
     @param[out]
     info      pointer to rocblas_int on the GPU.\n
               If info = 0, successful exit.
-              If info = j > 0, the solution for A could not be computed because
-              the diagonal element at A(j,j) is 0.
+              If info = j > 0, the solution could not be computed because input matrix A is singular;
+              the j-th diagonal element of its triangular factor is zero
 
     ********************************************************************/
 

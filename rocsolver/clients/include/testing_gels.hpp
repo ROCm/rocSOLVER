@@ -36,11 +36,11 @@ void gels_checkBadArgs(const rocblas_handle handle,
         << "Must report error when operation is invalid";
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, rocblas_operation_transpose, m, n, nrhs,
                                          dA, lda, stA, dC, ldc, stC, info, bc),
-                          rocblas_status_invalid_value)
+                          rocblas_status_not_implemented)
         << "Must report error when operation is transpose (unsupported)";
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, rocblas_operation_conjugate_transpose, m,
                                          n, nrhs, dA, lda, stA, dC, ldc, stC, info, bc),
-                          rocblas_status_invalid_value)
+                          rocblas_status_not_implemented)
         << "Must report error when opration is conjugate transpose (unsupported)";
 
     // sizes (only check batch_count if applicable)
@@ -65,6 +65,10 @@ void gels_checkBadArgs(const rocblas_handle handle,
         << "Should normally report error when info is null";
 
     // quick return with invalid pointers
+    EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, 0, n, nrhs, (U) nullptr, lda, stA,
+                                         dC, ldc, stC, info, bc),
+                          rocblas_status_success)
+        << "Matrix A may be null when m is 0 (empty matrix)";
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, 0, nrhs, (U) nullptr, lda, stA,
                                          dC, ldc, stC, info, bc),
                           rocblas_status_success)
@@ -228,7 +232,8 @@ void gels_getError(const rocblas_handle handle,
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        err = norm_error('I', m, nrhs, ldc, hC[b], hCRes[b]);
+        const rocblas_int rowsC = (trans == rocblas_operation_none) ? m : n;
+        err = norm_error('I', rowsC, nrhs, ldc, hC[b], hCRes[b]);
         *max_err = err > *max_err ? err : *max_err;
     }
 }
@@ -335,7 +340,7 @@ void testing_gels(Arguments argus)
     }
 
     // determine sizes
-    size_t size_A = size_t(lda) * m;
+    size_t size_A = size_t(lda) * n;
     size_t size_C = size_t(ldc) * nrhs;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
@@ -343,7 +348,7 @@ void testing_gels(Arguments argus)
 
     // check invalid sizes
     bool invalid_size
-        = (m < 0 || n < 0 || nrhs < 0 || m < n || lda < m || ldc < m || ldc < n || bc < 0);
+        = (m < 0 || n < 0 || nrhs < 0 || lda < m || ldc < m || ldc < n || bc < 0);
     if(invalid_size)
     {
         if(BATCHED)
@@ -444,9 +449,9 @@ void testing_gels(Arguments argus)
                                          hot_calls, argus.perf);
     }
     // validate results for rocsolver-test
-    // using m * machine_precision as tolerance
+    // using max(m,n) * machine_precision as tolerance
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, m);
+        rocsolver_test_check<T>(max_error, max(m,n));
 
     // output results for rocsolver-bench
     if(argus.timing)
