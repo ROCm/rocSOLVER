@@ -183,7 +183,7 @@ set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for librar
 
 # Set this before finding hip so that hip::device has the required arch flags
 # added as usage requirements on its interface
-set( AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific machine types for library to target" )
+set( AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-" CACHE STRING "List of specific machine types for library to target" )
 
 # Find HCC/HIP dependencies
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
