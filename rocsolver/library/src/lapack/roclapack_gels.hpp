@@ -147,7 +147,8 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
 
     // TODO: apply scaling to improve accuracy over a larger range of values
 
-    // note: m >= n
+    ROCSOLVER_ASSUME_X(m >= n, "argCheck rejects all other cases as not implemented");
+
     // compute QR factorization of A
     const rocblas_stride strideP = std::min(m, n);
     rocsolver_geqrf_template<BATCHED, STRIDED>(handle, m, n, A, shiftA, lda, strideA, ipiv, strideP,
