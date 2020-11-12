@@ -34,12 +34,12 @@ const vector<gels_params_A> matrix_sizeA_range = {
     {1, -1, 1, 1},
     {10, 10, 10, 1},
     {10, 10, 1, 10},
-    {40, 20, 40, 20},
     // not yet implemented
     {10, 1, 10, 10},
     // normal (valid) samples
     {20, 20, 20, 20},
     {30, 20, 40, 30},
+    {40, 20, 40, 40},
 };
 const vector<gels_params_B> matrix_sizeB_range = {
     // quick return

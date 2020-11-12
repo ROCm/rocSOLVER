@@ -136,9 +136,11 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
     hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return if A or B are empty
-    // TODO: clear B as needed when underdetermined support is added
     if(m == 0 || n == 0 || nrhs == 0)
+    {
+        hipLaunchKernelGGL(set_zero, std::max(m, n), nrhs, B, shiftB, ldb, strideB);
         return rocblas_status_success;
+    }
 
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
@@ -159,10 +161,11 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
         lda, strideA, ipiv, strideP, B, shiftB, ldb, strideB, batch_count, scalars, (T*)work_x_temp,
         (T*)workArr_temp_arr, (T*)diag_trfac_invA, (T**)trfact_workTrmm_invA_arr);
 
-    // do the equivalent of strtrs
+    // do the equivalent of trtrs
     const rocblas_int check_threads = min(((n - 1) / 64 + 1) * 64, BLOCKSIZE);
     hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1), dim3(1, check_threads, 1), 0,
                        stream, n, A, shiftA, lda, strideA, info);
+    // TODO: skip trsm for problems where check failed
     const T one = 1; // constant 1 in host memory
     // solve RX = Q'B, overwriting B with X
     rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_upper,
