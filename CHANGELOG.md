@@ -2,19 +2,14 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## [(Unreleased) rocSOLVER for ROCm 4.0.0]
+## [(Unreleased) rocSOLVER 3.11.0 for ROCm 4.0.0]
 ### Added
-__anchor__TA
 - Eigensolver routines for symmetric/hermitian matrices:
     - STERF, STEQR
-
-__anchor__CB
 - Linear solvers for general non-square systems:
     - GELS (API added with batched and strided\_batched versions. Only the overdetermined
       non-transpose case is implemented in this release. Other cases will return
       `rocblas_status_not_implemented` status for now.)
-
-__anchor__JZ
 - Extended test coverage for functions returning info
 - Changelog file
 - Tridiagonalization routines for symmetric and hermitian matrices:
@@ -22,62 +17,17 @@ __anchor__JZ
     - SYTD2, SYTRD (with batched and strided\_batched versions)
     - HETD2, HETRD (with batched and strided\_batched versions)
 
-### Optimizations
-__anchor__TA
-
-__anchor__CB
-
-__anchor__JZ
-
 ### Changed
-__anchor__TA
-
-__anchor__CB
 - Raised minimum requirement for building rocSOLVER from source to CMake 3.8
-
-__anchor__JZ
 - Switched to use semantic versioning for the library
 
-### Deprecated
-__anchor__TA
-
-__anchor__CB
-
-__anchor__JZ
-
 ### Removed
-__anchor__TA
-
-__anchor__CB
 - Removed `-DOPTIMAL` from the `roc::rocsolver` CMake usage requirements. This is an internal
   rocSOLVER definition, and does not need to be defined by library users
 
-__anchor__JZ
-
-### Fixed
-__anchor__TA
-
-__anchor__CB
-
-__anchor__JZ
-
-### Known Issues
-__anchor__TA
-
-__anchor__CB
-
-__anchor__JZ
-
-### Security
-__anchor__TA
-
-__anchor__CB
-
-__anchor__JZ
 
 
-
-## [(Unreleased) rocSOLVER 3.10.0 for ROCm 3.10.0]
+## [rocSOLVER 3.10.0 for ROCm 3.10.0]
 ### Added
 - Orthonormal/Unitary matrix generator routines (reverse order):
     - ORG2L, UNG2L, ORGQL, UNGQL
