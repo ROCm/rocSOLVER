@@ -158,7 +158,7 @@ void gels_initData(const rocblas_handle handle,
         {
             for(rocblas_int i = 0; i < m; i++)
             {
-                for(rocblas_int j = 0; j < m; j++)
+                for(rocblas_int j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] += 400;
@@ -201,7 +201,7 @@ void gels_getError(const rocblas_handle handle,
     std::vector<T> hW(sizeW);
 
     // input data initialization
-    gels_initData<true, true, T>(handle, trans, n, m, nrhs, dA, lda, stA, dC, ldc, stC, dInfo, bc,
+    gels_initData<true, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, dInfo, bc,
                                  hA, hC, hInfo);
 
     // execute computations
@@ -257,7 +257,7 @@ void gels_getPerfData(const rocblas_handle handle,
 
     if(!perf)
     {
-        gels_initData<true, false, T>(handle, trans, n, m, nrhs, dA, lda, stA, dC, ldc, stC, dInfo,
+        gels_initData<true, false, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, dInfo,
                                       bc, hA, hC, hInfo);
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
@@ -267,12 +267,12 @@ void gels_getPerfData(const rocblas_handle handle,
         }
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    gels_initData<true, false, T>(handle, trans, n, m, nrhs, dA, lda, stA, dC, ldc, stC, dInfo, bc,
+    gels_initData<true, false, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, dInfo, bc,
                                   hA, hC, hInfo);
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        gels_initData<false, true, T>(handle, trans, n, m, nrhs, dA, lda, stA, dC, ldc, stC, dInfo,
+        gels_initData<false, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, dInfo,
                                       bc, hA, hC, hInfo);
         CHECK_ROCBLAS_ERROR(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA.data(), lda, stA,
                                            dC.data(), ldc, stC, dInfo.data(), bc));
@@ -282,7 +282,7 @@ void gels_getPerfData(const rocblas_handle handle,
     double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        gels_initData<false, true, T>(handle, trans, n, m, nrhs, dA, lda, stA, dC, ldc, stC, dInfo,
+        gels_initData<false, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, dInfo,
                                       bc, hA, hC, hInfo);
 
         start = get_time_us();
