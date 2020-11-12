@@ -468,4 +468,39 @@ __global__ void scale_axpy(const rocblas_int n,
     }
 }
 
+template <typename T, typename U>
+__global__ void check_singularity(const rocblas_int n,
+                                  U A,
+                                  const rocblas_int shiftA,
+                                  const rocblas_int lda,
+                                  const rocblas_stride strideA,
+                                  rocblas_int* info)
+{
+    // Checks for singularities in the matrix and updates info to indicate where
+    // the first singularity (if any) occurs
+    int b = hipBlockIdx_x;
+
+    T* a = load_ptr_batch<T>(A, b, shiftA, strideA);
+
+    __shared__ rocblas_int _info;
+
+    if(hipThreadIdx_y == 0)
+        _info = 0;
+    __syncthreads();
+
+    for(int i = hipThreadIdx_y; i < n; i += hipBlockDim_y)
+    {
+        if(a[i + i * lda] == 0)
+        {
+            rocblas_int _info_temp = _info;
+            while(_info_temp == 0 || _info_temp > i + 1)
+                _info_temp = atomicCAS(&_info, _info_temp, i + 1);
+        }
+    }
+    __syncthreads();
+
+    if(hipThreadIdx_y == 0)
+        info[b] = _info;
+}
+
 #endif

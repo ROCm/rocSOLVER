@@ -126,12 +126,24 @@ void cblas_getrs(rocblas_operation trans,
                  rocblas_int ldb);
 
 template <typename T>
+void cblas_gels(rocblas_operation transR,
+                rocblas_int m,
+                rocblas_int n,
+                rocblas_int nrhs,
+                T* A,
+                rocblas_int lda,
+                T* B,
+                rocblas_int ldb,
+                T* work,
+                rocblas_int lwork);
+
+template <typename T>
 void cblas_getri(rocblas_int n,
                  T* A,
                  rocblas_int lda,
                  rocblas_int* ipiv,
                  T* work,
-                 rocblas_int* lwork,
+                 rocblas_int lwork,
                  rocblas_int* info);
 
 // template <typename T>

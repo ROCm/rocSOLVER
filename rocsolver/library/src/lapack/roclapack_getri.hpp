@@ -292,41 +292,6 @@ __device__ void getri_pivot(const rocblas_int n, T* a, const rocblas_int lda, ro
     }
 }
 
-template <typename T, typename U>
-__global__ void getri_check_singularity(const rocblas_int n,
-                                        U A,
-                                        const rocblas_int shifta,
-                                        const rocblas_int lda,
-                                        const rocblas_stride stridea,
-                                        rocblas_int* info)
-{
-    // Checks for singularities in the matrix and updates info to indicate where
-    // the first singularity (if any) occurs
-    int b = hipBlockIdx_x;
-
-    T* a = load_ptr_batch<T>(A, b, shifta, stridea);
-
-    __shared__ rocblas_int _info;
-
-    if(hipThreadIdx_y == 0)
-        _info = 0;
-    __syncthreads();
-
-    for(int i = hipThreadIdx_y; i < n; i += hipBlockDim_y)
-    {
-        if(a[i + i * lda] == 0)
-        {
-            rocblas_int _info_temp = _info;
-            while(_info_temp == 0 || _info_temp > i + 1)
-                _info_temp = atomicCAS(&_info, _info_temp, i + 1);
-        }
-    }
-    __syncthreads();
-
-    if(hipThreadIdx_y == 0)
-        info[b] = _info;
-}
-
 template <bool COPYALL, bool INPLACE, typename T, typename U, typename V>
 __global__ void getri_trtri_update(const rocblas_int n,
                                    U A,
@@ -652,8 +617,8 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     if(A1 == nullptr) // in-place trtri
     {
         // check for singularities
-        hipLaunchKernelGGL(getri_check_singularity<T>, dim3(batch_count, 1, 1), dim3(1, threads, 1),
-                           0, stream, n, A, shiftA, lda, strideA, info);
+        hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1), dim3(1, threads, 1), 0,
+                           stream, n, A, shiftA, lda, strideA, info);
 
         // compute inv(U)
         rocblasCall_trtri<BATCHED, STRIDED, T>(handle, rocblas_fill_upper, rocblas_diagonal_non_unit,
@@ -668,8 +633,8 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     else // out-of-place trtri
     {
         // check for singularities
-        hipLaunchKernelGGL(getri_check_singularity<T>, dim3(batch_count, 1, 1), dim3(1, threads, 1),
-                           0, stream, n, A1, shiftA1, lda1, strideA1, info);
+        hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1), dim3(1, threads, 1), 0,
+                           stream, n, A1, shiftA1, lda1, strideA1, info);
 
         // compute inv(U)
         rocblasCall_trtri<BATCHED, STRIDED, T>(handle, rocblas_fill_upper, rocblas_diagonal_non_unit,
