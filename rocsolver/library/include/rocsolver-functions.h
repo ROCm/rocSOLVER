@@ -7436,8 +7436,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
 
 /*! @{
     \brief GELS solves an overdetermined (or underdetermined) linear system defined by an m-by-n
-    matrix A, and an n-by-nrhs matrix C, using the QR factorization computed by GEQRF (or the
-    LQ factorization computed by GELQF).
+    matrix A, and a corresponding matrix C, using the QR factorization computed by GEQRF (or the LQ
+    factorization computed by GELQF).
 
     \details
     The problem solved by this function is either of the form
@@ -7458,7 +7458,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
 
     \note
     The current implementation only supports the overdetermined, no transpose case.
-    \p rocblas_status_not_implemented will be returned if m < n or trans is
+    \p rocblas_status_not_implemented will be returned if m < n, or if trans is
     \p rocblas_operation_transpose or \p rocblas_operation_conjugate_transpose.
 
     @param[in]
@@ -7485,7 +7485,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
               Specifies the leading dimension of matrix A.
     @param[inout]
     C         pointer to type. Array on the GPU of dimension ldc*nrhs.\n
-              On entry, the m-by-nrhs matrix C if non-transposed, or n-by-nrhs if transposed.
+              On entry, the matrix C is m-by-nrhs if non-transposed, or n-by-nrhs if transposed.
               On exit, when info = 0, C is overwritten by the solution vectors stored as columns.
     @param[in]
     ldc       rocblas_int. ldc >= max(m,n).\n
