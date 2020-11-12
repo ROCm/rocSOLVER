@@ -220,7 +220,7 @@ void getri_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cblas_getri<T>(n, hA[b], lda, hIpiv[b], hW.data(), &sizeW, hInfo[b]);
+        cblas_getri<T>(n, hA[b], lda, hIpiv[b], hW.data(), sizeW, hInfo[b]);
     }
 
     // error is ||hA - hARes|| / ||hA||
@@ -276,7 +276,7 @@ void getri_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cblas_getri<T>(n, hA[b], lda, hIpiv[b], hW.data(), &sizeW, hInfo[b]);
+            cblas_getri<T>(n, hA[b], lda, hIpiv[b], hW.data(), sizeW, hInfo[b]);
         }
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }

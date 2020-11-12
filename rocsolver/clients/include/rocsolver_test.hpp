@@ -65,11 +65,34 @@ inline T sconj(T scalar)
     return std::conj(scalar);
 }
 
+// A struct implicity convertable to and from char, used so we can customize
+// Google Test printing for LAPACK char arguments without affecting the default
+// char output.
+struct rocsolver_op_char
+{
+    rocsolver_op_char(char c)
+        : data(c)
+    {
+    }
+
+    operator char() const
+    {
+        return data;
+    }
+
+    char data;
+};
+
 // gtest printers
 
 inline std::ostream& operator<<(std::ostream& os, rocblas_status x)
 {
     return os << rocblas_status_to_string(x);
+}
+
+inline std::ostream& operator<<(std::ostream& os, rocsolver_op_char x)
+{
+    return os << x.data;
 }
 
 #endif

@@ -51,6 +51,7 @@ set(roclapack_test_source
     getri_gtest.cpp
     getf2_getrf_gtest.cpp
     potf2_potrf_gtest.cpp
+    gels_gtest.cpp
     # bidiagonal matrices and svd
     gebd2_gebrd_gtest.cpp
     gesvd_gtest.cpp
