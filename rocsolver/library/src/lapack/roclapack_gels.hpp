@@ -136,6 +136,7 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
     hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return if A or C are empty
+    // TODO: clear C as needed when underdetermined support is added
     if(m == 0 || n == 0 || nrhs == 0)
         return rocblas_status_success;
 
