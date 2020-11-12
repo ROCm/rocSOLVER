@@ -135,10 +135,17 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
     // info=0 (starting with a nonsingular matrix)
     hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
-    // quick return if A or B are empty
-    if(m == 0 || n == 0 || nrhs == 0)
+    // quick return if B is empty
+    if (nrhs == 0)
+        return rocblas_status_success;
+
+    // quick return if A is empty
+    if(m == 0 || n == 0)
     {
-        hipLaunchKernelGGL(set_zero, std::max(m, n), nrhs, B, shiftB, ldb, strideB);
+        rocblas_int rowsC = std::max(m,n);
+        rocblas_int blocksx = (rowsC - 1) / 32 + 1;;
+        rocblas_int blocksy = (nrhs - 1) / 32 + 1;;
+        hipLaunchKernelGGL(set_zero<T>, dim3(blocksx, blocksy, batch_count), dim3(32,32), 0, stream, rowsC, nrhs, B, shiftB, ldb, strideB);
         return rocblas_status_success;
     }
 
