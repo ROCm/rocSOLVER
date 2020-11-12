@@ -16,7 +16,7 @@ typedef std::tuple<int, rocsolver_op_char> gels_params_B;
 
 typedef std::tuple<gels_params_A, gels_params_B> gels_tuple;
 
-// each A_range tuple is a {M, N, lda, ldc};
+// each A_range tuple is a {M, N, lda, ldb};
 
 // each B_range tuple is a {nrhs, trans};
 
@@ -79,7 +79,7 @@ Arguments gels_setup_arguments(gels_tuple tup)
     arg.M = std::get<0>(matrix_sizeA);
     arg.N = std::get<1>(matrix_sizeA);
     arg.lda = std::get<2>(matrix_sizeA);
-    arg.ldc = std::get<3>(matrix_sizeA);
+    arg.ldb = std::get<3>(matrix_sizeA);
 
     arg.K = std::get<0>(matrix_sizeB);
     arg.transA_option = std::get<1>(matrix_sizeB);
@@ -89,7 +89,7 @@ Arguments gels_setup_arguments(gels_tuple tup)
     // only testing standard use case for strides
     // strides are ignored in normal and batched tests
     arg.bsa = arg.lda * arg.N;
-    arg.bsc = arg.ldc * arg.K;
+    arg.bsb = arg.ldb * arg.K;
 
     return arg;
 }

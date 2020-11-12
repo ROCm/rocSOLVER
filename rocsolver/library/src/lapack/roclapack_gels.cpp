@@ -12,8 +12,8 @@ rocblas_status rocsolver_gels_impl(rocblas_handle handle,
                                    const rocblas_int nrhs,
                                    U A,
                                    const rocblas_int lda,
-                                   U C,
-                                   const rocblas_int ldc,
+                                   U B,
+                                   const rocblas_int ldb,
                                    rocblas_int* info)
 {
     if(!handle)
@@ -22,17 +22,17 @@ rocblas_status rocsolver_gels_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_gels_argCheck(trans, m, n, nrhs, A, lda, C, ldc, info);
+    rocblas_status st = rocsolver_gels_argCheck(trans, m, n, nrhs, A, lda, B, ldb, info);
     if(st != rocblas_status_continue)
         return st;
 
     // working with unshifted arrays
     const rocblas_int shiftA = 0;
-    const rocblas_int shiftC = 0;
+    const rocblas_int shiftB = 0;
 
     // normal (non-batched non-strided) execution
     const rocblas_stride strideA = 0;
-    const rocblas_stride strideC = 0;
+    const rocblas_stride strideB = 0;
     const rocblas_int batch_count = 1;
 
     size_t size_scalars, size_work_x_temp, size_workArr_temp_arr, size_diag_trfac_invA,
@@ -66,7 +66,7 @@ rocblas_status rocsolver_gels_impl(rocblas_handle handle,
     RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
     return rocsolver_gels_template<false, false, T>(
-        handle, trans, m, n, nrhs, A, shiftA, lda, strideA, C, shiftC, ldc, strideC, info,
+        handle, trans, m, n, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, info,
         batch_count, (T*)scalars, (T*)work, (T*)workArr, (T*)diag_trfac_invA,
         (T**)trfact_workTrmm_invA, (T*)ipiv, optim_mem);
 }
@@ -86,11 +86,11 @@ rocblas_status rocsolver_sgels(rocblas_handle handle,
                                const rocblas_int nrhs,
                                float* A,
                                const rocblas_int lda,
-                               float* C,
-                               const rocblas_int ldc,
+                               float* B,
+                               const rocblas_int ldb,
                                rocblas_int* info)
 {
-    return rocsolver_gels_impl<float>(handle, trans, m, n, nrhs, A, lda, C, ldc, info);
+    return rocsolver_gels_impl<float>(handle, trans, m, n, nrhs, A, lda, B, ldb, info);
 }
 
 rocblas_status rocsolver_dgels(rocblas_handle handle,
@@ -100,11 +100,11 @@ rocblas_status rocsolver_dgels(rocblas_handle handle,
                                const rocblas_int nrhs,
                                double* A,
                                const rocblas_int lda,
-                               double* C,
-                               const rocblas_int ldc,
+                               double* B,
+                               const rocblas_int ldb,
                                rocblas_int* info)
 {
-    return rocsolver_gels_impl<double>(handle, trans, m, n, nrhs, A, lda, C, ldc, info);
+    return rocsolver_gels_impl<double>(handle, trans, m, n, nrhs, A, lda, B, ldb, info);
 }
 
 rocblas_status rocsolver_cgels(rocblas_handle handle,
@@ -114,11 +114,11 @@ rocblas_status rocsolver_cgels(rocblas_handle handle,
                                const rocblas_int nrhs,
                                rocblas_float_complex* A,
                                const rocblas_int lda,
-                               rocblas_float_complex* C,
-                               const rocblas_int ldc,
+                               rocblas_float_complex* B,
+                               const rocblas_int ldb,
                                rocblas_int* info)
 {
-    return rocsolver_gels_impl<rocblas_float_complex>(handle, trans, m, n, nrhs, A, lda, C, ldc,
+    return rocsolver_gels_impl<rocblas_float_complex>(handle, trans, m, n, nrhs, A, lda, B, ldb,
                                                       info);
 }
 
@@ -129,11 +129,11 @@ rocblas_status rocsolver_zgels(rocblas_handle handle,
                                const rocblas_int nrhs,
                                rocblas_double_complex* A,
                                const rocblas_int lda,
-                               rocblas_double_complex* C,
-                               const rocblas_int ldc,
+                               rocblas_double_complex* B,
+                               const rocblas_int ldb,
                                rocblas_int* info)
 {
-    return rocsolver_gels_impl<rocblas_double_complex>(handle, trans, m, n, nrhs, A, lda, C, ldc,
+    return rocsolver_gels_impl<rocblas_double_complex>(handle, trans, m, n, nrhs, A, lda, B, ldb,
                                                        info);
 }
 

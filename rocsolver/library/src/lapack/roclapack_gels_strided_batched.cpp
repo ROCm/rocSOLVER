@@ -13,9 +13,9 @@ rocblas_status rocsolver_gels_strided_batched_impl(rocblas_handle handle,
                                                    U A,
                                                    const rocblas_int lda,
                                                    const rocblas_stride strideA,
-                                                   U C,
-                                                   const rocblas_int ldc,
-                                                   const rocblas_stride strideC,
+                                                   U B,
+                                                   const rocblas_int ldb,
+                                                   const rocblas_stride strideB,
                                                    rocblas_int* info,
                                                    const rocblas_int batch_count)
 {
@@ -25,13 +25,13 @@ rocblas_status rocsolver_gels_strided_batched_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_gels_argCheck(trans, m, n, nrhs, A, lda, C, ldc, info, batch_count);
+    rocblas_status st = rocsolver_gels_argCheck(trans, m, n, nrhs, A, lda, B, ldb, info, batch_count);
     if(st != rocblas_status_continue)
         return st;
 
     // working with unshifted arrays
     const rocblas_int shiftA = 0;
-    const rocblas_int shiftC = 0;
+    const rocblas_int shiftB = 0;
 
     size_t size_scalars, size_work_x_temp, size_workArr_temp_arr, size_diag_trfac_invA,
         size_trfact_workTrmm_invA_arr, size_ipiv;
@@ -66,7 +66,7 @@ rocblas_status rocsolver_gels_strided_batched_impl(rocblas_handle handle,
     RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_scalars, hipMemcpyHostToDevice));
 
     return rocsolver_gels_template<false, true, T>(
-        handle, trans, m, n, nrhs, A, shiftA, lda, strideA, C, shiftC, ldc, strideC, info,
+        handle, trans, m, n, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, info,
         batch_count, (T*)scalars, (T*)work_x_temp, (T*)workArr_temp_arr, (T*)diag_trfac_invA,
         (T**)trfact_workTrmm_invA_arr, (T*)ipiv, optim_mem);
 }
@@ -87,14 +87,14 @@ rocblas_status rocsolver_sgels_strided_batched(rocblas_handle handle,
                                                float* A,
                                                const rocblas_int lda,
                                                const rocblas_stride strideA,
-                                               float* C,
-                                               const rocblas_int ldc,
-                                               const rocblas_stride strideC,
+                                               float* B,
+                                               const rocblas_int ldb,
+                                               const rocblas_stride strideB,
                                                rocblas_int* info,
                                                const rocblas_int batch_count)
 {
-    return rocsolver_gels_strided_batched_impl<float>(handle, trans, m, n, nrhs, A, lda, strideA, C,
-                                                      ldc, strideC, info, batch_count);
+    return rocsolver_gels_strided_batched_impl<float>(handle, trans, m, n, nrhs, A, lda, strideA, B,
+                                                      ldb, strideB, info, batch_count);
 }
 
 rocblas_status rocsolver_dgels_strided_batched(rocblas_handle handle,
@@ -105,14 +105,14 @@ rocblas_status rocsolver_dgels_strided_batched(rocblas_handle handle,
                                                double* A,
                                                const rocblas_int lda,
                                                const rocblas_stride strideA,
-                                               double* C,
-                                               const rocblas_int ldc,
-                                               const rocblas_stride strideC,
+                                               double* B,
+                                               const rocblas_int ldb,
+                                               const rocblas_stride strideB,
                                                rocblas_int* info,
                                                const rocblas_int batch_count)
 {
     return rocsolver_gels_strided_batched_impl<double>(handle, trans, m, n, nrhs, A, lda, strideA,
-                                                       C, ldc, strideC, info, batch_count);
+                                                       B, ldb, strideB, info, batch_count);
 }
 
 rocblas_status rocsolver_cgels_strided_batched(rocblas_handle handle,
@@ -123,14 +123,14 @@ rocblas_status rocsolver_cgels_strided_batched(rocblas_handle handle,
                                                rocblas_float_complex* A,
                                                const rocblas_int lda,
                                                const rocblas_stride strideA,
-                                               rocblas_float_complex* C,
-                                               const rocblas_int ldc,
-                                               const rocblas_stride strideC,
+                                               rocblas_float_complex* B,
+                                               const rocblas_int ldb,
+                                               const rocblas_stride strideB,
                                                rocblas_int* info,
                                                const rocblas_int batch_count)
 {
     return rocsolver_gels_strided_batched_impl<rocblas_float_complex>(
-        handle, trans, m, n, nrhs, A, lda, strideA, C, ldc, strideC, info, batch_count);
+        handle, trans, m, n, nrhs, A, lda, strideA, B, ldb, strideB, info, batch_count);
 }
 
 rocblas_status rocsolver_zgels_strided_batched(rocblas_handle handle,
@@ -141,14 +141,14 @@ rocblas_status rocsolver_zgels_strided_batched(rocblas_handle handle,
                                                rocblas_double_complex* A,
                                                const rocblas_int lda,
                                                const rocblas_stride strideA,
-                                               rocblas_double_complex* C,
-                                               const rocblas_int ldc,
-                                               const rocblas_stride strideC,
+                                               rocblas_double_complex* B,
+                                               const rocblas_int ldb,
+                                               const rocblas_stride strideB,
                                                rocblas_int* info,
                                                const rocblas_int batch_count)
 {
     return rocsolver_gels_strided_batched_impl<rocblas_double_complex>(
-        handle, trans, m, n, nrhs, A, lda, strideA, C, ldc, strideC, info, batch_count);
+        handle, trans, m, n, nrhs, A, lda, strideA, B, ldb, strideB, info, batch_count);
 }
 
 } // extern C

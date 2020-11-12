@@ -7436,22 +7436,22 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
 
 /*! @{
     \brief GELS solves an overdetermined (or underdetermined) linear system defined by an m-by-n
-    matrix A, and a corresponding matrix C, using the QR factorization computed by GEQRF (or the LQ
+    matrix A, and a corresponding matrix B, using the QR factorization computed by GEQRF (or the LQ
     factorization computed by GELQF).
 
     \details
     The problem solved by this function is either of the form
 
-        A  * X = C (no transpose), or
-        A' * X = C (transpose/conjugate transpose)
+        A  * X = B (no transpose), or
+        A' * X = B (transpose/conjugate transpose)
 
     depending on the value of trans.
 
     If m >= n (or n < m in the case of transpose/conjugate transpose), the system is overdetermined
     and a least-squares solution approximating X is found minimizing
 
-        || C - A  * X || (no transpose), or
-        || C - A' * X || (transpose/conjugate transpose)
+        || B - A  * X || (no transpose), or
+        || B - A' * X || (transpose/conjugate transpose)
 
     If n < m (or m >= n in the case of transpose/conjugate transpose), the system is underdetermined
     and a unique solution for X is chosen minimizing || X ||
@@ -7474,7 +7474,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
               The number of columns of matrix A.
     @param[in]
     nrhs      rocblas_int. nrhs >= 0.\n
-              The number of columns of matrices C and X;
+              The number of columns of matrices B and X;
               i.e., the columns on the right hand side.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
@@ -7484,12 +7484,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrix A.
     @param[inout]
-    C         pointer to type. Array on the GPU of dimension ldc*nrhs.\n
-              On entry, the matrix C is m-by-nrhs if non-transposed, or n-by-nrhs if transposed.
-              On exit, when info = 0, C is overwritten by the solution vectors stored as columns.
+    B         pointer to type. Array on the GPU of dimension ldb*nrhs.\n
+              On entry, the matrix B is m-by-nrhs if non-transposed, or n-by-nrhs if transposed.
+              On exit, when info = 0, B is overwritten by the solution vectors stored as columns.
     @param[in]
-    ldc       rocblas_int. ldc >= max(m,n).\n
-              Specifies the leading dimension of matrix C.
+    ldb       rocblas_int. ldb >= max(m,n).\n
+              Specifies the leading dimension of matrix B.
     @param[out]
     info      pointer to rocblas_int on the GPU.\n
               If info = 0, successful exit.
@@ -7505,8 +7505,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgels(rocblas_handle handle,
                                                 const rocblas_int nrhs,
                                                 float* A,
                                                 const rocblas_int lda,
-                                                float* C,
-                                                const rocblas_int ldc,
+                                                float* B,
+                                                const rocblas_int ldb,
                                                 rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgels(rocblas_handle handle,
@@ -7516,8 +7516,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgels(rocblas_handle handle,
                                                 const rocblas_int nrhs,
                                                 double* A,
                                                 const rocblas_int lda,
-                                                double* C,
-                                                const rocblas_int ldc,
+                                                double* B,
+                                                const rocblas_int ldb,
                                                 rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgels(rocblas_handle handle,
@@ -7527,8 +7527,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgels(rocblas_handle handle,
                                                 const rocblas_int nrhs,
                                                 rocblas_float_complex* A,
                                                 const rocblas_int lda,
-                                                rocblas_float_complex* C,
-                                                const rocblas_int ldc,
+                                                rocblas_float_complex* B,
+                                                const rocblas_int ldb,
                                                 rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
@@ -7538,29 +7538,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
                                                 const rocblas_int nrhs,
                                                 rocblas_double_complex* A,
                                                 const rocblas_int lda,
-                                                rocblas_double_complex* C,
-                                                const rocblas_int ldc,
+                                                rocblas_double_complex* B,
+                                                const rocblas_int ldb,
                                                 rocblas_int* info);
 ///@}
 
 /*! @{
     \brief GELS_BATCHED solves batches of overdetermined (or underdetermined) linear systems
-    defined by the array of m-by-n matrices A, and an array of corresponding matrices C, using the
+    defined by the array of m-by-n matrices A, and an array of corresponding matrices B, using the
     QR factorizations computed by GEQRF (or the LQ factorizations computed by GELQF).
 
     \details
     The problem solved by this function is either of the form
 
-        A_i  * X_i = C_i (no transpose), or
-        A_i' * X_i = C_i (transpose/conjugate transpose)
+        A_i  * X_i = B_i (no transpose), or
+        A_i' * X_i = B_i (transpose/conjugate transpose)
 
     depending on the value of trans.
 
     If m >= n (or n < m in the case of transpose/conjugate transpose), the systems are
     overdetermined and least-squares solutions approximating X_i are found minimizing
 
-        || C_i - A_i  * X_i || (no transpose), or
-        || C_i - A_i' * X_i || (transpose/conjugate transpose)
+        || B_i - A_i  * X_i || (no transpose), or
+        || B_i - A_i' * X_i || (transpose/conjugate transpose)
 
     If n < m (or m >= n in the case of transpose/conjugate transpose), the system is
     underdetermined and a unique solution for X_i is chosen minimizing || X_i ||
@@ -7583,7 +7583,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
               The number of columns of all matrices A_i in the batch.
     @param[in]
     nrhs      rocblas_int. nrhs >= 0.\n
-              The number of columns of all matrices C_i and X_i in the batch;
+              The number of columns of all matrices B_i and X_i in the batch;
               i.e., the columns on the right hand side.
     @param[inout]
     A         array of pointer to type. Each pointer points to an array on the GPU of dimension lda*n.\n
@@ -7593,12 +7593,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrices A_i.
     @param[inout]
-    C         array of pointer to type. Each pointer points to an array on the GPU of dimension ldc*nrhs.\n
-              On entry, the matrices C_i are m-by-nrhs if non-transposed, or n-by-nrhs if transposed.
-              On exit, when info = 0, each C_i is overwritten by the solution vectors stored as columns.
+    B         array of pointer to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
+              On entry, the matrices B_i are m-by-nrhs if non-transposed, or n-by-nrhs if transposed.
+              On exit, when info = 0, each B_i is overwritten by the solution vectors stored as columns.
     @param[in]
-    ldc       rocblas_int. ldc >= max(m,n).\n
-              Specifies the leading dimension of matrices C_i.
+    ldb       rocblas_int. ldb >= max(m,n).\n
+              Specifies the leading dimension of matrices B_i.
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
               If info_i = 0, successful exit for solution of A_i.
@@ -7617,8 +7617,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgels_batched(rocblas_handle handle,
                                                         const rocblas_int nrhs,
                                                         float* const A[],
                                                         const rocblas_int lda,
-                                                        float* const C[],
-                                                        const rocblas_int ldc,
+                                                        float* const B[],
+                                                        const rocblas_int ldb,
                                                         rocblas_int* info,
                                                         const rocblas_int batch_count);
 
@@ -7629,8 +7629,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgels_batched(rocblas_handle handle,
                                                         const rocblas_int nrhs,
                                                         double* const A[],
                                                         const rocblas_int lda,
-                                                        double* const C[],
-                                                        const rocblas_int ldc,
+                                                        double* const B[],
+                                                        const rocblas_int ldb,
                                                         rocblas_int* info,
                                                         const rocblas_int batch_count);
 
@@ -7641,8 +7641,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgels_batched(rocblas_handle handle,
                                                         const rocblas_int nrhs,
                                                         rocblas_float_complex* const A[],
                                                         const rocblas_int lda,
-                                                        rocblas_float_complex* const C[],
-                                                        const rocblas_int ldc,
+                                                        rocblas_float_complex* const B[],
+                                                        const rocblas_int ldb,
                                                         rocblas_int* info,
                                                         const rocblas_int batch_count);
 
@@ -7653,30 +7653,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_batched(rocblas_handle handle,
                                                         const rocblas_int nrhs,
                                                         rocblas_double_complex* const A[],
                                                         const rocblas_int lda,
-                                                        rocblas_double_complex* const C[],
-                                                        const rocblas_int ldc,
+                                                        rocblas_double_complex* const B[],
+                                                        const rocblas_int ldb,
                                                         rocblas_int* info,
                                                         const rocblas_int batch_count);
 ///@}
 
 /*! @{
     \brief GELS_STRIDED_BATCHED solves batches of overdetermined (or underdetermined) linear
-    systems defined by the array of m-by-n matrices A, and an array of corresponding matrices C,
+    systems defined by the array of m-by-n matrices A, and an array of corresponding matrices B,
     using the QR factorizations computed by GEQRF (or the LQ factorizations computed by GELQF).
 
     \details
     The problem solved by this function is either of the form
 
-        A_i  * X_i = C_i (no transpose), or
-        A_i' * X_i = C_i (transpose/conjugate transpose)
+        A_i  * X_i = B_i (no transpose), or
+        A_i' * X_i = B_i (transpose/conjugate transpose)
 
     depending on the value of trans.
 
     If m >= n (or n < m in the case of transpose/conjugate transpose), the systems are
     overdetermined and least-squares solutions approximating X_i are found minimizing
 
-        || C_i - A_i  * X_i || (no transpose), or
-        || C_i - A_i' * X_i || (transpose/conjugate transpose)
+        || B_i - A_i  * X_i || (no transpose), or
+        || B_i - A_i' * X_i || (transpose/conjugate transpose)
 
     If n < m (or m >= n in the case of transpose/conjugate transpose), the system is
     underdetermined and a unique solution for X_i is chosen minimizing || X_i ||
@@ -7699,7 +7699,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_batched(rocblas_handle handle,
               The number of columns of all matrices A_i in the batch.
     @param[in]
     nrhs      rocblas_int. nrhs >= 0.\n
-              The number of columns of all matrices C_i and X_i in the batch;
+              The number of columns of all matrices B_i and X_i in the batch;
               i.e., the columns on the right hand side.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
@@ -7713,16 +7713,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_batched(rocblas_handle handle,
               Stride from the start of one matrix A_i and the next one A_(i+1).
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[inout]
-    C         pointer to type. Array on the GPU (the size depends on the value of strideC).\n
-              On entry, the matrices C_i are m-by-nrhs if non-transposed, or n-by-nrhs if transposed.
-              On exit, when info = 0, each C_i is overwritten by the solution vectors stored as columns.
+    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+              On entry, the matrices B_i are m-by-nrhs if non-transposed, or n-by-nrhs if transposed.
+              On exit, when info = 0, each B_i is overwritten by the solution vectors stored as columns.
     @param[in]
-    ldc       rocblas_int. ldc >= max(m,n).\n
-              Specifies the leading dimension of matrices C_i.
+    ldb       rocblas_int. ldb >= max(m,n).\n
+              Specifies the leading dimension of matrices B_i.
     @param[in]
-    strideC   rocblas_stride.\n
-              Stride from the start of one matrix C_i and the next one C_(i+1).
-              There is no restriction for the value of strideC. Normal use case is strideC >= ldc*nrhs
+    strideB   rocblas_stride.\n
+              Stride from the start of one matrix B_i and the next one B_(i+1).
+              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs
     @param[out]
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
               If info_i = 0, successful exit for solution of A_i.
@@ -7742,9 +7742,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgels_strided_batched(rocblas_handle h
                                                                 float* A,
                                                                 const rocblas_int lda,
                                                                 const rocblas_stride strideA,
-                                                                float* C,
-                                                                const rocblas_int ldc,
-                                                                const rocblas_stride strideC,
+                                                                float* B,
+                                                                const rocblas_int ldb,
+                                                                const rocblas_stride strideB,
                                                                 rocblas_int* info,
                                                                 const rocblas_int batch_count);
 
@@ -7756,9 +7756,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgels_strided_batched(rocblas_handle h
                                                                 double* A,
                                                                 const rocblas_int lda,
                                                                 const rocblas_stride strideA,
-                                                                double* C,
-                                                                const rocblas_int ldc,
-                                                                const rocblas_stride strideC,
+                                                                double* B,
+                                                                const rocblas_int ldb,
+                                                                const rocblas_stride strideB,
                                                                 rocblas_int* info,
                                                                 const rocblas_int batch_count);
 
@@ -7770,9 +7770,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgels_strided_batched(rocblas_handle h
                                                                 rocblas_float_complex* A,
                                                                 const rocblas_int lda,
                                                                 const rocblas_stride strideA,
-                                                                rocblas_float_complex* C,
-                                                                const rocblas_int ldc,
-                                                                const rocblas_stride strideC,
+                                                                rocblas_float_complex* B,
+                                                                const rocblas_int ldb,
+                                                                const rocblas_stride strideB,
                                                                 rocblas_int* info,
                                                                 const rocblas_int batch_count);
 
@@ -7784,9 +7784,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_strided_batched(rocblas_handle h
                                                                 rocblas_double_complex* A,
                                                                 const rocblas_int lda,
                                                                 const rocblas_stride strideA,
-                                                                rocblas_double_complex* C,
-                                                                const rocblas_int ldc,
-                                                                const rocblas_stride strideC,
+                                                                rocblas_double_complex* B,
+                                                                const rocblas_int ldb,
+                                                                const rocblas_stride strideB,
                                                                 rocblas_int* info,
                                                                 const rocblas_int batch_count);
 ///@}

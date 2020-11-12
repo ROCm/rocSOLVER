@@ -18,71 +18,71 @@ void gels_checkBadArgs(const rocblas_handle handle,
                        U dA,
                        const rocblas_int lda,
                        const rocblas_stride stA,
-                       U dC,
-                       const rocblas_int ldc,
-                       const rocblas_stride stC,
+                       U dB,
+                       const rocblas_int ldb,
+                       const rocblas_stride stB,
                        rocblas_int* info,
                        const rocblas_int bc)
 {
     // handle
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_gels(STRIDED, nullptr, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, info, bc),
+        rocsolver_gels(STRIDED, nullptr, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, info, bc),
         rocblas_status_invalid_handle);
 
     // values
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, rocblas_operation(-1), m, n, nrhs, dA,
-                                         lda, stA, dC, ldc, stC, info, bc),
+                                         lda, stA, dB, ldb, stB, info, bc),
                           rocblas_status_invalid_value)
         << "Must report error when operation is invalid";
 
     // sizes (only check batch_count if applicable)
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA, lda, stA, dC,
-                                             ldc, stC, info, -1),
+        EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA, lda, stA, dB,
+                                             ldb, stB, info, -1),
                               rocblas_status_invalid_size)
             << "Must report error when batch size is negative";
 
     // pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, (U) nullptr, lda, stA,
-                                         dC, ldc, stC, info, bc),
+                                         dB, ldb, stB, info, bc),
                           rocblas_status_invalid_pointer)
         << "Should normally report error when A is null";
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA, lda, stA,
-                                         (U) nullptr, ldc, stC, info, bc),
+                                         (U) nullptr, ldb, stB, info, bc),
                           rocblas_status_invalid_pointer)
-        << "Should normally report error when C is null";
+        << "Should normally report error when B is null";
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, nullptr, bc),
+        rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, nullptr, bc),
         rocblas_status_invalid_pointer)
         << "Should normally report error when info is null";
 
     // quick return with invalid pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, 0, n, nrhs, (U) nullptr, lda, stA,
-                                         dC, ldc, stC, info, bc),
+                                         dB, ldb, stB, info, bc),
                           rocblas_status_not_implemented) // TODO: replace with success
         << "Matrix A may be null when m is 0 (empty matrix)";
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, 0, nrhs, (U) nullptr, lda, stA,
-                                         dC, ldc, stC, info, bc),
+                                         dB, ldb, stB, info, bc),
                           rocblas_status_success)
         << "Matrix A may be null when n is 0 (empty matrix)";
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, 0, dA, lda, stA, (U) nullptr,
-                                         ldc, stC, info, bc),
+                                         ldb, stB, info, bc),
                           rocblas_status_success)
-        << "Matrix C may be null when nhrs is 0 (empty matrix)";
+        << "Matrix B may be null when nhrs is 0 (empty matrix)";
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, 0, 0, nrhs, (U) nullptr, lda, stA,
-                                         (U) nullptr, ldc, stC, info, bc),
+                                         (U) nullptr, ldb, stB, info, bc),
                           rocblas_status_success)
-        << "Matrices A and C may be null when m and n are 0 (empty matrix)";
+        << "Matrices A and B may be null when m and n are 0 (empty matrix)";
     if(BATCHED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA, lda, stA, dC,
-                                             ldc, stC, nullptr, 0),
+        EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA, lda, stA, dB,
+                                             ldb, stB, nullptr, 0),
                               rocblas_status_success)
             << "Info may be null when batch size is 0";
 
     // quick return with zero batch_count if applicable
     if(STRIDED)
         EXPECT_ROCBLAS_STATUS(
-            rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, info, 0),
+            rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, info, 0),
             rocblas_status_success);
 }
 
@@ -95,38 +95,38 @@ void testing_gels_bad_arg()
     rocblas_int n = 1;
     rocblas_int nrhs = 1;
     rocblas_int lda = 1;
-    rocblas_int ldc = 1;
+    rocblas_int ldb = 1;
     rocblas_stride stA = 1;
-    rocblas_stride stC = 1;
+    rocblas_stride stB = 1;
     rocblas_int bc = 1;
     rocblas_operation trans = rocblas_operation_none;
     if(BATCHED)
     {
         // memory allocations
         device_batch_vector<T> dA(1, 1, 1);
-        device_batch_vector<T> dC(1, 1, 1);
+        device_batch_vector<T> dB(1, 1, 1);
         device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, 1);
         CHECK_HIP_ERROR(dA.memcheck());
-        CHECK_HIP_ERROR(dC.memcheck());
+        CHECK_HIP_ERROR(dB.memcheck());
         CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check bad arguments
         gels_checkBadArgs<BATCHED, STRIDED>(handle, trans, m, n, nrhs, dA.data(), lda, stA,
-                                            dC.data(), ldc, stC, dInfo.data(), bc);
+                                            dB.data(), ldb, stB, dInfo.data(), bc);
     }
     else
     {
         // memory allocations
         device_strided_batch_vector<T> dA(1, 1, 1, 1);
-        device_strided_batch_vector<T> dC(1, 1, 1, 1);
+        device_strided_batch_vector<T> dB(1, 1, 1, 1);
         device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, 1);
         CHECK_HIP_ERROR(dA.memcheck());
-        CHECK_HIP_ERROR(dC.memcheck());
+        CHECK_HIP_ERROR(dB.memcheck());
         CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check bad arguments
         gels_checkBadArgs<BATCHED, STRIDED>(handle, trans, m, n, nrhs, dA.data(), lda, stA,
-                                            dC.data(), ldc, stC, dInfo.data(), bc);
+                                            dB.data(), ldb, stB, dInfo.data(), bc);
     }
 }
 
@@ -139,19 +139,19 @@ void gels_initData(const rocblas_handle handle,
                    Td& dA,
                    const rocblas_int lda,
                    const rocblas_stride stA,
-                   Td& dC,
-                   const rocblas_int ldc,
-                   const rocblas_stride stC,
+                   Td& dB,
+                   const rocblas_int ldb,
+                   const rocblas_stride stB,
                    Ud& dInfo,
                    const rocblas_int bc,
                    Th& hA,
-                   Th& hC,
+                   Th& hB,
                    Uh& hInfo)
 {
     if(CPU)
     {
         rocblas_init<T>(hA, true);
-        rocblas_init<T>(hC, true);
+        rocblas_init<T>(hB, true);
 
         // scale A to avoid singularities
         for(rocblas_int b = 0; b < bc; ++b)
@@ -173,7 +173,7 @@ void gels_initData(const rocblas_handle handle,
     {
         // now copy pivoting indices and matrices to the GPU
         CHECK_HIP_ERROR(dA.transfer_from(hA));
-        CHECK_HIP_ERROR(dC.transfer_from(hC));
+        CHECK_HIP_ERROR(dB.transfer_from(hB));
     }
 }
 
@@ -186,14 +186,14 @@ void gels_getError(const rocblas_handle handle,
                    Td& dA,
                    const rocblas_int lda,
                    const rocblas_stride stA,
-                   Td& dC,
-                   const rocblas_int ldc,
-                   const rocblas_stride stC,
+                   Td& dB,
+                   const rocblas_int ldb,
+                   const rocblas_stride stB,
                    Ud& dInfo,
                    const rocblas_int bc,
                    Th& hA,
-                   Th& hC,
-                   Th& hCRes,
+                   Th& hB,
+                   Th& hBRes,
                    Uh& hInfo,
                    double* max_err)
 {
@@ -201,22 +201,22 @@ void gels_getError(const rocblas_handle handle,
     std::vector<T> hW(sizeW);
 
     // input data initialization
-    gels_initData<true, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, dInfo, bc,
-                                 hA, hC, hInfo);
+    gels_initData<true, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo, bc,
+                                 hA, hB, hInfo);
 
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA.data(), lda, stA,
-                                       dC.data(), ldc, stC, dInfo.data(), bc));
-    CHECK_HIP_ERROR(hCRes.transfer_from(dC));
+                                       dB.data(), ldb, stB, dInfo.data(), bc));
+    CHECK_HIP_ERROR(hBRes.transfer_from(dB));
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cblas_gels<T>(trans, m, n, nrhs, hA[b], lda, hC[b], ldc, hW.data(), sizeW);
+        cblas_gels<T>(trans, m, n, nrhs, hA[b], lda, hB[b], ldb, hW.data(), sizeW);
     }
 
-    // error is ||hC - hCRes|| / ||hC||
+    // error is ||hB - hBRes|| / ||hB||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using vector-induced infinity norm
@@ -224,8 +224,8 @@ void gels_getError(const rocblas_handle handle,
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        const rocblas_int rowsC = (trans == rocblas_operation_none) ? m : n;
-        err = norm_error('I', rowsC, nrhs, ldc, hC[b], hCRes[b]);
+        const rocblas_int rowsB = (trans == rocblas_operation_none) ? m : n;
+        err = norm_error('I', rowsB, nrhs, ldb, hB[b], hBRes[b]);
         *max_err = err > *max_err ? err : *max_err;
     }
 }
@@ -239,13 +239,13 @@ void gels_getPerfData(const rocblas_handle handle,
                       Td& dA,
                       const rocblas_int lda,
                       const rocblas_stride stA,
-                      Td& dC,
-                      const rocblas_int ldc,
-                      const rocblas_stride stC,
+                      Td& dB,
+                      const rocblas_int ldb,
+                      const rocblas_stride stB,
                       Ud& dInfo,
                       const rocblas_int bc,
                       Th& hA,
-                      Th& hC,
+                      Th& hB,
                       Uh& hInfo,
                       double* gpu_time_used,
                       double* cpu_time_used,
@@ -257,36 +257,36 @@ void gels_getPerfData(const rocblas_handle handle,
 
     if(!perf)
     {
-        gels_initData<true, false, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, dInfo,
-                                      bc, hA, hC, hInfo);
+        gels_initData<true, false, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo,
+                                      bc, hA, hB, hInfo);
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cblas_gels<T>(trans, m, n, nrhs, hA[b], lda, hC[b], ldc, hW.data(), sizeW);
+            cblas_gels<T>(trans, m, n, nrhs, hA[b], lda, hB[b], ldb, hW.data(), sizeW);
         }
         *cpu_time_used = get_time_us() - *cpu_time_used;
     }
-    gels_initData<true, false, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, dInfo, bc,
-                                  hA, hC, hInfo);
+    gels_initData<true, false, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo, bc,
+                                  hA, hB, hInfo);
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        gels_initData<false, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, dInfo,
-                                      bc, hA, hC, hInfo);
+        gels_initData<false, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo,
+                                      bc, hA, hB, hInfo);
         CHECK_ROCBLAS_ERROR(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA.data(), lda, stA,
-                                           dC.data(), ldc, stC, dInfo.data(), bc));
+                                           dB.data(), ldb, stB, dInfo.data(), bc));
     }
 
     // gpu-lapack performance
     double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        gels_initData<false, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, dInfo,
-                                      bc, hA, hC, hInfo);
+        gels_initData<false, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo,
+                                      bc, hA, hB, hInfo);
 
         start = get_time_us();
-        rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA.data(), lda, stA, dC.data(), ldc, stC,
+        rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA.data(), lda, stA, dB.data(), ldb, stB,
                        dInfo.data(), bc);
         *gpu_time_used += get_time_us() - start;
     }
@@ -307,21 +307,21 @@ void testing_gels(Arguments argus)
     rocblas_int n = argus.N;
     rocblas_int nrhs = argus.K;
     rocblas_int lda = argus.lda;
-    rocblas_int ldc = argus.ldc;
+    rocblas_int ldb = argus.ldb;
     rocblas_stride stA = argus.bsa;
-    rocblas_stride stC = argus.bsc;
+    rocblas_stride stB = argus.bsb;
     rocblas_int bc = argus.batch_count;
     char transC = argus.transA_option;
     rocblas_operation trans = char2rocblas_operation(transC);
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stCRes = (argus.unit_check || argus.norm_check) ? stC : 0;
+    rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
 
     // check non-supported values
     if(m < n || trans == rocblas_operation_transpose || trans == rocblas_operation_conjugate_transpose)
     {
         EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, (T* const*)nullptr,
-                                             lda, stA, (T* const*)nullptr, ldc, stC,
+                                             lda, stA, (T* const*)nullptr, ldb, stB,
                                              (rocblas_int*)nullptr, bc),
                               rocblas_status_not_implemented);
 
@@ -333,23 +333,23 @@ void testing_gels(Arguments argus)
 
     // determine sizes
     size_t size_A = size_t(lda) * n;
-    size_t size_C = size_t(ldc) * nrhs;
+    size_t size_B = size_t(ldb) * nrhs;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_CRes = (argus.unit_check || argus.norm_check) ? size_C : 0;
+    size_t size_BRes = (argus.unit_check || argus.norm_check) ? size_B : 0;
 
     // check invalid sizes
-    bool invalid_size = (m < 0 || n < 0 || nrhs < 0 || lda < m || ldc < m || ldc < n || bc < 0);
+    bool invalid_size = (m < 0 || n < 0 || nrhs < 0 || lda < m || ldb < m || ldb < n || bc < 0);
     if(invalid_size)
     {
         if(BATCHED)
             EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs,
                                                  (T* const*)nullptr, lda, stA, (T* const*)nullptr,
-                                                 ldc, stC, (rocblas_int*)nullptr, bc),
+                                                 ldb, stB, (rocblas_int*)nullptr, bc),
                                   rocblas_status_invalid_size);
         else
             EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, (T*)nullptr,
-                                                 lda, stA, (T*)nullptr, ldc, stC,
+                                                 lda, stA, (T*)nullptr, ldb, stB,
                                                  (rocblas_int*)nullptr, bc),
                                   rocblas_status_invalid_size);
 
@@ -363,16 +363,16 @@ void testing_gels(Arguments argus)
     {
         // memory allocations
         host_batch_vector<T> hA(size_A, 1, bc);
-        host_batch_vector<T> hC(size_C, 1, bc);
-        host_batch_vector<T> hCRes(size_CRes, 1, bc);
+        host_batch_vector<T> hB(size_B, 1, bc);
+        host_batch_vector<T> hBRes(size_BRes, 1, bc);
         host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
         device_batch_vector<T> dA(size_A, 1, bc);
-        device_batch_vector<T> dC(size_C, 1, bc);
+        device_batch_vector<T> dB(size_B, 1, bc);
         device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
         if(size_A)
             CHECK_HIP_ERROR(dA.memcheck());
-        if(size_C)
-            CHECK_HIP_ERROR(dC.memcheck());
+        if(size_B)
+            CHECK_HIP_ERROR(dB.memcheck());
         if(bc)
             CHECK_HIP_ERROR(dInfo.memcheck());
 
@@ -380,7 +380,7 @@ void testing_gels(Arguments argus)
         if(m == 0 || n == 0 || nrhs == 0 || bc == 0)
         {
             EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA.data(), lda,
-                                                 stA, dC.data(), ldc, stC, dInfo.data(), bc),
+                                                 stA, dB.data(), ldb, stB, dInfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 ROCSOLVER_BENCH_INFORM(0);
@@ -390,29 +390,29 @@ void testing_gels(Arguments argus)
 
         // check computations
         if(argus.unit_check || argus.norm_check)
-            gels_getError<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, dInfo,
-                                      bc, hA, hC, hCRes, hInfo, &max_error);
+            gels_getError<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo,
+                                      bc, hA, hB, hBRes, hInfo, &max_error);
 
         // collect performance data
         if(argus.timing)
-            gels_getPerfData<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC,
-                                         dInfo, bc, hA, hC, hInfo, &gpu_time_used, &cpu_time_used,
+            gels_getPerfData<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB,
+                                         dInfo, bc, hA, hB, hInfo, &gpu_time_used, &cpu_time_used,
                                          hot_calls, argus.perf);
     }
     else
     {
         // memory allocations
         host_strided_batch_vector<T> hA(size_A, 1, stA, bc);
-        host_strided_batch_vector<T> hC(size_C, 1, stC, bc);
-        host_strided_batch_vector<T> hCRes(size_CRes, 1, stCRes, bc);
+        host_strided_batch_vector<T> hB(size_B, 1, stB, bc);
+        host_strided_batch_vector<T> hBRes(size_BRes, 1, stBRes, bc);
         host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
         device_strided_batch_vector<T> dA(size_A, 1, stA, bc);
-        device_strided_batch_vector<T> dC(size_C, 1, stC, bc);
+        device_strided_batch_vector<T> dB(size_B, 1, stB, bc);
         device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
         if(size_A)
             CHECK_HIP_ERROR(dA.memcheck());
-        if(size_C)
-            CHECK_HIP_ERROR(dC.memcheck());
+        if(size_B)
+            CHECK_HIP_ERROR(dB.memcheck());
         if(bc)
             CHECK_HIP_ERROR(dInfo.memcheck());
 
@@ -420,7 +420,7 @@ void testing_gels(Arguments argus)
         if(m == 0 || n == 0 || nrhs == 0 || bc == 0)
         {
             EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA.data(), lda,
-                                                 stA, dC.data(), ldc, stC, dInfo.data(), bc),
+                                                 stA, dB.data(), ldb, stB, dInfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 ROCSOLVER_BENCH_INFORM(0);
@@ -430,13 +430,13 @@ void testing_gels(Arguments argus)
 
         // check computations
         if(argus.unit_check || argus.norm_check)
-            gels_getError<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC, dInfo,
-                                      bc, hA, hC, hCRes, hInfo, &max_error);
+            gels_getError<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo,
+                                      bc, hA, hB, hBRes, hInfo, &max_error);
 
         // collect performance data
         if(argus.timing)
-            gels_getPerfData<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dC, ldc, stC,
-                                         dInfo, bc, hA, hC, hInfo, &gpu_time_used, &cpu_time_used,
+            gels_getPerfData<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB,
+                                         dInfo, bc, hA, hB, hInfo, &gpu_time_used, &cpu_time_used,
                                          hot_calls, argus.perf);
     }
     // validate results for rocsolver-test
@@ -454,19 +454,19 @@ void testing_gels(Arguments argus)
             rocblas_cout << "============================================\n";
             if(BATCHED)
             {
-                rocsolver_bench_output("trans", "m", "n", "nrhs", "lda", "ldc", "batch_c");
-                rocsolver_bench_output(transC, m, n, nrhs, lda, ldc, bc);
+                rocsolver_bench_output("trans", "m", "n", "nrhs", "lda", "ldb", "batch_c");
+                rocsolver_bench_output(transC, m, n, nrhs, lda, ldb, bc);
             }
             else if(STRIDED)
             {
-                rocsolver_bench_output("trans", "m", "n", "nrhs", "lda", "ldc", "strideA",
-                                       "strideC", "batch_c");
-                rocsolver_bench_output(transC, m, n, nrhs, lda, ldc, stA, stC, bc);
+                rocsolver_bench_output("trans", "m", "n", "nrhs", "lda", "ldb", "strideA",
+                                       "strideB", "batch_c");
+                rocsolver_bench_output(transC, m, n, nrhs, lda, ldb, stA, stB, bc);
             }
             else
             {
-                rocsolver_bench_output("trans", "m", "n", "nrhs", "lda", "ldc");
-                rocsolver_bench_output(transC, m, n, nrhs, lda, ldc);
+                rocsolver_bench_output("trans", "m", "n", "nrhs", "lda", "ldb");
+                rocsolver_bench_output(transC, m, n, nrhs, lda, ldb);
             }
             rocblas_cout << "\n============================================\n";
             rocblas_cout << "Results:\n";

@@ -72,8 +72,8 @@ rocblas_status rocsolver_gels_argCheck(rocblas_operation trans,
                                        const rocblas_int nrhs,
                                        T A,
                                        const rocblas_int lda,
-                                       T C,
-                                       const rocblas_int ldc,
+                                       T B,
+                                       const rocblas_int ldb,
                                        rocblas_int* info,
                                        const rocblas_int batch_count = 1)
 {
@@ -87,11 +87,11 @@ rocblas_status rocsolver_gels_argCheck(rocblas_operation trans,
         return rocblas_status_invalid_value;
 
     // 3. invalid size
-    if(m < 0 || n < 0 || nrhs < 0 || lda < m || ldc < m || ldc < n || batch_count < 0)
+    if(m < 0 || n < 0 || nrhs < 0 || lda < m || ldb < m || ldb < n || batch_count < 0)
         return rocblas_status_invalid_size;
 
     // 4. invalid pointers
-    if((m * n && !A) || ((m * nrhs || n * nrhs) && !C) || (batch_count && !info))
+    if((m * n && !A) || ((m * nrhs || n * nrhs) && !B) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -107,10 +107,10 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                        const rocblas_int shiftA,
                                        const rocblas_int lda,
                                        const rocblas_stride strideA,
-                                       U C,
-                                       const rocblas_int shiftC,
-                                       const rocblas_int ldc,
-                                       const rocblas_stride strideC,
+                                       U B,
+                                       const rocblas_int shiftB,
+                                       const rocblas_int ldb,
+                                       const rocblas_stride strideB,
                                        rocblas_int* info,
                                        const rocblas_int batch_count,
                                        T* scalars,
@@ -135,8 +135,8 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
     // info=0 (starting with a nonsingular matrix)
     hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
-    // quick return if A or C are empty
-    // TODO: clear C as needed when underdetermined support is added
+    // quick return if A or B are empty
+    // TODO: clear B as needed when underdetermined support is added
     if(m == 0 || n == 0 || nrhs == 0)
         return rocblas_status_success;
 
@@ -156,7 +156,7 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                                diag_trfac_invA, trfact_workTrmm_invA_arr);
     rocsolver_ormqr_unmqr_template<BATCHED, STRIDED>(
         handle, rocblas_side_left, rocblas_operation_conjugate_transpose, m, nrhs, n, A, shiftA,
-        lda, strideA, ipiv, strideP, C, shiftC, ldc, strideC, batch_count, scalars, (T*)work_x_temp,
+        lda, strideA, ipiv, strideP, B, shiftB, ldb, strideB, batch_count, scalars, (T*)work_x_temp,
         (T*)workArr_temp_arr, (T*)diag_trfac_invA, (T**)trfact_workTrmm_invA_arr);
 
     // do the equivalent of strtrs
@@ -164,10 +164,10 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
     hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1), dim3(1, check_threads, 1), 0,
                        stream, n, A, shiftA, lda, strideA, info);
     const T one = 1; // constant 1 in host memory
-    // solve U*X = B, overwriting B with X
+    // solve RX = Q'B, overwriting B with X
     rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_upper,
                                  rocblas_operation_none, rocblas_diagonal_non_unit, n, nrhs, &one,
-                                 A, shiftA, lda, strideA, C, shiftC, ldc, strideC, batch_count,
+                                 A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
                                  optim_mem, work_x_temp, workArr_temp_arr, diag_trfac_invA,
                                  trfact_workTrmm_invA_arr);
 
