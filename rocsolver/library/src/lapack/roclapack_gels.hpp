@@ -142,11 +142,11 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
     // quick return if A is empty
     if(m == 0 || n == 0)
     {
-        rocblas_int rowsC = std::max(m, n);
-        rocblas_int blocksx = (rowsC - 1) / 32 + 1;
+        rocblas_int rowsB = std::max(m, n);
+        rocblas_int blocksx = (rowsB - 1) / 32 + 1;
         rocblas_int blocksy = (nrhs - 1) / 32 + 1;
         hipLaunchKernelGGL(set_zero<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0,
-                           stream, rowsC, nrhs, B, shiftB, ldb, strideB);
+                           stream, rowsB, nrhs, B, shiftB, ldb, strideB);
         return rocblas_status_success;
     }
 
