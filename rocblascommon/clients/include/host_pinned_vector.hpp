@@ -50,8 +50,13 @@ struct host_pinned_vector : std::vector<T, pinned_memory_allocator<T>>
     //!
     hipError_t transfer_from(const device_vector<T>& that)
     {
-        return hipMemcpy(this->data(), (const T*)that, sizeof(T) * this->size(),
-                         hipMemcpyDeviceToHost);
+        T* dst = this->data();
+        const T* src = that.data();
+        const size_t bytes = sizeof(T) * this->size();
+        assert(dst || bytes == 0);
+        assert(src || bytes == 0);
+        assert(this->size() == that.size());
+        return hipMemcpy(dst, src, bytes, hipMemcpyDeviceToHost);
     }
 
     //!

@@ -148,8 +148,13 @@ public:
     //!
     hipError_t transfer_from(const host_vector<T>& that)
     {
-        return hipMemcpy(this->m_data, (const T*)that, this->nmemb() * sizeof(T),
-                         hipMemcpyHostToDevice);
+        T* dst = this->m_data;
+        const T* src = that.data();
+        const size_t bytes = this->nmemb() * sizeof(T);
+        assert(dst || bytes == 0);
+        assert(src || bytes == 0);
+        assert(this->nmemb() == that.nmemb());
+        return hipMemcpy(dst, src, bytes, hipMemcpyHostToDevice);
     }
 
     hipError_t memcheck() const

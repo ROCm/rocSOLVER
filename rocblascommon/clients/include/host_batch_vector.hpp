@@ -106,6 +106,14 @@ public:
     }
 
     //!
+    //! @brief Returns the number of members in each vector.
+    //!
+    size_t nmemb() const
+    {
+        return this->m_n * std::abs(this->m_inc);
+    }
+
+    //!
     //! @brief Random access to the vectors.
     //! @param batch_index the batch index.
     //! @return The mutable pointer.
@@ -158,7 +166,12 @@ public:
             size_t num_bytes = this->n() * std::abs(this->inc()) * sizeof(T);
             for(rocblas_int batch_index = 0; batch_index < this->m_batch_count; ++batch_index)
             {
-                memcpy((*this)[batch_index], that[batch_index], num_bytes);
+                T* dst = (*this)[batch_index];
+                const T* src = that[batch_index];
+                assert(dst);
+                assert(src);
+                assert(num_bytes == that.n() * std::abs(that.inc()) * sizeof(T));
+                memcpy(dst, src, num_bytes);
             }
             return true;
         }
@@ -179,9 +192,13 @@ public:
         size_t num_bytes = size_t(this->m_n) * std::abs(this->m_inc) * sizeof(T);
         for(rocblas_int batch_index = 0; batch_index < this->m_batch_count; ++batch_index)
         {
-            if(hipSuccess
-               != (hip_err = hipMemcpy((*this)[batch_index], that[batch_index], num_bytes,
-                                       hipMemcpyDeviceToHost)))
+            T* dst = (*this)[batch_index];
+            const T* src = that[batch_index];
+            assert(dst || num_bytes == 0);
+            assert(src || num_bytes == 0);
+            assert(num_bytes == size_t(that.n()) * std::abs(that.inc()) * sizeof(T));
+            hip_err = hipMemcpy(dst, src, num_bytes, hipMemcpyDeviceToHost);
+            if(hipSuccess != hip_err)
             {
                 return hip_err;
             }

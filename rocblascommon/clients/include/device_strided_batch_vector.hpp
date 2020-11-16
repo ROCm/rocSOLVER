@@ -209,7 +209,13 @@ public:
     //!
     hipError_t transfer_from(const host_strided_batch_vector<T>& that)
     {
-        return hipMemcpy(this->data(), that.data(), sizeof(T) * this->nmemb(), hipMemcpyHostToDevice);
+        T* dst = this->data();
+        const T* src = that.data();
+        const size_t bytes = sizeof(T) * this->nmemb();
+        assert(dst || bytes == 0);
+        assert(src || bytes == 0);
+        assert(this->nmemb() == that.nmemb());
+        return hipMemcpy(dst, src, bytes, hipMemcpyHostToDevice);
     }
 
     //!

@@ -207,9 +207,14 @@ public:
         //
         for(rocblas_int batch_index = 0; batch_index < this->m_batch_count; ++batch_index)
         {
-            if(hipSuccess
-               != (hip_err = hipMemcpy((*this)[batch_index], that[batch_index],
-                                       sizeof(T) * this->nmemb(), hipMemcpyHostToDevice)))
+            T* dst = (*this)[batch_index];
+            const T* src = that[batch_index];
+            const size_t bytes = sizeof(T) * this->nmemb();
+            assert(dst || bytes == 0);
+            assert(src || bytes == 0);
+            assert(this->nmemb() == that.nmemb());
+            hip_err = hipMemcpy(dst, src, bytes, hipMemcpyHostToDevice);
+            if(hipSuccess != hip_err)
             {
                 return hip_err;
             }

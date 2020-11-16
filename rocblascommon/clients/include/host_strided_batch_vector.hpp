@@ -151,6 +151,14 @@ public:
     }
 
     //!
+    //! @brief The number of members in each vector.
+    //!
+    size_t nmemb() const
+    {
+        return this->m_nmemb;
+    }
+
+    //!
     //! @brief Returns pointer.
     //! @param batch_index The batch index.
     //! @return A mutable pointer to the batch_index'th vector.
@@ -214,6 +222,9 @@ public:
         if(that.n() == this->m_n && that.inc() == this->m_inc && that.stride() == this->m_stride
            && that.batch_count() == this->m_batch_count)
         {
+            assert(this->data());
+            assert(that.data());
+            assert(this->m_nmemb == that.nmemb());
             memcpy(this->data(), that.data(), sizeof(T) * this->m_nmemb);
             return true;
         }
@@ -231,7 +242,13 @@ public:
     template <size_t PAD, typename U>
     hipError_t transfer_from(const device_strided_batch_vector<T, PAD, U>& that)
     {
-        return hipMemcpy(this->m_data, that.data(), sizeof(T) * this->m_nmemb, hipMemcpyDeviceToHost);
+        T* dst = this->m_data;
+        const T* src = that.data();
+        const size_t bytes = sizeof(T) * this->m_nmemb;
+        assert(dst || bytes == 0);
+        assert(src || bytes == 0);
+        assert(this->m_nmemb == that.nmemb());
+        return hipMemcpy(dst, src, bytes, hipMemcpyDeviceToHost);
     }
 
     //!
