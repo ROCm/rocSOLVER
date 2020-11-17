@@ -121,6 +121,7 @@ public:
     T* operator[](rocblas_int batch_index)
     {
         assert(this->m_data || batch_index == 0);
+        assert(batch_index < this->m_batch_count);
         return this->m_data[batch_index];
     }
 
@@ -132,6 +133,7 @@ public:
     const T* operator[](rocblas_int batch_index) const
     {
         assert(this->m_data || batch_index == 0);
+        assert(batch_index < this->m_batch_count);
         return this->m_data[batch_index];
     }
 
