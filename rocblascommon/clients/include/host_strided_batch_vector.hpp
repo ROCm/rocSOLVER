@@ -169,6 +169,7 @@ public:
             ? this->m_stride * batch_index
             : (batch_index + 1 - this->m_batch_count) * this->m_stride;
         assert(this->m_data || offset == 0);
+        assert(offset >= 0);
         assert(offset < this->m_nmemb);
         return this->m_data + offset;
     }
@@ -184,6 +185,7 @@ public:
             ? this->m_stride * batch_index
             : (batch_index + 1 - this->m_batch_count) * this->m_stride;
         assert(this->m_data || offset == 0);
+        assert(offset >= 0);
         assert(offset < this->m_nmemb);
         return this->m_data + offset;
     }
