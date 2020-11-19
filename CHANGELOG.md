@@ -14,7 +14,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Removed
 
 ### Fixed
-- Fixed default launch bounds causing run-time failures in Debug mode
+- Fixed runtime errors in debug mode caused by incorrect kernel launch bounds
 
 
 
