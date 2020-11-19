@@ -2,6 +2,21 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
+## [(Unreleased) rocSOLVER for ROCm 4.1.0]
+### Added
+
+### Optimizations
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+
+
 ## [(Unreleased) rocSOLVER 3.11.0 for ROCm 4.0.0]
 ### Added
 - Eigensolver routines for symmetric/hermitian matrices:
