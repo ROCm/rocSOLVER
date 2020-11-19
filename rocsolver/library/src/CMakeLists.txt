@@ -143,6 +143,9 @@ add_library( roc::rocsolver ALIAS rocsolver )
 target_link_libraries( rocsolver PRIVATE hip::device --rtlib=compiler-rt --unwindlib=libgcc )
 set_target_properties( rocsolver PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
 
+# In ROCm 4.0 and earlier, the default maximum threads per block is 256
+target_compile_options( rocsolver PRIVATE --gpu-max-threads-per-block=1024 )
+
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   # Remove following when hcc is fixed; hcc emits following spurious warning ROCm v1.6.1
   # "clang-5.0: warning: argument unused during compilation: '-isystem /opt/rocm/include'"

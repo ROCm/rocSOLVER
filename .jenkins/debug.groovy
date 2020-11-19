@@ -32,6 +32,14 @@ def runCI =
         commonGroovy.runCompileCommand(platform, project, jobName)
     }
 
+    def testCommand =
+    {
+        platform, project->
+
+        def gfilter = '*checkin_lapack*'
+        commonGroovy.runTestCommand(platform, project, gfilter)
+    }
+
     def packageCommand =
     {
         platform, project->
@@ -39,7 +47,7 @@ def runCI =
         commonGroovy.runPackageCommand(platform, project)
     }
 
-    buildProject(prj, formatCheck, nodes.dockerArray, compileCommand, null, packageCommand)
+    buildProject(prj, formatCheck, nodes.dockerArray, compileCommand, testCommand, packageCommand)
 
 }
 
