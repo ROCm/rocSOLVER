@@ -311,6 +311,11 @@ supported_distro
 # #################################################
 # global variables
 # #################################################
+rocm_path=/opt/rocm
+if ! [ -z ${ROCM_PATH+x} ]; then
+  rocm_path=${ROCM_PATH}
+fi
+
 install_package=false
 build_package=false
 install_dependencies=false
@@ -318,8 +323,8 @@ static_lib=false
 build_clients=false
 build_hcc=false
 lib_dir=rocsolver-install
-install_dir=/opt/rocm
-rocblas_dir=/opt/rocm/rocblas
+install_dir=${rocm_path}
+rocblas_dir=${rocm_path}/rocblas
 build_dir=./build
 build_type=Release
 build_relocatable=false
@@ -327,10 +332,6 @@ build_docs=false
 optimal=true
 architecture=
 
-rocm_path=/opt/rocm
-if ! [ -z ${ROCM_PATH+x} ]; then
-  rocm_path=${ROCM_PATH}
-fi
 
 # #################################################
 # Parameter parsing
