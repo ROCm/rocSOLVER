@@ -19,7 +19,7 @@ double zlange_(char* norm_type, int* m, int* n, rocblas_double_complex* A, int* 
 
 void daxpy_(int* n, double* alpha, double* x, int* incx, double* y, int* incy);
 void zaxpy_(int* n,
-            double* alpha,
+            rocblas_double_complex* alpha,
             rocblas_double_complex* x,
             int* incx,
             rocblas_double_complex* y,
@@ -52,7 +52,7 @@ inline void xaxpy(int* n, double* alpha, double* x, int* incx, double* y, int* i
 }
 
 inline void xaxpy(int* n,
-                  double* alpha,
+                  rocblas_double_complex* alpha,
                   rocblas_double_complex* x,
                   int* incx,
                   rocblas_double_complex* y,
@@ -111,7 +111,7 @@ double norm_error(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda,
 
     double work[M];
     rocblas_int incx = 1;
-    double alpha = -1.0;
+    rocblas_double_complex alpha = -1.0;
     rocblas_int size = lda * N;
 
     double gold_norm = xlange(&norm_type, &M, &N, gold_double.data(), &lda, work);
