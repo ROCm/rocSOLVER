@@ -21,33 +21,23 @@
  * ===========================================================================
  */
 
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T>
 constexpr double get_epsilon()
 {
-    return std::numeric_limits<T>::epsilon();
+    using S = decltype(std::real(T{}));
+    return std::numeric_limits<S>::epsilon();
 }
 
-template <typename T, std::enable_if_t<+is_complex<T>, int> = 0>
-constexpr auto get_epsilon()
-{
-    return get_epsilon<decltype(std::real(T{}))>();
-}
-
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T>
 constexpr double get_safemin()
 {
-    auto eps = get_epsilon<T>();
-    auto s1 = std::numeric_limits<T>::min();
-    auto s2 = 1 / std::numeric_limits<T>::max();
+    using S = decltype(std::real(T{}));
+    auto eps = get_epsilon<S>();
+    auto s1 = std::numeric_limits<S>::min();
+    auto s2 = 1 / std::numeric_limits<S>::max();
     if(s2 > s1)
         return s2 * (1 + eps);
     return s1;
-}
-
-template <typename T, std::enable_if_t<+is_complex<T>, int> = 0>
-constexpr auto get_safemin()
-{
-    return get_safemin<decltype(std::real(T{}))>();
 }
 
 inline size_t idx2D(const size_t i, const size_t j, const size_t lda)
@@ -71,29 +61,25 @@ inline double machine_precision()
 template <typename T>
 T const* cast2constType(T* array)
 {
-    T const* R = array;
-    return R;
+    return array;
 }
 
 template <typename T>
 T const* const* cast2constType(T* const* array)
 {
-    T const* const* R = array;
-    return R;
+    return array;
 }
 
 template <typename T>
 T* cast2constPointer(T* array)
 {
-    T* R = array;
-    return R;
+    return array;
 }
 
 template <typename T>
 T* const* cast2constPointer(T** array)
 {
-    T* const* R = array;
-    return R;
+    return array;
 }
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
@@ -185,4 +171,4 @@ hipError_t init_scalars(rocblas_handle handle, T* scalars, size_t size_scalars)
 // which should explain why this invariant is believed to be guaranteed.
 #define ROCSOLVER_ASSUME_X(invariant, message) ROCSOLVER_ASSUME(invariant)
 
-#endif /* HELPERS_H */
+#endif /* COMMON_HOST_HELPERS_H */
