@@ -15,6 +15,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ### Fixed
 - Fixed runtime errors in debug mode caused by incorrect kernel launch bounds
+- Fixed unstable norm computation in complex unit tests
 
 
 
