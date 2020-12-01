@@ -2,8 +2,8 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef HELPERS_H
-#define HELPERS_H
+#ifndef COMMON_HOST_HELPERS_H
+#define COMMON_HOST_HELPERS_H
 
 #include <cassert>
 #include <cstdlib>

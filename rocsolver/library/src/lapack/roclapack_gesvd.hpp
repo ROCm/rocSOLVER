@@ -12,7 +12,6 @@
 
 #include "../auxiliary/rocauxiliary_bdsqr.hpp"
 #include "../auxiliary/rocauxiliary_orgbr_ungbr.hpp"
-#include "common_device.hpp"
 #include "rocblas.hpp"
 #include "roclapack_gebrd.hpp"
 #include "rocsolver.h"

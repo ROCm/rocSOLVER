@@ -13,7 +13,6 @@
 #include "../auxiliary/rocauxiliary_lacgv.hpp"
 #include "../auxiliary/rocauxiliary_larf.hpp"
 #include "../auxiliary/rocauxiliary_larfg.hpp"
-#include "common_device.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
 

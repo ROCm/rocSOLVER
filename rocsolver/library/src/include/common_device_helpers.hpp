@@ -2,12 +2,20 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef COMMON_DEVICE_H
-#define COMMON_DEVICE_H
+#ifndef COMMON_DEVICE_HELPERS_H
+#define COMMON_DEVICE_HELPERS_H
 
 #include "ideal_sizes.hpp"
 #include "libcommon.hpp"
 #include <hip/hip_runtime.h>
+
+/*
+ * ===========================================================================
+ *    common location for device functions and kernels that are used across
+ *    several rocSOLVER routines, excepting those device functions and kernels
+ *    that reproduce LAPACK functionality (see lapack_device_functions).
+ * ===========================================================================
+ */
 
 // **********************************************************
 // device functions that are used by many kernels

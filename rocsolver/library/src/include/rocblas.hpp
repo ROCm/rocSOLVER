@@ -8,8 +8,8 @@
 template <typename T>
 struct rocblas_index_value_t;
 
-#include "common_device.hpp"
-#include "helpers.hpp"
+#include "common_device_helpers.hpp"
+#include "common_host_helpers.hpp"
 #include "internal/rocblas-exported-proto.hpp"
 #include "internal/rocblas_device_malloc.hpp"
 #include <rocblas.h>

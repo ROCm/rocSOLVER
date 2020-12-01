@@ -1,12 +1,21 @@
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
-#pragma once
-#ifndef _ROCBLAS_DEVICE_FUNCTIONS_HPP_
-#define _ROCBLAS_DEVICE_FUNCTIONS_HPP_
 
-#include "common_device.hpp"
+#pragma once
+#ifndef _LAPACK_DEVICE_FUNCTIONS_HPP_
+#define _LAPACK_DEVICE_FUNCTIONS_HPP_
+
+#include "common_device_helpers.hpp"
 #include "rocsolver.h"
+
+/*
+ * ===========================================================================
+ *    common location for device functions and kernels that reproduce LAPACK
+ *    and BLAS functionality. Includes some reproduction of rocBLAS
+ *    functionality since rocBLAS cannot be called from within a kernel.
+ * ===========================================================================
+ */
 
 template <typename T>
 __device__ void trtri_kernel_upper(const rocblas_diagonal diag,
@@ -643,4 +652,4 @@ __device__ void lasrt_increasing(const rocblas_int n, T* D, rocblas_int* stack)
     }
 }
 
-#endif // _ROCBLAS_DEVICE_FUNCTIONS_HPP_
+#endif // _LAPACK_DEVICE_FUNCTIONS_HPP_
