@@ -53,8 +53,7 @@ rocblas_status rocsolver_org2r_ung2r_impl(rocblas_handle handle,
     scalars = mem[0];
     Abyx = mem[1];
     workArr = mem[2];
-    T sca[] = {-1, 0, 1};
-    RETURN_IF_HIP_ERROR(hipMemcpy((T*)scalars, sca, size_scalars, hipMemcpyHostToDevice));
+    RETURN_IF_HIP_ERROR(init_scalars(handle, (T*)scalars, size_scalars));
 
     // execution
     return rocsolver_org2r_ung2r_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP,

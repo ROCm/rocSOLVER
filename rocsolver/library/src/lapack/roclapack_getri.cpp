@@ -67,8 +67,7 @@ rocblas_status rocsolver_getri_impl(rocblas_handle handle,
     work4 = mem[4];
     tmpcopy = mem[5];
     workArr = mem[6];
-    T sca[] = {-1, 0, 1};
-    RETURN_IF_HIP_ERROR(hipMemcpy((T*)scalars, sca, size_scalars, hipMemcpyHostToDevice));
+    RETURN_IF_HIP_ERROR(init_scalars(handle, (T*)scalars, size_scalars));
 
     // in-place execution
     return rocsolver_getri_template<false, false, T>(

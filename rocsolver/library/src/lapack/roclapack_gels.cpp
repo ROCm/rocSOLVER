@@ -62,8 +62,7 @@ rocblas_status rocsolver_gels_impl(rocblas_handle handle,
     diag_trfac_invA = mem[3];
     trfact_workTrmm_invA = mem[4];
     ipiv = mem[5];
-    T sca[] = {-1, 0, 1};
-    RETURN_IF_HIP_ERROR(hipMemcpy(scalars, sca, size_scalars, hipMemcpyHostToDevice));
+    RETURN_IF_HIP_ERROR(init_scalars(handle, (T*)scalars, size_scalars));
 
     return rocsolver_gels_template<false, false, T>(
         handle, trans, m, n, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, info,

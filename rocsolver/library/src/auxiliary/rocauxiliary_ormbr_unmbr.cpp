@@ -65,8 +65,7 @@ rocblas_status rocsolver_ormbr_unmbr_impl(rocblas_handle handle,
     diagORtmptr = mem[2];
     trfact = mem[3];
     workArr = mem[4];
-    T sca[] = {-1, 0, 1};
-    RETURN_IF_HIP_ERROR(hipMemcpy((T*)scalars, sca, size_scalars, hipMemcpyHostToDevice));
+    RETURN_IF_HIP_ERROR(init_scalars(handle, (T*)scalars, size_scalars));
 
     // execution
     return rocsolver_ormbr_unmbr_template<false, false, T>(

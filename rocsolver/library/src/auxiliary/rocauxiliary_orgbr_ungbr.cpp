@@ -59,8 +59,7 @@ rocblas_status rocsolver_orgbr_ungbr_impl(rocblas_handle handle,
     Abyx_tmptr = mem[2];
     trfact = mem[3];
     workArr = mem[4];
-    T sca[] = {-1, 0, 1};
-    RETURN_IF_HIP_ERROR(hipMemcpy((T*)scalars, sca, size_scalars, hipMemcpyHostToDevice));
+    RETURN_IF_HIP_ERROR(init_scalars(handle, (T*)scalars, size_scalars));
 
     // execution
     return rocsolver_orgbr_ungbr_template<false, false, T>(
