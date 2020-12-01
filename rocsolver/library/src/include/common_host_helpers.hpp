@@ -135,7 +135,7 @@ void print_device_matrix(const std::string name,
 template <typename T>
 hipError_t init_scalars(rocblas_handle handle, T* scalars, size_t size_scalars)
 {
-    const T s[] = {-1, 0, 1};
+    static const T s[] = {-1, 0, 1};
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
