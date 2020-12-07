@@ -12,6 +12,14 @@
 #include <iostream>
 #include <limits>
 
+/*
+ * ===========================================================================
+ *    common location for functions that are used across several rocSOLVER
+ *    routines, excepting device functions and kernels (see
+ *    common_device_helpers.hpp and lapack_device_functions.hpp).
+ * ===========================================================================
+ */
+
 template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
 constexpr double get_epsilon()
 {

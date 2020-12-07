@@ -3,8 +3,8 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef _LAPACK_DEVICE_FUNCTIONS_HPP_
-#define _LAPACK_DEVICE_FUNCTIONS_HPP_
+#ifndef LAPACK_DEVICE_FUNCTIONS_HPP
+#define LAPACK_DEVICE_FUNCTIONS_HPP
 
 #include "common_device_helpers.hpp"
 #include "rocsolver.h"
@@ -652,4 +652,4 @@ __device__ void lasrt_increasing(const rocblas_int n, T* D, rocblas_int* stack)
     }
 }
 
-#endif // _LAPACK_DEVICE_FUNCTIONS_HPP_
+#endif // LAPACK_DEVICE_FUNCTIONS_HPP

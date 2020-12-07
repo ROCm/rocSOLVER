@@ -13,7 +13,7 @@
  * ===========================================================================
  *    common location for device functions and kernels that are used across
  *    several rocSOLVER routines, excepting those device functions and kernels
- *    that reproduce LAPACK functionality (see lapack_device_functions).
+ *    that reproduce LAPACK functionality (see lapack_device_functions.hpp).
  * ===========================================================================
  */
 
