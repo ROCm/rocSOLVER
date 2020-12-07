@@ -11,7 +11,6 @@
 #define ROCLAPACK_TRD_H
 
 #include "../auxiliary/rocauxiliary_latrd.hpp"
-#include "common_device.hpp"
 #include "rocblas.hpp"
 #include "roclapack_sytd2_hetd2.hpp"
 #include "rocsolver.h"

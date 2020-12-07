@@ -10,7 +10,6 @@
 #ifndef ROCLAPACK_LACGV_HPP
 #define ROCLAPACK_LACGV_HPP
 
-#include "common_device.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
 

@@ -15,7 +15,6 @@
 #define ROCLAPACK_GETF2_H
 
 #include "../auxiliary/rocauxiliary_laswp.hpp"
-#include "common_device.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
 

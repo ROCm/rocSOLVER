@@ -10,8 +10,8 @@
 #ifndef ROCLAPACK_STERF_HPP
 #define ROCLAPACK_STERF_HPP
 
+#include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
-#include "rocblas_device_functions.hpp"
 #include "rocsolver.h"
 
 /****************************************************************************
