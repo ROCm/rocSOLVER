@@ -68,7 +68,8 @@ void rocsolver_org2r_ung2r_getMemorySize(const rocblas_int m,
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_org2r_orgqr_argCheck(const rocblas_int m,
+rocblas_status rocsolver_org2r_orgqr_argCheck(rocblas_handle handle,
+                                              const rocblas_int m,
                                               const rocblas_int n,
                                               const rocblas_int k,
                                               const rocblas_int lda,
@@ -83,6 +84,10 @@ rocblas_status rocsolver_org2r_orgqr_argCheck(const rocblas_int m,
     // 2. invalid size
     if(m < 0 || n < 0 || n > m || k < 0 || k > n || lda < m)
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((k && !ipiv) || (m * n && !A))

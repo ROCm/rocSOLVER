@@ -26,8 +26,8 @@ rocblas_status rocsolver_larfb_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st
-        = rocsolver_larfb_argCheck(side, trans, direct, storev, m, n, k, ldv, ldf, lda, V, A, F);
+    rocblas_status st = rocsolver_larfb_argCheck(handle, side, trans, direct, storev, m, n, k, ldv,
+                                                 ldf, lda, V, A, F);
     if(st != rocblas_status_continue)
         return st;
 

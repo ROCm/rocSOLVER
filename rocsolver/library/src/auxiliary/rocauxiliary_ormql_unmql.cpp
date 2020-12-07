@@ -23,8 +23,8 @@ rocblas_status rocsolver_ormql_unmql_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st
-        = rocsolver_orm2l_ormql_argCheck<COMPLEX>(side, trans, m, n, k, lda, ldc, A, C, ipiv);
+    rocblas_status st = rocsolver_orm2l_ormql_argCheck<COMPLEX>(handle, side, trans, m, n, k, lda,
+                                                                ldc, A, C, ipiv);
     if(st != rocblas_status_continue)
         return st;
 

@@ -66,7 +66,8 @@ void rocsolver_gels_getMemorySize(const rocblas_int m,
 }
 
 template <typename T>
-rocblas_status rocsolver_gels_argCheck(rocblas_operation trans,
+rocblas_status rocsolver_gels_argCheck(rocblas_handle handle,
+                                       rocblas_operation trans,
                                        const rocblas_int m,
                                        const rocblas_int n,
                                        const rocblas_int nrhs,
@@ -89,6 +90,10 @@ rocblas_status rocsolver_gels_argCheck(rocblas_operation trans,
     // 3. invalid size
     if(m < 0 || n < 0 || nrhs < 0 || lda < m || ldb < m || ldb < n || batch_count < 0)
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 4. invalid pointers
     if((m * n && !A) || ((m * nrhs || n * nrhs) && !B) || (batch_count && !info))

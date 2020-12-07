@@ -118,8 +118,12 @@ void rocsolver_larfg_getMemorySize(const rocblas_int n,
 }
 
 template <typename T, typename U>
-rocblas_status
-    rocsolver_larfg_argCheck(const rocblas_int n, const rocblas_int incx, T alpha, T x, U tau)
+rocblas_status rocsolver_larfg_argCheck(rocblas_handle handle,
+                                        const rocblas_int n,
+                                        const rocblas_int incx,
+                                        T alpha,
+                                        T x,
+                                        U tau)
 {
     // order is important for unit tests:
 
@@ -129,6 +133,10 @@ rocblas_status
     // 2. invalid size
     if(n < 0 || incx < 1)
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((n > 1 && !x) || (n && !alpha) || (n && !tau))

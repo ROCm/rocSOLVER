@@ -154,7 +154,8 @@ void local_bdsqr_template(rocblas_handle handle,
 
 /** Argument checking **/
 template <typename T, typename TT, typename W>
-rocblas_status rocsolver_gesvd_argCheck(const rocblas_svect left_svect,
+rocblas_status rocsolver_gesvd_argCheck(rocblas_handle handle,
+                                        const rocblas_svect left_svect,
                                         const rocblas_svect right_svect,
                                         const rocblas_int m,
                                         const rocblas_int n,
@@ -187,6 +188,10 @@ rocblas_status rocsolver_gesvd_argCheck(const rocblas_svect left_svect,
     if((right_svect == rocblas_svect_all && ldv < n)
        || (right_svect == rocblas_svect_singular && ldv < min(m, n)))
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((n * m && !A) || (min(m, n) > 1 && !E) || (min(m, n) && !S) || (batch_count && !info))

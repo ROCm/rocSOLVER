@@ -276,7 +276,8 @@ void rocsolver_sterf_getMemorySize(const rocblas_int n,
 }
 
 template <typename T>
-rocblas_status rocsolver_sterf_argCheck(const rocblas_int n, T D, T E, rocblas_int* info)
+rocblas_status
+    rocsolver_sterf_argCheck(rocblas_handle handle, const rocblas_int n, T D, T E, rocblas_int* info)
 {
     // order is important for unit tests:
 
@@ -285,6 +286,10 @@ rocblas_status rocsolver_sterf_argCheck(const rocblas_int n, T D, T E, rocblas_i
     // 2. invalid size
     if(n < 0)
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((n && !D) || (n && !E) || !info)

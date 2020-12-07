@@ -15,7 +15,8 @@
 #include "rocsolver.h"
 
 template <typename T>
-rocblas_status rocsolver_getrs_argCheck(const rocblas_operation trans,
+rocblas_status rocsolver_getrs_argCheck(rocblas_handle handle,
+                                        const rocblas_operation trans,
                                         const rocblas_int n,
                                         const rocblas_int nrhs,
                                         const rocblas_int lda,
@@ -35,6 +36,10 @@ rocblas_status rocsolver_getrs_argCheck(const rocblas_operation trans,
     // 2. invalid size
     if(n < 0 || nrhs < 0 || lda < n || ldb < n || batch_count < 0)
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((n && !A) || (n && !ipiv) || (nrhs * n && !B))

@@ -20,7 +20,7 @@ rocblas_status rocsolver_sytrd_hetrd_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_sytrd_hetrd_argCheck(uplo, n, lda, A, D, E, tau);
+    rocblas_status st = rocsolver_sytrd_hetrd_argCheck(handle, uplo, n, lda, A, D, E, tau);
     if(st != rocblas_status_continue)
         return st;
 

@@ -49,7 +49,8 @@ void rocsolver_geql2_getMemorySize(const rocblas_int m,
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_geql2_geqlf_argCheck(const rocblas_int m,
+rocblas_status rocsolver_geql2_geqlf_argCheck(rocblas_handle handle,
+                                              const rocblas_int m,
                                               const rocblas_int n,
                                               const rocblas_int lda,
                                               T A,
@@ -64,6 +65,10 @@ rocblas_status rocsolver_geql2_geqlf_argCheck(const rocblas_int m,
     // 2. invalid size
     if(m < 0 || n < 0 || lda < m || batch_count < 0)
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((m * n && !A) || (m * n && !ipiv))

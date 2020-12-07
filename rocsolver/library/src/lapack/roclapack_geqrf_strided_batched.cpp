@@ -21,7 +21,7 @@ rocblas_status rocsolver_geqrf_strided_batched_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_geqr2_geqrf_argCheck(m, n, lda, A, ipiv, batch_count);
+    rocblas_status st = rocsolver_geqr2_geqrf_argCheck(handle, m, n, lda, A, ipiv, batch_count);
     if(st != rocblas_status_continue)
         return st;
 
