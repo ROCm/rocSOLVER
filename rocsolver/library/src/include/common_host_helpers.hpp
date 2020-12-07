@@ -2,8 +2,8 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef HELPERS_H
-#define HELPERS_H
+#ifndef COMMON_HOST_HELPERS_H
+#define COMMON_HOST_HELPERS_H
 
 #include <cassert>
 #include <cstdlib>
@@ -11,6 +11,14 @@
 #include <hip/hip_runtime.h>
 #include <iostream>
 #include <limits>
+
+/*
+ * ===========================================================================
+ *    common location for functions that are used across several rocSOLVER
+ *    routines, excepting device functions and kernels (see
+ *    common_device_helpers.hpp and lapack_device_functions.hpp).
+ * ===========================================================================
+ */
 
 template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
 constexpr double get_epsilon()

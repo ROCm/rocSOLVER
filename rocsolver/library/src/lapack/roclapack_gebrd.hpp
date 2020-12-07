@@ -11,7 +11,6 @@
 #define ROCLAPACK_GEBRD_H
 
 #include "../auxiliary/rocauxiliary_labrd.hpp"
-#include "common_device.hpp"
 #include "rocblas.hpp"
 #include "roclapack_gebd2.hpp"
 #include "rocsolver.h"

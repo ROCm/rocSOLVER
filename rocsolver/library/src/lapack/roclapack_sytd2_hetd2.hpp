@@ -11,7 +11,6 @@
 #define ROCLAPACK_TD2_H
 
 #include "../auxiliary/rocauxiliary_larfg.hpp"
-#include "common_device.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
 

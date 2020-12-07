@@ -10,8 +10,8 @@
 #ifndef ROCLAPACK_GETRI_H
 #define ROCLAPACK_GETRI_H
 
+#include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
-#include "rocblas_device_functions.hpp"
 #include "rocsolver.h"
 
 #ifdef OPTIMAL

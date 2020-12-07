@@ -10,9 +10,9 @@
 #ifndef ROCLAPACK_STEQR_HPP
 #define ROCLAPACK_STEQR_HPP
 
+#include "lapack_device_functions.hpp"
 #include "rocauxiliary_sterf.hpp"
 #include "rocblas.hpp"
-#include "rocblas_device_functions.hpp"
 #include "rocsolver.h"
 
 /****************************************************************************

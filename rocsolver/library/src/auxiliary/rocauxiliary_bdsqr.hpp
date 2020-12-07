@@ -10,9 +10,8 @@
 #ifndef ROCLAPACK_BDSQR_H
 #define ROCLAPACK_BDSQR_H
 
-#include "common_device.hpp"
+#include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
-#include "rocblas_device_functions.hpp"
 #include "rocsolver.h"
 
 /****************************************************************************
