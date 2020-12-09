@@ -49,7 +49,8 @@ rocblas_status rocsolver_potf2_strided_batched_impl(rocblas_handle handle,
     scalars = mem[0];
     work = mem[1];
     pivots = mem[2];
-    RETURN_IF_HIP_ERROR(init_scalars(handle, (T*)scalars, size_scalars));
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info, batch_count,

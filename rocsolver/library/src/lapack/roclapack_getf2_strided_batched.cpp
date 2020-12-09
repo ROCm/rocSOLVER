@@ -59,7 +59,8 @@ rocblas_status rocsolver_getf2_strided_batched_impl(rocblas_handle handle,
     work = mem[1];
     pivotval = mem[2];
     pivotidx = mem[3];
-    RETURN_IF_HIP_ERROR(init_scalars(handle, (T*)scalars, size_scalars));
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_getf2_template<true, T, S>(

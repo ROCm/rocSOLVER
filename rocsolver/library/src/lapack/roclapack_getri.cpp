@@ -67,7 +67,8 @@ rocblas_status rocsolver_getri_impl(rocblas_handle handle,
     work4 = mem[4];
     tmpcopy = mem[5];
     workArr = mem[6];
-    RETURN_IF_HIP_ERROR(init_scalars(handle, (T*)scalars, size_scalars));
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // in-place execution
     return rocsolver_getri_template<false, false, T>(

@@ -58,7 +58,8 @@ rocblas_status rocsolver_gelqf_strided_batched_impl(rocblas_handle handle,
     Abyx_norms_trfact = mem[2];
     diag_tmptr = mem[3];
     workArr = mem[4];
-    RETURN_IF_HIP_ERROR(init_scalars(handle, (T*)scalars, size_scalars));
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_gelqf_template<false, true, T>(

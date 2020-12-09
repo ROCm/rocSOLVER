@@ -61,7 +61,8 @@ rocblas_status rocsolver_orgql_ungql_impl(rocblas_handle handle,
     Abyx_tmptr = mem[2];
     trfact = mem[3];
     workArr = mem[4];
-    RETURN_IF_HIP_ERROR(init_scalars(handle, (T*)scalars, size_scalars));
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_orgql_ungql_template<false, false, T>(

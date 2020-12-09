@@ -62,7 +62,8 @@ rocblas_status rocsolver_sytd2_hetd2_impl(rocblas_handle handle,
     norms = mem[2];
     tmptau = mem[3];
     workArr = mem[4];
-    RETURN_IF_HIP_ERROR(init_scalars(handle, (T*)scalars, size_scalars));
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_sytd2_hetd2_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E,

@@ -57,7 +57,8 @@ rocblas_status rocsolver_gelq2_impl(rocblas_handle handle,
     work_workArr = mem[1];
     Abyx_norms = mem[2];
     diag = mem[3];
-    RETURN_IF_HIP_ERROR(init_scalars(handle, (T*)scalars, size_scalars));
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_gelq2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, stridep,

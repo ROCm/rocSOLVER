@@ -70,7 +70,8 @@ rocblas_status rocsolver_gebrd_impl(rocblas_handle handle,
     Abyx_norms = mem[2];
     X = mem[3];
     Y = mem[4];
-    RETURN_IF_HIP_ERROR(init_scalars(handle, (T*)scalars, size_scalars));
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_gebrd_template<false, false, S, T>(

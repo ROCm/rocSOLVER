@@ -130,18 +130,6 @@ void print_device_matrix(const std::string name,
     }
 }
 
-// Initializes scalars on the device.
-// size_scalars is expected to be 3*sizeof(T) or 0 (to skip initialization)
-template <typename T>
-hipError_t init_scalars(rocblas_handle handle, T* scalars, size_t size_scalars)
-{
-    static const T s[] = {-1, 0, 1};
-
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
-    return hipMemcpyAsync(scalars, s, size_scalars, hipMemcpyHostToDevice, stream);
-}
-
 // ROCSOLVER_UNREACHABLE is an alternative to __builtin_unreachable that verifies that the path is
 // actually unreachable if ROCSOLVER_VERIFY_ASSUMPTIONS is defined.
 #ifdef ROCSOLVER_VERIFY_ASSUMPTIONS
