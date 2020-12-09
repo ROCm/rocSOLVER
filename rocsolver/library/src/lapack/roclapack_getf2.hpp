@@ -660,6 +660,7 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
         *size_work = 0;
         *size_pivotval = 0;
         *size_pivotidx = 0;
+        return;
     }
 
 #ifdef OPTIMAL
@@ -673,6 +674,7 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
             *size_work = 0;
             *size_pivotval = 0;
             *size_pivotidx = 0;
+            return;
         }
     }
 #endif
