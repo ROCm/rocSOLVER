@@ -24,8 +24,8 @@ rocblas_status rocsolver_ormbr_unmbr_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st
-        = rocsolver_ormbr_argCheck<COMPLEX>(storev, side, trans, m, n, k, lda, ldc, A, C, ipiv);
+    rocblas_status st = rocsolver_ormbr_argCheck<COMPLEX>(handle, storev, side, trans, m, n, k, lda,
+                                                          ldc, A, C, ipiv);
     if(st != rocblas_status_continue)
         return st;
 

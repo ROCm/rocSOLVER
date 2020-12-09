@@ -27,7 +27,8 @@ rocblas_status rocsolver_gebrd_strided_batched_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_gebd2_gebrd_argCheck(m, n, lda, A, D, E, tauq, taup, batch_count);
+    rocblas_status st
+        = rocsolver_gebd2_gebrd_argCheck(handle, m, n, lda, A, D, E, tauq, taup, batch_count);
     if(st != rocblas_status_continue)
         return st;
 

@@ -25,7 +25,8 @@ rocblas_status rocsolver_getrf_strided_batched_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_getf2_getrf_argCheck(m, n, lda, A, ipiv, info, pivot, batch_count);
+    rocblas_status st
+        = rocsolver_getf2_getrf_argCheck(handle, m, n, lda, A, ipiv, info, pivot, batch_count);
     if(st != rocblas_status_continue)
         return st;
 

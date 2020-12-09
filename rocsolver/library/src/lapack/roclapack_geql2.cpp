@@ -18,7 +18,7 @@ rocblas_status rocsolver_geql2_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_geql2_geqlf_argCheck(m, n, lda, A, ipiv);
+    rocblas_status st = rocsolver_geql2_geqlf_argCheck(handle, m, n, lda, A, ipiv);
     if(st != rocblas_status_continue)
         return st;
 

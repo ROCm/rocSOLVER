@@ -24,7 +24,7 @@ rocblas_status rocsolver_ormtr_unmtr_impl(rocblas_handle handle,
 
     // argument checking
     rocblas_status st
-        = rocsolver_ormtr_argCheck<COMPLEX>(side, uplo, trans, m, n, lda, ldc, A, C, ipiv);
+        = rocsolver_ormtr_argCheck<COMPLEX>(handle, side, uplo, trans, m, n, lda, ldc, A, C, ipiv);
     if(st != rocblas_status_continue)
         return st;
 

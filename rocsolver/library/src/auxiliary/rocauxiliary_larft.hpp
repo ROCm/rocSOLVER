@@ -168,7 +168,8 @@ void rocsolver_larft_getMemorySize(const rocblas_int n,
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_larft_argCheck(const rocblas_direct direct,
+rocblas_status rocsolver_larft_argCheck(rocblas_handle handle,
+                                        const rocblas_direct direct,
                                         const rocblas_storev storev,
                                         const rocblas_int n,
                                         const rocblas_int k,
@@ -192,6 +193,10 @@ rocblas_status rocsolver_larft_argCheck(const rocblas_direct direct,
         return rocblas_status_invalid_size;
     if((row && ldv < k) || (!row && ldv < n))
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((n && !V) || !tau || !F)

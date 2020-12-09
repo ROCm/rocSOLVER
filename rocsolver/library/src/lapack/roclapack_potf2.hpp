@@ -103,7 +103,8 @@ void rocsolver_potf2_getMemorySize(const rocblas_int n,
 }
 
 template <typename T>
-rocblas_status rocsolver_potf2_potrf_argCheck(const rocblas_fill uplo,
+rocblas_status rocsolver_potf2_potrf_argCheck(rocblas_handle handle,
+                                              const rocblas_fill uplo,
                                               const rocblas_int n,
                                               const rocblas_int lda,
                                               T A,
@@ -119,6 +120,10 @@ rocblas_status rocsolver_potf2_potrf_argCheck(const rocblas_fill uplo,
     // 2. invalid size
     if(n < 0 || lda < n || batch_count < 0)
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((n && !A) || (batch_count && !info))

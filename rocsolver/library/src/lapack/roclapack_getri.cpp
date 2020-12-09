@@ -18,7 +18,7 @@ rocblas_status rocsolver_getri_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_getri_argCheck(n, lda, A, ipiv, info);
+    rocblas_status st = rocsolver_getri_argCheck(handle, n, lda, A, ipiv, info);
     if(st != rocblas_status_continue)
         return st;
 

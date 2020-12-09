@@ -28,7 +28,7 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
 
     // argument checking
     rocblas_status st
-        = rocsolver_bdsqr_argCheck(uplo, n, nv, nu, nc, ldv, ldu, ldc, D, E, V, U, C, info);
+        = rocsolver_bdsqr_argCheck(handle, uplo, n, nv, nu, nc, ldv, ldu, ldc, D, E, V, U, C, info);
     if(st != rocblas_status_continue)
         return st;
 

@@ -53,7 +53,8 @@ void rocsolver_ormtr_unmtr_getMemorySize(const rocblas_side side,
 }
 
 template <bool COMPLEX, typename T, typename U>
-rocblas_status rocsolver_ormtr_argCheck(const rocblas_side side,
+rocblas_status rocsolver_ormtr_argCheck(rocblas_handle handle,
+                                        const rocblas_side side,
                                         const rocblas_fill uplo,
                                         const rocblas_operation trans,
                                         const rocblas_int m,
@@ -83,6 +84,10 @@ rocblas_status rocsolver_ormtr_argCheck(const rocblas_side side,
     rocblas_int nq = left ? m : n;
     if(m < 0 || n < 0 || ldc < m || lda < nq)
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((nq > 0 && !A) || (nq > 0 && !ipiv) || (m * n && !C))

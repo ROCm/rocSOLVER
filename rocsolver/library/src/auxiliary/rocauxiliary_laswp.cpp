@@ -20,7 +20,7 @@ rocblas_status rocsolver_laswp_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_laswp_argCheck(n, lda, k1, k2, incx, A, ipiv);
+    rocblas_status st = rocsolver_laswp_argCheck(handle, n, lda, k1, k2, incx, A, ipiv);
     if(st != rocblas_status_continue)
         return st;
 

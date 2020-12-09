@@ -18,7 +18,7 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_larfg_argCheck(n, incx, alpha, x, tau);
+    rocblas_status st = rocsolver_larfg_argCheck(handle, n, incx, alpha, x, tau);
     if(st != rocblas_status_continue)
         return st;
 

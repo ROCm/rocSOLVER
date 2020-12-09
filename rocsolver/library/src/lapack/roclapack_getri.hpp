@@ -504,7 +504,8 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
 }
 
 template <typename T>
-rocblas_status rocsolver_getri_argCheck(const rocblas_int n,
+rocblas_status rocsolver_getri_argCheck(rocblas_handle handle,
+                                        const rocblas_int n,
                                         const rocblas_int lda,
                                         T A,
                                         rocblas_int* ipiv,
@@ -520,6 +521,10 @@ rocblas_status rocsolver_getri_argCheck(const rocblas_int n,
     if(n < 0 || lda < n || batch_count < 0)
         return rocblas_status_invalid_size;
 
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
+
     // 3. invalid pointers
     if((n && !A) || (n && !ipiv) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
@@ -528,7 +533,8 @@ rocblas_status rocsolver_getri_argCheck(const rocblas_int n,
 }
 
 template <typename T>
-rocblas_status rocsolver_getri_argCheck(const rocblas_int n,
+rocblas_status rocsolver_getri_argCheck(rocblas_handle handle,
+                                        const rocblas_int n,
                                         const rocblas_int lda,
                                         const rocblas_int ldc,
                                         T A,
@@ -545,6 +551,10 @@ rocblas_status rocsolver_getri_argCheck(const rocblas_int n,
     // 2. invalid size
     if(n < 0 || lda < n || ldc < n || batch_count < 0)
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((n && !A) || (n && !C) || (n && !ipiv) || (batch_count && !info))

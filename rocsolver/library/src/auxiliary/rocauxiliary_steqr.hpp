@@ -312,7 +312,8 @@ void rocsolver_steqr_getMemorySize(const rocblas_evect compc,
 }
 
 template <typename S, typename T>
-rocblas_status rocsolver_steqr_argCheck(const rocblas_evect compc,
+rocblas_status rocsolver_steqr_argCheck(rocblas_handle handle,
+                                        const rocblas_evect compc,
                                         const rocblas_int n,
                                         S D,
                                         S E,
@@ -332,6 +333,10 @@ rocblas_status rocsolver_steqr_argCheck(const rocblas_evect compc,
         return rocblas_status_invalid_size;
     if(compc != rocblas_evect_none && ldc < n)
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((n && !D) || (n && !E) || (compc != rocblas_evect_none && n && !C) || !info)

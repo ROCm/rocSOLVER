@@ -14,7 +14,7 @@ rocblas_status
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_sterf_argCheck(n, D, E, info);
+    rocblas_status st = rocsolver_sterf_argCheck(handle, n, D, E, info);
     if(st != rocblas_status_continue)
         return st;
 
