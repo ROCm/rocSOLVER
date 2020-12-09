@@ -23,7 +23,8 @@ rocblas_status rocsolver_gels_batched_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_gels_argCheck(trans, m, n, nrhs, A, lda, B, ldb, info, batch_count);
+    rocblas_status st
+        = rocsolver_gels_argCheck(handle, trans, m, n, nrhs, A, lda, B, ldb, info, batch_count);
     if(st != rocblas_status_continue)
         return st;
 

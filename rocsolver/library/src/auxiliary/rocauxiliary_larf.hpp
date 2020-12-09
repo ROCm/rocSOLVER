@@ -51,7 +51,8 @@ void rocsolver_larf_getMemorySize(const rocblas_side side,
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_larf_argCheck(const rocblas_side side,
+rocblas_status rocsolver_larf_argCheck(rocblas_handle handle,
+                                       const rocblas_side side,
                                        const rocblas_int m,
                                        const rocblas_int n,
                                        const rocblas_int lda,
@@ -70,6 +71,10 @@ rocblas_status rocsolver_larf_argCheck(const rocblas_side side,
     // 2. invalid size
     if(n < 0 || m < 0 || lda < m || !incx)
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((m * n && !A) || (left && m && (!alpha || !x)) || (!left && n && (!alpha || !x)))

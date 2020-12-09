@@ -20,7 +20,7 @@ rocblas_status rocsolver_steqr_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_steqr_argCheck(compc, n, D, E, C, ldc, info);
+    rocblas_status st = rocsolver_steqr_argCheck(handle, compc, n, D, E, C, ldc, info);
     if(st != rocblas_status_continue)
         return st;
 

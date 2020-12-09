@@ -26,7 +26,8 @@ rocblas_status rocsolver_labrd_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_labrd_argCheck(m, n, k, lda, ldx, ldy, A, D, E, tauq, taup, X, Y);
+    rocblas_status st
+        = rocsolver_labrd_argCheck(handle, m, n, k, lda, ldx, ldy, A, D, E, tauq, taup, X, Y);
     if(st != rocblas_status_continue)
         return st;
 

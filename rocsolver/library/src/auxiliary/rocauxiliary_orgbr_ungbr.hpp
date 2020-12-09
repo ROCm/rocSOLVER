@@ -80,7 +80,8 @@ void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev,
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_orgbr_argCheck(const rocblas_storev storev,
+rocblas_status rocsolver_orgbr_argCheck(rocblas_handle handle,
+                                        const rocblas_storev storev,
                                         const rocblas_int m,
                                         const rocblas_int n,
                                         const rocblas_int k,
@@ -102,6 +103,10 @@ rocblas_status rocsolver_orgbr_argCheck(const rocblas_storev storev,
         return rocblas_status_invalid_size;
     if(row && (m > n || m < min(n, k)))
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((m * n && !A) || (row && min(n, k) > 0 && !ipiv) || (!row && min(m, k) > 0 && !ipiv))

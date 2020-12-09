@@ -42,7 +42,8 @@ __global__ void laswp_kernel(const rocblas_int n,
 }
 
 template <typename T>
-rocblas_status rocsolver_laswp_argCheck(const rocblas_int n,
+rocblas_status rocsolver_laswp_argCheck(rocblas_handle handle,
+                                        const rocblas_int n,
                                         const rocblas_int lda,
                                         const rocblas_int k1,
                                         const rocblas_int k2,
@@ -58,6 +59,10 @@ rocblas_status rocsolver_laswp_argCheck(const rocblas_int n,
     // 2. invalid size
     if(n < 0 || lda < 1 || !incx || k1 < 1 || k2 < 1 || k2 < k1)
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((n && !A) || !ipiv)

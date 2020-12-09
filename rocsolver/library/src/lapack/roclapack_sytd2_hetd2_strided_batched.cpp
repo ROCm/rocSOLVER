@@ -25,7 +25,8 @@ rocblas_status rocsolver_sytd2_hetd2_strided_batched_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_sytd2_hetd2_argCheck(uplo, n, lda, A, D, E, tau, batch_count);
+    rocblas_status st
+        = rocsolver_sytd2_hetd2_argCheck(handle, uplo, n, lda, A, D, E, tau, batch_count);
     if(st != rocblas_status_continue)
         return st;
 

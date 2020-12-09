@@ -43,7 +43,8 @@ __global__ void conj_in_place(const rocblas_int m,
 }
 
 template <typename T>
-rocblas_status rocsolver_lacgv_argCheck(const rocblas_int n, const rocblas_int incx, T x)
+rocblas_status
+    rocsolver_lacgv_argCheck(rocblas_handle handle, const rocblas_int n, const rocblas_int incx, T x)
 {
     // order is important for unit tests:
 
@@ -53,6 +54,10 @@ rocblas_status rocsolver_lacgv_argCheck(const rocblas_int n, const rocblas_int i
     // 2. invalid size
     if(n < 0 || !incx)
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if(n && !x)

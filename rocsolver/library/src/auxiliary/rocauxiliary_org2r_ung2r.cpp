@@ -19,7 +19,7 @@ rocblas_status rocsolver_org2r_ung2r_impl(rocblas_handle handle,
     // logging is missing ???
 
     // argument checking
-    rocblas_status st = rocsolver_org2r_orgqr_argCheck(m, n, k, lda, A, ipiv);
+    rocblas_status st = rocsolver_org2r_orgqr_argCheck(handle, m, n, k, lda, A, ipiv);
     if(st != rocblas_status_continue)
         return st;
 

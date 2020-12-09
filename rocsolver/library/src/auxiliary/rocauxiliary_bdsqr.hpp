@@ -480,7 +480,8 @@ void rocsolver_bdsqr_getMemorySize(const rocblas_int n,
 }
 
 template <typename S, typename W>
-rocblas_status rocsolver_bdsqr_argCheck(const rocblas_fill uplo,
+rocblas_status rocsolver_bdsqr_argCheck(rocblas_handle handle,
+                                        const rocblas_fill uplo,
                                         const rocblas_int n,
                                         const rocblas_int nv,
                                         const rocblas_int nu,
@@ -507,6 +508,10 @@ rocblas_status rocsolver_bdsqr_argCheck(const rocblas_fill uplo,
         return rocblas_status_invalid_size;
     if((nv > 0 && ldv < n) || (nc > 0 && ldc < n))
         return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
 
     // 3. invalid pointers
     if((n && !D) || (n > 1 && !E) || (n * nv && !V) || (n * nu && !U) || (n * nc && !C) || !info)
