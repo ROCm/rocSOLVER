@@ -57,8 +57,8 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle,
     scalars = mem[0];
     work = mem[1];
     workArr = mem[2];
-    T sca[] = {-1, 0, 1};
-    RETURN_IF_HIP_ERROR(hipMemcpy((T*)scalars, sca, size_scalars, hipMemcpyHostToDevice));
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_larft_template<T>(handle, direct, storev, n, k, V, shiftV, ldv, stridev, tau,
