@@ -9,7 +9,7 @@ double* create_example_matrix(rocblas_int *M_out,
                               rocblas_int *N_out,
                               rocblas_int *lda_out) {
   // a *very* small example input; not a very efficient use of the API
-  const double A[3][3] = { {  12, -51,   4},
+  const double A_source[3][3] = { {  12, -51,   4},
                            {   6, 167, -68},
                            {  -4,  24, -41} };
   const rocblas_int M = 3;
@@ -20,14 +20,15 @@ double* create_example_matrix(rocblas_int *M_out,
   *lda_out = lda;
   // note: rocsolver matrices must be stored in column major format,
   //       i.e. entry (i,j) should be accessed by hA[i + j*lda]
-  double* hA = malloc(sizeof(double)*lda*N);
+  double* A;
+  hipMallocManaged((void**)&A, sizeof(double)*lda*N, hipMemAttachGlobal);
   for (size_t i = 0; i < M; ++i) {
     for (size_t j = 0; j < N; ++j) {
       // copy A (2D array) into hA (1D array, column-major)
-      hA[i + j*lda] = A[i][j];
+      A[i + j*lda] = A_source[i][j];
     }
   }
-  return hA;
+  return A;
 }
 
 // We use rocsolver_dgeqrf to factor a real M-by-N matrix, A.
@@ -37,14 +38,14 @@ int main() {
   rocblas_int M;          // rows
   rocblas_int N;          // cols
   rocblas_int lda;        // leading dimension
-  double* hA = create_example_matrix(&M, &N, &lda); // input matrix on CPU
+  double* A = create_example_matrix(&M, &N, &lda); // input matrix on CPU
 
   // let's print the input matrix, just to see it
   printf("A = [\n");
   for (size_t i = 0; i < M; ++i) {
     printf("  ");
     for (size_t j = 0; j < N; ++j) {
-      printf("% .3f ", hA[i + j*lda]);
+      printf("% .3f ", A[i + j*lda]);
     }
     printf(";\n");
   }
@@ -55,32 +56,36 @@ int main() {
   rocblas_create_handle(&handle);
 
   // calculate the sizes of our arrays
-  size_t size_A = lda * (size_t)N;   // count of elements in matrix A
   size_t size_piv = (M < N) ? M : N; // count of Householder scalars
 
-  // allocate memory on GPU
-  double *dA, *dIpiv;
-  hipMalloc((void**)&dA, sizeof(double)*size_A);
-  hipMalloc((void**)&dIpiv, sizeof(double)*size_piv);
+  // allocate memory
+  double *ipiv;
+  hipMallocManaged((void**)&ipiv, sizeof(double)*size_piv, hipMemAttachGlobal);
 
-  // copy data to GPU
-  hipMemcpy(dA, hA, sizeof(double)*size_A, hipMemcpyHostToDevice);
+  // determine workspace size
+  size_t size_W;
+  rocblas_start_device_memory_size_query(handle);
+  rocsolver_dgetrf(handle, M, N, NULL, lda, NULL, NULL);
+  rocblas_stop_device_memory_size_query(handle, &size_W);
+
+  // create custom workspace
+  double *work;
+  hipMallocManaged((void**)&work, size_W, hipMemAttachGlobal);
+  rocblas_set_workspace(handle, work, size_W);
 
   // compute the QR factorization on the GPU
-  rocsolver_dgeqrf(handle, M, N, dA, lda, dIpiv);
+  hipStream_t stream;
+  rocblas_get_stream(handle, &stream);
+  rocsolver_dgeqrf(handle, M, N, A, lda, ipiv);
+  hipStreamSynchronize(stream);
 
-  // copy the results back to CPU
-  double* hIpiv = malloc(sizeof(double)*size_piv); // array for householder scalars on CPU
-  hipMemcpy(hA, dA, sizeof(double)*size_A, hipMemcpyDeviceToHost);
-  hipMemcpy(hIpiv, dIpiv, sizeof(double)*size_piv, hipMemcpyDeviceToHost);
-
-  // the results are now in hA and hIpiv
+  // the results are now in A and ipiv
   // we can print some of the results if we want to see them
   printf("R = [\n");
   for (size_t i = 0; i < M; ++i) {
     printf("  ");
     for (size_t j = 0; j < N; ++j) {
-      printf("% .3f ", (i <= j) ? hA[i + j*lda] : 0);
+      printf("% .3f ", (i <= j) ? A[i + j*lda] : 0);
     }
     printf(";\n");
   }
@@ -88,14 +93,13 @@ int main() {
 
   printf("Ipiv = [");
   for (size_t i = 0; i < size_piv; ++i) {
-    printf("% .3f ", hIpiv[i]);
+    printf("% .3f ", ipiv[i]);
   }
   printf("]\n");
 
   // clean up
-  free(hIpiv);
-  hipFree(dA);
-  hipFree(dIpiv);
-  free(hA);
+  hipFree(A);
+  hipFree(ipiv);
+  hipFree(work);
   rocblas_destroy_handle(handle);
 }
