@@ -82,8 +82,8 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
     diag_tmptr = mem[3];
     workArr = mem[4];
     ipiv = mem[5];
-    T sca[] = {-1, 0, 1};
-    RETURN_IF_HIP_ERROR(hipMemcpy((T*)scalars, sca, size_scalars, hipMemcpyHostToDevice));
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // execution
     rocblas_status status = rocsolver_geqrf_template<true, false, T>(

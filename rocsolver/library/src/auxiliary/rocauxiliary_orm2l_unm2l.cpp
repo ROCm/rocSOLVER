@@ -64,8 +64,8 @@ rocblas_status rocsolver_orm2l_unm2l_impl(rocblas_handle handle,
     Abyx = mem[1];
     diag = mem[2];
     workArr = mem[3];
-    T sca[] = {-1, 0, 1};
-    RETURN_IF_HIP_ERROR(hipMemcpy((T*)scalars, sca, size_scalars, hipMemcpyHostToDevice));
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_orm2l_unm2l_template<T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA,

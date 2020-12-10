@@ -62,8 +62,8 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
     work = mem[1];
     norms = mem[2];
     workArr = mem[3];
-    T sca[] = {-1, 0, 1};
-    RETURN_IF_HIP_ERROR(hipMemcpy((T*)scalars, sca, size_scalars, hipMemcpyHostToDevice));
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_latrd_template(handle, uplo, n, k, A, shiftA, lda, strideA, E, strideE, tau,

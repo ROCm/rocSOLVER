@@ -65,8 +65,8 @@ rocblas_status rocsolver_potrf_batched_impl(rocblas_handle handle,
     work4 = mem[4];
     pivots = mem[5];
     iinfo = mem[6];
-    T sca[] = {-1, 0, 1};
-    RETURN_IF_HIP_ERROR(hipMemcpy((T*)scalars, sca, size_scalars, hipMemcpyHostToDevice));
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_potrf_template<true, S, T>(handle, uplo, n, A, shiftA, lda, strideA, info,
