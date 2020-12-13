@@ -2,6 +2,8 @@
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
+#pragma once
+
 #include "cblas_interface.h"
 #include "clientcommon.hpp"
 #include "norm.hpp"
