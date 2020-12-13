@@ -2,8 +2,7 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef COMMON_DEVICE_HELPERS_H
-#define COMMON_DEVICE_HELPERS_H
+#pragma once
 
 #include "ideal_sizes.hpp"
 #include "libcommon.hpp"
@@ -510,5 +509,3 @@ __global__ void check_singularity(const rocblas_int n,
     if(hipThreadIdx_y == 0)
         info[b] = _info;
 }
-
-#endif

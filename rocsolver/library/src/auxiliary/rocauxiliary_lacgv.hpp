@@ -7,8 +7,7 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_LACGV_HPP
-#define ROCLAPACK_LACGV_HPP
+#pragma once
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
@@ -92,5 +91,3 @@ rocblas_status rocsolver_lacgv_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
-
-#endif

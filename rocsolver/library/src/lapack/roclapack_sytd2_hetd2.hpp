@@ -7,8 +7,7 @@
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_TD2_H
-#define ROCLAPACK_TD2_H
+#pragma once
 
 #include "../auxiliary/rocauxiliary_larfg.hpp"
 #include "rocblas.hpp"
@@ -310,5 +309,3 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
-
-#endif
