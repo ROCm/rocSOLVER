@@ -6,8 +6,8 @@
     \brief rocsolver.h includes other *.h and exposes a common interface
  ***************************************************************************/
 
-#ifndef _ROCSOLVER_H_
-#define _ROCSOLVER_H_
+#ifndef ROCSOLVER_H_
+#define ROCSOLVER_H_
 
 /* library headers */
 #include "rocsolver-aliases.h"
@@ -16,4 +16,4 @@
 #include "rocsolver-functions.h"
 #include "rocsolver-version.h"
 
-#endif // _ROCSOLVER_H_
+#endif /* ROCSOLVER_H_ */

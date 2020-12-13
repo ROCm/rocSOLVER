@@ -166,4 +166,4 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_get_matrix(rocsolver_int rows,
 }
 #endif
 
-#endif
+#endif /* ROCSOLVER_ALIASES_H_ */
