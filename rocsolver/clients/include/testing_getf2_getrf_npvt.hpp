@@ -234,13 +234,13 @@ void getf2_getrf_npvt_getPerfData(const rocblas_handle handle,
                                                   singular, hinfo);
 
         // cpu-lapack performance (only if no perf mode)
-        *cpu_time_used = get_time_us();
+        *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
             GETRF ? cblas_getrf<T>(m, n, hA[b], lda, hIpiv[b], hinfo[b])
                   : cblas_getf2<T>(m, n, hA[b], lda, hIpiv[b], hinfo[b]);
         }
-        *cpu_time_used = get_time_us() - *cpu_time_used;
+        *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
     getf2_getrf_npvt_initData<true, false, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA, singular,
@@ -257,16 +257,18 @@ void getf2_getrf_npvt_getPerfData(const rocblas_handle handle,
     }
 
     // gpu-lapack performance
+    hipStream_t stream;
+    CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         getf2_getrf_npvt_initData<false, true, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA,
                                                   singular, hinfo);
 
-        start = get_time_us();
+        start = get_time_us_sync(stream);
         rocsolver_getf2_getrf_npvt(STRIDED, GETRF, handle, m, n, dA.data(), lda, stA, dinfo.data(),
                                    bc);
-        *gpu_time_used += get_time_us() - start;
+        *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
@@ -314,6 +316,25 @@ void testing_getf2_getrf_npvt(Arguments argus)
             ROCSOLVER_BENCH_INFORM(1);
 
         return;
+    }
+
+    // memory size query is necessary
+    if(!REALLOC)
+    {
+        CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
+        if(BATCHED)
+            CHECK_ALLOC_QUERY(rocsolver_getf2_getrf_npvt(STRIDED, GETRF, handle, m, n,
+                                                             (T* const*)nullptr, lda, stA,
+                                                             (rocblas_int*)nullptr, bc));
+        else
+            CHECK_ALLOC_QUERY(rocsolver_getf2_getrf_npvt(STRIDED, GETRF, handle, m, n, (T*)nullptr,
+                                                             lda, stA, (rocblas_int*)nullptr, bc));
+
+        size_t size;
+        CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
+
+        if(size > DEFAULT_MEM)
+            CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 
     if(BATCHED)

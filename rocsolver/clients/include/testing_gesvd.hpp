@@ -415,11 +415,11 @@ void gesvd_getPerfData(const rocblas_handle handle,
         gesvd_initData<true, false, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
 
         // cpu-lapack performance (only if not in perf mode)
-        *cpu_time_used = get_time_us();
+        *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
             cblas_gesvd<T>(left_svect, right_svect, m, n, hA[b], lda, hS[b], hU[b], ldu, hV[b], ldv,
                            hWork.data(), lwork, hE[b], hinfo[b]);
-        *cpu_time_used = get_time_us() - *cpu_time_used;
+        *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
     gesvd_initData<true, false, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
@@ -435,16 +435,19 @@ void gesvd_getPerfData(const rocblas_handle handle,
     }
 
     // gpu-lapack performance
+    hipStream_t stream;
+    CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+    
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         gesvd_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
 
-        start = get_time_us();
+        start = get_time_us_sync(stream);
         rocsolver_gesvd(STRIDED, handle, left_svect, right_svect, m, n, dA.data(), lda, stA,
                         dS.data(), stS, dU.data(), ldu, stU, dV.data(), ldv, stV, dE.data(), stE,
                         fa, dinfo.data(), bc);
-        *gpu_time_used += get_time_us() - start;
+        *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
@@ -614,6 +617,40 @@ void testing_gesvd(Arguments argus)
             ROCSOLVER_BENCH_INFORM(1);
 
         return;
+    }
+
+    // memory size query is necessary
+    if(!REALLOC)
+    {
+        CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
+        if(BATCHED)
+        {
+            CHECK_ALLOC_QUERY(rocsolver_gesvd(STRIDED, handle, leftv, rightv, m, n,
+                                                  (T* const*)nullptr, lda, stA, (S*)nullptr, stS,
+                                                  (T*)nullptr, ldu, stU, (T*)nullptr, ldv, stV,
+                                                  (S*)nullptr, stE, fa, (rocblas_int*)nullptr, bc));
+            CHECK_ALLOC_QUERY(rocsolver_gesvd(STRIDED, handle, leftvT, rightvT, mT, nT,
+                                                  (T* const*)nullptr, lda, stA, (S*)nullptr, stS,
+                                                  (T*)nullptr, lduT, stUT, (T*)nullptr, ldvT, stVT,
+                                                  (S*)nullptr, stE, fa, (rocblas_int*)nullptr, bc));
+        }
+        else
+        {
+            CHECK_ALLOC_QUERY(rocsolver_gesvd(STRIDED, handle, leftv, rightv, m, n, (T*)nullptr,
+                                                  lda, stA, (S*)nullptr, stS, (T*)nullptr, ldu, stU,
+                                                  (T*)nullptr, ldv, stV, (S*)nullptr, stE, fa,
+                                                  (rocblas_int*)nullptr, bc));
+            CHECK_ALLOC_QUERY(rocsolver_gesvd(STRIDED, handle, leftvT, rightvT, mT, nT, (T*)nullptr,
+                                                  lda, stA, (S*)nullptr, stS, (T*)nullptr, lduT, stUT,
+                                                  (T*)nullptr, ldvT, stVT, (S*)nullptr, stE, fa,
+                                                  (rocblas_int*)nullptr, bc));
+        }
+
+        size_t size;
+        CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
+
+        if(size > DEFAULT_MEM)
+            CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 
     // memory allocations (all cases)
