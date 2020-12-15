@@ -220,7 +220,8 @@ void testing_laswp(Arguments argus)
     if(!REALLOC)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_laswp(handle, n, (T*)nullptr, lda, k1, k2, (rocblas_int*)nullptr, inc));
+        CHECK_ALLOC_QUERY(
+            rocsolver_laswp(handle, n, (T*)nullptr, lda, k1, k2, (rocblas_int*)nullptr, inc));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));

@@ -318,8 +318,8 @@ void testing_ormtr_unmtr(Arguments argus)
     if(!REALLOC)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_ormtr_unmtr(handle, side, uplo, trans, m, n, (T*)nullptr,
-                                                    lda, (T*)nullptr, (T*)nullptr, ldc));
+        CHECK_ALLOC_QUERY(rocsolver_ormtr_unmtr(handle, side, uplo, trans, m, n, (T*)nullptr, lda,
+                                                (T*)nullptr, (T*)nullptr, ldc));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));

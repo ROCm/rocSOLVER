@@ -438,7 +438,7 @@ void gesvd_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
-    
+
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         gesvd_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
@@ -626,24 +626,24 @@ void testing_gesvd(Arguments argus)
         if(BATCHED)
         {
             CHECK_ALLOC_QUERY(rocsolver_gesvd(STRIDED, handle, leftv, rightv, m, n,
-                                                  (T* const*)nullptr, lda, stA, (S*)nullptr, stS,
-                                                  (T*)nullptr, ldu, stU, (T*)nullptr, ldv, stV,
-                                                  (S*)nullptr, stE, fa, (rocblas_int*)nullptr, bc));
+                                              (T* const*)nullptr, lda, stA, (S*)nullptr, stS,
+                                              (T*)nullptr, ldu, stU, (T*)nullptr, ldv, stV,
+                                              (S*)nullptr, stE, fa, (rocblas_int*)nullptr, bc));
             CHECK_ALLOC_QUERY(rocsolver_gesvd(STRIDED, handle, leftvT, rightvT, mT, nT,
-                                                  (T* const*)nullptr, lda, stA, (S*)nullptr, stS,
-                                                  (T*)nullptr, lduT, stUT, (T*)nullptr, ldvT, stVT,
-                                                  (S*)nullptr, stE, fa, (rocblas_int*)nullptr, bc));
+                                              (T* const*)nullptr, lda, stA, (S*)nullptr, stS,
+                                              (T*)nullptr, lduT, stUT, (T*)nullptr, ldvT, stVT,
+                                              (S*)nullptr, stE, fa, (rocblas_int*)nullptr, bc));
         }
         else
         {
             CHECK_ALLOC_QUERY(rocsolver_gesvd(STRIDED, handle, leftv, rightv, m, n, (T*)nullptr,
-                                                  lda, stA, (S*)nullptr, stS, (T*)nullptr, ldu, stU,
-                                                  (T*)nullptr, ldv, stV, (S*)nullptr, stE, fa,
-                                                  (rocblas_int*)nullptr, bc));
+                                              lda, stA, (S*)nullptr, stS, (T*)nullptr, ldu, stU,
+                                              (T*)nullptr, ldv, stV, (S*)nullptr, stE, fa,
+                                              (rocblas_int*)nullptr, bc));
             CHECK_ALLOC_QUERY(rocsolver_gesvd(STRIDED, handle, leftvT, rightvT, mT, nT, (T*)nullptr,
-                                                  lda, stA, (S*)nullptr, stS, (T*)nullptr, lduT, stUT,
-                                                  (T*)nullptr, ldvT, stVT, (S*)nullptr, stE, fa,
-                                                  (rocblas_int*)nullptr, bc));
+                                              lda, stA, (S*)nullptr, stS, (T*)nullptr, lduT, stUT,
+                                              (T*)nullptr, ldvT, stVT, (S*)nullptr, stE, fa,
+                                              (rocblas_int*)nullptr, bc));
         }
 
         size_t size;

@@ -459,14 +459,13 @@ void testing_gebd2_gebrd(Arguments argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)
-            CHECK_ALLOC_QUERY(rocsolver_gebd2_gebrd(STRIDED, GEBRD, handle, m, n,
-                                                        (T* const*)nullptr, lda, stA, (S*)nullptr,
-                                                        stD, (S*)nullptr, stE, (T*)nullptr, stQ,
-                                                        (T*)nullptr, stP, bc));
+            CHECK_ALLOC_QUERY(rocsolver_gebd2_gebrd(STRIDED, GEBRD, handle, m, n, (T* const*)nullptr,
+                                                    lda, stA, (S*)nullptr, stD, (S*)nullptr, stE,
+                                                    (T*)nullptr, stQ, (T*)nullptr, stP, bc));
         else
-            CHECK_ALLOC_QUERY(rocsolver_gebd2_gebrd(STRIDED, GEBRD, handle, m, n, (T*)nullptr,
-                                                        lda, stA, (S*)nullptr, stD, (S*)nullptr,
-                                                        stE, (T*)nullptr, stQ, (T*)nullptr, stP, bc));
+            CHECK_ALLOC_QUERY(rocsolver_gebd2_gebrd(STRIDED, GEBRD, handle, m, n, (T*)nullptr, lda,
+                                                    stA, (S*)nullptr, stD, (S*)nullptr, stE,
+                                                    (T*)nullptr, stQ, (T*)nullptr, stP, bc));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));

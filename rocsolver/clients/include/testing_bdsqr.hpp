@@ -383,7 +383,7 @@ void bdsqr_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
-    
+
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         bdsqr_initData<false, true, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC,
@@ -489,8 +489,8 @@ void testing_bdsqr(Arguments argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         CHECK_ALLOC_QUERY(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, (S*)nullptr, (S*)nullptr,
-                                              (T*)nullptr, ldv, (T*)nullptr, ldu, (T*)nullptr, ldc,
-                                              (rocblas_int*)nullptr));
+                                          (T*)nullptr, ldv, (T*)nullptr, ldu, (T*)nullptr, ldc,
+                                          (rocblas_int*)nullptr));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));

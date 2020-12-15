@@ -282,7 +282,7 @@ void gels_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
-    
+
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         gels_initData<false, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo,
@@ -362,13 +362,12 @@ void testing_gels(Arguments argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)
-            CHECK_ALLOC_QUERY(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs,
-                                                 (T* const*)nullptr, lda, stA, (T* const*)nullptr,
-                                                 ldb, stB, (rocblas_int*)nullptr, bc));
+            CHECK_ALLOC_QUERY(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, (T* const*)nullptr,
+                                             lda, stA, (T* const*)nullptr, ldb, stB,
+                                             (rocblas_int*)nullptr, bc));
         else
-            CHECK_ALLOC_QUERY(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, (T*)nullptr,
-                                                 lda, stA, (T*)nullptr, ldb, stB,
-                                                 (rocblas_int*)nullptr, bc));
+            CHECK_ALLOC_QUERY(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, (T*)nullptr, lda,
+                                             stA, (T*)nullptr, ldb, stB, (rocblas_int*)nullptr, bc));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));

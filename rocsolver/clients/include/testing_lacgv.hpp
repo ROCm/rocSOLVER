@@ -126,7 +126,7 @@ void lacgv_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
-    
+
     for(int iter = 0; iter < hot_calls; iter++)
     {
         lacgv_initData<false, true, T>(handle, n, dA, inc, hA);

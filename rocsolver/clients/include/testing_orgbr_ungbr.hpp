@@ -273,7 +273,8 @@ void testing_orgbr_ungbr(Arguments argus)
     if(!REALLOC)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_orgbr_ungbr(handle, storev, m, n, k, (T*)nullptr, lda, (T*)nullptr));
+        CHECK_ALLOC_QUERY(
+            rocsolver_orgbr_ungbr(handle, storev, m, n, k, (T*)nullptr, lda, (T*)nullptr));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));

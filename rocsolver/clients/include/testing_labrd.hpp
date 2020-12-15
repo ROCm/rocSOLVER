@@ -265,7 +265,7 @@ void labrd_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
-    
+
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         labrd_initData<false, true, S, T>(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx,
@@ -331,8 +331,8 @@ void testing_labrd(Arguments argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         CHECK_ALLOC_QUERY(rocsolver_labrd(handle, m, n, nb, (T*)nullptr, lda, (S*)nullptr,
-                                              (S*)nullptr, (T*)nullptr, (T*)nullptr, (T*)nullptr,
-                                              ldx, (T*)nullptr, ldy));
+                                          (S*)nullptr, (T*)nullptr, (T*)nullptr, (T*)nullptr, ldx,
+                                          (T*)nullptr, ldy));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));

@@ -302,7 +302,7 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
-    
+
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         getf2_getrf_initData<false, true, T>(handle, m, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA,
@@ -369,12 +369,13 @@ void testing_getf2_getrf(Arguments argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)
-            CHECK_ALLOC_QUERY(rocsolver_getf2_getrf(STRIDED, GETRF, handle, m, n, (T* const*)nullptr, lda, stA,
-                                      (rocblas_int*)nullptr, stP, (rocblas_int*)nullptr, bc));
+            CHECK_ALLOC_QUERY(rocsolver_getf2_getrf(STRIDED, GETRF, handle, m, n, (T* const*)nullptr,
+                                                    lda, stA, (rocblas_int*)nullptr, stP,
+                                                    (rocblas_int*)nullptr, bc));
         else
-            CHECK_ALLOC_QUERY(rocsolver_getf2_getrf(STRIDED, GETRF, handle, m, n, (T*)nullptr,
-                                                        lda, stA, (rocblas_int*)nullptr, stP,
-                                                        (rocblas_int*)nullptr, bc));
+            CHECK_ALLOC_QUERY(rocsolver_getf2_getrf(STRIDED, GETRF, handle, m, n, (T*)nullptr, lda,
+                                                    stA, (rocblas_int*)nullptr, stP,
+                                                    (rocblas_int*)nullptr, bc));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));

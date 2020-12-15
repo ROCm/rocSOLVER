@@ -11,7 +11,7 @@
 
 // If REALLOC is 0, automatic reallocation is disable and we will manually
 // reallocate workspace if the memory query resulted in more than DEFAULT_MEM
-#define REALLOC 1         
+#define REALLOC 1
 #define DEFAULT_MEM 33554432
 
 #define ROCSOLVER_BENCH_INFORM(case)                                       \

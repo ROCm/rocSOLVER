@@ -365,7 +365,7 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
-    
+
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         sytxx_hetxx_initData<false, true, T>(handle, n, dA, lda, bc, hA);
@@ -454,12 +454,12 @@ void testing_sytxx_hetxx(Arguments argus)
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)
             CHECK_ALLOC_QUERY(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n,
-                                                        (T* const*)nullptr, lda, stA, (S*)nullptr,
-                                                        stD, (S*)nullptr, stE, (T*)nullptr, stP, bc));
+                                                    (T* const*)nullptr, lda, stA, (S*)nullptr, stD,
+                                                    (S*)nullptr, stE, (T*)nullptr, stP, bc));
         else
-            CHECK_ALLOC_QUERY(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n,
-                                                        (T*)nullptr, lda, stA, (S*)nullptr, stD,
-                                                        (S*)nullptr, stE, (T*)nullptr, stP, bc));
+            CHECK_ALLOC_QUERY(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, (T*)nullptr,
+                                                    lda, stA, (S*)nullptr, stD, (S*)nullptr, stE,
+                                                    (T*)nullptr, stP, bc));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));

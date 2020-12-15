@@ -240,7 +240,7 @@ void ormxr_unmxr_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
-    
+
     for(int iter = 0; iter < hot_calls; iter++)
     {
         ormxr_unmxr_initData<false, true, T>(handle, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
@@ -314,8 +314,8 @@ void testing_ormxr_unmxr(Arguments argus)
     if(!REALLOC)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_ormxr_unmxr(MQR, handle, side, trans, m, n, k, (T*)nullptr,
-                                                    lda, (T*)nullptr, (T*)nullptr, ldc));
+        CHECK_ALLOC_QUERY(rocsolver_ormxr_unmxr(MQR, handle, side, trans, m, n, k, (T*)nullptr, lda,
+                                                (T*)nullptr, (T*)nullptr, ldc));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));

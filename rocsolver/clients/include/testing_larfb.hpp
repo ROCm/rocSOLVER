@@ -324,7 +324,7 @@ void larfb_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
-    
+
     for(int iter = 0; iter < hot_calls; iter++)
     {
         larfb_initData<false, true, T>(handle, side, trans, direct, storev, m, n, k, dV, ldv, dT,
@@ -405,8 +405,8 @@ void testing_larfb(Arguments argus)
     if(!REALLOC)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_larfb(handle, side, trans, direct, storev, m, n, k,
-                                              (T*)nullptr, ldv, (T*)nullptr, ldt, (T*)nullptr, lda));
+        CHECK_ALLOC_QUERY(rocsolver_larfb(handle, side, trans, direct, storev, m, n, k, (T*)nullptr,
+                                          ldv, (T*)nullptr, ldt, (T*)nullptr, lda));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));

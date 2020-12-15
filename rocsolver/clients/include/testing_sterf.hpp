@@ -154,7 +154,7 @@ void sterf_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
-    
+
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         sterf_initData<false, true, T>(handle, n, dD, dE, dInfo, hD, hE, hInfo);

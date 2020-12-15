@@ -297,7 +297,7 @@ void testing_latrd(Arguments argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         CHECK_ALLOC_QUERY(rocsolver_latrd(handle, uplo, n, k, (T*)nullptr, lda, (S*)nullptr,
-                                              (T*)nullptr, (T*)nullptr, ldw));
+                                          (T*)nullptr, (T*)nullptr, ldw));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));

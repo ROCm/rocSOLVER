@@ -88,18 +88,17 @@ inline void rocblas_expect_status(rocblas_status status, rocblas_status expect)
         }                                                                          \
     } while(0)
 
-#define CHECK_ALLOC_QUERY(STATUS)                                                              \
-    do                                                                                         \
-    {                                                                                          \
-        auto status__ = (STATUS);                                                              \
-        if(!(status__ == rocblas_status_size_increased                                         \
-             || status__ == rocblas_status_size_unchanged))                                    \
-        {                                                                                      \
-            rocblas_cerr << "rocBLAS status error: Expected rocblas_status_size_unchanged or " \
-                            "rocblas_status_size_increase,\nreceived "                         \
-                         << rocblas_status_to_string(status__) << std::endl;                   \
-            rocblas_abort();                                                                   \
-        }                                                                                      \
+#define CHECK_ALLOC_QUERY(STATUS)                                                                     \
+    do                                                                                                \
+    {                                                                                                 \
+        auto status__ = (STATUS);                                                                     \
+        if(!(status__ == rocblas_status_size_increased || status__ == rocblas_status_size_unchanged)) \
+        {                                                                                             \
+            rocblas_cerr << "rocBLAS status error: Expected rocblas_status_size_unchanged or "        \
+                            "rocblas_status_size_increase,\nreceived "                                \
+                         << rocblas_status_to_string(status__) << std::endl;                          \
+            rocblas_abort();                                                                          \
+        }                                                                                             \
     } while(0)
 
 #define CHECK_DEVICE_ALLOCATION CHECK_HIP_ERROR

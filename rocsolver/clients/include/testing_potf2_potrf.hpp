@@ -337,11 +337,11 @@ void testing_potf2_potrf(Arguments argus)
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)
             CHECK_ALLOC_QUERY(rocsolver_potf2_potrf(STRIDED, POTRF, handle, uplo, n,
-                                                        (T* const*)nullptr, lda, stA,
-                                                        (rocblas_int*)nullptr, bc));
+                                                    (T* const*)nullptr, lda, stA,
+                                                    (rocblas_int*)nullptr, bc));
         else
             CHECK_ALLOC_QUERY(rocsolver_potf2_potrf(STRIDED, POTRF, handle, uplo, n, (T*)nullptr,
-                                                        lda, stA, (rocblas_int*)nullptr, bc));
+                                                    lda, stA, (rocblas_int*)nullptr, bc));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));

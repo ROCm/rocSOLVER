@@ -307,8 +307,8 @@ void testing_steqr(Arguments argus)
     if(!REALLOC)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_steqr(handle, compc, n, (S*)nullptr, (S*)nullptr,
-                                              (T*)nullptr, ldc, (rocblas_int*)nullptr));
+        CHECK_ALLOC_QUERY(rocsolver_steqr(handle, compc, n, (S*)nullptr, (S*)nullptr, (T*)nullptr,
+                                          ldc, (rocblas_int*)nullptr));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
