@@ -4,6 +4,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## [(Unreleased) rocSOLVER for ROCm 4.1.0]
 ### Added
+- Sample code and unit test for unified memory model/HMM
 
 ### Optimizations
 
