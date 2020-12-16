@@ -3,7 +3,6 @@
  * ************************************************************************ */
 
 #pragma once
-#pragma once
 
 #include "common_device_helpers.hpp"
 #include "rocsolver.h"
