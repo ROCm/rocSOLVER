@@ -2,8 +2,7 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef COMMON_HOST_HELPERS_H
-#define COMMON_HOST_HELPERS_H
+#pragma once
 
 #include <cassert>
 #include <cstdlib>
@@ -158,5 +157,3 @@ void print_device_matrix(const std::string name,
 // ROCSOLVER_ASSUME_X is a variant of ROCSOLVER_ASSUME that takes a string as a second parameter,
 // which should explain why this invariant is believed to be guaranteed.
 #define ROCSOLVER_ASSUME_X(invariant, message) ROCSOLVER_ASSUME(invariant)
-
-#endif /* COMMON_HOST_HELPERS_H */

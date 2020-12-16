@@ -7,8 +7,7 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_STERF_HPP
-#define ROCLAPACK_STERF_HPP
+#pragma once
 
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
@@ -340,5 +339,3 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
-
-#endif

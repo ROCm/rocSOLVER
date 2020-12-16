@@ -2,8 +2,7 @@
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef _ARGUMENTS_H_
-#define _ARGUMENTS_H_
+#pragma once
 
 #include "rocblas.h"
 
@@ -69,5 +68,3 @@ public:
     rocblas_int iters = 5;
     char workmode = 'O';
 };
-
-#endif

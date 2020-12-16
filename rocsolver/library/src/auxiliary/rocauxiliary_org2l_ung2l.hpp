@@ -7,8 +7,7 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORG2L_UNG2L_HPP
-#define ROCLAPACK_ORG2L_UNG2L_HPP
+#pragma once
 
 //#include "rocauxiliary_lacgv.hpp"
 #include "rocauxiliary_larf.hpp"
@@ -154,5 +153,3 @@ rocblas_status rocsolver_org2l_ung2l_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
-
-#endif

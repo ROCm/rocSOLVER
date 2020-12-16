@@ -57,4 +57,4 @@ typedef enum rocblas_evect_
     rocblas_evect_none = 213, /**< No eigenvectors are computed. */
 } rocblas_evect;
 
-#endif
+#endif /* ROCSOLVER_EXTRAS_H_ */

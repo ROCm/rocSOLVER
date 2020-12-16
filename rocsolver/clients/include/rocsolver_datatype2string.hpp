@@ -2,8 +2,7 @@
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef ROCSOLVER_DATATYPE2CHAR_H_
-#define ROCSOLVER_DATATYPE2CHAR_H_
+#pragma once
 
 #include "rocblas.h"
 #include "rocsolver.h"
@@ -118,5 +117,3 @@ constexpr rocblas_evect char2rocblas_evect(char value)
     default: return static_cast<rocblas_evect>(-1);
     }
 }
-
-#endif

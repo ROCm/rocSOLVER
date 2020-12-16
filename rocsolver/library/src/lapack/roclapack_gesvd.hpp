@@ -7,8 +7,7 @@
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_GESVD_H
-#define ROCLAPACK_GESVD_H
+#pragma once
 
 #include "../auxiliary/rocauxiliary_bdsqr.hpp"
 #include "../auxiliary/rocauxiliary_orgbr_ungbr.hpp"
@@ -470,5 +469,3 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
-
-#endif /* ROCLAPACK_GESVD_H */

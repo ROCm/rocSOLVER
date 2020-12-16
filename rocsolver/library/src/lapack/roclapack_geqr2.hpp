@@ -7,8 +7,7 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_GEQR2_H
-#define ROCLAPACK_GEQR2_H
+#pragma once
 
 #include "../auxiliary/rocauxiliary_lacgv.hpp"
 #include "../auxiliary/rocauxiliary_larf.hpp"
@@ -137,5 +136,3 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
-
-#endif /* ROCLAPACK_GEQR2_H */

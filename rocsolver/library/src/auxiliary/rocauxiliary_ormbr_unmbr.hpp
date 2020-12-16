@@ -7,8 +7,7 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORMBR_UNMBR_HPP
-#define ROCLAPACK_ORMBR_UNMBR_HPP
+#pragma once
 
 #include "rocauxiliary_ormlq_unmlq.hpp"
 #include "rocauxiliary_ormqr_unmqr.hpp"
@@ -201,5 +200,3 @@ rocblas_status rocsolver_ormbr_unmbr_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
-
-#endif

@@ -7,8 +7,7 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_ORMQL_UNMQL_HPP
-#define ROCLAPACK_ORMQL_UNMQL_HPP
+#pragma once
 
 #include "rocauxiliary_larfb.hpp"
 #include "rocauxiliary_larft.hpp"
@@ -169,5 +168,3 @@ rocblas_status rocsolver_ormql_unmql_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
-
-#endif

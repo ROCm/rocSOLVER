@@ -2,8 +2,7 @@
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef ROCBLAS_RANDOM_H_
-#define ROCBLAS_RANDOM_H_
+#pragma once
 
 #include "rocblas.h"
 #include "rocblas_math.hpp"
@@ -170,5 +169,3 @@ inline std::string random_string(size_t n)
     }
     return str;
 }
-
-#endif

@@ -2,8 +2,7 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef IDEAL_SIZES_HPP
-#define IDEAL_SIZES_HPP
+#pragma once
 
 // general
 #define WAVESIZE 64 // size of wavefront
@@ -70,5 +69,3 @@
 #define ROCBLAS_IAMAX_NB 1024
 #define ROCBLAS_TRSM_BLOCK 128
 #define ROCBLAS_TRTRI_NB 16
-
-#endif /* IDEAL_SIZES_HPP */

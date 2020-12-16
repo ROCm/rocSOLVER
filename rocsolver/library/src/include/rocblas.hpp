@@ -1,9 +1,8 @@
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
+
 #pragma once
-#ifndef _ROCBLAS_HPP_
-#define _ROCBLAS_HPP_
 
 template <typename T>
 struct rocblas_index_value_t;
@@ -1357,5 +1356,3 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
         cast2constPointer(workArr), offset_invA, ldinvA, stride_invA, 0, batch_count, 1,
         cast2constPointer(c_temp_arr));
 }
-
-#endif // _ROCBLAS_HPP_

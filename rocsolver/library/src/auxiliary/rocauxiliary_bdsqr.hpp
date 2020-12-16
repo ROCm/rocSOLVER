@@ -7,8 +7,7 @@
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_BDSQR_H
-#define ROCLAPACK_BDSQR_H
+#pragma once
 
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
@@ -589,5 +588,3 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
-
-#endif /* ROCLAPACK_BDSQR_H */

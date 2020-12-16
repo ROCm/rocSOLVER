@@ -1,7 +1,9 @@
-//
-// Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
-//
+/* ************************************************************************
+ * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * ************************************************************************ */
+
 #pragma once
+
 #include "pinned_memory_allocator.hpp"
 #include <memory>
 

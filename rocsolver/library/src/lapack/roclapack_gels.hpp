@@ -7,8 +7,7 @@
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#ifndef ROCLAPACK_GELS_HPP
-#define ROCLAPACK_GELS_HPP
+#pragma once
 
 #include "../auxiliary/rocauxiliary_ormqr_unmqr.hpp"
 #include "rocblas.hpp"
@@ -190,5 +189,3 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
-
-#endif /* ROCLAPACK_GELS_HPP */

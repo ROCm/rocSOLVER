@@ -2,8 +2,7 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef CLIENTCOMMON_HPP
-#define CLIENTCOMMON_HPP
+#pragma once
 
 #include "../../../rocblascommon/clients/include/rocblas_datatype2string.hpp"
 #include "../../../rocblascommon/clients/include/rocblas_test.hpp"
@@ -17,5 +16,3 @@
 //#include "../../../rocblascommon/clients/include/host_batch_vector.hpp"
 //#include
 //"../../../rocblascommon/clients/include/host_strided_batch_vector.hpp"
-
-#endif

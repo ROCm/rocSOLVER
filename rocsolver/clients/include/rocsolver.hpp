@@ -2,8 +2,7 @@
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef ROCSOLVER_HPP
-#define ROCSOLVER_HPP
+#pragma once
 
 #include "clientcommon.hpp"
 #include "rocsolver.h"
@@ -3294,5 +3293,3 @@ inline rocblas_status rocsolver_sytxx_hetxx(bool STRIDED,
                  : rocsolver_zhetd2_batched(handle, uplo, n, A, lda, D, stD, E, stE, tau, stP, bc);
 }
 /********************************************************/
-
-#endif /* ROCSOLVER_HPP */

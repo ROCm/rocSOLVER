@@ -2,8 +2,7 @@
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef _TESTING_UTILITY_H_
-#define _TESTING_UTILITY_H_
+#pragma once
 
 //#include "cblas_interface.hpp"
 //#include "logging.h"
@@ -356,5 +355,3 @@ void print_strided_batched(const char* name,
     }
     rocblas_cout << std::flush;
 }
-
-#endif
