@@ -2,8 +2,8 @@
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef ROCSOLVER_EXTRA_TYPES_H_
-#define ROCSOLVER_EXTRA_TYPES_H_
+#ifndef ROCSOLVER_EXTRAS_H_
+#define ROCSOLVER_EXTRAS_H_
 
 /*! \brief Used to specify the order in which multiple elementary matrices are
  *applied together
@@ -57,4 +57,4 @@ typedef enum rocblas_evect_
     rocblas_evect_none = 213, /**< No eigenvectors are computed. */
 } rocblas_evect;
 
-#endif /* ROCSOLVER_EXTRA_TYPES_H_ */
+#endif /* ROCSOLVER_EXTRAS_H_ */
