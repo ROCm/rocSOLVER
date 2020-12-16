@@ -85,6 +85,8 @@ set(roclapack_test_source
     # vector & matrix manipulations
     lacgv_gtest.cpp
     laswp_gtest.cpp
+    # unified memory model
+    managed_malloc_gtest.cpp
     )
 
 set(rocsolver_test_source
