@@ -345,7 +345,7 @@ void testing_ormbr_unmbr(Arguments argus)
     }
 
     // memory size query is necessary
-    if(!REALLOC)
+    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         CHECK_ALLOC_QUERY(rocsolver_ormbr_unmbr(handle, storev, side, trans, m, n, k, (T*)nullptr,

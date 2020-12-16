@@ -334,7 +334,7 @@ void testing_getrs(Arguments argus)
     }
 
     // memory size query is necessary
-    if(!REALLOC)
+    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)

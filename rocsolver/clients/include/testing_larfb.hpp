@@ -402,7 +402,7 @@ void testing_larfb(Arguments argus)
     }
 
     // memory size query is necessary
-    if(!REALLOC)
+    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         CHECK_ALLOC_QUERY(rocsolver_larfb(handle, side, trans, direct, storev, m, n, k, (T*)nullptr,

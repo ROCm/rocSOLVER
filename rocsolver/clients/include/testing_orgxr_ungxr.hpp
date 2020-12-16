@@ -226,7 +226,7 @@ void testing_orgxr_ungxr(Arguments argus)
     }
 
     // memory size query is necessary
-    if(!REALLOC)
+    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         CHECK_ALLOC_QUERY(rocsolver_orgxr_ungxr(GQR, handle, m, n, k, (T*)nullptr, lda, (T*)nullptr));
