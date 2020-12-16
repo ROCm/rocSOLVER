@@ -3,7 +3,6 @@
  * ************************************************************************ */
 
 #pragma once
-#pragma once
 
 #include "clientcommon.hpp"
 #include "rocblas.h"
