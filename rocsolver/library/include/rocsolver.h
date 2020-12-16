@@ -16,4 +16,4 @@
 #include "rocsolver-functions.h"
 #include "rocsolver-version.h"
 
-#endif // _ROCSOLVER_H_
+#endif /* _ROCSOLVER_H_ */

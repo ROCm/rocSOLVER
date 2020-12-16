@@ -2,8 +2,7 @@
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef ROCBLAS_TEST_H_
-#define ROCBLAS_TEST_H_
+#pragma once
 
 //#include "argument_model.hpp"
 #include "rocblas.h"
@@ -284,5 +283,3 @@ types";
     }
 };
 */
-
-#endif

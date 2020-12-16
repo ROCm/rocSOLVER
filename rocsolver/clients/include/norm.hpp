@@ -3,8 +3,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef _NORM_HPP
-#define _NORM_HPP
 
 #include "clientcommon.hpp"
 #include "rocblas.h"
@@ -162,5 +160,3 @@ S snorm(char norm_type, rocblas_int m, rocblas_int n, T* A, rocblas_int lda)
 {
     return xlange(&norm_type, &m, &n, A, &lda, (S*)nullptr);
 }
-
-#endif

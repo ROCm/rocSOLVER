@@ -2,8 +2,7 @@
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef S_TEST_H_
-#define S_TEST_H_
+#pragma once
 
 #include <boost/format.hpp>
 #include <cstdarg>
@@ -94,5 +93,3 @@ inline std::ostream& operator<<(std::ostream& os, rocsolver_op_char x)
 {
     return os << x.data;
 }
-
-#endif
