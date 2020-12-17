@@ -211,9 +211,9 @@ void larft_getPerfData(const rocblas_handle handle,
                                        hT, hw, size_w);
 
         // cpu-lapack performance (only if not in perf mode)
-        *cpu_time_used = get_time_us();
+        *cpu_time_used = get_time_us_no_sync();
         cblas_larft<T>(direct, storev, n, k, hV[0], ldv, ht[0], hT[0], ldt);
-        *cpu_time_used = get_time_us() - *cpu_time_used;
+        *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
     larft_initData<true, false, T>(handle, direct, storev, n, k, dV, ldv, dt, dT, ldt, hV, ht, hT,
@@ -230,15 +230,18 @@ void larft_getPerfData(const rocblas_handle handle,
     }
 
     // gpu-lapack performance
+    hipStream_t stream;
+    CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
     for(int iter = 0; iter < hot_calls; iter++)
     {
         larft_initData<false, true, T>(handle, direct, storev, n, k, dV, ldv, dt, dT, ldt, hV, ht,
                                        hT, hw, size_w);
 
-        start = get_time_us();
+        start = get_time_us_sync(stream);
         rocsolver_larft(handle, direct, storev, n, k, dV.data(), ldv, dt.data(), dT.data(), ldt);
-        *gpu_time_used += get_time_us() - start;
+        *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
@@ -282,6 +285,18 @@ void testing_larft(Arguments argus)
             ROCSOLVER_BENCH_INFORM(1);
 
         return;
+    }
+
+    // memory size query is necessary
+    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
+    {
+        CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
+        CHECK_ALLOC_QUERY(rocsolver_larft(handle, direct, storev, n, k, (T*)nullptr, ldv,
+                                          (T*)nullptr, (T*)nullptr, ldt));
+
+        size_t size;
+        CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
+        CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 
     // memory allocations

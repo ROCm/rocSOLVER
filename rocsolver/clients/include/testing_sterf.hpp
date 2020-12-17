@@ -137,9 +137,9 @@ void sterf_getPerfData(const rocblas_handle handle,
         sterf_initData<true, false, T>(handle, n, dD, dE, dInfo, hD, hE, hInfo);
 
         // cpu-lapack performance (only if not in perf mode)
-        *cpu_time_used = get_time_us();
+        *cpu_time_used = get_time_us_no_sync();
         cblas_sterf<T>(n, hD[0], hE[0]);
-        *cpu_time_used = get_time_us() - *cpu_time_used;
+        *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
     sterf_initData<true, false, T>(handle, n, dD, dE, dInfo, hD, hE, hInfo);
@@ -153,14 +153,17 @@ void sterf_getPerfData(const rocblas_handle handle,
     }
 
     // gpu-lapack performance
+    hipStream_t stream;
+    CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         sterf_initData<false, true, T>(handle, n, dD, dE, dInfo, hD, hE, hInfo);
 
-        start = get_time_us();
+        start = get_time_us_sync(stream);
         rocsolver_sterf(handle, n, dD.data(), dE.data(), dInfo.data());
-        *gpu_time_used += get_time_us() - start;
+        *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
@@ -196,6 +199,17 @@ void testing_sterf(Arguments argus)
             ROCSOLVER_BENCH_INFORM(1);
 
         return;
+    }
+
+    // memory size query is necessary
+    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
+    {
+        CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
+        CHECK_ALLOC_QUERY(rocsolver_sterf(handle, n, (T*)nullptr, (T*)nullptr, (rocblas_int*)nullptr));
+
+        size_t size;
+        CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
+        CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 
     // memory allocations

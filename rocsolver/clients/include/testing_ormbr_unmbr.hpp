@@ -248,10 +248,10 @@ void ormbr_unmbr_getPerfData(const rocblas_handle handle,
                                              dC, ldc, hA, hIpiv, hC, hW, size_W);
 
         // cpu-lapack performance (only if not in perf mode)
-        *cpu_time_used = get_time_us();
+        *cpu_time_used = get_time_us_no_sync();
         cblas_ormbr_unmbr<T>(storev, side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc,
                              hW.data(), size_W);
-        *cpu_time_used = get_time_us() - *cpu_time_used;
+        *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
     ormbr_unmbr_initData<true, false, T>(handle, storev, side, trans, m, n, k, dA, lda, dIpiv, dC,
@@ -268,16 +268,19 @@ void ormbr_unmbr_getPerfData(const rocblas_handle handle,
     }
 
     // gpu-lapack performance
+    hipStream_t stream;
+    CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
     for(int iter = 0; iter < hot_calls; iter++)
     {
         ormbr_unmbr_initData<false, true, T>(handle, storev, side, trans, m, n, k, dA, lda, dIpiv,
                                              dC, ldc, hA, hIpiv, hC, hW, size_W);
 
-        start = get_time_us();
+        start = get_time_us_sync(stream);
         rocsolver_ormbr_unmbr(handle, storev, side, trans, m, n, k, dA.data(), lda, dIpiv.data(),
                               dC.data(), ldc);
-        *gpu_time_used += get_time_us() - start;
+        *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
@@ -341,6 +344,18 @@ void testing_ormbr_unmbr(Arguments argus)
             ROCSOLVER_BENCH_INFORM(1);
 
         return;
+    }
+
+    // memory size query is necessary
+    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
+    {
+        CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
+        CHECK_ALLOC_QUERY(rocsolver_ormbr_unmbr(handle, storev, side, trans, m, n, k, (T*)nullptr,
+                                                lda, (T*)nullptr, (T*)nullptr, ldc));
+
+        size_t size;
+        CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
+        CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 
     // memory allocations

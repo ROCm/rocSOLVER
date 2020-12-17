@@ -359,14 +359,14 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
                                                 stQ, dTaup, stP, bc, hA, hD, hE, hTauq, hTaup);
 
         // cpu-lapack performance (only if not in perf mode)
-        *cpu_time_used = get_time_us();
+        *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
             GEBRD ? cblas_gebrd<S, T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(),
                                       max(m, n))
                   : cblas_gebd2<S, T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
         }
-        *cpu_time_used = get_time_us() - *cpu_time_used;
+        *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
     gebd2_gebrd_initData<true, false, S, T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq,
@@ -384,16 +384,19 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
     }
 
     // gpu-lapack performance
+    hipStream_t stream;
+    CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         gebd2_gebrd_initData<false, true, S, T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq,
                                                 stQ, dTaup, stP, bc, hA, hD, hE, hTauq, hTaup);
 
-        start = get_time_us();
+        start = get_time_us_sync(stream);
         rocsolver_gebd2_gebrd(STRIDED, GEBRD, handle, m, n, dA.data(), lda, stA, dD.data(), stD,
                               dE.data(), stE, dTauq.data(), stQ, dTaup.data(), stP, bc);
-        *gpu_time_used += get_time_us() - start;
+        *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
@@ -451,6 +454,24 @@ void testing_gebd2_gebrd(Arguments argus)
             ROCSOLVER_BENCH_INFORM(1);
 
         return;
+    }
+
+    // memory size query is necessary
+    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
+    {
+        CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
+        if(BATCHED)
+            CHECK_ALLOC_QUERY(rocsolver_gebd2_gebrd(STRIDED, GEBRD, handle, m, n, (T* const*)nullptr,
+                                                    lda, stA, (S*)nullptr, stD, (S*)nullptr, stE,
+                                                    (T*)nullptr, stQ, (T*)nullptr, stP, bc));
+        else
+            CHECK_ALLOC_QUERY(rocsolver_gebd2_gebrd(STRIDED, GEBRD, handle, m, n, (T*)nullptr, lda,
+                                                    stA, (S*)nullptr, stD, (S*)nullptr, stE,
+                                                    (T*)nullptr, stQ, (T*)nullptr, stP, bc));
+
+        size_t size;
+        CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
+        CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 
     if(BATCHED)
