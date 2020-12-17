@@ -8,6 +8,10 @@
 #include <cstdarg>
 #include <limits>
 
+// If USE_ROCBLAS_REALLOC_ON_DEMAND is false, automatic reallocation is disable and we will manually
+// reallocate workspace
+#define USE_ROCBLAS_REALLOC_ON_DEMAND true
+
 #define ROCSOLVER_BENCH_INFORM(case)                                       \
     do                                                                     \
     {                                                                      \

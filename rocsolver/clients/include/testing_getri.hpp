@@ -275,12 +275,12 @@ void getri_getPerfData(const rocblas_handle handle,
                                        hIpiv, hInfo, singular);
 
         // cpu-lapack performance (only if not in perf mode)
-        *cpu_time_used = get_time_us();
+        *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
             cblas_getri<T>(n, hA[b], lda, hIpiv[b], hW.data(), sizeW, hInfo[b]);
         }
-        *cpu_time_used = get_time_us() - *cpu_time_used;
+        *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
     getri_initData<true, false, T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, hA1, hA,
@@ -297,16 +297,19 @@ void getri_getPerfData(const rocblas_handle handle,
     }
 
     // gpu-lapack performance
+    hipStream_t stream;
+    CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         getri_initData<false, true, T>(handle, n, dA1, dA, lda, stA, dIpiv, stP, dInfo, bc, hA1, hA,
                                        hIpiv, hInfo, singular);
 
-        start = get_time_us();
+        start = get_time_us_sync(stream);
         rocsolver_getri(STRIDED, handle, n, dA1.data(), dA.data(), lda, stA, dIpiv.data(), stP,
                         dInfo.data(), bc);
-        *gpu_time_used += get_time_us() - start;
+        *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
@@ -314,13 +317,8 @@ void getri_getPerfData(const rocblas_handle handle,
 template <bool BATCHED, bool STRIDED, typename T>
 void testing_getri(Arguments argus)
 {
-    rocblas_local_handle handle;
-    /* Set handle memory size to a large enough value for all tests to pass.
-     (TODO: Investigate why rocblas is not automatically increasing the size of
-     the memory stack in rocblas_handle)*/
-    rocblas_set_device_memory_size(handle, 80000000);
-
     // get arguments
+    rocblas_local_handle handle;
     rocblas_int n = argus.N;
     rocblas_int lda = argus.lda;
     rocblas_stride stA = argus.bsa;
@@ -359,6 +357,23 @@ void testing_getri(Arguments argus)
             ROCSOLVER_BENCH_INFORM(1);
 
         return;
+    }
+
+    // memory size query is necessary
+    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
+    {
+        CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
+        if(BATCHED)
+            CHECK_ALLOC_QUERY(rocsolver_getri(STRIDED, handle, n, (T* const*)nullptr,
+                                              (T* const*)nullptr, lda, stA, (rocblas_int*)nullptr,
+                                              stP, (rocblas_int*)nullptr, bc));
+        else
+            CHECK_ALLOC_QUERY(rocsolver_getri(STRIDED, handle, n, (T*)nullptr, (T*)nullptr, lda, stA,
+                                              (rocblas_int*)nullptr, stP, (rocblas_int*)nullptr, bc));
+
+        size_t size;
+        CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
+        CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 
     if(BATCHED && STRIDED)
