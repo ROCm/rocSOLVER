@@ -86,12 +86,6 @@ int main() {
   }
   printf("]\n");
 
-  printf("Ipiv = [");
-  for (size_t i = 0; i < size_piv; ++i) {
-    printf("% .3f ", hIpiv[i]);
-  }
-  printf("]\n");
-
   // clean up
   free(hIpiv);
   hipFree(dA);

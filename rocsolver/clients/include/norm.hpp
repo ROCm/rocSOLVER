@@ -73,10 +73,13 @@ double norm_error(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda,
     host_vector<double> gold_double(N * lda);
     host_vector<double> comp_double(N * lda);
 
-    for(rocblas_int i = 0; i < N * lda; i++)
+    for(rocblas_int i = 0; i < M; i++)
     {
-        gold_double[i] = double(gold[i]);
-        comp_double[i] = double(comp[i]);
+        for(rocblas_int j = 0; j < N; j++)
+        {
+            gold_double[i + j * lda] = double(gold[i + j * lda]);
+            comp_double[i + j * lda] = double(comp[i + j * lda]);
+        }
     }
 
     double work[M];
@@ -103,10 +106,13 @@ double norm_error(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda,
     host_vector<rocblas_double_complex> gold_double(N * lda);
     host_vector<rocblas_double_complex> comp_double(N * lda);
 
-    for(rocblas_int i = 0; i < N * lda; i++)
+    for(rocblas_int i = 0; i < M; i++)
     {
-        gold_double[i] = rocblas_double_complex(gold[i]);
-        comp_double[i] = rocblas_double_complex(comp[i]);
+        for(rocblas_int j = 0; j < N; j++)
+        {
+            gold_double[i + j * lda] = rocblas_double_complex(gold[i + j * lda]);
+            comp_double[i + j * lda] = rocblas_double_complex(comp[i + j * lda]);
+        }
     }
 
     double work[M];
