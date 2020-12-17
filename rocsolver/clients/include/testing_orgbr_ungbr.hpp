@@ -278,9 +278,7 @@ void testing_orgbr_ungbr(Arguments argus)
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
-
-        if(size > DEFAULT_MEM)
-            CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
+        CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 
     // memory allocations
