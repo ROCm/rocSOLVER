@@ -174,9 +174,6 @@ void managed_malloc_getError(const rocblas_handle handle,
     CHECK_ROCBLAS_ERROR(rocsolver_labrd(handle, m, n, nb, dARes, lda, dD, dE, dTauq, dTaup, dXRes,
                                         ldx, dYRes, ldy));
     hipDeviceSynchronize();
-    // CHECK_HIP_ERROR(hARes.transfer_from(dA));
-    // CHECK_HIP_ERROR(hXRes.transfer_from(dX));
-    // CHECK_HIP_ERROR(hYRes.transfer_from(dY));
 
     // CPU lapack
     cblas_labrd<S, T>(m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy);
@@ -222,11 +219,9 @@ void managed_malloc_getPerfData(const rocblas_handle handle,
         managed_malloc_initData<true, false, T>(handle, m, n, nb, dA, dARes, lda);
 
         // cpu-lapack performance
-        *cpu_time_used = get_time_us();
-        // memset(hX[0], 0, ldx * nb * sizeof(T));
-        // memset(hY[0], 0, ldy * nb * sizeof(T));
+        *cpu_time_used = get_time_us_no_sync();
         cblas_labrd<S, T>(m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy);
-        *cpu_time_used = get_time_us() - *cpu_time_used;
+        *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
     managed_malloc_initData<true, false, T>(handle, m, n, nb, dA, dARes, lda);
@@ -242,15 +237,18 @@ void managed_malloc_getPerfData(const rocblas_handle handle,
     }
 
     // gpu-lapack performance
+    hipStream_t stream;
+    CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         managed_malloc_initData<false, true, T>(handle, m, n, nb, dA, dARes, lda);
 
-        start = get_time_us();
+        start = get_time_us_sync(stream);
         rocsolver_labrd(handle, m, n, nb, dARes, lda, dD, dE, dTauq, dTaup, dXRes, ldx, dYRes, ldy);
         hipDeviceSynchronize();
-        *gpu_time_used += get_time_us() - start;
+        *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
@@ -296,6 +294,19 @@ void testing_managed_malloc(Arguments argus)
             ROCSOLVER_BENCH_INFORM(1);
 
         return;
+    }
+
+    // memory size query is necessary
+    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
+    {
+        CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
+        CHECK_ALLOC_QUERY(rocsolver_labrd(handle, m, n, nb, (T*)nullptr, lda, (S*)nullptr,
+                                          (S*)nullptr, (T*)nullptr, (T*)nullptr, (T*)nullptr, ldx,
+                                          (T*)nullptr, ldy));
+
+        size_t size;
+        CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
+        CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 
     // memory allocations
