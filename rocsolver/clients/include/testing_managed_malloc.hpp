@@ -2,6 +2,8 @@
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
+#pragma once
+
 #include "cblas_interface.h"
 #include "clientcommon.hpp"
 #include "norm.hpp"
@@ -9,103 +11,13 @@
 #include "rocsolver_arguments.hpp"
 #include "rocsolver_test.hpp"
 
-template <typename S, typename T>
-void managed_malloc_checkBadArgs(const rocblas_handle handle,
-                                 const rocblas_int m,
-                                 const rocblas_int n,
-                                 const rocblas_int nb,
-                                 T* dA,
-                                 const rocblas_int lda,
-                                 S* dD,
-                                 S* dE,
-                                 T* dTauq,
-                                 T* dTaup,
-                                 T* dX,
-                                 const rocblas_int ldx,
-                                 T* dY,
-                                 const rocblas_int ldy)
-{
-    // handle
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_labrd(nullptr, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy),
-        rocblas_status_invalid_handle);
-
-    // values
-    // N/A
-
-    // pointers
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_labrd(handle, m, n, nb, (T*)nullptr, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy),
-        rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_labrd(handle, m, n, nb, dA, lda, (S*)nullptr, dE, dTauq, dTaup, dX, ldx, dY, ldy),
-        rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_labrd(handle, m, n, nb, dA, lda, dD, (S*)nullptr, dTauq, dTaup, dX, ldx, dY, ldy),
-        rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_labrd(handle, m, n, nb, dA, lda, dD, dE, (T*)nullptr, dTaup, dX, ldx, dY, ldy),
-        rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_labrd(handle, m, n, nb, dA, lda, dD, dE, dTauq, (T*)nullptr, dX, ldx, dY, ldy),
-        rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_labrd(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, (T*)nullptr, ldx, dY, ldy),
-        rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_labrd(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, (T*)nullptr, ldy),
-        rocblas_status_invalid_pointer);
-
-    // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle, 0, n, 0, (T*)nullptr, lda, dD, dE, dTauq, dTaup,
-                                          (T*)nullptr, ldx, dY, ldy),
-                          rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle, m, 0, 0, (T*)nullptr, lda, dD, dE, dTauq, dTaup,
-                                          dX, ldx, (T*)nullptr, ldy),
-                          rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle, m, n, 0, dA, lda, (S*)nullptr, (S*)nullptr,
-                                          (T*)nullptr, (T*)nullptr, (T*)nullptr, ldx, (T*)nullptr,
-                                          ldy),
-                          rocblas_status_success);
-}
-
-template <typename T>
-void testing_managed_malloc_bad_arg()
-{
-    using S = decltype(std::real(T{}));
-
-    // safe arguments
-    rocblas_local_handle handle;
-    rocblas_int m = 1;
-    rocblas_int n = 1;
-    rocblas_int nb = 1;
-    rocblas_int lda = 1;
-    rocblas_int ldx = 1;
-    rocblas_int ldy = 1;
-
-    // memory allocations
-    S *dD, *dE;
-    T *dA, *dTauq, *dTaup, *dX, *dY;
-    hipMallocManaged(&dA, sizeof(T));
-    hipMallocManaged(&dD, sizeof(S));
-    hipMallocManaged(&dE, sizeof(S));
-    hipMallocManaged(&dTauq, sizeof(T));
-    hipMallocManaged(&dTaup, sizeof(T));
-    hipMallocManaged(&dX, sizeof(T));
-    hipMallocManaged(&dY, sizeof(T));
-
-    // check bad arguments
-    managed_malloc_checkBadArgs(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy);
-
-    // free memory
-    hipFree(dA);
-    hipFree(dD);
-    hipFree(dE);
-    hipFree(dTauq);
-    hipFree(dTaup);
-    hipFree(dX);
-    hipFree(dY);
-}
+/*
+ * ===========================================================================
+ *    testing_managed_malloc is a modified version of testing_labrd that tests
+ *    the unified memory model/HMM. checkBadArgs has been removed as the memory
+ *    model has no impact on the bad arg check.
+ * ===========================================================================
+ */
 
 template <bool CPU, bool GPU, typename T>
 void managed_malloc_initData(const rocblas_handle handle,

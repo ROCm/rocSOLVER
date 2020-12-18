@@ -4,6 +4,7 @@
 #include <stdlib.h>  // for malloc
 
 // Example: Compute the QR Factorization of a matrix on the GPU
+// using unified memory (via hipMallocManaged)
 
 double* create_example_matrix(rocblas_int *M_out,
                               rocblas_int *N_out,

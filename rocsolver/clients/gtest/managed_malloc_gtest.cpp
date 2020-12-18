@@ -17,9 +17,6 @@ typedef std::tuple<vector<int>, vector<int>> managed_malloc_tuple;
 
 // each n_size_range is a {n, ldy, nb}
 
-// case when m = n = 0 will also execute the bad arguments test
-// (null handle, null pointers and invalid values)
-
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
     // normal (valid) samples
@@ -69,9 +66,6 @@ TEST_P(MANAGED_MALLOC, __float)
 {
     Arguments arg = managed_malloc_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
-        testing_managed_malloc_bad_arg<float>();
-
     arg.batch_count = 1;
     testing_managed_malloc<float>(arg);
 }
@@ -79,9 +73,6 @@ TEST_P(MANAGED_MALLOC, __float)
 TEST_P(MANAGED_MALLOC, __double)
 {
     Arguments arg = managed_malloc_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_managed_malloc_bad_arg<double>();
 
     arg.batch_count = 1;
     testing_managed_malloc<double>(arg);
@@ -91,9 +82,6 @@ TEST_P(MANAGED_MALLOC, __float_complex)
 {
     Arguments arg = managed_malloc_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
-        testing_managed_malloc_bad_arg<rocblas_float_complex>();
-
     arg.batch_count = 1;
     testing_managed_malloc<rocblas_float_complex>(arg);
 }
@@ -101,9 +89,6 @@ TEST_P(MANAGED_MALLOC, __float_complex)
 TEST_P(MANAGED_MALLOC, __double_complex)
 {
     Arguments arg = managed_malloc_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_managed_malloc_bad_arg<rocblas_double_complex>();
 
     arg.batch_count = 1;
     testing_managed_malloc<rocblas_double_complex>(arg);
