@@ -2,12 +2,15 @@
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef S_TEST_H_
-#define S_TEST_H_
+#pragma once
 
 #include <boost/format.hpp>
 #include <cstdarg>
 #include <limits>
+
+// If USE_ROCBLAS_REALLOC_ON_DEMAND is false, automatic reallocation is disable and we will manually
+// reallocate workspace
+#define USE_ROCBLAS_REALLOC_ON_DEMAND true
 
 #define ROCSOLVER_BENCH_INFORM(case)                                       \
     do                                                                     \
@@ -94,5 +97,3 @@ inline std::ostream& operator<<(std::ostream& os, rocsolver_op_char x)
 {
     return os << x.data;
 }
-
-#endif

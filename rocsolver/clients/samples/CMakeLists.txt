@@ -90,7 +90,7 @@ endforeach( )
 
 foreach( exe ${c_samples} )
   set_target_properties( ${exe} PROPERTIES
-    C_STANDARD 11
+    C_STANDARD 99
     C_STANDARD_REQUIRED ON
     C_EXTENSIONS OFF
   )

@@ -2,8 +2,8 @@
  * Copyright (c) 2016-2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef UTILITY_H
-#define UTILITY_H
+#pragma once
+
 #include "definitions.h"
 #include "rocblas.h"
 #include <cmath>
@@ -419,5 +419,3 @@ catch(...)
 {
     return rocblas_status_internal_error;
 }
-
-#endif

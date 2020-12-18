@@ -2,6 +2,8 @@
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
+#pragma once
+
 #include "cblas_interface.h"
 #include "clientcommon.hpp"
 #include "norm.hpp"
@@ -276,13 +278,13 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
                                              hIpiv, hInfo, singular);
 
         // cpu-lapack performance (only if not in perf mode)
-        *cpu_time_used = get_time_us();
+        *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
             GETRF ? cblas_getrf<T>(m, n, hA[b], lda, hIpiv[b], hInfo[b])
                   : cblas_getf2<T>(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
         }
-        *cpu_time_used = get_time_us() - *cpu_time_used;
+        *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
     getf2_getrf_initData<true, false, T>(handle, m, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA,
@@ -299,16 +301,19 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
     }
 
     // gpu-lapack performance
+    hipStream_t stream;
+    CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         getf2_getrf_initData<false, true, T>(handle, m, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA,
                                              hIpiv, hInfo, singular);
 
-        start = get_time_us();
+        start = get_time_us_sync(stream);
         rocsolver_getf2_getrf(STRIDED, GETRF, handle, m, n, dA.data(), lda, stA, dIpiv.data(), stP,
                               dInfo.data(), bc);
-        *gpu_time_used += get_time_us() - start;
+        *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
@@ -359,6 +364,24 @@ void testing_getf2_getrf(Arguments argus)
             ROCSOLVER_BENCH_INFORM(1);
 
         return;
+    }
+
+    // memory size query is necessary
+    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
+    {
+        CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
+        if(BATCHED)
+            CHECK_ALLOC_QUERY(rocsolver_getf2_getrf(STRIDED, GETRF, handle, m, n, (T* const*)nullptr,
+                                                    lda, stA, (rocblas_int*)nullptr, stP,
+                                                    (rocblas_int*)nullptr, bc));
+        else
+            CHECK_ALLOC_QUERY(rocsolver_getf2_getrf(STRIDED, GETRF, handle, m, n, (T*)nullptr, lda,
+                                                    stA, (rocblas_int*)nullptr, stP,
+                                                    (rocblas_int*)nullptr, bc));
+
+        size_t size;
+        CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
+        CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 
     if(BATCHED)

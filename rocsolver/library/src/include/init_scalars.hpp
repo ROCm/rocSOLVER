@@ -2,6 +2,8 @@
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
+#pragma once
+
 #define IOTA_MAX_THDS 32
 
 // Fills the given range with sequentially increasing values.

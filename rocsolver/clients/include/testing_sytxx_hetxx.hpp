@@ -2,6 +2,8 @@
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
+#pragma once
+
 #include "cblas_interface.h"
 #include "clientcommon.hpp"
 #include "norm.hpp"
@@ -339,14 +341,14 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
         sytxx_hetxx_initData<true, false, T>(handle, n, dA, lda, bc, hA);
 
         // cpu-lapack performance (only if not in perf mode)
-        *cpu_time_used = get_time_us();
+        *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
             SYTRD ? cblas_sytrd_hetrd<S, T>(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b], hW.data(),
                                             32 * n)
                   : cblas_sytd2_hetd2<S, T>(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b]);
         }
-        *cpu_time_used = get_time_us() - *cpu_time_used;
+        *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
     sytxx_hetxx_initData<true, false, T>(handle, n, dA, lda, bc, hA);
@@ -362,15 +364,18 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
     }
 
     // gpu-lapack performance
+    hipStream_t stream;
+    CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         sytxx_hetxx_initData<false, true, T>(handle, n, dA, lda, bc, hA);
 
-        start = get_time_us();
+        start = get_time_us_sync(stream);
         rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, dA.data(), lda, stA, dD.data(), stD,
                               dE.data(), stE, dTau.data(), stP, bc);
-        *gpu_time_used += get_time_us() - start;
+        *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
@@ -443,6 +448,24 @@ void testing_sytxx_hetxx(Arguments argus)
             ROCSOLVER_BENCH_INFORM(1);
 
         return;
+    }
+
+    // memory size query is necessary
+    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
+    {
+        CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
+        if(BATCHED)
+            CHECK_ALLOC_QUERY(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n,
+                                                    (T* const*)nullptr, lda, stA, (S*)nullptr, stD,
+                                                    (S*)nullptr, stE, (T*)nullptr, stP, bc));
+        else
+            CHECK_ALLOC_QUERY(rocsolver_sytxx_hetxx(STRIDED, SYTRD, handle, uplo, n, (T*)nullptr,
+                                                    lda, stA, (S*)nullptr, stD, (S*)nullptr, stE,
+                                                    (T*)nullptr, stP, bc));
+
+        size_t size;
+        CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
+        CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 
     // memory allocations (all cases)
