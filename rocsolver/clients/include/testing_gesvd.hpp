@@ -344,7 +344,6 @@ void gesvd_getError(const rocblas_handle handle,
     // down to essentially run the algorithm again and until convergence is achieved).
 
     double err;
-    T tmp;
     *max_errv = 0;
 
     for(rocblas_int b = 0; b < bc; ++b)
@@ -362,7 +361,7 @@ void gesvd_getError(const rocblas_handle handle,
             {
                 for(rocblas_int i = 0; i < m; ++i)
                 {
-                    tmp = 0;
+                    T tmp = 0;
                     for(rocblas_int j = 0; j < n; ++j)
                         tmp += A[b * lda * n + i + j * lda] * sconj(Vres[b][k + j * ldvres]);
                     tmp -= hSres[b][k] * Ures[b][i + k * ldures];
