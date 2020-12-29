@@ -771,14 +771,12 @@ void testing_gesvd(Arguments argus)
     }
 
     // validate results for rocsolver-test
-    // using k * min(m,n) * machine_precision as tolerance
-    // where k is 1 for reals and 2 for complex numbers
+    // using 2 * min(m,n) * machine_precision as tolerance
     if(argus.unit_check)
     {
-        const int k = is_complex<T> ? 2 : 1;
-        rocsolver_test_check<T>(max_error, k * min(m, n));
+        rocsolver_test_check<T>(max_error, 2 * min(m, n));
         if(svects)
-            rocsolver_test_check<T>(max_errorv, k * min(m, n));
+            rocsolver_test_check<T>(max_errorv, 2 * min(m, n));
     }
 
     // output results for rocsolver-bench
