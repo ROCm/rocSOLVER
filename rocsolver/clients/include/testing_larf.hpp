@@ -311,7 +311,7 @@ void testing_larf(Arguments argus)
     // validate results for rocsolver-test
     // using size_x * machine_precision as tolerance
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, size_x);
+        ROCSOLVER_TEST_CHECK(T, max_error, size_x);
 
     // output results for rocsolver-bench
     if(argus.timing)

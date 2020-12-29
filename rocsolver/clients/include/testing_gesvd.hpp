@@ -774,9 +774,9 @@ void testing_gesvd(Arguments argus)
     // using 2 * min(m,n) * machine_precision as tolerance
     if(argus.unit_check)
     {
-        rocsolver_test_check<T>(max_error, 2 * min(m, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, 2 * min(m, n));
         if(svects)
-            rocsolver_test_check<T>(max_errorv, 2 * min(m, n));
+            ROCSOLVER_TEST_CHECK(T, max_errorv, 2 * min(m, n));
     }
 
     // output results for rocsolver-bench

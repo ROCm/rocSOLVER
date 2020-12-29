@@ -429,7 +429,7 @@ void testing_potf2_potrf(Arguments argus)
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, n);
+        ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)

@@ -579,7 +579,7 @@ void testing_gebd2_gebrd(Arguments argus)
     // validate results for rocsolver-test
     // using m*n * machine_precision as tolerance
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, m * n);
+        ROCSOLVER_TEST_CHECK(T, max_error, m * n);
 
     // output results for rocsolver-bench
     if(argus.timing)
