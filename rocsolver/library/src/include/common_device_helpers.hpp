@@ -285,12 +285,16 @@ __global__ void copyshift_right(const bool copy,
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
+    T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+    T* Wp = load_ptr_batch<T>(W, b, shiftW, strideW);
+
+    // make first row the identity
+    if(i == 0 && j == 0 && !copy)
+        Ap[0] = 1.0;
+
     if(i < dim && j < dim && j <= i)
     {
         rocblas_int offset = j * (j + 1) / 2; // to acommodate in smaller array W
-
-        T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
-        T* Wp = load_ptr_batch<T>(W, b, shiftW, strideW);
 
         if(copy)
         {
@@ -304,11 +308,7 @@ __global__ void copyshift_right(const bool copy,
 
             // make first row the identity
             if(i == j)
-            {
                 Ap[(j + 1) * lda] = 0.0;
-                if(i == 0)
-                    Ap[0] = 1.0;
-            }
         }
     }
 }
@@ -329,12 +329,17 @@ __global__ void copyshift_left(const bool copy,
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
+    T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+    T* Wp = load_ptr_batch<T>(W, b, shiftW, strideW);
+
+    // make last row the identity
+    if(i == 0 && j == 0 && !copy)
+        Ap[dim + dim * lda] = 1.0;
+
     if(i < dim && j < dim && i <= j)
     {
         rocblas_int offset = j * ldw - j * (j + 1) / 2; // to acommodate in smaller array W
 
-        T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
-        T* Wp = load_ptr_batch<T>(W, b, shiftW, strideW);
 
         if(copy)
         {
@@ -348,11 +353,7 @@ __global__ void copyshift_left(const bool copy,
 
             // make last row the identity
             if(i == j)
-            {
                 Ap[dim + j * lda] = 0.0;
-                if(i == 0)
-                    Ap[dim + dim * lda] = 1.0;
-            }
         }
     }
 }
@@ -373,12 +374,16 @@ __global__ void copyshift_down(const bool copy,
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
+    T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+    T* Wp = load_ptr_batch<T>(W, b, shiftW, strideW);
+                
+    // make first column the identity
+    if(i == 0 && j == 0 && !copy)
+        Ap[0] = 1.0;
+    
     if(i < dim && j < dim && i <= j)
     {
         rocblas_int offset = j * ldw - j * (j + 1) / 2; // to acommodate in smaller array W
-
-        T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
-        T* Wp = load_ptr_batch<T>(W, b, shiftW, strideW);
 
         if(copy)
         {
@@ -392,11 +397,7 @@ __global__ void copyshift_down(const bool copy,
 
             // make first column the identity
             if(i == j)
-            {
                 Ap[i + 1] = 0.0;
-                if(j == 0)
-                    Ap[0] = 1.0;
-            }
         }
     }
 }

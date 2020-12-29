@@ -158,10 +158,6 @@ rocblas_status rocsolver_orgbr_ungbr_template(rocblas_handle handle,
             rocblas_int ldw = m - 1;
             rocblas_int blocks = (m - 2) / BS + 1;
 
-            // set A(0,0) = 1
-            hipLaunchKernelGGL(reset_batch_info<T>, dim3(1, batch_count, 1), dim3(1, 1, 1), 0,
-                               stream, A, strideA, 1, 1);
-
             // copy
             hipLaunchKernelGGL(copyshift_right<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
                                stream, true, m - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
@@ -194,10 +190,6 @@ rocblas_status rocsolver_orgbr_ungbr_template(rocblas_handle handle,
             rocblas_stride strideW = rocblas_stride(n - 1) * n / 2; // number of elements to copy
             rocblas_int ldw = n - 1;
             rocblas_int blocks = (n - 2) / BS + 1;
-
-            // set A(0,0) = 1
-            hipLaunchKernelGGL(reset_batch_info<T>, dim3(1, batch_count, 1), dim3(1, 1, 1), 0,
-                               stream, A, strideA, 1, 1);
 
             // copy
             hipLaunchKernelGGL(copyshift_down<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
