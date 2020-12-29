@@ -340,7 +340,6 @@ __global__ void copyshift_left(const bool copy,
     {
         rocblas_int offset = j * ldw - j * (j + 1) / 2; // to acommodate in smaller array W
 
-
         if(copy)
         {
             // copy columns
@@ -376,11 +375,11 @@ __global__ void copyshift_down(const bool copy,
 
     T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
     T* Wp = load_ptr_batch<T>(W, b, shiftW, strideW);
-                
+
     // make first column the identity
     if(i == 0 && j == 0 && !copy)
         Ap[0] = 1.0;
-    
+
     if(i < dim && j < dim && i <= j)
     {
         rocblas_int offset = j * ldw - j * (j + 1) / 2; // to acommodate in smaller array W
