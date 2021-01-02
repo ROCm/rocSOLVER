@@ -1,30 +1,34 @@
 # ########################################################################
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
 cmake_minimum_required( VERSION 3.8 )
 
-# We use C++14 features, this will add compile option: -std=c++14
 set( CMAKE_CXX_STANDARD 14 )
-# Without this line, it will add -std=gnu++14 instead, which has some issues.
 set( CMAKE_CXX_EXTENSIONS OFF )
+set( CMAKE_CXX_STANDARD_REQUIRED ON )
 
 # This has to be initialized before the project() command appears
-# Set the default of CMAKE_BUILD_TYPE to be release, unless user specifies with -D.  MSVC_IDE does not use CMAKE_BUILD_TYPE
+# Set the default of CMAKE_BUILD_TYPE to Release
 if( NOT DEFINED CMAKE_CONFIGURATION_TYPES AND NOT DEFINED CMAKE_BUILD_TYPE )
-  set( CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." )
+  set( CMAKE_BUILD_TYPE Release CACHE STRING
+    "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+  )
 endif()
 
 if ( NOT DEFINED CMAKE_Fortran_COMPILER AND NOT DEFINED ENV{FC} )
   set( CMAKE_Fortran_COMPILER  "gfortran" )
 endif()
 
-# this remove some of the known warnings from the build output
+# ROCM_BUILD_ID is added to the package name by rocm-cmake. Unsetting it prevents that.
 unset(ENV{ROCM_BUILD_ID})
-add_compile_options( -Wno-unused-command-line-argument )
-add_compile_options( -Wno-pass-failed )
 
 project( rocsolver LANGUAGES CXX )
+
+# Add our CMake helper files to the lookup path
+list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" )
+list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/rocblascommon/cmake" )
+list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/rocsolver/clients/cmake" )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -95,53 +99,17 @@ elseif( CXX_VERSION_STRING MATCHES "HCC" )
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -hc")
 endif( )
 
-# This finds the rocm-cmake project, and installs it if not found
-# rocm-cmake contains common cmake code for rocm projects to help setup and install
-set( PROJECT_EXTERN_DIR ${CMAKE_CURRENT_BINARY_DIR}/extern )
+# get rocm-cmake
+include( get-rocm-cmake )
 
-# by default, rocm software stack is expected at /opt/rocm
-# set environment variable ROCM_PATH to change location
-if( NOT ROCM_PATH )
-  set( ROCM_PATH /opt/rocm )
-endif( )
-
-find_package( ROCM CONFIG QUIET PATHS ${ROCM_PATH} )
-if( NOT ROCM_FOUND )
-  set( rocm_cmake_tag "master" CACHE STRING "rocm-cmake tag to download" )
-  file( DOWNLOAD https://github.com/RadeonOpenCompute/rocm-cmake/archive/${rocm_cmake_tag}.zip
-      ${PROJECT_EXTERN_DIR}/rocm-cmake-${rocm_cmake_tag}.zip STATUS status LOG log)
-
-  list(GET status 0 status_code)
-  list(GET status 1 status_string)
-
-  if(NOT status_code EQUAL 0)
-    message(FATAL_ERROR "error: downloading
-    'https://github.com/RadeonOpenCompute/rocm-cmake/archive/${rocm_cmake_tag}.zip' failed
-    status_code: ${status_code}
-    status_string: ${status_string}
-    log: ${log}
-    ")
-  endif()
-
-  message(STATUS "downloading... done")
-
-  execute_process( COMMAND ${CMAKE_COMMAND} -E tar xzvf ${PROJECT_EXTERN_DIR}/rocm-cmake-${rocm_cmake_tag}.zip
-    WORKING_DIRECTORY ${PROJECT_EXTERN_DIR} )
-
-  find_package( ROCM REQUIRED CONFIG PATHS ${PROJECT_EXTERN_DIR}/rocm-cmake-${rocm_cmake_tag} )
-endif( )
-
+# include the rocm-cmake components we use
 include( ROCMSetupVersion )
 include( ROCMCreatePackage )
 include( ROCMInstallTargets )
 include( ROCMPackageConfigHelpers )
 include( ROCMInstallSymlinks )
 
-# Append our library helper cmake path and the cmake path for hip (for convenience)
-# Users may override HIP path by specifying their own in CMAKE_MODULE_PATH
-list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/rocblascommon/cmake )
-
-include (rocblascommon/cmake/os-detection.cmake)
+include( os-detection )
 get_os_id(OS_ID)
 message (STATUS "OS detected is ${OS_ID}")
 
@@ -163,20 +131,18 @@ endif( )
 set( ARMOR_LEVEL "${DEFAULT_ARMOR_LEVEL}" CACHE STRING "Enables increasingly expensive runtime correctness checks" )
 include( armor-config )
 
-# # set the optimization level for debug mode
-# if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
-#   add_compile_options( -O0 )
-# endif( )
-
-# BUILD_SHARED_LIBS is a cmake built-in; we make it an explicit option such that it shows in cmake-gui
+# BUILD_SHARED_LIBS is a cmake built-in
+# make it an explicit option such that it shows in cmake-gui
 option( BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON )
 
+# include helper functions and wrapper functions
+include( util )
+
 # by default, clients are not built
-include( rocsolver/clients/cmake/build-options.cmake )
+include( build-options )
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
 message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
-
 
 # force library install path to lib (CentOS 7 defaults to lib64)
 set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for libraries" FORCE)
@@ -191,10 +157,7 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   find_package( hip REQUIRED CONFIG PATHS ${ROCM_PATH} )
 endif( )
 
-
 find_package( rocblas REQUIRED CONFIG PATHS ${ROCM_PATH} )
-include_directories( ${rocblas_INCLUDE_DIR} )
-
 
 add_subdirectory( rocsolver/library )
 
@@ -202,5 +165,3 @@ add_subdirectory( rocsolver/library )
 if( BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES )
   add_subdirectory( rocsolver/clients )
 endif( )
-
-target_compile_definitions( rocsolver PRIVATE ROCM_USE_FLOAT16 )

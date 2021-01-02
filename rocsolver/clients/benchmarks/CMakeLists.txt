@@ -50,22 +50,12 @@ add_executable( rocsolver-bench client.cpp ${rocsolver_benchmark_common} )
 
 add_armor_flags( rocsolver-bench "${ARMOR_LEVEL}" )
 
-
-#if( BUILD_WITH_TENSILE )
-#    target_compile_definitions( rocsolver-bench PRIVATE BUILD_WITH_TENSILE=1 )
-#else()
-#    target_compile_definitions( rocsolver-bench PRIVATE BUILD_WITH_TENSILE=0 )
-#endif()
-
 # Internal header includes
 target_include_directories( rocsolver-bench
   PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../library/include>
 )
-
-#set( BLIS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/build/deps/blis/include/blis )
-#set( BLIS_LIBRARY ${CMAKE_SOURCE_DIR}/build/deps/blis/lib/libblis.so )
 
 if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
     if( OS_ID_rhel OR OS_ID_centos)
@@ -104,7 +94,6 @@ if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
     target_include_directories( rocsolver-bench
       SYSTEM PRIVATE
         $<BUILD_INTERFACE:${CLANG_INCLUDE_DIR}>
-#        $<BUILD_INTERFACE:${BLIS_INCLUDE_DIR}>
         $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${HCC_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
@@ -122,13 +111,12 @@ else()
         $<BUILD_INTERFACE:${HCC_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
-#        $<BUILD_INTERFACE:${BLIS_INCLUDE_DIR}>
         )
 
     target_link_libraries( rocsolver-bench PRIVATE ${Boost_LIBRARIES} cblas lapack roc::rocsolver )
 endif()
 
-target_link_libraries( rocsolver-bench PRIVATE roc::rocblas ) #${ROCBLAS_LIBRARY})
+target_link_libraries( rocsolver-bench PRIVATE roc::rocblas )
 
 if( CUDA_FOUND )
   target_include_directories( rocsolver-bench

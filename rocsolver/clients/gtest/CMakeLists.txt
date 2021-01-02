@@ -176,7 +176,7 @@ else()
     target_link_libraries( rocsolver-test PRIVATE ${GTEST_LIBRARIES} ${Boost_LIBRARIES} cblas lapack roc::rocsolver )
 endif()
 
-target_link_libraries( rocsolver-test PRIVATE roc::rocblas ) #${ROCBLAS_LIBRARY})
+target_link_libraries( rocsolver-test PRIVATE roc::rocblas )
 
 if( CUDA_FOUND )
   target_include_directories( rocsolver-test
