@@ -18,10 +18,14 @@ add_executable( example-fortran-basic
   example_basic.f90
   $<TARGET_OBJECTS:rocblas_module>
 )
+add_executable( example-c-hmm
+  example_hmm.c
+)
 
 # group sample programs by language
 set( c_samples
   example-c-basic
+  example-c-hmm
 )
 set( cpp_samples
   example-cpp-basic
