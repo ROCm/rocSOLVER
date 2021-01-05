@@ -173,7 +173,7 @@ rocblas_status rocsolver_orgbr_ungbr_template(rocblas_handle handle,
         }
     }
 
-    // if row-wise, compute orthonormal rowss of matrix P' in the
+    // if row-wise, compute orthonormal rows of matrix P' in the
     // bi-diagonalization of a k-by-n matrix A (given by gebrd)
     else
     {

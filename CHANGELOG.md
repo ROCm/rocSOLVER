@@ -18,6 +18,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Fixed runtime errors in debug mode caused by incorrect kernel launch bounds
 - Fixed complex unit test bug caused by incorrect zaxpy function signature
 - Eliminated a small memory transfer that was being done on the default stream
+- Fixed GESVD right singular vectors for 1x1 matrices
 
 
 

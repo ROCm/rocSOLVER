@@ -437,7 +437,7 @@ void testing_getrs(Arguments argus)
     // validate results for rocsolver-test
     // using m * machine_precision as tolerance
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, m);
+        ROCSOLVER_TEST_CHECK(T, max_error, m);
 
     // output results for rocsolver-bench
     if(argus.timing)

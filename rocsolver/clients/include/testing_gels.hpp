@@ -459,7 +459,7 @@ void testing_gels(Arguments argus)
     // validate results for rocsolver-test
     // using max(m,n) * machine_precision as tolerance
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, max(m, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, max(m, n));
 
     // output results for rocsolver-bench
     if(argus.timing)

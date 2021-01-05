@@ -370,7 +370,7 @@ void testing_ormtr_unmtr(Arguments argus)
     // using n * machine_precision as tolerance
     rocblas_int s = left ? m : n;
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, s);
+        ROCSOLVER_TEST_CHECK(T, max_error, s);
 
     // output results for rocsolver-bench
     if(argus.timing)
