@@ -473,7 +473,7 @@ void testing_getf2_getrf(Arguments argus)
     // validate results for rocsolver-test
     // using min(m,n) * machine_precision as tolerance
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, min(m, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, min(m, n));
 
     // output results for rocsolver-bench
     if(argus.timing)

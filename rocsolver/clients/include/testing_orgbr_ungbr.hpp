@@ -320,7 +320,7 @@ void testing_orgbr_ungbr(Arguments argus)
     // using s * machine_precision as tolerance
     rocblas_int s = row ? n : m;
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, s);
+        ROCSOLVER_TEST_CHECK(T, max_error, s);
 
     // output results for rocsolver-bench
     if(argus.timing)

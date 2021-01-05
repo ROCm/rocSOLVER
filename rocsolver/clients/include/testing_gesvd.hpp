@@ -333,18 +333,17 @@ void gesvd_getError(const rocblas_handle handle,
         }
     }
 
-    // Check info for non-covergence
+    // Check info for non-convergence
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
         if(hinfo[b][0] != hinfoRes[b][0])
             *max_err += 1;
 
     // (We expect the used input matrices to always converge. Testing
-    // implicitely the equivalent non-converged matrix is very complicated and it boils
+    // implicitly the equivalent non-converged matrix is very complicated and it boils
     // down to essentially run the algorithm again and until convergence is achieved).
 
     double err;
-    T tmp;
     *max_errv = 0;
 
     for(rocblas_int b = 0; b < bc; ++b)
@@ -357,12 +356,12 @@ void gesvd_getError(const rocblas_handle handle,
         if(hinfo[b][0] == 0 && (left_svect != rocblas_svect_none || right_svect != rocblas_svect_none))
         {
             err = 0;
-            // check singular vectors implicitely (A*v_k = s_k*u_k)
+            // check singular vectors implicitly (A*v_k = s_k*u_k)
             for(rocblas_int k = 0; k < min(m, n); ++k)
             {
                 for(rocblas_int i = 0; i < m; ++i)
                 {
-                    tmp = 0;
+                    T tmp = 0;
                     for(rocblas_int j = 0; j < n; ++j)
                         tmp += A[b * lda * n + i + j * lda] * sconj(Vres[b][k + j * ldvres]);
                     tmp -= hSres[b][k] * Ures[b][i + k * ldures];
@@ -772,12 +771,12 @@ void testing_gesvd(Arguments argus)
     }
 
     // validate results for rocsolver-test
-    // using min(m,n) * machine_precision as tolerance
+    // using 2 * min(m,n) * machine_precision as tolerance
     if(argus.unit_check)
     {
-        rocsolver_test_check<T>(max_error, min(m, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, 2 * min(m, n));
         if(svects)
-            rocsolver_test_check<T>(max_errorv, min(m, n));
+            ROCSOLVER_TEST_CHECK(T, max_errorv, 2 * min(m, n));
     }
 
     // output results for rocsolver-bench

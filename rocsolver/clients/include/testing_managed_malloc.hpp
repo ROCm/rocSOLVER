@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -273,7 +273,7 @@ void testing_managed_malloc(Arguments argus)
     // validate results for rocsolver-test
     // using nb * max(m,n) * machine_precision as tolerance
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, nb * max(m, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, nb * max(m, n));
 
     // output results for rocsolver-bench
     if(argus.timing)

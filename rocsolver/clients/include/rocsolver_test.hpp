@@ -32,13 +32,11 @@ constexpr double get_epsilon()
     return std::numeric_limits<S>::epsilon();
 }
 
-template <typename T>
-inline void rocsolver_test_check(double max_error, int tol)
-{
 #ifdef GOOGLE_TEST
-    ASSERT_LE(max_error, tol * get_epsilon<T>());
+#define ROCSOLVER_TEST_CHECK(T, max_error, tol) ASSERT_LE((max_error), (tol)*get_epsilon<T>())
+#else
+#define ROCSOLVER_TEST_CHECK(T, max_error, tol)
 #endif
-}
 
 inline void rocsolver_bench_output()
 {

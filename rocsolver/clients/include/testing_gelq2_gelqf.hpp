@@ -383,7 +383,7 @@ void testing_gelq2_gelqf(Arguments argus)
     // using n * machine_precision as tolerance
     // (for possibly singular of ill-conditioned matrices we could use n*min(m,n))
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, n);
+        ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)

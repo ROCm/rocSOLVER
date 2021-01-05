@@ -265,7 +265,7 @@ void testing_laswp(Arguments argus)
     // validate results for rocsolver-test
     // no tolerance
     if(argus.unit_check)
-        rocsolver_test_check<T>(max_error, 0);
+        ROCSOLVER_TEST_CHECK(T, max_error, 0);
 
     // output results for rocsolver-bench
     if(argus.timing)
