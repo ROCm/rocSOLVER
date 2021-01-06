@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2016-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # This file is intended to be used in two ways; independently in a stand alone PROJECT
