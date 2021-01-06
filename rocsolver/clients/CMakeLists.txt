@@ -1,14 +1,15 @@
 # ########################################################################
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
-# The ROCm platform requires Ubuntu 16.04 or Fedora 24, which has cmake 3.5
-cmake_minimum_required( VERSION 3.5 )
+cmake_minimum_required( VERSION 3.8 )
 
 # This has to be initialized before the project() command appears
-# Set the default of CMAKE_BUILD_TYPE to be release, unless user specifies with -D.  MSVC_IDE does not use CMAKE_BUILD_TYPE
+# Set the default of CMAKE_BUILD_TYPE to Release
 if( NOT DEFINED CMAKE_CONFIGURATION_TYPES AND NOT DEFINED CMAKE_BUILD_TYPE )
-  set( CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." )
+  set( CMAKE_BUILD_TYPE Release CACHE STRING
+    "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+  )
 endif()
 
 # This project may compile dependencies for clients
@@ -19,7 +20,6 @@ if(OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread")
 endif()
-
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)

@@ -1,77 +1,16 @@
 # ########################################################################
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 # ########################################################################
-
-# The following helper functions wrap common cmake functions.  They are
-# used to cope with a few wierdnesses of hipcc/nvcc.
-# ########################################################################
-# HELPER FUNCTIONS
-# ########################################################################
-
-# ########################################################################
-# target_compile_features() override for CUDA
-# ########################################################################
-function( target_compile_features target_name )
-  # With Cmake v3.5, hipcc (with nvcc backend) does not work with target_compile_features
-  # Turn on -std=c++14 manually
-  if( CUDA_FOUND AND CMAKE_CXX_COMPILER MATCHES ".*/hcc$|.*/hipcc$" )
-    set_target_properties( ${target_name} PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
-  else( )
-    _target_compile_features( ${target_name} ${ARGN} )
-  endif( )
-endfunction( )
-
-# ########################################################################
-# target_link_libraries() override for CUDA
-# ########################################################################
-function( target_link_libraries target_name )
-  # hipcc takes care of finding hip library dependencies internally; remove
-  # explicit mentions of them so cmake doesn't complain on nvcc path
-  # FIXME: This removes this target's hip libraries, even if this particular
-  #        target is not built using a compiler that can find its dependencies
-  #        internally (e.g. Fortran programs).
-  if( CUDA_FOUND AND CMAKE_CXX_COMPILER MATCHES ".*/hipcc$|.*/nvcc$" )
-    foreach( link_library ${ARGN} )
-      if( (link_library MATCHES "^hip::|^hcc::") )
-        message( DEBUG "Removing ${link_library} from ${target_name} library list" )
-      else( )
-        if( TARGET ${link_library} )
-          list( APPEND new_list -Xlinker ${link_library} )
-        else( )
-          list( APPEND new_list ${link_library} )
-        endif( )
-      endif( )
-    endforeach( )
-    _target_link_libraries( ${target_name} ${new_list} )
-  else( )
-    _target_link_libraries( ${target_name} ${ARGN} )
-  endif( )
-endfunction( )
-
-# ########################################################################
-# Main
-# ########################################################################
-
-
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
 
 # This is incremented when the ABI to the library changes
 set( rocsolver_SOVERSION 0.1 )
 
-list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/rocblascommon/cmake )
-
-# This option only works for make/nmake and the ninja generators, but no reason it shouldn't be on all the time
-# This tells cmake to create a compile_commands.json file that can be used with clang tooling or vim
+# This option only works for make, nmake and ninja, but no reason it shouldn't be on all the time
+# It creates a compile_commands.json file for use with clang tooling or vim
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
-
-# set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-Bsymbolic")
-
-# include( build-bitness )
 
 # Print out compiler flags for viewing/debug
 if( BUILD_VERBOSE )
-  message( STATUS "rocfft_VERSION: ${rocfft_VERSION}" )
   message( STATUS "\t==>CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}" )
   message( STATUS "\t==>BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}" )
   message( STATUS "\t==>CMAKE_INSTALL_PREFIX link: " ${CMAKE_INSTALL_PREFIX} )
@@ -94,8 +33,8 @@ if( BUILD_VERBOSE )
   message( STATUS "\t==>CMAKE_SHARED_LINKER_FLAGS_RELEASE: ${CMAKE_SHARED_LINKER_FLAGS_RELEASE}" )
 endif( )
 
-# configure a header file to pass the CMake version settings to the source, and package the header files in the output archive
-configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/include/rocsolver-version.h.in" "${PROJECT_BINARY_DIR}/include/rocsolver-version.h" )
+# Create version header from templated .in file using CMake info
+configure_file( include/rocsolver-version.h.in "${PROJECT_BINARY_DIR}/include/rocsolver-version.h" )
 
 set( rocsolver_headers_public
   include/rocsolver.h
@@ -106,6 +45,7 @@ set( rocsolver_headers_public
   ${PROJECT_BINARY_DIR}/include/rocsolver-export.h
 )
 
+# For IDE integration
 source_group( "Header Files\\Public" FILES ${rocsolver_headers_public} )
 
 include( GNUInstallDirs )
@@ -116,16 +56,6 @@ set( INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR} )
 
 # Build into subdirectories
 add_subdirectory( src )
-
-# The following code is setting variables to control the behavior of CPack to generate our
-# if( WIN32 )
-#     set( CPACK_SOURCE_GENERATOR "ZIP" )
-#     set( CPACK_GENERATOR "ZIP" )
-# else( )
-#     set( CPACK_SOURCE_GENERATOR "TGZ" )
-#     set( CPACK_GENERATOR "DEB;RPM" CACHE STRING "cpack list: 7Z, DEB, IFW, NSIS, NSIS64, RPM, STGZ, TBZ2, TGZ, TXZ, TZ, ZIP" )
-#     # set( CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON )
-# endif( )
 
 # Package specific CPACK vars
 string( TOLOWER "${HIP_RUNTIME}" HIP_RUNTIME_LOWER )
@@ -145,13 +75,17 @@ if( OS_ID_sles )
 endif()
 set( CPACK_RPM_PACKAGE_REQUIRES ${RPM_REQUIREMENTS} )
 
-set( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../../LICENSE.md" )
+set( CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE.md" )
 
 if( NOT CPACK_PACKAGING_INSTALL_PREFIX )
   set( CPACK_PACKAGING_INSTALL_PREFIX "${ROCM_PATH}" )
 endif( )
 
-set( CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "\${CPACK_PACKAGING_INSTALL_PREFIX}" "\${CPACK_PACKAGING_INSTALL_PREFIX}/include" "\${CPACK_PACKAGING_INSTALL_PREFIX}/lib" )
+set( CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
+  "\${CPACK_PACKAGING_INSTALL_PREFIX}"
+  "\${CPACK_PACKAGING_INSTALL_PREFIX}/include"
+  "\${CPACK_PACKAGING_INSTALL_PREFIX}/lib"
+)
 
 # Give rocsolver compiled for CUDA backend a different name
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" OR CXX_VERSION_STRING MATCHES "clang" )
@@ -160,11 +94,12 @@ else( )
     set( package_name rocsolver-alt )
 endif( )
 
-set( ROCSOLVER_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file" )
+set( ROCSOLVER_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
+  CACHE PATH "Path placed into ldconfig file" )
 
 rocm_create_package(
     NAME ${package_name}
-    DESCRIPTION "Radeon Open Compute SOLVER library"
+    DESCRIPTION "AMD ROCm SOLVER library"
     MAINTAINER "RocSOLVER maintainer <rocsolver-maintainer@amd.com>"
     LDCONFIG
     LDCONFIG_DIR ${ROCSOLVER_CONFIG_DIR}

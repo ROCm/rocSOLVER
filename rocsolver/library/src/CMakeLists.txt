@@ -1,23 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
-# ########################################################################
-
-# ########################################################################
-# A helper function to prefix a source list of files with a common path into a new list (non-destructive)
-# ########################################################################
-function( prepend_path prefix source_list_of_files return_list_of_files )
-  foreach( file ${${source_list_of_files}} )
-    if(IS_ABSOLUTE ${file} )
-      list( APPEND new_list ${file} )
-    else( )
-      list( APPEND new_list ${prefix}/${file} )
-    endif( )
-  endforeach( )
-  set( ${return_list_of_files} ${new_list} PARENT_SCOPE )
-endfunction( )
-
-# ########################################################################
-# Main
+# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # package_targets is used as a list of install target
@@ -146,6 +128,9 @@ set_target_properties( rocsolver PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRE
 # In ROCm 4.0 and earlier, the default maximum threads per block is 256
 target_compile_options( rocsolver PRIVATE --gpu-max-threads-per-block=1024 )
 
+# Ignore loop unrolling failures
+target_compile_options( rocsolver PRIVATE -Wno-pass-failed )
+
 if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
   # Remove following when hcc is fixed; hcc emits following spurious warning ROCm v1.6.1
   # "clang-5.0: warning: argument unused during compilation: '-isystem /opt/rocm/include'"
@@ -166,8 +151,7 @@ set_target_properties( rocsolver PROPERTIES CXX_EXTENSIONS NO )
 set_target_properties( rocsolver PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
 rocm_set_soversion(rocsolver ${rocsolver_SOVERSION})
 
-
-# Package that helps me set visibility for function names exported from shared library
+# set visibility for function names exported from shared library
 include( GenerateExportHeader )
 set_target_properties( rocsolver PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN ON )
 generate_export_header( rocsolver EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsolver-export.h )
@@ -181,6 +165,8 @@ if(OPTIMAL)
   target_compile_definitions(rocsolver PRIVATE OPTIMAL)
 endif( )
 
+target_compile_definitions( rocsolver PRIVATE ROCM_USE_FLOAT16 )
+
 add_armor_flags( rocsolver "${ARMOR_LEVEL}" )
 
 ############################################################
@@ -193,7 +179,6 @@ rocm_install_targets(
     ${CMAKE_BINARY_DIR}/include
   PREFIX rocsolver
 )
-#         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
 
 rocm_export_targets(
   TARGETS roc::rocsolver
