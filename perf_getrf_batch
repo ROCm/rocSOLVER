@@ -1,0 +1,25 @@
+#!/bin/bash
+
+bench=$1
+prec=$2
+
+i=64
+while [ $i -le 512 ]
+do
+    echo -n "$i        "; $bench -f getrf_strided_batched -m $i -n $i --lda $i --bsa $((i*i)) --bsp $i --perf 1 --iters 10 -v 0 -r $prec --batch 1000
+    i=$((i+32))
+done
+
+i=544
+while [ $i -le 1024 ]
+do
+    echo -n "$i        "; $bench -f getrf_strided_batched -m $i -n $i --lda $i --bsa $((i*i)) --bsp $i --perf 1 --iters 10 -v 0 -r $prec --batch 500
+    i=$((i+32))
+done
+
+i=1056
+while [ $i -le 2048 ]
+do
+    echo -n "$i        "; $bench -f getrf_strided_batched -m $i -n $i --lda $i --bsa $((i*i)) --bsp $i --perf 1 --iters 10 -v 0 -r $prec --batch 100
+    i=$((i+32))
+done

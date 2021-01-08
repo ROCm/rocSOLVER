@@ -42,7 +42,7 @@ namespace po = boost::program_options;
 int main(int argc, char* argv[])
 try
 {
-    rocblas_initialize();
+//    rocblas_initialize();
 
     Arguments argus;
 
