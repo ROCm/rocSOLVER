@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_gels.hpp"
@@ -17,6 +17,12 @@ rocblas_status rocsolver_gels_batched_impl(rocblas_handle handle,
                                            rocblas_int* info,
                                            const rocblas_int batch_count)
 {
+    bool logging_enabled = logger != nullptr && logger->is_logging_enabled();
+    if(logging_enabled)
+        logger->log_enter_top_level<T>(handle, "rocsolver", "gels_batched", "--transposeA",
+                                       rocblas2char_operation(trans), "-m", m, "-n", n, "-k", nrhs,
+                                       "--lda", lda, "--ldb:", ldb, "--batch", batch_count);
+
     if(!handle)
         return rocblas_status_invalid_handle;
 
@@ -66,10 +72,15 @@ rocblas_status rocsolver_gels_batched_impl(rocblas_handle handle,
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
 
-    return rocsolver_gels_template<true, false, T>(
+    // execution
+    rocblas_status status = rocsolver_gels_template<true, false, T>(
         handle, trans, m, n, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, info,
         batch_count, (T*)scalars, (T*)work, (T*)workArr, (T*)diag_trfac_invA,
-        (T**)trfact_workTrmm_invA, (T*)ipiv, optim_mem);
+        (T**)trfact_workTrmm_invA, (T*)ipiv, optim_mem, logging_enabled);
+
+    if(logging_enabled)
+        logger->log_exit_top_level<T>(handle, "rocsolver", "gels_batched");
+    return status;
 }
 
 /*

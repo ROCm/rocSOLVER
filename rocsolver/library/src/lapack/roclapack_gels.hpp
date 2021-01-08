@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -123,11 +123,22 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                        T* diag_trfac_invA,
                                        T** trfact_workTrmm_invA_arr,
                                        T* ipiv,
-                                       bool optim_mem)
+                                       bool optim_mem,
+                                       bool logging_enabled)
 {
+    if(logging_enabled)
+        logger->log_enter<T>(handle, "rocsolver", "gels", "trans:", rocblas2char_operation(trans),
+                             "m:", m, "n:", n, "nrhs:", nrhs, "lda:", lda, "shiftA:", shiftA,
+                             "strideA:", strideA, "ldb:", ldb, "shiftB:", shiftB,
+                             "strideB:", strideB, "batch_count:", batch_count);
+
     // quick return if zero instances in batch
     if(batch_count == 0)
+    {
+        if(logging_enabled)
+            logger->log_exit<T>(handle, "rocsolver", "gels");
         return rocblas_status_success;
+    }
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -141,7 +152,11 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
 
     // quick return if B is empty
     if(nrhs == 0)
+    {
+        if(logging_enabled)
+            logger->log_exit<T>(handle, "rocsolver", "gels");
         return rocblas_status_success;
+    }
 
     // quick return if A is empty
     if(m == 0 || n == 0)
@@ -151,6 +166,9 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
         rocblas_int blocksy = (nrhs - 1) / 32 + 1;
         hipLaunchKernelGGL(set_zero<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0,
                            stream, rowsB, nrhs, B, shiftB, ldb, strideB);
+
+        if(logging_enabled)
+            logger->log_exit<T>(handle, "rocsolver", "gels");
         return rocblas_status_success;
     }
 
@@ -165,9 +183,9 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
 
     // compute QR factorization of A
     const rocblas_stride strideP = std::min(m, n);
-    rocsolver_geqrf_template<BATCHED, STRIDED>(handle, m, n, A, shiftA, lda, strideA, ipiv, strideP,
-                                               batch_count, scalars, work_x_temp, workArr_temp_arr,
-                                               diag_trfac_invA, trfact_workTrmm_invA_arr);
+    rocsolver_geqrf_template<BATCHED, STRIDED>(
+        handle, m, n, A, shiftA, lda, strideA, ipiv, strideP, batch_count, scalars, work_x_temp,
+        workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr, logging_enabled);
     rocsolver_ormqr_unmqr_template<BATCHED, STRIDED>(
         handle, rocblas_side_left, rocblas_operation_conjugate_transpose, m, nrhs, n, A, shiftA,
         lda, strideA, ipiv, strideP, B, shiftB, ldb, strideB, batch_count, scalars, (T*)work_x_temp,
@@ -187,5 +205,8 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                  trfact_workTrmm_invA_arr);
 
     rocblas_set_pointer_mode(handle, old_mode);
+
+    if(logging_enabled)
+        logger->log_exit<T>(handle, "rocsolver", "gels");
     return rocblas_status_success;
 }

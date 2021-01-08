@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_geqr2.hpp"
@@ -14,6 +14,11 @@ rocblas_status rocsolver_geqr2_batched_impl(rocblas_handle handle,
                                             const rocblas_stride stridep,
                                             const rocblas_int batch_count)
 {
+    bool logging_enabled = logger != nullptr && logger->is_logging_enabled();
+    if(logging_enabled)
+        logger->log_enter_top_level<T>(handle, "rocsolver", "geqr2_batched", "-m", m, "-n", n,
+                                       "--lda", lda, "--bsp", stridep, "--batch", batch_count);
+
     if(!handle)
         return rocblas_status_invalid_handle;
 
@@ -61,9 +66,13 @@ rocblas_status rocsolver_geqr2_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_geqr2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, stridep,
-                                       batch_count, (T*)scalars, work_workArr, (T*)Abyx_norms,
-                                       (T*)diag);
+    rocblas_status status = rocsolver_geqr2_template<T>(
+        handle, m, n, A, shiftA, lda, strideA, ipiv, stridep, batch_count, (T*)scalars,
+        work_workArr, (T*)Abyx_norms, (T*)diag, logging_enabled);
+
+    if(logging_enabled)
+        logger->log_exit_top_level<T>(handle, "rocsolver", "geqr2_batched");
+    return status;
 }
 
 /*

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -12,6 +12,7 @@ struct rocblas_index_value_t;
 #include "init_scalars.hpp"
 #include "internal/rocblas-exported-proto.hpp"
 #include "internal/rocblas_device_malloc.hpp"
+#include "rocsolver_logger.hpp"
 #include <rocblas.h>
 
 // iamax

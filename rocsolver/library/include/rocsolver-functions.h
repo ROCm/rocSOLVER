@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef _ROCLAPACK_FUNCTIONS_H
@@ -31,6 +31,34 @@ extern "C" {
  ******************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char* buf, size_t len);
+
+/*
+ * ===========================================================================
+ *      Multi-level logging
+ * ===========================================================================
+ */
+
+/*! \brief Initialize multi-level logging set-up for rocSOLVER.
+
+    @param[in]
+    layer_mode      rocblas_layer_mode.\n
+                    The default logging layer mode. Can be overridden using
+                    environment variable ROCSOLVER_LAYER.
+    @param[in]
+    max_levels      rocblas_int. max_levels >= 1.\n
+                    The default maximum depth at which nested function calls
+                    will appear in the log. Can be overridden using environment
+                    variable ROCSOLVER_LEVELS.
+ ******************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
+                                                             const rocblas_int max_levels);
+
+/*! \brief Clean up multi-level logging set-up for rocSOLVER and, if applicable
+    print the profile logging results.
+ ******************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_logging_cleanup(void);
 
 /*
  * ===========================================================================

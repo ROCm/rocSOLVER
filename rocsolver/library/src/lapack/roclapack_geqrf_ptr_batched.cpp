@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_geqrf.hpp"
@@ -31,6 +31,11 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
                                                 U tau,
                                                 const rocblas_int batch_count)
 {
+    bool logging_enabled = logger != nullptr && logger->is_logging_enabled();
+    if(logging_enabled)
+        logger->log_enter_top_level<T>(handle, "rocsolver", "geqrf_ptr_batched", "-m", m, "-n", n,
+                                       "--lda", lda, "--batch", batch_count);
+
     if(!handle)
         return rocblas_status_invalid_handle;
 
@@ -88,7 +93,7 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
     // execution
     rocblas_status status = rocsolver_geqrf_template<true, false, T>(
         handle, m, n, A, shiftA, lda, strideA, (T*)ipiv, strideP, batch_count, (T*)scalars,
-        work_workArr, (T*)Abyx_norms_trfact, (T*)diag_tmptr, (T**)workArr);
+        work_workArr, (T*)Abyx_norms_trfact, (T*)diag_tmptr, (T**)workArr, logging_enabled);
 
     // copy ipiv into tau
     if(size_ipiv > 0)
@@ -101,6 +106,8 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
                            strideP, tau, (T*)ipiv);
     }
 
+    if(logging_enabled)
+        logger->log_exit_top_level<T>(handle, "rocsolver", "geqrf_ptr_batched");
     return status;
 }
 

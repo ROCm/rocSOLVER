@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_geqrf.hpp"
@@ -12,6 +12,10 @@ rocblas_status rocsolver_geqrf_impl(rocblas_handle handle,
                                     const rocblas_int lda,
                                     T* ipiv)
 {
+    bool logging_enabled = logger != nullptr && logger->is_logging_enabled();
+    if(logging_enabled)
+        logger->log_enter_top_level<T>(handle, "rocsolver", "geqrf", "-m", m, "-n", n, "--lda", lda);
+
     if(!handle)
         return rocblas_status_invalid_handle;
 
@@ -64,9 +68,13 @@ rocblas_status rocsolver_geqrf_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_geqrf_template<false, false, T>(
+    rocblas_status status = rocsolver_geqrf_template<false, false, T>(
         handle, m, n, A, shiftA, lda, strideA, ipiv, stridep, batch_count, (T*)scalars,
-        work_workArr, (T*)Abyx_norms_trfact, (T*)diag_tmptr, (T**)workArr);
+        work_workArr, (T*)Abyx_norms_trfact, (T*)diag_tmptr, (T**)workArr, logging_enabled);
+
+    if(logging_enabled)
+        logger->log_exit_top_level<T>(handle, "rocsolver", "geqrf");
+    return status;
 }
 
 /*
