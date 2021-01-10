@@ -1,0 +1,55 @@
+#!/bin/bash
+
+bench=$1
+
+i=2
+while [ $i -le 64 ]
+do
+    echo -n "$i        "; $bench -f getf2 -m $i -n $i --lda $i --bsa $((i*i)) --bsp $i --perf 1 --iters 20 -v $2
+    i=$((i+1))
+done
+
+#i=1152
+#j=0
+#while [ $i -le 4576 ]
+#do
+#    if [ $j -eq 0 ]
+#    then
+#        echo -n "$i        "; $bench -f getf2 -m $i -n $i --lda $i --bsa $((i*i)) --bsp $i --perf 1 --iters 20 -v $2 
+#        j=3
+#    else
+##        echo "$i        "
+#        j=$((j-1))
+#    fi
+#    i=$((i+32))
+#done
+#
+#i=4608
+#j=0
+#while [ $i -le 8928 ]
+#do
+#    if [ $j -eq 0 ]
+#    then
+#        echo -n "$i        "; $bench -f getf2 -m $i -n $i --lda $i --bsa $((i*i)) --bsp $i --perf 1 --iters 20 -v $2
+#        j=7
+#    else
+##        echo "$i        "
+#        j=$((j-1))
+#    fi
+#    i=$((i+32))
+#done
+#
+#i=8960
+#j=0
+#while [ $i -le 12032 ]
+#do
+#    if [ $j -eq 0 ]
+#    then
+#        echo -n "$i        "; $bench -f getf2 -m $i -n $i --lda $i --bsa $((i*i)) --bsp $i --perf 1 --iters 20 -v $2
+#        j=15
+#    else
+##        echo "$i        "
+#        j=$((j-1))
+#    fi
+#    i=$((i+32))
+#done
