@@ -17,14 +17,11 @@ rocblas_status rocsolver_gels_batched_impl(rocblas_handle handle,
                                            rocblas_int* info,
                                            const rocblas_int batch_count)
 {
-    bool logging_enabled = logger != nullptr && logger->is_logging_enabled();
-    if(logging_enabled)
-        logger->log_enter_top_level<T>(handle, "rocsolver", "gels_batched", "--transposeA",
-                                       rocblas2char_operation(trans), "-m", m, "-n", n, "-k", nrhs,
-                                       "--lda", lda, "--ldb:", ldb, "--batch", batch_count);
+    ROCSOLVER_ENTER_TOP("gels_batched", "--transposeA", rocblas2char_operation(trans), "-m", m,
+                        "-n", n, "-k", nrhs, "--lda", lda, "--ldb:", ldb, "--batch", batch_count);
 
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("gels_batched", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
@@ -32,7 +29,7 @@ rocblas_status rocsolver_gels_batched_impl(rocblas_handle handle,
     rocblas_status st
         = rocsolver_gels_argCheck(handle, trans, m, n, nrhs, A, lda, B, ldb, info, batch_count);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("gels_batched", st);
 
     // working with unshifted arrays
     const rocblas_int shiftA = 0;
@@ -49,9 +46,10 @@ rocblas_status rocsolver_gels_batched_impl(rocblas_handle handle,
         &size_diag_trfac_invA, &size_trfact_workTrmm_invA_arr, &size_ipiv);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_x_temp,
-                                                      size_workArr_temp_arr, size_diag_trfac_invA,
-                                                      size_trfact_workTrmm_invA_arr, size_ipiv);
+        ROCSOLVER_RETURN_TOP("gels_batched",
+                             rocblas_set_optimal_device_memory_size(
+                                 handle, size_scalars, size_work_x_temp, size_workArr_temp_arr,
+                                 size_diag_trfac_invA, size_trfact_workTrmm_invA_arr, size_ipiv));
 
     // always allocate all required memory for TRSM optimal performance
     bool optim_mem = true;
@@ -61,7 +59,7 @@ rocblas_status rocsolver_gels_batched_impl(rocblas_handle handle,
     rocblas_device_malloc mem(handle, size_scalars, size_work_x_temp, size_workArr_temp_arr,
                               size_diag_trfac_invA, size_trfact_workTrmm_invA_arr, size_ipiv);
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("gels_batched", rocblas_status_memory_error);
 
     scalars = mem[0];
     work = mem[1];
@@ -73,14 +71,11 @@ rocblas_status rocsolver_gels_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    rocblas_status status = rocsolver_gels_template<true, false, T>(
-        handle, trans, m, n, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, info,
-        batch_count, (T*)scalars, (T*)work, (T*)workArr, (T*)diag_trfac_invA,
-        (T**)trfact_workTrmm_invA, (T*)ipiv, optim_mem, logging_enabled);
-
-    if(logging_enabled)
-        logger->log_exit_top_level<T>(handle, "rocsolver", "gels_batched");
-    return status;
+    ROCSOLVER_RETURN_TOP("gels_batched",
+                         rocsolver_gels_template<true, false, T>(
+                             handle, trans, m, n, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb,
+                             strideB, info, batch_count, (T*)scalars, (T*)work, (T*)workArr,
+                             (T*)diag_trfac_invA, (T**)trfact_workTrmm_invA, (T*)ipiv, optim_mem));
 }
 
 /*

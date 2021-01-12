@@ -87,21 +87,14 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
                                         void* work_workArr,
                                         T* Abyx_norms_trfact,
                                         T* diag_tmptr,
-                                        T** workArr,
-                                        bool logging_enabled)
+                                        T** workArr)
 {
-    if(logging_enabled)
-        logger->log_enter<T>(handle, "rocsolver", "geqrf", "m:", m, "n:", n, "lda:", lda,
-                             "shiftA:", shiftA, "strideA:", strideA, "strideP:", strideP,
-                             "batch_count:", batch_count);
+    ROCSOLVER_ENTER("geqrf", "m:", m, "n:", n, "lda:", lda, "shiftA:", shiftA, "strideA:", strideA,
+                    "strideP:", strideP, "batch_count:", batch_count);
 
     // quick return
     if(m == 0 || n == 0 || batch_count == 0)
-    {
-        if(logging_enabled)
-            logger->log_exit<T>(handle, "rocsolver", "geqrf");
-        return rocblas_status_success;
-    }
+        ROCSOLVER_RETURN("geqrf", rocblas_status_success);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -110,13 +103,9 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
     // algorithm
     if(m <= GEQxF_GEQx2_SWITCHSIZE || n <= GEQxF_GEQx2_SWITCHSIZE)
     {
-        rocsolver_geqr2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, strideP,
-                                    batch_count, scalars, work_workArr, Abyx_norms_trfact,
-                                    diag_tmptr, logging_enabled);
-
-        if(logging_enabled)
-            logger->log_exit<T>(handle, "rocsolver", "geqrf");
-        return rocblas_status_success;
+        rocsolver_geqr2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, strideP, batch_count,
+                                    scalars, work_workArr, Abyx_norms_trfact, diag_tmptr);
+        ROCSOLVER_RETURN("geqrf", rocblas_status_success);
     }
 
     rocblas_int dim = min(m, n); // total number of pivots
@@ -131,7 +120,7 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
         jb = min(dim - j, GEQxF_GEQx2_BLOCKSIZE); // number of columns in the block
         rocsolver_geqr2_template<T>(handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
                                     (ipiv + j), strideP, batch_count, scalars, work_workArr,
-                                    Abyx_norms_trfact, diag_tmptr, logging_enabled);
+                                    Abyx_norms_trfact, diag_tmptr);
 
         // apply transformation to the rest of the matrix
         if(j + jb < n)
@@ -157,9 +146,7 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
     if(j < dim)
         rocsolver_geqr2_template<T>(handle, m - j, n - j, A, shiftA + idx2D(j, j, lda), lda,
                                     strideA, (ipiv + j), strideP, batch_count, scalars,
-                                    work_workArr, Abyx_norms_trfact, diag_tmptr, logging_enabled);
+                                    work_workArr, Abyx_norms_trfact, diag_tmptr);
 
-    if(logging_enabled)
-        logger->log_exit<T>(handle, "rocsolver", "geqrf");
-    return rocblas_status_success;
+    ROCSOLVER_RETURN("geqrf", rocblas_status_success);
 }

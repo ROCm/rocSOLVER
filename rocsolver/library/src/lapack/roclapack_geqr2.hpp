@@ -90,21 +90,14 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
                                         T* scalars,
                                         void* work_workArr,
                                         T* Abyx_norms,
-                                        T* diag,
-                                        bool logging_enabled)
+                                        T* diag)
 {
-    if(logging_enabled)
-        logger->log_enter<T>(handle, "rocsolver", "geqr2", "m:", m, "n:", n, "lda:", lda,
-                             "shiftA:", shiftA, "strideA:", strideA, "strideP:", strideP,
-                             "batch_count:", batch_count);
+    ROCSOLVER_ENTER("geqr2", "m:", m, "n:", n, "lda:", lda, "shiftA:", shiftA, "strideA:", strideA,
+                    "strideP:", strideP, "batch_count:", batch_count);
 
     // quick return
     if(m == 0 || n == 0 || batch_count == 0)
-    {
-        if(logging_enabled)
-            logger->log_exit<T>(handle, "rocsolver", "geqr2");
-        return rocblas_status_success;
-    }
+        ROCSOLVER_RETURN("geqr2", rocblas_status_success);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -144,7 +137,5 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
             rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);
     }
 
-    if(logging_enabled)
-        logger->log_exit<T>(handle, "rocsolver", "geqr2");
-    return rocblas_status_success;
+    ROCSOLVER_RETURN("geqr2", rocblas_status_success);
 }

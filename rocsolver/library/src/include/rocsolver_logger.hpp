@@ -10,6 +10,50 @@
 #include <string>
 #include <unordered_map>
 
+#define ROCSOLVER_ENTER_TOP(name, ...)                                              \
+    do                                                                              \
+    {                                                                               \
+        if(logger != nullptr && logger->is_logging_enabled())                       \
+            logger->log_enter_top_level<T>(handle, "rocsolver", name, __VA_ARGS__); \
+    } while(0)
+#define ROCSOLVER_ENTER(name, ...)                                        \
+    do                                                                    \
+    {                                                                     \
+        if(logger != nullptr && logger->is_logging_enabled())             \
+            logger->log_enter<T>(handle, "rocsolver", name, __VA_ARGS__); \
+    } while(0)
+#define ROCBLAS_ENTER(name, ...)                                        \
+    do                                                                  \
+    {                                                                   \
+        if(logger != nullptr && logger->is_logging_enabled())           \
+            logger->log_enter<T>(handle, "rocblas", name, __VA_ARGS__); \
+    } while(0)
+
+#define ROCSOLVER_RETURN_TOP(name, ...)                               \
+    do                                                                \
+    {                                                                 \
+        rocblas_status _status = __VA_ARGS__;                         \
+        if(logger != nullptr && logger->is_logging_enabled())         \
+            logger->log_exit_top_level<T>(handle, "rocsolver", name); \
+        return _status;                                               \
+    } while(0)
+#define ROCSOLVER_RETURN(name, ...)                           \
+    do                                                        \
+    {                                                         \
+        rocblas_status _status = __VA_ARGS__;                 \
+        if(logger != nullptr && logger->is_logging_enabled()) \
+            logger->log_exit<T>(handle, "rocsolver", name);   \
+        return _status;                                       \
+    } while(0)
+#define ROCBLAS_RETURN(name, ...)                             \
+    do                                                        \
+    {                                                         \
+        rocblas_status _status = __VA_ARGS__;                 \
+        if(logger != nullptr && logger->is_logging_enabled()) \
+            logger->log_exit<T>(handle, "rocblas", name);     \
+        return _status;                                       \
+    } while(0)
+
 class rocsolver_logger
 {
 private:

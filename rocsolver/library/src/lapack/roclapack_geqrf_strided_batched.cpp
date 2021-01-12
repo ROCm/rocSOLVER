@@ -15,21 +15,18 @@ rocblas_status rocsolver_geqrf_strided_batched_impl(rocblas_handle handle,
                                                     const rocblas_stride stridep,
                                                     const rocblas_int batch_count)
 {
-    bool logging_enabled = logger != nullptr && logger->is_logging_enabled();
-    if(logging_enabled)
-        logger->log_enter_top_level<T>(handle, "rocsolver", "geqrf_strided_batched", "-m", m, "-n",
-                                       n, "--lda", lda, "--bsa", strideA, "--bsp", stridep,
-                                       "--batch", batch_count);
+    ROCSOLVER_ENTER_TOP("geqrf_strided_batched", "-m", m, "-n", n, "--lda", lda, "--bsa", strideA,
+                        "--bsp", stridep, "--batch", batch_count);
 
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("geqrf_strided_batched", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_geqr2_geqrf_argCheck(handle, m, n, lda, A, ipiv, batch_count);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("geqrf_strided_batched", st);
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -47,9 +44,10 @@ rocblas_status rocsolver_geqrf_strided_batched_impl(rocblas_handle handle,
                                             &size_Abyx_norms_trfact, &size_diag_tmptr, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_workArr,
-                                                      size_Abyx_norms_trfact, size_diag_tmptr,
-                                                      size_workArr);
+        ROCSOLVER_RETURN_TOP("geqrf_strided_batched",
+                             rocblas_set_optimal_device_memory_size(
+                                 handle, size_scalars, size_work_workArr, size_Abyx_norms_trfact,
+                                 size_diag_tmptr, size_workArr));
 
     // memory workspace allocation
     void *scalars, *work_workArr, *Abyx_norms_trfact, *diag_tmptr, *workArr;
@@ -57,7 +55,7 @@ rocblas_status rocsolver_geqrf_strided_batched_impl(rocblas_handle handle,
                               size_diag_tmptr, size_workArr);
 
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("geqrf_strided_batched", rocblas_status_memory_error);
 
     scalars = mem[0];
     work_workArr = mem[1];
@@ -68,13 +66,11 @@ rocblas_status rocsolver_geqrf_strided_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    rocblas_status status = rocsolver_geqrf_template<false, true, T>(
-        handle, m, n, A, shiftA, lda, strideA, ipiv, stridep, batch_count, (T*)scalars,
-        work_workArr, (T*)Abyx_norms_trfact, (T*)diag_tmptr, (T**)workArr, logging_enabled);
-
-    if(logging_enabled)
-        logger->log_exit_top_level<T>(handle, "rocsolver", "geqrf_strided_batched");
-    return status;
+    ROCSOLVER_RETURN_TOP("geqrf_strided_batched",
+                         rocsolver_geqrf_template<false, true, T>(
+                             handle, m, n, A, shiftA, lda, strideA, ipiv, stridep, batch_count,
+                             (T*)scalars, work_workArr, (T*)Abyx_norms_trfact, (T*)diag_tmptr,
+                             (T**)workArr));
 }
 
 /*
