@@ -53,10 +53,19 @@
         return _status;                                       \
     } while(0)
 
+struct rocsolver_log_entry
+{
+    std::string name;
+    int calls;
+    double time;
+    double internal_time;
+};
+
 class rocsolver_logger
 {
 private:
-    std::unordered_map<rocblas_handle, int> current_level;
+    std::unordered_map<std::string, rocsolver_log_entry> profile;
+    std::unordered_map<rocblas_handle, std::vector<rocsolver_log_entry>> call_stack;
     int max_levels;
     rocblas_layer_mode layer_mode;
 
@@ -72,6 +81,10 @@ private:
     {
         return std::string(func_prefix) + '_' + func_name + "_template";
     }
+
+    double get_time_us();
+    double get_time_us_sync(hipStream_t stream);
+    double get_time_us_no_sync();
 
     template <typename T1, typename T2, typename... Ts>
     void log_arguments(rocsolver_ostream& os, const char* sep, T1 arg1, T2 arg2, Ts... args)
@@ -112,8 +125,22 @@ private:
     }
 
     template <typename T>
-    void log_profile(int level, const char* func_prefix, const char* func_name)
+    void log_profile(rocblas_handle handle, int level, const char* func_prefix, const char* func_name)
     {
+        rocsolver_log_entry& from_stack = call_stack[handle][level - 1];
+        rocsolver_log_entry& from_profile = profile[from_stack.name];
+
+        hipStream_t stream;
+        rocblas_get_stream(handle, &stream);
+        double time = get_time_us_sync(stream) - from_stack.time;
+
+        from_profile.name = from_stack.name;
+        from_profile.calls++;
+        from_profile.time += time;
+        from_profile.internal_time += from_stack.internal_time;
+
+        if(level > 1)
+            call_stack[handle][level - 2].internal_time += time;
     }
 
 public:
@@ -128,7 +155,7 @@ public:
                              const char* func_name,
                              Ts... args)
     {
-        int level = current_level[handle];
+        int level = call_stack[handle].size();
         if(level != 0)
             ROCSOLVER_UNREACHABLE();
 
@@ -142,19 +169,26 @@ public:
     template <typename T>
     void log_exit_top_level(rocblas_handle handle, const char* func_prefix, const char* func_name)
     {
-        int level = current_level[handle];
+        int level = call_stack[handle].size();
         if(level != 0)
             ROCSOLVER_UNREACHABLE();
 
         rocblas_cout << "-------  EXIT " << get_func_name<T>(func_prefix, func_name) << " -------"
                      << std::endl
                      << std::endl;
+
+        call_stack.erase(handle);
     }
 
     template <typename T, typename... Ts>
     void log_enter(rocblas_handle handle, const char* func_prefix, const char* func_name, Ts... args)
     {
-        int level = ++current_level[handle];
+        rocsolver_log_entry entry;
+        entry.name = get_template_name(func_prefix, func_name);
+        entry.time = get_time_us_no_sync();
+        call_stack[handle].push_back(entry);
+
+        int level = call_stack[handle].size();
 
         if(layer_mode & rocblas_layer_mode_log_trace && level <= max_levels)
             log_trace<T>(level, func_prefix, func_name, args...);
@@ -163,10 +197,12 @@ public:
     template <typename T>
     void log_exit(rocblas_handle handle, const char* func_prefix, const char* func_name)
     {
-        int level = current_level[handle]--;
+        int level = call_stack[handle].size();
 
         if(layer_mode & rocblas_layer_mode_log_profile)
-            log_profile<T>(level, func_prefix, func_name);
+            log_profile<T>(handle, level, func_prefix, func_name);
+
+        call_stack[handle].pop_back();
     }
 
     friend rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,

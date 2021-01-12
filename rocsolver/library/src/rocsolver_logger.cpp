@@ -3,6 +3,7 @@
  * ************************************************************************ */
 
 #include "rocsolver_logger.hpp"
+#include <sys/time.h>
 
 rocsolver_logger* logger = nullptr;
 
@@ -40,6 +41,22 @@ rocblas_status rocsolver_logging_cleanup()
     if(logger == nullptr)
         return rocblas_status_internal_error;
 
+    // print profile logging results
+    if(logger->layer_mode & rocblas_layer_mode_log_profile && logger->profile.size() > 0)
+    {
+        rocblas_cout << "------- PROFILE -------" << std::endl;
+        for(auto it = logger->profile.begin(); it != logger->profile.end(); ++it)
+        {
+            rocblas_cout << it->first.c_str() << ": Calls: " << it->second.calls
+                         << ", Total Time: " << it->second.time << " ms";
+            if(it->second.internal_time > 0.0)
+                rocblas_cout << " (in nested functions: " << it->second.internal_time << " ms)"
+                             << std::endl;
+            else
+                rocblas_cout << std::endl;
+        }
+    }
+
     delete logger;
     logger = nullptr;
 
@@ -66,4 +83,27 @@ template <>
 char rocsolver_logger::get_precision<rocblas_double_complex>()
 {
     return 'z';
+}
+
+double rocsolver_logger::get_time_us()
+{
+    hipDeviceSynchronize();
+    struct timespec tv;
+    clock_gettime(CLOCK_MONOTONIC, &tv);
+    return tv.tv_sec * 1'000'000llu + (tv.tv_nsec + 500llu) / 1000;
+}
+
+double rocsolver_logger::get_time_us_sync(hipStream_t stream)
+{
+    hipStreamSynchronize(stream);
+    struct timespec tv;
+    clock_gettime(CLOCK_MONOTONIC, &tv);
+    return tv.tv_sec * 1'000'000llu + (tv.tv_nsec + 500llu) / 1000;
+}
+
+double rocsolver_logger::get_time_us_no_sync()
+{
+    struct timespec tv;
+    clock_gettime(CLOCK_MONOTONIC, &tv);
+    return tv.tv_sec * 1'000'000llu + (tv.tv_nsec + 500llu) / 1000;
 }
