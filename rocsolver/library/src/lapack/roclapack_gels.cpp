@@ -16,8 +16,8 @@ rocblas_status rocsolver_gels_impl(rocblas_handle handle,
                                    const rocblas_int ldb,
                                    rocblas_int* info)
 {
-    ROCSOLVER_ENTER_TOP("gels", "--transposeA", rocblas2char_operation(trans), "-m", m, "-n", n,
-                        "-k", nrhs, "--lda", lda, "--ldb:", ldb);
+    ROCSOLVER_ENTER_TOP("gels", "--transposeA", trans, "-m", m, "-n", n, "-k", nrhs, "--lda", lda,
+                        "--ldb:", ldb);
 
     if(!handle)
         ROCSOLVER_RETURN_TOP("gels", rocblas_status_invalid_handle);

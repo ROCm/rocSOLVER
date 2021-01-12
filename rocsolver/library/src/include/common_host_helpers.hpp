@@ -1,14 +1,14 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
 
+#include "common_ostream_helpers.hpp"
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
 #include <hip/hip_runtime.h>
-#include <iostream>
 #include <limits>
 #include <rocblas.h>
 
@@ -91,17 +91,17 @@ void print_device_matrix(const std::string name,
     T hA[lda * n];
     hipMemcpy(hA, A, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
-    std::cerr << m << "-by-" << n << " matrix: " << name << '\n';
+    rocblas_cout << m << "-by-" << n << " matrix: " << name << std::endl;
     for(int i = 0; i < m; i++)
     {
-        std::cerr << "    ";
+        rocblas_cout << "    ";
         for(int j = 0; j < n; j++)
         {
-            std::cerr << hA[j * lda + i];
+            rocblas_cout << hA[j * lda + i];
             if(j < n - 1)
-                std::cerr << ", ";
+                rocblas_cout << ", ";
         }
-        std::cerr << '\n';
+        rocblas_cout << std::endl;
     }
 }
 
@@ -115,17 +115,17 @@ void print_device_matrix(const std::string name,
     T hA[lda * n];
     hipMemcpy(hA, A, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
-    std::cerr << m << "-by-" << n << " matrix: " << name << '\n';
+    rocblas_cout << m << "-by-" << n << " matrix: " << name << std::endl;
     for(int i = 0; i < m; i++)
     {
-        std::cerr << "    ";
+        rocblas_cout << "    ";
         for(int j = 0; j < n; j++)
         {
-            std::cerr << '[' << hA[j * lda + i].real() << "+" << hA[j * lda + i].imag() << "i]";
+            rocblas_cout << '[' << hA[j * lda + i].real() << "+" << hA[j * lda + i].imag() << "i]";
             if(j < n - 1)
-                std::cerr << ", ";
+                rocblas_cout << ", ";
         }
-        std::cerr << '\n';
+        rocblas_cout << std::endl;
     }
 }
 

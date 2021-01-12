@@ -125,9 +125,9 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                        T* ipiv,
                                        bool optim_mem)
 {
-    ROCSOLVER_ENTER("gels", "trans:", rocblas2char_operation(trans), "m:", m, "n:", n,
-                    "nrhs:", nrhs, "lda:", lda, "shiftA:", shiftA, "strideA:", strideA, "ldb:", ldb,
-                    "shiftB:", shiftB, "strideB:", strideB, "batch_count:", batch_count);
+    ROCSOLVER_ENTER("gels", "trans:", trans, "m:", m, "n:", n, "nrhs:", nrhs, "lda:", lda,
+                    "shiftA:", shiftA, "strideA:", strideA, "ldb:", ldb, "shiftB:", shiftB,
+                    "strideB:", strideB, "batch_count:", batch_count);
 
     // quick return if zero instances in batch
     if(batch_count == 0)

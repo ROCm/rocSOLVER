@@ -108,6 +108,7 @@ set( rocsolver_lapack_source
 )
 
 set( auxiliaries
+  ../../../rocblascommon/library/src/rocblas_ostream.cpp
   buildinfo.cpp
   rocsolver_logger.cpp
 )

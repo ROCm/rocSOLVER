@@ -5,9 +5,8 @@
 #pragma once
 
 #include "common_host_helpers.hpp"
+#include "common_ostream_helpers.hpp"
 #include "rocsolver.h"
-#include <iostream>
-#include <string>
 #include <unordered_map>
 
 #define ROCSOLVER_ENTER_TOP(name, ...)                                              \
@@ -75,7 +74,7 @@ private:
     }
 
     template <typename T1, typename T2, typename... Ts>
-    void log_arguments(std::ostream& os, const char* sep, T1 arg1, T2 arg2, Ts... args)
+    void log_arguments(rocsolver_ostream& os, const char* sep, T1 arg1, T2 arg2, Ts... args)
     {
         os << arg1 << ' ' << arg2;
 
@@ -85,7 +84,7 @@ private:
             log_arguments(os, sep, args...);
         }
     }
-    void log_arguments(std::ostream& os, const char* sep)
+    void log_arguments(rocsolver_ostream& os, const char* sep)
     {
         // do nothing
     }
@@ -94,22 +93,22 @@ private:
     void log_bench(int level, const char* func_prefix, const char* func_name, Ts... args)
     {
         for(int i = 0; i < level - 1; i++)
-            std::cerr << "    ";
+            rocblas_cout << "    ";
 
-        std::cerr << "rocsolver-bench -f " << func_name << " -r " << get_precision<T>() << ' ';
-        log_arguments(std::cerr, " ", args...);
-        std::cerr << std::endl;
+        rocblas_cout << "rocsolver-bench -f " << func_name << " -r " << get_precision<T>() << ' ';
+        log_arguments(rocblas_cout, " ", args...);
+        rocblas_cout << std::endl;
     }
 
     template <typename T, typename... Ts>
     void log_trace(int level, const char* func_prefix, const char* func_name, Ts... args)
     {
         for(int i = 0; i < level - 1; i++)
-            std::cerr << "    ";
+            rocblas_cout << "    ";
 
-        std::cerr << get_template_name(func_prefix, func_name) << " (";
-        log_arguments(std::cerr, ", ", args...);
-        std::cerr << ')' << std::endl;
+        rocblas_cout << get_template_name(func_prefix, func_name) << " (";
+        log_arguments(rocblas_cout, ", ", args...);
+        rocblas_cout << ')' << std::endl;
     }
 
     template <typename T>
@@ -133,8 +132,8 @@ public:
         if(level != 0)
             ROCSOLVER_UNREACHABLE();
 
-        std::cerr << "------- ENTER " << get_func_name<T>(func_prefix, func_name) << " -------"
-                  << std::endl;
+        rocblas_cout << "------- ENTER " << get_func_name<T>(func_prefix, func_name) << " -------"
+                     << std::endl;
 
         if(layer_mode & rocblas_layer_mode_log_bench)
             log_bench<T>(level, func_prefix, func_name, args...);
@@ -147,9 +146,9 @@ public:
         if(level != 0)
             ROCSOLVER_UNREACHABLE();
 
-        std::cerr << "-------  EXIT " << get_func_name<T>(func_prefix, func_name) << " -------"
-                  << std::endl
-                  << std::endl;
+        rocblas_cout << "-------  EXIT " << get_func_name<T>(func_prefix, func_name) << " -------"
+                     << std::endl
+                     << std::endl;
     }
 
     template <typename T, typename... Ts>

@@ -9,6 +9,7 @@ struct rocblas_index_value_t;
 
 #include "common_device_helpers.hpp"
 #include "common_host_helpers.hpp"
+#include "common_ostream_helpers.hpp"
 #include "init_scalars.hpp"
 #include "internal/rocblas-exported-proto.hpp"
 #include "internal/rocblas_device_malloc.hpp"
