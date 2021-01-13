@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -23,19 +23,23 @@
 #define ORMxx_ORMxx_BLOCKSIZE 32
 
 // getf2/getfr
-//#define GETRF_GETF2_SWITCHSIZE 64
 #define GETF2_MAX_THDS 256
-//#define GETRF_GETF2_BLOCKSIZE 64
 #define GETF2_OPTIM_NGRP \
     16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
-#define GETF2_BATCH_OPTIM_MAX_SIZE 2048
+#define GETF2_BATCH_OPTIM_MAX_SIZE 1024
 #define GETF2_OPTIM_MAX_SIZE 1024
 #define GETRF_NUM_INTERVALS_NORMAL 4
-#define GETRF_INTERVALS_NORMAL 65, 593, 1217, 8321
-#define GETRF_BLKSIZES_NORMAL 1, 64, 1, 128, 256
+#define GETRF_INTERVALS_NORMAL 65, 657, 1217, 5249
+#define GETRF_BLKSIZES_NORMAL 1, 32, 1, 128, 192
 #define GETRF_NUM_INTERVALS_BATCH 3
-#define GETRF_INTERVALS_BATCH 65, 497, 1025
+#define GETRF_INTERVALS_BATCH 65, 497, 2049
 #define GETRF_BLKSIZES_BATCH 1, 16, 32, 64
+#define GETRF_NPVT_NUM_INTERVALS_NORMAL 3
+#define GETRF_NPVT_INTERVALS_NORMAL 65, 3073, 4609
+#define GETRF_NPVT_BLKSIZES_NORMAL 1, 32, 64, 192
+#define GETRF_NPVT_NUM_INTERVALS_BATCH 3
+#define GETRF_NPVT_INTERVALS_BATCH 45, 181, 2049
+#define GETRF_NPVT_BLKSIZES_BATCH 1, 16, 32, 64
 
 // getri
 #define GETRI_SWITCHSIZE_MID 64
