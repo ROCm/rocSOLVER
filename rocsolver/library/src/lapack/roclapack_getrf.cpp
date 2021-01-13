@@ -13,17 +13,20 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle,
                                     rocblas_int* ipiv,
                                     rocblas_int* info)
 {
+    const char* name = (PIVOT ? "getrf" : "getrf_npvt");
+    ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "--lda", lda);
+
     using S = decltype(std::real(T{}));
 
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP(name, rocblas_status_invalid_handle);
 
     // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_getf2_getrf_argCheck(handle, m, n, lda, A, ipiv, info, PIVOT);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP(name, st);
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -48,9 +51,10 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle,
         &size_work4, &size_pivotval, &size_pivotidx, &size_iinfo);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_work1,
-                                                      size_work2, size_work3, size_work4,
-                                                      size_pivotval, size_pivotidx, size_iinfo);
+        ROCSOLVER_RETURN_TOP(name,
+                             rocblas_set_optimal_device_memory_size(
+                                 handle, size_scalars, size_work, size_work1, size_work2,
+                                 size_work3, size_work4, size_pivotval, size_pivotidx, size_iinfo));
 
     // always allocate all required memory for TRSM optimal performance
     bool optim_mem = true;
@@ -61,7 +65,7 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle,
                               size_work4, size_pivotval, size_pivotidx, size_iinfo);
 
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP(name, rocblas_status_memory_error);
 
     scalars = mem[0];
     work = mem[1];
@@ -76,10 +80,12 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_getrf_template<false, false, PIVOT, T, S>(
-        handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count,
-        (T*)scalars, (rocblas_index_value_t<S>*)work, work1, work2, work3, work4, (T*)pivotval,
-        (rocblas_int*)pivotidx, (rocblas_int*)iinfo, optim_mem);
+    ROCSOLVER_RETURN_TOP(name,
+                         rocsolver_getrf_template<false, false, PIVOT, T, S>(
+                             handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
+                             batch_count, (T*)scalars, (rocblas_index_value_t<S>*)work, work1,
+                             work2, work3, work4, (T*)pivotval, (rocblas_int*)pivotidx,
+                             (rocblas_int*)iinfo, optim_mem));
 }
 
 /*

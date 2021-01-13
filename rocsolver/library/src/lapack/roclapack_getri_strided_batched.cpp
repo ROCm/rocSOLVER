@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_getri.hpp"
@@ -15,15 +15,18 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle,
                                                     rocblas_int* info,
                                                     const rocblas_int batch_count)
 {
+    ROCSOLVER_ENTER_TOP("getri_strided_batched", "-n", n, "--lda", lda, "--bsa", strideA, "--bsp",
+                        strideP, "--batch", batch_count);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("getri_strided_batched", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_getri_argCheck(handle, n, lda, A, ipiv, info, batch_count);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("getri_strided_batched", st);
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -43,9 +46,10 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle,
                                                   &size_tmpcopy, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
-                                                      size_work3, size_work4, size_tmpcopy,
-                                                      size_workArr);
+        ROCSOLVER_RETURN_TOP("getri_strided_batched",
+                             rocblas_set_optimal_device_memory_size(
+                                 handle, size_scalars, size_work1, size_work2, size_work3,
+                                 size_work4, size_tmpcopy, size_workArr));
 
     // always allocate all required memory for TRSM optimal performance
     bool optim_mem = true;
@@ -56,7 +60,7 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle,
                               size_tmpcopy, size_workArr);
 
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("getri_strided_batched", rocblas_status_memory_error);
 
     scalars = mem[0];
     work1 = mem[1];
@@ -69,9 +73,11 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // in-place execution
-    return rocsolver_getri_template<false, true, T>(
-        handle, n, (U) nullptr, 0, 0, 0, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
-        batch_count, (T*)scalars, work1, work2, work3, work4, (T*)tmpcopy, (T**)workArr, optim_mem);
+    ROCSOLVER_RETURN_TOP("getri_strided_batched",
+                         rocsolver_getri_template<false, true, T>(
+                             handle, n, (U) nullptr, 0, 0, 0, A, shiftA, lda, strideA, ipiv, shiftP,
+                             strideP, info, batch_count, (T*)scalars, work1, work2, work3, work4,
+                             (T*)tmpcopy, (T**)workArr, optim_mem));
 }
 
 /*

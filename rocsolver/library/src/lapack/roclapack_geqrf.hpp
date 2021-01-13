@@ -89,7 +89,7 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
                                         T* diag_tmptr,
                                         T** workArr)
 {
-    ROCSOLVER_ENTER("geqrf", "m:", m, "n:", n, "lda:", lda, "shiftA:", shiftA, "strideA:", strideA,
+    ROCSOLVER_ENTER("geqrf", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "strideA:", strideA,
                     "strideP:", strideP, "batch_count:", batch_count);
 
     // quick return

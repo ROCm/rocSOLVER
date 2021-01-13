@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_getrs.hpp"
@@ -15,15 +15,18 @@ rocblas_status rocsolver_getrs_impl(rocblas_handle handle,
                                     T* B,
                                     const rocblas_int ldb)
 {
+    ROCSOLVER_ENTER_TOP("getrs", "--transposeA", trans, "-m", n, "-n", nrhs, "--lda", lda, "--ldb",
+                        ldb);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("getrs", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_getrs_argCheck(handle, trans, n, nrhs, lda, ldb, A, B, ipiv);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("getrs", st);
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -42,8 +45,9 @@ rocblas_status rocsolver_getrs_impl(rocblas_handle handle,
                                             &size_work3, &size_work4);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2, size_work3,
-                                                      size_work4);
+        ROCSOLVER_RETURN_TOP("getrs",
+                             rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2,
+                                                                    size_work3, size_work4));
 
     // always allocate all required memory for TRSM optimal performance
     bool optim_mem = true;
@@ -53,7 +57,7 @@ rocblas_status rocsolver_getrs_impl(rocblas_handle handle,
     rocblas_device_malloc mem(handle, size_work1, size_work2, size_work3, size_work4);
 
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("getrs", rocblas_status_memory_error);
 
     work1 = mem[0];
     work2 = mem[1];
@@ -61,9 +65,11 @@ rocblas_status rocsolver_getrs_impl(rocblas_handle handle,
     work4 = mem[3];
 
     // execution
-    return rocsolver_getrs_template<false, T>(handle, trans, n, nrhs, A, shiftA, lda, strideA, ipiv,
-                                              strideP, B, shiftB, ldb, strideB, batch_count, work1,
-                                              work2, work3, work4, optim_mem);
+    ROCSOLVER_RETURN_TOP("getrs",
+                         rocsolver_getrs_template<false, T>(handle, trans, n, nrhs, A, shiftA, lda,
+                                                            strideA, ipiv, strideP, B, shiftB, ldb,
+                                                            strideB, batch_count, work1, work2,
+                                                            work3, work4, optim_mem));
 }
 
 /*

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_gesvd.hpp"
@@ -21,8 +21,11 @@ rocblas_status rocsolver_gesvd_impl(rocblas_handle handle,
                                     const rocblas_workmode fast_alg,
                                     rocblas_int* info)
 {
+    ROCSOLVER_ENTER_TOP("gesvd", "--leftsv", left_svect, "--rightsv", right_svect, "-m", m, "-n", n,
+                        "--lda", lda, "--ldb", ldu, "--ldv", ldv, "--workmode", fast_alg);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("gesvd", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
@@ -30,7 +33,7 @@ rocblas_status rocsolver_gesvd_impl(rocblas_handle handle,
     rocblas_status st = rocsolver_gesvd_argCheck(handle, left_svect, right_svect, m, n, A, lda, S,
                                                  U, ldu, V, ldv, E, info);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("gesvd", st);
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -59,9 +62,10 @@ rocblas_status rocsolver_gesvd_impl(rocblas_handle handle,
         &size_Abyx_norms_tmptr, &size_X_trfact, &size_Y, &size_tau, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_workArr,
-                                                      size_Abyx_norms_tmptr, size_X_trfact, size_Y,
-                                                      size_tau, size_workArr);
+        ROCSOLVER_RETURN_TOP("gesvd",
+                             rocblas_set_optimal_device_memory_size(
+                                 handle, size_scalars, size_work_workArr, size_Abyx_norms_tmptr,
+                                 size_X_trfact, size_Y, size_tau, size_workArr));
 
     // memory workspace allocation
     void *scalars, *work_workArr, *Abyx_norms_tmptr, *X_trfact, *Y, *tau, *workArr;
@@ -69,7 +73,7 @@ rocblas_status rocsolver_gesvd_impl(rocblas_handle handle,
                               size_X_trfact, size_Y, size_tau, size_workArr);
 
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("gesvd", rocblas_status_memory_error);
 
     scalars = mem[0];
     work_workArr = mem[1];
@@ -82,10 +86,12 @@ rocblas_status rocsolver_gesvd_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_gesvd_template<false, false, T>(
-        handle, left_svect, right_svect, m, n, A, shiftA, lda, strideA, S, strideS, U, ldu, strideU,
-        V, ldv, strideV, E, strideE, fast_alg, info, batch_count, (T*)scalars, work_workArr,
-        (T*)Abyx_norms_tmptr, (T*)X_trfact, (T*)Y, (T*)tau, (T**)workArr);
+    ROCSOLVER_RETURN_TOP("gesvd",
+                         rocsolver_gesvd_template<false, false, T>(
+                             handle, left_svect, right_svect, m, n, A, shiftA, lda, strideA, S,
+                             strideS, U, ldu, strideU, V, ldv, strideV, E, strideE, fast_alg, info,
+                             batch_count, (T*)scalars, work_workArr, (T*)Abyx_norms_tmptr,
+                             (T*)X_trfact, (T*)Y, (T*)tau, (T**)workArr));
 }
 
 /*

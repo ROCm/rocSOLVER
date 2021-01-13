@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     April 2012
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -332,11 +332,16 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                         T* tau,
                                         T** workArr)
 {
+    ROCSOLVER_ENTER("gesvd", "leftsv:", left_svect, "rightsv:", right_svect, "m:", m, "n:", n,
+                    "shiftA:", shiftA, "lda:", lda, "strideA:", strideA, "strideS:", strideS,
+                    "ldu:", ldu, "strideU:", strideU, "ldv:", ldv, "strideV:", strideV,
+                    "strideE:", strideE, "workmode:", fast_alg, "batch_count:", batch_count);
+
     constexpr bool COMPLEX = is_complex<T>;
 
     // quick return
     if(n == 0 || m == 0 || batch_count == 0)
-        return rocblas_status_success;
+        ROCSOLVER_RETURN("gesvd", rocblas_status_success);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -382,13 +387,13 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
         // use fast thin-svd algorithm (this may require larger memory worksapce)
         if(fast_thinSVD)
         {
-            return rocblas_status_not_implemented;
+            ROCSOLVER_RETURN("gesvd", rocblas_status_not_implemented);
         }
 
         // use normal thin-svd
         else
         { //(!fast_thinSVD)
-            return rocblas_status_not_implemented;
+            ROCSOLVER_RETURN("gesvd", rocblas_status_not_implemented);
         }
     }
 
@@ -467,5 +472,5 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
         }
     }
 
-    return rocblas_status_success;
+    ROCSOLVER_RETURN("gesvd", rocblas_status_success);
 }

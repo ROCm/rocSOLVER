@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -103,9 +103,13 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
                                               T* tmptau_W,
                                               T** workArr)
 {
+    ROCSOLVER_ENTER("sytrd_hetrd", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
+                    "strideA:", strideA, "strideD:", strideD, "strideE:", strideE,
+                    "strideP:", strideP, "batch_count:", batch_count);
+
     // quick return
     if(n == 0 || batch_count == 0)
-        return rocblas_status_success;
+        ROCSOLVER_RETURN("sytrd_hetrd", rocblas_status_success);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -115,9 +119,10 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
 
     // if the matrix is too small, use the unblocked variant of the algorithm
     if(n <= kk)
-        return rocsolver_sytd2_hetd2_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
-                                              E, strideE, tau, strideP, batch_count, scalars, work,
-                                              norms, tmptau_W, workArr);
+        ROCSOLVER_RETURN("sytrd_hetrd",
+                         rocsolver_sytd2_hetd2_template(
+                             handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE, tau,
+                             strideP, batch_count, scalars, work, norms, tmptau_W, workArr));
 
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
@@ -196,5 +201,5 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
                        uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE);
 
     rocblas_set_pointer_mode(handle, old_mode);
-    return rocblas_status_success;
+    ROCSOLVER_RETURN("sytrd_hetrd", rocblas_status_success);
 }

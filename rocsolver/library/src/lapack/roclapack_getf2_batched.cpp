@@ -15,10 +15,14 @@ rocblas_status rocsolver_getf2_batched_impl(rocblas_handle handle,
                                             rocblas_int* info,
                                             const rocblas_int batch_count)
 {
+    const char* name = (PIVOT ? "getf2_batched" : "getf2_npvt_batched");
+    ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "--lda", lda, "--bsp", strideP, "--batch",
+                        batch_count);
+
     using S = decltype(std::real(T{}));
 
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP(name, rocblas_status_invalid_handle);
 
     // logging is missing ???
 
@@ -26,7 +30,7 @@ rocblas_status rocsolver_getf2_batched_impl(rocblas_handle handle,
     rocblas_status st
         = rocsolver_getf2_getrf_argCheck(handle, m, n, lda, A, ipiv, info, PIVOT, batch_count);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP(name, st);
 
     // using unshifted arrays
     rocblas_int shiftA = 0;
@@ -47,15 +51,16 @@ rocblas_status rocsolver_getf2_batched_impl(rocblas_handle handle,
                                               &size_pivotval, &size_pivotidx);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
-                                                      size_pivotval, size_pivotidx);
+        ROCSOLVER_RETURN_TOP(name,
+                             rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
+                                                                    size_pivotval, size_pivotidx));
 
     // memory workspace allocation
     void *scalars, *pivotidx, *pivotval, *work;
     rocblas_device_malloc mem(handle, size_scalars, size_work, size_pivotval, size_pivotidx);
 
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP(name, rocblas_status_memory_error);
 
     scalars = mem[0];
     work = mem[1];
@@ -65,9 +70,11 @@ rocblas_status rocsolver_getf2_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_getf2_template<true, PIVOT, T, S>(
-        handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count,
-        (T*)scalars, (rocblas_index_value_t<S>*)work, (T*)pivotval, (rocblas_int*)pivotidx);
+    ROCSOLVER_RETURN_TOP(name,
+                         rocsolver_getf2_template<true, PIVOT, T, S>(
+                             handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
+                             batch_count, (T*)scalars, (rocblas_index_value_t<S>*)work,
+                             (T*)pivotval, (rocblas_int*)pivotidx));
 }
 
 /*

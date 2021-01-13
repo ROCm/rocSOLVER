@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_geqlf.hpp"
@@ -15,15 +15,18 @@ rocblas_status rocsolver_geqlf_strided_batched_impl(rocblas_handle handle,
                                                     const rocblas_stride stridep,
                                                     const rocblas_int batch_count)
 {
+    ROCSOLVER_ENTER_TOP("geqlf_strided_batched", "-m", m, "-n", n, "--lda", lda, "--bsa", strideA,
+                        "--bsp", stridep, "--batch", batch_count);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("geqlf_strided_batched", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_geql2_geqlf_argCheck(handle, m, n, lda, A, ipiv, batch_count);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("geqlf_strided_batched", st);
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -41,9 +44,10 @@ rocblas_status rocsolver_geqlf_strided_batched_impl(rocblas_handle handle,
                                             &size_Abyx_norms_trfact, &size_diag_tmptr, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_workArr,
-                                                      size_Abyx_norms_trfact, size_diag_tmptr,
-                                                      size_workArr);
+        ROCSOLVER_RETURN_TOP("geqlf_strided_batched",
+                             rocblas_set_optimal_device_memory_size(
+                                 handle, size_scalars, size_work_workArr, size_Abyx_norms_trfact,
+                                 size_diag_tmptr, size_workArr));
 
     // memory workspace allocation
     void *scalars, *work_workArr, *Abyx_norms_trfact, *diag_tmptr, *workArr;
@@ -51,7 +55,7 @@ rocblas_status rocsolver_geqlf_strided_batched_impl(rocblas_handle handle,
                               size_diag_tmptr, size_workArr);
 
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("geqlf_strided_batched", rocblas_status_memory_error);
 
     scalars = mem[0];
     work_workArr = mem[1];
@@ -62,9 +66,11 @@ rocblas_status rocsolver_geqlf_strided_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_geqlf_template<false, true, T>(
-        handle, m, n, A, shiftA, lda, strideA, ipiv, stridep, batch_count, (T*)scalars,
-        work_workArr, (T*)Abyx_norms_trfact, (T*)diag_tmptr, (T**)workArr);
+    ROCSOLVER_RETURN_TOP("geqlf_strided_batched",
+                         rocsolver_geqlf_template<false, true, T>(
+                             handle, m, n, A, shiftA, lda, strideA, ipiv, stridep, batch_count,
+                             (T*)scalars, work_workArr, (T*)Abyx_norms_trfact, (T*)diag_tmptr,
+                             (T**)workArr));
 }
 
 /*

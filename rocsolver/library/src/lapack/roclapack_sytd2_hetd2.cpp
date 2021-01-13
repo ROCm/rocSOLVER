@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_sytd2_hetd2.hpp"
@@ -14,15 +14,18 @@ rocblas_status rocsolver_sytd2_hetd2_impl(rocblas_handle handle,
                                           S* E,
                                           T* tau)
 {
+    const char* name = (!is_complex<T> ? "sytd2" : "hetd2");
+    ROCSOLVER_ENTER_TOP(name, "--uplo", uplo, "-n", n, "--lda", lda);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP(name, rocblas_status_invalid_handle);
 
     // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_sytd2_hetd2_argCheck(handle, uplo, n, lda, A, D, E, tau);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP(name, st);
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -47,15 +50,17 @@ rocblas_status rocsolver_sytd2_hetd2_impl(rocblas_handle handle,
                                                   &size_norms, &size_tmptau, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_norms,
-                                                      size_tmptau, size_workArr);
+        ROCSOLVER_RETURN_TOP(name,
+                             rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
+                                                                    size_norms, size_tmptau,
+                                                                    size_workArr));
 
     // memory workspace allocation
     void *scalars, *work, *norms, *tmptau, *workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_work, size_norms, size_tmptau, size_workArr);
 
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP(name, rocblas_status_memory_error);
 
     scalars = mem[0];
     work = mem[1];
@@ -66,9 +71,11 @@ rocblas_status rocsolver_sytd2_hetd2_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_sytd2_hetd2_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E,
-                                          strideE, tau, strideP, batch_count, (T*)scalars, (T*)work,
-                                          (T*)norms, (T*)tmptau, (T**)workArr);
+    ROCSOLVER_RETURN_TOP(name,
+                         rocsolver_sytd2_hetd2_template(handle, uplo, n, A, shiftA, lda, strideA, D,
+                                                        strideD, E, strideE, tau, strideP,
+                                                        batch_count, (T*)scalars, (T*)work,
+                                                        (T*)norms, (T*)tmptau, (T**)workArr));
 }
 
 /*

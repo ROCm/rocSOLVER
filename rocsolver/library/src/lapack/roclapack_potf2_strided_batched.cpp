@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_potf2.hpp"
@@ -14,15 +14,18 @@ rocblas_status rocsolver_potf2_strided_batched_impl(rocblas_handle handle,
                                                     rocblas_int* info,
                                                     const rocblas_int batch_count)
 {
+    ROCSOLVER_ENTER_TOP("potf2_strided_batched", "--uplo", uplo, "-n", n, "--lda", lda, "--bsa",
+                        strideA, "--batch", batch_count);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("potf2_strided_batched", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_potf2_potrf_argCheck(handle, uplo, n, lda, A, info, batch_count);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("potf2_strided_batched", st);
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -37,14 +40,16 @@ rocblas_status rocsolver_potf2_strided_batched_impl(rocblas_handle handle,
     rocsolver_potf2_getMemorySize<T>(n, batch_count, &size_scalars, &size_work, &size_pivots);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_pivots);
+        ROCSOLVER_RETURN_TOP(
+            "potf2_strided_batched",
+            rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_pivots));
 
     // memory workspace allocation
     void *scalars, *work, *pivots;
     rocblas_device_malloc mem(handle, size_scalars, size_work, size_pivots);
 
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("potf2_strided_batched", rocblas_status_memory_error);
 
     scalars = mem[0];
     work = mem[1];
@@ -53,8 +58,9 @@ rocblas_status rocsolver_potf2_strided_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info, batch_count,
-                                       (T*)scalars, (T*)work, (T*)pivots);
+    ROCSOLVER_RETURN_TOP("potf2_strided_batched",
+                         rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info,
+                                                     batch_count, (T*)scalars, (T*)work, (T*)pivots));
 }
 
 /*

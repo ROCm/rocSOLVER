@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -145,9 +145,12 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         T* work,
                                         T* pivots)
 {
+    ROCSOLVER_ENTER("potf2", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
+                    "strideA:", strideA, "batch_count:", batch_count);
+
     // quick return if zero instances in batch
     if(batch_count == 0)
-        return rocblas_status_success;
+        ROCSOLVER_RETURN("potf2", rocblas_status_success);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -161,7 +164,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
 
     // quick return if no dimensions
     if(n == 0)
-        return rocblas_status_success;
+        ROCSOLVER_RETURN("potf2", rocblas_status_success);
 
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
@@ -244,5 +247,5 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     }
 
     rocblas_set_pointer_mode(handle, old_mode);
-    return rocblas_status_success;
+    ROCSOLVER_RETURN("potf2", rocblas_status_success);
 }
