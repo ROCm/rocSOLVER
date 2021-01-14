@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -39,7 +39,44 @@ __global__ void getrf_check_singularity(const rocblas_int n,
     }
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename S>
+template <bool ISBATCHED, bool PIVOT>
+rocblas_int get_blksize(rocblas_int dim)
+{
+    rocblas_int max;
+    rocblas_int i;
+
+#if ISBATCHED
+#if PIVOT
+    std::vector<rocblas_int> size{GETRF_BLKSIZES_BATCH};
+    std::vector<rocblas_int> intervals{GETRF_INTERVALS_BATCH};
+    max = GETRF_NUM_INTERVALS_BATCH;
+#else
+    std::vector<rocblas_int> size{GETRF_NPVT_BLKSIZES_BATCH};
+    std::vector<rocblas_int> intervals{GETRF_NPVT_INTERVALS_BATCH};
+    max = GETRF_NPVT_NUM_INTERVALS_BATCH;
+#endif
+#else
+#if PIVOT
+    std::vector<rocblas_int> size{GETRF_BLKSIZES_NORMAL};
+    std::vector<rocblas_int> intervals{GETRF_INTERVALS_NORMAL};
+    max = GETRF_NUM_INTERVALS_NORMAL;
+#else
+    std::vector<rocblas_int> size{GETRF_NPVT_BLKSIZES_NORMAL};
+    std::vector<rocblas_int> intervals{GETRF_NPVT_INTERVALS_NORMAL};
+    max = GETRF_NPVT_NUM_INTERVALS_NORMAL;
+#endif
+#endif
+
+    for(i = 0; i < max; ++i)
+    {
+        if(dim < intervals[i])
+            break;
+    }
+
+    return size[i];
+}
+
+template <bool BATCHED, bool STRIDED, bool PIVOT, typename T, typename S>
 void rocsolver_getrf_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
                                    const rocblas_int batch_count,
@@ -70,7 +107,10 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         return;
     }
 
-    if(m < GETRF_GETF2_SWITCHSIZE || n < GETRF_GETF2_SWITCHSIZE)
+    rocblas_int dim = min(m, n);
+    rocblas_int blk = get_blksize<ISBATCHED, PIVOT>(dim);
+
+    if(blk == 1)
     {
         // requirements for one single GETF2
         rocsolver_getf2_getMemorySize<ISBATCHED, T, S>(m, n, batch_count, size_scalars, size_work,
@@ -83,22 +123,20 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
     }
     else
     {
-        rocblas_int jb = GETRF_GETF2_SWITCHSIZE;
-
         // requirements for calling GETF2 for the sub blocks
-        rocsolver_getf2_getMemorySize<ISBATCHED, T, S>(m, jb, batch_count, size_scalars, size_work,
+        rocsolver_getf2_getMemorySize<ISBATCHED, T, S>(m, blk, batch_count, size_scalars, size_work,
                                                        size_pivotval, size_pivotidx);
 
         // to store info about singularity of sub blocks
         *size_iinfo = sizeof(rocblas_int) * batch_count;
 
         // extra workspace (for calling TRSM)
-        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, jb, n - jb, batch_count, size_work1,
+        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, blk, n - blk, batch_count, size_work1,
                                          size_work2, size_work3, size_work4);
     }
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
+template <bool BATCHED, bool STRIDED, bool PIVOT, typename T, typename S, typename U>
 rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,
@@ -111,7 +149,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                         const rocblas_stride strideP,
                                         rocblas_int* info,
                                         const rocblas_int batch_count,
-                                        const rocblas_int pivot,
                                         T* scalars,
                                         rocblas_index_value_t<S>* work,
                                         void* work1,
@@ -145,13 +182,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
 
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
-    // if the matrix is small, use the unblocked (level-2-blas) variant of the
-    // algorithm
-    if(m < GETRF_GETF2_SWITCHSIZE || n < GETRF_GETF2_SWITCHSIZE)
-        return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
-                                                      shiftP, strideP, info, batch_count, pivot,
-                                                      scalars, work, pivotval, pivotidx);
-
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle, &old_mode);
@@ -164,30 +194,37 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_int dim = min(m, n); // total number of pivots
     rocblas_int jb, sizePivot;
 
-    for(rocblas_int j = 0; j < dim; j += GETRF_GETF2_SWITCHSIZE)
+    rocblas_int blk = get_blksize<ISBATCHED, PIVOT>(dim);
+
+    if(blk == 1)
+        return rocsolver_getf2_template<ISBATCHED, PIVOT, T>(handle, m, n, A, shiftA, lda, strideA,
+                                                             ipiv, shiftP, strideP, info, batch_count,
+                                                             scalars, work, pivotval, pivotidx);
+
+    for(rocblas_int j = 0; j < dim; j += blk) //dim
     {
         // Factor diagonal and subdiagonal blocks
-        jb = min(dim - j, GETRF_GETF2_SWITCHSIZE); // number of columns in the block
+        jb = min(dim - j, blk); // number of columns in the block
         hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
-        rocsolver_getf2_template<ISBATCHED, T>(handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda,
-                                               strideA, ipiv, shiftP + j, strideP, iinfo,
-                                               batch_count, pivot, scalars, work, pivotval, pivotidx);
+        rocsolver_getf2_template<ISBATCHED, PIVOT, T>(
+            handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, ipiv, shiftP + j,
+            strideP, iinfo, batch_count, scalars, work, pivotval, pivotidx);
 
         // adjust pivot indices and check singularity
         sizePivot = min(m - j, jb); // number of pivots in the block
         blocksPivot = (sizePivot - 1) / BLOCKSIZE + 1;
         gridPivot = dim3(blocksPivot, batch_count, 1);
         hipLaunchKernelGGL(getrf_check_singularity<U>, gridPivot, threads, 0, stream, sizePivot, j,
-                           ipiv, shiftP + j, strideP, iinfo, info, pivot);
+                           ipiv, shiftP + j, strideP, iinfo, info, PIVOT);
 
         // apply interchanges to columns 1 : j-1
-        if(pivot)
+        if(PIVOT)
             rocsolver_laswp_template<T>(handle, j, A, shiftA, lda, strideA, j + 1, j + jb, ipiv,
                                         shiftP, strideP, 1, batch_count);
 
         if(j + jb < n)
         {
-            if(pivot)
+            if(PIVOT)
             {
                 // apply interchanges to columns j+jb : n
                 rocsolver_laswp_template<T>(handle, (n - j - jb), A, shiftA + idx2D(0, j + jb, lda),
