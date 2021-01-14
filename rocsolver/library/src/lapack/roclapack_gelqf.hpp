@@ -89,8 +89,7 @@ rocblas_status rocsolver_gelqf_template(rocblas_handle handle,
                                         T* diag_tmptr,
                                         T** workArr)
 {
-    ROCSOLVER_ENTER("gelqf", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "strideA:", strideA,
-                    "strideP:", strideP, "batch_count:", batch_count);
+    ROCSOLVER_ENTER("gelqf", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "bc:", batch_count);
 
     // quick return
     if(m == 0 || n == 0 || batch_count == 0)

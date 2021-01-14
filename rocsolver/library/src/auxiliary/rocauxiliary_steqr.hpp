@@ -362,9 +362,8 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
                                         const rocblas_int batch_count,
                                         void* work_stack)
 {
-    ROCSOLVER_ENTER("steqr", "compc:", compc, "n:", n, "shiftD:", shiftD, "strideD:", strideD,
-                    "shiftE:", shiftE, "strideE:", strideE, "shiftC:", shiftC, "ldc:", ldc,
-                    "strideC:", strideC, "batch_count:", batch_count);
+    ROCSOLVER_ENTER("steqr", "evect:", compc, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
+                    "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
 
     // quick return
     if(batch_count == 0)

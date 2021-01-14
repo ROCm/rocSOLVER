@@ -94,8 +94,7 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
                                         bool optim_mem)
 {
     ROCSOLVER_ENTER("getrs", "trans:", trans, "n:", n, "nrhs:", nrhs, "shiftA:", shiftA,
-                    "lda:", lda, "strideA:", strideA, "strideP:", strideP, "shiftB:", shiftB,
-                    "ldb:", ldb, "strideB", strideB, "batch_count:", batch_count);
+                    "lda:", lda, "shiftB:", shiftB, "ldb:", ldb, "bc:", batch_count);
 
     // quick return
     if(n == 0 || nrhs == 0 || batch_count == 0)

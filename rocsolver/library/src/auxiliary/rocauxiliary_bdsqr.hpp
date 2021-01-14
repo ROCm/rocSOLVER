@@ -547,9 +547,8 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                                         S* work)
 {
     ROCSOLVER_ENTER("bdsqr", "uplo:", uplo, "n:", n, "nv:", nv, "nu:", nu, "nc:", nc,
-                    "strideD:", strideD, "strideE:", strideE, "shiftV:", shiftV, "ldv:", ldv,
-                    "strideV:", strideV, "shiftU:", shiftU, "ldu:", ldu, "strideU:", strideU,
-                    "shiftC:", shiftC, "ldc:", ldc, "strideC:", strideC, "batch_count:", batch_count);
+                    "shiftV:", shiftV, "ldv:", ldv, "shiftU:", shiftU, "ldu:", ldu,
+                    "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
 
     // quick return
     if(n == 0 || batch_count == 0)

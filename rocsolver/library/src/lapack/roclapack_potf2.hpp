@@ -146,7 +146,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         T* pivots)
 {
     ROCSOLVER_ENTER("potf2", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
-                    "strideA:", strideA, "batch_count:", batch_count);
+                    "bc:", batch_count);
 
     // quick return if zero instances in batch
     if(batch_count == 0)

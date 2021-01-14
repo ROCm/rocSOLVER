@@ -160,8 +160,8 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                         rocblas_int* iinfo,
                                         bool optim_mem)
 {
-    ROCSOLVER_ENTER("getrf", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "strideA:", strideA,
-                    "shiftP:", shiftP, "strideP:", strideP, "batch_count:", batch_count);
+    ROCSOLVER_ENTER("getrf", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
+                    "bc:", batch_count);
 
     // quick return
     if(batch_count == 0)

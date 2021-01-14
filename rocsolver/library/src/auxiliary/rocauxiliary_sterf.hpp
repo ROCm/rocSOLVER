@@ -310,8 +310,7 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
                                         const rocblas_int batch_count,
                                         rocblas_int* stack)
 {
-    ROCSOLVER_ENTER("sterf", "n:", n, "shiftD:", shiftD, "strideD:", strideD, "shiftE:", shiftE,
-                    "strideE:", strideE, "batch_count:", batch_count);
+    ROCSOLVER_ENTER("sterf", "n:", n, "shiftD:", shiftD, "shiftE:", shiftE, "bc:", batch_count);
 
     // quick return
     if(batch_count == 0)

@@ -92,8 +92,7 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
                                         T* Abyx_norms,
                                         T* diag)
 {
-    ROCSOLVER_ENTER("geqr2", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "strideA:", strideA,
-                    "strideP:", strideP, "batch_count:", batch_count);
+    ROCSOLVER_ENTER("geqr2", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "bc:", batch_count);
 
     // quick return
     if(m == 0 || n == 0 || batch_count == 0)

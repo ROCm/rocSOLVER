@@ -104,8 +104,7 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                         T** workArr)
 {
     ROCSOLVER_ENTER("latrd", "uplo:", uplo, "n:", n, "k:", k, "shiftA:", shiftA, "lda:", lda,
-                    "strideA:", strideA, "strideE:", strideE, "strideP:", strideP, "shiftW:", shiftW,
-                    "ldw:", ldw, "strideW:", strideW, "batch_count:", batch_count);
+                    "shiftW:", shiftW, "ldw:", ldw, "bc:", batch_count);
 
     // quick return
     if(n == 0 || k == 0 || batch_count == 0)

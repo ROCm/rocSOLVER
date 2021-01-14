@@ -119,10 +119,8 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                                         T* norms)
 {
     ROCSOLVER_ENTER("labrd", "m:", m, "n:", n, "k:", k, "shiftA:", shiftA, "lda:", lda,
-                    "strideA:", strideA, "strideD:", strideD, "strideE:", strideE,
-                    "strideQ:", strideQ, "strideP:", strideP, "shiftX:", shiftX, "ldx:", ldx,
-                    "strideX:", strideX, "shiftY:", shiftY, "ldy:", ldy, "strideY:", strideY,
-                    "batch_count:", batch_count);
+                    "shiftX:", shiftX, "ldx:", ldx, "shiftY:", shiftY, "ldy:", ldy,
+                    "bc:", batch_count);
 
     // quick return
     if(m == 0 || n == 0 || k == 0 || batch_count == 0)

@@ -85,8 +85,8 @@ rocblas_status rocsolver_laswp_template(rocblas_handle handle,
                                         rocblas_int incx,
                                         const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER("laswp", "n:", n, "shiftA:", shiftA, "lda:", lda, "strideA:", strideA, "k1:", k1,
-                    "k2:", k2, "shiftP:", shiftP, "strideP:", strideP, "batch_count:", batch_count);
+    ROCSOLVER_ENTER("laswp", "n:", n, "shiftA:", shiftA, "lda:", lda, "k1:", k1, "k2:", k2,
+                    "shiftP:", shiftP, "bc:", batch_count);
 
     // quick return
     if(n == 0 || batch_count == 0)

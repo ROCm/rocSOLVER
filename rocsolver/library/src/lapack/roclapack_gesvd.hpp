@@ -333,9 +333,8 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                         T** workArr)
 {
     ROCSOLVER_ENTER("gesvd", "leftsv:", left_svect, "rightsv:", right_svect, "m:", m, "n:", n,
-                    "shiftA:", shiftA, "lda:", lda, "strideA:", strideA, "strideS:", strideS,
-                    "ldu:", ldu, "strideU:", strideU, "ldv:", ldv, "strideV:", strideV,
-                    "strideE:", strideE, "workmode:", fast_alg, "batch_count:", batch_count);
+                    "shiftA:", shiftA, "lda:", lda, "ldu:", ldu, "ldv:", ldv, "mode:", fast_alg,
+                    "bc:", batch_count);
 
     constexpr bool COMPLEX = is_complex<T>;
 

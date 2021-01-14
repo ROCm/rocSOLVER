@@ -134,8 +134,7 @@ rocblas_status rocsolver_orgbr_ungbr_template(rocblas_handle handle,
                                               T** workArr)
 {
     ROCSOLVER_ENTER("orgbr_ungbr", "storev:", storev, "m:", m, "n:", n, "k:", k, "shiftA:", shiftA,
-                    "lda:", lda, "strideA:", strideA, "strideP:", strideP,
-                    "batch_count:", batch_count);
+                    "lda:", lda, "bc:", batch_count);
 
     // quick return
     if(!n || !m || !batch_count)

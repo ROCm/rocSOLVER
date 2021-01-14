@@ -74,8 +74,7 @@ rocblas_status rocsolver_lacgv_template(rocblas_handle handle,
                                         const rocblas_stride stridex,
                                         const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER("lacgv", "n:", n, "shiftX:", shiftx, "incx:", incx, "strideX:", stridex,
-                    "batch_count:", batch_count);
+    ROCSOLVER_ENTER("lacgv", "n:", n, "shiftX:", shiftx, "incx:", incx, "bc:", batch_count);
 
     // quick return
     if(n == 0 || !batch_count || !COMPLEX)

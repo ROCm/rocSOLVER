@@ -587,8 +587,8 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
                                         T** workArr,
                                         bool optim_mem)
 {
-    ROCSOLVER_ENTER("getri", "n:", n, "shiftA:", shiftA, "lda:", lda, "strideA:", strideA,
-                    "shiftP:", shiftP, "strideP:", strideP, "batch_count:", batch_count);
+    ROCSOLVER_ENTER("getri", "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
+                    "bc:", batch_count);
 
     // quick return if zero instances in batch
     if(batch_count == 0)

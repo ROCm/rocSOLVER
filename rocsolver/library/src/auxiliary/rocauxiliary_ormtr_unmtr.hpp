@@ -120,8 +120,8 @@ rocblas_status rocsolver_ormtr_unmtr_template(rocblas_handle handle,
                                               T** workArr)
 {
     ROCSOLVER_ENTER("ormtr_unmtr", "side:", side, "uplo:", uplo, "trans:", trans, "m:", m, "n:", n,
-                    "shiftA:", shiftA, "lda:", lda, "strideA:", strideA, "strideP:", strideP,
-                    "shiftC:", shiftC, "ldc:", ldc, "strideC:", strideC, "batch_count:", batch_count);
+                    "shiftA:", shiftA, "lda:", lda, "shiftC:", shiftC, "ldc:", ldc,
+                    "bc:", batch_count);
 
     // quick return
     if(!n || !m || !batch_count)

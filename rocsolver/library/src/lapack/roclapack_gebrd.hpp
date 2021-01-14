@@ -96,9 +96,7 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
                                         void* work_workArr,
                                         T* Abyx_norms)
 {
-    ROCSOLVER_ENTER("gebrd", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "strideA:", strideA,
-                    "strideD:", strideD, "strideE:", strideE, "strideQ:", strideQ,
-                    "strideP:", strideP, "batch_count:", batch_count);
+    ROCSOLVER_ENTER("gebrd", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "bc:", batch_count);
 
     // quick return
     if(m == 0 || n == 0 || batch_count == 0)

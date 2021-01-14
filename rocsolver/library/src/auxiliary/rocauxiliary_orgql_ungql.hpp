@@ -86,7 +86,7 @@ rocblas_status rocsolver_orgql_ungql_template(rocblas_handle handle,
                                               T** workArr)
 {
     ROCSOLVER_ENTER("orgql_ungql", "m:", m, "n:", n, "k:", k, "shiftA:", shiftA, "lda:", lda,
-                    "strideA:", strideA, "strideP:", strideP, "batch_count:", batch_count);
+                    "bc:", batch_count);
 
     // quick return
     if(!n || !m || !batch_count)

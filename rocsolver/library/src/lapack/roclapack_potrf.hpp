@@ -99,7 +99,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                         bool optim_mem)
 {
     ROCSOLVER_ENTER("potrf", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
-                    "strideA:", strideA, "batch_count:", batch_count);
+                    "bc:", batch_count);
 
     // quick return
     if(batch_count == 0)

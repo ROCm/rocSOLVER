@@ -161,7 +161,7 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
 {
     // TODO: How to get alpha for trace logging
     ROCSOLVER_ENTER("larfg", "n:", n, "shiftA:", shifta, "shiftX:", shiftx, "incx:", incx,
-                    "strideX:", stridex, "strideP:", strideP, "batch_count:", batch_count);
+                    "bc:", batch_count);
 
     // quick return
     if(n == 0 || batch_count == 0)

@@ -112,7 +112,7 @@ rocblas_status rocsolver_org2r_ung2r_template(rocblas_handle handle,
                                               T** workArr)
 {
     ROCSOLVER_ENTER("org2r_ung2r", "m:", m, "n:", n, "k:", k, "shiftA:", shiftA, "lda:", lda,
-                    "strideA:", strideA, "strideP:", strideP, "batch_count:", batch_count);
+                    "bc:", batch_count);
 
     // quick return
     if(!n || !m || !batch_count)

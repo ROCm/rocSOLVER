@@ -178,9 +178,8 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
                                         T** workArr)
 {
     ROCSOLVER_ENTER("larfb", "side:", side, "trans:", trans, "direct:", direct, "storev:", storev,
-                    "m:", m, "n:", n, "k:", k, "shiftV:", shiftV, "ldv:", ldv, "strideV:", strideV,
-                    "shiftF:", shiftF, "ldf:", ldf, "strideF:", strideF, "shiftA:", shiftA,
-                    "lda:", lda, "strideA:", strideA, "batch_count:", batch_count);
+                    "m:", m, "n:", n, "k:", k, "shiftV:", shiftV, "ldv:", ldv, "shiftF:", shiftF,
+                    "ldf:", ldf, "shiftA:", shiftA, "lda:", lda, "bc:", batch_count);
 
     // quick return
     if(m == 0 || n == 0 || batch_count == 0)

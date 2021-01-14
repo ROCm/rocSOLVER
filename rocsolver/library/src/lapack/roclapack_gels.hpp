@@ -126,8 +126,7 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                        bool optim_mem)
 {
     ROCSOLVER_ENTER("gels", "trans:", trans, "m:", m, "n:", n, "nrhs:", nrhs, "shiftA:", shiftA,
-                    "lda:", lda, "strideA:", strideA, "shiftB:", shiftB, "ldb:", ldb,
-                    "strideB:", strideB, "batch_count:", batch_count);
+                    "lda:", lda, "shiftB:", shiftB, "ldb:", ldb, "bc:", batch_count);
 
     // quick return if zero instances in batch
     if(batch_count == 0)

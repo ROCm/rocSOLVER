@@ -191,8 +191,7 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
                                               T** workArr)
 {
     ROCSOLVER_ENTER("sytd2_hetd2", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
-                    "strideA:", strideA, "strideD:", strideD, "strideE:", strideE,
-                    "strideP:", strideP, "batch_count:", batch_count);
+                    "bc:", batch_count);
 
     // quick return
     if(n == 0 || batch_count == 0)
