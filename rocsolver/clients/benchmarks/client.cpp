@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2016-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "testing_bdsqr.hpp"
@@ -42,8 +42,6 @@ namespace po = boost::program_options;
 int main(int argc, char* argv[])
 try
 {
-//    rocblas_initialize();
-
     Arguments argus;
 
     // disable unit_check in client benchmark, it is only
