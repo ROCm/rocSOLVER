@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_orgl2_ungl2.hpp"
@@ -13,15 +13,18 @@ rocblas_status rocsolver_orgl2_ungl2_impl(rocblas_handle handle,
                                           const rocblas_int lda,
                                           T* ipiv)
 {
+    const char* name = (!is_complex<T> ? "orgl2" : "ungl2");
+    ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "-k", k, "--lda", lda);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP(name, rocblas_status_invalid_handle);
 
     // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_orgl2_orglq_argCheck(handle, m, n, k, lda, A, ipiv);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP(name, st);
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -42,13 +45,15 @@ rocblas_status rocsolver_orgl2_ungl2_impl(rocblas_handle handle,
                                                   &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_Abyx, size_workArr);
+        ROCSOLVER_RETURN_TOP(
+            name,
+            rocblas_set_optimal_device_memory_size(handle, size_scalars, size_Abyx, size_workArr));
 
     // memory workspace allocation
     void *scalars, *Abyx, *workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_Abyx, size_workArr);
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP(name, rocblas_status_memory_error);
 
     scalars = mem[0];
     Abyx = mem[1];
@@ -57,8 +62,10 @@ rocblas_status rocsolver_orgl2_ungl2_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_orgl2_ungl2_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP,
-                                             batch_count, (T*)scalars, (T*)Abyx, (T**)workArr);
+    ROCSOLVER_RETURN_TOP(name,
+                         rocsolver_orgl2_ungl2_template<T>(handle, m, n, k, A, shiftA, lda, strideA,
+                                                           ipiv, strideP, batch_count, (T*)scalars,
+                                                           (T*)Abyx, (T**)workArr));
 }
 
 /*

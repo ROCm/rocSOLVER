@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_ormlq_unmlq.hpp"
@@ -17,8 +17,12 @@ rocblas_status rocsolver_ormlq_unmlq_impl(rocblas_handle handle,
                                           T* C,
                                           const rocblas_int ldc)
 {
+    const char* name = (!is_complex<T> ? "ormlq" : "unmlq");
+    ROCSOLVER_ENTER_TOP(name, "--side", side, "--transposeA", trans, "-m", m, "-n", n, "-k", k,
+                        "--lda", lda, "--ldc", ldc);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP(name, rocblas_status_invalid_handle);
 
     // logging is missing ???
 
@@ -26,7 +30,7 @@ rocblas_status rocsolver_ormlq_unmlq_impl(rocblas_handle handle,
     rocblas_status st = rocsolver_orml2_ormlq_argCheck<COMPLEX>(handle, side, trans, m, n, k, lda,
                                                                 ldc, A, C, ipiv);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP(name, st);
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -52,15 +56,17 @@ rocblas_status rocsolver_ormlq_unmlq_impl(rocblas_handle handle,
                                                   &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_AbyxORwork,
-                                                      size_diagORtmptr, size_trfact, size_workArr);
+        ROCSOLVER_RETURN_TOP(
+            name,
+            rocblas_set_optimal_device_memory_size(handle, size_scalars, size_AbyxORwork,
+                                                   size_diagORtmptr, size_trfact, size_workArr));
 
     // memory workspace allocation
     void *scalars, *AbyxORwork, *diagORtmptr, *trfact, *workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_AbyxORwork, size_diagORtmptr, size_trfact,
                               size_workArr);
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP(name, rocblas_status_memory_error);
 
     scalars = mem[0];
     AbyxORwork = mem[1];
@@ -71,9 +77,11 @@ rocblas_status rocsolver_ormlq_unmlq_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_ormlq_unmlq_template<false, false, T>(
-        handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C, shiftC, ldc,
-        strideC, batch_count, (T*)scalars, (T*)AbyxORwork, (T*)diagORtmptr, (T*)trfact, (T**)workArr);
+    ROCSOLVER_RETURN_TOP(name,
+                         rocsolver_ormlq_unmlq_template<false, false, T>(
+                             handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP,
+                             C, shiftC, ldc, strideC, batch_count, (T*)scalars, (T*)AbyxORwork,
+                             (T*)diagORtmptr, (T*)trfact, (T**)workArr));
 }
 
 /*

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_latrd.hpp"
@@ -16,15 +16,17 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
                                     T* W,
                                     const rocblas_int ldw)
 {
+    ROCSOLVER_ENTER_TOP("latrd", "--uplo", uplo, "-n", n, "-k", k, "--lda", lda, "--ldb", ldw);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("latrd", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_latrd_argCheck(handle, uplo, n, k, lda, ldw, A, E, tau, W);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("latrd", st);
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -48,15 +50,16 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
                                             &size_norms, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_norms,
-                                                      size_workArr);
+        ROCSOLVER_RETURN_TOP("latrd",
+                             rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
+                                                                    size_norms, size_workArr));
 
     // memory workspace allocation
     void *scalars, *work, *norms, *workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_work, size_norms, size_workArr);
 
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("latrd", rocblas_status_memory_error);
 
     scalars = mem[0];
     work = mem[1];
@@ -66,9 +69,11 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_latrd_template(handle, uplo, n, k, A, shiftA, lda, strideA, E, strideE, tau,
-                                    strideP, W, shiftW, ldw, strideW, batch_count, (T*)scalars,
-                                    (T*)work, (T*)norms, (T**)workArr);
+    ROCSOLVER_RETURN_TOP("latrd",
+                         rocsolver_latrd_template(handle, uplo, n, k, A, shiftA, lda, strideA, E,
+                                                  strideE, tau, strideP, W, shiftW, ldw, strideW,
+                                                  batch_count, (T*)scalars, (T*)work, (T*)norms,
+                                                  (T**)workArr));
 }
 
 /*

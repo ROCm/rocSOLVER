@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_larfb.hpp"
@@ -20,8 +20,12 @@ rocblas_status rocsolver_larfb_impl(rocblas_handle handle,
                                     T* A,
                                     const rocblas_int lda)
 {
+    ROCSOLVER_ENTER_TOP("larfb", "--side", side, "--transposeH", trans, "--direct", direct,
+                        "--storev", storev, "-m", m, "-n", n, "-k", k, "--ldv", ldv, "--ldt", ldf,
+                        "--lda", lda);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("larfb", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
@@ -29,7 +33,7 @@ rocblas_status rocsolver_larfb_impl(rocblas_handle handle,
     rocblas_status st = rocsolver_larfb_argCheck(handle, side, trans, direct, storev, m, n, k, ldv,
                                                  ldf, lda, V, A, F);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("larfb", st);
 
     // working with unshifted arrays
     rocblas_int shiftV = 0;
@@ -54,22 +58,26 @@ rocblas_status rocsolver_larfb_impl(rocblas_handle handle,
                                             &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_work, size_tmptr, size_workArr);
+        ROCSOLVER_RETURN_TOP(
+            "larfb",
+            rocblas_set_optimal_device_memory_size(handle, size_work, size_tmptr, size_workArr));
 
     // memory workspace allocation
     void *tmptr, *work, *workArr;
     rocblas_device_malloc mem(handle, size_work, size_tmptr, size_workArr);
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("larfb", rocblas_status_memory_error);
 
     work = mem[0];
     tmptr = mem[1];
     workArr = mem[2];
 
     //  execution
-    return rocsolver_larfb_template<false, false, T>(
-        handle, side, trans, direct, storev, m, n, k, V, shiftV, ldv, stridev, F, shiftF, ldf,
-        stridef, A, shiftA, lda, stridea, batch_count, (T*)work, (T*)tmptr, (T**)workArr);
+    ROCSOLVER_RETURN_TOP("larfb",
+                         rocsolver_larfb_template<false, false, T>(
+                             handle, side, trans, direct, storev, m, n, k, V, shiftV, ldv, stridev,
+                             F, shiftF, ldf, stridef, A, shiftA, lda, stridea, batch_count,
+                             (T*)work, (T*)tmptr, (T**)workArr));
 }
 
 /*

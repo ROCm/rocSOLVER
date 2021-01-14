@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_larfg.hpp"
@@ -12,15 +12,18 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle,
                                     const rocblas_int incx,
                                     T* tau)
 {
+    // TODO: How to get alpha for bench logging
+    ROCSOLVER_ENTER_TOP("larfg", "-n", n, "--incx", incx);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("larfg", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_larfg_argCheck(handle, n, incx, alpha, x, tau);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("larfg", st);
 
     // working with unshifted arrays
     rocblas_int shifta = 0;
@@ -39,20 +42,23 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle,
     rocsolver_larfg_getMemorySize<T>(n, batch_count, &size_work, &size_norms);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_work, size_norms);
+        ROCSOLVER_RETURN_TOP("larfg",
+                             rocblas_set_optimal_device_memory_size(handle, size_work, size_norms));
 
     // memory workspace allocation
     void *work, *norms;
     rocblas_device_malloc mem(handle, size_work, size_norms);
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("larfg", rocblas_status_memory_error);
 
     work = mem[0];
     norms = mem[1];
 
     // execution
-    return rocsolver_larfg_template<T>(handle, n, alpha, shifta, x, shiftx, incx, stridex, tau,
-                                       strideP, batch_count, (T*)work, (T*)norms);
+    ROCSOLVER_RETURN_TOP("larfg",
+                         rocsolver_larfg_template<T>(handle, n, alpha, shifta, x, shiftx, incx,
+                                                     stridex, tau, strideP, batch_count, (T*)work,
+                                                     (T*)norms));
 }
 
 /*

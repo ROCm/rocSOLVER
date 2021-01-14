@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_sterf.hpp"
@@ -8,15 +8,17 @@ template <typename T>
 rocblas_status
     rocsolver_sterf_impl(rocblas_handle handle, const rocblas_int n, T* D, T* E, rocblas_int* info)
 {
+    ROCSOLVER_ENTER_TOP("sterf", "-n", n);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("sterf", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_sterf_argCheck(handle, n, D, E, info);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("sterf", st);
 
     // working with unshifted arrays
     rocblas_int shiftD = 0;
@@ -33,19 +35,20 @@ rocblas_status
     rocsolver_sterf_getMemorySize<T>(n, batch_count, &size_stack);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_stack);
+        ROCSOLVER_RETURN_TOP("sterf", rocblas_set_optimal_device_memory_size(handle, size_stack));
 
     // memory workspace allocation
     void* stack;
     rocblas_device_malloc mem(handle, size_stack);
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("sterf", rocblas_status_memory_error);
 
     stack = mem[0];
 
     // execution
-    return rocsolver_sterf_template<T>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
-                                       batch_count, (rocblas_int*)stack);
+    ROCSOLVER_RETURN_TOP("sterf",
+                         rocsolver_sterf_template<T>(handle, n, D, shiftD, strideD, E, shiftE, strideE,
+                                                     info, batch_count, (rocblas_int*)stack));
 }
 
 /*

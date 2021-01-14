@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_lacgv.hpp"
@@ -8,15 +8,17 @@ template <typename T>
 rocblas_status
     rocsolver_lacgv_impl(rocblas_handle handle, const rocblas_int n, T* x, const rocblas_int incx)
 {
+    ROCSOLVER_ENTER_TOP("lacgv", "-n", n, "--incx", incx);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("lacgv", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_lacgv_argCheck(handle, n, incx, x);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("lacgv", st);
 
     // working with unshifted arrays
     rocblas_int shiftx = 0;
@@ -27,10 +29,11 @@ rocblas_status
 
     // this function does not requiere memory work space
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_status_size_unchanged;
+        ROCSOLVER_RETURN_TOP("lacgv", rocblas_status_size_unchanged);
 
     // execution
-    return rocsolver_lacgv_template<T>(handle, n, x, shiftx, incx, stridex, batch_count);
+    ROCSOLVER_RETURN_TOP(
+        "lacgv", rocsolver_lacgv_template<T>(handle, n, x, shiftx, incx, stridex, batch_count));
 }
 
 /*

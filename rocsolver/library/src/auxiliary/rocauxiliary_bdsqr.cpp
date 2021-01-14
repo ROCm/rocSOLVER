@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_bdsqr.hpp"
@@ -21,8 +21,11 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
                                     const rocblas_int ldc,
                                     rocblas_int* info)
 {
+    ROCSOLVER_ENTER_TOP("bdsqr", "--uplo", uplo, "-m", n, "-n", nv, "-k", nu, "--size4", nc,
+                        "--lda", ldv, "--ldb", ldu, "--ldc", ldc);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("bdsqr", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
@@ -30,7 +33,7 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
     rocblas_status st
         = rocsolver_bdsqr_argCheck(handle, uplo, n, nv, nu, nc, ldv, ldu, ldc, D, E, V, U, C, info);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("bdsqr", st);
 
     // working with unshifted arrays
     rocblas_int shiftV = 0;
@@ -51,20 +54,22 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
     rocsolver_bdsqr_getMemorySize<S>(n, nv, nu, nc, batch_count, &size_work);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_work);
+        ROCSOLVER_RETURN_TOP("bdsqr", rocblas_set_optimal_device_memory_size(handle, size_work));
 
     // memory workspace allocation
     void* work;
     rocblas_device_malloc mem(handle, size_work);
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("bdsqr", rocblas_status_memory_error);
 
     work = mem[0];
 
     // execution
-    return rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, nc, D, strideD, E, strideE, V,
-                                       shiftV, ldv, strideV, U, shiftU, ldu, strideU, C, shiftC,
-                                       ldc, strideC, info, batch_count, (S*)work);
+    ROCSOLVER_RETURN_TOP("bdsqr",
+                         rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, nc, D, strideD, E,
+                                                     strideE, V, shiftV, ldv, strideV, U, shiftU,
+                                                     ldu, strideU, C, shiftC, ldc, strideC, info,
+                                                     batch_count, (S*)work));
 }
 
 /*

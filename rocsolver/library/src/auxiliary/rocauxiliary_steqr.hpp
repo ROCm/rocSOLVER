@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -362,9 +362,13 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
                                         const rocblas_int batch_count,
                                         void* work_stack)
 {
+    ROCSOLVER_ENTER("steqr", "compc:", compc, "n:", n, "shiftD:", shiftD, "strideD:", strideD,
+                    "shiftE:", shiftE, "strideE:", strideE, "shiftC:", shiftC, "ldc:", ldc,
+                    "strideC:", strideC, "batch_count:", batch_count);
+
     // quick return
     if(batch_count == 0)
-        return rocblas_status_success;
+        ROCSOLVER_RETURN("steqr", rocblas_status_success);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -380,7 +384,7 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
     if(n == 1 && compc != rocblas_evect_none)
         hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, C, batch_count, 1);
     if(n <= 1)
-        return rocblas_status_success;
+        ROCSOLVER_RETURN("steqr", rocblas_status_success);
 
     // Initialize identity matrix
     if(compc == rocblas_evect_tridiagonal)
@@ -405,5 +409,5 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
                            D + shiftD, strideD, E + shiftE, strideE, C, shiftC, ldc, strideC, info,
                            (S*)work_stack, 30 * n, eps, ssfmin, ssfmax);
 
-    return rocblas_status_success;
+    ROCSOLVER_RETURN("steqr", rocblas_status_success);
 }

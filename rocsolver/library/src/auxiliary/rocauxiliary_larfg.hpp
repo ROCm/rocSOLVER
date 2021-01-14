@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2017
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -159,9 +159,13 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
                                         T* work,
                                         T* norms)
 {
+    // TODO: How to get alpha for trace logging
+    ROCSOLVER_ENTER("larfg", "n:", n, "shiftA:", shifta, "shiftX:", shiftx, "incx:", incx,
+                    "strideX:", stridex, "strideP:", strideP, "batch_count:", batch_count);
+
     // quick return
     if(n == 0 || batch_count == 0)
-        return rocblas_status_success;
+        ROCSOLVER_RETURN("larfg", rocblas_status_success);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -172,7 +176,7 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
     if(n == 1 && !COMPLEX)
     {
         hipLaunchKernelGGL(reset_batch_info<T>, gridReset, threads, 0, stream, tau, strideP, 1, 0);
-        return rocblas_status_success;
+        ROCSOLVER_RETURN("larfg", rocblas_status_success);
     }
 
     // everything must be executed with scalars on the device
@@ -193,5 +197,5 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
     rocblasCall_scal<T>(handle, n - 1, norms, 1, x, shiftx, incx, stridex, batch_count);
 
     rocblas_set_pointer_mode(handle, old_mode);
-    return rocblas_status_success;
+    ROCSOLVER_RETURN("larfg", rocblas_status_success);
 }

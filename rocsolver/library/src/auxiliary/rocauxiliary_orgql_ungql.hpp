@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -85,17 +85,22 @@ rocblas_status rocsolver_orgql_ungql_template(rocblas_handle handle,
                                               T* trfact,
                                               T** workArr)
 {
+    ROCSOLVER_ENTER("orgql_ungql", "m:", m, "n:", n, "k:", k, "shiftA:", shiftA, "lda:", lda,
+                    "strideA:", strideA, "strideP:", strideP, "batch_count:", batch_count);
+
     // quick return
     if(!n || !m || !batch_count)
-        return rocblas_status_success;
+        ROCSOLVER_RETURN("orgql_ungql", rocblas_status_success);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
     // if the matrix is small, use the unblocked variant of the algorithm
     if(k <= ORGxx_UNGxx_SWITCHSIZE)
-        return rocsolver_org2l_ung2l_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv,
-                                                 strideP, batch_count, scalars, Abyx_tmptr, workArr);
+        ROCSOLVER_RETURN("orgql_ungql",
+                         rocsolver_org2l_ung2l_template<T>(handle, m, n, k, A, shiftA, lda, strideA,
+                                                           ipiv, strideP, batch_count, scalars,
+                                                           Abyx_tmptr, workArr));
 
     rocblas_int ldw = ORGxx_UNGxx_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) * ldw;
@@ -158,5 +163,5 @@ rocblas_status rocsolver_orgql_ungql_template(rocblas_handle handle,
         j += jb;
     }
 
-    return rocblas_status_success;
+    ROCSOLVER_RETURN("orgql_ungql", rocblas_status_success);
 }

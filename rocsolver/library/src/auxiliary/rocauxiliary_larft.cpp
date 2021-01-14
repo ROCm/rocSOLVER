@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_larft.hpp"
@@ -16,15 +16,18 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle,
                                     T* F,
                                     const rocblas_int ldf)
 {
+    ROCSOLVER_ENTER_TOP("larft", "--direct", direct, "--storev", storev, "-n", n, "-k", k, "--ldv",
+                        ldv, "--ldt", ldf);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("larft", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_larft_argCheck(handle, direct, storev, n, k, ldv, ldf, V, tau, F);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("larft", st);
 
     // working with unshifted arrays
     rocblas_int shiftV = 0;
@@ -46,13 +49,15 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle,
                                             &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_workArr);
+        ROCSOLVER_RETURN_TOP(
+            "larft",
+            rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_workArr));
 
     // memory workspace allocation
     void *scalars, *work, *workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_work, size_workArr);
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("larft", rocblas_status_memory_error);
 
     scalars = mem[0];
     work = mem[1];
@@ -61,9 +66,10 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_larft_template<T>(handle, direct, storev, n, k, V, shiftV, ldv, stridev, tau,
-                                       stridet, F, ldf, stridef, batch_count, (T*)scalars, (T*)work,
-                                       (T**)workArr);
+    ROCSOLVER_RETURN_TOP("larft",
+                         rocsolver_larft_template<T>(
+                             handle, direct, storev, n, k, V, shiftV, ldv, stridev, tau, stridet, F,
+                             ldf, stridef, batch_count, (T*)scalars, (T*)work, (T**)workArr));
 }
 
 /*

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -118,9 +118,15 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                                         void* work_workArr,
                                         T* norms)
 {
+    ROCSOLVER_ENTER("labrd", "m:", m, "n:", n, "k:", k, "shiftA:", shiftA, "lda:", lda,
+                    "strideA:", strideA, "strideD:", strideD, "strideE:", strideE,
+                    "strideQ:", strideQ, "strideP:", strideP, "shiftX:", shiftX, "ldx:", ldx,
+                    "strideX:", strideX, "shiftY:", shiftY, "ldy:", ldy, "strideY:", strideY,
+                    "batch_count:", batch_count);
+
     // quick return
     if(m == 0 || n == 0 || k == 0 || batch_count == 0)
-        return rocblas_status_success;
+        ROCSOLVER_RETURN("labrd", rocblas_status_success);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -435,5 +441,5 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
     }
 
     rocblas_set_pointer_mode(handle, old_mode);
-    return rocblas_status_success;
+    ROCSOLVER_RETURN("labrd", rocblas_status_success);
 }

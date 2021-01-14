@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_labrd.hpp"
@@ -20,8 +20,10 @@ rocblas_status rocsolver_labrd_impl(rocblas_handle handle,
                                     U Y,
                                     const rocblas_int ldy)
 {
+    ROCSOLVER_ENTER_TOP("labrd", "-m", m, "-n", n, "-k", k, "--lda", lda, "--ldb", ldx, "--ldc", ldy);
+
     if(!handle)
-        return rocblas_status_invalid_handle;
+        ROCSOLVER_RETURN_TOP("labrd", rocblas_status_invalid_handle);
 
     // logging is missing ???
 
@@ -29,7 +31,7 @@ rocblas_status rocsolver_labrd_impl(rocblas_handle handle,
     rocblas_status st
         = rocsolver_labrd_argCheck(handle, m, n, k, lda, ldx, ldy, A, D, E, tauq, taup, X, Y);
     if(st != rocblas_status_continue)
-        return st;
+        ROCSOLVER_RETURN_TOP("labrd", st);
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -57,15 +59,16 @@ rocblas_status rocsolver_labrd_impl(rocblas_handle handle,
                                             &size_norms);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_workArr,
-                                                      size_norms);
+        ROCSOLVER_RETURN_TOP("labrd",
+                             rocblas_set_optimal_device_memory_size(handle, size_scalars,
+                                                                    size_work_workArr, size_norms));
 
     // memory workspace allocation
     void *scalars, *work_workArr, *norms;
     rocblas_device_malloc mem(handle, size_scalars, size_work_workArr, size_norms);
 
     if(!mem)
-        return rocblas_status_memory_error;
+        ROCSOLVER_RETURN_TOP("labrd", rocblas_status_memory_error);
 
     scalars = mem[0];
     work_workArr = mem[1];
@@ -74,10 +77,11 @@ rocblas_status rocsolver_labrd_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_labrd_template<S, T>(handle, m, n, k, A, shiftA, lda, strideA, D, strideD, E,
-                                          strideE, tauq, strideQ, taup, strideP, X, shiftX, ldx,
-                                          strideX, Y, shiftY, ldy, strideY, batch_count,
-                                          (T*)scalars, work_workArr, (T*)norms);
+    ROCSOLVER_RETURN_TOP("labrd",
+                         rocsolver_labrd_template<S, T>(
+                             handle, m, n, k, A, shiftA, lda, strideA, D, strideD, E, strideE, tauq,
+                             strideQ, taup, strideP, X, shiftX, ldx, strideX, Y, shiftY, ldy,
+                             strideY, batch_count, (T*)scalars, work_workArr, (T*)norms));
 }
 
 /*
