@@ -2,27 +2,7 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## [(Unreleased) rocSOLVER for ROCm 4.1.0]
-### Added
-- Sample code and unit test for unified memory model/Heterogeneous Memory Management (HMM)
-
-### Optimizations
-
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-- Fixed runtime errors in debug mode caused by incorrect kernel launch bounds
-- Fixed complex unit test bug caused by incorrect zaxpy function signature
-- Eliminated a small memory transfer that was being done on the default stream
-- Fixed GESVD right singular vectors for 1x1 matrices
-
-
-
-## [(Unreleased) rocSOLVER 3.11.0 for ROCm 4.0.0]
+## [(Unreleased) rocSOLVER 3.11.0 for ROCm 4.1.0]
 ### Added
 - Eigensolver routines for symmetric/hermitian matrices:
     - STERF, STEQR
@@ -36,15 +16,25 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - LATRD
     - SYTD2, SYTRD (with batched and strided\_batched versions)
     - HETD2, HETRD (with batched and strided\_batched versions)
+- Sample code and unit test for unified memory model/Heterogeneous Memory Management (HMM)
+
+### Optimizations
+- Improved performance of LU factorization of small and mid-size matrices (n <= 2048)
 
 ### Changed
 - Raised minimum requirement for building rocSOLVER from source to CMake 3.8
 - Switched to use semantic versioning for the library
+- Enabled automatic reallocation of memory workspace in rocsolver clients
 
 ### Removed
 - Removed `-DOPTIMAL` from the `roc::rocsolver` CMake usage requirements. This is an internal
   rocSOLVER definition, and does not need to be defined by library users
 
+### Fixed
+- Fixed runtime errors in debug mode caused by incorrect kernel launch bounds
+- Fixed complex unit test bug caused by incorrect zaxpy function signature
+- Eliminated a small memory transfer that was being done on the default stream
+- Fixed GESVD right singular vectors for 1x1 matrices
 
 
 ## [rocSOLVER 3.10.0 for ROCm 3.10.0]

@@ -170,7 +170,7 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS) LUfact_panel_kernel(const rocb
     GETF2_MAX_THDS <= m <= GETF2_OPTIM_MAX_SIZE and n = WAVESIZE
     (to be used by GETRF if block size = WAVESIZE)
 *******************************************************************/
-template <rocblas_int DIM, typename T, typename U>
+template <rocblas_int DIM1, rocblas_int DIM2, typename T, typename U>
 __global__ void __launch_bounds__(GETF2_MAX_THDS)
     LUfact_panel_kernel_blk(const rocblas_int m,
                             U AA,
@@ -212,9 +212,9 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
     int tmp;
     int pivot_index;
     int myinfo = 0; // to build info
-    int mypivs[DIM]; // to build ipiv
-    int myrows[DIM]; // to store this-thread active-rows-indices
-    T rA[DIM][WAVESIZE]; // to store this-thread active-rows-values
+    int mypivs[DIM1]; // to build ipiv
+    int myrows[DIM1]; // to store this-thread active-rows-indices
+    T rA[DIM1][DIM2]; // to store this-thread active-rows-values
 
     // initialization
     for(int i = 0; i < nrows; ++i)
@@ -226,14 +226,16 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
     // read corresponding rows from global memory into local array
     for(int i = 0; i < nrows; ++i)
     {
-#pragma unroll WAVESIZE
-        for(int j = 0; j < WAVESIZE; ++j)
+#pragma unroll DIM2
+        for(int j = 0; j < DIM2; ++j)
+        {
             rA[i][j] = A[myrows[i] + j * lda];
+        }
     }
 
-// for each pivot (main loop)
-#pragma unroll WAVESIZE
-    for(int k = 0; k < WAVESIZE; ++k)
+    // for each pivot (main loop)
+#pragma unroll DIM2
+    for(int k = 0; k < DIM2; ++k)
     {
         // share current column
         for(int i = 0; i < nrows; ++i)
@@ -269,7 +271,7 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
             {
                 myrows[i] = k;
                 // share pivot row
-                for(int j = k + 1; j < WAVESIZE; ++j)
+                for(int j = k + 1; j < DIM2; ++j)
                     common[j] = rA[i][j];
             }
             else if(myrows[i] == k)
@@ -286,7 +288,7 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
             if(myrows[i] > k)
             {
                 rA[i][k] *= pivot_value;
-                for(int j = k + 1; j < WAVESIZE; ++j)
+                for(int j = k + 1; j < DIM2; ++j)
                     rA[i][j] -= rA[i][k] * common[j];
             }
         }
@@ -296,22 +298,25 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS)
     // write results to global memory
     if(myrow == 0)
         *info = myinfo;
+
     if(pivot)
     {
         for(int i = 0; i < nrows; ++i)
         {
-            if(myrows[i] < WAVESIZE)
+            if(myrows[i] < DIM2)
                 ipiv[myrows[i]] = mypivs[i];
         }
     }
+
     for(int i = 0; i < nrows; ++i)
     {
-#pragma unroll WAVESIZE
-        for(int j = 0; j < WAVESIZE; ++j)
+#pragma unroll DIM2
+        for(int j = 0; j < DIM2; ++j)
+        {
             A[myrows[i] + j * lda] = rA[i][j];
+        }
     }
 }
-
 /**************************************************************************
     Launcher of LUfact_panel kernels
 **************************************************************************/
@@ -330,13 +335,13 @@ rocblas_status LUfact_panel(rocblas_handle handle,
                             const rocblas_int batch_count,
                             const rocblas_int pivot)
 {
-#define RUN_LUFACT_PANEL(DIM)                                                                      \
-    if(n == 64)                                                                                    \
-        hipLaunchKernelGGL((LUfact_panel_kernel_blk<DIM, T>), grid, block, lmemsize, stream, m, A, \
-                           shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count, pivot); \
-    else                                                                                           \
-        hipLaunchKernelGGL((LUfact_panel_kernel<DIM, T>), grid, block, lmemsize, stream, m, n, A,  \
-                           shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count, pivot)
+#define RUN_LUFACT_PANEL_BLK(DIM1, DIM2)                                                           \
+    hipLaunchKernelGGL((LUfact_panel_kernel_blk<DIM1, DIM2, T>), grid, block, lmemsize, stream, m, \
+                       A, shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count, pivot)
+
+#define RUN_LUFACT_PANEL(DIM)                                                                 \
+    hipLaunchKernelGGL((LUfact_panel_kernel<DIM, T>), grid, block, lmemsize, stream, m, n, A, \
+                       shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count, pivot)
 
     // determine sizes
     rocblas_int blocks = batch_count;
@@ -356,13 +361,69 @@ rocblas_status LUfact_panel(rocblas_handle handle,
     // GETF2_OPTIM_MAX_SIZE are tunned) kernel launch
     switch(dim)
     {
-    case 2: RUN_LUFACT_PANEL(2); break;
-    case 3: RUN_LUFACT_PANEL(3); break;
-    case 4: RUN_LUFACT_PANEL(4); break;
-    case 5: RUN_LUFACT_PANEL(5); break;
-    case 6: RUN_LUFACT_PANEL(6); break;
-    case 7: RUN_LUFACT_PANEL(7); break;
-    case 8: RUN_LUFACT_PANEL(8); break;
+    case 2:
+        switch(n)
+        {
+        case 16: RUN_LUFACT_PANEL_BLK(2, 16); break;
+        case 32: RUN_LUFACT_PANEL_BLK(2, 32); break;
+        case 64: RUN_LUFACT_PANEL_BLK(2, 64); break;
+        default: RUN_LUFACT_PANEL(2);
+        }
+        break;
+    case 3:
+        switch(n)
+        {
+        case 16: RUN_LUFACT_PANEL_BLK(3, 16); break;
+        case 32: RUN_LUFACT_PANEL_BLK(3, 32); break;
+        case 64: RUN_LUFACT_PANEL_BLK(3, 64); break;
+        default: RUN_LUFACT_PANEL(3);
+        }
+        break;
+    case 4:
+        switch(n)
+        {
+        case 16: RUN_LUFACT_PANEL_BLK(4, 16); break;
+        case 32: RUN_LUFACT_PANEL_BLK(4, 32); break;
+        case 64: RUN_LUFACT_PANEL_BLK(4, 64); break;
+        default: RUN_LUFACT_PANEL(4);
+        }
+        break;
+    case 5:
+        switch(n)
+        {
+        case 16: RUN_LUFACT_PANEL_BLK(5, 16); break;
+        case 32: RUN_LUFACT_PANEL_BLK(5, 32); break;
+        case 64: RUN_LUFACT_PANEL_BLK(5, 64); break;
+        default: RUN_LUFACT_PANEL(5);
+        }
+        break;
+    case 6:
+        switch(n)
+        {
+        case 16: RUN_LUFACT_PANEL_BLK(6, 16); break;
+        case 32: RUN_LUFACT_PANEL_BLK(6, 32); break;
+        case 64: RUN_LUFACT_PANEL_BLK(6, 64); break;
+        default: RUN_LUFACT_PANEL(6);
+        }
+        break;
+    case 7:
+        switch(n)
+        {
+        case 16: RUN_LUFACT_PANEL_BLK(7, 16); break;
+        case 32: RUN_LUFACT_PANEL_BLK(7, 32); break;
+        case 64: RUN_LUFACT_PANEL_BLK(7, 64); break;
+        default: RUN_LUFACT_PANEL(7);
+        }
+        break;
+    case 8:
+        switch(n)
+        {
+        case 16: RUN_LUFACT_PANEL_BLK(8, 16); break;
+        case 32: RUN_LUFACT_PANEL_BLK(8, 32); break;
+        case 64: RUN_LUFACT_PANEL_BLK(8, 64); break;
+        default: RUN_LUFACT_PANEL(8);
+        }
+        break;
     default: ROCSOLVER_UNREACHABLE();
     }
 
@@ -722,7 +783,7 @@ rocblas_status rocsolver_getf2_getrf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool ISBATCHED, typename T, typename S, typename U>
+template <bool ISBATCHED, bool PIVOT, typename T, typename S, typename U>
 rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,
@@ -735,7 +796,6 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                                         const rocblas_stride strideP,
                                         rocblas_int* info,
                                         const rocblas_int batch_count,
-                                        const rocblas_int pivot,
                                         T* scalars,
                                         rocblas_index_value_t<S>* work,
                                         T* pivotval,
@@ -766,11 +826,11 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     {
         if(m <= GETF2_MAX_THDS)
             return LUfact_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
-                                   info, batch_count, pivot);
+                                   info, batch_count, PIVOT);
         else if((m <= GETF2_OPTIM_MAX_SIZE && !ISBATCHED)
                 || (m <= GETF2_BATCH_OPTIM_MAX_SIZE && ISBATCHED))
             return LUfact_panel<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
-                                   info, batch_count, pivot);
+                                   info, batch_count, PIVOT);
     }
 #endif
 
@@ -781,7 +841,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
 
     for(rocblas_int j = 0; j < dim; ++j)
     {
-        if(pivot)
+        if(PIVOT)
             // find pivot. Use Fortran 1-based indexing for the ipiv array as iamax
             // does that as well!
             rocblasCall_iamax<ISBATCHED, T, S>(handle, m - j, A, shiftA + idx2D(j, j, lda), 1,
@@ -790,9 +850,9 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         // adjust pivot indices and check singularity
         hipLaunchKernelGGL(getf2_check_singularity<T>, dim3(batch_count), dim3(1), 0, stream, A,
                            shiftA, strideA, ipiv, shiftP, strideP, j, lda, pivotval, pivotidx, info,
-                           pivot);
+                           PIVOT);
 
-        if(pivot)
+        if(PIVOT)
             // Swap pivot row and j-th row
             rocsolver_laswp_template<T>(handle, n, A, shiftA, lda, strideA, j + 1, j + 1, ipiv,
                                         shiftP, strideP, 1, batch_count);
