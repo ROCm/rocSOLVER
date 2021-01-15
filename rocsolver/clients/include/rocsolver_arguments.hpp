@@ -59,8 +59,6 @@ public:
     rocblas_int bsp = 128;
     rocblas_int bs5 = 128;
 
-    bool rankd = false; // rank deficient
-
     rocblas_int norm_check = 0;
     rocblas_int unit_check = 1;
     rocblas_int timing = 0;
