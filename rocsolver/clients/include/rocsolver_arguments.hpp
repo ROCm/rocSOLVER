@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -58,6 +58,8 @@ public:
     rocblas_int bsc = 128 * 128;
     rocblas_int bsp = 128;
     rocblas_int bs5 = 128;
+
+    bool rankd = false; // rank deficient
 
     rocblas_int norm_check = 0;
     rocblas_int unit_check = 1;

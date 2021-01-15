@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
 #pragma once
@@ -133,7 +133,8 @@ void cblas_gels(rocblas_operation transR,
                 T* B,
                 rocblas_int ldb,
                 T* work,
-                rocblas_int lwork);
+                rocblas_int lwork,
+                rocblas_int* info);
 
 template <typename T>
 void cblas_getri(rocblas_int n,
