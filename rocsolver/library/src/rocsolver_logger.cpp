@@ -7,6 +7,9 @@
 
 rocsolver_logger* logger = nullptr;
 
+/***************************************************************************
+ * Logging set-up and tear-down
+ ***************************************************************************/
 extern "C" {
 
 rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
@@ -64,6 +67,9 @@ rocblas_status rocsolver_logging_cleanup()
 }
 }
 
+/***************************************************************************
+ * rocsolver_logger member functions
+ ***************************************************************************/
 template <>
 char rocsolver_logger::get_precision<float>()
 {
