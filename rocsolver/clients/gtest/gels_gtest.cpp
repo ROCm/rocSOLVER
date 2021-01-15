@@ -11,12 +11,12 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<int, int, int, int, int> gels_params_A;
+typedef std::tuple<int, int, int, int> gels_params_A;
 typedef std::tuple<int, rocsolver_op_char> gels_params_B;
 
 typedef std::tuple<gels_params_A, gels_params_B> gels_tuple;
 
-// each A_range tuple is a {M, N, lda, ldb, rankd};
+// each A_range tuple is a {M, N, lda, ldb};
 
 // each B_range tuple is a {nrhs, trans};
 
@@ -26,21 +26,21 @@ typedef std::tuple<gels_params_A, gels_params_B> gels_tuple;
 // for checkin_lapack tests
 const vector<gels_params_A> matrix_sizeA_range = {
     // quick return
-    {0, 0, 0, 0, 0},
+    {0, 0, 0, 0},
     // invalid
-    {-1, 1, 1, 1, 0},
-    {1, -1, 1, 1, 0},
-    {10, 10, 10, 1, 0},
-    {10, 10, 1, 10, 0},
+    {-1, 1, 1, 1},
+    {1, -1, 1, 1},
+    {10, 10, 10, 1},
+    {10, 10, 1, 10},
     // not yet implemented
-    {10, 1, 10, 10, 0},
+    {10, 1, 10, 10},
     // normal (valid) samples
-    {20, 20, 20, 20, 0},
-    {20, 20, 20, 20, 1},
-    {30, 20, 40, 30, 0},
-    {30, 20, 40, 30, 1},
-    {40, 20, 40, 40, 0},
-    {40, 20, 40, 40, 1},
+    {20, 20, 20, 20},
+    {20, 20, 20, 20},
+    {30, 20, 40, 30},
+    {30, 20, 40, 30},
+    {40, 20, 40, 40},
+    {40, 20, 40, 40},
 };
 const vector<gels_params_B> matrix_sizeB_range = {
     // quick return
@@ -58,8 +58,8 @@ const vector<gels_params_B> matrix_sizeB_range = {
 
 // for daily_lapack tests
 const vector<gels_params_A> large_matrix_sizeA_range = {
-    {75, 25, 75, 75, 0},    {150, 150, 150, 150, 0},    {150, 150, 150, 150, 1},
-    {500, 50, 600, 600, 0}, {1000, 500, 1000, 1000, 0},
+    {75, 25, 75, 75},    {150, 150, 150, 150},    {150, 150, 150, 150},
+    {500, 50, 600, 600}, {1000, 500, 1000, 1000},
 };
 const vector<gels_params_B> large_matrix_sizeB_range = {
     {100, 'N'},
@@ -79,7 +79,6 @@ Arguments gels_setup_arguments(gels_tuple tup)
     arg.N = std::get<1>(matrix_sizeA);
     arg.lda = std::get<2>(matrix_sizeA);
     arg.ldb = std::get<3>(matrix_sizeA);
-    arg.rankd = std::get<4>(matrix_sizeA);
 
     arg.K = std::get<0>(matrix_sizeB);
     arg.transA_option = std::get<1>(matrix_sizeB);
@@ -112,6 +111,10 @@ TEST_P(GELS, __float)
         testing_gels_bad_arg<false, false, float>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_gels<false, false, float>(arg);
+
+    arg.singular = 0;
     testing_gels<false, false, float>(arg);
 }
 
@@ -123,6 +126,10 @@ TEST_P(GELS, __double)
         testing_gels_bad_arg<false, false, double>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_gels<false, false, double>(arg);
+
+    arg.singular = 0;
     testing_gels<false, false, double>(arg);
 }
 
@@ -134,6 +141,10 @@ TEST_P(GELS, __float_complex)
         testing_gels_bad_arg<false, false, rocblas_float_complex>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_gels<false, false, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_gels<false, false, rocblas_float_complex>(arg);
 }
 
@@ -145,6 +156,10 @@ TEST_P(GELS, __double_complex)
         testing_gels_bad_arg<false, false, rocblas_double_complex>();
 
     arg.batch_count = 1;
+    if(arg.singular == 1)
+        testing_gels<false, false, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_gels<false, false, rocblas_double_complex>(arg);
 }
 
@@ -158,6 +173,10 @@ TEST_P(GELS, batched__float)
         testing_gels_bad_arg<true, true, float>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_gels<true, true, float>(arg);
+
+    arg.singular = 0;
     testing_gels<true, true, float>(arg);
 }
 
@@ -169,6 +188,10 @@ TEST_P(GELS, batched__double)
         testing_gels_bad_arg<true, true, double>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_gels<true, true, double>(arg);
+
+    arg.singular = 0;
     testing_gels<true, true, double>(arg);
 }
 
@@ -180,6 +203,10 @@ TEST_P(GELS, batched__float_complex)
         testing_gels_bad_arg<true, true, rocblas_float_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_gels<true, true, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_gels<true, true, rocblas_float_complex>(arg);
 }
 
@@ -191,6 +218,10 @@ TEST_P(GELS, batched__double_complex)
         testing_gels_bad_arg<true, true, rocblas_double_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_gels<true, true, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_gels<true, true, rocblas_double_complex>(arg);
 }
 
@@ -204,6 +235,10 @@ TEST_P(GELS, strided_batched__float)
         testing_gels_bad_arg<false, true, float>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_gels<false, true, float>(arg);
+
+    arg.singular = 0;
     testing_gels<false, true, float>(arg);
 }
 
@@ -215,6 +250,10 @@ TEST_P(GELS, strided_batched__double)
         testing_gels_bad_arg<false, true, double>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_gels<false, true, double>(arg);
+
+    arg.singular = 0;
     testing_gels<false, true, double>(arg);
 }
 
@@ -226,6 +265,10 @@ TEST_P(GELS, strided_batched__float_complex)
         testing_gels_bad_arg<false, true, rocblas_float_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_gels<false, true, rocblas_float_complex>(arg);
+
+    arg.singular = 0;
     testing_gels<false, true, rocblas_float_complex>(arg);
 }
 
@@ -237,6 +280,10 @@ TEST_P(GELS, strided_batched__double_complex)
         testing_gels_bad_arg<false, true, rocblas_double_complex>();
 
     arg.batch_count = 3;
+    if(arg.singular == 1)
+        testing_gels<false, true, rocblas_double_complex>(arg);
+
+    arg.singular = 0;
     testing_gels<false, true, rocblas_double_complex>(arg);
 }
 

@@ -132,23 +132,6 @@ void testing_gels_bad_arg()
     }
 }
 
-template <typename Th>
-void make_rank_deficient(Th& hA, rocblas_int b, rocblas_int m, rocblas_int n, rocblas_int lda)
-{
-    // zero first col
-    for(rocblas_int i = 0; i < m; i++)
-    {
-        rocblas_int j = 0;
-        hA[b][i + j * lda] = 0;
-    }
-    // zero first row
-    for(rocblas_int j = 0; j < n; j++)
-    {
-        rocblas_int i = 0;
-        hA[b][i + j * lda] = 0;
-    }
-}
-
 template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
 void gels_initData(const rocblas_handle handle,
                    const rocblas_operation trans,
@@ -164,9 +147,9 @@ void gels_initData(const rocblas_handle handle,
                    Ud& dInfo,
                    const rocblas_int bc,
                    Th& hA,
-                   bool rankd,
                    Th& hB,
-                   Uh& hInfo)
+                   Uh& hInfo,
+                   const bool singular)
 {
     if(CPU)
     {
@@ -186,11 +169,25 @@ void gels_initData(const rocblas_handle handle,
                         hA[b][i + j * lda] -= 4;
                 }
             }
-        }
 
-        if(rankd)
-            for(rocblas_int b = 0; b < bc; ++b)
-                make_rank_deficient(hA, b, m, n, lda);
+            // add some singularities
+            // always the same elements for debugging purposes
+            if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
+            {
+                // zero first col
+                for(rocblas_int i = 0; i < m; i++)
+                {
+                    rocblas_int j = 0;
+                    hA[b][i + j * lda] = 0;
+                }
+                // zero first row
+                for(rocblas_int j = 0; j < n; j++)
+                {
+                    rocblas_int i = 0;
+                    hA[b][i + j * lda] = 0;
+                }
+            }
+        }
     }
 
     if(GPU)
@@ -216,31 +213,31 @@ void gels_getError(const rocblas_handle handle,
                    Ud& dInfo,
                    const rocblas_int bc,
                    Th& hA,
-                   bool rankd,
                    Th& hB,
                    Th& hBRes,
                    Uh& hInfo,
-                   double* max_err)
+                   Uh& hInfoRes,
+                   double* max_err,
+                   const bool singular)
 {
     rocblas_int sizeW = max(1, min(m, n) + max(min(m, n), nrhs));
     std::vector<T> hW(sizeW);
-    std::vector<rocblas_int> hInfoCblas(bc);
 
     // input data initialization
     gels_initData<true, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo, bc,
-                                 hA, rankd, hB, hInfo);
+                                 hA, hB, hInfo, singular);
 
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA.data(), lda, stA,
                                        dB.data(), ldb, stB, dInfo.data(), bc));
     CHECK_HIP_ERROR(hBRes.transfer_from(dB));
-    CHECK_HIP_ERROR(hInfo.transfer_from(dInfo));
+    CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cblas_gels<T>(trans, m, n, nrhs, hA[b], lda, hB[b], ldb, hW.data(), sizeW, &hInfoCblas[b]);
+        cblas_gels<T>(trans, m, n, nrhs, hA[b], lda, hB[b], ldb, hW.data(), sizeW, hInfo[b]);
     }
 
     // error is ||hB - hBRes|| / ||hB||
@@ -256,10 +253,10 @@ void gels_getError(const rocblas_handle handle,
         *max_err = err > *max_err ? err : *max_err;
     }
 
-    // also check info
+    // also check info for singularities
     err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
-        if(hInfoCblas[b][0] != hInfo[b][0])
+        if(hInfo[b][0] != hInfoRes[b][0])
             err++;
     *max_err += err;
 }
@@ -279,13 +276,13 @@ void gels_getPerfData(const rocblas_handle handle,
                       Ud& dInfo,
                       const rocblas_int bc,
                       Th& hA,
-                      bool rankd,
                       Th& hB,
                       Uh& hInfo,
                       double* gpu_time_used,
                       double* cpu_time_used,
                       const rocblas_int hot_calls,
-                      const bool perf)
+                      const bool perf,
+                      const bool singular)
 {
     rocblas_int sizeW = max(1, min(m, n) + max(min(m, n), nrhs));
     std::vector<T> hW(sizeW);
@@ -293,23 +290,22 @@ void gels_getPerfData(const rocblas_handle handle,
     if(!perf)
     {
         gels_initData<true, false, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo,
-                                      bc, hA, rankd, hB, hInfo);
+                                      bc, hA, hB, hInfo, singular);
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            rocblas_int info;
-            cblas_gels<T>(trans, m, n, nrhs, hA[b], lda, hB[b], ldb, hW.data(), sizeW, &info);
+            cblas_gels<T>(trans, m, n, nrhs, hA[b], lda, hB[b], ldb, hW.data(), sizeW, hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
     gels_initData<true, false, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo, bc,
-                                  hA, rankd, hB, hInfo);
+                                  hA, hB, hInfo, singular);
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         gels_initData<false, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo,
-                                      bc, hA, rankd, hB, hInfo);
+                                      bc, hA, hB, hInfo, singular);
         CHECK_ROCBLAS_ERROR(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA.data(), lda, stA,
                                            dB.data(), ldb, stB, dInfo.data(), bc));
     }
@@ -322,7 +318,7 @@ void gels_getPerfData(const rocblas_handle handle,
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         gels_initData<false, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo,
-                                      bc, hA, rankd, hB, hInfo);
+                                      bc, hA, hB, hInfo, singular);
 
         start = get_time_us_sync(stream);
         rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, dA.data(), lda, stA, dB.data(), ldb, stB,
@@ -344,7 +340,6 @@ void testing_gels(Arguments argus)
     rocblas_int ldb = argus.ldb;
     rocblas_stride stA = argus.bsa;
     rocblas_stride stB = argus.bsb;
-    rocblas_int rankd = argus.rankd;
     rocblas_int bc = argus.batch_count;
     char transC = argus.transA_option;
     rocblas_operation trans = char2rocblas_operation(transC);
@@ -418,6 +413,7 @@ void testing_gels(Arguments argus)
         host_batch_vector<T> hB(size_B, 1, bc);
         host_batch_vector<T> hBRes(size_BRes, 1, bc);
         host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
+        host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
         device_batch_vector<T> dA(size_A, 1, bc);
         device_batch_vector<T> dB(size_B, 1, bc);
         device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
@@ -443,13 +439,13 @@ void testing_gels(Arguments argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
             gels_getError<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo,
-                                      bc, hA, rankd, hB, hBRes, hInfo, &max_error);
+                                      bc, hA, hB, hBRes, hInfo, hInfoRes, &max_error, argus.singular);
 
         // collect performance data
         if(argus.timing)
             gels_getPerfData<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB,
-                                         dInfo, bc, hA, rankd, hB, hInfo, &gpu_time_used,
-                                         &cpu_time_used, hot_calls, argus.perf);
+                                         dInfo, bc, hA, hB, hInfo, &gpu_time_used, &cpu_time_used,
+                                         hot_calls, argus.perf, argus.singular);
     }
     else
     {
@@ -458,6 +454,7 @@ void testing_gels(Arguments argus)
         host_strided_batch_vector<T> hB(size_B, 1, stB, bc);
         host_strided_batch_vector<T> hBRes(size_BRes, 1, stBRes, bc);
         host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
+        host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
         device_strided_batch_vector<T> dA(size_A, 1, stA, bc);
         device_strided_batch_vector<T> dB(size_B, 1, stB, bc);
         device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
@@ -483,13 +480,13 @@ void testing_gels(Arguments argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
             gels_getError<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo,
-                                      bc, hA, rankd, hB, hBRes, hInfo, &max_error);
+                                      bc, hA, hB, hBRes, hInfo, hInfoRes, &max_error, argus.singular);
 
         // collect performance data
         if(argus.timing)
             gels_getPerfData<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB,
-                                         dInfo, bc, hA, rankd, hB, hInfo, &gpu_time_used,
-                                         &cpu_time_used, hot_calls, argus.perf);
+                                         dInfo, bc, hA, hB, hInfo, &gpu_time_used, &cpu_time_used,
+                                         hot_calls, argus.perf, argus.singular);
     }
     // validate results for rocsolver-test
     // using max(m,n) * machine_precision as tolerance
