@@ -11,12 +11,13 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<int, int, int, int> gels_params_A;
+typedef std::tuple<int, int, int, int, int> gels_params_A;
 typedef std::tuple<int, rocsolver_op_char> gels_params_B;
 
 typedef std::tuple<gels_params_A, gels_params_B> gels_tuple;
 
-// each A_range tuple is a {M, N, lda, ldb};
+// each A_range tuple is a {M, N, lda, ldb, singular};
+// if singular = 1, then the used matrix for the tests is singular
 
 // each B_range tuple is a {nrhs, trans};
 
@@ -26,21 +27,18 @@ typedef std::tuple<gels_params_A, gels_params_B> gels_tuple;
 // for checkin_lapack tests
 const vector<gels_params_A> matrix_sizeA_range = {
     // quick return
-    {0, 0, 0, 0},
+    {0, 0, 0, 0, 0},
     // invalid
-    {-1, 1, 1, 1},
-    {1, -1, 1, 1},
-    {10, 10, 10, 1},
-    {10, 10, 1, 10},
+    {-1, 1, 1, 1, 0},
+    {1, -1, 1, 1, 0},
+    {10, 10, 10, 1, 0},
+    {10, 10, 1, 10, 0},
     // not yet implemented
-    {10, 1, 10, 10},
+    {10, 1, 10, 10, 0},
     // normal (valid) samples
-    {20, 20, 20, 20},
-    {20, 20, 20, 20},
-    {30, 20, 40, 30},
-    {30, 20, 40, 30},
-    {40, 20, 40, 40},
-    {40, 20, 40, 40},
+    {20, 20, 20, 20, 1},
+    {30, 20, 40, 30, 0},
+    {40, 20, 40, 40, 1},
 };
 const vector<gels_params_B> matrix_sizeB_range = {
     // quick return
@@ -58,8 +56,10 @@ const vector<gels_params_B> matrix_sizeB_range = {
 
 // for daily_lapack tests
 const vector<gels_params_A> large_matrix_sizeA_range = {
-    {75, 25, 75, 75},    {150, 150, 150, 150},    {150, 150, 150, 150},
-    {500, 50, 600, 600}, {1000, 500, 1000, 1000},
+    {75, 25, 75, 75, 0},
+    {150, 150, 150, 150, 1},
+    {500, 50, 600, 600, 0},
+    {1000, 500, 1000, 1000, 1},
 };
 const vector<gels_params_B> large_matrix_sizeB_range = {
     {100, 'N'},
@@ -79,6 +79,7 @@ Arguments gels_setup_arguments(gels_tuple tup)
     arg.N = std::get<1>(matrix_sizeA);
     arg.lda = std::get<2>(matrix_sizeA);
     arg.ldb = std::get<3>(matrix_sizeA);
+    arg.singular = std::get<4>(matrix_sizeA);
 
     arg.K = std::get<0>(matrix_sizeB);
     arg.transA_option = std::get<1>(matrix_sizeB);
