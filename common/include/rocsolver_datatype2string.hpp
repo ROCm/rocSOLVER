@@ -127,6 +127,17 @@ constexpr auto rocblas2char_evect(rocblas_evect value)
     return '\0';
 }
 
+constexpr auto rocblas2char_itype(rocblas_itype value)
+{
+    switch(value)
+    {
+    case rocblas_itype_ax: return '1';
+    case rocblas_itype_abx: return '2';
+    case rocblas_itype_bax: return '3';
+    }
+    return '\0';
+}
+
 // return precision string for rocblas_datatype
 constexpr auto rocblas2string_datatype(rocblas_datatype type)
 {
@@ -267,6 +278,17 @@ constexpr rocblas_evect char2rocblas_evect(char value)
     case 'I': return rocblas_evect_tridiagonal;
     case 'N': return rocblas_evect_none;
     default: return static_cast<rocblas_evect>(-1);
+    }
+}
+
+constexpr rocblas_itype char2rocblas_itype(char value)
+{
+    switch(value)
+    {
+    case '1': return rocblas_itype_ax;
+    case '2': return rocblas_itype_abx;
+    case '3': return rocblas_itype_bax;
+    default: return static_cast<rocblas_itype>(-1);
     }
 }
 

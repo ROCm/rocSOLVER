@@ -40,6 +40,10 @@ rocblas_workmode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenenum:: rocblas_workmode
 
+rocblas_itype
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocblas_itype
+
 
 Logging Functions
 ============================

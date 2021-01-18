@@ -223,6 +223,10 @@ try
 
         ("evect",
          po::value<char>(&argus.evect)->default_value('N'),
+         "Only applicable to certain routines")
+
+        ("itype",
+         po::value<char>(&argus.itype)->default_value('1'),
          "Only applicable to certain routines");
     // clang-format on
 
@@ -297,6 +301,10 @@ try
     // workmode
     if(argus.workmode != 'O' && argus.workmode != 'I')
         throw std::invalid_argument("Invalid value for --workmode");
+
+    // itype
+    if(argus.itype != '1' && argus.itype != '2' && argus.itype != '3')
+        throw std::invalid_argument("Invalid value for --itype");
 
     // select and dispatch function test/benchmark
     // (TODO) MOVE THIS TO A SEPARATE IMPROVED DISPATCH FUNCTION
