@@ -47,17 +47,18 @@ rocblas_status rocsolver_logging_cleanup()
     // print profile logging results
     if(logger->layer_mode & rocblas_layer_mode_log_profile && logger->profile.size() > 0)
     {
-        rocblas_cout << "------- PROFILE -------" << std::endl;
+        rocblas_cout << "------- PROFILE -------" << '\n';
         for(auto it = logger->profile.begin(); it != logger->profile.end(); ++it)
         {
             rocblas_cout << it->first.c_str() << ": Calls: " << it->second.calls
                          << ", Total Time: " << it->second.time << " ms";
             if(it->second.internal_time > 0.0)
                 rocblas_cout << " (in nested functions: " << it->second.internal_time << " ms)"
-                             << std::endl;
+                             << '\n';
             else
-                rocblas_cout << std::endl;
+                rocblas_cout << '\n';
         }
+        rocblas_cout << std::endl;
     }
 
     delete logger;

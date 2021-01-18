@@ -121,7 +121,7 @@ private:
 
         rocblas_cout << "rocsolver-bench -f " << func_name << " -r " << get_precision<T>() << ' ';
         print_pairs(rocblas_cout, " ", args...);
-        rocblas_cout << std::endl;
+        rocblas_cout << '\n';
     }
 
     // outputs trace logging
@@ -133,7 +133,7 @@ private:
 
         rocblas_cout << get_template_name(func_prefix, func_name) << " (";
         print_pairs(rocblas_cout, ", ", args...);
-        rocblas_cout << ')' << std::endl;
+        rocblas_cout << ')' << '\n';
     }
 
     // populates profile logging data with information from call_stack
@@ -175,7 +175,7 @@ public:
             ROCSOLVER_UNREACHABLE();
 
         rocblas_cout << "------- ENTER " << get_func_name<T>(func_prefix, func_name) << " -------"
-                     << std::endl;
+                     << '\n';
 
         if(layer_mode & rocblas_layer_mode_log_bench)
             log_bench<T>(level, func_prefix, func_name, args...);
@@ -190,7 +190,7 @@ public:
             ROCSOLVER_UNREACHABLE();
 
         rocblas_cout << "-------  EXIT " << get_func_name<T>(func_prefix, func_name) << " -------"
-                     << std::endl
+                     << '\n'
                      << std::endl;
 
         call_stack.erase(handle);

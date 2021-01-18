@@ -47,7 +47,8 @@ inline void print_pairs(rocsolver_ostream& os, const char* sep)
 }
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-void print_device_matrix(const std::string name,
+void print_device_matrix(rocsolver_ostream& os,
+                         const std::string name,
                          const rocblas_int m,
                          const rocblas_int n,
                          U A,
@@ -56,22 +57,24 @@ void print_device_matrix(const std::string name,
     T hA[lda * n];
     hipMemcpy(hA, A, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
-    rocblas_cout << m << "-by-" << n << " matrix: " << name << std::endl;
+    os << m << "-by-" << n << " matrix: " << name << '\n';
     for(int i = 0; i < m; i++)
     {
-        rocblas_cout << "    ";
+        os << "    ";
         for(int j = 0; j < n; j++)
         {
-            rocblas_cout << hA[j * lda + i];
+            os << hA[j * lda + i];
             if(j < n - 1)
-                rocblas_cout << ", ";
+                os << ", ";
         }
-        rocblas_cout << std::endl;
+        os << '\n';
     }
+    os << std::endl;
 }
 
 template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-void print_device_matrix(const std::string name,
+void print_device_matrix(rocsolver_ostream& os,
+                         const std::string name,
                          const rocblas_int m,
                          const rocblas_int n,
                          U A,
@@ -80,16 +83,17 @@ void print_device_matrix(const std::string name,
     T hA[lda * n];
     hipMemcpy(hA, A, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
-    rocblas_cout << m << "-by-" << n << " matrix: " << name << std::endl;
+    os << m << "-by-" << n << " matrix: " << name << '\n';
     for(int i = 0; i < m; i++)
     {
-        rocblas_cout << "    ";
+        os << "    ";
         for(int j = 0; j < n; j++)
         {
-            rocblas_cout << '[' << hA[j * lda + i].real() << "+" << hA[j * lda + i].imag() << "i]";
+            os << '[' << hA[j * lda + i].real() << "+" << hA[j * lda + i].imag() << "i]";
             if(j < n - 1)
-                rocblas_cout << ", ";
+                os << ", ";
         }
-        rocblas_cout << std::endl;
+        os << '\n';
     }
+    os << std::endl;
 }
