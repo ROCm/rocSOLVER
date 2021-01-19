@@ -6,8 +6,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 - Multi-level logging
 - Eigenproblem reduction routines for symmetric and hermitian matrices:
-    - SYGS2 (with batched and strided\_batched versions)
-    - HEGS2 (with batched and strided\_batched versions)
+    - SYGS2, SYGST (with batched and strided\_batched versions)
+    - HEGS2, HEGST (with batched and strided\_batched versions)
 
 ### Optimizations
 

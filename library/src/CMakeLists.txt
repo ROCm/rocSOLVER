@@ -110,6 +110,9 @@ set( rocsolver_lapack_source
   lapack/roclapack_sygs2_hegs2.cpp
   lapack/roclapack_sygs2_hegs2_batched.cpp
   lapack/roclapack_sygs2_hegs2_strided_batched.cpp
+  lapack/roclapack_sygst_hegst.cpp
+  lapack/roclapack_sygst_hegst_batched.cpp
+  lapack/roclapack_sygst_hegst_strided_batched.cpp
 )
 
 set( auxiliaries
