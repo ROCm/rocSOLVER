@@ -154,6 +154,8 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
 endif( )
 
 find_package( rocblas REQUIRED CONFIG PATHS ${ROCM_PATH} )
+get_imported_target_location( location roc::rocblas )
+message(STATUS "Found rocBLAS: ${location}")
 
 add_subdirectory( library )
 
