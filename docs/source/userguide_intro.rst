@@ -134,6 +134,12 @@ rocsolver_hetd2_strided_batched                   x             x
 **rocsolver_hetrd**                               x             x
 rocsolver_hetrd_batched                           x             x
 rocsolver_hetrd_strided_batched                   x             x
+**rocsolver_sygs2**             x      x
+rocsolver_sygs2_batched         x      x
+rocsolver_sygs2_strided_batched x      x
+**rocsolver_hegs2**                               x             x
+rocsolver_hegs2_batched                           x             x
+rocsolver_hegs2_strided_batched                   x             x
 =============================== ====== ====== ============== ==============
 
 ==================================== ====== ====== ============== ==============

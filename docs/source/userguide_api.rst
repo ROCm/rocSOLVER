@@ -891,6 +891,46 @@ rocsolver_<type>hetrd_strided_batched()
 .. doxygenfunction:: rocsolver_chetrd_strided_batched
 
 
+Symmetric Matrix Reductions
+---------------------------------
+
+rocsolver_<type>sygs2()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsygs2
+   :outline:
+.. doxygenfunction:: rocsolver_ssygs2
+
+rocsolver_<type>sygs2_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsygs2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygs2_batched
+
+rocsolver_<type>sygs2_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsygs2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygs2_strided_batched
+
+rocsolver_<type>hegs2()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhegs2
+   :outline:
+.. doxygenfunction:: rocsolver_chegs2
+
+rocsolver_<type>hegs2_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhegs2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegs2_batched
+
+rocsolver_<type>hegs2_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhegs2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegs2_strided_batched
+
+
 General Matrix Inversion
 --------------------------
 

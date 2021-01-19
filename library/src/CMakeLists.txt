@@ -106,6 +106,10 @@ set( rocsolver_lapack_source
   lapack/roclapack_sytrd_hetrd.cpp
   lapack/roclapack_sytrd_hetrd_batched.cpp
   lapack/roclapack_sytrd_hetrd_strided_batched.cpp
+  # reduction of symmetric eigenproblems
+  lapack/roclapack_sygs2_hegs2.cpp
+  lapack/roclapack_sygs2_hegs2_batched.cpp
+  lapack/roclapack_sygs2_hegs2_strided_batched.cpp
 )
 
 set( auxiliaries

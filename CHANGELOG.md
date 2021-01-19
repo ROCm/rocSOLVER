@@ -5,6 +5,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ## [(Unreleased) rocSOLVER 3.12.0 for ROCm 4.2.0]
 ### Added
 - Multi-level logging
+- Eigenproblem reduction routines for symmetric and hermitian matrices:
+    - SYGS2 (with batched and strided\_batched versions)
+    - HEGS2 (with batched and strided\_batched versions)
 
 ### Optimizations
 
