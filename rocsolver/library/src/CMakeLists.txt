@@ -131,15 +131,6 @@ target_compile_options( rocsolver PRIVATE --gpu-max-threads-per-block=1024 )
 # Ignore loop unrolling failures
 target_compile_options( rocsolver PRIVATE -Wno-pass-failed )
 
-if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
-  # Remove following when hcc is fixed; hcc emits following spurious warning ROCm v1.6.1
-  # "clang-5.0: warning: argument unused during compilation: '-isystem /opt/rocm/include'"
-  target_compile_options( rocsolver PRIVATE -Wno-unused-command-line-argument -fno-gpu-rdc )
-  foreach( target ${AMDGPU_TARGETS} )
-    target_compile_options( rocsolver PRIVATE --amdgpu-target=${target} )
-  endforeach( )
-endif( )
-
 target_include_directories( rocsolver
   PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/rocsolver/library/include>
           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
