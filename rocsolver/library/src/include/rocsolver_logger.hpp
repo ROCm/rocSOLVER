@@ -119,7 +119,7 @@ private:
         for(int i = 0; i < level - 1; i++)
             rocblas_cout << "    ";
 
-        rocblas_cout << "rocsolver-bench -f " << func_name << " -r " << get_precision<T>() << ' ';
+        rocblas_cout << "./rocsolver-bench -f " << func_name << " -r " << get_precision<T>() << ' ';
         print_pairs(rocblas_cout, " ", args...);
         rocblas_cout << '\n';
     }

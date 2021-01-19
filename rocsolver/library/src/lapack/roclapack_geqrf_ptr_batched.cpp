@@ -36,8 +36,6 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
     if(!handle)
         ROCSOLVER_RETURN_TOP("geqrf_ptr_batched", rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st = rocsolver_geqr2_geqrf_argCheck(handle, m, n, lda, A, tau, batch_count);
     if(st != rocblas_status_continue)

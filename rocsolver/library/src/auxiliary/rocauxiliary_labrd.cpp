@@ -25,8 +25,6 @@ rocblas_status rocsolver_labrd_impl(rocblas_handle handle,
     if(!handle)
         ROCSOLVER_RETURN_TOP("labrd", rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st
         = rocsolver_labrd_argCheck(handle, m, n, k, lda, ldx, ldy, A, D, E, tauq, taup, X, Y);

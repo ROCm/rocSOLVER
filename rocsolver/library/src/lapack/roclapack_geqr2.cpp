@@ -17,8 +17,6 @@ rocblas_status rocsolver_geqr2_impl(rocblas_handle handle,
     if(!handle)
         ROCSOLVER_RETURN_TOP("geqr2", rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st = rocsolver_geqr2_geqrf_argCheck(handle, m, n, lda, A, ipiv);
     if(st != rocblas_status_continue)

@@ -27,8 +27,6 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
     if(!handle)
         ROCSOLVER_RETURN_TOP("bdsqr", rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st
         = rocsolver_bdsqr_argCheck(handle, uplo, n, nv, nu, nc, ldv, ldu, ldc, D, E, V, U, C, info);

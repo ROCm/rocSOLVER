@@ -13,8 +13,6 @@ rocblas_status
     if(!handle)
         ROCSOLVER_RETURN_TOP("lacgv", rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st = rocsolver_lacgv_argCheck(handle, n, incx, x);
     if(st != rocblas_status_continue)

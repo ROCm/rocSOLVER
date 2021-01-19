@@ -20,8 +20,6 @@ rocblas_status rocsolver_larf_impl(rocblas_handle handle,
     if(!handle)
         ROCSOLVER_RETURN_TOP("larf", rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st = rocsolver_larf_argCheck(handle, side, m, n, lda, incx, x, A, alpha);
     if(st != rocblas_status_continue)

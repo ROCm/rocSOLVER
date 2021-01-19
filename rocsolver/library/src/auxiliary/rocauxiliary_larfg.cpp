@@ -18,8 +18,6 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle,
     if(!handle)
         ROCSOLVER_RETURN_TOP("larfg", rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st = rocsolver_larfg_argCheck(handle, n, incx, alpha, x, tau);
     if(st != rocblas_status_continue)

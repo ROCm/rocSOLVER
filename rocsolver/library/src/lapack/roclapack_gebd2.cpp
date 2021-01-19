@@ -20,8 +20,6 @@ rocblas_status rocsolver_gebd2_impl(rocblas_handle handle,
     if(!handle)
         ROCSOLVER_RETURN_TOP("gebd2", rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st = rocsolver_gebd2_gebrd_argCheck(handle, m, n, lda, A, D, E, tauq, taup);
     if(st != rocblas_status_continue)

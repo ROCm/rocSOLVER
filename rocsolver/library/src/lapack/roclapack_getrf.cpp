@@ -21,8 +21,6 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle,
     if(!handle)
         ROCSOLVER_RETURN_TOP(name, rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st = rocsolver_getf2_getrf_argCheck(handle, m, n, lda, A, ipiv, info, PIVOT);
     if(st != rocblas_status_continue)

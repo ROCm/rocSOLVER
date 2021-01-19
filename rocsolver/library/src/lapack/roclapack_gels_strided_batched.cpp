@@ -26,8 +26,6 @@ rocblas_status rocsolver_gels_strided_batched_impl(rocblas_handle handle,
     if(!handle)
         ROCSOLVER_RETURN_TOP("gels_strided_batched", rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st
         = rocsolver_gels_argCheck(handle, trans, m, n, nrhs, A, lda, B, ldb, info, batch_count);

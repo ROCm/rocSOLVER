@@ -13,8 +13,6 @@ rocblas_status
     if(!handle)
         ROCSOLVER_RETURN_TOP("sterf", rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st = rocsolver_sterf_argCheck(handle, n, D, E, info);
     if(st != rocblas_status_continue)

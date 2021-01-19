@@ -24,8 +24,6 @@ rocblas_status rocsolver_ormlq_unmlq_impl(rocblas_handle handle,
     if(!handle)
         ROCSOLVER_RETURN_TOP(name, rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st = rocsolver_orml2_ormlq_argCheck<COMPLEX>(handle, side, trans, m, n, k, lda,
                                                                 ldc, A, C, ipiv);

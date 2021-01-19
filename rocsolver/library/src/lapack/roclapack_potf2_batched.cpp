@@ -19,8 +19,6 @@ rocblas_status rocsolver_potf2_batched_impl(rocblas_handle handle,
     if(!handle)
         ROCSOLVER_RETURN_TOP("potf2_batched", rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st = rocsolver_potf2_potrf_argCheck(handle, uplo, n, lda, A, info, batch_count);
     if(st != rocblas_status_continue)

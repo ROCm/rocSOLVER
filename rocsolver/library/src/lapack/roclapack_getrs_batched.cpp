@@ -23,8 +23,6 @@ rocblas_status rocsolver_getrs_batched_impl(rocblas_handle handle,
     if(!handle)
         ROCSOLVER_RETURN_TOP("getrs_batched", rocblas_status_invalid_handle);
 
-    // logging is missing ???
-
     // argument checking
     rocblas_status st
         = rocsolver_getrs_argCheck(handle, trans, n, nrhs, lda, ldb, A, B, ipiv, batch_count);
