@@ -509,7 +509,7 @@ template <typename S, typename T>
 void cblas_steqr(rocblas_evect compc, rocblas_int n, S* D, S* E, T* C, rocblas_int ldc, S* work);
 
 template <typename T>
-void cblas_sygs2_hegs2(rocblas_itype itype,
+void cblas_sygs2_hegs2(rocblas_eform itype,
                        rocblas_fill uplo,
                        rocblas_int n,
                        T* A,
@@ -518,7 +518,7 @@ void cblas_sygs2_hegs2(rocblas_itype itype,
                        rocblas_int ldb);
 
 template <typename T>
-void cblas_sygst_hegst(rocblas_itype itype,
+void cblas_sygst_hegst(rocblas_eform itype,
                        rocblas_fill uplo,
                        rocblas_int n,
                        T* A,

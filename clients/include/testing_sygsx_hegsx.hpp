@@ -13,7 +13,7 @@
 
 template <bool STRIDED, bool SYGST, typename T>
 void sygsx_hegsx_checkBadArgs(const rocblas_handle handle,
-                              const rocblas_itype itype,
+                              const rocblas_eform itype,
                               const rocblas_fill uplo,
                               const rocblas_int n,
                               T dA,
@@ -68,7 +68,7 @@ void testing_sygsx_hegsx_bad_arg()
 {
     // safe arguments
     rocblas_local_handle handle;
-    rocblas_itype itype = rocblas_itype_ax;
+    rocblas_eform itype = rocblas_eform_ax;
     rocblas_fill uplo = rocblas_fill_upper;
     rocblas_int n = 1;
     rocblas_int lda = 1;
@@ -105,7 +105,7 @@ void testing_sygsx_hegsx_bad_arg()
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Th>
 void sygsx_hegsx_initData(const rocblas_handle handle,
-                          const rocblas_itype itype,
+                          const rocblas_eform itype,
                           const rocblas_fill uplo,
                           const rocblas_int n,
                           Td& dA,
@@ -157,7 +157,7 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
 
 template <bool STRIDED, bool SYGST, typename T, typename Td, typename Th>
 void sygsx_hegsx_getError(const rocblas_handle handle,
-                          const rocblas_itype itype,
+                          const rocblas_eform itype,
                           const rocblas_fill uplo,
                           const rocblas_int n,
                           Td& dA,
@@ -207,7 +207,7 @@ void sygsx_hegsx_getError(const rocblas_handle handle,
 
 template <bool STRIDED, bool SYGST, typename T, typename Td, typename Th>
 void sygsx_hegsx_getPerfData(const rocblas_handle handle,
-                             const rocblas_itype itype,
+                             const rocblas_eform itype,
                              const rocblas_fill uplo,
                              const rocblas_int n,
                              Td& dA,
@@ -286,7 +286,7 @@ void testing_sygsx_hegsx(Arguments argus)
     rocblas_int hot_calls = argus.iters;
     char itypeC = argus.itype;
     char uploC = argus.uplo_option;
-    rocblas_itype itype = char2rocblas_itype(itypeC);
+    rocblas_eform itype = char2rocblas_eform(itypeC);
     rocblas_fill uplo = char2rocblas_fill(uploC);
 
     size_t stARes = (argus.unit_check || argus.norm_check) ? stA : 0;

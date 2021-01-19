@@ -6,7 +6,7 @@
 
 template <typename T, typename U>
 rocblas_status rocsolver_sygst_hegst_batched_impl(rocblas_handle handle,
-                                                  const rocblas_itype itype,
+                                                  const rocblas_eform itype,
                                                   const rocblas_fill uplo,
                                                   const rocblas_int n,
                                                   U A,
@@ -69,7 +69,7 @@ rocblas_status rocsolver_sygst_hegst_batched_impl(rocblas_handle handle,
 extern "C" {
 
 rocblas_status rocsolver_ssygst_batched(rocblas_handle handle,
-                                        const rocblas_itype itype,
+                                        const rocblas_eform itype,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
                                         float* const A[],
@@ -83,7 +83,7 @@ rocblas_status rocsolver_ssygst_batched(rocblas_handle handle,
 }
 
 rocblas_status rocsolver_dsygst_batched(rocblas_handle handle,
-                                        const rocblas_itype itype,
+                                        const rocblas_eform itype,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
                                         double* const A[],
@@ -97,7 +97,7 @@ rocblas_status rocsolver_dsygst_batched(rocblas_handle handle,
 }
 
 rocblas_status rocsolver_chegst_batched(rocblas_handle handle,
-                                        const rocblas_itype itype,
+                                        const rocblas_eform itype,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
                                         rocblas_float_complex* const A[],
@@ -111,7 +111,7 @@ rocblas_status rocsolver_chegst_batched(rocblas_handle handle,
 }
 
 rocblas_status rocsolver_zhegst_batched(rocblas_handle handle,
-                                        const rocblas_itype itype,
+                                        const rocblas_eform itype,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
                                         rocblas_double_complex* const A[],

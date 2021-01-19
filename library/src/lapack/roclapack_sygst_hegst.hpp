@@ -31,7 +31,7 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_int n,
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
-                                              const rocblas_itype itype,
+                                              const rocblas_eform itype,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,
                                               U A,

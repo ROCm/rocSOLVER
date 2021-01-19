@@ -62,13 +62,13 @@ typedef enum rocblas_evect_
     rocblas_evect_none = 213, /**< No eigenvectors are computed. */
 } rocblas_evect;
 
-/*! \brief Used to specify the eigenproblem type
+/*! \brief Used to specify the form of the generalized eigenproblem
  ********************************************************************************/
-typedef enum rocblas_itype_
+typedef enum rocblas_eform_
 {
-    rocblas_itype_ax = 221, /**< The problem is A*x = lambda*B*x. */
-    rocblas_itype_abx = 222, /**< The problem is A*B*x = lambda*x. */
-    rocblas_itype_bax = 223, /**< The problem is B*A*x = lambda*x. */
-} rocblas_itype;
+    rocblas_eform_ax = 221, /**< The problem is A*x = lambda*B*x. */
+    rocblas_eform_abx = 222, /**< The problem is A*B*x = lambda*x. */
+    rocblas_eform_bax = 223, /**< The problem is B*A*x = lambda*x. */
+} rocblas_eform;
 
 #endif /* ROCSOLVER_EXTRAS_H_ */

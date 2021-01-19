@@ -4930,7 +4930,7 @@ void cblas_steqr<double, rocblas_double_complex>(rocblas_evect compc,
 
 // sygs2 & hegs2
 template <>
-void cblas_sygs2_hegs2<float>(rocblas_itype itype,
+void cblas_sygs2_hegs2<float>(rocblas_eform itype,
                               rocblas_fill uplo,
                               rocblas_int n,
                               float* A,
@@ -4939,13 +4939,13 @@ void cblas_sygs2_hegs2<float>(rocblas_itype itype,
                               rocblas_int ldb)
 {
     rocblas_int info;
-    int itypeI = rocblas2char_itype(itype) - '0';
+    int itypeI = rocblas2char_eform(itype) - '0';
     char uploC = rocblas2char_fill(uplo);
     ssygs2_(&itypeI, &uploC, &n, A, &lda, B, &ldb, &info);
 }
 
 template <>
-void cblas_sygs2_hegs2<double>(rocblas_itype itype,
+void cblas_sygs2_hegs2<double>(rocblas_eform itype,
                                rocblas_fill uplo,
                                rocblas_int n,
                                double* A,
@@ -4954,13 +4954,13 @@ void cblas_sygs2_hegs2<double>(rocblas_itype itype,
                                rocblas_int ldb)
 {
     rocblas_int info;
-    int itypeI = rocblas2char_itype(itype) - '0';
+    int itypeI = rocblas2char_eform(itype) - '0';
     char uploC = rocblas2char_fill(uplo);
     dsygs2_(&itypeI, &uploC, &n, A, &lda, B, &ldb, &info);
 }
 
 template <>
-void cblas_sygs2_hegs2<rocblas_float_complex>(rocblas_itype itype,
+void cblas_sygs2_hegs2<rocblas_float_complex>(rocblas_eform itype,
                                               rocblas_fill uplo,
                                               rocblas_int n,
                                               rocblas_float_complex* A,
@@ -4969,13 +4969,13 @@ void cblas_sygs2_hegs2<rocblas_float_complex>(rocblas_itype itype,
                                               rocblas_int ldb)
 {
     rocblas_int info;
-    int itypeI = rocblas2char_itype(itype) - '0';
+    int itypeI = rocblas2char_eform(itype) - '0';
     char uploC = rocblas2char_fill(uplo);
     chegs2_(&itypeI, &uploC, &n, A, &lda, B, &ldb, &info);
 }
 
 template <>
-void cblas_sygs2_hegs2<rocblas_double_complex>(rocblas_itype itype,
+void cblas_sygs2_hegs2<rocblas_double_complex>(rocblas_eform itype,
                                                rocblas_fill uplo,
                                                rocblas_int n,
                                                rocblas_double_complex* A,
@@ -4984,14 +4984,14 @@ void cblas_sygs2_hegs2<rocblas_double_complex>(rocblas_itype itype,
                                                rocblas_int ldb)
 {
     rocblas_int info;
-    int itypeI = rocblas2char_itype(itype) - '0';
+    int itypeI = rocblas2char_eform(itype) - '0';
     char uploC = rocblas2char_fill(uplo);
     zhegs2_(&itypeI, &uploC, &n, A, &lda, B, &ldb, &info);
 }
 
 // sygst & hegst
 template <>
-void cblas_sygst_hegst<float>(rocblas_itype itype,
+void cblas_sygst_hegst<float>(rocblas_eform itype,
                               rocblas_fill uplo,
                               rocblas_int n,
                               float* A,
@@ -5000,13 +5000,13 @@ void cblas_sygst_hegst<float>(rocblas_itype itype,
                               rocblas_int ldb)
 {
     rocblas_int info;
-    int itypeI = rocblas2char_itype(itype) - '0';
+    int itypeI = rocblas2char_eform(itype) - '0';
     char uploC = rocblas2char_fill(uplo);
     ssygst_(&itypeI, &uploC, &n, A, &lda, B, &ldb, &info);
 }
 
 template <>
-void cblas_sygst_hegst<double>(rocblas_itype itype,
+void cblas_sygst_hegst<double>(rocblas_eform itype,
                                rocblas_fill uplo,
                                rocblas_int n,
                                double* A,
@@ -5015,13 +5015,13 @@ void cblas_sygst_hegst<double>(rocblas_itype itype,
                                rocblas_int ldb)
 {
     rocblas_int info;
-    int itypeI = rocblas2char_itype(itype) - '0';
+    int itypeI = rocblas2char_eform(itype) - '0';
     char uploC = rocblas2char_fill(uplo);
     dsygst_(&itypeI, &uploC, &n, A, &lda, B, &ldb, &info);
 }
 
 template <>
-void cblas_sygst_hegst<rocblas_float_complex>(rocblas_itype itype,
+void cblas_sygst_hegst<rocblas_float_complex>(rocblas_eform itype,
                                               rocblas_fill uplo,
                                               rocblas_int n,
                                               rocblas_float_complex* A,
@@ -5030,13 +5030,13 @@ void cblas_sygst_hegst<rocblas_float_complex>(rocblas_itype itype,
                                               rocblas_int ldb)
 {
     rocblas_int info;
-    int itypeI = rocblas2char_itype(itype) - '0';
+    int itypeI = rocblas2char_eform(itype) - '0';
     char uploC = rocblas2char_fill(uplo);
     chegst_(&itypeI, &uploC, &n, A, &lda, B, &ldb, &info);
 }
 
 template <>
-void cblas_sygst_hegst<rocblas_double_complex>(rocblas_itype itype,
+void cblas_sygst_hegst<rocblas_double_complex>(rocblas_eform itype,
                                                rocblas_fill uplo,
                                                rocblas_int n,
                                                rocblas_double_complex* A,
@@ -5045,7 +5045,7 @@ void cblas_sygst_hegst<rocblas_double_complex>(rocblas_itype itype,
                                                rocblas_int ldb)
 {
     rocblas_int info;
-    int itypeI = rocblas2char_itype(itype) - '0';
+    int itypeI = rocblas2char_eform(itype) - '0';
     char uploC = rocblas2char_fill(uplo);
     zhegst_(&itypeI, &uploC, &n, A, &lda, B, &ldb, &info);
 }

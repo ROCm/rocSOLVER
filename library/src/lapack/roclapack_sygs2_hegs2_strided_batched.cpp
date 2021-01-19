@@ -6,7 +6,7 @@
 
 template <typename T, typename U>
 rocblas_status rocsolver_sygs2_hegs2_strided_batched_impl(rocblas_handle handle,
-                                                          const rocblas_itype itype,
+                                                          const rocblas_eform itype,
                                                           const rocblas_fill uplo,
                                                           const rocblas_int n,
                                                           U A,
@@ -67,7 +67,7 @@ rocblas_status rocsolver_sygs2_hegs2_strided_batched_impl(rocblas_handle handle,
 extern "C" {
 
 rocblas_status rocsolver_ssygs2_strided_batched(rocblas_handle handle,
-                                                const rocblas_itype itype,
+                                                const rocblas_eform itype,
                                                 const rocblas_fill uplo,
                                                 const rocblas_int n,
                                                 float* A,
@@ -83,7 +83,7 @@ rocblas_status rocsolver_ssygs2_strided_batched(rocblas_handle handle,
 }
 
 rocblas_status rocsolver_dsygs2_strided_batched(rocblas_handle handle,
-                                                const rocblas_itype itype,
+                                                const rocblas_eform itype,
                                                 const rocblas_fill uplo,
                                                 const rocblas_int n,
                                                 double* A,
@@ -99,7 +99,7 @@ rocblas_status rocsolver_dsygs2_strided_batched(rocblas_handle handle,
 }
 
 rocblas_status rocsolver_chegs2_strided_batched(rocblas_handle handle,
-                                                const rocblas_itype itype,
+                                                const rocblas_eform itype,
                                                 const rocblas_fill uplo,
                                                 const rocblas_int n,
                                                 rocblas_float_complex* A,
@@ -115,7 +115,7 @@ rocblas_status rocsolver_chegs2_strided_batched(rocblas_handle handle,
 }
 
 rocblas_status rocsolver_zhegs2_strided_batched(rocblas_handle handle,
-                                                const rocblas_itype itype,
+                                                const rocblas_eform itype,
                                                 const rocblas_fill uplo,
                                                 const rocblas_int n,
                                                 rocblas_double_complex* A,

@@ -40,9 +40,9 @@ rocblas_workmode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenenum:: rocblas_workmode
 
-rocblas_itype
+rocblas_eform
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygenenum:: rocblas_itype
+.. doxygenenum:: rocblas_eform
 
 
 Logging Functions

@@ -6,7 +6,7 @@
 
 template <typename T, typename U>
 rocblas_status rocsolver_sygst_hegst_impl(rocblas_handle handle,
-                                          const rocblas_itype itype,
+                                          const rocblas_eform itype,
                                           const rocblas_fill uplo,
                                           const rocblas_int n,
                                           U A,
@@ -67,7 +67,7 @@ rocblas_status rocsolver_sygst_hegst_impl(rocblas_handle handle,
 extern "C" {
 
 rocblas_status rocsolver_ssygst(rocblas_handle handle,
-                                const rocblas_itype itype,
+                                const rocblas_eform itype,
                                 const rocblas_fill uplo,
                                 const rocblas_int n,
                                 float* A,
@@ -79,7 +79,7 @@ rocblas_status rocsolver_ssygst(rocblas_handle handle,
 }
 
 rocblas_status rocsolver_dsygst(rocblas_handle handle,
-                                const rocblas_itype itype,
+                                const rocblas_eform itype,
                                 const rocblas_fill uplo,
                                 const rocblas_int n,
                                 double* A,
@@ -91,7 +91,7 @@ rocblas_status rocsolver_dsygst(rocblas_handle handle,
 }
 
 rocblas_status rocsolver_chegst(rocblas_handle handle,
-                                const rocblas_itype itype,
+                                const rocblas_eform itype,
                                 const rocblas_fill uplo,
                                 const rocblas_int n,
                                 rocblas_float_complex* A,
@@ -103,7 +103,7 @@ rocblas_status rocsolver_chegst(rocblas_handle handle,
 }
 
 rocblas_status rocsolver_zhegst(rocblas_handle handle,
-                                const rocblas_itype itype,
+                                const rocblas_eform itype,
                                 const rocblas_fill uplo,
                                 const rocblas_int n,
                                 rocblas_double_complex* A,

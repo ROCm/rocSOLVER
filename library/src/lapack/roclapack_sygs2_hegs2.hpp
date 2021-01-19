@@ -31,7 +31,7 @@ void rocsolver_sygs2_hegs2_getMemorySize(const rocblas_int n,
 
 template <typename T>
 rocblas_status rocsolver_sygs2_hegs2_argCheck(rocblas_handle handle,
-                                              const rocblas_itype itype,
+                                              const rocblas_eform itype,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,
                                               const rocblas_int lda,
@@ -43,7 +43,7 @@ rocblas_status rocsolver_sygs2_hegs2_argCheck(rocblas_handle handle,
     // order is important for unit tests:
 
     // 1. invalid/non-supported values
-    if(itype != rocblas_itype_ax && itype != rocblas_itype_abx && itype != rocblas_itype_bax)
+    if(itype != rocblas_eform_ax && itype != rocblas_eform_abx && itype != rocblas_eform_bax)
         return rocblas_status_invalid_value;
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
         return rocblas_status_invalid_value;
@@ -65,7 +65,7 @@ rocblas_status rocsolver_sygs2_hegs2_argCheck(rocblas_handle handle,
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
-                                              const rocblas_itype itype,
+                                              const rocblas_eform itype,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,
                                               U A,
