@@ -9,7 +9,7 @@
 function( target_compile_features target_name )
   # With Cmake v3.5, hipcc (with nvcc backend) does not work with target_compile_features
   # Turn on -std=c++14 manually
-  if( CUDA_FOUND AND CMAKE_CXX_COMPILER MATCHES ".*/hcc$|.*/hipcc$" )
+  if( CUDA_FOUND AND CMAKE_CXX_COMPILER MATCHES ".*/hipcc$|.*/nvcc$" )
     set_target_properties( ${target_name} PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
   else( )
     _target_compile_features( ${target_name} ${ARGN} )
@@ -28,7 +28,7 @@ function( target_link_libraries target_name )
   #        internally (e.g. Fortran programs).
   if( CUDA_FOUND AND CMAKE_CXX_COMPILER MATCHES ".*/hipcc$|.*/nvcc$" )
     foreach( link_library ${ARGN} )
-      if( (link_library MATCHES "^hip::|^hcc::") )
+      if( (link_library MATCHES "^hip::") )
         message( DEBUG "Removing ${link_library} from ${target_name} library list" )
       else( )
         if( TARGET ${link_library} )
@@ -45,7 +45,8 @@ function( target_link_libraries target_name )
 endfunction( )
 
 # ########################################################################
-# A helper function to prefix a source list of files with a common path into a new list (non-destructive)
+# A helper function to prefix a source list of files with a common path
+# into a new list (non-destructive)
 # ########################################################################
 function( prepend_path prefix source_list_of_files return_list_of_files )
   foreach( file ${${source_list_of_files}} )

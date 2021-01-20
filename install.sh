@@ -33,8 +33,6 @@ Options:
                               Use only absolute paths.
                               (Default is /opt/rocm/rocblas)
 
-  --hcc                       Pass this flag to build library using deprecated hcc compiler.
-
   -g | --debug                Pass this flag to build in Debug mode (equivalent to set CMAKE_BUILD_TYPE=Debug).
                               (Default build type is Release)
 
@@ -49,8 +47,8 @@ Options:
   -c | --clients              Pass this flag to also build the library clients benchmark and gtest.
                               (Generated binaries will be located at builddir/clients/staging)
 
-  -h | --hip-clang            Pass this flag to build library using hipclang compiler.
-                              (This is the default building option).
+  -h | --hip-clang            Pass this flag to build using the hip-clang compiler.
+                              hip-clang is currently the only supported compiler, so this flag has no effect.
 
   -s | --static               Pass this flag to build rocsolver as a static library.
                               (rocsolver must be built statically when the used companion rocblas is also static).
@@ -321,7 +319,6 @@ build_package=false
 install_dependencies=false
 static_lib=false
 build_clients=false
-build_hcc=false
 lib_dir=rocsolver-install
 install_dir=${rocm_path}
 rocblas_dir=${rocm_path}/rocblas
@@ -340,7 +337,7 @@ architecture=
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,hcc,build_dir:,rocblas_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrna: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrna: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -379,13 +376,10 @@ while true; do
         static_lib=true
         shift ;;
     -h | --hip-clang)
-        build_hcc=false
+        # flag has no effect; hip-clang is the default
         shift ;;
     -n | --no-optimizations)
         optimal=false
-        shift ;;
-    --hcc)
-        build_hcc=true
         shift ;;
     --build_dir)
         build_dir=${2}
@@ -440,23 +434,13 @@ case "${ID}" in
   ;;
 esac
 
-if [[ "${build_hcc}" == false ]]; then
-  cxx="hipcc"
-  cc="hipcc"
-  fc="gfortran"
-else
-  cxx="hcc"
-  cc="hcc"
-  fc="gfortran"
-fi
+cxx="hipcc"
+cc="hipcc"
+fc="gfortran"
 
 # We append customary rocm path; if user provides custom rocm path in ${path}, our
 # hard-coded path has lesser priority
-if [[ "${build_hcc}" == false ]]; then
-  export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}"
-else
-  export PATH="${PATH}:${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/hcc/bin"
-fi
+export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}"
 
 # #################################################
 # dependencies

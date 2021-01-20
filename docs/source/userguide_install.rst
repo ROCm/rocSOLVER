@@ -216,7 +216,7 @@ of common use cases (see the CMake documentation for more information on CMake o
 .. code-block:: bash
 
     mkdir -p build/release && cd build/release
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install ../..
+    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install ../..
     make install
 
 This is equivalent to ``./install.sh``.
@@ -224,7 +224,7 @@ This is equivalent to ``./install.sh``.
 .. code-block:: bash
 
     mkdir -p buildoutput/release && cd buildoutput/release
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=/home/user/rocsolverlib ../..
+    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=/home/user/rocsolverlib ../..
     make install
 
 This is equivalent to ``./install.sh --lib_dir /home/user/rocsolverlib --build_dir buildoutput``.
@@ -232,7 +232,7 @@ This is equivalent to ``./install.sh --lib_dir /home/user/rocsolverlib --build_d
 .. code-block:: bash
 
     mkdir -p build/release && cd build/release
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -Drocblas_DIR=/alternative/rocblas/location ../..
+    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -Drocblas_DIR=/alternative/rocblas/location ../..
     make install
 
 This is equivalent to ``./install.sh --rocblas_dir /alternative/rocblas/location``.
@@ -240,7 +240,7 @@ This is equivalent to ``./install.sh --rocblas_dir /alternative/rocblas/location
 .. code-block:: bash
 
     mkdir -p build/debug && cd build/debug
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCMAKE_BUILD_TYPE=Debug ../..
+    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCMAKE_BUILD_TYPE=Debug ../..
     make install
 
 This is equivalent to ``./install.sh -g``.
@@ -248,7 +248,7 @@ This is equivalent to ``./install.sh -g``.
 .. code-block:: bash
 
     mkdir -p build/release && cd build/release
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_SHARED_LIBS=OFF ../..
+    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_SHARED_LIBS=OFF ../..
     make install
 
 This is equivalent to ``./install.sh -s``.
@@ -264,7 +264,7 @@ This is equivalent to ``./install.sh -h``.
 .. code-block:: bash
 
     mkdir -p build/release && cd build/release
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON ../..
+    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON ../..
     make install
 
 This is equivalent to ``./install.sh -c``.
@@ -272,7 +272,7 @@ This is equivalent to ``./install.sh -c``.
 .. code-block:: bash
 
     mkdir -p build/release && cd build/release
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/opt/rocm ../..
+    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/opt/rocm ../..
     make install
     make package
 
@@ -281,7 +281,7 @@ This is equivalent to ``./install.sh -p``.
 .. code-block:: bash
 
     mkdir -p build/release && cd build/release
-    CXX=/opt/rocm/bin/hcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/package/install/path ../..
+    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/package/install/path ../..
     make install
     make package
     sudo dpkg -i rocsolver[-\_]*.deb

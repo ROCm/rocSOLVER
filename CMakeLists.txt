@@ -57,15 +57,15 @@ find_package(Threads REQUIRED)
 
 # Hopefully, cost #2 is already paid.  All in all, I want to get rid of the
 # need for hipcc, and hope that at some point of time in the future we
-# can use the export config files from hip & hcc for both ROCm & nvcc backends.
+# can use the export config files from hip for both ROCm & nvcc backends.
 # ########################################################################
 
 # ########################################################################
 # Main
 # ########################################################################
 
-if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" OR CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
-  # Determine if CXX Compiler is hcc, hip-clang or nvcc
+if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
+  # Determine if CXX Compiler is hip-clang or nvcc
   execute_process(COMMAND ${CMAKE_CXX_COMPILER} "--version" OUTPUT_VARIABLE CXX_OUTPUT
                   OUTPUT_STRIP_TRAILING_WHITESPACE
                   ERROR_STRIP_TRAILING_WHITESPACE)
@@ -94,9 +94,8 @@ elseif( CXX_VERSION_STRING MATCHES "nvcc" )
   set( CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY "-Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}" )
   set( CMAKE_C_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN "-Xcompiler ${CMAKE_C_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN}" )
   set( CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN "-Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN}" )
-elseif( CXX_VERSION_STRING MATCHES "HCC" )
-  message( STATUS "HCC compiler set; ROCm backend selected [ CXX=/opt/rocm/bin/hcc cmake ... ]" )
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -hc")
+elseif( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
+  message( SEND_ERROR "HCC compiler is no longer supported!" )
 endif( )
 
 # get rocm-cmake
@@ -114,12 +113,11 @@ get_os_id(OS_ID)
 message (STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-# keeping versioning according to ROCm release
 set ( VERSION_STRING "3.11.0" )
 rocm_setup_version( VERSION ${VERSION_STRING} )
 
-# NOTE:  workaround until hcc & hip cmake modules fixes symlink logic in their config files; remove when fixed
-list( APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hcc ${ROCM_PATH}/hip /opt/rocm/hcc /opt/rocm/hip )
+# NOTE:  workaround until llvm & hip cmake modules fixes symlink logic in their config files; remove when fixed
+list( APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/llvm ${ROCM_PATH}/hip /opt/rocm/llvm /opt/rocm/hip )
 
 option( BUILD_VERBOSE "Output additional build information" OFF )
 
@@ -151,10 +149,9 @@ set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for librar
 # added as usage requirements on its interface
 set( AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-" CACHE STRING "List of specific machine types for library to target" )
 
-# Find HCC/HIP dependencies
-if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
-  find_package( hcc REQUIRED CONFIG PATHS ${ROCM_PATH} )
-  find_package( hip REQUIRED CONFIG PATHS ${ROCM_PATH} )
+# Find HIP dependencies
+if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
+  find_package( hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm )
 endif( )
 
 find_package( rocblas REQUIRED CONFIG PATHS ${ROCM_PATH} )
