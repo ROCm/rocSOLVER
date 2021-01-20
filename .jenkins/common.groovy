@@ -5,6 +5,8 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
 {
     project.paths.construct_build_prefix()
 
+    String compiler = 'hipcc'
+    String hipClang = ''
     String sles = platform.jenkinsLabel.contains('sles') ? '/usr/bin/sudo --preserve-env' : ''
     String debug = project.buildName.contains('Debug') ? '-g' : ''
     String centos = platform.jenkinsLabel.contains('centos') ? 'source scl_source enable devtoolset-7' : ''
