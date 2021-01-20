@@ -7486,15 +7486,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
     @param[inout]
     B         pointer to type. Array on the GPU of dimension ldb*nrhs.\n
               On entry, the matrix B is m-by-nrhs if non-transposed, or n-by-nrhs if transposed.
-              On exit, when info = 0, B is overwritten by the solution vectors stored as columns.
+              On exit, when info = 0, B is overwritten by the solution vectors (and the residuals in 
+              the overdetermined cases) stored as columns.
     @param[in]
     ldb       rocblas_int. ldb >= max(m,n).\n
               Specifies the leading dimension of matrix B.
     @param[out]
     info      pointer to rocblas_int on the GPU.\n
               If info = 0, successful exit.
-              If info = j > 0, the solution could not be computed because input matrix A is singular;
-              the j-th diagonal element of its triangular factor is zero.
+              If info = j > 0, the solution could not be computed because input matrix A is 
+              rank deficient; the j-th diagonal element of its triangular factor is zero.
 
     ********************************************************************/
 
@@ -7595,7 +7596,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
     @param[inout]
     B         array of pointer to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
               On entry, the matrices B_i are m-by-nrhs if non-transposed, or n-by-nrhs if transposed.
-              On exit, when info = 0, each B_i is overwritten by the solution vectors stored as columns.
+              On exit, when info = 0, each B_i is overwritten by the solution vectors (and the residuals in
+              the overdetermined cases) stored as columns.
     @param[in]
     ldb       rocblas_int. ldb >= max(m,n).\n
               Specifies the leading dimension of matrices B_i.
@@ -7603,7 +7605,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
               If info_i = 0, successful exit for solution of A_i.
               If info_i = j > 0, the solution of A_i could not be computed because input
-              matrix A_i is singular; the j-th diagonal element of its triangular factor is zero.
+              matrix A_i is rank deficient; the j-th diagonal element of its triangular factor is zero.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
               Number of matrices in the batch.
@@ -7715,7 +7717,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_batched(rocblas_handle handle,
     @param[inout]
     B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
               On entry, the matrices B_i are m-by-nrhs if non-transposed, or n-by-nrhs if transposed.
-              On exit, when info = 0, each B_i is overwritten by the solution vectors stored as columns.
+              On exit, when info = 0, each B_i is overwritten by the solution vectors (and the residuals in
+              the overdetermined cases) stored as columns.
     @param[in]
     ldb       rocblas_int. ldb >= max(m,n).\n
               Specifies the leading dimension of matrices B_i.
@@ -7727,7 +7730,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_batched(rocblas_handle handle,
     info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
               If info_i = 0, successful exit for solution of A_i.
               If info_i = j > 0, the solution of A_i could not be computed because input
-              matrix A_i is singular; the j-th diagonal element of its triangular factor is zero.
+              matrix A_i is rank deficient; the j-th diagonal element of its triangular factor is zero.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
               Number of matrices in the batch.
