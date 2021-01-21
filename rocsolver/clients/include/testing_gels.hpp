@@ -192,8 +192,7 @@ void gels_initData(const rocblas_handle handle,
                         for(rocblas_int i = 0; i < m; i++)
                             hA[b][i + j * lda] = 0;
                     }
-                }
-                while(coinflip(rocblas_rng));
+                } while(coinflip(rocblas_rng));
             }
         }
     }

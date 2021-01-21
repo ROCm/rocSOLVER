@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef _ROCLAPACK_FUNCTIONS_H
@@ -7486,7 +7486,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
     @param[inout]
     B         pointer to type. Array on the GPU of dimension ldb*nrhs.\n
               On entry, the matrix B is m-by-nrhs if non-transposed, or n-by-nrhs if transposed.
-              On exit, when info = 0, B is overwritten by the solution vectors (and the residuals in 
+              On exit, when info = 0, B is overwritten by the solution vectors (and the residuals in
               the overdetermined cases) stored as columns.
     @param[in]
     ldb       rocblas_int. ldb >= max(m,n).\n
@@ -7494,7 +7494,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
     @param[out]
     info      pointer to rocblas_int on the GPU.\n
               If info = 0, successful exit.
-              If info = j > 0, the solution could not be computed because input matrix A is 
+              If info = j > 0, the solution could not be computed because input matrix A is
               rank deficient; the j-th diagonal element of its triangular factor is zero.
 
     ********************************************************************/
