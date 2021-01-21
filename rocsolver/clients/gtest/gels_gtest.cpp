@@ -108,7 +108,7 @@ TEST_P(GELS, __float)
 {
     Arguments arg = gels_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
+    if(arg.M == 0 && arg.K == 0)
         testing_gels_bad_arg<false, false, float>();
 
     arg.batch_count = 1;
@@ -123,7 +123,7 @@ TEST_P(GELS, __double)
 {
     Arguments arg = gels_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
+    if(arg.M == 0 && arg.K == 0)
         testing_gels_bad_arg<false, false, double>();
 
     arg.batch_count = 1;
@@ -138,7 +138,7 @@ TEST_P(GELS, __float_complex)
 {
     Arguments arg = gels_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
+    if(arg.M == 0 && arg.K == 0)
         testing_gels_bad_arg<false, false, rocblas_float_complex>();
 
     arg.batch_count = 1;
@@ -153,7 +153,7 @@ TEST_P(GELS, __double_complex)
 {
     Arguments arg = gels_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
+    if(arg.M == 0 && arg.K == 0)
         testing_gels_bad_arg<false, false, rocblas_double_complex>();
 
     arg.batch_count = 1;
@@ -170,7 +170,7 @@ TEST_P(GELS, batched__float)
 {
     Arguments arg = gels_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
+    if(arg.M == 0 && arg.K == 0)
         testing_gels_bad_arg<true, true, float>();
 
     arg.batch_count = 3;
@@ -185,7 +185,7 @@ TEST_P(GELS, batched__double)
 {
     Arguments arg = gels_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
+    if(arg.M == 0 && arg.K == 0)
         testing_gels_bad_arg<true, true, double>();
 
     arg.batch_count = 3;
@@ -200,7 +200,7 @@ TEST_P(GELS, batched__float_complex)
 {
     Arguments arg = gels_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
+    if(arg.M == 0 && arg.K == 0)
         testing_gels_bad_arg<true, true, rocblas_float_complex>();
 
     arg.batch_count = 3;
@@ -215,7 +215,7 @@ TEST_P(GELS, batched__double_complex)
 {
     Arguments arg = gels_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
+    if(arg.M == 0 && arg.K == 0)
         testing_gels_bad_arg<true, true, rocblas_double_complex>();
 
     arg.batch_count = 3;
@@ -232,7 +232,7 @@ TEST_P(GELS, strided_batched__float)
 {
     Arguments arg = gels_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
+    if(arg.M == 0 && arg.K == 0)
         testing_gels_bad_arg<false, true, float>();
 
     arg.batch_count = 3;
@@ -247,7 +247,7 @@ TEST_P(GELS, strided_batched__double)
 {
     Arguments arg = gels_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
+    if(arg.M == 0 && arg.K == 0)
         testing_gels_bad_arg<false, true, double>();
 
     arg.batch_count = 3;
@@ -262,7 +262,7 @@ TEST_P(GELS, strided_batched__float_complex)
 {
     Arguments arg = gels_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
+    if(arg.M == 0 && arg.K == 0)
         testing_gels_bad_arg<false, true, rocblas_float_complex>();
 
     arg.batch_count = 3;
@@ -277,7 +277,7 @@ TEST_P(GELS, strided_batched__double_complex)
 {
     Arguments arg = gels_setup_arguments(GetParam());
 
-    if(arg.M == 0 && arg.N == 0)
+    if(arg.M == 0 && arg.K == 0)
         testing_gels_bad_arg<false, true, rocblas_double_complex>();
 
     arg.batch_count = 3;

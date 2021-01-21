@@ -156,6 +156,10 @@ void gels_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
         rocblas_init<T>(hB, true);
 
+        const rocblas_int max_index = std::max(0, std::min(m, n) - 1);
+        std::uniform_int_distribution<int> sample_index(0, max_index);
+        std::bernoulli_distribution coinflip(0.5);
+
         // scale A to avoid singularities
         for(rocblas_int b = 0; b < bc; ++b)
         {
@@ -174,18 +178,22 @@ void gels_initData(const rocblas_handle handle,
             // always the same elements for debugging purposes
             if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
             {
-                // zero first col
-                for(rocblas_int i = 0; i < m; i++)
+                do
                 {
-                    rocblas_int j = 0;
-                    hA[b][i + j * lda] = 0;
+                    if(n < m) // zero random row
+                    {
+                        rocblas_int i = sample_index(rocblas_rng);
+                        for(rocblas_int j = 0; j < n; j++)
+                            hA[b][i + j * lda] = 0;
+                    }
+                    else // zero random col
+                    {
+                        rocblas_int j = sample_index(rocblas_rng);
+                        for(rocblas_int i = 0; i < m; i++)
+                            hA[b][i + j * lda] = 0;
+                    }
                 }
-                // zero first row
-                for(rocblas_int j = 0; j < n; j++)
-                {
-                    rocblas_int i = 0;
-                    hA[b][i + j * lda] = 0;
-                }
+                while(coinflip(rocblas_rng));
             }
         }
     }

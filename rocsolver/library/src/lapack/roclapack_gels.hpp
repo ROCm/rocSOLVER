@@ -95,11 +95,8 @@ void rocsolver_gels_getMemorySize(const rocblas_int m,
     *size_workArr_temp_arr = std::max({geqrf_workArr, ormqr_workArr, trsm_x_temp_arr});
     *size_diag_trfac_invA = std::max({geqrf_diag, ormqr_trfact, trsm_invA});
     *size_trfact_workTrmm_invA_arr = std::max({geqrf_trfact, ormqr_workTrmm, trsm_invA_arr});
-
-    const rocblas_int pivot_count_per_batch = std::min(m, n);
-    const size_t size_ipiv = sizeof(T) * pivot_count_per_batch * batch_count;
-    const size_t size_savedB = sizeof(T) * n * nrhs * batch_count;
-    *size_ipiv_savedB = std::max({size_ipiv, size_savedB});
+    // size_ipiv = sizeof(T) * std::min(m, n) * batch_count, which is always less than size_savedB
+    *size_ipiv_savedB = sizeof(T) * n * nrhs * batch_count;
 }
 
 template <typename T>
