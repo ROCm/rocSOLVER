@@ -13,48 +13,49 @@
  * rocSOLVER logging macros
  ***************************************************************************/
 
-#define ROCSOLVER_ENTER_TOP(name, ...)                                              \
-    do                                                                              \
-    {                                                                               \
-        if(logger != nullptr && logger->is_logging_enabled())                       \
-            logger->log_enter_top_level<T>(handle, "rocsolver", name, __VA_ARGS__); \
+#define ROCSOLVER_ENTER_TOP(name, ...)                                                      \
+    do                                                                                      \
+    {                                                                                       \
+        if(rocsolver_logger::is_logging_enabled())                                          \
+            rocsolver_logger::instance()->log_enter_top_level<T>(handle, "rocsolver", name, \
+                                                                 __VA_ARGS__);              \
     } while(0)
-#define ROCSOLVER_ENTER(name, ...)                                        \
-    do                                                                    \
-    {                                                                     \
-        if(logger != nullptr && logger->is_logging_enabled())             \
-            logger->log_enter<T>(handle, "rocsolver", name, __VA_ARGS__); \
+#define ROCSOLVER_ENTER(name, ...)                                                              \
+    do                                                                                          \
+    {                                                                                           \
+        if(rocsolver_logger::is_logging_enabled())                                              \
+            rocsolver_logger::instance()->log_enter<T>(handle, "rocsolver", name, __VA_ARGS__); \
     } while(0)
-#define ROCBLAS_ENTER(name, ...)                                        \
-    do                                                                  \
-    {                                                                   \
-        if(logger != nullptr && logger->is_logging_enabled())           \
-            logger->log_enter<T>(handle, "rocblas", name, __VA_ARGS__); \
+#define ROCBLAS_ENTER(name, ...)                                                              \
+    do                                                                                        \
+    {                                                                                         \
+        if(rocsolver_logger::is_logging_enabled())                                            \
+            rocsolver_logger::instance()->log_enter<T>(handle, "rocblas", name, __VA_ARGS__); \
     } while(0)
 
-#define ROCSOLVER_RETURN_TOP(name, ...)                               \
-    do                                                                \
-    {                                                                 \
-        rocblas_status _status = __VA_ARGS__;                         \
-        if(logger != nullptr && logger->is_logging_enabled())         \
-            logger->log_exit_top_level<T>(handle, "rocsolver", name); \
-        return _status;                                               \
+#define ROCSOLVER_RETURN_TOP(name, ...)                                                     \
+    do                                                                                      \
+    {                                                                                       \
+        rocblas_status _status = __VA_ARGS__;                                               \
+        if(rocsolver_logger::is_logging_enabled())                                          \
+            rocsolver_logger::instance()->log_exit_top_level<T>(handle, "rocsolver", name); \
+        return _status;                                                                     \
     } while(0)
-#define ROCSOLVER_RETURN(name, ...)                           \
-    do                                                        \
-    {                                                         \
-        rocblas_status _status = __VA_ARGS__;                 \
-        if(logger != nullptr && logger->is_logging_enabled()) \
-            logger->log_exit<T>(handle, "rocsolver", name);   \
-        return _status;                                       \
+#define ROCSOLVER_RETURN(name, ...)                                               \
+    do                                                                            \
+    {                                                                             \
+        rocblas_status _status = __VA_ARGS__;                                     \
+        if(rocsolver_logger::is_logging_enabled())                                \
+            rocsolver_logger::instance()->log_exit<T>(handle, "rocsolver", name); \
+        return _status;                                                           \
     } while(0)
-#define ROCBLAS_RETURN(name, ...)                             \
-    do                                                        \
-    {                                                         \
-        rocblas_status _status = __VA_ARGS__;                 \
-        if(logger != nullptr && logger->is_logging_enabled()) \
-            logger->log_exit<T>(handle, "rocblas", name);     \
-        return _status;                                       \
+#define ROCBLAS_RETURN(name, ...)                                               \
+    do                                                                          \
+    {                                                                           \
+        rocblas_status _status = __VA_ARGS__;                                   \
+        if(rocsolver_logger::is_logging_enabled())                              \
+            rocsolver_logger::instance()->log_exit<T>(handle, "rocblas", name); \
+        return _status;                                                         \
     } while(0)
 
 /***************************************************************************
@@ -83,6 +84,8 @@ struct rocsolver_log_entry
 class rocsolver_logger
 {
 private:
+    // static singleton instance
+    static rocsolver_logger* _instance;
     // profile logging data keyed by function name
     std::unordered_map<std::string, rocsolver_log_entry> profile;
     // function call stack keyed by handle
@@ -157,10 +160,16 @@ private:
     }
 
 public:
-    // returns true if logging facilities are enabled
-    inline bool is_logging_enabled()
+    // return the singleton instance
+    static inline rocsolver_logger* instance()
     {
-        return layer_mode > 0;
+        return rocsolver_logger::_instance;
+    }
+
+    // returns true if logging facilities are enabled
+    static inline bool is_logging_enabled()
+    {
+        return rocsolver_logger::_instance != nullptr && rocsolver_logger::_instance->layer_mode > 0;
     }
 
     // logging function to be called upon entering a top-level (i.e. impl) function
@@ -171,8 +180,7 @@ public:
                              Ts... args)
     {
         int level = call_stack[handle].size();
-        if(level != 0)
-            ROCSOLVER_UNREACHABLE();
+        ROCSOLVER_ASSUME(level == 0);
 
         rocblas_cout << "------- ENTER " << get_func_name<T>(func_prefix, func_name) << " -------"
                      << '\n';
@@ -186,8 +194,7 @@ public:
     void log_exit_top_level(rocblas_handle handle, const char* func_prefix, const char* func_name)
     {
         int level = call_stack[handle].size();
-        if(level != 0)
-            ROCSOLVER_UNREACHABLE();
+        ROCSOLVER_ASSUME(level == 0);
 
         rocblas_cout << "-------  EXIT " << get_func_name<T>(func_prefix, func_name) << " -------"
                      << '\n'
@@ -227,5 +234,3 @@ public:
                                                        const rocblas_int max_levels);
     friend rocblas_status rocsolver_logging_cleanup(void);
 };
-
-extern rocsolver_logger* logger;

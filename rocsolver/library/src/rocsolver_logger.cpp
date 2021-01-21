@@ -5,7 +5,8 @@
 #include "rocsolver_logger.hpp"
 #include <sys/time.h>
 
-rocsolver_logger* logger = nullptr;
+// initialize the static variable
+rocsolver_logger* rocsolver_logger::_instance = nullptr;
 
 /***************************************************************************
  * Logging set-up and tear-down
@@ -15,12 +16,12 @@ extern "C" {
 rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
                                             const rocblas_int max_levels)
 {
-    if(logger != nullptr)
+    if(rocsolver_logger::_instance != nullptr)
         return rocblas_status_internal_error;
     if(max_levels < 1)
         return rocblas_status_invalid_value;
 
-    logger = new rocsolver_logger();
+    auto logger = rocsolver_logger::_instance = new rocsolver_logger();
 
     // set layer_mode from value of environment variable ROCSOLVER_LAYER
     const char* str_layer_mode = getenv("ROCSOLVER_LAYER");
@@ -41,8 +42,10 @@ rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
 
 rocblas_status rocsolver_logging_cleanup()
 {
-    if(logger == nullptr)
+    if(rocsolver_logger::_instance == nullptr)
         return rocblas_status_internal_error;
+
+    auto logger = rocsolver_logger::_instance;
 
     // print profile logging results
     if(logger->layer_mode & rocblas_layer_mode_log_profile && logger->profile.size() > 0)
@@ -51,10 +54,10 @@ rocblas_status rocsolver_logging_cleanup()
         for(auto it = logger->profile.begin(); it != logger->profile.end(); ++it)
         {
             rocblas_cout << it->first.c_str() << ": Calls: " << it->second.calls
-                         << ", Total Time: " << it->second.time << " ms";
+                         << ", Total Time: " << (it->second.time * 0.001) << " ms";
             if(it->second.internal_time > 0.0)
-                rocblas_cout << " (in nested functions: " << it->second.internal_time << " ms)"
-                             << '\n';
+                rocblas_cout << " (in nested functions: " << (it->second.internal_time * 0.001)
+                             << " ms)" << '\n';
             else
                 rocblas_cout << '\n';
         }
