@@ -77,14 +77,10 @@ if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
     endif()
 
     message(STATUS "RocmPath: ${ROCM_PATH}")
-    if(EXISTS ${ROCM_PATH}/llvm/lib/clang/12.0.0/include/immintrin.h AND CMAKE_CXX_COMPILER MATCHES ".*/hcc$|.*/hipcc$" )
+    if(EXISTS ${ROCM_PATH}/llvm/lib/clang/12.0.0/include/immintrin.h AND CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
         set( CLANG_INCLUDE_DIR ${ROCM_PATH}/llvm/lib/clang/12.0.0/include )
-    elseif(EXISTS ${ROCM_PATH}/llvm/lib/clang/11.0.0/include/immintrin.h AND CMAKE_CXX_COMPILER MATCHES ".*/hcc$|.*/hipcc$" )
+    elseif(EXISTS ${ROCM_PATH}/llvm/lib/clang/11.0.0/include/immintrin.h AND CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
         set( CLANG_INCLUDE_DIR ${ROCM_PATH}/llvm/lib/clang/11.0.0/include )
-    elseif( EXISTS "${ROCM_PATH}/hcc/lib/clang/10.0.0/include/immintrin.h" AND CMAKE_CXX_COMPILER MATCHES ".*/hcc$|.*/hipcc$" )
-        set( CLANG_INCLUDE_DIR ${ROCM_PATH}/hcc/lib/clang/10.0.0/include )
-    elseif( EXISTS "${ROCM_PATH}/hcc/lib/clang/9.0.0/include/immintrin.h" AND CMAKE_CXX_COMPILER MATCHES ".*/hcc$|.*/hipcc$" )
-        set( CLANG_INCLUDE_DIR ${ROCM_PATH}/hcc/lib/clang/9.0.0/include )
     else()
         set( CLANG_INCLUDE_DIR )
     endif()
@@ -94,7 +90,6 @@ if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
       SYSTEM PRIVATE
         $<BUILD_INTERFACE:${CLANG_INCLUDE_DIR}>
         $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${HCC_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${OPENMP_INCLUDE_DIR}>
@@ -107,7 +102,6 @@ else()
     target_include_directories( rocsolver-bench
       SYSTEM PRIVATE
         $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${HCC_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
         )
@@ -126,16 +120,10 @@ if( CUDA_FOUND )
   target_compile_definitions( rocsolver-bench PRIVATE __HIP_PLATFORM_NVCC__ )
   target_link_libraries( rocsolver-bench PRIVATE ${CUDA_LIBRARIES} )
 else( )
-  target_compile_definitions( rocsolver-bench PRIVATE __HIP_PLATFORM_HCC__ )
   target_link_libraries( rocsolver-bench PRIVATE hip::device )
 endif( )
 
-if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
-  # Remove following when hcc is fixed; hcc emits following spurious warning ROCm v1.6.1
-  # "clang-5.0: warning: argument unused during compilation: '-isystem ${ROCM_PATH}/include'"
-  target_compile_options( rocsolver-bench PRIVATE -Wno-unused-command-line-argument -mf16c )
-  target_include_directories( rocsolver-bench PRIVATE ${ROCM_PATH}/hsa/include)
-elseif( CMAKE_COMPILER_IS_GNUCXX OR CXX_VERSION_STRING MATCHES "clang")
+if( CMAKE_COMPILER_IS_GNUCXX OR CXX_VERSION_STRING MATCHES "clang")
   # GCC or hip-clang needs specific flags to turn on f16c intrinsics
   target_compile_options( rocsolver-bench PRIVATE -mf16c )
 endif( )

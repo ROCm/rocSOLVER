@@ -88,7 +88,7 @@ set( CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
 )
 
 # Give rocsolver compiled for CUDA backend a different name
-if( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" OR CXX_VERSION_STRING MATCHES "clang" )
+if( CXX_VERSION_STRING MATCHES "clang" )
     set( package_name rocsolver )
 else( )
     set( package_name rocsolver-alt )

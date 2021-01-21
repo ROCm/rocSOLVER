@@ -6,8 +6,17 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 - Multi-level logging
 
+### Optimizations
 
-## [(Unreleased) rocSOLVER 3.11.0 for ROCm 4.1.0]
+### Changed
+
+### Removed
+- Removed hcc compiler support
+
+### Fixed
+
+
+## [rocSOLVER 3.11.0 for ROCm 4.1.0]
 ### Added
 - Eigensolver routines for symmetric/hermitian matrices:
     - STERF, STEQR
