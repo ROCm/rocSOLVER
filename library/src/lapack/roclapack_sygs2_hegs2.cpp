@@ -37,25 +37,38 @@ rocblas_status rocsolver_sygs2_hegs2_impl(rocblas_handle handle,
     // memory workspace sizes:
     // size for constants in rocblas calls
     size_t size_scalars;
-    rocsolver_sygs2_hegs2_getMemorySize<T, false>(n, batch_count, &size_scalars);
+    // size of reusable workspace (and for calling TRSV or TRMV)
+    size_t size_work_x_temp, size_workArr_temp_arr, size_store_invA, size_invA_arr;
+    rocsolver_sygs2_hegs2_getMemorySize<T, false>(itype, n, batch_count, &size_scalars,
+                                                  &size_work_x_temp, &size_workArr_temp_arr,
+                                                  &size_store_invA, &size_invA_arr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars);
+        return rocblas_set_optimal_device_memory_size(
+                                 handle, size_scalars, size_work_x_temp, size_workArr_temp_arr,
+                                 size_store_invA, size_invA_arr);
 
     // memory workspace allocation
-    void* scalars;
-    rocblas_device_malloc mem(handle, size_scalars);
+    void *scalars, *work_x_temp, *workArr_temp_arr, *store_invA, *invA_arr;
+    rocblas_device_malloc mem(handle, size_scalars, size_work_x_temp, size_workArr_temp_arr,
+                              size_store_invA, size_invA_arr);
 
     if(!mem)
         return rocblas_status_memory_error;
 
     scalars = mem[0];
+    work_x_temp = mem[1];
+    workArr_temp_arr = mem[2];
+    store_invA = mem[3];
+    invA_arr = mem[4];
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_sygs2_hegs2_template(handle, itype, uplo, n, A, shiftA, lda, strideA, B,
-                                          shiftB, ldb, strideB, batch_count, (T*)scalars);
+    return rocsolver_sygs2_hegs2_template<false, T>(
+                             handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb,
+                             strideB, batch_count, (T*)scalars, work_x_temp, workArr_temp_arr,
+                             store_invA, invA_arr);
 }
 
 /*
