@@ -180,16 +180,18 @@ void gels_initData(const rocblas_handle handle,
             {
                 do
                 {
-                    if(n < m) // zero random row
+                    if(n <= m)
                     {
-                        rocblas_int i = sample_index(rocblas_rng);
-                        for(rocblas_int j = 0; j < n; j++)
-                            hA[b][i + j * lda] = 0;
-                    }
-                    else // zero random col
-                    {
+                        // zero random col
                         rocblas_int j = sample_index(rocblas_rng);
                         for(rocblas_int i = 0; i < m; i++)
+                            hA[b][i + j * lda] = 0;
+                    }
+                    else
+                    {
+                        // zero random row
+                        rocblas_int i = sample_index(rocblas_rng);
+                        for(rocblas_int j = 0; j < n; j++)
                             hA[b][i + j * lda] = 0;
                     }
                 } while(coinflip(rocblas_rng));
