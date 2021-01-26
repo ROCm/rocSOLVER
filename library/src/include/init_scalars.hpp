@@ -1,0 +1,30 @@
+/* ************************************************************************
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * ************************************************************************/
+
+#pragma once
+
+#define IOTA_MAX_THDS 32
+
+// Fills the given range with sequentially increasing values.
+// The name and interface is based on std::iota
+template <typename T>
+__global__ void __launch_bounds__(IOTA_MAX_THDS) iota_n(T* first, uint32_t count, T value)
+{
+    const auto idx = hipThreadIdx_x;
+    if(idx < count)
+    {
+        first[idx] = T(idx) + value;
+    }
+}
+
+// Initializes scalars on the device.
+template <typename T>
+void init_scalars(rocblas_handle handle, T* scalars)
+{
+    assert(scalars != nullptr);
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+    hipLaunchKernelGGL(iota_n<T>, dim3(1), dim3(IOTA_MAX_THDS), 0, stream, scalars, 3, -1);
+}
