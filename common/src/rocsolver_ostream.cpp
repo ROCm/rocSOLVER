@@ -6,7 +6,7 @@
 // rocsolver_ostream.hpp
 static void rocsolver_abort_once [[noreturn]] ();
 
-#include "./include/rocblas_ostream.hpp"
+#include "../include/rocsolver_ostream.hpp"
 #include <csignal>
 #include <fcntl.h>
 #include <type_traits>

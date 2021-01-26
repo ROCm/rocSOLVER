@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "common_device_helpers.hpp"
+#include "lib_device_helpers.hpp"
 #include "rocsolver.h"
 
 /*

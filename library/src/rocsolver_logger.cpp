@@ -3,6 +3,7 @@
  * ************************************************************************ */
 
 #include "rocsolver_logger.hpp"
+#include "../rocblascommon/utility.h"
 #include <cerrno>
 #include <climits>
 #include <cstdlib>

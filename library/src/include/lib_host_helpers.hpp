@@ -15,7 +15,7 @@
  * ===========================================================================
  *    common location for functions that are used across several rocSOLVER
  *    routines, excepting device functions and kernels (see
- *    common_device_helpers.hpp and lapack_device_functions.hpp).
+ *    lib_device_helpers.hpp and lapack_device_functions.hpp).
  * ===========================================================================
  */
 

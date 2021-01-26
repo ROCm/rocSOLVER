@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "../../common/include/rocsolver_datatype2string.hpp"
 #include "clientcommon.hpp"
-#include "rocsolver_datatype2string.hpp"
 #include <rocblas.h>
 
 /*!\file

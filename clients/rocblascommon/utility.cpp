@@ -2,9 +2,9 @@
  * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "../include/utility.hpp"
 //#include "../../library/src/include/handle.h"
-#include "../include/rocblas_random.hpp"
+#include "utility.hpp"
+#include "rocblas_random.hpp"
 #include <cstdlib>
 #include <cstring>
 //#include <regex>

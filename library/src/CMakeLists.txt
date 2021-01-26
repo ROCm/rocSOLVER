@@ -109,7 +109,7 @@ set( rocsolver_lapack_source
 )
 
 set( auxiliaries
-  ../../../rocblascommon/library/src/rocblas_ostream.cpp
+  ../../common/src/rocsolver_ostream.cpp
   buildinfo.cpp
   rocsolver_logger.cpp
 )
@@ -135,7 +135,7 @@ target_compile_options( rocsolver PRIVATE --gpu-max-threads-per-block=1024 )
 target_compile_options( rocsolver PRIVATE -Wno-pass-failed )
 
 target_include_directories( rocsolver
-  PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/rocsolver/library/include>
+  PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
           $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
           $<INSTALL_INTERFACE:include>
@@ -169,7 +169,7 @@ add_armor_flags( rocsolver "${ARMOR_LEVEL}" )
 rocm_install_targets(
   TARGETS ${package_targets}
   INCLUDE
-    ${CMAKE_SOURCE_DIR}/rocsolver/library/include
+    ${CMAKE_SOURCE_DIR}/library/include
     ${CMAKE_BINARY_DIR}/include
   PREFIX rocsolver
 )

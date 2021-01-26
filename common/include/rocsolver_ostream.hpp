@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include "../../library/src/rocblascommon/utility.h"
 #include "rocblas.h"
 #include "rocsolver.h"
-#include "utility.h"
 #include <cmath>
 #include <complex>
 #include <condition_variable>

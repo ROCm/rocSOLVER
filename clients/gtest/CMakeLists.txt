@@ -95,8 +95,8 @@ set(rocsolver_test_source
 )
 
 set( rocsolver_benchmark_common
-      ../../../rocblascommon/clients/common/utility.cpp
       ../common/cblas_interface.cpp
+      ../rocblascommon/utility.cpp
     )
 
 add_executable( rocsolver-test ${roclapack_test_source} ${rocsolver_test_source} ${rocsolver_benchmark_common} )
@@ -204,5 +204,5 @@ else( )
 endif( )
 
 set_target_properties( rocsolver-test PROPERTIES CXX_EXTENSIONS NO )
-set_target_properties( rocsolver-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/../../clients/staging" )
+set_target_properties( rocsolver-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
 target_compile_definitions( rocsolver-test PRIVATE ROCM_USE_FLOAT16 )
