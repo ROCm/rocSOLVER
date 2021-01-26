@@ -1271,6 +1271,74 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
         cast2constPointer<T>(work), offsety, incy, stridey, batch_count);
 }
 
+// symm
+template <typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
+rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
+                                     rocblas_side side,
+                                     rocblas_fill uplo,
+                                     rocblas_int m,
+                                     rocblas_int n,
+                                     U alpha,
+                                     V A,
+                                     rocblas_int offsetA,
+                                     rocblas_int lda,
+                                     rocblas_stride strideA,
+                                     V B,
+                                     rocblas_int offsetB,
+                                     rocblas_int ldb,
+                                     rocblas_stride strideB,
+                                     U beta,
+                                     V C,
+                                     rocblas_int offsetC,
+                                     rocblas_int ldc,
+                                     rocblas_stride strideC,
+                                     rocblas_int batch_count)
+{
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("symm", "side:", side, "uplo:", uplo, "m:", m, "n:", n, "shiftA:", offsetA,
+                  "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
+                  "bc:", batch_count);
+
+    return rocblas_symm_template<false>(
+                       handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A),
+                       offsetA, lda, strideA, cast2constType<T>(B), offsetB, ldb, strideB,
+                       cast2constType<T>(beta), C, offsetC, ldc, strideC, batch_count);
+}
+
+// hemm
+template <typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
+rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
+                                     rocblas_side side,
+                                     rocblas_fill uplo,
+                                     rocblas_int m,
+                                     rocblas_int n,
+                                     U alpha,
+                                     V A,
+                                     rocblas_int offsetA,
+                                     rocblas_int lda,
+                                     rocblas_stride strideA,
+                                     V B,
+                                     rocblas_int offsetB,
+                                     rocblas_int ldb,
+                                     rocblas_stride strideB,
+                                     U beta,
+                                     V C,
+                                     rocblas_int offsetC,
+                                     rocblas_int ldc,
+                                     rocblas_stride strideC,
+                                     rocblas_int batch_count)
+{
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("hemm", "side:", side, "uplo:", uplo, "m:", m, "n:", n, "shiftA:", offsetA,
+                  "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
+                  "bc:", batch_count);
+
+    return rocblas_symm_template<true>(
+                       handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A),
+                       offsetA, lda, strideA, cast2constType<T>(B), offsetB, ldb, strideB,
+                       cast2constType<T>(beta), C, offsetC, ldc, strideC, batch_count);
+}
+
 // trsv memory sizes
 template <bool BATCHED, typename T>
 void rocblasCall_trsv_mem(rocblas_int m,

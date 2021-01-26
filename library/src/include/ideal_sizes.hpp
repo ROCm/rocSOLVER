@@ -64,6 +64,10 @@
 #define xxTRD_xxTD2_BLOCKSIZE 32
 #define xxTRD_xxTD2_SWITCHSIZE 64
 
+// xxgs2/xxgst
+#define xxGST_xxGS2_BLOCKSIZE 32
+#define xxGST_xxGS2_SWITCHSIZE 64
+
 // gesvd
 // This value should be ~1.6 (to be tuned).
 // For now, it is set to a very high value until the thin-SVD algorithm is
