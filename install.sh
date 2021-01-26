@@ -33,6 +33,8 @@ Options:
                               Use only absolute paths.
                               (Default is /opt/rocm/rocblas)
 
+  --cleanup                   Pass this flag to remove intermediary build files after build and reduce disk usage
+
   -g | --debug                Pass this flag to build in Debug mode (equivalent to set CMAKE_BUILD_TYPE=Debug).
                               (Default build type is Release)
 
@@ -327,6 +329,7 @@ build_type=Release
 build_relocatable=false
 build_docs=false
 optimal=true
+cleanup=false
 architecture=
 
 
@@ -337,7 +340,7 @@ architecture=
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,debug,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrna: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,cleanup,debug,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrna: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -384,6 +387,9 @@ while true; do
     --build_dir)
         build_dir=${2}
         shift 2;;
+    --cleanup)
+        cleanup=true
+        shift ;;
     --lib_dir)
         lib_dir=${2}
         shift 2 ;;
@@ -562,4 +568,10 @@ if [[ "${build_package}" == true ]]; then
     esac
   fi
 fi
+check_exit_code "$?"
+
+if [[ "${cleanup}" == true ]]; then
+  rm -rf  _CPack_Packages/
+fi
+
 popd
