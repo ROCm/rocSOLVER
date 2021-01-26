@@ -170,105 +170,52 @@ inline bool isAligned(const void* pointer, size_t byte_count)
 }
 
 // clang-format off
-// return letter N,T,C in place of rocblas_operation enum
-constexpr char rocblas_transpose_letter(rocblas_operation trans)
-{
-    switch(trans)
-    {
-    case rocblas_operation_none:                return 'N';
-    case rocblas_operation_transpose:           return 'T';
-    case rocblas_operation_conjugate_transpose: return 'C';
-    }
-    return ' ';
-}
+// // return letter N,T,C in place of rocblas_operation enum
+// constexpr char rocblas_transpose_letter(rocblas_operation trans)
+// {
+//     switch(trans)
+//     {
+//     case rocblas_operation_none:                return 'N';
+//     case rocblas_operation_transpose:           return 'T';
+//     case rocblas_operation_conjugate_transpose: return 'C';
+//     }
+//     return ' ';
+// }
 
-// return letter L, R, B in place of rocblas_side enum
-constexpr char rocblas_side_letter(rocblas_side side)
-{
-    switch(side)
-    {
-    case rocblas_side_left:  return 'L';
-    case rocblas_side_right: return 'R';
-    case rocblas_side_both:  return 'B';
-    }
-    return ' ';
-}
+// // return letter L, R, B in place of rocblas_side enum
+// constexpr char rocblas_side_letter(rocblas_side side)
+// {
+//     switch(side)
+//     {
+//     case rocblas_side_left:  return 'L';
+//     case rocblas_side_right: return 'R';
+//     case rocblas_side_both:  return 'B';
+//     }
+//     return ' ';
+// }
 
-// return letter U, L, B in place of rocblas_fill enum
-constexpr char rocblas_fill_letter(rocblas_fill fill)
-{
-    switch(fill)
-    {
-    case rocblas_fill_upper: return 'U';
-    case rocblas_fill_lower: return 'L';
-    case rocblas_fill_full:  return 'F';
-    }
-    return ' ';
-}
+// // return letter U, L, B in place of rocblas_fill enum
+// constexpr char rocblas_fill_letter(rocblas_fill fill)
+// {
+//     switch(fill)
+//     {
+//     case rocblas_fill_upper: return 'U';
+//     case rocblas_fill_lower: return 'L';
+//     case rocblas_fill_full:  return 'F';
+//     }
+//     return ' ';
+// }
 
-// return letter N, U in place of rocblas_diagonal enum
-constexpr char rocblas_diag_letter(rocblas_diagonal diag)
-{
-    switch(diag)
-    {
-    case rocblas_diagonal_non_unit: return 'N';
-    case rocblas_diagonal_unit:     return 'U';
-    }
-    return ' ';
-}
-
-constexpr char rocblas_direct_letter(rocblas_direct value)
-{
-    switch(value)
-    {
-    case rocblas_forward_direction: return 'F';
-    case rocblas_backward_direction: return 'B';
-    }
-    return ' ';
-}
-
-constexpr char rocblas_storev_letter(rocblas_storev value)
-{
-    switch(value)
-    {
-    case rocblas_column_wise: return 'C';
-    case rocblas_row_wise: return 'R';
-    }
-    return ' ';
-}
-
-constexpr char rocblas_workmode_letter(rocblas_workmode value)
-{
-    switch(value)
-    {
-    case rocblas_outofplace: return 'O';
-    case rocblas_inplace: return 'I';
-    }
-    return ' ';
-}
-
-constexpr char rocblas_svect_letter(rocblas_svect value)
-{
-    switch(value)
-    {
-    case rocblas_svect_all: return 'A';
-    case rocblas_svect_singular: return 'S';
-    case rocblas_svect_overwrite: return 'O';
-    case rocblas_svect_none: return 'N';
-    }
-    return ' ';
-}
-
-constexpr char rocblas_evect_letter(rocblas_evect value)
-{
-    switch(value)
-    {
-    case rocblas_evect_original: return 'V';
-    case rocblas_evect_tridiagonal: return 'I';
-    case rocblas_evect_none: return 'N';
-    }
-    return ' ';
-}
+// // return letter N, U in place of rocblas_diagonal enum
+// constexpr char rocblas_diag_letter(rocblas_diagonal diag)
+// {
+//     switch(diag)
+//     {
+//     case rocblas_diagonal_non_unit: return 'N';
+//     case rocblas_diagonal_unit:     return 'U';
+//     }
+//     return ' ';
+// }
 
 // return precision string for rocblas_datatype
 constexpr const char* rocblas_datatype_string(rocblas_datatype type)

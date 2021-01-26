@@ -113,55 +113,55 @@ rocblas_int query_device_property();
 /*  set current device to device_id */
 void set_device(rocblas_int device_id);
 
-/* ============================================================================================
- */
-/*  timing: HIP only provides very limited timers function clock() and not
-   general; rocblas sync CPU and device and use more accurate CPU timer*/
+// /* ============================================================================================
+//  */
+// /*  timing: HIP only provides very limited timers function clock() and not
+//    general; rocblas sync CPU and device and use more accurate CPU timer*/
 
-/*! \brief  CPU Timer(in microsecond): synchronize with the default device and
- * return wall time */
-double get_time_us();
+// /*! \brief  CPU Timer(in microsecond): synchronize with the default device and
+//  * return wall time */
+// double get_time_us();
 
-/*! \brief  CPU Timer(in microsecond): synchronize with given queue/stream and
- * return wall time */
-double get_time_us_sync(hipStream_t stream);
+// /*! \brief  CPU Timer(in microsecond): synchronize with given queue/stream and
+//  * return wall time */
+// double get_time_us_sync(hipStream_t stream);
 
-/*! \brief  CPU Timer(in microsecond): no GPU synchronization and return wall
- * time */
-double get_time_us_no_sync();
+// /*! \brief  CPU Timer(in microsecond): no GPU synchronization and return wall
+//  * time */
+// double get_time_us_no_sync();
 
 /* ============================================================================================
  */
 // Return path of this executable
 std::string rocblas_exepath();
 
-/* ============================================================================================
- */
-/*! \brief  Debugging purpose, print out CPU and GPU result matrix, not valid in
- * complex number  */
-template <typename T>
-inline void rocblas_print_matrix(T* CPU_result, T* GPU_result, size_t m, size_t n, size_t lda)
-{
-    for(size_t i = 0; i < m; i++)
-        for(size_t j = 0; j < n; j++)
-        {
-            rocblas_cout << "matrix  col " << i << ", row " << j
-                         << ", CPU result=" << CPU_result[j + i * lda]
-                         << ", GPU result=" << GPU_result[j + i * lda] << std::endl;
-        }
-}
+// /* ============================================================================================
+//  */
+// /*! \brief  Debugging purpose, print out CPU and GPU result matrix, not valid in
+//  * complex number  */
+// template <typename T>
+// inline void rocblas_print_matrix(T* CPU_result, T* GPU_result, size_t m, size_t n, size_t lda)
+// {
+//     for(size_t i = 0; i < m; i++)
+//         for(size_t j = 0; j < n; j++)
+//         {
+//             rocblas_cout << "matrix  col " << i << ", row " << j
+//                          << ", CPU result=" << CPU_result[j + i * lda]
+//                          << ", GPU result=" << GPU_result[j + i * lda] << std::endl;
+//         }
+// }
 
-template <typename T>
-void rocblas_print_matrix(const char* name, T* A, size_t m, size_t n, size_t lda)
-{
-    rocblas_cout << "---------- " << name << " ----------\n";
-    for(size_t i = 0; i < m; i++)
-    {
-        for(size_t j = 0; j < n; j++)
-            rocblas_cout << A[i + j * lda] << " ";
-        rocblas_cout << std::endl;
-    }
-}
+// template <typename T>
+// void rocblas_print_matrix(const char* name, T* A, size_t m, size_t n, size_t lda)
+// {
+//     rocblas_cout << "---------- " << name << " ----------\n";
+//     for(size_t i = 0; i < m; i++)
+//     {
+//         for(size_t j = 0; j < n; j++)
+//             rocblas_cout << A[i + j * lda] << " ";
+//         rocblas_cout << std::endl;
+//     }
+// }
 
 /* =============================================================================
  */

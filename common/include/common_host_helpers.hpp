@@ -4,15 +4,27 @@
 
 #pragma once
 
-#include "libcommon.hpp"
-#include "rocsolver.h"
+#include "rocsolver_ostream.hpp"
+#include <boost/format.hpp>
 
 /*
  * ===========================================================================
- *    common location for functions that are used to output rocsolver data
- *    types (e.g. for logging purposes).
+ *    common location for functions that are used by both the rocSOLVER
+ *    library and rocSOLVER client code.
  * ===========================================================================
  */
+
+/*! \brief  CPU Timer(in microsecond): synchronize with the default device and
+ * return wall time */
+double get_time_us();
+
+/*! \brief  CPU Timer(in microsecond): synchronize with given queue/stream and
+ * return wall time */
+double get_time_us_sync(hipStream_t stream);
+
+/*! \brief  CPU Timer(in microsecond): no GPU synchronization and return wall
+ * time */
+double get_time_us_no_sync();
 
 template <typename T, typename... Ts>
 void print_list(rocsolver_ostream& os, const char* sep, T arg, Ts... args)
@@ -46,24 +58,21 @@ inline void print_pairs(rocsolver_ostream& os, const char* sep)
     // do nothing
 }
 
-template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-void print_device_matrix(rocsolver_ostream& os,
-                         const std::string name,
-                         const rocblas_int m,
-                         const rocblas_int n,
-                         U A,
-                         const rocblas_int lda)
+template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+void print_host_matrix(rocsolver_ostream& os,
+                       const std::string name,
+                       const rocblas_int m,
+                       const rocblas_int n,
+                       T* A,
+                       const rocblas_int lda)
 {
-    T hA[lda * n];
-    hipMemcpy(hA, A, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
-
     os << m << "-by-" << n << " matrix: " << name << '\n';
     for(int i = 0; i < m; i++)
     {
         os << "    ";
         for(int j = 0; j < n; j++)
         {
-            os << hA[j * lda + i];
+            os << A[j * lda + i];
             if(j < n - 1)
                 os << ", ";
         }
@@ -72,28 +81,61 @@ void print_device_matrix(rocsolver_ostream& os,
     os << std::endl;
 }
 
-template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-void print_device_matrix(rocsolver_ostream& os,
-                         const std::string name,
-                         const rocblas_int m,
-                         const rocblas_int n,
-                         U A,
-                         const rocblas_int lda)
+template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+void print_host_matrix(rocsolver_ostream& os,
+                       const std::string name,
+                       const rocblas_int m,
+                       const rocblas_int n,
+                       T* A,
+                       const rocblas_int lda)
 {
-    T hA[lda * n];
-    hipMemcpy(hA, A, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
-
     os << m << "-by-" << n << " matrix: " << name << '\n';
     for(int i = 0; i < m; i++)
     {
         os << "    ";
         for(int j = 0; j < n; j++)
         {
-            os << '[' << hA[j * lda + i].real() << "+" << hA[j * lda + i].imag() << "i]";
+            os << '[' << A[j * lda + i].real() << "+" << A[j * lda + i].imag() << "i]";
             if(j < n - 1)
                 os << ", ";
         }
         os << '\n';
+    }
+    os << std::endl;
+}
+
+template <typename T>
+void print_device_matrix(rocsolver_ostream& os,
+                         const std::string name,
+                         const rocblas_int m,
+                         const rocblas_int n,
+                         T* A,
+                         const rocblas_int lda)
+{
+    T hA[lda * n];
+    hipMemcpy(hA, A, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+
+    print_host_matrix<T>(os, name, m, n, hA, lda);
+}
+
+/*! \brief  Debugging purpose, print out CPU and GPU result matrix, not valid in
+ * complex number  */
+template <typename T>
+void print_host_matrix(rocsolver_ostream& os,
+                       const std::string name,
+                       const rocblas_int m,
+                       const rocblas_int n,
+                       T* CPU_result,
+                       T* GPU_result,
+                       const rocblas_int lda)
+{
+    for(size_t i = 0; i < m; i++)
+    {
+        for(size_t j = 0; j < n; j++)
+        {
+            os << "matrix  col " << i << ", row " << j << ", CPU result=" << CPU_result[j + i * lda]
+               << ", GPU result=" << GPU_result[j + i * lda] << '\n';
+        }
     }
     os << std::endl;
 }

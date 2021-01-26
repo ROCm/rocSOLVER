@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "../../library/src/rocblascommon/utility.h"
 #include "rocblas.h"
 #include "rocsolver.h"
+#include "rocsolver_datatype2string.hpp"
 #include <cmath>
 #include <complex>
 #include <condition_variable>
@@ -331,74 +331,73 @@ public:
     // rocblas_datatype output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_datatype d)
     {
-        return os << rocblas_datatype_string(d);
+        return os << rocblas2string_datatype(d);
     }
 
     // rocsolver_operation output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_operation trans)
     {
-        return os << rocblas_transpose_letter(trans);
+        return os << rocblas2char_operation(trans);
     }
 
     // rocsolver_fill output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_fill fill)
     {
-        return os << rocblas_fill_letter(fill);
+        return os << rocblas2char_fill(fill);
     }
 
     // rocsolver_diagonal output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_diagonal diag)
     {
-        return os << rocblas_diag_letter(diag);
+        return os << rocblas2char_diagonal(diag);
     }
 
     // rocsolver_side output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_side side)
-
     {
-        return os << rocblas_side_letter(side);
+        return os << rocblas2char_side(side);
     }
 
     // rocsolver_direct output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_direct value)
     {
-        return os << rocblas_direct_letter(value);
+        return os << rocblas2char_direct(value);
     }
 
     // rocsolver_storev output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_storev value)
     {
-        return os << rocblas_storev_letter(value);
+        return os << rocblas2char_storev(value);
     }
 
     // rocsolver_workmode output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_workmode value)
     {
-        return os << rocblas_workmode_letter(value);
+        return os << rocblas2char_workmode(value);
     }
 
     // rocsolver_svect output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_svect value)
     {
-        return os << rocblas_svect_letter(value);
+        return os << rocblas2char_svect(value);
     }
 
     // rocsolver_evect output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_evect value)
     {
-        return os << rocblas_evect_letter(value);
+        return os << rocblas2char_evect(value);
     }
 
     // rocsolver_status output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_status status)
-
     {
-        os.os << rocblas_status_to_string(status);
-        return os;
+        return os << rocblas_status_to_string(status);
     }
 
-    enum rocblas_initialization : int;
-    friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_initialization init);
+    friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_initialization init)
+    {
+        return os << rocblas2string_initialization(init);
+    }
 
     // Transfer rocsolver_ostream to std::ostream
     friend std::ostream& operator<<(std::ostream& os, const rocsolver_ostream& str)

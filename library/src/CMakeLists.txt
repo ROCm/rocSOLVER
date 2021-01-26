@@ -109,6 +109,7 @@ set( rocsolver_lapack_source
 )
 
 set( auxiliaries
+  ../../common/src/common_host_helpers.cpp
   ../../common/src/rocsolver_ostream.cpp
   buildinfo.cpp
   rocsolver_logger.cpp

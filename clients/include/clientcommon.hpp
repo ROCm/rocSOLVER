@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include "../rocblascommon/rocblas_datatype2string.hpp"
+#include "../../common/include/common_host_helpers.hpp"
+#include "../../common/include/rocsolver_datatype2string.hpp"
+#include "../../common/include/rocsolver_ostream.hpp"
 #include "../rocblascommon/rocblas_test.hpp"
 #include "../rocblascommon/rocblas_vector.hpp"
 #include "../rocblascommon/utility.hpp"

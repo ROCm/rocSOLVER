@@ -135,17 +135,13 @@ private:
     // prints the results of profile logging
     void write_profile(rocsolver_profile_map::iterator start, rocsolver_profile_map::iterator end);
 
-    // convert type T into char s, d, c, or z
-    template <typename T>
-    char get_precision();
-
     // combines a function prefix and name into an std::string
     template <typename T>
     std::string get_func_name(const char* func_prefix, const char* func_name)
     {
         std::string result(func_prefix);
         result += '_';
-        result += get_precision<T>();
+        result += rocblas2char_precision<T>;
         result += func_name;
         return result;
     }
@@ -158,16 +154,11 @@ private:
         return result;
     }
 
-    // timing functions borrowed from rocblascommon/clients/include/utility.hpp
-    double get_time_us();
-    double get_time_us_sync(hipStream_t stream);
-    double get_time_us_no_sync();
-
     // outputs bench logging
     template <typename T, typename... Ts>
     void log_bench(int level, const char* func_prefix, const char* func_name, Ts... args)
     {
-        *bench_os << "./rocsolver-bench -f " << func_name << " -r " << get_precision<T>() << ' ';
+        *bench_os << "./rocsolver-bench -f " << func_name << " -r " << rocblas2char_precision<T> << ' ';
         print_pairs(*bench_os, " ", args...);
         *bench_os << std::endl;
     }
