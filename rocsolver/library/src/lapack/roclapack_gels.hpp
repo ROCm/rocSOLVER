@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -13,6 +13,42 @@
 #include "rocblas.hpp"
 #include "roclapack_geqrf.hpp"
 #include "rocsolver.h"
+
+enum copymat_direction
+{
+    copymat_to_buffer,
+    copymat_from_buffer
+};
+
+template <typename T, typename U>
+__global__ void masked_copymat(copymat_direction direction,
+                               const rocblas_int m,
+                               const rocblas_int n,
+                               U A,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               T* buffer,
+                               const rocblas_int* mask)
+{
+    const auto b = hipBlockIdx_z;
+    const auto i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const auto j = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    const rocblas_int ldw = m;
+    const rocblas_stride strideW = rocblas_stride(ldw) * n;
+
+    if(i < m && j < n && mask[b])
+    {
+        T* Wp = &buffer[b * strideW];
+        T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+
+        if(direction == copymat_to_buffer)
+            Wp[i + j * ldw] = Ap[i + j * lda];
+        else // direction == copymat_from_buffer
+            Ap[i + j * lda] = Wp[i + j * ldw];
+    }
+}
 
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_gels_getMemorySize(const rocblas_int m,
@@ -24,7 +60,7 @@ void rocsolver_gels_getMemorySize(const rocblas_int m,
                                   size_t* size_workArr_temp_arr,
                                   size_t* size_diag_trfac_invA,
                                   size_t* size_trfact_workTrmm_invA_arr,
-                                  size_t* size_ipiv)
+                                  size_t* size_ipiv_savedB)
 {
     // if quick return no workspace needed
     if(m == 0 || n == 0 || nrhs == 0 || batch_count == 0)
@@ -34,7 +70,7 @@ void rocsolver_gels_getMemorySize(const rocblas_int m,
         *size_workArr_temp_arr = 0;
         *size_diag_trfac_invA = 0;
         *size_trfact_workTrmm_invA_arr = 0;
-        *size_ipiv = 0;
+        *size_ipiv_savedB = 0;
         return;
     }
 
@@ -59,9 +95,8 @@ void rocsolver_gels_getMemorySize(const rocblas_int m,
     *size_workArr_temp_arr = std::max({geqrf_workArr, ormqr_workArr, trsm_x_temp_arr});
     *size_diag_trfac_invA = std::max({geqrf_diag, ormqr_trfact, trsm_invA});
     *size_trfact_workTrmm_invA_arr = std::max({geqrf_trfact, ormqr_workTrmm, trsm_invA_arr});
-
-    const rocblas_int pivot_count_per_batch = std::min(m, n);
-    *size_ipiv = sizeof(T) * pivot_count_per_batch * batch_count;
+    // size_ipiv = sizeof(T) * std::min(m, n) * batch_count, which is always less than size_savedB
+    *size_ipiv_savedB = sizeof(T) * n * nrhs * batch_count;
 }
 
 template <typename T>
@@ -122,7 +157,7 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                        T* workArr_temp_arr,
                                        T* diag_trfac_invA,
                                        T** trfact_workTrmm_invA_arr,
-                                       T* ipiv,
+                                       T* ipiv_savedB,
                                        bool optim_mem)
 {
     // quick return if zero instances in batch
@@ -165,19 +200,26 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
 
     // compute QR factorization of A
     const rocblas_stride strideP = std::min(m, n);
-    rocsolver_geqrf_template<BATCHED, STRIDED>(handle, m, n, A, shiftA, lda, strideA, ipiv, strideP,
-                                               batch_count, scalars, work_x_temp, workArr_temp_arr,
-                                               diag_trfac_invA, trfact_workTrmm_invA_arr);
+    rocsolver_geqrf_template<BATCHED, STRIDED>(
+        handle, m, n, A, shiftA, lda, strideA, ipiv_savedB, strideP, batch_count, scalars,
+        work_x_temp, workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
     rocsolver_ormqr_unmqr_template<BATCHED, STRIDED>(
         handle, rocblas_side_left, rocblas_operation_conjugate_transpose, m, nrhs, n, A, shiftA,
-        lda, strideA, ipiv, strideP, B, shiftB, ldb, strideB, batch_count, scalars, (T*)work_x_temp,
-        (T*)workArr_temp_arr, (T*)diag_trfac_invA, (T**)trfact_workTrmm_invA_arr);
+        lda, strideA, ipiv_savedB, strideP, B, shiftB, ldb, strideB, batch_count, scalars,
+        (T*)work_x_temp, (T*)workArr_temp_arr, (T*)diag_trfac_invA, (T**)trfact_workTrmm_invA_arr);
 
     // do the equivalent of trtrs
     const rocblas_int check_threads = min(((n - 1) / 64 + 1) * 64, BLOCKSIZE);
     hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1), dim3(1, check_threads, 1), 0,
                        stream, n, A, shiftA, lda, strideA, info);
-    // TODO: skip trsm for problems where check failed
+
+    // save elements of B that will be overwritten by TRSM for cases where info is nonzero
+    const rocblas_int copyblocksx = (nrhs - 1) / 32 + 1;
+    const rocblas_int copyblocksy = (n - 1) / 32 + 1;
+    hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                       dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb, strideB,
+                       ipiv_savedB, info);
+
     const T one = 1; // constant 1 in host memory
     // solve RX = Q'B, overwriting B with X
     rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_upper,
@@ -185,6 +227,11 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                  A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
                                  optim_mem, work_x_temp, workArr_temp_arr, diag_trfac_invA,
                                  trfact_workTrmm_invA_arr);
+
+    // restore elements of B that were overwritten by TRSM in cases where info is nonzero
+    hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                       dim3(32, 32), 0, stream, copymat_from_buffer, n, nrhs, B, shiftB, ldb,
+                       strideB, ipiv_savedB, info);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;

@@ -110,6 +110,9 @@ rocsolver_getrs_strided_batched x      x          x             x
 **rocsolver_getri**             x      x          x             x
 rocsolver_getri_batched         x      x          x             x
 rocsolver_getri_strided_batched x      x          x             x
+**rocsolver_gels**              x      x          x             x
+rocsolver_gels_batched          x      x          x             x
+rocsolver_gels_strided_batched  x      x          x             x
 **rocsolver_gebd2**             x      x          x             x
 rocsolver_gebd2_batched         x      x          x             x
 rocsolver_gebd2_strided_batched x      x          x             x
@@ -142,9 +145,6 @@ rocsolver_getf2_npvt_strided_batched x      x          x             x
 **rocsolver_getrf_npvt**             x      x          x             x
 rocsolver_getrf_npvt_batched         x      x          x             x
 rocsolver_getrf_npvt_strided_batched x      x          x             x
-**rocsolver_gels**                   x      x          x             x
-rocsolver_gels_batched               x      x          x             x
-rocsolver_gels_strided_batched       x      x          x             x
 ==================================== ====== ====== ============== ==============
 
 
