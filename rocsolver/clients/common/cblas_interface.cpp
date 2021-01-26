@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2016-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
 #include "cblas_interface.h"
@@ -4076,11 +4076,11 @@ void cblas_gels<float>(rocblas_operation transR,
                        float* B,
                        rocblas_int ldb,
                        float* work,
-                       rocblas_int lwork)
+                       rocblas_int lwork,
+                       rocblas_int* info)
 {
     char trans = rocblas2char_operation(transR);
-    int info;
-    sgels_(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, work, &lwork, &info);
+    sgels_(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, work, &lwork, info);
 }
 
 template <>
@@ -4093,11 +4093,11 @@ void cblas_gels<double>(rocblas_operation transR,
                         double* B,
                         rocblas_int ldb,
                         double* work,
-                        rocblas_int lwork)
+                        rocblas_int lwork,
+                        rocblas_int* info)
 {
     char trans = rocblas2char_operation(transR);
-    int info;
-    dgels_(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, work, &lwork, &info);
+    dgels_(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, work, &lwork, info);
 }
 
 template <>
@@ -4110,11 +4110,11 @@ void cblas_gels<rocblas_float_complex>(rocblas_operation transR,
                                        rocblas_float_complex* B,
                                        rocblas_int ldb,
                                        rocblas_float_complex* work,
-                                       rocblas_int lwork)
+                                       rocblas_int lwork,
+                                       rocblas_int* info)
 {
     char trans = rocblas2char_operation(transR);
-    int info;
-    cgels_(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, work, &lwork, &info);
+    cgels_(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, work, &lwork, info);
 }
 
 template <>
@@ -4127,11 +4127,11 @@ void cblas_gels<rocblas_double_complex>(rocblas_operation transR,
                                         rocblas_double_complex* B,
                                         rocblas_int ldb,
                                         rocblas_double_complex* work,
-                                        rocblas_int lwork)
+                                        rocblas_int lwork,
+                                        rocblas_int* info)
 {
     char trans = rocblas2char_operation(transR);
-    int info;
-    zgels_(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, work, &lwork, &info);
+    zgels_(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, work, &lwork, info);
 }
 
 // getri

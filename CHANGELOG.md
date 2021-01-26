@@ -13,6 +13,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Removed hcc compiler support
 
 ### Fixed
+- Fixed GELS overwriting B even when info != 0
 
 
 ## [rocSOLVER 3.11.0 for ROCm 4.1.0]

@@ -45,13 +45,20 @@ set( rocsolver_auxiliary_source
 )
 
 set( rocsolver_lapack_source
-  # triangular factorizations and linear solvers
+  # triangular factorizations 
   lapack/roclapack_getf2.cpp
   lapack/roclapack_getf2_batched.cpp
   lapack/roclapack_getf2_strided_batched.cpp
   lapack/roclapack_getrf.cpp
   lapack/roclapack_getrf_batched.cpp
   lapack/roclapack_getrf_strided_batched.cpp
+  lapack/roclapack_potf2.cpp
+  lapack/roclapack_potf2_batched.cpp
+  lapack/roclapack_potf2_strided_batched.cpp
+  lapack/roclapack_potrf.cpp
+  lapack/roclapack_potrf_batched.cpp
+  lapack/roclapack_potrf_strided_batched.cpp
+  # linear systems solvers
   lapack/roclapack_getrs.cpp
   lapack/roclapack_getrs_batched.cpp
   lapack/roclapack_getrs_strided_batched.cpp
@@ -62,12 +69,6 @@ set( rocsolver_lapack_source
   lapack/roclapack_gels.cpp
   lapack/roclapack_gels_batched.cpp
   lapack/roclapack_gels_strided_batched.cpp
-  lapack/roclapack_potf2.cpp
-  lapack/roclapack_potf2_batched.cpp
-  lapack/roclapack_potf2_strided_batched.cpp
-  lapack/roclapack_potrf.cpp
-  lapack/roclapack_potrf_batched.cpp
-  lapack/roclapack_potrf_strided_batched.cpp
   # orthogonal factorizations
   lapack/roclapack_geqr2.cpp
   lapack/roclapack_geqr2_batched.cpp
