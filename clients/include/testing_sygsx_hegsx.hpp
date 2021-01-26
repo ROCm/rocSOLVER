@@ -289,8 +289,9 @@ void testing_sygsx_hegsx(Arguments argus)
     rocblas_eform itype = char2rocblas_eform(itypeC);
     rocblas_fill uplo = char2rocblas_fill(uploC);
 
-    size_t stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
-    size_t stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
+    // hARes and hBRes should always be allocated (used in initData)
+    size_t stARes = stA;
+    size_t stBRes = stB;
 
     // check non-supported values
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
@@ -317,8 +318,9 @@ void testing_sygsx_hegsx(Arguments argus)
     size_t size_B = size_t(ldb) * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
-    size_t size_BRes = (argus.unit_check || argus.norm_check) ? size_B : 0;
+    // hARes and hBRes should always be allocated (used in initData)
+    size_t size_ARes = size_A;
+    size_t size_BRes = size_B;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < n || ldb < n || bc < 0);
