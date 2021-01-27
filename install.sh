@@ -572,6 +572,7 @@ check_exit_code "$?"
 
 if [[ "${cleanup}" == true ]]; then
   rm -rf  _CPack_Packages/
+  find -name '*.o' -delete
 fi
 
 popd
