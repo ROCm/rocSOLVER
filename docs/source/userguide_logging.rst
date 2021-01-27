@@ -44,18 +44,24 @@ may appear in the trace logging.
 Both the default layer mode and max level depth can be overridden using two environment variables:
 
 * ``ROCSOLVER_LAYER``
-
 * ``ROCSOLVER_LEVELS``
 
 ``ROCSOLVER_LAYER`` is a bitwise OR of zero or more bit masks as follows:
 
 *  If ``ROCSOLVER_LAYER`` is not set, then there is no logging
-
 *  If ``(ROCSOLVER_LAYER & 1) != 0``, then there is trace logging
-
 *  If ``(ROCSOLVER_LAYER & 2) != 0``, then there is bench logging
-
 *  If ``(ROCSOLVER_LAYER & 4) != 0``, then there is profile logging
+
+Three environment variables can set the full path name for a log file:
+
+* ``ROCSOLVER_LOG_TRACE_PATH`` sets the full path name for trace logging
+* ``ROCSOLVER_LOG_BENCH_PATH`` sets the full path name for bench logging
+* ``ROCSOLVER_LOG_PROFILE_PATH`` sets the full path name for profile logging
+
+If one of these environment variables is not set, then ``ROCSOLVER_LOG_PATH`` sets the full path
+for the corresponding logging, if it is set. If neither the above nor ``ROCSOLVER_LOG_PATH`` are
+set, then the corresponding logging output is streamed to standard error.
 
 Once logging facilities are no longer required (e.g. at program termination), the user must
 call ``rocsolver_logging_cleanup``.

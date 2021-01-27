@@ -7,6 +7,7 @@
 #include "common_host_helpers.hpp"
 #include "common_ostream_helpers.hpp"
 #include "rocsolver.h"
+#include <memory>
 #include <unordered_map>
 
 /***************************************************************************
@@ -94,6 +95,13 @@ private:
     int max_levels;
     // layer mode enum describing which logging facilities are enabled
     rocblas_layer_mode layer_mode;
+    // streams for different logging types
+    std::unique_ptr<rocsolver_ostream> trace_os;
+    std::unique_ptr<rocsolver_ostream> bench_os;
+    std::unique_ptr<rocsolver_ostream> profile_os;
+
+    // returns a unique_ptr to a file stream or a given default stream
+    auto open_log_stream(const char* environment_variable_name);
 
     // convert type T into char s, d, c, or z
     template <typename T>
@@ -120,11 +128,11 @@ private:
     void log_bench(int level, const char* func_prefix, const char* func_name, Ts... args)
     {
         for(int i = 0; i < level - 1; i++)
-            rocblas_cout << "    ";
+            *bench_os << "    ";
 
-        rocblas_cout << "./rocsolver-bench -f " << func_name << " -r " << get_precision<T>() << ' ';
-        print_pairs(rocblas_cout, " ", args...);
-        rocblas_cout << '\n';
+        *bench_os << "./rocsolver-bench -f " << func_name << " -r " << get_precision<T>() << ' ';
+        print_pairs(*bench_os, " ", args...);
+        *bench_os << std::endl;
     }
 
     // outputs trace logging
@@ -132,11 +140,11 @@ private:
     void log_trace(int level, const char* func_prefix, const char* func_name, Ts... args)
     {
         for(int i = 0; i < level - 1; i++)
-            rocblas_cout << "    ";
+            *trace_os << "    ";
 
-        rocblas_cout << get_template_name(func_prefix, func_name) << " (";
-        print_pairs(rocblas_cout, ", ", args...);
-        rocblas_cout << ')' << '\n';
+        *trace_os << get_template_name(func_prefix, func_name) << " (";
+        print_pairs(*trace_os, ", ", args...);
+        *trace_os << ')' << '\n';
     }
 
     // populates profile logging data with information from call_stack
@@ -182,11 +190,12 @@ public:
         int level = call_stack[handle].size();
         ROCSOLVER_ASSUME(level == 0);
 
-        rocblas_cout << "------- ENTER " << get_func_name<T>(func_prefix, func_name) << " -------"
-                     << '\n';
-
         if(layer_mode & rocblas_layer_mode_log_bench)
             log_bench<T>(level, func_prefix, func_name, args...);
+
+        if(trace_os)
+            *trace_os << "------- ENTER " << get_func_name<T>(func_prefix, func_name) << " -------"
+                      << '\n';
     }
 
     // logging function to be called before exiting a top-level (i.e. impl) function
@@ -196,9 +205,10 @@ public:
         int level = call_stack[handle].size();
         ROCSOLVER_ASSUME(level == 0);
 
-        rocblas_cout << "-------  EXIT " << get_func_name<T>(func_prefix, func_name) << " -------"
-                     << '\n'
-                     << std::endl;
+        if(trace_os)
+            *trace_os << "-------  EXIT " << get_func_name<T>(func_prefix, func_name) << " -------"
+                      << '\n'
+                      << std::endl;
 
         call_stack.erase(handle);
     }

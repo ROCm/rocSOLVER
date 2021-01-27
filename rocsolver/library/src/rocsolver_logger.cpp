@@ -5,12 +5,47 @@
 #include "rocsolver_logger.hpp"
 #include <sys/time.h>
 
+#define STRINGIFY(s) STRINGIFY_HELPER(s)
+#define STRINGIFY_HELPER(s) #s
+
 // initialize the static variable
 rocsolver_logger* rocsolver_logger::_instance = nullptr;
 
 /***************************************************************************
+ * Open logging streams
+ ***************************************************************************/
+
+auto rocsolver_logger::open_log_stream(const char* environment_variable_name)
+{
+    const char* logfile;
+    if((logfile = getenv(environment_variable_name)) != nullptr
+       || (logfile = getenv("ROCSOLVER_LOG_PATH")) != nullptr)
+    {
+        auto os = std::make_unique<rocsolver_ostream>(logfile);
+
+        // print version info only once per file
+        if(os != trace_os && os != bench_os && os != profile_os)
+        {
+            *os << "ROCSOLVER LOG FILE" << '\n';
+            *os << "rocSOLVER Version: " << STRINGIFY(ROCSOLVER_VERSION_MAJOR) << '.'
+                << STRINGIFY(ROCSOLVER_VERSION_MINOR) << '.' << STRINGIFY(ROCSOLVER_VERSION_PATCH)
+                << '.' << STRINGIFY(ROCSOLVER_VERSION_TWEAK) << '\n';
+            *os << "rocBLAS Version: " << STRINGIFY(ROCBLAS_VERSION_MAJOR) << '.'
+                << STRINGIFY(ROCBLAS_VERSION_MINOR) << '.' << STRINGIFY(ROCBLAS_VERSION_PATCH)
+                << '.' << STRINGIFY(ROCBLAS_VERSION_TWEAK) << '\n';
+            *os << std::endl;
+        }
+
+        return os;
+    }
+    else
+        return std::make_unique<rocsolver_ostream>(STDERR_FILENO);
+}
+
+/***************************************************************************
  * Logging set-up and tear-down
  ***************************************************************************/
+
 extern "C" {
 
 rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
@@ -37,6 +72,14 @@ rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
     else
         logger->max_levels = max_levels;
 
+    // create output streams
+    if(logger->layer_mode & rocblas_layer_mode_log_trace)
+        logger->trace_os = logger->open_log_stream("ROCSOLVER_LOG_TRACE_PATH");
+    if(logger->layer_mode & rocblas_layer_mode_log_bench)
+        logger->bench_os = logger->open_log_stream("ROCSOLVER_LOG_BENCH_PATH");
+    if(logger->layer_mode & rocblas_layer_mode_log_profile)
+        logger->profile_os = logger->open_log_stream("ROCSOLVER_LOG_PROFILE_PATH");
+
     return rocblas_status_success;
 }
 
@@ -50,18 +93,19 @@ rocblas_status rocsolver_logging_cleanup()
     // print profile logging results
     if(logger->layer_mode & rocblas_layer_mode_log_profile && logger->profile.size() > 0)
     {
-        rocblas_cout << "------- PROFILE -------" << '\n';
+        *logger->profile_os << "------- PROFILE -------" << '\n';
         for(auto it = logger->profile.begin(); it != logger->profile.end(); ++it)
         {
-            rocblas_cout << it->first.c_str() << ": Calls: " << it->second.calls
-                         << ", Total Time: " << (it->second.time * 0.001) << " ms";
+            *logger->profile_os << it->first.c_str() << ": Calls: " << it->second.calls
+                                << ", Total Time: " << (it->second.time * 0.001) << " ms";
             if(it->second.internal_time > 0.0)
-                rocblas_cout << " (in nested functions: " << (it->second.internal_time * 0.001)
-                             << " ms)" << '\n';
+                *logger->profile_os
+                    << " (in nested functions: " << (it->second.internal_time * 0.001) << " ms)"
+                    << '\n';
             else
-                rocblas_cout << '\n';
+                *logger->profile_os << '\n';
         }
-        rocblas_cout << std::endl;
+        *logger->profile_os << std::endl;
     }
 
     delete logger;
