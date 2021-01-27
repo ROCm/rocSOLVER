@@ -211,12 +211,6 @@ install_packages( )
   local library_dependencies_sles=(   "make" "cmake" "python3-PyYAM" "python3-distutils-extra"
                                       "gcc-c++" "libcxxtools9" "rpm-build" "wget" )
 
-  library_dependencies_ubuntu+=( "rocm-dev" )
-  library_dependencies_centos_7+=( "rocm-dev" )
-  library_dependencies_centos_8+=( "rocm-dev" )
-  library_dependencies_fedora+=( "rocm-dev" )
-  library_dependencies_sles+=( "rocm-dev" )
-
   case "${ID}" in
     centos|rhel|sles|opensuse-leap)
       install_msgpack_from_source
