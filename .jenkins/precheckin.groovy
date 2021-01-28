@@ -15,7 +15,7 @@ def runCI =
 
     def prj = new rocProject('rocSOLVER', 'PreCheckin')
     // customize for project
-    prj.paths.build_command = './install.sh -c'
+    prj.paths.build_command = './install.sh -c --cleanup'
 
     // Define test architectures, optional rocm version argument is available
     def nodes = new dockerNodes(nodeDetails, jobName, prj)
