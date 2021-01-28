@@ -22,8 +22,9 @@ extern "C" {
  * ===========================================================================
  */
 
-/*! \brief Query the library version.
+/*! \brief GET_VERSION_STRING Queries the library version.
 
+    \details
     @param[out]
     buf         A buffer that the version string will be written into.
     @param[in]
@@ -32,33 +33,64 @@ extern "C" {
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char* buf, size_t len);
 
+
 /*
  * ===========================================================================
  *      Multi-level logging
  * ===========================================================================
  */
 
-/*! \brief Initialize multi-level logging set-up for rocSOLVER.
+/*! \brief LOGGING_INITIALIZE re-initializes the multi-level rocSOLVER logger to the specified layer_mode and levels.
 
+    \details
     @param[in]
     layer_mode      rocblas_layer_mode.\n
-                    The default logging layer mode. Can be overridden using
-                    environment variable ROCSOLVER_LAYER.
+                    Specifies the logging mode.
     @param[in]
     max_levels      rocblas_int. max_levels >= 1.\n
-                    The default maximum depth at which nested function calls
-                    will appear in the log. Can be overridden using environment
-                    variable ROCSOLVER_LEVELS.
+                    Specifies the maximum depth at which nested function calls
+                    will appear in the log. 
  ******************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
                                                              const rocblas_int max_levels);
 
-/*! \brief Clean up multi-level logging set-up for rocSOLVER and, if applicable
-    print the profile logging results.
+
+/*! \brief LOGGING_CLEANUP cleans up the multi-level rocSOLVER logger. 
+
+    \details
+    This function prints the profile logging results, if applicable, and then reset the logger to the
+    default mode (no logging).
+
+    @param[in]
+    clean_profile   boolean.\n
+                    Specifies whether the profile record will be erased after printed.
  ******************************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_logging_cleanup(void);
+ROCSOLVER_EXPORT rocblas_status rocsolver_logging_cleanup(bool clean_profile);
+
+
+/*! \brief CREATE_LOGGER creates a multi-level rocSOLVER logger.
+
+    \details
+    Creates a rocSOLVER logger and initializes it to the default mode (no logging and one level depth).
+    Default mode can be overridden by using the environment variables ROCSOLVER_LAYER and ROCSOLVER_LEVELS.
+
+    This function also sets the streams where the log results will be outputted. The default is STDERR for 
+    all the modes. This default can also be overridden using the environment variable ROCSOLVER_LOG_PATH, or
+    specifically ROCSOLVER_LOG_TRACE_PATH, ROCSOLVER_LOG_BENCH_PATH, and/or ROCSOLVER_LOG_PROFILE_PATH.
+******************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_create_logger(void);
+
+
+/*! \brief DESTROY_LOGGER destroys the multi-level rocSOLVER logger.
+
+    \details
+    If applicable, this function also prints the profile logging results before destroying the logger.
+*****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_destroy_logger(void);
 
 /*
  * ===========================================================================

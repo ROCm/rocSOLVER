@@ -124,9 +124,6 @@ private:
     template <typename T, typename... Ts>
     void log_bench(int level, const char* func_prefix, const char* func_name, Ts... args)
     {
-        for(int i = 0; i < level - 1; i++)
-            *bench_os << "    ";
-
         *bench_os << "./rocsolver-bench -f " << func_name << " -r " << get_precision<T>() << ' ';
         print_pairs(*bench_os, " ", args...);
         *bench_os << std::endl;
@@ -195,8 +192,8 @@ public:
         if(layer_mode & rocblas_layer_mode_log_bench)
             log_bench<T>(entry.level, func_prefix, func_name, args...);
 
-        if(trace_os)
-            *trace_os << "------- ENTER " << entry.name << " -------\n";
+        if(layer_mode & rocblas_layer_mode_log_trace)
+            *trace_os << "------- ENTER " << entry.name << " trace tree" << " -------\n";
     }
 
     // logging function to be called before exiting a top-level (i.e. impl) function
@@ -208,8 +205,8 @@ public:
         rocsolver_logger::_mutex.unlock();
         ROCSOLVER_ASSUME(entry.level == 0);
 
-        if(trace_os)
-            *trace_os << "-------  EXIT " << entry.name << " -------\n" << std::endl;
+        if(layer_mode & rocblas_layer_mode_log_trace)
+            *trace_os << "------- EXIT " << entry.name << " trace tree" << " -------\n" << std::endl;
     }
 
     // logging function to be called upon entering a sub-level (i.e. template) function
@@ -262,5 +259,7 @@ public:
 
     friend rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
                                                        const rocblas_int max_levels);
-    friend rocblas_status rocsolver_logging_cleanup(void);
+    friend rocblas_status rocsolver_logging_cleanup(bool clean_profile);
+    friend rocblas_status rocsolver_create_logger(void);
+    friend rocblas_status rocsolver_destroy_logger(void);
 };
