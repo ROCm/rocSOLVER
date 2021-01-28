@@ -70,3 +70,11 @@ Note that when profile logging is enabled, memory usage will increase. If the pr
 without calling ``rocsolver_logging_cleanup``, then profile logging will not be outputted
 before the program exits.
 
+
+Multiple host threads
+================================================
+
+The logging facilities for rocSOLVER assume that each ``rocblas_handle`` is associated with at
+most one host thread. When using rocSOLVER's multi-level logging setup, it is recommended to
+create a separate ``rocblas_handle`` for each host thread.
+
