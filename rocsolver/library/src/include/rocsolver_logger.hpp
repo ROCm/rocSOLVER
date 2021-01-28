@@ -174,7 +174,10 @@ public:
     // returns true if logging facilities are enabled
     static inline bool is_logging_enabled()
     {
-        return rocsolver_logger::_instance != nullptr && rocsolver_logger::_instance->layer_mode > 0;
+        return (rocsolver_logger::_instance != nullptr)
+            && (rocsolver_logger::_instance->layer_mode
+                & (rocblas_layer_mode_log_trace | rocblas_layer_mode_log_bench
+                   | rocblas_layer_mode_log_profile));
     }
 
     // logging function to be called upon entering a top-level (i.e. impl) function
@@ -233,6 +236,10 @@ public:
             log_profile<T>(handle, entry);
     }
 
+    /***************************************************************************
+     * The scope_guard struct will call an appropriate logging exit function
+     * upon the function losing scope.
+     ***************************************************************************/
     template <typename T>
     struct scope_guard
     {
