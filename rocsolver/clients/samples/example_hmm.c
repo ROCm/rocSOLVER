@@ -55,7 +55,6 @@ int main() {
   // initialization
   rocblas_handle handle;
   rocblas_create_handle(&handle);
-  rocsolver_create_logger();
 
   // calculate the sizes of our arrays
   size_t size_piv = (M < N) ? M : N; // count of Householder scalars
@@ -97,6 +96,5 @@ int main() {
   hipFree(A);
   hipFree(ipiv);
   hipFree(work);
-  rocsolver_destroy_logger();
   rocblas_destroy_handle(handle);
 }

@@ -53,7 +53,6 @@ int main() {
   // initialization
   rocblas_handle handle;
   rocblas_create_handle(&handle);
-  rocsolver_create_logger();
 
   // calculate the sizes of our arrays
   size_t size_A = lda * (size_t)N;   // count of elements in matrix A
@@ -92,6 +91,5 @@ int main() {
   hipFree(dA);
   hipFree(dIpiv);
   free(hA);
-  rocsolver_destroy_logger();
   rocblas_destroy_handle(handle);
 }

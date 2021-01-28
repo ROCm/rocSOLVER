@@ -30,6 +30,7 @@ void get_example_matrix(std::vector<double>& hA,
 
 // We use rocsolver_dgeqrf to factor a real M-by-N matrix, A.
 // See https://rocsolver.readthedocs.io/en/latest/userguide_api.html#c.rocsolver_dgeqrf
+// and https://rocsolver.readthedocs.io/en/latest/userguide_logging.html
 // and https://www.netlib.org/lapack/explore-html/df/dc5/group__variants_g_ecomputational_ga3766ea903391b5cf9008132f7440ec7b.html
 int main() {
   rocblas_int M;          // rows
@@ -38,20 +39,10 @@ int main() {
   std::vector<double> hA; // input matrix on CPU
   get_example_matrix(hA, M, N, lda);
 
-  // let's print the input matrix, just to see it
-  printf("A = [\n");
-  for (size_t i = 0; i < M; ++i) {
-    printf("  ");
-    for (size_t j = 0; j < N; ++j) {
-      printf("% .3f ", hA[i + j*lda]);
-    }
-    printf(";\n");
-  }
-  printf("]\n");
-
   // initialization
   rocblas_handle handle;
   rocblas_create_handle(&handle);
+  rocsolver_create_logger();
 
   // calculate the sizes of our arrays
   size_t size_A = size_t(lda) * N;          // count of elements in matrix A
@@ -62,31 +53,38 @@ int main() {
   hipMalloc(&dA, sizeof(double)*size_A);
   hipMalloc(&dIpiv, sizeof(double)*size_piv);
 
+
   // copy data to GPU
   hipMemcpy(dA, hA.data(), sizeof(double)*size_A, hipMemcpyHostToDevice);
+
+  // begin trace logging (max depth = 4) and profile logging
+  auto layer_mode = rocblas_layer_mode_log_trace | rocblas_layer_mode_log_profile;
+  rocsolver_logging_initialize((rocblas_layer_mode)layer_mode, 4);
 
   // compute the QR factorization on the GPU
   rocsolver_dgeqrf(handle, M, N, dA, lda, dIpiv);
 
-  // copy the results back to CPU
-  std::vector<double> hIpiv(size_piv); // array for householder scalars on CPU
-  hipMemcpy(hA.data(), dA, sizeof(double)*size_A, hipMemcpyDeviceToHost);
-  hipMemcpy(hIpiv.data(), dIpiv, sizeof(double)*size_piv, hipMemcpyDeviceToHost);
+  // stop logging, print profile results, and clear the profile data
+  rocsolver_logging_cleanup(true);
 
-  // the results are now in hA and hIpiv
-  // we can print some of the results if we want to see them
-  printf("R = [\n");
-  for (size_t i = 0; i < M; ++i) {
-    printf("  ");
-    for (size_t j = 0; j < N; ++j) {
-      printf("% .3f ", (i <= j) ? hA[i + j*lda] : 0);
-    }
-    printf(";\n");
-  }
-  printf("]\n");
+
+  // copy data to GPU
+  hipMemcpy(dA, hA.data(), sizeof(double)*size_A, hipMemcpyHostToDevice);
+
+  // begin bench logging and profile logging
+  layer_mode = rocblas_layer_mode_log_bench | rocblas_layer_mode_log_profile;
+  rocsolver_logging_initialize((rocblas_layer_mode)layer_mode, 1);
+
+  // compute the QR factorization on the GPU
+  rocsolver_dgeqrf(handle, M, N, dA, lda, dIpiv);
+
+  // stop logging, print profile results, and clear the profile data
+  rocsolver_logging_cleanup(true);
+
 
   // clean up
   hipFree(dA);
   hipFree(dIpiv);
+  rocsolver_destroy_logger();
   rocblas_destroy_handle(handle);
 }
