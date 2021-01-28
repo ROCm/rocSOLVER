@@ -193,7 +193,8 @@ public:
             log_bench<T>(entry.level, func_prefix, func_name, args...);
 
         if(layer_mode & rocblas_layer_mode_log_trace)
-            *trace_os << "------- ENTER " << entry.name << " trace tree" << " -------\n";
+            *trace_os << "------- ENTER " << entry.name << " trace tree"
+                      << " -------\n";
     }
 
     // logging function to be called before exiting a top-level (i.e. impl) function
@@ -206,7 +207,9 @@ public:
         ROCSOLVER_ASSUME(entry.level == 0);
 
         if(layer_mode & rocblas_layer_mode_log_trace)
-            *trace_os << "------- EXIT " << entry.name << " trace tree" << " -------\n" << std::endl;
+            *trace_os << "------- EXIT " << entry.name << " trace tree"
+                      << " -------\n"
+                      << std::endl;
     }
 
     // logging function to be called upon entering a sub-level (i.e. template) function
@@ -243,11 +246,14 @@ public:
         bool top_level;
         rocblas_handle handle;
 
+        // Constructor
         scope_guard(bool top_level, rocblas_handle handle)
             : top_level(top_level)
             , handle(handle)
         {
         }
+        // Copy constructor is deleted
+        scope_guard(const scope_guard&) = delete;
         ~scope_guard()
         {
             if(top_level)
@@ -255,6 +261,9 @@ public:
             else
                 rocsolver_logger::instance()->log_exit<T>(handle);
         }
+
+        // Assignment operator is deleted
+        scope_guard& operator=(const scope_guard&) = delete;
     };
 
     friend rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,

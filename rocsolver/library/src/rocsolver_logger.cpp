@@ -3,6 +3,7 @@
  * ************************************************************************ */
 
 #include "rocsolver_logger.hpp"
+#include <cstdlib>
 #include <sys/time.h>
 
 #define STRINGIFY(s) STRINGIFY_HELPER(s)
@@ -19,8 +20,8 @@ std::mutex rocsolver_logger::_mutex;
 auto rocsolver_logger::open_log_stream(const char* environment_variable_name)
 {
     const char* logfile;
-    if((logfile = getenv(environment_variable_name)) != nullptr
-       || (logfile = getenv("ROCSOLVER_LOG_PATH")) != nullptr)
+    if((logfile = std::getenv(environment_variable_name)) != nullptr
+       || (logfile = std::getenv("ROCSOLVER_LOG_PATH")) != nullptr)
     {
         auto os = std::make_unique<rocsolver_ostream>(logfile);
 
@@ -90,23 +91,23 @@ rocblas_status rocsolver_create_logger()
     rocsolver_logger::_mutex.lock();
 
     // if there is no logger, create one and:
-    if(rocsolver_logger::_instance != nullptr) 
+    if(rocsolver_logger::_instance != nullptr)
     {
-        rocsolver_logger::_mutex.unlock(); 
+        rocsolver_logger::_mutex.unlock();
         return rocblas_status_internal_error;
     }
 
     auto logger = rocsolver_logger::_instance = new rocsolver_logger();
 
     // set layer_mode from environment variable ROCSOLVER_LAYER or to default
-    const char* str_layer_mode = getenv("ROCSOLVER_LAYER");
+    const char* str_layer_mode = std::getenv("ROCSOLVER_LAYER");
     if(str_layer_mode)
         logger->layer_mode = static_cast<rocblas_layer_mode>(strtol(str_layer_mode, 0, 0));
     else
         logger->layer_mode = rocblas_layer_mode_none;
 
     // set max_levels from value of environment variable ROCSOLVER_LEVELS or to default
-    const char* str_max_level = getenv("ROCSOLVER_LEVELS");
+    const char* str_max_level = std::getenv("ROCSOLVER_LEVELS");
     if(str_max_level)
         logger->max_levels = static_cast<int>(strtol(str_max_level, 0, 0));
     else
@@ -126,8 +127,8 @@ rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
                                             const rocblas_int max_levels)
 {
     rocsolver_logger::_mutex.lock();
- 
-    // if there is an active logger:   
+
+    // if there is an active logger:
     if(rocsolver_logger::_instance == nullptr)
     {
         rocsolver_logger::_mutex.unlock();
@@ -141,8 +142,8 @@ rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
 
     auto logger = rocsolver_logger::_instance;
 
-    // change to user specified mode and levels. 
-    // output streams remain the same defined at logger creation 
+    // change to user specified mode and levels.
+    // output streams remain the same defined at logger creation
     logger->layer_mode = layer_mode;
     logger->max_levels = max_levels;
 
@@ -185,7 +186,8 @@ rocblas_status rocsolver_logging_cleanup(bool clean_profile)
     // reset to no logging and clear profile info
     logger->max_levels = 1;
     logger->layer_mode = rocblas_layer_mode_none;
-    if(clean_profile) logger->profile.clear();
+    if(clean_profile)
+        logger->profile.clear();
 
     rocsolver_logger::_mutex.unlock();
 
@@ -196,24 +198,23 @@ rocblas_status rocsolver_destroy_logger()
 {
     // first cleanup in case there is profile to print
     rocsolver_logging_cleanup(true);
-    
-    // then delete the logger if any 
+
+    // then delete the logger if any
     rocsolver_logger::_mutex.lock();
-    
+
     if(rocsolver_logger::_instance == nullptr)
     {
         rocsolver_logger::_mutex.unlock();
         return rocblas_status_internal_error;
     }
-    
+
     delete rocsolver_logger::_instance;
     rocsolver_logger::_instance = nullptr;
 
     rocsolver_logger::_mutex.unlock();
-    
-    return rocblas_status_success;    
-}
 
+    return rocblas_status_success;
+}
 }
 
 /***************************************************************************

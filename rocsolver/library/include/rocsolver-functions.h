@@ -33,7 +33,6 @@ extern "C" {
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char* buf, size_t len);
 
-
 /*
  * ===========================================================================
  *      Multi-level logging
@@ -49,14 +48,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char* buf, size_t l
     @param[in]
     max_levels      rocblas_int. max_levels >= 1.\n
                     Specifies the maximum depth at which nested function calls
-                    will appear in the log. 
+                    will appear in the log.
  ******************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
                                                              const rocblas_int max_levels);
 
-
-/*! \brief LOGGING_CLEANUP cleans up the multi-level rocSOLVER logger. 
+/*! \brief LOGGING_CLEANUP cleans up the multi-level rocSOLVER logger.
 
     \details
     This function prints the profile logging results, if applicable, and then reset the logger to the
@@ -69,20 +67,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_logging_initialize(const rocblas_layer
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_logging_cleanup(bool clean_profile);
 
-
 /*! \brief CREATE_LOGGER creates a multi-level rocSOLVER logger.
 
     \details
     Creates a rocSOLVER logger and initializes it to the default mode (no logging and one level depth).
     Default mode can be overridden by using the environment variables ROCSOLVER_LAYER and ROCSOLVER_LEVELS.
 
-    This function also sets the streams where the log results will be outputted. The default is STDERR for 
+    This function also sets the streams where the log results will be outputted. The default is STDERR for
     all the modes. This default can also be overridden using the environment variable ROCSOLVER_LOG_PATH, or
     specifically ROCSOLVER_LOG_TRACE_PATH, ROCSOLVER_LOG_BENCH_PATH, and/or ROCSOLVER_LOG_PROFILE_PATH.
 ******************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_create_logger(void);
-
 
 /*! \brief DESTROY_LOGGER destroys the multi-level rocSOLVER logger.
 
