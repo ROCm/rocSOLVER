@@ -41,6 +41,27 @@ rocblas_workmode
 .. doxygenenum:: rocblas_workmode
 
 
+Logging Functions
+============================
+
+These are functions that enable and control rocSOLVER's multi-level logging capabilities.
+
+Logging set-up and tear-down
+--------------------------------------
+
+rocsolver_<create/destroy>_logger()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_create_logger
+   :outline:
+.. doxygenfunction:: rocsolver_destroy_logger
+
+rocsolver_logging_<initialize/cleanup>()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_logging_initialize
+   :outline:
+.. doxygenfunction:: rocsolver_logging_cleanup
+
+
 LAPACK Auxiliary Functions
 ============================
 
