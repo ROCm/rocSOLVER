@@ -8,6 +8,7 @@
 #include "common_ostream_helpers.hpp"
 #include "rocsolver.h"
 #include <memory>
+#include <mutex>
 #include <unordered_map>
 
 /***************************************************************************
@@ -66,12 +67,14 @@
 struct rocsolver_log_entry
 {
     std::string name;
+    int level;
     int calls;
     double time;
     double internal_time;
 
     rocsolver_log_entry()
-        : calls(0)
+        : level(0)
+        , calls(0)
         , time(0)
         , internal_time(0)
     {
@@ -87,6 +90,8 @@ class rocsolver_logger
 private:
     // static singleton instance
     static rocsolver_logger* _instance;
+    // static mutex for multithreading
+    static std::mutex _mutex;
     // profile logging data keyed by function name
     std::unordered_map<std::string, rocsolver_log_entry> profile;
     // function call stack keyed by handle
@@ -102,6 +107,11 @@ private:
 
     // returns a unique_ptr to a file stream or a given default stream
     auto open_log_stream(const char* environment_variable_name);
+
+    // returns a log entry on the call stack
+    rocsolver_log_entry& push_log_entry(rocblas_handle handle, std::string name);
+    rocsolver_log_entry& peek_log_entry(rocblas_handle handle);
+    rocsolver_log_entry pop_log_entry(rocblas_handle handle);
 
     // convert type T into char s, d, c, or z
     template <typename T>
@@ -149,22 +159,22 @@ private:
 
     // populates profile logging data with information from call_stack
     template <typename T>
-    void log_profile(rocblas_handle handle, int level, const char* func_prefix, const char* func_name)
+    void log_profile(rocblas_handle handle, rocsolver_log_entry& from_stack)
     {
-        rocsolver_log_entry& from_stack = call_stack[handle][level - 1];
-        rocsolver_log_entry& from_profile = profile[from_stack.name];
-
         hipStream_t stream;
         rocblas_get_stream(handle, &stream);
         double time = get_time_us_sync(stream) - from_stack.time;
 
+        rocsolver_logger::_mutex.lock();
+        rocsolver_log_entry& from_profile = profile[from_stack.name];
         from_profile.name = from_stack.name;
         from_profile.calls++;
         from_profile.time += time;
         from_profile.internal_time += from_stack.internal_time;
 
-        if(level > 1)
-            call_stack[handle][level - 2].internal_time += time;
+        if(from_stack.level > 1)
+            peek_log_entry(handle).internal_time += time;
+        rocsolver_logger::_mutex.unlock();
     }
 
 public:
@@ -187,57 +197,53 @@ public:
                              const char* func_name,
                              Ts... args)
     {
-        int level = call_stack[handle].size();
-        ROCSOLVER_ASSUME(level == 0);
+        rocsolver_logger::_mutex.lock();
+        auto entry = push_log_entry(handle, get_func_name<T>(func_prefix, func_name));
+        rocsolver_logger::_mutex.unlock();
+        ROCSOLVER_ASSUME(entry.level == 0);
 
         if(layer_mode & rocblas_layer_mode_log_bench)
-            log_bench<T>(level, func_prefix, func_name, args...);
+            log_bench<T>(entry.level, func_prefix, func_name, args...);
 
         if(trace_os)
-            *trace_os << "------- ENTER " << get_func_name<T>(func_prefix, func_name) << " -------"
-                      << '\n';
+            *trace_os << "------- ENTER " << entry.name << " -------\n";
     }
 
     // logging function to be called before exiting a top-level (i.e. impl) function
     template <typename T>
     void log_exit_top_level(rocblas_handle handle, const char* func_prefix, const char* func_name)
     {
-        int level = call_stack[handle].size();
-        ROCSOLVER_ASSUME(level == 0);
+        rocsolver_logger::_mutex.lock();
+        auto entry = pop_log_entry(handle);
+        rocsolver_logger::_mutex.unlock();
+        ROCSOLVER_ASSUME(entry.level == 0);
 
         if(trace_os)
-            *trace_os << "-------  EXIT " << get_func_name<T>(func_prefix, func_name) << " -------"
-                      << '\n'
-                      << std::endl;
-
-        call_stack.erase(handle);
+            *trace_os << "-------  EXIT " << entry.name << " -------\n" << std::endl;
     }
 
     // logging function to be called upon entering a sub-level (i.e. template) function
     template <typename T, typename... Ts>
     void log_enter(rocblas_handle handle, const char* func_prefix, const char* func_name, Ts... args)
     {
-        rocsolver_log_entry entry;
-        entry.name = get_template_name(func_prefix, func_name);
-        entry.time = get_time_us_no_sync();
-        call_stack[handle].push_back(entry);
+        rocsolver_logger::_mutex.lock();
+        auto entry = push_log_entry(handle, get_template_name(func_prefix, func_name));
+        rocsolver_logger::_mutex.unlock();
 
-        int level = call_stack[handle].size();
-
-        if(layer_mode & rocblas_layer_mode_log_trace && level <= max_levels)
-            log_trace<T>(level, func_prefix, func_name, args...);
+        if(layer_mode & rocblas_layer_mode_log_trace && entry.level <= max_levels)
+            log_trace<T>(entry.level, func_prefix, func_name, args...);
     }
 
     // logging function to be called before exiting a sub-level (i.e. template) function
     template <typename T>
     void log_exit(rocblas_handle handle, const char* func_prefix, const char* func_name)
     {
-        int level = call_stack[handle].size();
+        rocsolver_logger::_mutex.lock();
+        auto entry = pop_log_entry(handle);
+        rocsolver_logger::_mutex.unlock();
 
         if(layer_mode & rocblas_layer_mode_log_profile)
-            log_profile<T>(handle, level, func_prefix, func_name);
-
-        call_stack[handle].pop_back();
+            log_profile<T>(handle, entry);
     }
 
     friend rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,

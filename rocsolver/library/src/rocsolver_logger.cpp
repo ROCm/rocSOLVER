@@ -10,6 +10,7 @@
 
 // initialize the static variable
 rocsolver_logger* rocsolver_logger::_instance = nullptr;
+std::mutex rocsolver_logger::_mutex;
 
 /***************************************************************************
  * Open logging streams
@@ -43,6 +44,42 @@ auto rocsolver_logger::open_log_stream(const char* environment_variable_name)
 }
 
 /***************************************************************************
+ * Call stack manipulation
+ ***************************************************************************/
+
+rocsolver_log_entry& rocsolver_logger::push_log_entry(rocblas_handle handle, std::string name)
+{
+    std::vector<rocsolver_log_entry>& stack = call_stack[handle];
+    stack.push_back(rocsolver_log_entry());
+
+    rocsolver_log_entry& result = stack.back();
+    result.name = name;
+    result.level = stack.size() - 1;
+    result.time = get_time_us_no_sync();
+
+    return result;
+}
+
+rocsolver_log_entry& rocsolver_logger::peek_log_entry(rocblas_handle handle)
+{
+    std::vector<rocsolver_log_entry>& stack = call_stack.at(handle);
+    rocsolver_log_entry& result = stack.back();
+    return result;
+}
+
+rocsolver_log_entry rocsolver_logger::pop_log_entry(rocblas_handle handle)
+{
+    std::vector<rocsolver_log_entry>& stack = call_stack.at(handle);
+    rocsolver_log_entry result = stack.back();
+    stack.pop_back();
+
+    if(stack.size() == 0)
+        call_stack.erase(handle);
+
+    return result;
+}
+
+/***************************************************************************
  * Logging set-up and tear-down
  ***************************************************************************/
 
@@ -51,6 +88,8 @@ extern "C" {
 rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
                                             const rocblas_int max_levels)
 {
+    rocsolver_logger::_mutex.lock();
+
     if(rocsolver_logger::_instance != nullptr)
         return rocblas_status_internal_error;
     if(max_levels < 1)
@@ -80,11 +119,14 @@ rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
     if(logger->layer_mode & rocblas_layer_mode_log_profile)
         logger->profile_os = logger->open_log_stream("ROCSOLVER_LOG_PROFILE_PATH");
 
+    rocsolver_logger::_mutex.unlock();
     return rocblas_status_success;
 }
 
 rocblas_status rocsolver_logging_cleanup()
 {
+    rocsolver_logger::_mutex.lock();
+
     if(rocsolver_logger::_instance == nullptr)
         return rocblas_status_internal_error;
 
@@ -111,6 +153,7 @@ rocblas_status rocsolver_logging_cleanup()
     delete logger;
     logger = nullptr;
 
+    rocsolver_logger::_mutex.unlock();
     return rocblas_status_success;
 }
 }
