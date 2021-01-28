@@ -163,21 +163,6 @@ install_zypper_packages( )
     done
 }
 
-install_msgpack_from_source( )
-{
-    if [[ ! -d "${build_dir}/deps/msgpack-c" ]]; then
-      pushd .
-      mkdir -p "${build_dir}/deps"
-      cd "${build_dir}/deps"
-      git clone -b cpp-3.0.1 https://github.com/msgpack/msgpack-c.git
-      cd msgpack-c
-      CXX=${cxx} CC=${cc} ${cmake_executable} -DMSGPACK_BUILD_TESTS=OFF -DMSGPACK_BUILD_EXAMPLES=OFF .
-      make
-      elevate_if_not_root make install
-      popd
-    fi
-}
-
 # Take an array of packages as input, and delegate the work to the appropriate distro installer
 # prereq: ${ID} must be defined before calling
 # prereq: ${build_clients} must be defined before calling
@@ -210,12 +195,6 @@ install_packages( )
                                       "gcc-c++" "libcxx-devel" "zlib-devel" "wget" )
   local library_dependencies_sles=(   "make" "cmake" "python3-PyYAM" "python3-distutils-extra"
                                       "gcc-c++" "libcxxtools9" "rpm-build" "wget" )
-
-  case "${ID}" in
-    centos|rhel|sles|opensuse-leap)
-      install_msgpack_from_source
-      ;;
-  esac
 
   # dependencies to build the client
   local client_dependencies_ubuntu=( "gfortran" "libomp-dev" "libboost-program-options-dev")
