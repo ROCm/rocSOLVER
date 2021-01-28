@@ -25,13 +25,13 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
                         "--lda", ldv, "--ldb", ldu, "--ldc", ldc);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP("bdsqr", rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st
         = rocsolver_bdsqr_argCheck(handle, uplo, n, nv, nu, nc, ldv, ldu, ldc, D, E, V, U, C, info);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP("bdsqr", st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftV = 0;
@@ -52,22 +52,20 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
     rocsolver_bdsqr_getMemorySize<S>(n, nv, nu, nc, batch_count, &size_work);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP("bdsqr", rocblas_set_optimal_device_memory_size(handle, size_work));
+        return rocblas_set_optimal_device_memory_size(handle, size_work);
 
     // memory workspace allocation
     void* work;
     rocblas_device_malloc mem(handle, size_work);
     if(!mem)
-        ROCSOLVER_RETURN_TOP("bdsqr", rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     work = mem[0];
 
     // execution
-    ROCSOLVER_RETURN_TOP("bdsqr",
-                         rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, nc, D, strideD, E,
-                                                     strideE, V, shiftV, ldv, strideV, U, shiftU,
-                                                     ldu, strideU, C, shiftC, ldc, strideC, info,
-                                                     batch_count, (S*)work));
+    return rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, nc, D, strideD, E, strideE, V,
+                                       shiftV, ldv, strideV, U, shiftU, ldu, strideU, C, shiftC,
+                                       ldc, strideC, info, batch_count, (S*)work);
 }
 
 /*

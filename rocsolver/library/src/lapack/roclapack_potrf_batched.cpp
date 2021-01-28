@@ -17,12 +17,12 @@ rocblas_status rocsolver_potrf_batched_impl(rocblas_handle handle,
                         batch_count);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP("potrf_batched", rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_potf2_potrf_argCheck(handle, uplo, n, lda, A, info, batch_count);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP("potrf_batched", st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -44,10 +44,9 @@ rocblas_status rocsolver_potrf_batched_impl(rocblas_handle handle,
                                            &size_iinfo);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP(
-            "potrf_batched",
-            rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
-                                                   size_work3, size_work4, size_pivots, size_iinfo));
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
+                                                      size_work3, size_work4, size_pivots,
+                                                      size_iinfo);
 
     // always allocate all required memory for TRSM optimal performance
     bool optim_mem = true;
@@ -58,7 +57,7 @@ rocblas_status rocsolver_potrf_batched_impl(rocblas_handle handle,
                               size_pivots, size_iinfo);
 
     if(!mem)
-        ROCSOLVER_RETURN_TOP("potrf_batched", rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     scalars = mem[0];
     work1 = mem[1];
@@ -71,11 +70,9 @@ rocblas_status rocsolver_potrf_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    ROCSOLVER_RETURN_TOP(
-        "potrf_batched",
-        rocsolver_potrf_template<true, S, T>(handle, uplo, n, A, shiftA, lda, strideA, info,
-                                             batch_count, (T*)scalars, work1, work2, work3, work4,
-                                             (T*)pivots, (rocblas_int*)iinfo, optim_mem));
+    return rocsolver_potrf_template<true, S, T>(handle, uplo, n, A, shiftA, lda, strideA, info,
+                                                batch_count, (T*)scalars, work1, work2, work3,
+                                                work4, (T*)pivots, (rocblas_int*)iinfo, optim_mem);
 }
 
 /*

@@ -108,7 +108,7 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
 
     // quick return
     if(n == 0 || k == 0 || batch_count == 0)
-        ROCSOLVER_RETURN("latrd", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -307,5 +307,5 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
     }
 
     rocblas_set_pointer_mode(handle, old_mode);
-    ROCSOLVER_RETURN("latrd", rocblas_status_success);
+    return rocblas_status_success;
 }

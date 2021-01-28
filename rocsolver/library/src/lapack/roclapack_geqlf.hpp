@@ -93,7 +93,7 @@ rocblas_status rocsolver_geqlf_template(rocblas_handle handle,
 
     // quick return
     if(m == 0 || n == 0 || batch_count == 0)
-        ROCSOLVER_RETURN("geqlf", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -101,10 +101,9 @@ rocblas_status rocsolver_geqlf_template(rocblas_handle handle,
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
     // algorithm
     if(m <= GEQxF_GEQx2_SWITCHSIZE || n <= GEQxF_GEQx2_SWITCHSIZE)
-        ROCSOLVER_RETURN("geqlf",
-                         rocsolver_geql2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
-                                                     strideP, batch_count, scalars, work_workArr,
-                                                     Abyx_norms_trfact, diag_tmptr));
+        return rocsolver_geql2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, strideP,
+                                           batch_count, scalars, work_workArr, Abyx_norms_trfact,
+                                           diag_tmptr);
 
     rocblas_int k = min(m, n); // total number of pivots
     rocblas_int nb = GEQxF_GEQx2_BLOCKSIZE;
@@ -151,5 +150,5 @@ rocblas_status rocsolver_geqlf_template(rocblas_handle handle,
                                     batch_count, scalars, work_workArr, Abyx_norms_trfact,
                                     diag_tmptr);
 
-    ROCSOLVER_RETURN("geqlf", rocblas_status_success);
+    return rocblas_status_success;
 }

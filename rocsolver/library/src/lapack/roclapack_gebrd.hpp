@@ -100,7 +100,7 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
 
     // quick return
     if(m == 0 || n == 0 || batch_count == 0)
-        ROCSOLVER_RETURN("gebrd", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -114,11 +114,9 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
 
     // if the matrix is small, use the unblocked variant of the algorithm
     if(m <= k || n <= k)
-        ROCSOLVER_RETURN("gebrd",
-                         rocsolver_gebd2_template<S, T>(handle, m, n, A, shiftA, lda, strideA, D,
-                                                        strideD, E, strideE, tauq, strideQ, taup,
-                                                        strideP, batch_count, scalars, work_workArr,
-                                                        Abyx_norms));
+        return rocsolver_gebd2_template<S, T>(handle, m, n, A, shiftA, lda, strideA, D, strideD, E,
+                                              strideE, tauq, strideQ, taup, strideP, batch_count,
+                                              scalars, work_workArr, Abyx_norms);
 
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
@@ -176,5 +174,5 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
                                        Abyx_norms);
 
     rocblas_set_pointer_mode(handle, old_mode);
-    ROCSOLVER_RETURN("gebrd", rocblas_status_success);
+    return rocblas_status_success;
 }

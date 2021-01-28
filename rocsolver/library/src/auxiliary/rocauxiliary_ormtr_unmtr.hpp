@@ -125,7 +125,7 @@ rocblas_status rocsolver_ormtr_unmtr_template(rocblas_handle handle,
 
     // quick return
     if(!n || !m || !batch_count)
-        ROCSOLVER_RETURN("ormtr_unmtr", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -162,5 +162,5 @@ rocblas_status rocsolver_ormtr_unmtr_template(rocblas_handle handle,
             AbyxORwork, diagORtmptr, trfact, workArr);
     }
 
-    ROCSOLVER_RETURN("ormtr_unmtr", rocblas_status_success);
+    return rocblas_status_success;
 }

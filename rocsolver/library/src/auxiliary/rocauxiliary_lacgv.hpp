@@ -78,7 +78,7 @@ rocblas_status rocsolver_lacgv_template(rocblas_handle handle,
 
     // quick return
     if(n == 0 || !batch_count || !COMPLEX)
-        ROCSOLVER_RETURN("lacgv", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -91,5 +91,5 @@ rocblas_status rocsolver_lacgv_template(rocblas_handle handle,
     hipLaunchKernelGGL(conj_in_place<T>, dim3(1, blocks, batch_count), dim3(1, 64, 1), 0, stream, 1,
                        n, x, offset, incx, stridex);
 
-    ROCSOLVER_RETURN("lacgv", rocblas_status_success);
+    return rocblas_status_success;
 }

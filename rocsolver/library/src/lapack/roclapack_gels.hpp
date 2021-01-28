@@ -130,7 +130,7 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
 
     // quick return if zero instances in batch
     if(batch_count == 0)
-        ROCSOLVER_RETURN("gels", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -144,7 +144,7 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
 
     // quick return if B is empty
     if(nrhs == 0)
-        ROCSOLVER_RETURN("gels", rocblas_status_success);
+        return rocblas_status_success;
 
     // quick return if A is empty
     if(m == 0 || n == 0)
@@ -155,7 +155,7 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
         hipLaunchKernelGGL(set_zero<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0,
                            stream, rowsB, nrhs, B, shiftB, ldb, strideB);
 
-        ROCSOLVER_RETURN("gels", rocblas_status_success);
+        return rocblas_status_success;
     }
 
     // everything must be executed with scalars on the host
@@ -191,5 +191,5 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                  trfact_workTrmm_invA_arr);
 
     rocblas_set_pointer_mode(handle, old_mode);
-    ROCSOLVER_RETURN("gels", rocblas_status_success);
+    return rocblas_status_success;
 }

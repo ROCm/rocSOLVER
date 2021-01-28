@@ -367,7 +367,7 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
 
     // quick return
     if(batch_count == 0)
-        ROCSOLVER_RETURN("steqr", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -383,7 +383,7 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
     if(n == 1 && compc != rocblas_evect_none)
         hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, C, batch_count, 1);
     if(n <= 1)
-        ROCSOLVER_RETURN("steqr", rocblas_status_success);
+        return rocblas_status_success;
 
     // Initialize identity matrix
     if(compc == rocblas_evect_tridiagonal)
@@ -408,5 +408,5 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
                            D + shiftD, strideD, E + shiftE, strideE, C, shiftC, ldc, strideC, info,
                            (S*)work_stack, 30 * n, eps, ssfmin, ssfmax);
 
-    ROCSOLVER_RETURN("steqr", rocblas_status_success);
+    return rocblas_status_success;
 }

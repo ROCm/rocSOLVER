@@ -11,12 +11,12 @@ rocblas_status
     ROCSOLVER_ENTER_TOP("lacgv", "-n", n, "--incx", incx);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP("lacgv", rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_lacgv_argCheck(handle, n, incx, x);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP("lacgv", st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftx = 0;
@@ -27,11 +27,10 @@ rocblas_status
 
     // this function does not requiere memory work space
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP("lacgv", rocblas_status_size_unchanged);
+        return rocblas_status_size_unchanged;
 
     // execution
-    ROCSOLVER_RETURN_TOP(
-        "lacgv", rocsolver_lacgv_template<T>(handle, n, x, shiftx, incx, stridex, batch_count));
+    return rocsolver_lacgv_template<T>(handle, n, x, shiftx, incx, stridex, batch_count);
 }
 
 /*

@@ -108,7 +108,7 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
 
     // quick return
     if(n == 0 || batch_count == 0)
-        ROCSOLVER_RETURN("sytrd_hetrd", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -118,10 +118,9 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
 
     // if the matrix is too small, use the unblocked variant of the algorithm
     if(n <= kk)
-        ROCSOLVER_RETURN("sytrd_hetrd",
-                         rocsolver_sytd2_hetd2_template(
-                             handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE, tau,
-                             strideP, batch_count, scalars, work, norms, tmptau_W, workArr));
+        return rocsolver_sytd2_hetd2_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
+                                              E, strideE, tau, strideP, batch_count, scalars, work,
+                                              norms, tmptau_W, workArr);
 
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
@@ -200,5 +199,5 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
                        uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE);
 
     rocblas_set_pointer_mode(handle, old_mode);
-    ROCSOLVER_RETURN("sytrd_hetrd", rocblas_status_success);
+    return rocblas_status_success;
 }

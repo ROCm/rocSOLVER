@@ -340,7 +340,7 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
     // quick return
     if(n == 0 || m == 0 || batch_count == 0)
-        ROCSOLVER_RETURN("gesvd", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -386,13 +386,13 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
         // use fast thin-svd algorithm (this may require larger memory worksapce)
         if(fast_thinSVD)
         {
-            ROCSOLVER_RETURN("gesvd", rocblas_status_not_implemented);
+            return rocblas_status_not_implemented;
         }
 
         // use normal thin-svd
         else
         { //(!fast_thinSVD)
-            ROCSOLVER_RETURN("gesvd", rocblas_status_not_implemented);
+            return rocblas_status_not_implemented;
         }
     }
 
@@ -471,5 +471,5 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
         }
     }
 
-    ROCSOLVER_RETURN("gesvd", rocblas_status_success);
+    return rocblas_status_success;
 }

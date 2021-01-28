@@ -165,7 +165,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
 
     // quick return
     if(batch_count == 0)
-        ROCSOLVER_RETURN("getrf", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -181,7 +181,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
 
     // quick return if no dimensions
     if(m == 0 || n == 0)
-        ROCSOLVER_RETURN("getrf", rocblas_status_success);
+        return rocblas_status_success;
 
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
@@ -200,10 +200,9 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_int blk = get_blksize<ISBATCHED, PIVOT>(dim);
 
     if(blk == 1)
-        ROCSOLVER_RETURN("getrf",
-                         rocsolver_getf2_template<ISBATCHED, PIVOT, T>(
-                             handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
-                             batch_count, scalars, work, pivotval, pivotidx));
+        return rocsolver_getf2_template<ISBATCHED, PIVOT, T>(handle, m, n, A, shiftA, lda, strideA,
+                                                             ipiv, shiftP, strideP, info, batch_count,
+                                                             scalars, work, pivotval, pivotidx);
 
     for(rocblas_int j = 0; j < dim; j += blk) //dim
     {
@@ -256,5 +255,5 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     }
 
     rocblas_set_pointer_mode(handle, old_mode);
-    ROCSOLVER_RETURN("getrf", rocblas_status_success);
+    return rocblas_status_success;
 }

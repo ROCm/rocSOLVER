@@ -17,12 +17,12 @@ rocblas_status rocsolver_steqr_impl(rocblas_handle handle,
     ROCSOLVER_ENTER_TOP("sterf", "--evect", compc, "-n", n, "--ldc", ldc);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP("steqr", rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_steqr_argCheck(handle, compc, n, D, E, C, ldc, info);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP("steqr", st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftD = 0;
@@ -41,22 +41,19 @@ rocblas_status rocsolver_steqr_impl(rocblas_handle handle,
     rocsolver_steqr_getMemorySize<S, T>(compc, n, batch_count, &size_work_stack);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP("steqr",
-                             rocblas_set_optimal_device_memory_size(handle, size_work_stack));
+        return rocblas_set_optimal_device_memory_size(handle, size_work_stack);
 
     // memory workspace allocation
     void* work_stack;
     rocblas_device_malloc mem(handle, size_work_stack);
     if(!mem)
-        ROCSOLVER_RETURN_TOP("steqr", rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     work_stack = mem[0];
 
     // execution
-    ROCSOLVER_RETURN_TOP("steqr",
-                         rocsolver_steqr_template<S, T>(handle, compc, n, D, shiftD, strideD, E,
-                                                        shiftE, strideE, C, shiftC, ldc, strideC,
-                                                        info, batch_count, work_stack));
+    return rocsolver_steqr_template<S, T>(handle, compc, n, D, shiftD, strideD, E, shiftE, strideE,
+                                          C, shiftC, ldc, strideC, info, batch_count, work_stack);
 }
 
 /*

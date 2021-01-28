@@ -32,13 +32,13 @@ rocblas_status rocsolver_gesvd_batched_impl(rocblas_handle handle,
                         "--batch", batch_count);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP("gesvd_batched", rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_gesvd_argCheck(handle, left_svect, right_svect, m, n, A, lda, S,
                                                  U, ldu, V, ldv, E, info, batch_count);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP("gesvd_batched", st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -62,10 +62,9 @@ rocblas_status rocsolver_gesvd_batched_impl(rocblas_handle handle,
         &size_Abyx_norms_tmptr, &size_X_trfact, &size_Y, &size_tau, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP("gesvd_batched",
-                             rocblas_set_optimal_device_memory_size(
-                                 handle, size_scalars, size_work_workArr, size_Abyx_norms_tmptr,
-                                 size_X_trfact, size_Y, size_tau, size_workArr));
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_workArr,
+                                                      size_Abyx_norms_tmptr, size_X_trfact, size_Y,
+                                                      size_tau, size_workArr);
 
     // memory workspace allocation
     void *scalars, *work_workArr, *Abyx_norms_tmptr, *X_trfact, *Y, *tau, *workArr;
@@ -73,7 +72,7 @@ rocblas_status rocsolver_gesvd_batched_impl(rocblas_handle handle,
                               size_X_trfact, size_Y, size_tau, size_workArr);
 
     if(!mem)
-        ROCSOLVER_RETURN_TOP("gesvd_batched", rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     scalars = mem[0];
     work_workArr = mem[1];
@@ -86,12 +85,10 @@ rocblas_status rocsolver_gesvd_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    ROCSOLVER_RETURN_TOP("gesvd_batched",
-                         rocsolver_gesvd_template<true, false, T>(
-                             handle, left_svect, right_svect, m, n, A, shiftA, lda, strideA, S,
-                             strideS, U, ldu, strideU, V, ldv, strideV, E, strideE, fast_alg, info,
-                             batch_count, (T*)scalars, work_workArr, (T*)Abyx_norms_tmptr,
-                             (T*)X_trfact, (T*)Y, (T*)tau, (T**)workArr));
+    return rocsolver_gesvd_template<true, false, T>(
+        handle, left_svect, right_svect, m, n, A, shiftA, lda, strideA, S, strideS, U, ldu, strideU,
+        V, ldv, strideV, E, strideE, fast_alg, info, batch_count, (T*)scalars, work_workArr,
+        (T*)Abyx_norms_tmptr, (T*)X_trfact, (T*)Y, (T*)tau, (T**)workArr);
 }
 
 /*

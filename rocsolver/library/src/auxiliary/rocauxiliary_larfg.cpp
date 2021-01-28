@@ -16,12 +16,12 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle,
     ROCSOLVER_ENTER_TOP("larfg", "-n", n, "--incx", incx);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP("larfg", rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_larfg_argCheck(handle, n, incx, alpha, x, tau);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP("larfg", st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shifta = 0;
@@ -40,23 +40,20 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle,
     rocsolver_larfg_getMemorySize<T>(n, batch_count, &size_work, &size_norms);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP("larfg",
-                             rocblas_set_optimal_device_memory_size(handle, size_work, size_norms));
+        return rocblas_set_optimal_device_memory_size(handle, size_work, size_norms);
 
     // memory workspace allocation
     void *work, *norms;
     rocblas_device_malloc mem(handle, size_work, size_norms);
     if(!mem)
-        ROCSOLVER_RETURN_TOP("larfg", rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     work = mem[0];
     norms = mem[1];
 
     // execution
-    ROCSOLVER_RETURN_TOP("larfg",
-                         rocsolver_larfg_template<T>(handle, n, alpha, shifta, x, shiftx, incx,
-                                                     stridex, tau, strideP, batch_count, (T*)work,
-                                                     (T*)norms));
+    return rocsolver_larfg_template<T>(handle, n, alpha, shifta, x, shiftx, incx, stridex, tau,
+                                       strideP, batch_count, (T*)work, (T*)norms);
 }
 
 /*

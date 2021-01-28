@@ -25,13 +25,13 @@ rocblas_status rocsolver_larfb_impl(rocblas_handle handle,
                         "--lda", lda);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP("larfb", rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_larfb_argCheck(handle, side, trans, direct, storev, m, n, k, ldv,
                                                  ldf, lda, V, A, F);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP("larfb", st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftV = 0;
@@ -56,26 +56,22 @@ rocblas_status rocsolver_larfb_impl(rocblas_handle handle,
                                             &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP(
-            "larfb",
-            rocblas_set_optimal_device_memory_size(handle, size_work, size_tmptr, size_workArr));
+        return rocblas_set_optimal_device_memory_size(handle, size_work, size_tmptr, size_workArr);
 
     // memory workspace allocation
     void *tmptr, *work, *workArr;
     rocblas_device_malloc mem(handle, size_work, size_tmptr, size_workArr);
     if(!mem)
-        ROCSOLVER_RETURN_TOP("larfb", rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     work = mem[0];
     tmptr = mem[1];
     workArr = mem[2];
 
     //  execution
-    ROCSOLVER_RETURN_TOP("larfb",
-                         rocsolver_larfb_template<false, false, T>(
-                             handle, side, trans, direct, storev, m, n, k, V, shiftV, ldv, stridev,
-                             F, shiftF, ldf, stridef, A, shiftA, lda, stridea, batch_count,
-                             (T*)work, (T*)tmptr, (T**)workArr));
+    return rocsolver_larfb_template<false, false, T>(
+        handle, side, trans, direct, storev, m, n, k, V, shiftV, ldv, stridev, F, shiftF, ldf,
+        stridef, A, shiftA, lda, stridea, batch_count, (T*)work, (T*)tmptr, (T**)workArr);
 }
 
 /*

@@ -90,7 +90,7 @@ rocblas_status rocsolver_laswp_template(rocblas_handle handle,
 
     // quick return
     if(n == 0 || batch_count == 0)
-        ROCSOLVER_RETURN("laswp", rocblas_status_success);
+        return rocblas_status_success;
 
     rocblas_int start, end, inc;
     if(incx < 0)
@@ -120,5 +120,5 @@ rocblas_status rocsolver_laswp_template(rocblas_handle handle,
                            strideA, i, k1, ipiv, shiftP, strideP, incx);
     }
 
-    ROCSOLVER_RETURN("laswp", rocblas_status_success);
+    return rocblas_status_success;
 }

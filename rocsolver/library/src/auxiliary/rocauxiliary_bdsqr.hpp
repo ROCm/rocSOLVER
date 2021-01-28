@@ -552,7 +552,7 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
 
     // quick return
     if(n == 0 || batch_count == 0)
-        ROCSOLVER_RETURN("bdsqr", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -590,5 +590,5 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                        strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu, strideU, C,
                        shiftC, ldc, strideC, info, maxiter, eps, sfm, tol, minshift, work, strideW);
 
-    ROCSOLVER_RETURN("bdsqr", rocblas_status_success);
+    return rocblas_status_success;
 }

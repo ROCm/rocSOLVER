@@ -592,7 +592,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
 
     // quick return if zero instances in batch
     if(batch_count == 0)
-        ROCSOLVER_RETURN("getri", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -603,7 +603,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
         rocblas_int blocks = (batch_count - 1) / 32 + 1;
         hipLaunchKernelGGL(reset_info, dim3(blocks, 1, 1), dim3(32, 1, 1), 0, stream, info,
                            batch_count, 0);
-        ROCSOLVER_RETURN("getri", rocblas_status_success);
+        return rocblas_status_success;
     }
 
     rocblas_int blocks = (n - 1) / 32 + 1;
@@ -618,9 +618,8 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
                                dim3(batch_count, blocks, blocks), dim3(1, 32, 32), 0, stream, n, A,
                                shiftA, lda, strideA, A1, shiftA1, lda1, strideA1, nullptr);
 
-        ROCSOLVER_RETURN("getri",
-                         getri_run_small<T>(handle, n, A, shiftA, lda, strideA, ipiv, shiftP,
-                                            strideP, info, batch_count));
+        return getri_run_small<T>(handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
+                                  batch_count);
     }
 #endif
 
@@ -708,5 +707,5 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
         rocblas_set_pointer_mode(handle, old_mode);
     }
 
-    ROCSOLVER_RETURN("getri", rocblas_status_success);
+    return rocblas_status_success;
 }

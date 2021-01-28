@@ -34,12 +34,12 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
     ROCSOLVER_ENTER_TOP("geqrf_ptr_batched", "-m", m, "-n", n, "--lda", lda, "--batch", batch_count);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP("geqrf_ptr_batched", rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_geqr2_geqrf_argCheck(handle, m, n, lda, A, tau, batch_count);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP("geqrf_ptr_batched", st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -64,10 +64,9 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
     size_t size_ipiv = sizeof(T) * strideP * batch_count;
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP("geqrf_ptr_batched",
-                             rocblas_set_optimal_device_memory_size(
-                                 handle, size_scalars, size_work_workArr, size_Abyx_norms_trfact,
-                                 size_diag_tmptr, size_workArr, size_ipiv));
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_workArr,
+                                                      size_Abyx_norms_trfact, size_diag_tmptr,
+                                                      size_workArr, size_ipiv);
 
     // memory workspace allocation
     void *scalars, *work_workArr, *Abyx_norms_trfact, *diag_tmptr, *workArr, *ipiv;
@@ -75,7 +74,7 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
                               size_diag_tmptr, size_workArr, size_ipiv);
 
     if(!mem)
-        ROCSOLVER_RETURN_TOP("geqrf_ptr_batched", rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     scalars = mem[0];
     work_workArr = mem[1];
@@ -102,7 +101,7 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
                            strideP, tau, (T*)ipiv);
     }
 
-    ROCSOLVER_RETURN_TOP("geqrf_ptr_batched", status);
+    return status;
 }
 
 /*

@@ -103,7 +103,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
 
     // quick return
     if(batch_count == 0)
-        ROCSOLVER_RETURN("potrf", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -117,7 +117,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
 
     // quick return
     if(n == 0)
-        ROCSOLVER_RETURN("potrf", rocblas_status_success);
+        return rocblas_status_success;
 
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
@@ -127,9 +127,8 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
     // algorithm
     if(n < POTRF_POTF2_SWITCHSIZE)
-        ROCSOLVER_RETURN("potrf",
-                         rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info,
-                                                     batch_count, scalars, (T*)work1, pivots));
+        return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info,
+                                           batch_count, scalars, (T*)work1, pivots);
 
     // constants for rocblas functions calls
     T t_one = 1;
@@ -206,5 +205,5 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     }
 
     rocblas_set_pointer_mode(handle, old_mode);
-    ROCSOLVER_RETURN("potrf", rocblas_status_success);
+    return rocblas_status_success;
 }

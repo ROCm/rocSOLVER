@@ -22,13 +22,13 @@ rocblas_status rocsolver_orml2_unml2_impl(rocblas_handle handle,
                         "--lda", lda, "--ldc", ldc);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP(name, rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_orml2_ormlq_argCheck<COMPLEX>(handle, side, trans, m, n, k, lda,
                                                                 ldc, A, C, ipiv);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP(name, st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -53,15 +53,14 @@ rocblas_status rocsolver_orml2_unml2_impl(rocblas_handle handle,
                                                   &size_Abyx, &size_diag, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP(name,
-                             rocblas_set_optimal_device_memory_size(handle, size_scalars, size_Abyx,
-                                                                    size_diag, size_workArr));
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_Abyx, size_diag,
+                                                      size_workArr);
 
     // memory workspace allocation
     void *scalars, *Abyx, *diag, *workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_Abyx, size_diag, size_workArr);
     if(!mem)
-        ROCSOLVER_RETURN_TOP(name, rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     scalars = mem[0];
     Abyx = mem[1];
@@ -71,11 +70,9 @@ rocblas_status rocsolver_orml2_unml2_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    ROCSOLVER_RETURN_TOP(name,
-                         rocsolver_orml2_unml2_template<T>(handle, side, trans, m, n, k, A, shiftA,
-                                                           lda, strideA, ipiv, strideP, C, shiftC,
-                                                           ldc, strideC, batch_count, (T*)scalars,
-                                                           (T*)Abyx, (T*)diag, (T**)workArr));
+    return rocsolver_orml2_unml2_template<T>(handle, side, trans, m, n, k, A, shiftA, lda, strideA,
+                                             ipiv, strideP, C, shiftC, ldc, strideC, batch_count,
+                                             (T*)scalars, (T*)Abyx, (T*)diag, (T**)workArr);
 }
 
 /*

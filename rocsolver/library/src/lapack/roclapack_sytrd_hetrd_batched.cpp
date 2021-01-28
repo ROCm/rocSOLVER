@@ -23,13 +23,13 @@ rocblas_status rocsolver_sytrd_hetrd_batched_impl(rocblas_handle handle,
                         batch_count);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP(name, rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st
         = rocsolver_sytrd_hetrd_argCheck(handle, uplo, n, lda, A, D, E, tau, batch_count);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP(name, st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -48,10 +48,8 @@ rocblas_status rocsolver_sytrd_hetrd_batched_impl(rocblas_handle handle,
                                                  &size_norms, &size_tmptau_W, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP(name,
-                             rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
-                                                                    size_norms, size_tmptau_W,
-                                                                    size_workArr));
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_norms,
+                                                      size_tmptau_W, size_workArr);
 
     // memory workspace allocation
     void *scalars, *work, *norms, *tmptau_W, *workArr;
@@ -59,7 +57,7 @@ rocblas_status rocsolver_sytrd_hetrd_batched_impl(rocblas_handle handle,
                               size_workArr);
 
     if(!mem)
-        ROCSOLVER_RETURN_TOP(name, rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     scalars = mem[0];
     work = mem[1];
@@ -70,11 +68,9 @@ rocblas_status rocsolver_sytrd_hetrd_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    ROCSOLVER_RETURN_TOP(name,
-                         rocsolver_sytrd_hetrd_template(handle, uplo, n, A, shiftA, lda, strideA, D,
-                                                        strideD, E, strideE, tau, strideP,
-                                                        batch_count, (T*)scalars, (T*)work,
-                                                        (T*)norms, (T*)tmptau_W, (T**)workArr));
+    return rocsolver_sytrd_hetrd_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E,
+                                          strideE, tau, strideP, batch_count, (T*)scalars, (T*)work,
+                                          (T*)norms, (T*)tmptau_W, (T**)workArr);
 }
 
 /*

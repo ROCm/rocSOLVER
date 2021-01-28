@@ -18,12 +18,12 @@ rocblas_status rocsolver_larf_impl(rocblas_handle handle,
     ROCSOLVER_ENTER_TOP("larf", "--side", side, "-m", m, "-n", n, "--incx", incx, "--lda", lda);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP("larf", rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_larf_argCheck(handle, side, m, n, lda, incx, x, A, alpha);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP("larf", st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -46,15 +46,13 @@ rocblas_status rocsolver_larf_impl(rocblas_handle handle,
                                            &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP(
-            "larf",
-            rocblas_set_optimal_device_memory_size(handle, size_scalars, size_Abyx, size_workArr));
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_Abyx, size_workArr);
 
     // memory workspace allocation
     void *scalars, *Abyx, *workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_Abyx, size_workArr);
     if(!mem)
-        ROCSOLVER_RETURN_TOP("larf", rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     scalars = mem[0];
     Abyx = mem[1];
@@ -63,10 +61,9 @@ rocblas_status rocsolver_larf_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    ROCSOLVER_RETURN_TOP("larf",
-                         rocsolver_larf_template<T>(
-                             handle, side, m, n, x, shiftx, incx, stridex, alpha, stridep, A, shiftA,
-                             lda, stridea, batch_count, (T*)scalars, (T*)Abyx, (T**)workArr));
+    return rocsolver_larf_template<T>(handle, side, m, n, x, shiftx, incx, stridex, alpha, stridep,
+                                      A, shiftA, lda, stridea, batch_count, (T*)scalars, (T*)Abyx,
+                                      (T**)workArr);
 }
 
 /*

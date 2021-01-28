@@ -24,13 +24,13 @@ rocblas_status rocsolver_gels_strided_batched_impl(rocblas_handle handle,
                         batch_count);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP("gels_strided_batched", rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st
         = rocsolver_gels_argCheck(handle, trans, m, n, nrhs, A, lda, B, ldb, info, batch_count);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP("gels_strided_batched", st);
+        return st;
 
     // working with unshifted arrays
     const rocblas_int shiftA = 0;
@@ -43,10 +43,9 @@ rocblas_status rocsolver_gels_strided_batched_impl(rocblas_handle handle,
         &size_diag_trfac_invA, &size_trfact_workTrmm_invA_arr, &size_ipiv);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP("gels_strided_batched",
-                             rocblas_set_optimal_device_memory_size(
-                                 handle, size_scalars, size_work_x_temp, size_workArr_temp_arr,
-                                 size_diag_trfac_invA, size_trfact_workTrmm_invA_arr, size_ipiv));
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_x_temp,
+                                                      size_workArr_temp_arr, size_diag_trfac_invA,
+                                                      size_trfact_workTrmm_invA_arr, size_ipiv);
 
     // always allocate all required memory for TRSM optimal performance
     bool optim_mem = true;
@@ -58,7 +57,7 @@ rocblas_status rocsolver_gels_strided_batched_impl(rocblas_handle handle,
                               size_diag_trfac_invA, size_trfact_workTrmm_invA_arr, size_ipiv);
 
     if(!mem)
-        ROCSOLVER_RETURN_TOP("gels_strided_batched", rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     scalars = mem[0];
     work_x_temp = mem[1];
@@ -70,12 +69,10 @@ rocblas_status rocsolver_gels_strided_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    ROCSOLVER_RETURN_TOP("gels_strided_batched",
-                         rocsolver_gels_template<false, true, T>(
-                             handle, trans, m, n, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb,
-                             strideB, info, batch_count, (T*)scalars, (T*)work_x_temp,
-                             (T*)workArr_temp_arr, (T*)diag_trfac_invA,
-                             (T**)trfact_workTrmm_invA_arr, (T*)ipiv, optim_mem));
+    return rocsolver_gels_template<false, true, T>(
+        handle, trans, m, n, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, info,
+        batch_count, (T*)scalars, (T*)work_x_temp, (T*)workArr_temp_arr, (T*)diag_trfac_invA,
+        (T**)trfact_workTrmm_invA_arr, (T*)ipiv, optim_mem);
 }
 
 /*

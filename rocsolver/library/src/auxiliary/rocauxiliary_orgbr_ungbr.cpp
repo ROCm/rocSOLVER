@@ -18,12 +18,12 @@ rocblas_status rocsolver_orgbr_ungbr_impl(rocblas_handle handle,
     ROCSOLVER_ENTER_TOP(name, "--storev", storev, "-m", m, "-n", n, "-k", k, "--lda", lda);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP(name, rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_orgbr_argCheck(handle, storev, m, n, k, lda, A, ipiv);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP(name, st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -45,17 +45,15 @@ rocblas_status rocsolver_orgbr_ungbr_impl(rocblas_handle handle,
                                                   &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP(name,
-                             rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
-                                                                    size_Abyx_tmptr, size_trfact,
-                                                                    size_workArr));
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
+                                                      size_Abyx_tmptr, size_trfact, size_workArr);
 
     // memory workspace allocation
     void *scalars, *work, *Abyx_tmptr, *trfact, *workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_work, size_Abyx_tmptr, size_trfact,
                               size_workArr);
     if(!mem)
-        ROCSOLVER_RETURN_TOP(name, rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     scalars = mem[0];
     work = mem[1];
@@ -66,11 +64,9 @@ rocblas_status rocsolver_orgbr_ungbr_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    ROCSOLVER_RETURN_TOP(name,
-                         rocsolver_orgbr_ungbr_template<false, false, T>(
-                             handle, storev, m, n, k, A, shiftA, lda, strideA, ipiv, strideP,
-                             batch_count, (T*)scalars, (T*)work, (T*)Abyx_tmptr, (T*)trfact,
-                             (T**)workArr));
+    return rocsolver_orgbr_ungbr_template<false, false, T>(
+        handle, storev, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, batch_count, (T*)scalars,
+        (T*)work, (T*)Abyx_tmptr, (T*)trfact, (T**)workArr);
 }
 
 /*

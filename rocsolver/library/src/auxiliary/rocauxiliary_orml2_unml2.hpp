@@ -117,7 +117,7 @@ rocblas_status rocsolver_orml2_unml2_template(rocblas_handle handle,
 
     // quick return
     if(!n || !m || !k || !batch_count)
-        ROCSOLVER_RETURN("orml2_unml2", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -205,5 +205,5 @@ rocblas_status rocsolver_orml2_unml2_template(rocblas_handle handle,
     if(COMPLEX && !transpose)
         rocsolver_lacgv_template<T>(handle, k, ipiv, 0, 1, strideP, batch_count);
 
-    ROCSOLVER_RETURN("orml2_unml2", rocblas_status_success);
+    return rocblas_status_success;
 }

@@ -18,12 +18,12 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle,
                         batch_count);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP("getri_batched", rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_getri_argCheck(handle, n, lda, A, ipiv, info, batch_count);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP("getri_batched", st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -46,10 +46,9 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle,
                                                  &size_tmpcopy, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP("getri_batched",
-                             rocblas_set_optimal_device_memory_size(
-                                 handle, size_scalars, size_work1, size_work2, size_work3,
-                                 size_work4, size_tmpcopy, size_workArr));
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
+                                                      size_work3, size_work4, size_tmpcopy,
+                                                      size_workArr);
 
     // always allocate all required memory for TRSM optimal performance
     bool optim_mem = true;
@@ -60,7 +59,7 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle,
                               size_tmpcopy, size_workArr);
 
     if(!mem)
-        ROCSOLVER_RETURN_TOP("getri_batched", rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     scalars = mem[0];
     work1 = mem[1];
@@ -73,11 +72,9 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // in-place execution
-    ROCSOLVER_RETURN_TOP("getri_batched",
-                         rocsolver_getri_template<true, false, T>(
-                             handle, n, (U) nullptr, 0, 0, 0, A, shiftA, lda, strideA, ipiv, shiftP,
-                             strideP, info, batch_count, (T*)scalars, work1, work2, work3, work4,
-                             (T*)tmpcopy, (T**)workArr, optim_mem));
+    return rocsolver_getri_template<true, false, T>(
+        handle, n, (U) nullptr, 0, 0, 0, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
+        batch_count, (T*)scalars, work1, work2, work3, work4, (T*)tmpcopy, (T**)workArr, optim_mem);
 }
 
 /*

@@ -16,48 +16,35 @@
  ***************************************************************************/
 
 #define ROCSOLVER_ENTER_TOP(name, ...)                                                      \
+    std::unique_ptr<rocsolver_logger::scope_guard<T>> _log_token;                           \
     do                                                                                      \
     {                                                                                       \
         if(rocsolver_logger::is_logging_enabled())                                          \
+        {                                                                                   \
             rocsolver_logger::instance()->log_enter_top_level<T>(handle, "rocsolver", name, \
                                                                  __VA_ARGS__);              \
+            _log_token = std::make_unique<rocsolver_logger::scope_guard<T>>(true, handle);  \
+        }                                                                                   \
     } while(0)
 #define ROCSOLVER_ENTER(name, ...)                                                              \
+    std::unique_ptr<rocsolver_logger::scope_guard<T>> _log_token;                               \
     do                                                                                          \
     {                                                                                           \
         if(rocsolver_logger::is_logging_enabled())                                              \
+        {                                                                                       \
             rocsolver_logger::instance()->log_enter<T>(handle, "rocsolver", name, __VA_ARGS__); \
+            _log_token = std::make_unique<rocsolver_logger::scope_guard<T>>(false, handle);     \
+        }                                                                                       \
     } while(0)
 #define ROCBLAS_ENTER(name, ...)                                                              \
+    std::unique_ptr<rocsolver_logger::scope_guard<T>> _log_token;                             \
     do                                                                                        \
     {                                                                                         \
         if(rocsolver_logger::is_logging_enabled())                                            \
+        {                                                                                     \
             rocsolver_logger::instance()->log_enter<T>(handle, "rocblas", name, __VA_ARGS__); \
-    } while(0)
-
-#define ROCSOLVER_RETURN_TOP(name, ...)                                                     \
-    do                                                                                      \
-    {                                                                                       \
-        rocblas_status _status = __VA_ARGS__;                                               \
-        if(rocsolver_logger::is_logging_enabled())                                          \
-            rocsolver_logger::instance()->log_exit_top_level<T>(handle, "rocsolver", name); \
-        return _status;                                                                     \
-    } while(0)
-#define ROCSOLVER_RETURN(name, ...)                                               \
-    do                                                                            \
-    {                                                                             \
-        rocblas_status _status = __VA_ARGS__;                                     \
-        if(rocsolver_logger::is_logging_enabled())                                \
-            rocsolver_logger::instance()->log_exit<T>(handle, "rocsolver", name); \
-        return _status;                                                           \
-    } while(0)
-#define ROCBLAS_RETURN(name, ...)                                               \
-    do                                                                          \
-    {                                                                           \
-        rocblas_status _status = __VA_ARGS__;                                   \
-        if(rocsolver_logger::is_logging_enabled())                              \
-            rocsolver_logger::instance()->log_exit<T>(handle, "rocblas", name); \
-        return _status;                                                         \
+            _log_token = std::make_unique<rocsolver_logger::scope_guard<T>>(false, handle);   \
+        }                                                                                     \
     } while(0)
 
 /***************************************************************************
@@ -211,7 +198,7 @@ public:
 
     // logging function to be called before exiting a top-level (i.e. impl) function
     template <typename T>
-    void log_exit_top_level(rocblas_handle handle, const char* func_prefix, const char* func_name)
+    void log_exit_top_level(rocblas_handle handle)
     {
         rocsolver_logger::_mutex.lock();
         auto entry = pop_log_entry(handle);
@@ -236,7 +223,7 @@ public:
 
     // logging function to be called before exiting a sub-level (i.e. template) function
     template <typename T>
-    void log_exit(rocblas_handle handle, const char* func_prefix, const char* func_name)
+    void log_exit(rocblas_handle handle)
     {
         rocsolver_logger::_mutex.lock();
         auto entry = pop_log_entry(handle);
@@ -245,6 +232,26 @@ public:
         if(layer_mode & rocblas_layer_mode_log_profile)
             log_profile<T>(handle, entry);
     }
+
+    template <typename T>
+    struct scope_guard
+    {
+        bool top_level;
+        rocblas_handle handle;
+
+        scope_guard(bool top_level, rocblas_handle handle)
+            : top_level(top_level)
+            , handle(handle)
+        {
+        }
+        ~scope_guard()
+        {
+            if(top_level)
+                rocsolver_logger::instance()->log_exit_top_level<T>(handle);
+            else
+                rocsolver_logger::instance()->log_exit<T>(handle);
+        }
+    };
 
     friend rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
                                                        const rocblas_int max_levels);

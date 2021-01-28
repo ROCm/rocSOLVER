@@ -17,12 +17,12 @@ rocblas_status rocsolver_potf2_batched_impl(rocblas_handle handle,
                         batch_count);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP("potf2_batched", rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_potf2_potrf_argCheck(handle, uplo, n, lda, A, info, batch_count);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP("potf2_batched", st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
@@ -40,16 +40,14 @@ rocblas_status rocsolver_potf2_batched_impl(rocblas_handle handle,
     rocsolver_potf2_getMemorySize<T>(n, batch_count, &size_scalars, &size_work, &size_pivots);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP(
-            "potf2_batched",
-            rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_pivots));
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_pivots);
 
     // memory workspace allocation
     void *scalars, *work, *pivots;
     rocblas_device_malloc mem(handle, size_scalars, size_work, size_pivots);
 
     if(!mem)
-        ROCSOLVER_RETURN_TOP("potf2_batched", rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     scalars = mem[0];
     work = mem[1];
@@ -58,9 +56,8 @@ rocblas_status rocsolver_potf2_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    ROCSOLVER_RETURN_TOP("potf2_batched",
-                         rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info,
-                                                     batch_count, (T*)scalars, (T*)work, (T*)pivots));
+    return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info, batch_count,
+                                       (T*)scalars, (T*)work, (T*)pivots);
 }
 
 /*

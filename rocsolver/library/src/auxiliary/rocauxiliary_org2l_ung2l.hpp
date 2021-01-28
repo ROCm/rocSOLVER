@@ -115,7 +115,7 @@ rocblas_status rocsolver_org2l_ung2l_template(rocblas_handle handle,
 
     // quick return
     if(!n || !m || !batch_count)
-        ROCSOLVER_RETURN("org2l_ung2l", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -154,5 +154,5 @@ rocblas_status rocsolver_org2l_ung2l_template(rocblas_handle handle,
     hipLaunchKernelGGL(restau<T>, dim3(blocksx, batch_count), dim3(128), 0, stream, k, ipiv, strideP);
 
     rocblas_set_pointer_mode(handle, old_mode);
-    ROCSOLVER_RETURN("org2l_ung2l", rocblas_status_success);
+    return rocblas_status_success;
 }

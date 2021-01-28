@@ -133,7 +133,7 @@ rocblas_status rocsolver_ormbr_unmbr_template(rocblas_handle handle,
 
     // quick return
     if(!n || !m || !k || !batch_count)
-        ROCSOLVER_RETURN("ormbr_unmbr", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -202,5 +202,5 @@ rocblas_status rocsolver_ormbr_unmbr_template(rocblas_handle handle,
         }
     }
 
-    ROCSOLVER_RETURN("ormbr_unmbr", rocblas_status_success);
+    return rocblas_status_success;
 }

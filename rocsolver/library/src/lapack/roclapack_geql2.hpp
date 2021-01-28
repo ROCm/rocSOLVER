@@ -96,7 +96,7 @@ rocblas_status rocsolver_geql2_template(rocblas_handle handle,
 
     // quick return
     if(m == 0 || n == 0 || batch_count == 0)
-        ROCSOLVER_RETURN("geql2", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -133,5 +133,5 @@ rocblas_status rocsolver_geql2_template(rocblas_handle handle,
             rocsolver_lacgv_template<T>(handle, 1, ipiv, dim - j - 1, 1, strideP, batch_count);
     }
 
-    ROCSOLVER_RETURN("geql2", rocblas_status_success);
+    return rocblas_status_success;
 }

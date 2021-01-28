@@ -20,12 +20,12 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle,
                         ldv, "--ldt", ldf);
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP("larft", rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_larft_argCheck(handle, direct, storev, n, k, ldv, ldf, V, tau, F);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP("larft", st);
+        return st;
 
     // working with unshifted arrays
     rocblas_int shiftV = 0;
@@ -47,15 +47,13 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle,
                                             &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP(
-            "larft",
-            rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_workArr));
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_workArr);
 
     // memory workspace allocation
     void *scalars, *work, *workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_work, size_workArr);
     if(!mem)
-        ROCSOLVER_RETURN_TOP("larft", rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     scalars = mem[0];
     work = mem[1];
@@ -64,10 +62,9 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    ROCSOLVER_RETURN_TOP("larft",
-                         rocsolver_larft_template<T>(
-                             handle, direct, storev, n, k, V, shiftV, ldv, stridev, tau, stridet, F,
-                             ldf, stridef, batch_count, (T*)scalars, (T*)work, (T**)workArr));
+    return rocsolver_larft_template<T>(handle, direct, storev, n, k, V, shiftV, ldv, stridev, tau,
+                                       stridet, F, ldf, stridef, batch_count, (T*)scalars, (T*)work,
+                                       (T**)workArr);
 }
 
 /*

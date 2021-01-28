@@ -195,7 +195,7 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
 
     // quick return
     if(n == 0 || batch_count == 0)
-        ROCSOLVER_RETURN("sytd2_hetd2", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -310,5 +310,5 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
                        strideA, D, strideD, E, strideE);
 
     rocblas_set_pointer_mode(handle, old_mode);
-    ROCSOLVER_RETURN("sytd2_hetd2", rocblas_status_success);
+    return rocblas_status_success;
 }

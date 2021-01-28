@@ -229,7 +229,7 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
 
     // quick return
     if(n == 0 || batch_count == 0)
-        ROCSOLVER_RETURN("larft", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -344,5 +344,5 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     hipLaunchKernelGGL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau, strideT);
 
     rocblas_set_pointer_mode(handle, old_mode);
-    ROCSOLVER_RETURN("larft", rocblas_status_success);
+    return rocblas_status_success;
 }

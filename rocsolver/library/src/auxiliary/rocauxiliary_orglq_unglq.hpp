@@ -90,17 +90,15 @@ rocblas_status rocsolver_orglq_unglq_template(rocblas_handle handle,
 
     // quick return
     if(!n || !m || !batch_count)
-        ROCSOLVER_RETURN("orglq_unglq", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
     // if the matrix is small, use the unblocked variant of the algorithm
     if(k <= ORGxx_UNGxx_SWITCHSIZE)
-        ROCSOLVER_RETURN("orglq_unglq",
-                         rocsolver_orgl2_ungl2_template<T>(handle, m, n, k, A, shiftA, lda, strideA,
-                                                           ipiv, strideP, batch_count, scalars,
-                                                           Abyx_tmptr, workArr));
+        return rocsolver_orgl2_ungl2_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv,
+                                                 strideP, batch_count, scalars, Abyx_tmptr, workArr);
 
     rocblas_int ldw = ORGxx_UNGxx_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) * ldw;
@@ -163,5 +161,5 @@ rocblas_status rocsolver_orglq_unglq_template(rocblas_handle handle,
         j -= jb;
     }
 
-    ROCSOLVER_RETURN("orglq_unglq", rocblas_status_success);
+    return rocblas_status_success;
 }

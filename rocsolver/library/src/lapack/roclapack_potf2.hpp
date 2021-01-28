@@ -150,7 +150,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
 
     // quick return if zero instances in batch
     if(batch_count == 0)
-        ROCSOLVER_RETURN("potf2", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -164,7 +164,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
 
     // quick return if no dimensions
     if(n == 0)
-        ROCSOLVER_RETURN("potf2", rocblas_status_success);
+        return rocblas_status_success;
 
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
@@ -247,5 +247,5 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     }
 
     rocblas_set_pointer_mode(handle, old_mode);
-    ROCSOLVER_RETURN("potf2", rocblas_status_success);
+    return rocblas_status_success;
 }

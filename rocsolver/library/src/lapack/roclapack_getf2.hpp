@@ -806,7 +806,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
 
     // quick return if zero instances in batch
     if(batch_count == 0)
-        ROCSOLVER_RETURN("getf2", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -821,21 +821,19 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
 
     // quick return if no dimensions
     if(m == 0 || n == 0)
-        ROCSOLVER_RETURN("getf2", rocblas_status_success);
+        return rocblas_status_success;
 
 #ifdef OPTIMAL
     // Use optimized LU factorization for the right sizes
     if(n <= WAVESIZE)
     {
         if(m <= GETF2_MAX_THDS)
-            ROCSOLVER_RETURN("getf2",
-                             LUfact_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP,
-                                             strideP, info, batch_count, PIVOT));
+            return LUfact_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
+                                   info, batch_count, PIVOT);
         else if((m <= GETF2_OPTIM_MAX_SIZE && !ISBATCHED)
                 || (m <= GETF2_BATCH_OPTIM_MAX_SIZE && ISBATCHED))
-            ROCSOLVER_RETURN("getf2",
-                             LUfact_panel<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP,
-                                             strideP, info, batch_count, PIVOT));
+            return LUfact_panel<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
+                                   info, batch_count, PIVOT);
     }
 #endif
 
@@ -877,5 +875,5 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     }
 
     rocblas_set_pointer_mode(handle, old_mode);
-    ROCSOLVER_RETURN("getf2", rocblas_status_success);
+    return rocblas_status_success;
 }

@@ -96,7 +96,7 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle,
 
     // quick return
     if(m == 0 || n == 0 || batch_count == 0)
-        ROCSOLVER_RETURN("gelq2", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -139,5 +139,5 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle,
                                         batch_count);
     }
 
-    ROCSOLVER_RETURN("gelq2", rocblas_status_success);
+    return rocblas_status_success;
 }

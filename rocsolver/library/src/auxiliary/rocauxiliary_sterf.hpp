@@ -314,7 +314,7 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
 
     // quick return
     if(batch_count == 0)
-        ROCSOLVER_RETURN("sterf", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -328,7 +328,7 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
 
     // quick return
     if(n <= 1)
-        ROCSOLVER_RETURN("sterf", rocblas_status_success);
+        return rocblas_status_success;
 
     T eps = get_epsilon<T>();
     T ssfmin = get_safemin<T>();
@@ -339,5 +339,5 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
     hipLaunchKernelGGL(sterf_kernel<T>, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
                        strideD, E + shiftE, strideE, info, stack, 30 * n, eps, ssfmin, ssfmax);
 
-    ROCSOLVER_RETURN("sterf", rocblas_status_success);
+    return rocblas_status_success;
 }

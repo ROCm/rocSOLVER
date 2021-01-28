@@ -165,7 +165,7 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
 
     // quick return
     if(n == 0 || batch_count == 0)
-        ROCSOLVER_RETURN("larfg", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -176,7 +176,7 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
     if(n == 1 && !COMPLEX)
     {
         hipLaunchKernelGGL(reset_batch_info<T>, gridReset, threads, 0, stream, tau, strideP, 1, 0);
-        ROCSOLVER_RETURN("larfg", rocblas_status_success);
+        return rocblas_status_success;
     }
 
     // everything must be executed with scalars on the device
@@ -197,5 +197,5 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
     rocblasCall_scal<T>(handle, n - 1, norms, 1, x, shiftx, incx, stridex, batch_count);
 
     rocblas_set_pointer_mode(handle, old_mode);
-    ROCSOLVER_RETURN("larfg", rocblas_status_success);
+    return rocblas_status_success;
 }

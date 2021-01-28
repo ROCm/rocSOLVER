@@ -106,7 +106,7 @@ rocblas_status rocsolver_orgtr_ungtr_template(rocblas_handle handle,
 
     // quick return
     if(!n || !batch_count)
-        ROCSOLVER_RETURN("orgtr_ungtr", rocblas_status_success);
+        return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -153,5 +153,5 @@ rocblas_status rocsolver_orgtr_ungtr_template(rocblas_handle handle,
             batch_count, scalars, work, Abyx_tmptr, trfact, workArr);
     }
 
-    ROCSOLVER_RETURN("orgtr_ungtr", rocblas_status_success);
+    return rocblas_status_success;
 }

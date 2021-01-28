@@ -19,12 +19,12 @@ rocblas_status rocsolver_getf2_impl(rocblas_handle handle,
     using S = decltype(std::real(T{}));
 
     if(!handle)
-        ROCSOLVER_RETURN_TOP(name, rocblas_status_invalid_handle);
+        return rocblas_status_invalid_handle;
 
     // argument checking
     rocblas_status st = rocsolver_getf2_getrf_argCheck(handle, m, n, lda, A, ipiv, info, PIVOT);
     if(st != rocblas_status_continue)
-        ROCSOLVER_RETURN_TOP(name, st);
+        return st;
 
     // using unshifted arrays
     rocblas_int shiftA = 0;
@@ -47,16 +47,15 @@ rocblas_status rocsolver_getf2_impl(rocblas_handle handle,
                                                &size_pivotval, &size_pivotidx);
 
     if(rocblas_is_device_memory_size_query(handle))
-        ROCSOLVER_RETURN_TOP(name,
-                             rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
-                                                                    size_pivotval, size_pivotidx));
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
+                                                      size_pivotval, size_pivotidx);
 
     // memory workspace allocation
     void *scalars, *pivotidx, *pivotval, *work;
     rocblas_device_malloc mem(handle, size_scalars, size_work, size_pivotval, size_pivotidx);
 
     if(!mem)
-        ROCSOLVER_RETURN_TOP(name, rocblas_status_memory_error);
+        return rocblas_status_memory_error;
 
     scalars = mem[0];
     work = mem[1];
@@ -66,11 +65,9 @@ rocblas_status rocsolver_getf2_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    ROCSOLVER_RETURN_TOP(name,
-                         rocsolver_getf2_template<false, PIVOT, T, S>(
-                             handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
-                             batch_count, (T*)scalars, (rocblas_index_value_t<S>*)work,
-                             (T*)pivotval, (rocblas_int*)pivotidx));
+    return rocsolver_getf2_template<false, PIVOT, T, S>(
+        handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count,
+        (T*)scalars, (rocblas_index_value_t<S>*)work, (T*)pivotval, (rocblas_int*)pivotidx);
 }
 
 /*
