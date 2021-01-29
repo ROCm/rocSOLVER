@@ -21,9 +21,9 @@ Options:
                               (Default is ./build)
 
   --lib_dir <libdir>          Specify path to the directory where the library generated files
-                              will be located. Relative paths are relative to builddir/release
-                              or builddir/debug, depending on the build type.
-                              (Default is builddir/release/rocsolver-install)
+                              will be located. Relative paths are relative to <builddir>/release
+                              or <builddir>/debug, depending on the build type.
+                              (Default is <builddir>/release/rocsolver-install)
 
   --install_dir <installdir>  Specify path to the directory where the library package
                               (when generated) will be installed. Use only absolute paths.
@@ -33,11 +33,11 @@ Options:
                               (Default is /opt/rocm/rocblas)
 
   --deps_dir <depsdir>        Specify path to the directory where dependencies built from source will be installed.
-                              (Default is builddir/deps/install)
+                              (Default is <builddir>/deps/install)
 
-  --cleanup                   Pass this flag to remove intermediary build files after build and reduce disk usage
+  --cleanup                   Pass this flag to remove intermediary build files after build and reduce disk usage.
 
-  -g | --debug                Pass this flag to build in Debug mode (equivalent to set CMAKE_BUILD_TYPE=Debug).
+  -g | --debug                Pass this flag to build in Debug mode (equivalent to -DCMAKE_BUILD_TYPE=Debug).
                               (Default build type is Release)
 
   -p | --package              Pass this flag to generate library package after build.
@@ -49,22 +49,24 @@ Options:
                               Note that client dependencies will only be installed if combined with --clients.
                               This does not install rocBLAS or the ROCm software stack.
 
-  -c | --clients              Pass this flag to also build the library clients benchmark and gtest.
-                              (Generated binaries will be located at builddir/clients/staging)
+  -c | --clients              Pass this flag to also build the library clients. Specifically, this builds
+                              rocsolver-test, rocsolver-benchmark, and the sample programs.
+                              (The default location for generated binaries is <builddir>/release/clients/staging)
 
   -h | --hip-clang            Pass this flag to build using the hip-clang compiler.
                               hip-clang is currently the only supported compiler, so this flag has no effect.
 
   -s | --static               Pass this flag to build rocsolver as a static library.
-                              (rocsolver must be built statically when the used companion rocblas is also static).
+                              rocsolver must be static when the companion rocblas is also static.
 
-  -r | --relocatable          Pass this to add RUNPATH(based on ROCM_RPATH) and remove ldconf entry.
+  -r | --relocatable          Pass this to add RUNPATH (based on ROCM_RPATH) and remove ldconf entry.
 
-  -n | --no-optimizations     Pass this flag to disable optimizations for small sizes.
+  -n | --no-optimizations     Pass this flag to disable optimizations for small matrix sizes.
 
-  -a | --architecture         Set GPU architecture target, e.g. "gfx803;gfx900;gfx906;gfx908".
-                              If you don't know the architecture of the GPU in your local machine, it can be
-                              queried by running "mygpu".
+  -a | --architecture         Pass this flag to choose which GPU architectures to target.
+                              Note that the architecture of your GPU can be queried using 'mygpu' from the
+                              openmp-extras package.
+                              (Default is 'gfx803;gfx900;gfx906:xnack-;gfx908:xnack-')
 
   --docs                      (experimental) Pass this flag to build the documentation from source.
                               Official documentation is available online at https://rocsolver.readthedocs.io/
