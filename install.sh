@@ -112,9 +112,7 @@ check_exit_code( )
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
 elevate_if_not_root( )
 {
-  local uid=$(id -u)
-
-  if (( ${uid} )); then
+  if (( $EUID )); then
     sudo $@
     check_exit_code "$?"
   else
