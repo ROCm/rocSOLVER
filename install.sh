@@ -179,7 +179,7 @@ install_packages( )
   fi
 
   # dependencies needed to build the rocsolver library
-  local library_dependencies_ubuntu=( "make" "cmake-curses-gui")
+  local library_dependencies_ubuntu=( "make" "cmake")
   local library_dependencies_centos_7=( "epel-release" "make" "cmake3" "rpm-build")
   local library_dependencies_centos_8=( "epel-release" "make" "cmake3" "rpm-build")
   local library_dependencies_fedora=( "make" "cmake" "rpm-build")
