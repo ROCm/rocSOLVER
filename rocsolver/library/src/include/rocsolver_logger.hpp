@@ -48,22 +48,42 @@
     } while(0)
 
 /***************************************************************************
- * The rocsolver_log_entry struct records function data for profile logging
- * purposes.
+ * The rocsolver_log_entry struct records function data for trace and
+ * profile logging purposes.
  ***************************************************************************/
 struct rocsolver_log_entry
+{
+    std::vector<std::string> callers;
+    std::string name;
+    int level;
+    double start_time;
+
+    rocsolver_log_entry()
+        : level(0)
+        , start_time(0)
+    {
+    }
+};
+
+/***************************************************************************
+ * The rocsolver_profile_entry struct records function data for profile
+ * logging purposes.
+ ***************************************************************************/
+struct rocsolver_profile_entry;
+using rocsolver_profile_map = std::unordered_map<std::string, rocsolver_profile_entry>;
+
+struct rocsolver_profile_entry
 {
     std::string name;
     int level;
     int calls;
     double time;
-    double internal_time;
+    std::unique_ptr<rocsolver_profile_map> internal_calls;
 
-    rocsolver_log_entry()
+    rocsolver_profile_entry()
         : level(0)
         , calls(0)
         , time(0)
-        , internal_time(0)
     {
     }
 };
@@ -80,7 +100,7 @@ private:
     // static mutex for multithreading
     static std::mutex _mutex;
     // profile logging data keyed by function name
-    std::unordered_map<std::string, rocsolver_log_entry> profile;
+    rocsolver_profile_map profile;
     // function call stack keyed by handle
     std::unordered_map<rocblas_handle, std::vector<rocsolver_log_entry>> call_stack;
     // the maximum depth at which nested function calls will appear in the log
@@ -99,6 +119,10 @@ private:
     rocsolver_log_entry& push_log_entry(rocblas_handle handle, std::string name);
     rocsolver_log_entry& peek_log_entry(rocblas_handle handle);
     rocsolver_log_entry pop_log_entry(rocblas_handle handle);
+
+    // prints the results of profile logging
+    void print_profile_log(rocsolver_profile_map::iterator start,
+                           rocsolver_profile_map::iterator end);
 
     // convert type T into char s, d, c, or z
     template <typename T>
@@ -147,17 +171,25 @@ private:
     {
         hipStream_t stream;
         rocblas_get_stream(handle, &stream);
-        double time = get_time_us_sync(stream) - from_stack.time;
+        double time = get_time_us_sync(stream) - from_stack.start_time;
 
         rocsolver_logger::_mutex.lock();
-        rocsolver_log_entry& from_profile = profile[from_stack.name];
+
+        rocsolver_profile_map* map = &profile;
+        for(std::string caller_name : from_stack.callers)
+        {
+            rocsolver_profile_entry& entry = (*map)[caller_name];
+            if(!entry.internal_calls)
+                entry.internal_calls = std::make_unique<rocsolver_profile_map>();
+            map = entry.internal_calls.get();
+        }
+
+        rocsolver_profile_entry& from_profile = (*map)[from_stack.name];
         from_profile.name = from_stack.name;
+        from_profile.level = from_stack.level;
         from_profile.calls++;
         from_profile.time += time;
-        from_profile.internal_time += from_stack.internal_time;
 
-        if(from_stack.level > 1)
-            peek_log_entry(handle).internal_time += time;
         rocsolver_logger::_mutex.unlock();
     }
 

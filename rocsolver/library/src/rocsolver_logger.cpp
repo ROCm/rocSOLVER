@@ -56,7 +56,10 @@ rocsolver_log_entry& rocsolver_logger::push_log_entry(rocblas_handle handle, std
     rocsolver_log_entry& result = stack.back();
     result.name = name;
     result.level = stack.size() - 1;
-    result.time = get_time_us_no_sync();
+    result.start_time = get_time_us_no_sync();
+
+    for(int i = 1; i < stack.size() - 1; i++)
+        result.callers.push_back(stack[i].name);
 
     return result;
 }
@@ -78,6 +81,38 @@ rocsolver_log_entry rocsolver_logger::pop_log_entry(rocblas_handle handle)
         call_stack.erase(handle);
 
     return result;
+}
+
+/***************************************************************************
+ * Profile log printing
+ ***************************************************************************/
+
+void rocsolver_logger::print_profile_log(rocsolver_profile_map::iterator start,
+                                         rocsolver_profile_map::iterator end)
+{
+    for(auto it = start; it != end; ++it)
+    {
+        rocsolver_profile_entry& entry = it->second;
+        for(int i = 0; i < entry.level - 1; i++)
+            *profile_os << "    ";
+
+        *profile_os << it->first.c_str() << ": Calls: " << entry.calls
+                    << ", Total Time: " << (entry.time * 0.001) << " ms";
+
+        if(entry.internal_calls)
+        {
+            double internal_time = 0;
+            for(auto nested = entry.internal_calls->begin(); nested != entry.internal_calls->end();
+                nested++)
+                internal_time += nested->second.time;
+
+            *profile_os << " (in nested functions: " << (internal_time * 0.001) << " ms)" << '\n';
+
+            print_profile_log(entry.internal_calls->begin(), entry.internal_calls->end());
+        }
+        else
+            *profile_os << '\n';
+    }
 }
 
 /***************************************************************************
@@ -169,17 +204,7 @@ rocblas_status rocsolver_logging_cleanup(bool clean_profile)
     if(logger->layer_mode & rocblas_layer_mode_log_profile && logger->profile.size() > 0)
     {
         *logger->profile_os << "------- PROFILE -------" << '\n';
-        for(auto it = logger->profile.begin(); it != logger->profile.end(); ++it)
-        {
-            *logger->profile_os << it->first.c_str() << ": Calls: " << it->second.calls
-                                << ", Total Time: " << (it->second.time * 0.001) << " ms";
-            if(it->second.internal_time > 0.0)
-                *logger->profile_os
-                    << " (in nested functions: " << (it->second.internal_time * 0.001) << " ms)"
-                    << '\n';
-            else
-                *logger->profile_os << '\n';
-        }
+        logger->print_profile_log(logger->profile.begin(), logger->profile.end());
         *logger->profile_os << std::endl;
     }
 
@@ -196,18 +221,33 @@ rocblas_status rocsolver_logging_cleanup(bool clean_profile)
 
 rocblas_status rocsolver_destroy_logger()
 {
-    // first cleanup in case there is profile to print
-    rocsolver_logging_cleanup(true);
-
-    // then delete the logger if any
     rocsolver_logger::_mutex.lock();
 
+    // if there is an active logger:
     if(rocsolver_logger::_instance == nullptr)
     {
         rocsolver_logger::_mutex.unlock();
         return rocblas_status_internal_error;
     }
 
+    auto logger = rocsolver_logger::_instance;
+
+    // if there are pending log_exit calls:
+    if(rocsolver_logger::_instance->call_stack.size() > 0)
+    {
+        rocsolver_logger::_mutex.unlock();
+        return rocblas_status_internal_error;
+    }
+
+    // print profile logging results
+    if(logger->layer_mode & rocblas_layer_mode_log_profile && logger->profile.size() > 0)
+    {
+        *logger->profile_os << "------- PROFILE -------" << '\n';
+        logger->print_profile_log(logger->profile.begin(), logger->profile.end());
+        *logger->profile_os << std::endl;
+    }
+
+    // delete the logger
     delete rocsolver_logger::_instance;
     rocsolver_logger::_instance = nullptr;
 
