@@ -24,21 +24,22 @@ Bench logging outputs a line each time a public rocSOLVER routine is called (exc
 auxiliary library functions), outputting a line that can be used with the executable
 ``rocsolver-bench`` to call the function with the same size arguments.
 
-Profile logging, upon disabling the logging facility using ``rocsolver_logging_cleanup``
-or ``rocsolver_destroy_logger``, will output statistics on each called internal rocSOLVER and
-rocBLAS routine. These include the number of times each function was called, the total program
-runtime occupied by the function, and the total program runtime occupied by its nested function
-calls. Note that, when profile logging is enabled, the stream will be synchronized after every
-internal function call.
+Profile logging, upon calling ``rocsolver_log_write_profile`` or ``rocsolver_log_flush_profile``,
+or terminating the logging session using ``rocsolver_log_end``, will output statistics on each
+called internal rocSOLVER and rocBLAS routine. These include the number of times each function
+was called, the total program runtime occupied by the function, and the total program runtime
+occupied by its nested function calls. Note that, when profile logging is enabled, the stream
+will be synchronized after every internal function call.
 
 
 Initialization and set-up
 ================================================
 
-In order to use rocSOLVER's logging facilities, the user must first call ``rocsolver_create_logger``
-in order to allocate the internal data structures used for logging. The user may then specify a
-layer mode and max level depth, either programmatically using ``rocsolver_logging_initialize``
-function or by setting the corresponding environment variables.
+In order to use rocSOLVER's logging facilities, the user must first call ``rocsolver_log_begin``
+in order to allocate the internal data structures used for logging and begin the logging session.
+The user may then specify a layer mode and max level depth, either programmatically using
+``rocsolver_log_set_layer_mode``, ``rocsolver_log_set_max_levels``, or by setting the corresponding
+environment variables.
 
 The layer mode specifies which logging type(s) are activated, and can be ``rocblas_layer_mode_none``,
 ``rocblas_layer_mode_log_trace``, ``rocblas_layer_mode_log_bench``, ``rocblas_layer_mode_log_profile``,
@@ -51,7 +52,8 @@ Both the default layer mode and max level depth can be specified using environme
 * ``ROCSOLVER_LEVELS``
 
 If these variables are not set, the layer mode will default to ``rocblas_layer_mode_none`` and the
-max level depth will default to 1.
+max level depth will default to 1. These defaults can be restored by calling the function
+``rocsolver_log_restore_defaults``.
 
 ``ROCSOLVER_LAYER`` is a bitwise OR of zero or more bit masks as follows:
 
@@ -70,14 +72,13 @@ If one of these environment variables is not set, then ``ROCSOLVER_LOG_PATH`` se
 for the corresponding logging, if it is set. If neither the above nor ``ROCSOLVER_LOG_PATH`` are
 set, then the corresponding logging output is streamed to standard error.
 
-Logging can be disabled using the ``rocsolver_logging_cleanup`` function (which will also print
-out the results of profile logging, if applicable) and be restarted with a fresh profile by
-making a new call to ``rocsolver_logging_initialize``. Once logging facilities are no longer
-required (e.g. at program termination), the user must call ``rocsolver_destroy_logger`` to free the
-data structures used for logging.
+The results of profile logging, if enabled, can be printed using ``rocsolver_log_write_profile``
+or ``rocsolver_log_flush_profile``. Once logging facilities are no longer required (e.g. at
+program termination), the user must call ``rocsolver_log_end`` to free the data structures used
+for logging.
 
 Note that when profile logging is enabled, memory usage will increase. If the program exits
-without calling ``rocsolver_logging_cleanup`` or ``rocsolver_destroy_logger``, then profile
+without calling ``rocsolver_log_write_profile`` or ``rocsolver_log_end``, then profile
 logging will not be outputted before the program exits.
 
 

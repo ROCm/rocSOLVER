@@ -49,17 +49,26 @@ These are functions that enable and control rocSOLVER's multi-level logging capa
 Logging set-up and tear-down
 --------------------------------------
 
-rocsolver_<create/destroy>_logger()
+rocsolver_log_<function>()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygenfunction:: rocsolver_create_logger
+.. doxygenfunction:: rocsolver_log_begin
    :outline:
-.. doxygenfunction:: rocsolver_destroy_logger
+.. doxygenfunction:: rocsolver_log_end
+   :outline:
+.. doxygenfunction:: rocsolver_log_set_layer_mode
+   :outline:
+.. doxygenfunction:: rocsolver_log_set_max_levels
+   :outline:
+.. doxygenfunction:: rocsolver_log_restore_defaults
 
-rocsolver_logging_<initialize/cleanup>()
+Profile log
+--------------------------------------
+
+rocsolver_log_<write/flush>_profile()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygenfunction:: rocsolver_logging_initialize
+.. doxygenfunction:: rocsolver_log_write_profile
    :outline:
-.. doxygenfunction:: rocsolver_logging_cleanup
+.. doxygenfunction:: rocsolver_log_flush_profile
 
 
 LAPACK Auxiliary Functions

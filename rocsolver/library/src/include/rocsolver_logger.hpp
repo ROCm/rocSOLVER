@@ -118,7 +118,7 @@ private:
     // the maximum depth at which nested function calls will appear in the log
     int max_levels;
     // layer mode enum describing which logging facilities are enabled
-    rocblas_layer_mode layer_mode;
+    rocblas_layer_mode_flags layer_mode;
     // streams for different logging types
     std::unique_ptr<rocsolver_ostream> trace_os;
     std::unique_ptr<rocsolver_ostream> bench_os;
@@ -133,8 +133,7 @@ private:
     rocsolver_log_entry pop_log_entry(rocblas_handle handle);
 
     // prints the results of profile logging
-    void print_profile_log(rocsolver_profile_map::iterator start,
-                           rocsolver_profile_map::iterator end);
+    void write_profile(rocsolver_profile_map::iterator start, rocsolver_profile_map::iterator end);
 
     // convert type T into char s, d, c, or z
     template <typename T>
@@ -230,13 +229,15 @@ public:
     {
         rocsolver_logger::_mutex.lock();
         auto entry = push_log_entry(handle, get_func_name<T>(func_prefix, func_name));
+        bool bench_enabled = layer_mode & rocblas_layer_mode_log_bench;
+        bool trace_enabled = layer_mode & rocblas_layer_mode_log_trace;
         rocsolver_logger::_mutex.unlock();
         ROCSOLVER_ASSUME(entry.level == 0);
 
-        if(layer_mode & rocblas_layer_mode_log_bench)
+        if(bench_enabled)
             log_bench<T>(entry.level, func_prefix, func_name, args...);
 
-        if(layer_mode & rocblas_layer_mode_log_trace)
+        if(trace_enabled)
             *trace_os << "------- ENTER " << entry.name << " trace tree"
                       << " -------\n";
     }
@@ -247,10 +248,11 @@ public:
     {
         rocsolver_logger::_mutex.lock();
         auto entry = pop_log_entry(handle);
+        bool trace_enabled = layer_mode & rocblas_layer_mode_log_trace;
         rocsolver_logger::_mutex.unlock();
         ROCSOLVER_ASSUME(entry.level == 0);
 
-        if(layer_mode & rocblas_layer_mode_log_trace)
+        if(trace_enabled)
             *trace_os << "------- EXIT " << entry.name << " trace tree"
                       << " -------\n"
                       << std::endl;
@@ -262,9 +264,10 @@ public:
     {
         rocsolver_logger::_mutex.lock();
         auto entry = push_log_entry(handle, get_template_name(func_prefix, func_name));
+        bool trace_enabled = layer_mode & rocblas_layer_mode_log_trace && entry.level <= max_levels;
         rocsolver_logger::_mutex.unlock();
 
-        if(layer_mode & rocblas_layer_mode_log_trace && entry.level <= max_levels)
+        if(trace_enabled)
             log_trace<T>(entry.level, func_prefix, func_name, args...);
     }
 
@@ -274,9 +277,10 @@ public:
     {
         rocsolver_logger::_mutex.lock();
         auto entry = pop_log_entry(handle);
+        bool profile_enabled = layer_mode & rocblas_layer_mode_log_profile;
         rocsolver_logger::_mutex.unlock();
 
-        if(layer_mode & rocblas_layer_mode_log_profile)
+        if(profile_enabled)
             log_profile<T>(handle, entry);
     }
 
@@ -313,9 +317,11 @@ public:
         scope_guard& operator=(const scope_guard&) = delete;
     };
 
-    friend rocblas_status rocsolver_logging_initialize(const rocblas_layer_mode layer_mode,
-                                                       const rocblas_int max_levels);
-    friend rocblas_status rocsolver_logging_cleanup(bool clean_profile);
-    friend rocblas_status rocsolver_create_logger(void);
-    friend rocblas_status rocsolver_destroy_logger(void);
+    friend rocblas_status rocsolver_log_begin(void);
+    friend rocblas_status rocsolver_log_end(void);
+    friend rocblas_status rocsolver_log_set_layer_mode(const rocblas_layer_mode_flags layer_mode);
+    friend rocblas_status rocsolver_log_set_max_levels(const rocblas_int max_levels);
+    friend rocblas_status rocsolver_log_restore_defaults(void);
+    friend rocblas_status rocsolver_log_write_profile(void);
+    friend rocblas_status rocsolver_log_flush_profile(void);
 };

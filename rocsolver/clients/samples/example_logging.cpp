@@ -42,7 +42,7 @@ int main() {
   // initialization
   rocblas_handle handle;
   rocblas_create_handle(&handle);
-  rocsolver_create_logger();
+  rocsolver_log_begin();
 
   // calculate the sizes of our arrays
   size_t size_A = size_t(lda) * N;          // count of elements in matrix A
@@ -58,33 +58,34 @@ int main() {
   hipMemcpy(dA, hA.data(), sizeof(double)*size_A, hipMemcpyHostToDevice);
 
   // begin trace logging (max depth = 4) and profile logging
-  auto layer_mode = rocblas_layer_mode_log_trace | rocblas_layer_mode_log_profile;
-  rocsolver_logging_initialize((rocblas_layer_mode)layer_mode, 4);
+  rocsolver_log_set_layer_mode(rocblas_layer_mode_log_trace | rocblas_layer_mode_log_profile);
+  rocsolver_log_set_max_levels(4);
 
   // compute the QR factorization on the GPU
   rocsolver_dgeqrf(handle, M, N, dA, lda, dIpiv);
 
   // stop logging, print profile results, and clear the profile data
-  rocsolver_logging_cleanup(true);
+  rocsolver_log_flush_profile();
+  rocsolver_log_restore_defaults();
 
 
   // copy data to GPU
   hipMemcpy(dA, hA.data(), sizeof(double)*size_A, hipMemcpyHostToDevice);
 
   // begin bench logging and profile logging
-  layer_mode = rocblas_layer_mode_log_bench | rocblas_layer_mode_log_profile;
-  rocsolver_logging_initialize((rocblas_layer_mode)layer_mode, 1);
+  rocsolver_log_set_layer_mode(rocblas_layer_mode_log_bench | rocblas_layer_mode_log_profile);
 
   // compute the QR factorization on the GPU
   rocsolver_dgeqrf(handle, M, N, dA, lda, dIpiv);
 
-  // stop logging, print profile results, and clear the profile data
-  rocsolver_logging_cleanup(true);
+  // stop logging and print profile results
+  rocsolver_log_write_profile();
+  rocsolver_log_restore_defaults();
 
 
   // clean up
   hipFree(dA);
   hipFree(dIpiv);
-  rocsolver_destroy_logger();
+  rocsolver_log_end();
   rocblas_destroy_handle(handle);
 }
