@@ -63,6 +63,12 @@ struct rocsolver_log_entry
         , start_time(0)
     {
     }
+
+    // Move constructor
+    rocsolver_log_entry(rocsolver_log_entry&&) = default;
+
+    // Copy constructor
+    rocsolver_log_entry(const rocsolver_log_entry&) = default;
 };
 
 /***************************************************************************
@@ -86,6 +92,12 @@ struct rocsolver_profile_entry
         , time(0)
     {
     }
+
+    // Move constructor
+    rocsolver_profile_entry(rocsolver_profile_entry&&) = default;
+
+    // Copy constructor is deleted
+    rocsolver_profile_entry(const rocsolver_profile_entry&) = delete;
 };
 
 /***************************************************************************
@@ -284,8 +296,11 @@ public:
             , handle(handle)
         {
         }
+
         // Copy constructor is deleted
         scope_guard(const scope_guard&) = delete;
+
+        // Destructor
         ~scope_guard()
         {
             if(top_level)
