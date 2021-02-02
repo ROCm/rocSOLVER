@@ -89,6 +89,10 @@ The logging facilities for rocSOLVER assume that each ``rocblas_handle`` is asso
 most one host thread. When using rocSOLVER's multi-level logging setup, it is recommended to
 create a separate ``rocblas_handle`` for each host thread.
 
+Calling any of these logging functions, especially ``rocsolver_log_begin`` and ``rocsolver_log_end``,
+while another rocSOLVER routine is running on another thread may lead to undefined behaviour
+and is not recommended.
+
 Note that trace logging is not designed for multiple host threads and will likely result in
 garbled trace trees if rocSOLVER routines are called from multiple threads.
 
