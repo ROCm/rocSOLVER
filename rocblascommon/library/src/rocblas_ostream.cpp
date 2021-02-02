@@ -213,9 +213,9 @@ ROCSOLVER_EXPORT rocsolver_ostream& operator<<(rocsolver_ostream& os, const char
 ROCSOLVER_EXPORT rocsolver_ostream& operator<<(rocsolver_ostream& os, const std::string& s)
 {
     if(os.yaml)
-        os << std::quoted(s.c_str());
+        os.os << std::quoted(s);
     else
-        os << s;
+        os.os << s;
     return os;
 }
 
