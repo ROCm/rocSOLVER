@@ -20,8 +20,7 @@ typedef std::tuple<vector<int>, vector<char>> sygst_tuple;
 // case when n = 0, itype = 1, and uplo = U will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
-const vector<vector<char>> type_range
-    = {{'1', 'L'}, {'2', 'L'}, {'3', 'L'}, {'1', 'U'}, {'2', 'U'}, {'3', 'U'}};
+const vector<vector<char>> type_range = {{'1', 'L'}, {'2', 'L'}, {'1', 'U'}, {'2', 'U'}};
 
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
