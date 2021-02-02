@@ -1300,9 +1300,9 @@ rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                   "bc:", batch_count);
 
     return rocblas_symm_template<false>(
-                       handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A),
-                       offsetA, lda, strideA, cast2constType<T>(B), offsetB, ldb, strideB,
-                       cast2constType<T>(beta), C, offsetC, ldc, strideC, batch_count);
+        handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+        strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
+        ldc, strideC, batch_count);
 }
 
 // hemm
@@ -1334,9 +1334,9 @@ rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                   "bc:", batch_count);
 
     return rocblas_symm_template<true>(
-                       handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A),
-                       offsetA, lda, strideA, cast2constType<T>(B), offsetB, ldb, strideB,
-                       cast2constType<T>(beta), C, offsetC, ldc, strideC, batch_count);
+        handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+        strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
+        ldc, strideC, batch_count);
 }
 
 // trsv memory sizes
@@ -1381,7 +1381,7 @@ void rocblasCall_trsv_mem(rocblas_int m,
 }
 
 // trsv
-template <bool BATCHED, typename T, typename U>
+template <bool BATCHED, typename T, typename U, std::enable_if_t<!BATCHED, int> = 0>
 rocblas_status rocblasCall_trsv(rocblas_handle handle,
                                 rocblas_fill uplo,
                                 rocblas_operation transA,
@@ -1408,9 +1408,49 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
 
     U supplied_invA = nullptr;
     return rocblas_trsv_template<ROCBLAS_TRSV_BLOCK, BATCHED, T>(
-                       handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B,
-                       offset_B, ldb, stride_B, batch_count, x_temp, x_temp_arr, invA, invA_arr,
-                       cast2constType(supplied_invA), 0, 0, 0);
+        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B + offset_B, 0,
+        ldb, stride_B, batch_count, x_temp, x_temp_arr, invA, invA_arr,
+        cast2constType(supplied_invA), 0, 0, 0);
+}
+
+// trsv
+template <bool BATCHED, typename T, typename U, std::enable_if_t<BATCHED, int> = 0>
+rocblas_status rocblasCall_trsv(rocblas_handle handle,
+                                rocblas_fill uplo,
+                                rocblas_operation transA,
+                                rocblas_diagonal diag,
+                                rocblas_int m,
+                                U A,
+                                rocblas_int offset_A,
+                                rocblas_int lda,
+                                rocblas_stride stride_A,
+                                U B,
+                                rocblas_int offset_B,
+                                rocblas_int ldb,
+                                rocblas_stride stride_B,
+                                rocblas_int batch_count,
+                                void* x_temp,
+                                void* x_temp_arr,
+                                void* invA,
+                                void* invA_arr,
+                                T** workArr)
+{
+    ROCBLAS_ENTER("trsv", "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
+                  "shiftA:", offset_A, "lda:", lda, "shiftB:", offset_B, "ldb:", ldb,
+                  "bc:", batch_count);
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    hipLaunchKernelGGL(shift_array, dim3(blocks), dim3(256), 0, stream, workArr, B, offset_B,
+                       batch_count);
+
+    U supplied_invA = nullptr;
+    return rocblas_trsv_template<ROCBLAS_TRSV_BLOCK, BATCHED, T>(
+        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, (U)workArr, 0,
+        ldb, stride_B, batch_count, x_temp, x_temp_arr, invA, invA_arr,
+        cast2constType(supplied_invA), 0, 0, 0);
 }
 
 // trsm memory sizes
