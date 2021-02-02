@@ -75,11 +75,8 @@ set, then the corresponding logging output is streamed to standard error.
 The results of profile logging, if enabled, can be printed using ``rocsolver_log_write_profile``
 or ``rocsolver_log_flush_profile``. Once logging facilities are no longer required (e.g. at
 program termination), the user must call ``rocsolver_log_end`` to free the data structures used
-for logging.
-
-Note that when profile logging is enabled, memory usage will increase. If the program exits
-without calling ``rocsolver_log_write_profile`` or ``rocsolver_log_end``, then profile
-logging will not be outputted before the program exits.
+for logging. If the profile log has not been flushed beforehand, then ``rocsolver_log_end``
+will also output the results of profile logging.
 
 
 Multiple host threads
@@ -89,10 +86,8 @@ The logging facilities for rocSOLVER assume that each ``rocblas_handle`` is asso
 most one host thread. When using rocSOLVER's multi-level logging setup, it is recommended to
 create a separate ``rocblas_handle`` for each host thread.
 
-Calling any of these logging functions, especially ``rocsolver_log_begin`` and ``rocsolver_log_end``,
-while another rocSOLVER routine is running on another thread may lead to undefined behaviour
-and is not recommended.
-
-Note that trace logging is not designed for multiple host threads and will likely result in
-garbled trace trees if rocSOLVER routines are called from multiple threads.
+The rocsolver_log_* functions are not thread-safe. Calling a log function while any rocSOLVER
+routine is executing on another host thread will result in undefined behaviour. Once enabled,
+logging data collection is thread-safe. However, note that trace logging will likely result in
+garbled trace trees if rocSOLVER routines are called from multiple host threads.
 
