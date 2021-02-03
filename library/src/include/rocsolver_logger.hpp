@@ -158,7 +158,8 @@ private:
     template <typename T, typename... Ts>
     void log_bench(int level, const char* func_prefix, const char* func_name, Ts... args)
     {
-        *bench_os << "./rocsolver-bench -f " << func_name << " -r " << rocblas2char_precision<T> << ' ';
+        *bench_os << "./rocsolver-bench -f " << func_name << " -r "
+                  << rocblas2char_precision<T> << ' ';
         print_pairs(*bench_os, " ", args...);
         *bench_os << std::endl;
     }
