@@ -276,6 +276,17 @@ void gesvd_getError(const rocblas_handle handle,
     // input data initialization
     gesvd_initData<true, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A);
 
+
+/*rocblas_cout << "\noriginal A:\n";
+for(int i=0;i<m;++i)
+{
+    for(int j=0;j<n;++j)
+        rocblas_cout << hA[0][i+j*lda] << " ";
+    rocblas_cout << "\n";
+}
+*/
+
+
     // execute computations
     // complementary execution (to compute all singular vectors if needed)
     CHECK_ROCBLAS_ERROR(rocsolver_gesvd(
@@ -294,19 +305,57 @@ void gesvd_getError(const rocblas_handle handle,
         cblas_gesvd<T>(left_svect, right_svect, m, n, hA[b], lda, hS[b], hU[b], ldu, hV[b], ldv,
                        hWork.data(), lwork, hE[b], hinfo[b]);
 
+//rocblas_cout<<"\n+++ llamando a gesvd +++"<<std::flush;
+
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_gesvd(STRIDED, handle, left_svect, right_svect, m, n, dA.data(),
                                         lda, stA, dS.data(), stS, dU.data(), ldu, stU, dV.data(),
                                         ldv, stV, dE.data(), stE, fa, dinfo.data(), bc));
 
+//hipDeviceSynchronize();
+//rocblas_cout<<"\n+++ regrese de gesvd +++"<<std::flush;
+/*CHECK_HIP_ERROR(hA.transfer_from(dA));
+CHECK_HIP_ERROR(hV.transfer_from(dV));
+
+rocblas_cout << "\ncomputed A:\n";
+for(int i=0;i<m;++i)
+{
+    for(int j=0;j<n;++j)
+        rocblas_cout << hA[0][i+j*lda] << " ";
+    rocblas_cout << "\n";
+}
+
+
+rocblas_cout << "\ncomputed V:\n";
+for(int i=0;i<n;++i)
+{
+    for(int j=0;j<n;++j)
+        rocblas_cout << hV[0][i+j*ldv] << " ";
+    rocblas_cout << "\n";
+}*/
+
+
+
     CHECK_HIP_ERROR(hSres.transfer_from(dS));
     CHECK_HIP_ERROR(hEres.transfer_from(dE));
     CHECK_HIP_ERROR(hinfoRes.transfer_from(dinfo));
+
+//rocblas_cout<<"\n+++ copie diagonales +++"<<std::flush;
+
+/*rocblas_cout << "\ncomputed S:\n";
+for(int i=0;i<n;++i)
+    rocblas_cout << hSres[0][i] << " ";
+*/
+
+
 
     if(left_svect == rocblas_svect_singular || left_svect == rocblas_svect_all)
         CHECK_HIP_ERROR(Ures.transfer_from(dU));
     if(right_svect == rocblas_svect_singular || right_svect == rocblas_svect_all)
         CHECK_HIP_ERROR(Vres.transfer_from(dV));
+
+//rocblas_cout<<"\n+++ copie V +++"<<std::flush;
+
 
     if(left_svect == rocblas_svect_overwrite)
     {
@@ -333,11 +382,38 @@ void gesvd_getError(const rocblas_handle handle,
         }
     }
 
+//rocblas_cout<<"\n+++ copie U +++"<<std::flush;
+
+/*rocblas_cout << "\ncomputed U:\n";
+for(int i=0;i<m;++i)
+{
+    for(int j=0;j<m;++j)
+        rocblas_cout << Ures[0][i+j*ldures] << " ";
+    rocblas_cout << "\n";
+}
+
+
+rocblas_cout << "\ncomputed V:\n";
+for(int i=0;i<n;++i)
+{
+    for(int j=0;j<n;++j)
+        rocblas_cout << Vres[0][i+j*ldvres] << " ";
+    rocblas_cout << "\n";
+}
+
+rocblas_cout << "\ncomputed S:\n";
+for(int i=0;i<min(m,n);++i)
+    rocblas_cout << hSres[0][i] << " ";
+
+*/
+
+
     // Check info for non-convergence
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
         if(hinfo[b][0] != hinfoRes[b][0])
             *max_err += 1;
+//rocblas_cout<<"\n+++ verifique convergencia +++"<<std::flush;
 
     // (We expect the used input matrices to always converge. Testing
     // implicitly the equivalent non-converged matrix is very complicated and it boils
@@ -372,6 +448,7 @@ void gesvd_getError(const rocblas_handle handle,
             *max_errv = err > *max_errv ? err : *max_errv;
         }
     }
+//rocblas_cout<<"\n+++ calcule error +++"<<std::flush;
 }
 
 template <bool STRIDED, typename T, typename Wd, typename Td, typename Ud, typename Id, typename Wh, typename Th, typename Uh, typename Ih>

@@ -460,8 +460,12 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
         if(!othervN)
             rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(storev_other, k, k, k, batch_count, &unused, &w[3],
                                                 &a[2], &x[3], &unused);
+
         if(fast_thinSVD)
             rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(storev_lead, k, k, k, batch_count, &unused, &w[4],
+                                                &a[3], &x[4], &unused);
+        else if(othervN && leadvO)
+            rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(storev_lead, m, n, k, batch_count, &unused, &w[4],
                                                 &a[3], &x[4], &unused);
     }
     else
@@ -684,7 +688,7 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
     // computing a thin SVD, a fast algorithm could be executed by doing some
     // computations out-of-place.
 
-    if(m >= THIN_SVD_SWITCH * n || n >= THIN_SVD_SWITCH * m)
+    if(m >= THIN_SVD_SWITCH * n || n >= THIN_SVD_SWITCH * m) 
     /*******************************************/
     /********** CASE: CHOOSE THIN-SVD **********/
     /*******************************************/
@@ -721,11 +725,11 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
             //*** STAGE 5: Compute singular values and vectors from the bidiagonal form ***//
             if(row)
-                local_bdsqr_template<T>(handle, uplo, k, nv, nu, S, strideS, E, strideE, A, shiftA, lda,
+                local_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, S, strideS, E, strideE, A, shiftA, lda,
                                     strideA, U, shiftU, ldu, strideU, info, batch_count,
                                     (TT*)work_workArr, workArr);
             else
-                local_bdsqr_template<T>(handle, uplo, k, nv, nu, S, strideS, E, strideE, V, shiftV, ldv,
+                local_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, S, strideS, E, strideE, V, shiftV, ldv,
                                     strideV, A, shiftA, lda, strideA, info, batch_count,
                                     (TT*)work_workArr, workArr);
 
@@ -743,8 +747,11 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
         /***** SUB-CASE: USE FAST (OUT-OF-PLACE) THIN-SVD ALGORITHM *****/
         /****************************************************************/
         {
+//printf("\nhola mundo en fast thin SVD..."); fflush(stdout);
             nu = leftvN ? 0 : k;
             nv = rightvN ? 0 : k;
+
+print_device_matrix<T>(rocblas_cout,"original A",m,n,A,lda);
             
             //*** STAGE 1: Row (or column) compression ***//
             local_geqrlq_template<BATCHED,STRIDED>(handle,m,n,A,shiftA,lda,strideA,tau,k,batch_count,
@@ -761,6 +768,8 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
                                dim3(thread_count, thread_count, 1), 0, stream, k, k, A, shiftA, lda,
                                strideA, bufferT, shiftT, ldt, strideT, uplo);
+//hipDeviceSynchronize();
+//printf("\ncompresion lista..."); fflush(stdout);
 
             //*** STAGE 2: generate orthonormal/unitary matrix from row/column compression ***//
             if(leadvA)
@@ -771,6 +780,8 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                 local_orgqrlq_ungqrlq_template<BATCHED, STRIDED>(
                     handle, m, n, k, A, shiftA, lda, strideA, tau, k, batch_count,
                     scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
+//hipDeviceSynchronize();
+//printf("\ngenere matriz ortogonal de la compresion..."); fflush(stdout);
 
             //*** STAGE 3: Bidiagonalization ***//
             // clean triangular factor
@@ -789,6 +800,8 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                 hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
                                dim3(thread_count, thread_count, 1), 0, stream, k, k, bufferT, 
                                shiftT, ldt, strideT, bufferC, shiftC, ldc, strideC);
+//hipDeviceSynchronize();
+//printf("\nbidiagonalization lista..."); fflush(stdout);
 
             //*** STAGE 4: generate orthonormal/unitary matrices from bidiagonalization ***//
             // for lead-dimension vectors
@@ -801,16 +814,20 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                 rocsolver_orgbr_ungbr_template<false, STRIDED>(
                         handle, storev_other, k, k, k, bufferC, shiftC, ldc, strideC, (tau + offset_other), k, 
                         batch_count, scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);    
+//hipDeviceSynchronize();
+//printf("\ngenere matriz ortogonal de la bidiagonalization..."); fflush(stdout);
 
             //*** STAGE 5: Compute singular values and vectors from the bidiagonal form ***//
             if(row)
-                local_bdsqr_template<T>(handle, uplo, k, nv, nu, S, strideS, E, strideE, bufferC, shiftC, ldc,
+                local_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, S, strideS, E, strideE, bufferC, shiftC, ldc,
                                     strideC, bufferT, shiftT, ldt, strideT, info, batch_count,
                                     (TT*)work_workArr, workArr);
             else
-                local_bdsqr_template<T>(handle, uplo, k, nv, nu, S, strideS, E, strideE, bufferT, shiftT, ldt,
+                local_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, S, strideS, E, strideE, bufferT, shiftT, ldt,
                                     strideT, bufferC, shiftC, ldc, strideC, info, batch_count,
                                     (TT*)work_workArr, workArr);
+//hipDeviceSynchronize();
+//printf("\nSVD lista..."); fflush(stdout);
 
             //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
             if(leadvO)
@@ -871,10 +888,12 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                dim3(thread_count, thread_count, 1), 0, stream, k, k, bufferC,
                                shiftC, ldc, strideC, A, shiftA, lda, strideA);
             }
+//hipDeviceSynchronize();
+//printf("\nupdate de vectores liston..."); fflush(stdout);
         }
 
         else
-        /***** SUB-CASE: USE NORMAL (IN-PLACE) THIN-SVD ALGORITHM *****/
+        /************ SUB-CASE: USE IN-PLACE THIN-SVD ALGORITHM *******/
         /**************************************************************/
         {
             //*** STAGE 1: Row (or column) compression ***//
@@ -924,6 +943,8 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                     (tau + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX,
                     diag_tmptr_Y, shiftY, ldy, strideY,
                     batch_count, scalars, work_workArr, Abyx_norms_tmptr);
+
+                uplo = rocblas_fill_upper;
             }
             else if(!leadvO)
             {
@@ -937,6 +958,8 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                     (tau + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX,
                     diag_tmptr_Y, shiftY, ldy, strideY,
                     batch_count, scalars, work_workArr, Abyx_norms_tmptr); 
+
+                uplo = rocblas_fill_upper;
             }
             else
                 rocsolver_gebrd_template<BATCHED, STRIDED>(
@@ -966,9 +989,12 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                         UV,shiftUV,lduv,strideUV,batch_count,
                                         scalars, Abyx_norms_tmptr, diag_tmptr_Y, Abyx_norms_trfact_X,workArr);               
             else
-                local_orgqrlq_ungqrlq_template<BATCHED, STRIDED>(
-                        handle, m, n, k, A, shiftA, lda, strideA, (tau + offset_lead), k, batch_count,
-                        scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
+                rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
+                        handle, storev_lead, m, n, k, A, shiftA, lda, strideA, (tau + offset_lead), k, batch_count,
+                        scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);
+//                local_orgqrlq_ungqrlq_template<BATCHED, STRIDED>(
+//                        handle, m, n, k, A, shiftA, lda, strideA, (tau + offset_lead), k, batch_count,
+//                        scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
 
             // for the other-side vectors
             if(othervS || othervA)
@@ -987,14 +1013,12 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                     strideV, U, shiftU, ldu, strideU, info, batch_count,
                                     (TT*)work_workArr, workArr);
             }
-
             else if(leftvO && !rightvO)
             {
                 local_bdsqr_template<T>(handle, uplo, k, nv, nu, S, strideS, E, strideE, V, shiftV, ldv,
                                     strideV, A, shiftA, lda, strideA, info, batch_count,
                                     (TT*)work_workArr, workArr);
             }
-    
             else
             {
                 local_bdsqr_template<T>(handle, uplo, k, nv, nu, S, strideS, E, strideE, A, shiftA,
@@ -1093,5 +1117,6 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
     }
 
     rocblas_set_pointer_mode(handle, old_mode);
+//printf("\nadios mundo..."); fflush(stdout);
     return rocblas_status_success;
 }
