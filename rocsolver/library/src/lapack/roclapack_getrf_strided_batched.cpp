@@ -16,12 +16,14 @@ rocblas_status rocsolver_getrf_strided_batched_impl(rocblas_handle handle,
                                                     rocblas_int* info,
                                                     const rocblas_int batch_count)
 {
+    const char* name = (PIVOT ? "getrf_strided_batched" : "getrf_npvt_strided_batched");
+    ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "--lda", lda, "--bsa", strideA, "--bsp", strideP,
+                        "--batch", batch_count);
+
     using S = decltype(std::real(T{}));
 
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st

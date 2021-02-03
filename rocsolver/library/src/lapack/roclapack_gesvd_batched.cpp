@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_gesvd.hpp"
@@ -26,10 +26,13 @@ rocblas_status rocsolver_gesvd_batched_impl(rocblas_handle handle,
                                             rocblas_int* info,
                                             const rocblas_int batch_count)
 {
+    ROCSOLVER_ENTER_TOP("gesvd_batched", "--leftsv", left_svect, "--rightsv", right_svect, "-m", m,
+                        "-n", n, "--lda", lda, "--bsb", strideS, "--ldb", ldu, "--bsc", strideU,
+                        "--ldv", ldv, "--bsp", strideV, "--bs5", strideE, "--workmode", fast_alg,
+                        "--batch", batch_count);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_gesvd_argCheck(handle, left_svect, right_svect, m, n, A, lda, S,

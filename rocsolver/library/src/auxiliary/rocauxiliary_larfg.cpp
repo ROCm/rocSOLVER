@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_larfg.hpp"
@@ -12,10 +12,11 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle,
                                     const rocblas_int incx,
                                     T* tau)
 {
+    // TODO: How to get alpha for bench logging
+    ROCSOLVER_ENTER_TOP("larfg", "-n", n, "--incx", incx);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_larfg_argCheck(handle, n, incx, alpha, x, tau);

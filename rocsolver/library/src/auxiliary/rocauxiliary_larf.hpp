@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -102,6 +102,9 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle,
                                        T* Abyx,
                                        T** workArr)
 {
+    ROCSOLVER_ENTER("larf", "side:", side, "m:", m, "n:", n, "shiftX:", shiftx, "incx:", incx,
+                    "shiftA:", shiftA, "lda:", lda, "bc:", batch_count);
+
     // quick return
     if(n == 0 || m == 0 || !batch_count)
         return rocblas_status_success;

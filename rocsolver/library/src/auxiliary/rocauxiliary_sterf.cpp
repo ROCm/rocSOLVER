@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_sterf.hpp"
@@ -8,10 +8,10 @@ template <typename T>
 rocblas_status
     rocsolver_sterf_impl(rocblas_handle handle, const rocblas_int n, T* D, T* E, rocblas_int* info)
 {
+    ROCSOLVER_ENTER_TOP("sterf", "-n", n);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_sterf_argCheck(handle, n, D, E, info);

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_getri.hpp"
@@ -12,10 +12,10 @@ rocblas_status rocsolver_getri_impl(rocblas_handle handle,
                                     rocblas_int* ipiv,
                                     rocblas_int* info)
 {
+    ROCSOLVER_ENTER_TOP("getri", "-n", n, "--lda", lda);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_getri_argCheck(handle, n, lda, A, ipiv, info);

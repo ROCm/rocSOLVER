@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # For debugging, uncomment this
@@ -96,7 +96,6 @@ set(rocsolver_test_source
 
 set( rocsolver_benchmark_common
       ../../../rocblascommon/clients/common/utility.cpp
-      ../../../rocblascommon/library/src/rocblas_ostream.cpp
       ../common/cblas_interface.cpp
     )
 

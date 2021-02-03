@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -310,6 +310,8 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
                                         const rocblas_int batch_count,
                                         rocblas_int* stack)
 {
+    ROCSOLVER_ENTER("sterf", "n:", n, "shiftD:", shiftD, "shiftE:", shiftE, "bc:", batch_count);
+
     // quick return
     if(batch_count == 0)
         return rocblas_status_success;

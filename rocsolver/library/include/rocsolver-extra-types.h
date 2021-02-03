@@ -1,9 +1,14 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef ROCSOLVER_EXTRAS_H_
 #define ROCSOLVER_EXTRAS_H_
+
+/*! \brief Used to specify the logging layer mode using a bitwise combination
+ *of rocblas_layer_mode values.
+ ********************************************************************************/
+typedef uint32_t rocblas_layer_mode_flags;
 
 /*! \brief Used to specify the order in which multiple elementary matrices are
  *applied together

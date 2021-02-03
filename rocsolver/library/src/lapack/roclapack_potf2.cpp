@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_potf2.hpp"
@@ -12,10 +12,10 @@ rocblas_status rocsolver_potf2_impl(rocblas_handle handle,
                                     const rocblas_int lda,
                                     rocblas_int* info)
 {
+    ROCSOLVER_ENTER_TOP("potf2", "--uplo", uplo, "-n", n, "--lda", lda);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_potf2_potrf_argCheck(handle, uplo, n, lda, A, info);

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_latrd.hpp"
@@ -16,10 +16,10 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
                                     T* W,
                                     const rocblas_int ldw)
 {
+    ROCSOLVER_ENTER_TOP("latrd", "--uplo", uplo, "-n", n, "-k", k, "--lda", lda, "--ldb", ldw);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_latrd_argCheck(handle, uplo, n, k, lda, ldw, A, E, tau, W);

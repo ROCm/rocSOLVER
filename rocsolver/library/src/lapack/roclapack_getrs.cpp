@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_getrs.hpp"
@@ -15,10 +15,11 @@ rocblas_status rocsolver_getrs_impl(rocblas_handle handle,
                                     T* B,
                                     const rocblas_int ldb)
 {
+    ROCSOLVER_ENTER_TOP("getrs", "--transposeA", trans, "-m", n, "-n", nrhs, "--lda", lda, "--ldb",
+                        ldb);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_getrs_argCheck(handle, trans, n, nrhs, lda, ldb, A, B, ipiv);

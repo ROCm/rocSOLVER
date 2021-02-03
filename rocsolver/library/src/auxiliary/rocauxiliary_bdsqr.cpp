@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_bdsqr.hpp"
@@ -21,10 +21,11 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
                                     const rocblas_int ldc,
                                     rocblas_int* info)
 {
+    ROCSOLVER_ENTER_TOP("bdsqr", "--uplo", uplo, "-m", n, "-n", nv, "-k", nu, "--size4", nc,
+                        "--lda", ldv, "--ldb", ldu, "--ldc", ldc);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st

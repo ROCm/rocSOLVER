@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -546,6 +546,10 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                                         const rocblas_int batch_count,
                                         S* work)
 {
+    ROCSOLVER_ENTER("bdsqr", "uplo:", uplo, "n:", n, "nv:", nv, "nu:", nu, "nc:", nc,
+                    "shiftV:", shiftV, "ldv:", ldv, "shiftU:", shiftU, "ldu:", ldu,
+                    "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
+
     // quick return
     if(n == 0 || batch_count == 0)
         return rocblas_status_success;

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     April 2012
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -332,6 +332,10 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                         T* tau,
                                         T** workArr)
 {
+    ROCSOLVER_ENTER("gesvd", "leftsv:", left_svect, "rightsv:", right_svect, "m:", m, "n:", n,
+                    "shiftA:", shiftA, "lda:", lda, "ldu:", ldu, "ldv:", ldv, "mode:", fast_alg,
+                    "bc:", batch_count);
+
     constexpr bool COMPLEX = is_complex<T>;
 
     // quick return

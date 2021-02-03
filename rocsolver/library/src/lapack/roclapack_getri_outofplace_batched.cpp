@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_getri.hpp"
@@ -24,10 +24,11 @@ rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle,
                                                        rocblas_int* info,
                                                        const rocblas_int batch_count)
 {
+    ROCSOLVER_ENTER_TOP("getri_outofplace_batched", "-n", n, "--lda", lda, "--bsp", strideP,
+                        "--batch", batch_count);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_getri_argCheck(handle, n, lda, ldc, A, C, ipiv, info, batch_count);

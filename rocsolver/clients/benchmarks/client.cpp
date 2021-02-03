@@ -132,6 +132,10 @@ try
          "Specific stride of batched pivots vector Ipiv, is only applicable to batched and strided_batched"
          "factorizations: min(first dimension, second dimension).")
 
+        ("bs5",
+         po::value<rocblas_int>(&argus.bs5)->default_value(1024),
+         "Specific stride of batched pivots vector Ipiv, is only applicable to batched and strided_batched")
+
         ("incx",
          po::value<rocblas_int>(&argus.incx)->default_value(1),
          "increment between values in x vector")

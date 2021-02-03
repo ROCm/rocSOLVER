@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_potrf.hpp"
@@ -13,10 +13,11 @@ rocblas_status rocsolver_potrf_batched_impl(rocblas_handle handle,
                                             rocblas_int* info,
                                             const rocblas_int batch_count)
 {
+    ROCSOLVER_ENTER_TOP("potrf_batched", "--uplo", uplo, "-n", n, "--lda", lda, "--batch",
+                        batch_count);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_potf2_potrf_argCheck(handle, uplo, n, lda, A, info, batch_count);

@@ -2,8 +2,9 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## [(Unreleased) rocSOLVER for ROCm 4.2.0]
+## [(Unreleased) rocSOLVER 3.12.0 for ROCm 4.2.0]
 ### Added
+- Multi-level logging
 
 ### Optimizations
 

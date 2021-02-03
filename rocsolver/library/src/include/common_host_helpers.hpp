@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -8,7 +8,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <hip/hip_runtime.h>
-#include <iostream>
 #include <limits>
 #include <rocblas.h>
 
@@ -79,54 +78,6 @@ template <typename T>
 T* const* cast2constPointer(T** array)
 {
     return array;
-}
-
-template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-void print_device_matrix(const std::string name,
-                         const rocblas_int m,
-                         const rocblas_int n,
-                         U A,
-                         const rocblas_int lda)
-{
-    T hA[lda * n];
-    hipMemcpy(hA, A, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
-
-    std::cerr << m << "-by-" << n << " matrix: " << name << '\n';
-    for(int i = 0; i < m; i++)
-    {
-        std::cerr << "    ";
-        for(int j = 0; j < n; j++)
-        {
-            std::cerr << hA[j * lda + i];
-            if(j < n - 1)
-                std::cerr << ", ";
-        }
-        std::cerr << '\n';
-    }
-}
-
-template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-void print_device_matrix(const std::string name,
-                         const rocblas_int m,
-                         const rocblas_int n,
-                         U A,
-                         const rocblas_int lda)
-{
-    T hA[lda * n];
-    hipMemcpy(hA, A, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
-
-    std::cerr << m << "-by-" << n << " matrix: " << name << '\n';
-    for(int i = 0; i < m; i++)
-    {
-        std::cerr << "    ";
-        for(int j = 0; j < n; j++)
-        {
-            std::cerr << '[' << hA[j * lda + i].real() << "+" << hA[j * lda + i].imag() << "i]";
-            if(j < n - 1)
-                std::cerr << ", ";
-        }
-        std::cerr << '\n';
-    }
 }
 
 #ifdef ROCSOLVER_VERIFY_ASSUMPTIONS

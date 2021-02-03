@@ -160,6 +160,9 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                        T* ipiv_savedB,
                                        bool optim_mem)
 {
+    ROCSOLVER_ENTER("gels", "trans:", trans, "m:", m, "n:", n, "nrhs:", nrhs, "shiftA:", shiftA,
+                    "lda:", lda, "shiftB:", shiftB, "ldb:", ldb, "bc:", batch_count);
+
     // quick return if zero instances in batch
     if(batch_count == 0)
         return rocblas_status_success;
@@ -186,6 +189,7 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
         rocblas_int blocksy = (nrhs - 1) / 32 + 1;
         hipLaunchKernelGGL(set_zero<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0,
                            stream, rowsB, nrhs, B, shiftB, ldb, strideB);
+
         return rocblas_status_success;
     }
 

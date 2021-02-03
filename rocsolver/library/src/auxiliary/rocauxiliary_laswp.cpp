@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_laswp.hpp"
@@ -14,10 +14,10 @@ rocblas_status rocsolver_laswp_impl(rocblas_handle handle,
                                     const rocblas_int* ipiv,
                                     const rocblas_int incx)
 {
+    ROCSOLVER_ENTER_TOP("laswp", "-n", n, "--lda", lda, "--k1", k1, "--k2", k2);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_laswp_argCheck(handle, n, lda, k1, k2, incx, A, ipiv);

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_steqr.hpp"
@@ -14,10 +14,10 @@ rocblas_status rocsolver_steqr_impl(rocblas_handle handle,
                                     const rocblas_int ldc,
                                     rocblas_int* info)
 {
+    ROCSOLVER_ENTER_TOP("sterf", "--evect", compc, "-n", n, "--ldc", ldc);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_steqr_argCheck(handle, compc, n, D, E, C, ldc, info);

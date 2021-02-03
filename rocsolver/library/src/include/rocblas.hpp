@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -9,9 +9,11 @@ struct rocblas_index_value_t;
 
 #include "common_device_helpers.hpp"
 #include "common_host_helpers.hpp"
+#include "common_ostream_helpers.hpp"
 #include "init_scalars.hpp"
 #include "internal/rocblas-exported-proto.hpp"
 #include "internal/rocblas_device_malloc.hpp"
+#include "rocsolver_logger.hpp"
 #include <rocblas.h>
 
 // iamax
@@ -26,6 +28,8 @@ rocblas_status rocblasCall_iamax(rocblas_handle handle,
                                  rocblas_int* result,
                                  rocblas_index_value_t<S>* workspace)
 {
+    ROCBLAS_ENTER("iamax", "n:", n, "shiftX:", shiftx, "incx:", incx, "bc:", batch_count);
+
     return rocblas_iamax_template<ROCBLAS_IAMAX_NB, ISBATCHED>(
         handle, n, cast2constType<T>(x), shiftx, incx, stridex, batch_count, result, workspace);
 }
@@ -42,6 +46,9 @@ rocblas_status rocblasCall_scal(rocblas_handle handle,
                                 rocblas_stride stridex,
                                 rocblas_int batch_count)
 {
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("scal", "n:", n, "shiftX:", offsetx, "incx:", incx, "bc:", batch_count);
+
     return rocblas_scal_template<ROCBLAS_SCAL_NB, T>(handle, n, alpha, stridea, x, offsetx, incx,
                                                      stridex, batch_count);
 }
@@ -63,6 +70,9 @@ rocblas_status rocblasCall_dot(rocblas_handle handle,
                                T* workspace,
                                T** work = nullptr)
 {
+    ROCBLAS_ENTER("dot", "n:", n, "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety,
+                  "incy:", incy, "bc:", batch_count);
+
     return rocblas_dot_template<ROCBLAS_DOT_NB, CONJ, T>(
         handle, n, cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(y), offsety,
         incy, stridey, batch_count, results, workspace);
@@ -85,6 +95,9 @@ rocblas_status rocblasCall_dot(rocblas_handle handle,
                                T* workspace,
                                T** work)
 {
+    ROCBLAS_ENTER("dot", "n:", n, "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety,
+                  "incy:", incy, "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -118,6 +131,10 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
                                rocblas_int batch_count,
                                T** work)
 {
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("ger", "m:", m, "n:", n, "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety,
+                  "incy:", incy, "shiftA:", offsetA, "lda:", lda, "bc:", batch_count);
+
     return rocblas_ger_template<CONJ, T>(handle, m, n, alpha, stridea, cast2constType<T>(x),
                                          offsetx, incx, stridex, cast2constType<T>(y), offsety,
                                          incy, stridey, A, offsetA, lda, strideA, batch_count);
@@ -145,6 +162,10 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
                                rocblas_int batch_count,
                                T** work)
 {
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("ger", "m:", m, "n:", n, "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety,
+                  "incy:", incy, "shiftA:", offsetA, "lda:", lda, "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -178,6 +199,10 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
                                rocblas_int batch_count,
                                T** work)
 {
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("ger", "m:", m, "n:", n, "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety,
+                  "incy:", incy, "shiftA:", offsetA, "lda:", lda, "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -214,6 +239,11 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
                                 rocblas_int batch_count,
                                 T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("gemv", "trans:", transA, "m:", m, "n:", n, "shiftA:", offseta, "lda:", lda,
+                  "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety, "incy:", incy,
+                  "bc:", batch_count);
+
     return rocblas_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A),
                                     offseta, lda, strideA, cast2constType<T>(x), offsetx, incx,
                                     stridex, beta, stride_beta, y, offsety, incy, stridey,
@@ -245,6 +275,11 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
                                 rocblas_int batch_count,
                                 T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("gemv", "trans:", transA, "m:", m, "n:", n, "shiftA:", offseta, "lda:", lda,
+                  "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety, "incy:", incy,
+                  "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -282,6 +317,11 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
                                 rocblas_int batch_count,
                                 T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("gemv", "trans:", transA, "m:", m, "n:", n, "shiftA:", offseta, "lda:", lda,
+                  "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety, "incy:", incy,
+                  "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -319,6 +359,11 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
                                 rocblas_int batch_count,
                                 T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("gemv", "trans:", transA, "m:", m, "n:", n, "shiftA:", offseta, "lda:", lda,
+                  "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety, "incy:", incy,
+                  "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -356,6 +401,11 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
                                 rocblas_int batch_count,
                                 T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("gemv", "trans:", transA, "m:", m, "n:", n, "shiftA:", offseta, "lda:", lda,
+                  "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety, "incy:", incy,
+                  "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -395,6 +445,11 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
                                 rocblas_int batch_count,
                                 T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("gemv", "trans:", transA, "m:", m, "n:", n, "shiftA:", offseta, "lda:", lda,
+                  "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety, "incy:", incy,
+                  "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -428,6 +483,9 @@ rocblas_status rocblasCall_trmv(rocblas_handle handle,
                                 rocblas_stride stridew,
                                 rocblas_int batch_count)
 {
+    ROCBLAS_ENTER("trmv", "trans:", transa, "diag:", diag, "m:", m, "shiftA:", offseta, "lda:", lda,
+                  "shiftX:", offsetx, "incx:", incx, "bc:", batch_count);
+
     return rocblas_trmv_template<ROCBLAS_TRMV_NB>(handle, uplo, transa, diag, m,
                                                   cast2constType<T>(a), offseta, lda, stridea, x,
                                                   offsetx, incx, stridex, w, stridew, batch_count);
@@ -458,6 +516,11 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_int batch_count,
                                 T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("gemm", "transA:", trans_a, "transB:", trans_b, "m:", m, "n:", n, "k:", k,
+                  "shiftA:", offset_a, "lda:", ld_a, "shiftB:", offset_b, "ldb:", ld_b,
+                  "shiftC:", offset_c, "ldc:", ld_c, "bc:", batch_count);
+
     return rocblas_gemm_template<BATCHED, T>(handle, trans_a, trans_b, m, n, k, alpha,
                                              cast2constType<T>(A), offset_a, ld_a, stride_a,
                                              cast2constType<T>(B), offset_b, ld_b, stride_b, beta,
@@ -489,6 +552,11 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_int batch_count,
                                 T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("gemm", "transA:", trans_a, "transB:", trans_b, "m:", m, "n:", n, "k:", k,
+                  "shiftA:", offset_a, "lda:", ld_a, "shiftB:", offset_b, "ldb:", ld_b,
+                  "shiftC:", offset_c, "ldc:", ld_c, "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -526,6 +594,11 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_int batch_count,
                                 T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("gemm", "transA:", trans_a, "transB:", trans_b, "m:", m, "n:", n, "k:", k,
+                  "shiftA:", offset_a, "lda:", ld_a, "shiftB:", offset_b, "ldb:", ld_b,
+                  "shiftC:", offset_c, "ldc:", ld_c, "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -563,6 +636,11 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_int batch_count,
                                 T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("gemm", "transA:", trans_a, "transB:", trans_b, "m:", m, "n:", n, "k:", k,
+                  "shiftA:", offset_a, "lda:", ld_a, "shiftB:", offset_b, "ldb:", ld_b,
+                  "shiftC:", offset_c, "ldc:", ld_c, "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -597,6 +675,11 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
                                 T* work,
                                 T** workArr)
 {
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("trmm", "side:", side, "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
+                  "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftB:", offsetB, "ldb:", ldb,
+                  "bc:", batch_count);
+
     constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
     constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
 
@@ -627,6 +710,11 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
                                 T* work,
                                 T** workArr)
 {
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("trmm", "side:", side, "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
+                  "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftB:", offsetB, "ldb:", ldb,
+                  "bc:", batch_count);
+
     constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
     constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
 
@@ -664,6 +752,11 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
                                 T* work,
                                 T** workArr)
 {
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("trmm", "side:", side, "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
+                  "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftB:", offsetB, "ldb:", ldb,
+                  "bc:", batch_count);
+
     constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
     constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
 
@@ -703,6 +796,11 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_int batch_count,
                                      T** work)
 {
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("syr2", "uplo:", uplo, "n:", n, "shiftX:", offsetx, "incx:", incx,
+                  "shiftY:", offsety, "incy:", incy, "shiftA:", offsetA, "lda:", lda,
+                  "bc:", batch_count);
+
     return rocblas_syr2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x),
                                  offsetx, incx, stridex, cast2constType<T>(y), offsety, incy,
                                  stridey, A, lda, offsetA, strideA, batch_count);
@@ -729,6 +827,11 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_int batch_count,
                                      T** work)
 {
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("syr2", "uplo:", uplo, "n:", n, "shiftX:", offsetx, "incx:", incx,
+                  "shiftY:", offsety, "incy:", incy, "shiftA:", offsetA, "lda:", lda,
+                  "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -761,6 +864,11 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_int batch_count,
                                      T** work)
 {
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("her2", "uplo:", uplo, "n:", n, "shiftX:", offsetx, "incx:", incx,
+                  "shiftY:", offsety, "incy:", incy, "shiftA:", offsetA, "lda:", lda,
+                  "bc:", batch_count);
+
     return rocblas_her2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x),
                                  offsetx, incx, stridex, cast2constType<T>(y), offsety, incy,
                                  stridey, A, lda, offsetA, strideA, batch_count);
@@ -787,6 +895,11 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_int batch_count,
                                      T** work)
 {
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("her2", "uplo:", uplo, "n:", n, "shiftX:", offsetx, "incx:", incx,
+                  "shiftY:", offsety, "incy:", incy, "shiftA:", offsetA, "lda:", lda,
+                  "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -817,6 +930,10 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                      rocblas_stride strideC,
                                      rocblas_int batch_count)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("syrk", "uplo:", uplo, "trans:", transA, "n:", n, "k:", k, "shiftA:", offsetA,
+                  "lda:", lda, "shiftC:", offsetC, "ldc:", ldc, "bc:", batch_count);
+
     return rocblas_syrk_template(handle, uplo, transA, n, k, cast2constType<S>(alpha),
                                  cast2constType<T>(A), offsetA, lda, strideA,
                                  cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
@@ -841,6 +958,10 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                      rocblas_stride strideC,
                                      rocblas_int batch_count)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("herk", "uplo:", uplo, "trans:", transA, "n:", n, "k:", k, "shiftA:", offsetA,
+                  "lda:", lda, "shiftC:", offsetC, "ldc:", ldc, "bc:", batch_count);
+
     return rocblas_herk_template(handle, uplo, transA, n, k, cast2constType<S>(alpha),
                                  cast2constType<T>(A), offsetA, lda, strideA,
                                  cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
@@ -870,6 +991,11 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
                                        rocblas_int batch_count,
                                        T** work = nullptr)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("syr2k", "uplo:", uplo, "trans:", trans, "n:", n, "k:", k, "shiftA:", offsetA,
+                  "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
+                  "bc:", batch_count);
+
     return rocblas_syr2k_template<true>(
         handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
@@ -900,6 +1026,11 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
                                        rocblas_int batch_count,
                                        T** work = nullptr)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("syr2k", "uplo:", uplo, "trans:", trans, "n:", n, "k:", k, "shiftA:", offsetA,
+                  "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
+                  "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -936,7 +1067,13 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
                                        rocblas_int batch_count,
                                        T** work = nullptr)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("her2k", "uplo:", uplo, "trans:", trans, "n:", n, "k:", k, "shiftA:", offsetA,
+                  "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
+                  "bc:", batch_count);
+
     using S = decltype(std::real(T{}));
+
     return rocblas_her2k_template<true>(
         handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<S>(beta), C, offsetC,
@@ -967,6 +1104,11 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
                                        rocblas_int batch_count,
                                        T** work = nullptr)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("her2k", "uplo:", uplo, "trans:", trans, "n:", n, "k:", k, "shiftA:", offsetA,
+                  "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
+                  "bc:", batch_count);
+
     using S = decltype(std::real(T{}));
 
     hipStream_t stream;
@@ -1005,6 +1147,10 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
                                      rocblas_int batch_count,
                                      T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("symv", "uplo:", uplo, "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftX:", offsetx,
+                  "incx:", incx, "shiftY:", offsety, "incy:", incy, "bc:", batch_count);
+
     return rocblas_symv_template<T>(handle, uplo, n, cast2constType<T>(alpha), stridea,
                                     cast2constType<T>(A), offsetA, lda, strideA, cast2constType<T>(x),
                                     offsetx, incx, stridex, cast2constType<T>(beta), strideb, y,
@@ -1035,6 +1181,10 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
                                      rocblas_int batch_count,
                                      T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("symv", "uplo:", uplo, "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftX:", offsetx,
+                  "incx:", incx, "shiftY:", offsety, "incy:", incy, "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -1071,6 +1221,10 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
                                      rocblas_int batch_count,
                                      T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("hemv", "uplo:", uplo, "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftX:", offsetx,
+                  "incx:", incx, "shiftY:", offsety, "incy:", incy, "bc:", batch_count);
+
     return rocblas_hemv_template<T>(handle, uplo, n, cast2constType<T>(alpha), stridea,
                                     cast2constType<T>(A), offsetA, lda, strideA, cast2constType<T>(x),
                                     offsetx, incx, stridex, cast2constType<T>(beta), strideb, y,
@@ -1101,6 +1255,10 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
                                      rocblas_int batch_count,
                                      T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("hemv", "uplo:", uplo, "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftX:", offsetx,
+                  "incx:", incx, "shiftY:", offsety, "incy:", incy, "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -1205,6 +1363,11 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                                 void* invA_arr,
                                 T** workArr = nullptr)
 {
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("trsm", "side:", side, "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
+                  "n:", n, "shiftA:", offset_A, "lda:", lda, "shiftB:", offset_B, "ldb:", ldb,
+                  "bc:", batch_count);
+
     U supplied_invA = nullptr;
     return rocblas_trsm_template<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, alpha, cast2constType(A), offset_A, lda, stride_A,
@@ -1238,6 +1401,11 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                                 void* invA_arr,
                                 T** workArr)
 {
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("trsm", "side:", side, "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
+                  "n:", n, "shiftA:", offset_A, "lda:", lda, "shiftB:", offset_B, "ldb:", ldb,
+                  "bc:", batch_count);
+
     using U = T* const*;
 
     hipStream_t stream;
@@ -1283,6 +1451,9 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
                                  T** c_temp_arr,
                                  T** workArr)
 {
+    ROCBLAS_ENTER("trtri", "uplo:", uplo, "diag:", diag, "n:", n, "shiftA:", offset_A, "lda:", lda,
+                  "shiftC:", offset_invA, "ldc:", ldinvA, "bc:", batch_count);
+
     return rocblas_trtri_template<ROCBLAS_TRTRI_NB, BATCHED, STRIDED, T>(
         handle, uplo, diag, n, cast2constType(A), offset_A, lda, stride_A, 0, invA, offset_invA,
         ldinvA, stride_invA, 0, batch_count, 1, c_temp);
@@ -1307,6 +1478,9 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
                                  T** c_temp_arr,
                                  T** workArr)
 {
+    ROCBLAS_ENTER("trtri", "uplo:", uplo, "diag:", diag, "n:", n, "shiftA:", offset_A, "lda:", lda,
+                  "shiftC:", offset_invA, "ldc:", ldinvA, "bc:", batch_count);
+
     size_t c_temp_els = rocblas_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, 1);
 
     hipStream_t stream;
@@ -1340,6 +1514,9 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
                                  T** c_temp_arr,
                                  T** workArr)
 {
+    ROCBLAS_ENTER("trtri", "uplo:", uplo, "diag:", diag, "n:", n, "shiftA:", offset_A, "lda:", lda,
+                  "shiftC:", offset_invA, "ldc:", ldinvA, "bc:", batch_count);
+
     size_t c_temp_els = rocblas_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, 1);
 
     hipStream_t stream;

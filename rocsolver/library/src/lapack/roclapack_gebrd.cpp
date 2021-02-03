@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_gebrd.hpp"
@@ -15,10 +15,10 @@ rocblas_status rocsolver_gebrd_impl(rocblas_handle handle,
                                     T* tauq,
                                     T* taup)
 {
+    ROCSOLVER_ENTER_TOP("gebrd", "-m", m, "-n", n, "--lda", lda);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_gebd2_gebrd_argCheck(handle, m, n, lda, A, D, E, tauq, taup);

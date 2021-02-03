@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_sytd2_hetd2.hpp"
@@ -14,10 +14,11 @@ rocblas_status rocsolver_sytd2_hetd2_impl(rocblas_handle handle,
                                           S* E,
                                           T* tau)
 {
+    const char* name = (!is_complex<T> ? "sytd2" : "hetd2");
+    ROCSOLVER_ENTER_TOP(name, "--uplo", uplo, "-n", n, "--lda", lda);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_sytd2_hetd2_argCheck(handle, uplo, n, lda, A, D, E, tau);

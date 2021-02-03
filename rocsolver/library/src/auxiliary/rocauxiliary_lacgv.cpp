@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_lacgv.hpp"
@@ -8,10 +8,10 @@ template <typename T>
 rocblas_status
     rocsolver_lacgv_impl(rocblas_handle handle, const rocblas_int n, T* x, const rocblas_int incx)
 {
+    ROCSOLVER_ENTER_TOP("lacgv", "-n", n, "--incx", incx);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_lacgv_argCheck(handle, n, incx, x);

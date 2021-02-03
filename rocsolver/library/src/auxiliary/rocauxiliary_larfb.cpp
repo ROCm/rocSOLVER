@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_larfb.hpp"
@@ -20,10 +20,12 @@ rocblas_status rocsolver_larfb_impl(rocblas_handle handle,
                                     T* A,
                                     const rocblas_int lda)
 {
+    ROCSOLVER_ENTER_TOP("larfb", "--side", side, "--transposeH", trans, "--direct", direct,
+                        "--storev", storev, "-m", m, "-n", n, "-k", k, "--ldv", ldv, "--ldt", ldf,
+                        "--lda", lda);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_larfb_argCheck(handle, side, trans, direct, storev, m, n, k, ldv,

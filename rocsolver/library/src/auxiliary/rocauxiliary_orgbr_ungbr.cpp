@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_orgbr_ungbr.hpp"
@@ -14,10 +14,11 @@ rocblas_status rocsolver_orgbr_ungbr_impl(rocblas_handle handle,
                                           const rocblas_int lda,
                                           T* ipiv)
 {
+    const char* name = (!is_complex<T> ? "orgbr" : "ungbr");
+    ROCSOLVER_ENTER_TOP(name, "--storev", storev, "-m", m, "-n", n, "-k", k, "--lda", lda);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_orgbr_argCheck(handle, storev, m, n, k, lda, A, ipiv);

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_gebd2.hpp"
@@ -20,10 +20,11 @@ rocblas_status rocsolver_gebd2_batched_impl(rocblas_handle handle,
                                             const rocblas_stride strideP,
                                             const rocblas_int batch_count)
 {
+    ROCSOLVER_ENTER_TOP("gebd2_batched", "-m", m, "-n", n, "--lda", lda, "--bsp", strideP,
+                        "--batch", batch_count);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st
