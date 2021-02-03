@@ -42,7 +42,6 @@ set( fortran_samples
 foreach( exe ${c_samples} ${cpp_samples} ${fortran_samples} )
   target_link_libraries( ${exe} PRIVATE roc::rocsolver roc::rocblas )
 
-  set_target_properties( ${exe} PROPERTIES CXX_EXTENSIONS NO )
   set_target_properties( ${exe} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
 
   target_include_directories( ${exe}
@@ -76,9 +75,11 @@ foreach( exe ${c_samples} ${cpp_samples} ${fortran_samples} )
 endforeach( )
 
 foreach( exe ${cpp_samples} )
-  if( NOT CUDA_FOUND )
-    target_link_libraries( ${exe} PRIVATE hip::device )
-  endif()
+  set_target_properties( ${exe} PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+  )
 endforeach( )
 
 foreach( exe ${c_samples} )
