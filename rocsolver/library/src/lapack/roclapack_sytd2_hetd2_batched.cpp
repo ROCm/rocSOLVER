@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_sytd2_hetd2.hpp"
@@ -18,10 +18,12 @@ rocblas_status rocsolver_sytd2_hetd2_batched_impl(rocblas_handle handle,
                                                   const rocblas_stride strideP,
                                                   const rocblas_int batch_count)
 {
+    const char* name = (!is_complex<T> ? "sytd2_batched" : "hetd2_batched");
+    ROCSOLVER_ENTER_TOP(name, "--uplo", uplo, "-n", n, "--lda", lda, "--bsp", strideP, "--batch",
+                        batch_count);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st

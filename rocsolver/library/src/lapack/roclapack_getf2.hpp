@@ -801,6 +801,9 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                                         T* pivotval,
                                         rocblas_int* pivotidx)
 {
+    ROCSOLVER_ENTER("getf2", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
+                    "bc:", batch_count);
+
     // quick return if zero instances in batch
     if(batch_count == 0)
         return rocblas_status_success;

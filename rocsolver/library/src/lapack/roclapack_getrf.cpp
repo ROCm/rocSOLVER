@@ -13,12 +13,13 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle,
                                     rocblas_int* ipiv,
                                     rocblas_int* info)
 {
+    const char* name = (PIVOT ? "getrf" : "getrf_npvt");
+    ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "--lda", lda);
+
     using S = decltype(std::real(T{}));
 
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_getf2_getrf_argCheck(handle, m, n, lda, A, ipiv, info, PIVOT);

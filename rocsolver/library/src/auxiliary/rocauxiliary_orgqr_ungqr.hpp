@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -85,6 +85,9 @@ rocblas_status rocsolver_orgqr_ungqr_template(rocblas_handle handle,
                                               T* trfact,
                                               T** workArr)
 {
+    ROCSOLVER_ENTER("orgqr_ungqr", "m:", m, "n:", n, "k:", k, "shiftA:", shiftA, "lda:", lda,
+                    "bc:", batch_count);
+
     // quick return
     if(!n || !m || !batch_count)
         return rocblas_status_success;

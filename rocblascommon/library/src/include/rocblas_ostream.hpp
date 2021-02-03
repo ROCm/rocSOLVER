@@ -1,10 +1,11 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
 
 #include "rocblas.h"
+#include "rocsolver.h"
 #include "utility.h"
 #include <cmath>
 #include <complex>
@@ -330,27 +331,23 @@ public:
     // rocblas_datatype output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_datatype d)
     {
-        os.os << rocblas_datatype_string(d);
-        return os;
+        return os << rocblas_datatype_string(d);
     }
 
     // rocsolver_operation output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_operation trans)
-
     {
         return os << rocblas_transpose_letter(trans);
     }
 
     // rocsolver_fill output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_fill fill)
-
     {
         return os << rocblas_fill_letter(fill);
     }
 
     // rocsolver_diagonal output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_diagonal diag)
-
     {
         return os << rocblas_diag_letter(diag);
     }
@@ -360,6 +357,36 @@ public:
 
     {
         return os << rocblas_side_letter(side);
+    }
+
+    // rocsolver_direct output
+    friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_direct value)
+    {
+        return os << rocblas_direct_letter(value);
+    }
+
+    // rocsolver_storev output
+    friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_storev value)
+    {
+        return os << rocblas_storev_letter(value);
+    }
+
+    // rocsolver_workmode output
+    friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_workmode value)
+    {
+        return os << rocblas_workmode_letter(value);
+    }
+
+    // rocsolver_svect output
+    friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_svect value)
+    {
+        return os << rocblas_svect_letter(value);
+    }
+
+    // rocsolver_evect output
+    friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_evect value)
+    {
+        return os << rocblas_evect_letter(value);
     }
 
     // rocsolver_status output

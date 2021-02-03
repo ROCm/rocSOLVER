@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_gels.hpp"
@@ -17,10 +17,11 @@ rocblas_status rocsolver_gels_batched_impl(rocblas_handle handle,
                                            rocblas_int* info,
                                            const rocblas_int batch_count)
 {
+    ROCSOLVER_ENTER_TOP("gels_batched", "--transposeA", trans, "-m", m, "-n", n, "-k", nrhs,
+                        "--lda", lda, "--ldb:", ldb, "--batch", batch_count);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st
@@ -66,6 +67,7 @@ rocblas_status rocsolver_gels_batched_impl(rocblas_handle handle,
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
 
+    // execution
     return rocsolver_gels_template<true, false, T>(
         handle, trans, m, n, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, info,
         batch_count, (T*)scalars, (T*)work, (T*)workArr, (T*)diag_trfac_invA,

@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2016-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # the interface to rocblas for Fortran programs
@@ -21,6 +21,9 @@ add_executable( example-fortran-basic
 add_executable( example-c-hmm
   example_hmm.c
 )
+add_executable( example-cpp-logging
+  example_logging.cpp
+)
 
 # group sample programs by language
 set( c_samples
@@ -29,6 +32,7 @@ set( c_samples
 )
 set( cpp_samples
   example-cpp-basic
+  example-cpp-logging
 )
 set( fortran_samples
   example-fortran-basic

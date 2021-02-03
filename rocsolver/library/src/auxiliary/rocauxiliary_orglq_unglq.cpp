@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_orglq_unglq.hpp"
@@ -13,10 +13,11 @@ rocblas_status rocsolver_orglq_unglq_impl(rocblas_handle handle,
                                           const rocblas_int lda,
                                           T* ipiv)
 {
+    const char* name = (!is_complex<T> ? "orglq" : "unglq");
+    ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "-k", k, "--lda", lda);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_orgl2_orglq_argCheck(handle, m, n, k, lda, A, ipiv);

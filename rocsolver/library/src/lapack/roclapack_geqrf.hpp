@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2019
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -89,6 +89,8 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
                                         T* diag_tmptr,
                                         T** workArr)
 {
+    ROCSOLVER_ENTER("geqrf", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "bc:", batch_count);
+
     // quick return
     if(m == 0 || n == 0 || batch_count == 0)
         return rocblas_status_success;
@@ -99,9 +101,11 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
     // algorithm
     if(m <= GEQxF_GEQx2_SWITCHSIZE || n <= GEQxF_GEQx2_SWITCHSIZE)
-        return rocsolver_geqr2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, strideP,
-                                           batch_count, scalars, work_workArr, Abyx_norms_trfact,
-                                           diag_tmptr);
+    {
+        rocsolver_geqr2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, strideP, batch_count,
+                                    scalars, work_workArr, Abyx_norms_trfact, diag_tmptr);
+        return rocblas_status_success;
+    }
 
     rocblas_int dim = min(m, n); // total number of pivots
     rocblas_int jb, j = 0;

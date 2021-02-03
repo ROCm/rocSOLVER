@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_ormlq_unmlq.hpp"
@@ -17,10 +17,12 @@ rocblas_status rocsolver_ormlq_unmlq_impl(rocblas_handle handle,
                                           T* C,
                                           const rocblas_int ldc)
 {
+    const char* name = (!is_complex<T> ? "ormlq" : "unmlq");
+    ROCSOLVER_ENTER_TOP(name, "--side", side, "--transposeA", trans, "-m", m, "-n", n, "-k", k,
+                        "--lda", lda, "--ldc", ldc);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_orml2_ormlq_argCheck<COMPLEX>(handle, side, trans, m, n, k, lda,

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_geqlf.hpp"
@@ -12,10 +12,10 @@ rocblas_status rocsolver_geqlf_impl(rocblas_handle handle,
                                     const rocblas_int lda,
                                     T* ipiv)
 {
+    ROCSOLVER_ENTER_TOP("geqlf", "-m", m, "-n", n, "--lda", lda);
+
     if(!handle)
         return rocblas_status_invalid_handle;
-
-    // logging is missing ???
 
     // argument checking
     rocblas_status st = rocsolver_geql2_geqlf_argCheck(handle, m, n, lda, A, ipiv);
