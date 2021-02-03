@@ -35,10 +35,7 @@ endif( )
 
 # Linking lapack library requires fortran flags
 enable_language( Fortran )
-find_package( cblas CONFIG REQUIRED )
-if( NOT cblas_FOUND )
-  message( FATAL_ERROR "cblas is a required dependency and is not found;  try adding cblas path to CMAKE_PREFIX_PATH" )
-endif( )
+find_package( cblas REQUIRED )
 
 find_package( GTest REQUIRED )
 
