@@ -57,7 +57,7 @@ int main() {
   // copy data to GPU
   hipMemcpy(dA, hA.data(), sizeof(double)*size_A, hipMemcpyHostToDevice);
 
-  // begin trace logging (max depth = 4) and profile logging
+  // begin trace logging and profile logging (max depth = 4)
   rocsolver_log_set_layer_mode(rocblas_layer_mode_log_trace | rocblas_layer_mode_log_profile);
   rocsolver_log_set_max_levels(4);
 
@@ -72,7 +72,7 @@ int main() {
   // copy data to GPU
   hipMemcpy(dA, hA.data(), sizeof(double)*size_A, hipMemcpyHostToDevice);
 
-  // begin bench logging and profile logging
+  // begin bench logging and profile logging (max depth = 1)
   rocsolver_log_set_layer_mode(rocblas_layer_mode_log_bench | rocblas_layer_mode_log_profile);
 
   // compute the QR factorization on the GPU

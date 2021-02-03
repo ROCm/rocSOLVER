@@ -110,7 +110,8 @@ void rocsolver_logger::write_profile(rocsolver_profile_map::iterator start,
 
             *profile_os << " (in nested functions: " << (internal_time * 0.001) << " ms)" << '\n';
 
-            write_profile(entry.internal_calls->begin(), entry.internal_calls->end());
+            if(entry.level < max_levels)
+                write_profile(entry.internal_calls->begin(), entry.internal_calls->end());
         }
         else
             *profile_os << '\n';

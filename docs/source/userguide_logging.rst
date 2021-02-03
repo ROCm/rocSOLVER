@@ -28,8 +28,9 @@ Profile logging, upon calling ``rocsolver_log_write_profile`` or ``rocsolver_log
 or terminating the logging session using ``rocsolver_log_end``, will output statistics on each
 called internal rocSOLVER and rocBLAS routine. These include the number of times each function
 was called, the total program runtime occupied by the function, and the total program runtime
-occupied by its nested function calls. Note that, when profile logging is enabled, the stream
-will be synchronized after every internal function call.
+occupied by its nested function calls. As with trace logging, the maximum depth of nested output
+is specified by the user. Note that, when profile logging is enabled, the stream will be synchronized
+after every internal function call.
 
 
 Initialization and set-up
@@ -44,7 +45,7 @@ environment variables.
 The layer mode specifies which logging type(s) are activated, and can be ``rocblas_layer_mode_none``,
 ``rocblas_layer_mode_log_trace``, ``rocblas_layer_mode_log_bench``, ``rocblas_layer_mode_log_profile``,
 or a bitwise combination of these. The max level depth specifies the default maximum depth of nested
-function calls that may appear in the trace logging.
+function calls that may appear in the trace and profile logging.
 
 Both the default layer mode and max level depth can be specified using environment variables.
 

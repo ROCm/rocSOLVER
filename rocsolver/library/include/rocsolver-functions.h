@@ -81,7 +81,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_log_set_layer_mode(const rocblas_layer
     @param[in]
     max_levels      rocblas_int. max_levels >= 1.\n
                     Specifies the maximum depth at which nested function calls
-                    will appear in the trace log.
+                    will appear in the trace and profile logs.
  ******************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_log_set_max_levels(const rocblas_int max_levels);
