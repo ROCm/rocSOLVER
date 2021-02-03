@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
 # ########################################################################
 
 function (get_os_id OS_ID)
