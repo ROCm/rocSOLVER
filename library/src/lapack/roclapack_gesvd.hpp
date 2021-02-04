@@ -429,7 +429,7 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
 
     // size of arrays to store temporary copies
     *size_tempArrayT = fast_thinSVD ? sizeof(T) * k * k * batch_count : 0;
-    *size_tempArrayC = (fast_thinSVD && (othervN || othervO)) ? sizeof(T) * m * n * batch_count : 0;
+    *size_tempArrayC = (fast_thinSVD && (othervN || othervO || leadvO)) ? sizeof(T) * m * n * batch_count : 0;
 
     // workspace required for the bidiagonalization
     if(compressed)
@@ -702,6 +702,8 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                  scalars,work_workArr,Abyx_norms_trfact_X,
                                  diag_tmptr_Y,workArr,row);
 
+//print_device_matrix<T>(rocblas_cout,"factorized A",m,n,A,lda);
+
             //*** STAGE 2: generate orthonormal/unitary matrix from row/column compression ***//
             // N/A
 
@@ -710,6 +712,8 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             hipLaunchKernelGGL(set_zero<T>, dim3(blocks_k, blocks_k, batch_count),
                                dim3(thread_count, thread_count, 1), 0, stream,
                                k, k, A, shiftA, lda, strideA, uplo);
+
+//print_device_matrix<T>(rocblas_cout,"clean triangular part",m,n,A,lda);
             
             rocsolver_gebrd_template<BATCHED, STRIDED>(
                 handle, k, k, A, shiftA, lda, strideA, S, strideS, E, strideE, tau, k,
@@ -717,11 +721,15 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                 diag_tmptr_Y, shiftY, ldy, strideY,
                 batch_count, scalars, work_workArr, Abyx_norms_tmptr);
 
+//print_device_matrix<T>(rocblas_cout,"diagonalized matrix",m,n,A,lda);
+
             //*** STAGE 4: generate orthonormal/unitary matrices from bidiagonalization ***//
             if(!othervN)
                 rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
                     handle, storev_other, k, k, k, A, shiftA, lda, strideA, (tau + offset_other), k, 
                     batch_count, scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);    
+
+//print_device_matrix<T>(rocblas_cout,"right orthogonal matrix from diagonalization",m,n,A,lda);
 
             //*** STAGE 5: Compute singular values and vectors from the bidiagonal form ***//
             if(row)
@@ -733,6 +741,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                     strideV, A, shiftA, lda, strideA, info, batch_count,
                                     (TT*)work_workArr, workArr);
 
+//print_device_matrix<TT>(rocblas_cout,"singular values",1,k,S,1);
+//print_device_matrix<T>(rocblas_cout,"updated right vectors",m,n,A,lda);
+
             //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
             if(othervS || othervA)
             {
@@ -741,6 +752,8 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                dim3(thread_count, thread_count, 1), 0, stream, mn, mn, A, shiftA, lda,
                                strideA, bufferC, shiftC, ldc, strideC);
             }
+
+//print_device_matrix<T>(rocblas_cout,"final right vectors in V",n,n,V,ldv);
         }  
 
         else if(fast_thinSVD)
@@ -751,7 +764,7 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             nu = leftvN ? 0 : k;
             nv = rightvN ? 0 : k;
 
-print_device_matrix<T>(rocblas_cout,"original A",m,n,A,lda);
+//print_device_matrix<T>(rocblas_cout,"original A",m,n,A,lda);
             
             //*** STAGE 1: Row (or column) compression ***//
             local_geqrlq_template<BATCHED,STRIDED>(handle,m,n,A,shiftA,lda,strideA,tau,k,batch_count,
@@ -768,6 +781,9 @@ print_device_matrix<T>(rocblas_cout,"original A",m,n,A,lda);
             hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
                                dim3(thread_count, thread_count, 1), 0, stream, k, k, A, shiftA, lda,
                                strideA, bufferT, shiftT, ldt, strideT, uplo);
+
+//print_device_matrix<T>(rocblas_cout,"factorized A",m,n,A,lda);
+//print_device_matrix<T>(rocblas_cout,"copied triangular part",k,k,bufferT,ldt);
 //hipDeviceSynchronize();
 //printf("\ncompresion lista..."); fflush(stdout);
 
@@ -780,6 +796,8 @@ print_device_matrix<T>(rocblas_cout,"original A",m,n,A,lda);
                 local_orgqrlq_ungqrlq_template<BATCHED, STRIDED>(
                     handle, m, n, k, A, shiftA, lda, strideA, tau, k, batch_count,
                     scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
+
+//print_device_matrix<T>(rocblas_cout,"orthogonal matrix from factorization",m,n,A,lda);
 //hipDeviceSynchronize();
 //printf("\ngenere matriz ortogonal de la compresion..."); fflush(stdout);
 
@@ -789,17 +807,23 @@ print_device_matrix<T>(rocblas_cout,"original A",m,n,A,lda);
                                dim3(thread_count, thread_count, 1), 0, stream,
                                k, k, bufferT, shiftT, ldt, strideT, uplo);
 
+//print_device_matrix<T>(rocblas_cout,"triangular part ready for diagonalization",k,k,bufferT,ldt);
+
             rocsolver_gebrd_template<false, STRIDED>(
                 handle, k, k, bufferT, shiftT, ldt, strideT, S, strideS, E, strideE, tau, k,
                 (tau + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX,
                 diag_tmptr_Y, shiftY, ldy, strideY,
                 batch_count, scalars, work_workArr, Abyx_norms_tmptr);
 
+//print_device_matrix<T>(rocblas_cout,"triangular part diagonalized",k,k,bufferT,ldt);
+
             if(!othervN)
                 // copy results to generate non-lead vectors if required
                 hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
                                dim3(thread_count, thread_count, 1), 0, stream, k, k, bufferT, 
                                shiftT, ldt, strideT, bufferC, shiftC, ldc, strideC);
+
+//print_device_matrix<T>(rocblas_cout,"diagonalization copied into V",n,n,V,ldv);
 //hipDeviceSynchronize();
 //printf("\nbidiagonalization lista..."); fflush(stdout);
 
@@ -814,6 +838,9 @@ print_device_matrix<T>(rocblas_cout,"original A",m,n,A,lda);
                 rocsolver_orgbr_ungbr_template<false, STRIDED>(
                         handle, storev_other, k, k, k, bufferC, shiftC, ldc, strideC, (tau + offset_other), k, 
                         batch_count, scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);    
+
+//print_device_matrix<T>(rocblas_cout,"left orthogonal matrix from diagonalization",k,k,bufferT,ldt);
+//print_device_matrix<T>(rocblas_cout,"right orthogonal matrix from diagonalization",n,n,V,ldv);
 //hipDeviceSynchronize();
 //printf("\ngenere matriz ortogonal de la bidiagonalization..."); fflush(stdout);
 
@@ -826,12 +853,20 @@ print_device_matrix<T>(rocblas_cout,"original A",m,n,A,lda);
                 local_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, S, strideS, E, strideE, bufferT, shiftT, ldt,
                                     strideT, bufferC, shiftC, ldc, strideC, info, batch_count,
                                     (TT*)work_workArr, workArr);
+
+//print_device_matrix<T>(rocblas_cout,"left orthogonal matrix from diagonalization with bdsqr",k,k,bufferT,ldt);
+//print_device_matrix<T>(rocblas_cout,"right orthogonal matrix from diagonalization with bdsqr",n,n,V,ldv);
+//print_device_matrix<TT>(rocblas_cout,"singular values",1,k,S,1);
 //hipDeviceSynchronize();
 //printf("\nSVD lista..."); fflush(stdout);
 
             //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
             if(leadvO)
             {
+                bufferC = tempArrayC;
+                ldc = m;
+                strideC = m * n;
+                
                 // update
                 if(row)
                     rocblasCall_gemm<BATCHED,STRIDED>(handle,rocblas_operation_none,rocblas_operation_none,
@@ -888,6 +923,9 @@ print_device_matrix<T>(rocblas_cout,"original A",m,n,A,lda);
                                dim3(thread_count, thread_count, 1), 0, stream, k, k, bufferC,
                                shiftC, ldc, strideC, A, shiftA, lda, strideA);
             }
+
+//print_device_matrix<T>(rocblas_cout,"final left vectors (in A)",m,n,A,lda);
+//print_device_matrix<T>(rocblas_cout,"final right vectors (in V)",n,n,V,ldv);
 //hipDeviceSynchronize();
 //printf("\nupdate de vectores liston..."); fflush(stdout);
         }
@@ -968,6 +1006,8 @@ print_device_matrix<T>(rocblas_cout,"original A",m,n,A,lda);
                     diag_tmptr_Y, shiftY, ldy, strideY,
                     batch_count, scalars, work_workArr, Abyx_norms_tmptr);
 
+//print_device_matrix<T>(rocblas_cout,"diagonalized A",m,n,A,lda);
+
             //*** STAGE 4: generate orthonormal/unitary matrices from bidiagonalization ***//
             // for lead-dimension vectors
             if(othervS || othervA)
@@ -992,9 +1032,8 @@ print_device_matrix<T>(rocblas_cout,"original A",m,n,A,lda);
                 rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
                         handle, storev_lead, m, n, k, A, shiftA, lda, strideA, (tau + offset_lead), k, batch_count,
                         scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);
-//                local_orgqrlq_ungqrlq_template<BATCHED, STRIDED>(
-//                        handle, m, n, k, A, shiftA, lda, strideA, (tau + offset_lead), k, batch_count,
-//                        scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
+
+//print_device_matrix<T>(rocblas_cout,"orthogonal matrix from diagonalization",m,n,A,lda);
 
             // for the other-side vectors
             if(othervS || othervA)
@@ -1025,6 +1064,9 @@ print_device_matrix<T>(rocblas_cout,"original A",m,n,A,lda);
                                     lda, strideA, U, shiftU, ldu, strideU, info, batch_count,
                                     (TT*)work_workArr, workArr);
             }
+
+//print_device_matrix<TT>(rocblas_cout,"singular values",1,k,S,1);
+//print_device_matrix<T>(rocblas_cout,"final left vectors",m,n,A,lda);
 
             //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
             // N/A
