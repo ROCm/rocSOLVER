@@ -16,6 +16,30 @@ struct rocblas_index_value_t;
 #include "rocsolver_logger.hpp"
 #include <rocblas.h>
 
+// axpy
+template <typename T, typename U>
+rocblas_status rocblasCall_axpy(rocblas_handle handle,
+                                rocblas_int n,
+                                T* alpha,
+                                rocblas_stride stride_alpha,
+                                U x,
+                                rocblas_int shiftx,
+                                rocblas_int incx,
+                                rocblas_stride stridex,
+                                U y,
+                                rocblas_int shifty,
+                                rocblas_int incy,
+                                rocblas_stride stridey,
+                                rocblas_int batch_count)
+{
+    // TODO: How to get alpha for trace logging
+    //ROCBLAS_ENTER("axpy", "n:", n, "shiftX:", shiftx, "incx:", incx, "shiftY:", shifty, "incy:", incy, "bc:", batch_count);
+
+    return rocblas_axpy_template<ROCBLAS_AXPY_NB, T>(
+        handle, n, cast2constType<T>(alpha), stride_alpha, cast2constType<T>(x), shiftx, incx,
+        stridex, y, shifty, incy, stridey, batch_count);
+}
+
 // iamax
 template <bool ISBATCHED, typename T, typename S, typename U>
 rocblas_status rocblasCall_iamax(rocblas_handle handle,
@@ -1300,9 +1324,9 @@ rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                   "bc:", batch_count);
 
     return rocblas_symm_template<false>(
-                       handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A),
-                       offsetA, lda, strideA, cast2constType<T>(B), offsetB, ldb, strideB,
-                       cast2constType<T>(beta), C, offsetC, ldc, strideC, batch_count);
+        handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+        strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
+        ldc, strideC, batch_count);
 }
 
 // hemm
@@ -1334,9 +1358,9 @@ rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                   "bc:", batch_count);
 
     return rocblas_symm_template<true>(
-                       handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A),
-                       offsetA, lda, strideA, cast2constType<T>(B), offsetB, ldb, strideB,
-                       cast2constType<T>(beta), C, offsetC, ldc, strideC, batch_count);
+        handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+        strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
+        ldc, strideC, batch_count);
 }
 
 // trsv memory sizes
@@ -1408,9 +1432,9 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
 
     U supplied_invA = nullptr;
     return rocblas_trsv_template<ROCBLAS_TRSV_BLOCK, BATCHED, T>(
-                       handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B,
-                       offset_B, ldb, stride_B, batch_count, x_temp, x_temp_arr, invA, invA_arr,
-                       cast2constType(supplied_invA), 0, 0, 0);
+        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B, offset_B, ldb,
+        stride_B, batch_count, x_temp, x_temp_arr, invA, invA_arr, cast2constType(supplied_invA), 0,
+        0, 0);
 }
 
 // trsm memory sizes

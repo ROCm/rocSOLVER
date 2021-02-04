@@ -221,7 +221,6 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
     rocblas_int blocks_batch = (batch_count - 1) / 32 + 1;
-    rocblas_int blocks_n;
 
     if(itype == rocblas_eform_ax)
     {
@@ -252,11 +251,9 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                                     batch_count);
                     }
 
-                    blocks_n = (n - k - 2) / 32 + 1;
-                    hipLaunchKernelGGL(axpy_kernel, dim3(batch_count, blocks_n, 1), dim3(1, 32, 1),
-                                       0, stream, n - k - 1, ((T*)store_invA) + 1, strideS, B,
-                                       shiftB + idx2D(k, k + 1, ldb), ldb, strideB, A,
-                                       shiftA + idx2D(k, k + 1, lda), lda, strideA);
+                    rocblasCall_axpy<T>(handle, n - k - 1, ((T*)store_invA) + 1, strideS, B,
+                                        shiftB + idx2D(k, k + 1, ldb), ldb, strideB, A,
+                                        shiftA + idx2D(k, k + 1, lda), lda, strideA, batch_count);
 
                     rocblasCall_syr2_her2<T>(handle, uplo, n - k - 1, scalars, A,
                                              shiftA + idx2D(k, k + 1, lda), lda, strideA, B,
@@ -264,10 +261,9 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                              shiftA + idx2D(k + 1, k + 1, lda), lda, strideA,
                                              batch_count, (T**)workArr_temp_arr);
 
-                    hipLaunchKernelGGL(axpy_kernel, dim3(batch_count, blocks_n, 1), dim3(1, 32, 1),
-                                       0, stream, n - k - 1, ((T*)store_invA) + 1, strideS, B,
-                                       shiftB + idx2D(k, k + 1, ldb), ldb, strideB, A,
-                                       shiftA + idx2D(k, k + 1, lda), lda, strideA);
+                    rocblasCall_axpy<T>(handle, n - k - 1, ((T*)store_invA) + 1, strideS, B,
+                                        shiftB + idx2D(k, k + 1, ldb), ldb, strideB, A,
+                                        shiftA + idx2D(k, k + 1, lda), lda, strideA, batch_count);
 
                     if(COMPLEX)
                         rocsolver_lacgv_template<T>(handle, n - k - 1, B,
@@ -302,11 +298,9 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                     rocblasCall_scal<T>(handle, n - k - 1, (T*)store_invA, strideS, A,
                                         shiftA + idx2D(k + 1, k, lda), 1, strideA, batch_count);
 
-                    blocks_n = (n - k - 2) / 32 + 1;
-                    hipLaunchKernelGGL(axpy_kernel, dim3(batch_count, blocks_n, 1), dim3(1, 32, 1),
-                                       0, stream, n - k - 1, ((T*)store_invA) + 1, strideS, B,
-                                       shiftB + idx2D(k + 1, k, ldb), 1, strideB, A,
-                                       shiftA + idx2D(k + 1, k, lda), 1, strideA);
+                    rocblasCall_axpy<T>(handle, n - k - 1, ((T*)store_invA) + 1, strideS, B,
+                                        shiftB + idx2D(k + 1, k, ldb), 1, strideB, A,
+                                        shiftA + idx2D(k + 1, k, lda), 1, strideA, batch_count);
 
                     rocblasCall_syr2_her2<T>(handle, uplo, n - k - 1, scalars, A,
                                              shiftA + idx2D(k + 1, k, lda), 1, strideA, B,
@@ -314,10 +308,9 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                              shiftA + idx2D(k + 1, k + 1, lda), lda, strideA,
                                              batch_count, (T**)workArr_temp_arr);
 
-                    hipLaunchKernelGGL(axpy_kernel, dim3(batch_count, blocks_n, 1), dim3(1, 32, 1),
-                                       0, stream, n - k - 1, ((T*)store_invA) + 1, strideS, B,
-                                       shiftB + idx2D(k + 1, k, ldb), 1, strideB, A,
-                                       shiftA + idx2D(k + 1, k, lda), 1, strideA);
+                    rocblasCall_axpy<T>(handle, n - k - 1, ((T*)store_invA) + 1, strideS, B,
+                                        shiftB + idx2D(k + 1, k, ldb), 1, strideB, A,
+                                        shiftA + idx2D(k + 1, k, lda), 1, strideA, batch_count);
 
                     rocblasCall_trsv<BATCHED, T>(
                         handle, uplo, rocblas_operation_none, rocblas_diagonal_non_unit, n - k - 1,
@@ -347,20 +340,17 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                     k, B, shiftB, ldb, strideB, A, shiftA + idx2D(0, k, lda), 1,
                                     strideA, (T*)work_x_temp, strideW, batch_count);
 
-                blocks_n = (k - 1) / 32 + 1;
-                hipLaunchKernelGGL(axpy_kernel, dim3(batch_count, blocks_n, 1), dim3(1, 32, 1), 0,
-                                   stream, k, ((T*)store_invA) + 1, strideS, B,
-                                   shiftB + idx2D(0, k, ldb), 1, strideB, A,
-                                   shiftA + idx2D(0, k, lda), 1, strideA);
+                rocblasCall_axpy<T>(handle, k, ((T*)store_invA) + 1, strideS, B,
+                                    shiftB + idx2D(0, k, ldb), 1, strideB, A,
+                                    shiftA + idx2D(0, k, lda), 1, strideA, batch_count);
 
                 rocblasCall_syr2_her2<T>(handle, uplo, k, scalars + 2, A, shiftA + idx2D(0, k, lda),
                                          1, strideA, B, shiftB + idx2D(0, k, ldb), 1, strideB, A,
                                          shiftA, lda, strideA, batch_count, (T**)workArr_temp_arr);
 
-                hipLaunchKernelGGL(axpy_kernel, dim3(batch_count, blocks_n, 1), dim3(1, 32, 1), 0,
-                                   stream, k, ((T*)store_invA) + 1, strideS, B,
-                                   shiftB + idx2D(0, k, ldb), 1, strideB, A,
-                                   shiftA + idx2D(0, k, lda), 1, strideA);
+                rocblasCall_axpy<T>(handle, k, ((T*)store_invA) + 1, strideS, B,
+                                    shiftB + idx2D(0, k, ldb), 1, strideB, A,
+                                    shiftA + idx2D(0, k, lda), 1, strideA, batch_count);
 
                 rocblasCall_scal<T>(handle, k, (T*)store_invA, strideS, A,
                                     shiftA + idx2D(0, k, lda), 1, strideA, batch_count);
@@ -393,20 +383,17 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                     rocsolver_lacgv_template<T>(handle, k, B, shiftB + idx2D(k, 0, ldb), ldb,
                                                 strideB, batch_count);
 
-                blocks_n = (k - 1) / 32 + 1;
-                hipLaunchKernelGGL(axpy_kernel, dim3(batch_count, blocks_n, 1), dim3(1, 32, 1), 0,
-                                   stream, k, ((T*)store_invA) + 1, strideS, B,
-                                   shiftB + idx2D(k, 0, ldb), ldb, strideB, A,
-                                   shiftA + idx2D(k, 0, lda), lda, strideA);
+                rocblasCall_axpy<T>(handle, k, ((T*)store_invA) + 1, strideS, B,
+                                    shiftB + idx2D(k, 0, ldb), ldb, strideB, A,
+                                    shiftA + idx2D(k, 0, lda), lda, strideA, batch_count);
 
                 rocblasCall_syr2_her2<T>(handle, uplo, k, scalars + 2, A, shiftA + idx2D(k, 0, lda),
                                          lda, strideA, B, shiftB + idx2D(k, 0, ldb), ldb, strideB, A,
                                          shiftA, lda, strideA, batch_count, (T**)workArr_temp_arr);
 
-                hipLaunchKernelGGL(axpy_kernel, dim3(batch_count, blocks_n, 1), dim3(1, 32, 1), 0,
-                                   stream, k, ((T*)store_invA) + 1, strideS, B,
-                                   shiftB + idx2D(k, 0, ldb), ldb, strideB, A,
-                                   shiftA + idx2D(k, 0, lda), lda, strideA);
+                rocblasCall_axpy<T>(handle, k, ((T*)store_invA) + 1, strideS, B,
+                                    shiftB + idx2D(k, 0, ldb), ldb, strideB, A,
+                                    shiftA + idx2D(k, 0, lda), lda, strideA, batch_count);
 
                 if(COMPLEX)
                     rocsolver_lacgv_template<T>(handle, k, B, shiftB + idx2D(k, 0, ldb), ldb,
