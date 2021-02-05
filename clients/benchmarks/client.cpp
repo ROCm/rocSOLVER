@@ -35,6 +35,7 @@
 #include "testing_steqr.hpp"
 #include "testing_sterf.hpp"
 #include "testing_sygsx_hegsx.hpp"
+#include "testing_sygv_hegv.hpp"
 #include "testing_sytxx_hetxx.hpp"
 #include <boost/program_options.hpp>
 
@@ -1525,6 +1526,60 @@ try
             testing_sygsx_hegsx<false, true, 1, rocblas_float_complex>(argus);
         else if(precision == 'z')
             testing_sygsx_hegsx<false, true, 1, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sygv")
+    {
+        if(precision == 's')
+            testing_sygv_hegv<false, false, float>(argus);
+        else if(precision == 'd')
+            testing_sygv_hegv<false, false, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sygv_batched")
+    {
+        if(precision == 's')
+            testing_sygv_hegv<true, true, float>(argus);
+        else if(precision == 'd')
+            testing_sygv_hegv<true, true, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sygv_strided_batched")
+    {
+        if(precision == 's')
+            testing_sygv_hegv<false, true, float>(argus);
+        else if(precision == 'd')
+            testing_sygv_hegv<false, true, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hegv")
+    {
+        if(precision == 'c')
+            testing_sygv_hegv<false, false, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sygv_hegv<false, false, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hegv_batched")
+    {
+        if(precision == 'c')
+            testing_sygv_hegv<true, true, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sygv_hegv<true, true, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hegv_strided_batched")
+    {
+        if(precision == 'c')
+            testing_sygv_hegv<false, true, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sygv_hegv<false, true, rocblas_double_complex>(argus);
         else
             throw std::invalid_argument("This function does not support the given --precision");
     }
