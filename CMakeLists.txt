@@ -27,8 +27,7 @@ project( rocsolver LANGUAGES CXX )
 
 # Add our CMake helper files to the lookup path
 list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" )
-list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/rocblascommon/cmake" )
-list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/rocsolver/clients/cmake" )
+list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/clients/cmake" )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -156,9 +155,9 @@ endif( )
 
 find_package( rocblas REQUIRED CONFIG PATHS ${ROCM_PATH} )
 
-add_subdirectory( rocsolver/library )
+add_subdirectory( library )
 
 # Build clients of the library
 if( BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES )
-  add_subdirectory( rocsolver/clients )
+  add_subdirectory( clients )
 endif( )

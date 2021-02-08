@@ -1,0 +1,141 @@
+/* ************************************************************************
+ * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * ************************************************************************ */
+
+#pragma once
+
+#include "rocsolver_ostream.hpp"
+#include <boost/format.hpp>
+
+/*
+ * ===========================================================================
+ *    common location for functions that are used by both the rocSOLVER
+ *    library and rocSOLVER client code.
+ * ===========================================================================
+ */
+
+/*! \brief  CPU Timer(in microsecond): synchronize with the default device and
+ * return wall time */
+double get_time_us();
+
+/*! \brief  CPU Timer(in microsecond): synchronize with given queue/stream and
+ * return wall time */
+double get_time_us_sync(hipStream_t stream);
+
+/*! \brief  CPU Timer(in microsecond): no GPU synchronization and return wall
+ * time */
+double get_time_us_no_sync();
+
+template <typename T, typename... Ts>
+void print_list(rocsolver_ostream& os, const char* sep, T arg, Ts... args)
+{
+    os << arg;
+
+    if(sizeof...(Ts) > 0)
+    {
+        os << sep;
+        print_list(os, sep, args...);
+    }
+}
+inline void print_list(rocsolver_ostream& os, const char* sep)
+{
+    // do nothing
+}
+
+template <typename T1, typename T2, typename... Ts>
+void print_pairs(rocsolver_ostream& os, const char* sep, T1 arg1, T2 arg2, Ts... args)
+{
+    os << arg1 << ' ' << arg2;
+
+    if(sizeof...(Ts) > 0)
+    {
+        os << sep;
+        print_pairs(os, sep, args...);
+    }
+}
+inline void print_pairs(rocsolver_ostream& os, const char* sep)
+{
+    // do nothing
+}
+
+template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+void print_host_matrix(rocsolver_ostream& os,
+                       const std::string name,
+                       const rocblas_int m,
+                       const rocblas_int n,
+                       T* A,
+                       const rocblas_int lda)
+{
+    os << m << "-by-" << n << " matrix: " << name << '\n';
+    for(int i = 0; i < m; i++)
+    {
+        os << "    ";
+        for(int j = 0; j < n; j++)
+        {
+            os << A[j * lda + i];
+            if(j < n - 1)
+                os << ", ";
+        }
+        os << '\n';
+    }
+    os << std::endl;
+}
+
+template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+void print_host_matrix(rocsolver_ostream& os,
+                       const std::string name,
+                       const rocblas_int m,
+                       const rocblas_int n,
+                       T* A,
+                       const rocblas_int lda)
+{
+    os << m << "-by-" << n << " matrix: " << name << '\n';
+    for(int i = 0; i < m; i++)
+    {
+        os << "    ";
+        for(int j = 0; j < n; j++)
+        {
+            os << '[' << A[j * lda + i].real() << "+" << A[j * lda + i].imag() << "i]";
+            if(j < n - 1)
+                os << ", ";
+        }
+        os << '\n';
+    }
+    os << std::endl;
+}
+
+template <typename T>
+void print_device_matrix(rocsolver_ostream& os,
+                         const std::string name,
+                         const rocblas_int m,
+                         const rocblas_int n,
+                         T* A,
+                         const rocblas_int lda)
+{
+    T hA[lda * n];
+    hipMemcpy(hA, A, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+
+    print_host_matrix<T>(os, name, m, n, hA, lda);
+}
+
+/*! \brief  Debugging purpose, print out CPU and GPU result matrix, not valid in
+ * complex number  */
+template <typename T>
+void print_host_matrix(rocsolver_ostream& os,
+                       const std::string name,
+                       const rocblas_int m,
+                       const rocblas_int n,
+                       T* CPU_result,
+                       T* GPU_result,
+                       const rocblas_int lda)
+{
+    for(size_t i = 0; i < m; i++)
+    {
+        for(size_t j = 0; j < n; j++)
+        {
+            os << "matrix  col " << i << ", row " << j << ", CPU result=" << CPU_result[j + i * lda]
+               << ", GPU result=" << GPU_result[j + i * lda] << '\n';
+        }
+    }
+    os << std::endl;
+}
