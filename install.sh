@@ -459,7 +459,7 @@ if [[ "${install_dependencies}" == true ]]; then
     pushd .
     printf "\033[32mBuilding \033[33mgoogletest & lapack\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
     mkdir -p "${build_dir}/deps" && cd "${build_dir}/deps"
-    CXX=${cxx} CC=${cc} FC=${fc} ${cmake_executable} -lpthread -DBUILD_BOOST=OFF "${main}/rocblascommon/deps"
+    CXX=${cxx} CC=${cc} FC=${fc} ${cmake_executable} -lpthread -DBUILD_BOOST=OFF "${main}/deps"
     make -j$(nproc)
     elevate_if_not_root make install
     popd
