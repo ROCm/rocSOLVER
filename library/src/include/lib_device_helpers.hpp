@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -251,7 +251,7 @@ __global__ void restore_diag(S* D,
 
 /** SET_ZERO inserts zeros in all the entries of a m-by-n matrix A.
     If uplo = lower, the lower triangular part of A is kept unchanged.
-    If uplo = upper, the upper triangular part of A is ketp unchanged **/ 
+    If uplo = upper, the upper triangular part of A is ketp unchanged **/
 template <typename T, typename U>
 __global__ void set_zero(const rocblas_int m,
                          const rocblas_int n,
@@ -283,16 +283,16 @@ __global__ void set_zero(const rocblas_int m,
     If uplo = rocblas_fill_lower, only the lower triangular part is copied **/
 template <typename T, typename U1, typename U2>
 __global__ void copy_mat(const rocblas_int m,
-                           const rocblas_int n,
-                           U1 A,
-                           const rocblas_int shiftA,
-                           const rocblas_int lda,
-                           const rocblas_stride strideA,
-                           U2 B,
-                           const rocblas_int shiftB,
-                           const rocblas_int ldb,
-                           const rocblas_stride strideB,
-                           const rocblas_fill uplo = rocblas_fill_full)
+                         const rocblas_int n,
+                         U1 A,
+                         const rocblas_int shiftA,
+                         const rocblas_int lda,
+                         const rocblas_stride strideA,
+                         U2 B,
+                         const rocblas_int shiftB,
+                         const rocblas_int ldb,
+                         const rocblas_stride strideB,
+                         const rocblas_fill uplo = rocblas_fill_full)
 {
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -311,7 +311,6 @@ __global__ void copy_mat(const rocblas_int m,
         }
     }
 }
-
 
 template <typename T, typename U>
 __global__ void copyshift_right(const bool copy,
