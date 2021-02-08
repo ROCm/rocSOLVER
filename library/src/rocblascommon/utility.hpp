@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "definitions.h"
+#include "definitions.hpp"
 #include "rocblas.h"
 #include "rocsolver.h"
 #include <cmath>

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "clientcommon.hpp"
-#include "lapack_host_reference.h"
+#include "lapack_host_reference.hpp"
 #include "norm.hpp"
 #include "rocsolver.hpp"
 #include "rocsolver_arguments.hpp"

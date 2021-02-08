@@ -4,12 +4,12 @@
 
 #pragma once
 
-//#include "lapack_host_reference.hpp"
+//#include "lapack_host_reference.hpppp"
 //#include "logging.h"
 #include "rocblas.h"
 #include "rocblas_test.hpp"
 //#include "rocblas_vector.hpp"
-//#include "utility.h"
+//#include "utility.hpp"
 #include <cstdio>
 #include <iostream>
 #include <string>

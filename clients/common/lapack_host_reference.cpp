@@ -2,7 +2,7 @@
  * Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
-#include "lapack_host_reference.h"
+#include "lapack_host_reference.hpp"
 #include "cblas.h"
 #include "rocblas.h"
 
