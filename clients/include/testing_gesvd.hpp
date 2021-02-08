@@ -719,14 +719,14 @@ void testing_gesvd(Arguments argus)
                                        &max_error, &max_errorv);
         }
 
-        //        // collect performance data
-        //        if(argus.timing)
-        //        {
-        //            gesvd_getPerfData<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU,
-        //                                          ldu, stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, hA, hS,
-        //                                          hU, hV, hE, hinfo, &gpu_time_used, &cpu_time_used,
-        //                                          hot_calls, argus.perf);
-        //        }
+        // collect performance data
+        if(argus.timing)
+        {
+            gesvd_getPerfData<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU,
+                                          ldu, stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, hA, hS,
+                                          hU, hV, hE, hinfo, &gpu_time_used, &cpu_time_used,
+                                          hot_calls, argus.perf);
+        }
     }
 
     else
@@ -761,14 +761,14 @@ void testing_gesvd(Arguments argus)
                                        &max_error, &max_errorv);
         }
 
-        //        // collect performance data
-        //        if(argus.timing)
-        //        {
-        //            gesvd_getPerfData<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU,
-        //                                          ldu, stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, hA, hS,
-        //                                          hU, hV, hE, hinfo, &gpu_time_used, &cpu_time_used,
-        //                                          hot_calls, argus.perf);
-        //        }
+        // collect performance data
+        if(argus.timing)
+        {
+            gesvd_getPerfData<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU,
+                                          ldu, stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, hA, hS,
+                                          hU, hV, hE, hinfo, &gpu_time_used, &cpu_time_used,
+                                          hot_calls, argus.perf);
+        }
     }
 
     // validate results for rocsolver-test

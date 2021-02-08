@@ -511,21 +511,10 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
     }
 
     // get max sizes
-
-    /*    rocblas_cout << "\nw: " << w[0] << " " << w[1] << " " << w[2] << " " << w[3] << " " << w[4]
-                 << " " << w[5];
-    rocblas_cout << "\na: " << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << " " << a[4];
-    rocblas_cout << "\nx: " << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << x[4]
-                 << " " << x[5];
-    rocblas_cout << "\ny: " << y[0] << " " << y[1] << " " << y[2];*/
     *size_work_workArr = *std::max_element(w.data(), w.data() + 6);
     *size_Abyx_norms_tmptr = *std::max_element(a.data(), a.data() + 5);
     *size_Abyx_norms_trfact_X = *std::max_element(x.data(), x.data() + 6);
     *size_diag_tmptr_Y = *std::max_element(y.data(), y.data() + 3);
-    /*    rocblas_cout << "\n*size_work_workArr " << *size_work_workArr;
-    rocblas_cout << "\n*size_Abyx_norms_tmptr " << *size_Abyx_norms_tmptr;
-    rocblas_cout << "\n*size_Abyx_norms_trfact_X " << *size_Abyx_norms_trfact_X;
-    rocblas_cout << "\n*size_diag_tmptr_Y " << *size_diag_tmptr_Y << "\n";*/
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename TT, typename W>
@@ -693,11 +682,11 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
     const rocblas_int blocks_n = (n - 1) / thread_count + 1;
     const rocblas_int blocks_k = (k - 1) / thread_count + 1;
 
-    // A thin SVD could be computed for matrices with sufficiently more rows than
-    // columns (or columns than rows) by starting with a QR factorization (or LQ
-    // factorization) and working with the triangular factor afterwards. When
-    // computing a thin SVD, a fast algorithm could be executed by doing some
-    // computations out-of-place.
+    /** A thin SVD could be computed for matrices with sufficiently more rows than
+        columns (or columns than rows) by starting with a QR factorization (or LQ
+        factorization) and working with the triangular factor afterwards. When
+        computing a thin SVD, a fast algorithm could be executed by doing some
+        computations out-of-place. **/
 
     if(thinSVD)
     /*******************************************/
@@ -906,20 +895,21 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
         /************ SUB-CASE: USE IN-PLACE THIN-SVD ALGORITHM *******/
         /**************************************************************/
         {
-            //            print_device_matrix<T>(rocblas_cout, "original matrix", m, n, A, lda);
+            /** (Note: A compression is not required when leadvO and othervN. We are
+                compressing matrix A here, albeit requiring extra workspace for the purpose of
+                testing. -See corresponding unit test for more details-) **/
+
             //*** STAGE 1: Row (or column) compression ***//
             local_geqrlq_template<BATCHED, STRIDED>(handle, m, n, A, shiftA, lda, strideA, tau, k,
                                                     batch_count, scalars, work_workArr,
                                                     Abyx_norms_trfact_X, diag_tmptr_Y, workArr, row);
 
-            //            print_device_matrix<T>(rocblas_cout, "factorized matrix", m, n, A, lda);
             if(!leadvO)
                 // copy factorization to U or V when needed
                 hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_m, blocks_n, batch_count),
                                    dim3(thread_count, thread_count, 1), 0, stream, m, n, A, shiftA,
                                    lda, strideA, UV, shiftUV, lduv, strideUV);
 
-            //            print_device_matrix<T>(rocblas_cout, "copied to U", m, n, U, ldu);
             if(othervS || othervA || (leadvO && othervN))
                 // copy the triangular part
                 hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
@@ -940,8 +930,6 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                     handle, m, n, k, UV, shiftUV, lduv, strideUV, tau, k, batch_count, scalars,
                     (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
 
-            //            print_device_matrix<T>(rocblas_cout, "orthogonal matrix in U to feed ormbr", m, n,
-            //                                   U, ldu);
             //*** STAGE 3: Bidiagonalization ***//
             if(othervS || othervA || (leadvO && othervN))
             {
@@ -965,7 +953,6 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                    dim3(thread_count, thread_count, 1), 0, stream, k, k, A, shiftA,
                                    lda, strideA, uplo);
 
-                //                print_device_matrix<T>(rocblas_cout, "cleaned A for diagonalization", k, k, A, lda);
                 rocsolver_gebrd_template<BATCHED, STRIDED>(
                     handle, k, k, A, shiftA, lda, strideA, S, strideS, E, strideE, tau, k,
                     (tau + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX,
@@ -975,10 +962,6 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                 uplo = rocblas_fill_upper;
             }
 
-            //            print_device_matrix<T>(rocblas_cout, "diagonalized matrix in A to feed ormbr", k, k, A, lda);
-            //rocblas_cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
-            //            print_device_matrix<TT>(rocblas_cout, "diagonal in S", 1, k, S, 1);
-            //            print_device_matrix<TT>(rocblas_cout, "off diag in E", 1, k, E, 1);
             //*** STAGE 4: generate orthonormal/unitary matrices from bidiagonalization ***//
             // for lead-dimension vectors
             if(othervS || othervA || (leadvO && othervN))
@@ -1000,8 +983,6 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                     (tau + offset_lead), k, UV, shiftUV, lduv, strideUV, batch_count, scalars,
                     Abyx_norms_tmptr, diag_tmptr_Y, Abyx_norms_trfact_X, workArr);
 
-            //rocblas_cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
-            //print_device_matrix<T>(rocblas_cout, "orthogonal matrix in U after local_ormbr", m,n, U, ldu);
             // for the other-side vectors
             if(othervS || othervA)
                 rocsolver_orgbr_ungbr_template<false, STRIDED>(
