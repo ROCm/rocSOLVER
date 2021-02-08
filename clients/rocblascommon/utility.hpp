@@ -4,7 +4,7 @@
 
 #pragma once
 
-//#include "cblas_interface.hpp"
+//#include "lapack_host_reference.hpp"
 //#include "logging.h"
 #include "rocblas.h"
 #include "rocblas_test.hpp"
@@ -20,7 +20,7 @@
  * \brief provide common utilities
  */
 
-// We use rocblas_cout and rocblas_cerr instead of std::cout, std::cerr, stdout
+// We use rocsolver_cout and rocsolver_cerr instead of std::cout, std::cerr, stdout
 // and stderr, for thread-safe IO.
 //
 // All stdio and std::ostream functions related to stdout and stderr are
@@ -35,12 +35,12 @@
 // If you are here because of a poisoned identifier error, here is the rationale
 // for each included identifier:
 //
-// cout, stdout: rocblas_cout should be used instead, for thread-safe and atomic
-// line buffering cerr, stderr: rocblas_cerr should be used instead, for
+// cout, stdout: rocsolver_cout should be used instead, for thread-safe and atomic
+// line buffering cerr, stderr: rocsolver_cerr should be used instead, for
 // thread-safe and atomic line buffering clog: C++ stream which should not be
 // used gets: Always unsafe; buffer-overflows; removed from later versions of
 // the language; use fgets puts, putchar, fputs, printf, fprintf, vprintf,
-// vfprintf: Use rocblas_cout or rocblas_cerr sprintf, vsprintf: Possible buffer
+// vfprintf: Use rocsolver_cout or rocsolver_cerr sprintf, vsprintf: Possible buffer
 // overflows; us snprintf or vsnprintf instead strerror: Thread-unsafe; use
 // snprintf / dprintf with %m or strerror_* alternatives strtok: Thread-unsafe;
 // use strtok_r gmtime, ctime, asctime, localtime: Thread-unsafe tmpnam:
@@ -55,7 +55,7 @@
 #pragma GCC poison cout cerr clog stdout stderr gets puts putchar fputs fprintf printf sprintf    \
     vfprintf vprintf vsprintf perror strerror strtok gmtime ctime asctime localtime tmpnam putenv \
         clearenv fcloseall ecvt fcvt sleep
-#define BOOST_ASSERT_MSG_OSTREAM rocblas_cerr
+#define BOOST_ASSERT_MSG_OSTREAM rocsolver_cerr
 // Suppress warnings about hipMalloc(), hipFree() except in rocblas-test and
 // rocblas-bench
 #undef hipMalloc
@@ -145,7 +145,7 @@ std::string rocblas_exepath();
 //     for(size_t i = 0; i < m; i++)
 //         for(size_t j = 0; j < n; j++)
 //         {
-//             rocblas_cout << "matrix  col " << i << ", row " << j
+//             rocsolver_cout << "matrix  col " << i << ", row " << j
 //                          << ", CPU result=" << CPU_result[j + i * lda]
 //                          << ", GPU result=" << GPU_result[j + i * lda] << std::endl;
 //         }
@@ -154,12 +154,12 @@ std::string rocblas_exepath();
 // template <typename T>
 // void rocblas_print_matrix(const char* name, T* A, size_t m, size_t n, size_t lda)
 // {
-//     rocblas_cout << "---------- " << name << " ----------\n";
+//     rocsolver_cout << "---------- " << name << " ----------\n";
 //     for(size_t i = 0; i < m; i++)
 //     {
 //         for(size_t j = 0; j < n; j++)
-//             rocblas_cout << A[i + j * lda] << " ";
-//         rocblas_cout << std::endl;
+//             rocsolver_cout << A[i + j * lda] << " ";
+//         rocsolver_cout << std::endl;
 //     }
 // }
 
@@ -337,7 +337,7 @@ void print_strided_batched(const char* name,
 {
     // n1, n2, n3 are matrix dimensions, sometimes called m, n, batch_count
     // s1, s1, s3 are matrix strides, sometimes called 1, lda, stride_a
-    rocblas_cout << "---------- " << name << " ----------\n";
+    rocsolver_cout << "---------- " << name << " ----------\n";
     int max_size = 8;
 
     for(int i3 = 0; i3 < n3 && i3 < max_size; i3++)
@@ -346,12 +346,12 @@ void print_strided_batched(const char* name,
         {
             for(int i2 = 0; i2 < n2 && i2 < max_size; i2++)
             {
-                rocblas_cout << A[(i1 * s1) + (i2 * s2) + (i3 * s3)] << "|";
+                rocsolver_cout << A[(i1 * s1) + (i2 * s2) + (i3 * s3)] << "|";
             }
-            rocblas_cout << "\n";
+            rocsolver_cout << "\n";
         }
         if(i3 < (n3 - 1) && i3 < (max_size - 1))
-            rocblas_cout << "\n";
+            rocsolver_cout << "\n";
     }
-    rocblas_cout << std::flush;
+    rocsolver_cout << std::flush;
 }

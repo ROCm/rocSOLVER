@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -50,8 +50,8 @@ public:
         T* d;
         if((hipMalloc)(&d, bytes) != hipSuccess)
         {
-            rocblas_cerr << "Error allocating " << bytes << " bytes (" << (bytes >> 30) << " GB)"
-                         << std::endl;
+            rocsolver_cerr << "Error allocating " << bytes << " bytes (" << (bytes >> 30) << " GB)"
+                           << std::endl;
 
             d = nullptr;
         }

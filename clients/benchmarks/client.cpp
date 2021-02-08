@@ -233,7 +233,7 @@ try
     // print help message
     if(vm.count("help"))
     {
-        rocblas_cout << desc << std::endl;
+        rocsolver_cout << desc << std::endl;
         return 0;
     }
 
@@ -1419,6 +1419,6 @@ try
 
 catch(const std::invalid_argument& exp)
 {
-    rocblas_cerr << exp.what() << std::endl;
+    rocsolver_cerr << exp.what() << std::endl;
     return -1;
 }

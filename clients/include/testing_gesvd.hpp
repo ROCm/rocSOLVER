@@ -1,11 +1,11 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
 
-#include "cblas_interface.h"
 #include "clientcommon.hpp"
+#include "lapack_host_reference.h"
 #include "norm.hpp"
 #include "rocsolver.hpp"
 #include "rocsolver_arguments.hpp"
@@ -786,9 +786,9 @@ void testing_gesvd(Arguments argus)
         {
             if(svects)
                 max_error = (max_error >= max_errorv) ? max_error : max_errorv;
-            rocblas_cout << "\n============================================\n";
-            rocblas_cout << "Arguments:\n";
-            rocblas_cout << "============================================\n";
+            rocsolver_cout << "\n============================================\n";
+            rocsolver_cout << "Arguments:\n";
+            rocsolver_cout << "============================================\n";
             if(BATCHED)
             {
                 rocsolver_bench_output("left_svect", "right_svect", "m", "n", "lda", "strideS",
@@ -808,9 +808,9 @@ void testing_gesvd(Arguments argus)
                 rocsolver_bench_output("left_svect", "right_svect", "m", "n", "lda", "ldu", "ldv");
                 rocsolver_bench_output(leftvC, rightvC, m, n, lda, ldu, ldv);
             }
-            rocblas_cout << "\n============================================\n";
-            rocblas_cout << "Results:\n";
-            rocblas_cout << "============================================\n";
+            rocsolver_cout << "\n============================================\n";
+            rocsolver_cout << "Results:\n";
+            rocsolver_cout << "============================================\n";
             if(argus.norm_check)
             {
                 rocsolver_bench_output("cpu_time", "gpu_time", "error");
@@ -821,7 +821,7 @@ void testing_gesvd(Arguments argus)
                 rocsolver_bench_output("cpu_time", "gpu_time");
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
-            rocblas_cout << std::endl;
+            rocsolver_cout << std::endl;
         }
         else
         {

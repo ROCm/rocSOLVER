@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -12,17 +12,17 @@
 // reallocate workspace
 #define USE_ROCBLAS_REALLOC_ON_DEMAND true
 
-#define ROCSOLVER_BENCH_INFORM(case)                                       \
-    do                                                                     \
-    {                                                                      \
-        if(case == 2)                                                      \
-            rocblas_cout << "Invalid value in arguments ..." << std::endl; \
-        else if(case == 1)                                                 \
-            rocblas_cout << "Invalid size arguments..." << std::endl;      \
-        else                                                               \
-            rocblas_cout << "Quick return..." << std::endl;                \
-        rocblas_cout << "No performance data to collect." << std::endl;    \
-        rocblas_cout << "No computations to verify." << std::endl;         \
+#define ROCSOLVER_BENCH_INFORM(case)                                         \
+    do                                                                       \
+    {                                                                        \
+        if(case == 2)                                                        \
+            rocsolver_cout << "Invalid value in arguments ..." << std::endl; \
+        else if(case == 1)                                                   \
+            rocsolver_cout << "Invalid size arguments..." << std::endl;      \
+        else                                                                 \
+            rocsolver_cout << "Quick return..." << std::endl;                \
+        rocsolver_cout << "No performance data to collect." << std::endl;    \
+        rocsolver_cout << "No computations to verify." << std::endl;         \
     } while(0)
 
 template <typename T>
@@ -41,7 +41,7 @@ constexpr double get_epsilon()
 inline void rocsolver_bench_output()
 {
     // empty version
-    rocblas_cout << std::endl;
+    rocsolver_cout << std::endl;
 }
 
 template <typename T, typename... Ts>
@@ -50,7 +50,7 @@ inline void rocsolver_bench_output(T arg, Ts... args)
     using boost::format;
     format f("%|-15|");
 
-    rocblas_cout << f % arg;
+    rocsolver_cout << f % arg;
     rocsolver_bench_output(args...);
 }
 

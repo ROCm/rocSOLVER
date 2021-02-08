@@ -41,7 +41,7 @@ if( NOT cblas_FOUND )
 endif( )
 
 set( rocsolver_benchmark_common
-      ../common/cblas_interface.cpp
+      ../common/lapack_host_reference.cpp
       ../rocblascommon/utility.cpp
     )
 

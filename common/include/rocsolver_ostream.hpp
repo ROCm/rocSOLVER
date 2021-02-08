@@ -31,8 +31,8 @@
  * rocBLAS output streams                                                    *
  *****************************************************************************/
 
-#define rocblas_cout (rocsolver_ostream::cout())
-#define rocblas_cerr (rocsolver_ostream::cerr())
+#define rocsolver_cout (rocsolver_ostream::cout())
+#define rocsolver_cerr (rocsolver_ostream::cerr())
 
 /***************************************************************************
  * The rocsolver_ostream class performs atomic IO on log files, and provides *

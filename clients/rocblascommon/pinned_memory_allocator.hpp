@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -30,8 +30,8 @@ struct pinned_memory_allocator
         if(status != hipSuccess)
         {
             ptr = nullptr;
-            rocblas_cerr << "rocBLAS pinned_memory_allocator failed to allocate memory: "
-                         << hipGetErrorString(status) << std::endl;
+            rocsolver_cerr << "rocBLAS pinned_memory_allocator failed to allocate memory: "
+                           << hipGetErrorString(status) << std::endl;
         }
         return ptr;
     }
@@ -41,8 +41,8 @@ struct pinned_memory_allocator
         hipError_t status = hipHostFree(ptr);
         if(status != hipSuccess)
         {
-            rocblas_cerr << "rocBLAS pinned_memory_allocator failed to free memory: "
-                         << hipGetErrorString(status) << std::endl;
+            rocsolver_cerr << "rocBLAS pinned_memory_allocator failed to free memory: "
+                           << hipGetErrorString(status) << std::endl;
         }
     }
 };
