@@ -57,22 +57,22 @@ rocblas_status rocsolver_gesvd_strided_batched_impl(rocblas_handle handle,
     size_t size_tempArrayT, size_tempArrayC;
     // size of array of pointers (only for batched case)
     size_t size_workArr;
+
     rocsolver_gesvd_getMemorySize<false, T, TT>(
         left_svect, right_svect, m, n, batch_count, fast_alg, &size_scalars, &size_work_workArr,
-        &size_Abyx_norms_tmptr, &size_Abyx_norms_trfact_X, &size_diag_tmptr_Y, &size_tau, 
+        &size_Abyx_norms_tmptr, &size_Abyx_norms_trfact_X, &size_diag_tmptr_Y, &size_tau,
         &size_tempArrayT, &size_tempArrayC, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_workArr,
-                                                      size_Abyx_norms_tmptr, size_Abyx_norms_trfact_X, 
-                                                      size_diag_tmptr_Y, size_tau, size_tempArrayT,
-                                                      size_tempArrayC, size_workArr);
+        return rocblas_set_optimal_device_memory_size(
+            handle, size_scalars, size_work_workArr, size_Abyx_norms_tmptr, size_Abyx_norms_trfact_X,
+            size_diag_tmptr_Y, size_tau, size_tempArrayT, size_tempArrayC, size_workArr);
 
     // memory workspace allocation
     void *scalars, *work_workArr, *Abyx_norms_tmptr, *Abyx_norms_trfact_X, *diag_tmptr_Y, *tau;
     void *tempArrayT, *tempArrayC, *workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_work_workArr, size_Abyx_norms_tmptr,
-                              size_Abyx_norms_trfact_X, size_diag_tmptr_Y, size_tau, 
+                              size_Abyx_norms_trfact_X, size_diag_tmptr_Y, size_tau,
                               size_tempArrayT, size_tempArrayC, size_workArr);
 
     if(!mem)
@@ -94,8 +94,8 @@ rocblas_status rocsolver_gesvd_strided_batched_impl(rocblas_handle handle,
     return rocsolver_gesvd_template<false, true, T>(
         handle, left_svect, right_svect, m, n, A, shiftA, lda, strideA, S, strideS, U, ldu, strideU,
         V, ldv, strideV, E, strideE, fast_alg, info, batch_count, (T*)scalars, work_workArr,
-        (T*)Abyx_norms_tmptr, (T*)Abyx_norms_trfact_X, (T*)diag_tmptr_Y, (T*)tau, 
-        (T*)tempArrayT, (T*)tempArrayC, (T**)workArr);
+        (T*)Abyx_norms_tmptr, (T*)Abyx_norms_trfact_X, (T*)diag_tmptr_Y, (T*)tau, (T*)tempArrayT,
+        (T*)tempArrayC, (T**)workArr);
 }
 
 /*
