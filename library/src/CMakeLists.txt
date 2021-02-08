@@ -45,7 +45,7 @@ set( rocsolver_auxiliary_source
 )
 
 set( rocsolver_lapack_source
-  # triangular factorizations 
+  # triangular factorizations
   lapack/roclapack_getf2.cpp
   lapack/roclapack_getf2_batched.cpp
   lapack/roclapack_getf2_strided_batched.cpp
@@ -111,8 +111,8 @@ set( rocsolver_lapack_source
 set( auxiliaries
   ../../common/src/common_host_helpers.cpp
   ../../common/src/rocsolver_ostream.cpp
-  buildinfo.cpp
-  rocsolver_logger.cpp
+  common/buildinfo.cpp
+  common/rocsolver_logger.cpp
 )
 
 prepend_path( ".." rocsolver_headers_public relative_rocsolver_headers_public )
