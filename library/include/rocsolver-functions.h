@@ -10096,7 +10096,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle 
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    itype     rocblas_eform.\n
+    itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblem.
     @param[in]
     uplo      rocblas_fill.\n
@@ -10174,7 +10174,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2(rocblas_handle handle,
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    itype     rocblas_eform.\n
+    itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblem.
     @param[in]
     uplo      rocblas_fill.\n
@@ -10253,7 +10253,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2(rocblas_handle handle,
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    itype     rocblas_eform.\n
+    itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo      rocblas_fill.\n
@@ -10337,7 +10337,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_batched(rocblas_handle handle,
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    itype     rocblas_eform.\n
+    itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo      rocblas_fill.\n
@@ -10421,7 +10421,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_batched(rocblas_handle handle,
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    itype     rocblas_eform.\n
+    itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo      rocblas_fill.\n
@@ -10517,7 +10517,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_strided_batched(rocblas_handle 
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    itype     rocblas_eform.\n
+    itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo      rocblas_fill.\n
@@ -10612,7 +10612,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_strided_batched(rocblas_handle 
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    itype     rocblas_eform.\n
+    itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblem.
     @param[in]
     uplo      rocblas_fill.\n
@@ -10690,7 +10690,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst(rocblas_handle handle,
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    itype     rocblas_eform.\n
+    itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblem.
     @param[in]
     uplo      rocblas_fill.\n
@@ -10769,7 +10769,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst(rocblas_handle handle,
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    itype     rocblas_eform.\n
+    itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo      rocblas_fill.\n
@@ -10853,7 +10853,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_batched(rocblas_handle handle,
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    itype     rocblas_eform.\n
+    itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo      rocblas_fill.\n
@@ -10937,7 +10937,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_batched(rocblas_handle handle,
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    itype     rocblas_eform.\n
+    itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo      rocblas_fill.\n
@@ -11033,7 +11033,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_strided_batched(rocblas_handle 
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    itype     rocblas_eform.\n
+    itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo      rocblas_fill.\n
