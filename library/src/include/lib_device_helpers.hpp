@@ -251,7 +251,7 @@ __global__ void restore_diag(S* D,
 
 /** SET_ZERO inserts zeros in all the entries of a m-by-n matrix A.
     If uplo = lower, the lower triangular part of A is kept unchanged.
-    If uplo = upper, the upper triangular part of A is ketp unchanged **/
+    If uplo = upper, the upper triangular part of A is kept unchanged **/
 template <typename T, typename U>
 __global__ void set_zero(const rocblas_int m,
                          const rocblas_int n,
