@@ -33,6 +33,9 @@ Options:
                               Use only absolute paths.
                               (Default is /opt/rocm/rocblas)
 
+  --deps_dir <depsdir>        Specify path to the directory where dependencies built from source will be installed.
+                              (Default is builddir/deps/install)
+
   --cleanup                   Pass this flag to remove intermediary build files after build and reduce disk usage
 
   -g | --debug                Pass this flag to build in Debug mode (equivalent to set CMAKE_BUILD_TYPE=Debug).
@@ -42,9 +45,10 @@ Options:
 
   -i | --install              Pass this flag to generate and install library package after build.
 
-  -d | --dependencies         Pass this flag to also build and install external dependencies.
-                              Dependecies are to be installed in /usr/local. This should be done only once.
-                              (this does not install rocBLAS nor ROCm software stack)
+  -d | --dependencies         Pass this flag to also build and/or install external dependencies. By default,
+                              dependecies built from source are installed in <builddir>/deps/install.
+                              Note that client dependencies will only be installed if combined with --clients.
+                              This does not install rocBLAS or the ROCm software stack.
 
   -c | --clients              Pass this flag to also build the library clients benchmark and gtest.
                               (Generated binaries will be located at builddir/clients/staging)
@@ -245,7 +249,7 @@ install_packages( )
   esac
 }
 
-# given a relative path, returns the absolute path
+# given an (existing) relative path, returns the absolute path
 make_absolute_path( ) {
   (cd "$1" && pwd -P)
 }
@@ -295,6 +299,7 @@ build_dir=./build
 build_type=Release
 build_relocatable=false
 build_docs=false
+deps_dir="${build_dir}/deps/install"
 optimal=true
 cleanup=false
 architecture=
@@ -307,7 +312,7 @@ architecture=
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,cleanup,debug,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrna: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,cleanup,debug,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,deps_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrna: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -366,6 +371,9 @@ while true; do
     --rocblas_dir)
         rocblas_dir=${2}
         shift 2 ;;
+    --deps_dir)
+        deps_dir=${2}
+        shift 2 ;;
     -a|--architecture)
         architecture=${2}
         shift 2 ;;
@@ -398,6 +406,10 @@ else
   rm -rf -- "${build_dir}/debug"
 fi
 
+# resolve relative paths
+mkdir -p -- "${deps_dir}"
+deps_dir="$(make_absolute_path "${deps_dir}")"
+
 # Default cmake executable is called cmake
 cmake_executable=cmake
 
@@ -422,11 +434,11 @@ if [[ "${install_dependencies}" == true ]]; then
   install_packages
 
   if [[ "${build_clients}" == true ]]; then
-    # The following builds googletest & lapack from source, installs into cmake default /usr/local
+    # build googletest and lapack from source
     pushd .
-    printf "${grn}Building ${yel}googletest & lapack${grn} from source; installing into ${yel}/usr/local${rst}\n"
-    mkdir -p "${build_dir}/deps" && cd "${build_dir}/deps"
-    CXX=${cxx} CC=${cc} FC=${fc} ${cmake_executable} -lpthread -DBUILD_BOOST=OFF "${main}/deps"
+    printf "${grn}Building ${yel}googletest & lapack${grn} from source; installing into ${yel}${deps_dir}${rst}\n"
+    rm -rf -- "${build_dir}/deps" && mkdir -p -- "${build_dir}/deps" && cd -- "${build_dir}/deps"
+    CXX=${cxx} CC=${cc} FC=${fc} ${cmake_executable} -lpthread -DBUILD_BOOST=OFF -DCMAKE_INSTALL_PREFIX="${deps_dir}" "${main}/deps"
     make -j$(nproc)
     elevate_if_not_root make install
     popd
@@ -469,7 +481,7 @@ else
   mkdir -p release && cd release
 fi
 
-cmake_common_options="${cmake_common_options} -DROCM_PATH=${rocm_path} -Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${lib_dir} -DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir} -DCMAKE_BUILD_TYPE=${build_type}"
+cmake_common_options="${cmake_common_options} -DROCM_PATH=${rocm_path} -Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${lib_dir} -DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir} -DCMAKE_BUILD_TYPE=${build_type} -DCMAKE_PREFIX_PATH=${deps_dir}"
 
 if [[ "${static_lib}" == true ]]; then
   cmake_common_options="${cmake_common_options} -DBUILD_SHARED_LIBS=OFF"
