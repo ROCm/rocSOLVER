@@ -30,7 +30,6 @@ Options:
                               (Default is /opt/rocm)
 
   --rocblas_dir <blasdir>     Specify path to the companion rocBLAS-library root directory.
-                              Use only absolute paths.
                               (Default is /opt/rocm/rocblas)
 
   --deps_dir <depsdir>        Specify path to the directory where dependencies built from source will be installed.
@@ -409,6 +408,7 @@ fi
 # resolve relative paths
 mkdir -p -- "${deps_dir}"
 deps_dir="$(make_absolute_path "${deps_dir}")"
+rocblas_dir="$(make_absolute_path "${rocblas_dir}")"
 
 # Default cmake executable is called cmake
 cmake_executable=cmake
