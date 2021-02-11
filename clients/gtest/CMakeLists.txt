@@ -35,7 +35,7 @@ endif( )
 
 # Linking lapack library requires fortran flags
 enable_language( Fortran )
-find_package( cblas REQUIRED )
+find_package( cblas REQUIRED CONFIG )
 
 find_package( GTest REQUIRED )
 

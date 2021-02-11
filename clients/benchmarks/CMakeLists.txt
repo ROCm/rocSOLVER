@@ -35,7 +35,7 @@ find_package( Threads REQUIRED )
 
 # Linking lapack library requires fortran flags
 enable_language( Fortran )
-find_package( cblas REQUIRED )
+find_package( cblas REQUIRED CONFIG )
 
 set( rocsolver_benchmark_common
       ../common/lapack_host_reference.cpp
