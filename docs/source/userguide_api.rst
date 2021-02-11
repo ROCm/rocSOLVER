@@ -891,7 +891,7 @@ rocsolver_<type>hetrd_strided_batched()
 .. doxygenfunction:: rocsolver_chetrd_strided_batched
 
 
-Symmetric Matrix Reductions
+Generalized Eigensolvers
 ---------------------------------
 
 rocsolver_<type>sygs2()

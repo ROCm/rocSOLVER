@@ -10064,7 +10064,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief SYGS2 reduces a symmetric-definite generalized eigenproblem to standard form.
+    \brief SYGS2 reduces a real symmetric-definite generalized eigenproblem to standard
+    form.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -10109,7 +10110,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle 
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix A. On exit, the transformed matrix.
+              On entry, the matrix A. On exit, the transformed matrix associated with
+              the equivalent standard eigenvalue problem.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A.
@@ -10117,7 +10119,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle 
     B         pointer to type. Array on the GPU of dimension ldb*n.\n
               The triangular factor of the matrix B, as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
 
     ********************************************************************/
@@ -10187,7 +10189,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2(rocblas_handle handle,
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix A. On exit, the transformed matrix.
+              On entry, the matrix A. On exit, the transformed matrix associated with
+              the equivalent standard eigenvalue problem.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A.
@@ -10195,7 +10198,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2(rocblas_handle handle,
     B         pointer to type. Array on the GPU of dimension ldb*n.\n
               The triangular factor of the matrix B, as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
 
     ********************************************************************/
@@ -10220,8 +10223,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief SYGS2_BATCHED reduces a batch of symmetric-definite generalized eigenproblems to
-    standard form.
+    \brief SYGS2_BATCHED reduces a batch of real symmetric-definite generalized eigenproblems
+    to standard form.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -10266,15 +10269,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2(rocblas_handle handle,
               The matrix dimensions.
     @param[inout]
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_i. On exit, the transformed matrices.
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A_i.
     @param[out]
-    B         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
               The triangular factors of the matrices B_i, as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
@@ -10350,15 +10354,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_batched(rocblas_handle handle,
               The matrix dimensions.
     @param[inout]
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_i. On exit, the transformed matrices.
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A_i.
     @param[out]
-    B         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
               The triangular factors of the matrices B_i, as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
@@ -10388,7 +10393,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_batched(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief SYGS2_STRIDED_BATCHED reduces a batch of symmetric-definite generalized
+    \brief SYGS2_STRIDED_BATCHED reduces a batch of real symmetric-definite generalized
     eigenproblems to standard form.
 
     \details
@@ -10434,7 +10439,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_batched(rocblas_handle handle,
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_i. On exit, the transformed matrices.
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A_i.
@@ -10446,12 +10452,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_batched(rocblas_handle handle,
     B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
               The triangular factors of the matrices B_i, as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
     @param[in]
     strideB   rocblas_stride.\n
               Stride from the start of one matrix B_i and the next one B_(i+1).
-              There is no restriction for the value of strideB. Normal use case is strideB >= lda*n.
+              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
@@ -10530,7 +10536,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_strided_batched(rocblas_handle 
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_i. On exit, the transformed matrices.
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A_i.
@@ -10542,12 +10549,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_strided_batched(rocblas_handle 
     B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
               The triangular factors of the matrices B_i, as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
     @param[in]
     strideB   rocblas_stride.\n
               Stride from the start of one matrix B_i and the next one B_(i+1).
-              There is no restriction for the value of strideB. Normal use case is strideB >= lda*n.
+              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
@@ -10580,7 +10587,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief SYGST reduces a symmetric-definite generalized eigenproblem to standard form.
+    \brief SYGST reduces a real symmetric-definite generalized eigenproblem to standard
+    form.
 
     \details
     (This is the blocked version of the algorithm).
@@ -10625,7 +10633,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_strided_batched(rocblas_handle 
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix A. On exit, the transformed matrix.
+              On entry, the matrix A. On exit, the transformed matrix associated with
+              the equivalent standard eigenvalue problem.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A.
@@ -10633,7 +10642,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_strided_batched(rocblas_handle 
     B         pointer to type. Array on the GPU of dimension ldb*n.\n
               The triangular factor of the matrix B, as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
 
     ********************************************************************/
@@ -10703,7 +10712,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst(rocblas_handle handle,
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix A. On exit, the transformed matrix.
+              On entry, the matrix A. On exit, the transformed matrix associated with
+              the equivalent standard eigenvalue problem.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A.
@@ -10711,7 +10721,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst(rocblas_handle handle,
     B         pointer to type. Array on the GPU of dimension ldb*n.\n
               The triangular factor of the matrix B, as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
 
     ********************************************************************/
@@ -10736,8 +10746,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief SYGST_BATCHED reduces a batch of symmetric-definite generalized eigenproblems to
-    standard form.
+    \brief SYGST_BATCHED reduces a batch of real symmetric-definite generalized eigenproblems
+    to standard form.
 
     \details
     (This is the blocked version of the algorithm).
@@ -10782,15 +10792,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst(rocblas_handle handle,
               The matrix dimensions.
     @param[inout]
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_i. On exit, the transformed matrices.
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A_i.
     @param[out]
-    B         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
               The triangular factors of the matrices B_i, as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
@@ -10866,15 +10877,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_batched(rocblas_handle handle,
               The matrix dimensions.
     @param[inout]
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_i. On exit, the transformed matrices.
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A_i.
     @param[out]
-    B         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
               The triangular factors of the matrices B_i, as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
@@ -10904,7 +10916,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_batched(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief SYGST_STRIDED_BATCHED reduces a batch of symmetric-definite generalized
+    \brief SYGST_STRIDED_BATCHED reduces a batch of real symmetric-definite generalized
     eigenproblems to standard form.
 
     \details
@@ -10950,7 +10962,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_batched(rocblas_handle handle,
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_i. On exit, the transformed matrices.
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A_i.
@@ -10962,12 +10975,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_batched(rocblas_handle handle,
     B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
               The triangular factors of the matrices B_i, as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
     @param[in]
     strideB   rocblas_stride.\n
               Stride from the start of one matrix B_i and the next one B_(i+1).
-              There is no restriction for the value of strideB. Normal use case is strideB >= lda*n.
+              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.
@@ -11046,7 +11059,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_strided_batched(rocblas_handle 
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_i. On exit, the transformed matrices.
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A_i.
@@ -11058,12 +11072,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_strided_batched(rocblas_handle 
     B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
               The triangular factors of the matrices B_i, as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
     @param[in]
     strideB   rocblas_stride.\n
               Stride from the start of one matrix B_i and the next one B_(i+1).
-              There is no restriction for the value of strideB. Normal use case is strideB >= lda*n.
+              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
     @param[in]
     batch_count  rocblas_int. batch_count >= 0.\n
                  Number of matrices in the batch.

@@ -110,9 +110,8 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
     // if the matrix is too small, use the unblocked variant of the algorithm
     if(n <= nb)
         return rocsolver_sygs2_hegs2_template<BATCHED, T>(
-                             handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb,
-                             strideB, batch_count, scalars, work_x_temp, workArr_temp_arr,
-                             store_invA, invA_arr);
+            handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
+            scalars, work_x_temp, workArr_temp_arr, store_invA, invA_arr);
 
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
