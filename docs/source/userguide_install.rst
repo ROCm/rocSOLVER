@@ -131,13 +131,10 @@ rocSOLVER using the hip-clang compiler.
 
     ./install.sh -d
 
-With the -d flag, the installer will first
-install all the external dependencies
-required by rocSOLVER library in
-``/usr/local``.
-This flag only needs to be used once. For
-subsequent invocations of install.sh it is
-not necessary to rebuild the dependencies.
+With the -d flag, the installer will first install all the external dependencies
+required by rocSOLVER library in ``rocSOLVER/build/deps/install``.  This flag
+only needs to be used once for a given build directory. It is not necessary to
+rebuild the dependencies for subsequent invocations of install.sh.
 
 .. code-block:: bash
 
@@ -156,12 +153,8 @@ dependencies have been installed.
 
     ./install.sh -dc
 
-By combining c and d flags, the installer
-will also install all the external
+By combining c and d flags, the installer will also install all the external
 dependencies required by rocSOLVER clients.
-The -d flag only needs to be used once. For
-subsequent invocations of install.sh it is
-not necessary to rebuild the dependencies.
 
 .. code-block:: bash
 

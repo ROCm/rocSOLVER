@@ -9,6 +9,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Optimizations
 
 ### Changed
+- Reworked dependency installation for building rocSOLVER from source with `./install.sh -d`
 
 ### Removed
 - Removed hcc compiler support
