@@ -58,6 +58,10 @@ inline void print_pairs(rocsolver_ostream& os, const char* sep)
     // do nothing
 }
 
+/** Set of helpers to print out data hosted in the CPU and/or the GPU **/
+/***********************************************************************/
+
+/*! \brief Print data from a real array on the CPU */
 template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
 void print_host_matrix(rocsolver_ostream& os,
                        const std::string name,
@@ -81,6 +85,7 @@ void print_host_matrix(rocsolver_ostream& os,
     os << std::endl;
 }
 
+/*! \brief Print data from a complex array on the CPU */
 template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
 void print_host_matrix(rocsolver_ostream& os,
                        const std::string name,
@@ -104,16 +109,38 @@ void print_host_matrix(rocsolver_ostream& os,
     os << std::endl;
 }
 
+/*! \brief Print data from a normal or strided_batched array on the GPU */
 template <typename T>
 void print_device_matrix(rocsolver_ostream& os,
                          const std::string name,
                          const rocblas_int m,
                          const rocblas_int n,
                          T* A,
-                         const rocblas_int lda)
+                         const rocblas_int lda,
+                         const rocblas_stride stride = 1,
+                         const rocblas_int idx = 0)
 {
     T hA[lda * n];
-    hipMemcpy(hA, A, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+    hipMemcpy(hA, A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+
+    print_host_matrix<T>(os, name, m, n, hA, lda);
+}
+
+/*! \brief Print data from a batched array on the GPU */
+template <typename T>
+void print_device_matrix(rocsolver_ostream& os,
+                         const std::string name,
+                         const rocblas_int m,
+                         const rocblas_int n,
+                         T* const A[],
+                         const rocblas_int lda,
+                         const rocblas_stride stride = 1,
+                         const rocblas_int idx = 0)
+{
+    T hA[lda * n];
+    T* AA[1];
+    hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost);
+    hipMemcpy(hA, AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
     print_host_matrix<T>(os, name, m, n, hA, lda);
 }

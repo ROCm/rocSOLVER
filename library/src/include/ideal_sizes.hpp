@@ -68,10 +68,7 @@
 #define xxGST_xxGS2_BLOCKSIZE 64
 
 // gesvd
-// This value should be ~1.6 (to be tuned).
-// For now, it is set to a very high value until the thin-SVD algorithm is
-// implemented
-#define THIN_SVD_SWITCH 16000
+#define THIN_SVD_SWITCH 1.6
 
 // THESE FOLLOWING VALUES ARE TO MATCH ROCBLAS C++ INTERFACE
 // THEY ARE DEFINED/TUNNED IN ROCBLAS
