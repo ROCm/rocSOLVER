@@ -653,6 +653,123 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
         ld_c, stride_c, batch_count);
 }
 
+// gemm overload
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+rocblas_status rocblasCall_gemm(rocblas_handle handle,
+                                rocblas_operation trans_a,
+                                rocblas_operation trans_b,
+                                rocblas_int m,
+                                rocblas_int n,
+                                rocblas_int k,
+                                U alpha,
+                                T* const A[],
+                                rocblas_int offset_a,
+                                rocblas_int ld_a,
+                                rocblas_stride stride_a,
+                                T* B,
+                                rocblas_int offset_b,
+                                rocblas_int ld_b,
+                                rocblas_stride stride_b,
+                                U beta,
+                                T* C,
+                                rocblas_int offset_c,
+                                rocblas_int ld_c,
+                                rocblas_stride stride_c,
+                                rocblas_int batch_count,
+                                T** work)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, stride_b, batch_count);
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, C,
+                       stride_c, batch_count);
+
+    return rocblas_gemm_template<BATCHED, T>(
+        handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
+        cast2constType<T>(work), offset_b, ld_b, stride_b, beta,
+        cast2constPointer(work + batch_count), offset_c, ld_c, stride_c, batch_count);
+}
+
+// gemm overload
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+rocblas_status rocblasCall_gemm(rocblas_handle handle,
+                                rocblas_operation trans_a,
+                                rocblas_operation trans_b,
+                                rocblas_int m,
+                                rocblas_int n,
+                                rocblas_int k,
+                                U alpha,
+                                T* A,
+                                rocblas_int offset_a,
+                                rocblas_int ld_a,
+                                rocblas_stride stride_a,
+                                T* const B[],
+                                rocblas_int offset_b,
+                                rocblas_int ld_b,
+                                rocblas_stride stride_b,
+                                U beta,
+                                T* C,
+                                rocblas_int offset_c,
+                                rocblas_int ld_c,
+                                rocblas_stride stride_c,
+                                rocblas_int batch_count,
+                                T** work)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, stride_a, batch_count);
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, C,
+                       stride_c, batch_count);
+
+    return rocblas_gemm_template<BATCHED, T>(
+        handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(work), offset_a, ld_a, stride_a,
+        cast2constType<T>(B), offset_b, ld_b, stride_b, beta, cast2constPointer(work + batch_count),
+        offset_c, ld_c, stride_c, batch_count);
+}
+
+// gemm overload
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+rocblas_status rocblasCall_gemm(rocblas_handle handle,
+                                rocblas_operation trans_a,
+                                rocblas_operation trans_b,
+                                rocblas_int m,
+                                rocblas_int n,
+                                rocblas_int k,
+                                U alpha,
+                                T* A,
+                                rocblas_int offset_a,
+                                rocblas_int ld_a,
+                                rocblas_stride stride_a,
+                                T* B,
+                                rocblas_int offset_b,
+                                rocblas_int ld_b,
+                                rocblas_stride stride_b,
+                                U beta,
+                                T* const C[],
+                                rocblas_int offset_c,
+                                rocblas_int ld_c,
+                                rocblas_stride stride_c,
+                                rocblas_int batch_count,
+                                T** work)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, stride_a, batch_count);
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, B,
+                       stride_b, batch_count);
+
+    return rocblas_gemm_template<BATCHED, T>(
+        handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(work), offset_a, ld_a, stride_a,
+        cast2constType<T>(work + batch_count), offset_b, ld_b, stride_b, beta, C, offset_c, ld_c,
+        stride_c, batch_count);
+}
+
 // trmm
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocblasCall_trmm(rocblas_handle handle,

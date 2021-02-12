@@ -502,10 +502,11 @@ void testing_gesvd(Arguments argus)
         return;
     }
 
-    // (TESTING OF SINGULAR VECTORS IS DONE IMPLICITLY, NOT EXPLICITLY COMPARING
-    // WITH LAPACK.
-    // SO, WE ALWAYS NEED TO COMPUTE THE SAME NUMBER OF ELEMENTS OF THE RIGHT AND
-    // LEFT VECTORS)
+    /** TESTING OF SINGULAR VECTORS IS DONE IMPLICITLY, NOT EXPLICITLY COMPARING
+        WITH LAPACK. SO, WE ALWAYS NEED TO COMPUTE THE SAME NUMBER OF ELEMENTS OF
+        THE RIGHT AND LEFT VECTORS. WHILE DOING THIS, IF MORE VECTORS THAN THE
+        SPECIFIED IN THE MAIN CALL NEED TO BE COMPUTED, WE DO SO WITH AN EXTRA CALL **/
+
     rocblas_svect leftvT = rocblas_svect_none;
     rocblas_svect rightvT = rocblas_svect_none;
     rocblas_int ldvT = 1;
@@ -771,7 +772,7 @@ void testing_gesvd(Arguments argus)
     }
 
     // validate results for rocsolver-test
-    // using 2 * min(m,n) * machine_precision as tolerance
+    // using 2 * min(m, n) * machine_precision as tolerance
     if(argus.unit_check)
     {
         ROCSOLVER_TEST_CHECK(T, max_error, 2 * min(m, n));

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -249,23 +249,66 @@ __global__ void restore_diag(S* D,
         a[j] = d[i];
 }
 
+/** SET_ZERO inserts zeros in all the entries of a m-by-n matrix A.
+    If uplo = lower, the lower triangular part of A is kept unchanged.
+    If uplo = upper, the upper triangular part of A is kept unchanged **/
 template <typename T, typename U>
 __global__ void set_zero(const rocblas_int m,
                          const rocblas_int n,
                          U A,
                          const rocblas_int shiftA,
                          const rocblas_int lda,
-                         const rocblas_stride strideA)
+                         const rocblas_stride strideA,
+                         const rocblas_fill uplo = rocblas_fill_full)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const bool lower = (uplo == rocblas_fill_lower);
+    const bool full = (uplo == rocblas_fill_full);
+    const bool upper = (uplo == rocblas_fill_upper);
 
     if(i < m && j < n)
     {
-        T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+        if(full || (lower && j > i) || (upper && i > j))
+        {
+            T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+            Ap[i + j * lda] = 0.0;
+        }
+    }
+}
 
-        Ap[i + j * lda] = 0.0;
+/** COPY_MAT copies m-by-n array A into B.
+    If uplo = rocblas_fill_upper, only the upper triangular part is copied
+    If uplo = rocblas_fill_lower, only the lower triangular part is copied **/
+template <typename T, typename U1, typename U2>
+__global__ void copy_mat(const rocblas_int m,
+                         const rocblas_int n,
+                         U1 A,
+                         const rocblas_int shiftA,
+                         const rocblas_int lda,
+                         const rocblas_stride strideA,
+                         U2 B,
+                         const rocblas_int shiftB,
+                         const rocblas_int ldb,
+                         const rocblas_stride strideB,
+                         const rocblas_fill uplo = rocblas_fill_full)
+{
+    const auto b = hipBlockIdx_z;
+    const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    const bool lower = (uplo == rocblas_fill_lower);
+    const bool full = (uplo == rocblas_fill_full);
+    const bool upper = (uplo == rocblas_fill_upper);
+
+    if(i < m && j < n)
+    {
+        if(full || (lower && i >= j) || (upper && j >= i))
+        {
+            T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+            T* Bp = load_ptr_batch<T>(B, b, shiftB, strideB);
+            Bp[i + j * ldb] = Ap[i + j * lda];
+        }
     }
 }
 
