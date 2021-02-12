@@ -10063,6 +10063,1052 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle 
                                                                  const rocblas_int batch_count);
 //! @}
 
+/*! @{
+    \brief SYGS2 reduces a real symmetric-definite generalized eigenproblem to standard
+    form.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The problem solved by this function is either of the form
+
+        A * X = lambda * B * X (1st form), or
+        A * B * X = lambda * X (2nd form), or
+        B * A * X = lambda * X (3rd form),
+
+    depending on the value of itype.
+
+    If the problem is of the 1st form, then A is overwritten as
+
+        inv(U') * A * inv(U), or
+        inv(L)  * A * inv(L'),
+
+    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    on the value of uplo.
+
+    If the problem is of the 2nd or 3rd form, then A is overwritten as
+
+        U  * A * U', or
+        L' * A * L,
+
+    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    on the value of uplo.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    itype     #rocblas_eform.\n
+              Specifies the form of the generalized eigenproblem.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrix A is stored, and
+              whether the factorization applied to B was upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) parts of A and
+              B are not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The matrix dimensions.
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the matrix A. On exit, the transformed matrix associated with
+              the equivalent standard eigenvalue problem.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A.
+    @param[out]
+    B         pointer to type. Array on the GPU of dimension ldb*n.\n
+              The triangular factor of the matrix B, as returned by POTRF.
+    @param[in]
+    ldb       rocblas_int. ldb >= n.\n
+              Specifies the leading dimension of B.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssygs2(rocblas_handle handle,
+                                                 const rocblas_eform itype,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 float* A,
+                                                 const rocblas_int lda,
+                                                 float* B,
+                                                 const rocblas_int ldb);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2(rocblas_handle handle,
+                                                 const rocblas_eform itype,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 double* A,
+                                                 const rocblas_int lda,
+                                                 double* B,
+                                                 const rocblas_int ldb);
+//! @}
+
+/*! @{
+    \brief HEGS2 reduces a hermitian-definite generalized eigenproblem to standard form.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The problem solved by this function is either of the form
+
+        A * X = lambda * B * X (1st form), or
+        A * B * X = lambda * X (2nd form), or
+        B * A * X = lambda * X (3rd form),
+
+    depending on the value of itype.
+
+    If the problem is of the 1st form, then A is overwritten as
+
+        inv(U') * A * inv(U), or
+        inv(L)  * A * inv(L'),
+
+    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    on the value of uplo.
+
+    If the problem is of the 2nd or 3rd form, then A is overwritten as
+
+        U  * A * U', or
+        L' * A * L,
+
+    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    on the value of uplo.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    itype     #rocblas_eform.\n
+              Specifies the form of the generalized eigenproblem.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrix A is stored, and
+              whether the factorization applied to B was upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) parts of A and
+              B are not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The matrix dimensions.
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the matrix A. On exit, the transformed matrix associated with
+              the equivalent standard eigenvalue problem.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A.
+    @param[out]
+    B         pointer to type. Array on the GPU of dimension ldb*n.\n
+              The triangular factor of the matrix B, as returned by POTRF.
+    @param[in]
+    ldb       rocblas_int. ldb >= n.\n
+              Specifies the leading dimension of B.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_chegs2(rocblas_handle handle,
+                                                 const rocblas_eform itype,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_float_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_float_complex* B,
+                                                 const rocblas_int ldb);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2(rocblas_handle handle,
+                                                 const rocblas_eform itype,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_double_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_double_complex* B,
+                                                 const rocblas_int ldb);
+//! @}
+
+/*! @{
+    \brief SYGS2_BATCHED reduces a batch of real symmetric-definite generalized eigenproblems
+    to standard form.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The problem solved by this function is either of the form
+
+        A_i * X_i = lambda_i * B_i * X_i (1st form), or
+        A_i * B_i * X_i = lambda_i * X_i (2nd form), or
+        B_i * A_i * X_i = lambda_i * X_i (3rd form),
+
+    depending on the value of itype.
+
+    If the problem is of the 1st form, then A_i is overwritten as
+
+        inv(U_i') * A_i * inv(U_i), or
+        inv(L_i)  * A_i * inv(L_i'),
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    If the problem is of the 2nd or 3rd form, then A_i is overwritten as
+
+        U_i  * A_i * U_i', or
+        L_i' * A_i * L_i,
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    itype     #rocblas_eform.\n
+              Specifies the form of the generalized eigenproblems.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrices A_i are stored, and
+              whether the factorization applied to B_i was upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
+              B_i are not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The matrix dimensions.
+    @param[inout]
+    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A_i.
+    @param[out]
+    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+              The triangular factors of the matrices B_i, as returned by POTRF.
+    @param[in]
+    ldb       rocblas_int. ldb >= n.\n
+              Specifies the leading dimension of B_i.
+    @param[in]
+    batch_count  rocblas_int. batch_count >= 0.\n
+                 Number of matrices in the batch.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssygs2_batched(rocblas_handle handle,
+                                                         const rocblas_eform itype,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         float* const A[],
+                                                         const rocblas_int lda,
+                                                         float* const B[],
+                                                         const rocblas_int ldb,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_batched(rocblas_handle handle,
+                                                         const rocblas_eform itype,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         double* const A[],
+                                                         const rocblas_int lda,
+                                                         double* const B[],
+                                                         const rocblas_int ldb,
+                                                         const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief HEGS2_BATCHED reduces a batch of hermitian-definite generalized eigenproblems to
+    standard form.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The problem solved by this function is either of the form
+
+        A_i * X_i = lambda_i * B_i * X_i (1st form), or
+        A_i * B_i * X_i = lambda_i * X_i (2nd form), or
+        B_i * A_i * X_i = lambda_i * X_i (3rd form),
+
+    depending on the value of itype.
+
+    If the problem is of the 1st form, then A_i is overwritten as
+
+        inv(U_i') * A_i * inv(U_i), or
+        inv(L_i)  * A_i * inv(L_i'),
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    If the problem is of the 2nd or 3rd form, then A_i is overwritten as
+
+        U_i  * A_i * U_i', or
+        L_i' * A_i * L_i,
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    itype     #rocblas_eform.\n
+              Specifies the form of the generalized eigenproblems.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrices A_i are stored, and
+              whether the factorization applied to B_i was upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
+              B_i are not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The matrix dimensions.
+    @param[inout]
+    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A_i.
+    @param[out]
+    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+              The triangular factors of the matrices B_i, as returned by POTRF.
+    @param[in]
+    ldb       rocblas_int. ldb >= n.\n
+              Specifies the leading dimension of B_i.
+    @param[in]
+    batch_count  rocblas_int. batch_count >= 0.\n
+                 Number of matrices in the batch.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_chegs2_batched(rocblas_handle handle,
+                                                         const rocblas_eform itype,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_float_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_float_complex* const B[],
+                                                         const rocblas_int ldb,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_batched(rocblas_handle handle,
+                                                         const rocblas_eform itype,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_double_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_double_complex* const B[],
+                                                         const rocblas_int ldb,
+                                                         const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief SYGS2_STRIDED_BATCHED reduces a batch of real symmetric-definite generalized
+    eigenproblems to standard form.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The problem solved by this function is either of the form
+
+        A_i * X_i = lambda_i * B_i * X_i (1st form), or
+        A_i * B_i * X_i = lambda_i * X_i (2nd form), or
+        B_i * A_i * X_i = lambda_i * X_i (3rd form),
+
+    depending on the value of itype.
+
+    If the problem is of the 1st form, then A_i is overwritten as
+
+        inv(U_i') * A_i * inv(U_i), or
+        inv(L_i)  * A_i * inv(L_i'),
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    If the problem is of the 2nd or 3rd form, then A_i is overwritten as
+
+        U_i  * A_i * U_i', or
+        L_i' * A_i * L_i,
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    itype     #rocblas_eform.\n
+              Specifies the form of the generalized eigenproblems.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrices A_i are stored, and
+              whether the factorization applied to B_i was upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
+              B_i are not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The matrix dimensions.
+    @param[inout]
+    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A_i.
+    @param[in]
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_i and the next one A_(i+1).
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[out]
+    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+              The triangular factors of the matrices B_i, as returned by POTRF.
+    @param[in]
+    ldb       rocblas_int. ldb >= n.\n
+              Specifies the leading dimension of B_i.
+    @param[in]
+    strideB   rocblas_stride.\n
+              Stride from the start of one matrix B_i and the next one B_(i+1).
+              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
+    @param[in]
+    batch_count  rocblas_int. batch_count >= 0.\n
+                 Number of matrices in the batch.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssygs2_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_eform itype,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 float* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 float* B,
+                                                                 const rocblas_int ldb,
+                                                                 const rocblas_stride strideB,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_eform itype,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 double* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 double* B,
+                                                                 const rocblas_int ldb,
+                                                                 const rocblas_stride strideB,
+                                                                 const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief HEGS2_STRIDED_BATCHED reduces a batch of hermitian-definite generalized
+    eigenproblems to standard form.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The problem solved by this function is either of the form
+
+        A_i * X_i = lambda_i * B_i * X_i (1st form), or
+        A_i * B_i * X_i = lambda_i * X_i (2nd form), or
+        B_i * A_i * X_i = lambda_i * X_i (3rd form),
+
+    depending on the value of itype.
+
+    If the problem is of the 1st form, then A_i is overwritten as
+
+        inv(U_i') * A_i * inv(U_i), or
+        inv(L_i)  * A_i * inv(L_i'),
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    If the problem is of the 2nd or 3rd form, then A_i is overwritten as
+
+        U_i  * A_i * U_i', or
+        L_i' * A_i * L_i,
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    itype     #rocblas_eform.\n
+              Specifies the form of the generalized eigenproblems.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrices A_i are stored, and
+              whether the factorization applied to B_i was upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
+              B_i are not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The matrix dimensions.
+    @param[inout]
+    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A_i.
+    @param[in]
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_i and the next one A_(i+1).
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[out]
+    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+              The triangular factors of the matrices B_i, as returned by POTRF.
+    @param[in]
+    ldb       rocblas_int. ldb >= n.\n
+              Specifies the leading dimension of B_i.
+    @param[in]
+    strideB   rocblas_stride.\n
+              Stride from the start of one matrix B_i and the next one B_(i+1).
+              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
+    @param[in]
+    batch_count  rocblas_int. batch_count >= 0.\n
+                 Number of matrices in the batch.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_chegs2_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_eform itype,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_float_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_float_complex* B,
+                                                                 const rocblas_int ldb,
+                                                                 const rocblas_stride strideB,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_eform itype,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_double_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_double_complex* B,
+                                                                 const rocblas_int ldb,
+                                                                 const rocblas_stride strideB,
+                                                                 const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief SYGST reduces a real symmetric-definite generalized eigenproblem to standard
+    form.
+
+    \details
+    (This is the blocked version of the algorithm).
+
+    The problem solved by this function is either of the form
+
+        A * X = lambda * B * X (1st form), or
+        A * B * X = lambda * X (2nd form), or
+        B * A * X = lambda * X (3rd form),
+
+    depending on the value of itype.
+
+    If the problem is of the 1st form, then A is overwritten as
+
+        inv(U') * A * inv(U), or
+        inv(L)  * A * inv(L'),
+
+    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    on the value of uplo.
+
+    If the problem is of the 2nd or 3rd form, then A is overwritten as
+
+        U  * A * U', or
+        L' * A * L,
+
+    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    on the value of uplo.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    itype     #rocblas_eform.\n
+              Specifies the form of the generalized eigenproblem.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrix A is stored, and
+              whether the factorization applied to B was upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) parts of A and
+              B are not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The matrix dimensions.
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the matrix A. On exit, the transformed matrix associated with
+              the equivalent standard eigenvalue problem.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A.
+    @param[out]
+    B         pointer to type. Array on the GPU of dimension ldb*n.\n
+              The triangular factor of the matrix B, as returned by POTRF.
+    @param[in]
+    ldb       rocblas_int. ldb >= n.\n
+              Specifies the leading dimension of B.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssygst(rocblas_handle handle,
+                                                 const rocblas_eform itype,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 float* A,
+                                                 const rocblas_int lda,
+                                                 float* B,
+                                                 const rocblas_int ldb);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst(rocblas_handle handle,
+                                                 const rocblas_eform itype,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 double* A,
+                                                 const rocblas_int lda,
+                                                 double* B,
+                                                 const rocblas_int ldb);
+//! @}
+
+/*! @{
+    \brief HEGST reduces a hermitian-definite generalized eigenproblem to standard form.
+
+    \details
+    (This is the blocked version of the algorithm).
+
+    The problem solved by this function is either of the form
+
+        A * X = lambda * B * X (1st form), or
+        A * B * X = lambda * X (2nd form), or
+        B * A * X = lambda * X (3rd form),
+
+    depending on the value of itype.
+
+    If the problem is of the 1st form, then A is overwritten as
+
+        inv(U') * A * inv(U), or
+        inv(L)  * A * inv(L'),
+
+    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    on the value of uplo.
+
+    If the problem is of the 2nd or 3rd form, then A is overwritten as
+
+        U  * A * U', or
+        L' * A * L,
+
+    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    on the value of uplo.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    itype     #rocblas_eform.\n
+              Specifies the form of the generalized eigenproblem.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrix A is stored, and
+              whether the factorization applied to B was upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) parts of A and
+              B are not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The matrix dimensions.
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the matrix A. On exit, the transformed matrix associated with
+              the equivalent standard eigenvalue problem.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A.
+    @param[out]
+    B         pointer to type. Array on the GPU of dimension ldb*n.\n
+              The triangular factor of the matrix B, as returned by POTRF.
+    @param[in]
+    ldb       rocblas_int. ldb >= n.\n
+              Specifies the leading dimension of B.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_chegst(rocblas_handle handle,
+                                                 const rocblas_eform itype,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_float_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_float_complex* B,
+                                                 const rocblas_int ldb);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst(rocblas_handle handle,
+                                                 const rocblas_eform itype,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_double_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_double_complex* B,
+                                                 const rocblas_int ldb);
+//! @}
+
+/*! @{
+    \brief SYGST_BATCHED reduces a batch of real symmetric-definite generalized eigenproblems
+    to standard form.
+
+    \details
+    (This is the blocked version of the algorithm).
+
+    The problem solved by this function is either of the form
+
+        A_i * X_i = lambda_i * B_i * X_i (1st form), or
+        A_i * B_i * X_i = lambda_i * X_i (2nd form), or
+        B_i * A_i * X_i = lambda_i * X_i (3rd form),
+
+    depending on the value of itype.
+
+    If the problem is of the 1st form, then A_i is overwritten as
+
+        inv(U_i') * A_i * inv(U_i), or
+        inv(L_i)  * A_i * inv(L_i'),
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    If the problem is of the 2nd or 3rd form, then A_i is overwritten as
+
+        U_i  * A_i * U_i', or
+        L_i' * A_i * L_i,
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    itype     #rocblas_eform.\n
+              Specifies the form of the generalized eigenproblems.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrices A_i are stored, and
+              whether the factorization applied to B_i was upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
+              B_i are not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The matrix dimensions.
+    @param[inout]
+    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A_i.
+    @param[out]
+    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+              The triangular factors of the matrices B_i, as returned by POTRF.
+    @param[in]
+    ldb       rocblas_int. ldb >= n.\n
+              Specifies the leading dimension of B_i.
+    @param[in]
+    batch_count  rocblas_int. batch_count >= 0.\n
+                 Number of matrices in the batch.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssygst_batched(rocblas_handle handle,
+                                                         const rocblas_eform itype,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         float* const A[],
+                                                         const rocblas_int lda,
+                                                         float* const B[],
+                                                         const rocblas_int ldb,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_batched(rocblas_handle handle,
+                                                         const rocblas_eform itype,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         double* const A[],
+                                                         const rocblas_int lda,
+                                                         double* const B[],
+                                                         const rocblas_int ldb,
+                                                         const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief HEGST_BATCHED reduces a batch of hermitian-definite generalized eigenproblems to
+    standard form.
+
+    \details
+    (This is the blocked version of the algorithm).
+
+    The problem solved by this function is either of the form
+
+        A_i * X_i = lambda_i * B_i * X_i (1st form), or
+        A_i * B_i * X_i = lambda_i * X_i (2nd form), or
+        B_i * A_i * X_i = lambda_i * X_i (3rd form),
+
+    depending on the value of itype.
+
+    If the problem is of the 1st form, then A_i is overwritten as
+
+        inv(U_i') * A_i * inv(U_i), or
+        inv(L_i)  * A_i * inv(L_i'),
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    If the problem is of the 2nd or 3rd form, then A_i is overwritten as
+
+        U_i  * A_i * U_i', or
+        L_i' * A_i * L_i,
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    itype     #rocblas_eform.\n
+              Specifies the form of the generalized eigenproblems.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrices A_i are stored, and
+              whether the factorization applied to B_i was upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
+              B_i are not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The matrix dimensions.
+    @param[inout]
+    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A_i.
+    @param[out]
+    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+              The triangular factors of the matrices B_i, as returned by POTRF.
+    @param[in]
+    ldb       rocblas_int. ldb >= n.\n
+              Specifies the leading dimension of B_i.
+    @param[in]
+    batch_count  rocblas_int. batch_count >= 0.\n
+                 Number of matrices in the batch.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_chegst_batched(rocblas_handle handle,
+                                                         const rocblas_eform itype,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_float_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_float_complex* const B[],
+                                                         const rocblas_int ldb,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_batched(rocblas_handle handle,
+                                                         const rocblas_eform itype,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_double_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_double_complex* const B[],
+                                                         const rocblas_int ldb,
+                                                         const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief SYGST_STRIDED_BATCHED reduces a batch of real symmetric-definite generalized
+    eigenproblems to standard form.
+
+    \details
+    (This is the blocked version of the algorithm).
+
+    The problem solved by this function is either of the form
+
+        A_i * X_i = lambda_i * B_i * X_i (1st form), or
+        A_i * B_i * X_i = lambda_i * X_i (2nd form), or
+        B_i * A_i * X_i = lambda_i * X_i (3rd form),
+
+    depending on the value of itype.
+
+    If the problem is of the 1st form, then A_i is overwritten as
+
+        inv(U_i') * A_i * inv(U_i), or
+        inv(L_i)  * A_i * inv(L_i'),
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    If the problem is of the 2nd or 3rd form, then A_i is overwritten as
+
+        U_i  * A_i * U_i', or
+        L_i' * A_i * L_i,
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    itype     #rocblas_eform.\n
+              Specifies the form of the generalized eigenproblems.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrices A_i are stored, and
+              whether the factorization applied to B_i was upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
+              B_i are not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The matrix dimensions.
+    @param[inout]
+    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A_i.
+    @param[in]
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_i and the next one A_(i+1).
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[out]
+    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+              The triangular factors of the matrices B_i, as returned by POTRF.
+    @param[in]
+    ldb       rocblas_int. ldb >= n.\n
+              Specifies the leading dimension of B_i.
+    @param[in]
+    strideB   rocblas_stride.\n
+              Stride from the start of one matrix B_i and the next one B_(i+1).
+              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
+    @param[in]
+    batch_count  rocblas_int. batch_count >= 0.\n
+                 Number of matrices in the batch.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssygst_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_eform itype,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 float* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 float* B,
+                                                                 const rocblas_int ldb,
+                                                                 const rocblas_stride strideB,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_eform itype,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 double* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 double* B,
+                                                                 const rocblas_int ldb,
+                                                                 const rocblas_stride strideB,
+                                                                 const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief HEGST_STRIDED_BATCHED reduces a batch of hermitian-definite generalized
+    eigenproblems to standard form.
+
+    \details
+    (This is the blocked version of the algorithm).
+
+    The problem solved by this function is either of the form
+
+        A_i * X_i = lambda_i * B_i * X_i (1st form), or
+        A_i * B_i * X_i = lambda_i * X_i (2nd form), or
+        B_i * A_i * X_i = lambda_i * X_i (3rd form),
+
+    depending on the value of itype.
+
+    If the problem is of the 1st form, then A_i is overwritten as
+
+        inv(U_i') * A_i * inv(U_i), or
+        inv(L_i)  * A_i * inv(L_i'),
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    If the problem is of the 2nd or 3rd form, then A_i is overwritten as
+
+        U_i  * A_i * U_i', or
+        L_i' * A_i * L_i,
+
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    depending on the value of uplo.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    itype     #rocblas_eform.\n
+              Specifies the form of the generalized eigenproblems.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrices A_i are stored, and
+              whether the factorization applied to B_i was upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
+              B_i are not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The matrix dimensions.
+    @param[inout]
+    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+              On entry, the matrices A_i. On exit, the transformed matrices associated with
+              the equivalent standard eigenvalue problems.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A_i.
+    @param[in]
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_i and the next one A_(i+1).
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[out]
+    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+              The triangular factors of the matrices B_i, as returned by POTRF.
+    @param[in]
+    ldb       rocblas_int. ldb >= n.\n
+              Specifies the leading dimension of B_i.
+    @param[in]
+    strideB   rocblas_stride.\n
+              Stride from the start of one matrix B_i and the next one B_(i+1).
+              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
+    @param[in]
+    batch_count  rocblas_int. batch_count >= 0.\n
+                 Number of matrices in the batch.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_chegst_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_eform itype,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_float_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_float_complex* B,
+                                                                 const rocblas_int ldb,
+                                                                 const rocblas_stride strideB,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_eform itype,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_double_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_double_complex* B,
+                                                                 const rocblas_int ldb,
+                                                                 const rocblas_stride strideB,
+                                                                 const rocblas_int batch_count);
+//! @}
+
 #ifdef __cplusplus
 }
 #endif

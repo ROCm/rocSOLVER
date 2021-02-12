@@ -6,6 +6,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 - Multi-level logging functionality
 - Implementation of the Thin-SVD algorithm
+- Reductions of generalized symmetric- and hermitian-definite eigenproblems:
+    - SYGS2, SYGST (with batched and strided\_batched versions)
+    - HEGS2, HEGST (with batched and strided\_batched versions)
 
 ### Optimizations
 
