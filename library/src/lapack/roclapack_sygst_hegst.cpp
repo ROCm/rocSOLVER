@@ -46,9 +46,9 @@ rocblas_status rocsolver_sygst_hegst_impl(rocblas_handle handle,
                                                   &size_store_invA, &size_invA_arr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(
-                                 handle, size_scalars, size_work_x_temp, size_workArr_temp_arr,
-                                 size_store_invA, size_invA_arr);
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_x_temp,
+                                                      size_workArr_temp_arr, size_store_invA,
+                                                      size_invA_arr);
 
     // always allocate all required memory for TRSM optimal performance
     bool optim_mem = true;
@@ -71,9 +71,8 @@ rocblas_status rocsolver_sygst_hegst_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_sygst_hegst_template<false, false, S, T>(
-                             handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb,
-                             strideB, batch_count, (T*)scalars, work_x_temp, workArr_temp_arr,
-                             store_invA, invA_arr, optim_mem);
+        handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
+        (T*)scalars, work_x_temp, workArr_temp_arr, store_invA, invA_arr, optim_mem);
 }
 
 /*

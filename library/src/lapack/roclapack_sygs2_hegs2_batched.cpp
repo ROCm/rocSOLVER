@@ -46,9 +46,9 @@ rocblas_status rocsolver_sygs2_hegs2_batched_impl(rocblas_handle handle,
                                                  &size_store_invA, &size_invA_arr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(
-                                 handle, size_scalars, size_work_x_temp, size_workArr_temp_arr,
-                                 size_store_invA, size_invA_arr);
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_x_temp,
+                                                      size_workArr_temp_arr, size_store_invA,
+                                                      size_invA_arr);
 
     // memory workspace allocation
     void *scalars, *work_x_temp, *workArr_temp_arr, *store_invA, *invA_arr;
@@ -68,9 +68,8 @@ rocblas_status rocsolver_sygs2_hegs2_batched_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_sygs2_hegs2_template<true, T>(
-                             handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb,
-                             strideB, batch_count, (T*)scalars, work_x_temp, workArr_temp_arr,
-                             store_invA, invA_arr);
+        handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
+        (T*)scalars, work_x_temp, workArr_temp_arr, store_invA, invA_arr);
 }
 
 /*
