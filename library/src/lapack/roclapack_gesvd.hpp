@@ -378,10 +378,6 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
         return;
     }
 
-    //    std::vector<size_t> w(6, 0);
-    //    std::vector<size_t> a(5, 0);
-    //    std::vector<size_t> x(6, 0);
-    //    std::vector<size_t> y(3, 0);
     size_t w[6] = {};
     size_t a[5] = {};
     size_t x[6] = {};
@@ -515,10 +511,6 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
     }
 
     // get max sizes
-    //    *size_work_workArr = *std::max_element(w.data(), w.data() + 6);
-    //    *size_Abyx_norms_tmptr = *std::max_element(a.data(), a.data() + 5);
-    //    *size_Abyx_norms_trfact_X = *std::max_element(x.data(), x.data() + 6);
-    //    *size_diag_tmptr_Y = *std::max_element(y.data(), y.data() + 3);
     *size_work_workArr = *std::max_element(std::begin(w), std::end(w));
     *size_Abyx_norms_tmptr = *std::max_element(std::begin(a), std::end(a));
     *size_Abyx_norms_trfact_X = *std::max_element(std::begin(x), std::end(x));
