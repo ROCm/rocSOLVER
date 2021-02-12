@@ -60,6 +60,7 @@ set(roclapack_test_source
     bdsqr_gtest.cpp
     # tridiagonal matrices and eigensolvers
     sytxx_hetxx_gtest.cpp
+    sygsx_hegsx_gtest.cpp
     sterf_gtest.cpp
     steqr_gtest.cpp
     latrd_gtest.cpp

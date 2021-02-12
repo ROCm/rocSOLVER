@@ -40,6 +40,10 @@ rocblas_workmode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenenum:: rocblas_workmode
 
+rocblas_eform
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenenum:: rocblas_eform
+
 
 Logging Functions
 ============================
@@ -885,6 +889,82 @@ rocsolver_<type>hetrd_strided_batched()
 .. doxygenfunction:: rocsolver_zhetrd_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_chetrd_strided_batched
+
+
+Generalized Eigensolvers
+---------------------------------
+
+rocsolver_<type>sygs2()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsygs2
+   :outline:
+.. doxygenfunction:: rocsolver_ssygs2
+
+rocsolver_<type>sygs2_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsygs2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygs2_batched
+
+rocsolver_<type>sygs2_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsygs2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygs2_strided_batched
+
+rocsolver_<type>hegs2()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhegs2
+   :outline:
+.. doxygenfunction:: rocsolver_chegs2
+
+rocsolver_<type>hegs2_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhegs2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegs2_batched
+
+rocsolver_<type>hegs2_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhegs2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegs2_strided_batched
+
+rocsolver_<type>sygst()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsygst
+   :outline:
+.. doxygenfunction:: rocsolver_ssygst
+
+rocsolver_<type>sygst_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsygst_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygst_batched
+
+rocsolver_<type>sygst_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsygst_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygst_strided_batched
+
+rocsolver_<type>hegst()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhegst
+   :outline:
+.. doxygenfunction:: rocsolver_chegst
+
+rocsolver_<type>hegst_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhegst_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegst_batched
+
+rocsolver_<type>hegst_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhegst_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegst_strided_batched
 
 
 General Matrix Inversion

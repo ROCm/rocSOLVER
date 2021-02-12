@@ -252,7 +252,7 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
             // A = A - v*w' - w*v'
             rocblasCall_syr2_her2<T>(handle, uplo, n - 1 - j, scalars, A,
                                      shiftA + idx2D(j + 1, j, lda), 1, strideA, tau, j, 1, strideP,
-                                     A, lda, shiftA + idx2D(j + 1, j + 1, lda), strideA,
+                                     A, shiftA + idx2D(j + 1, j + 1, lda), lda, strideA,
                                      batch_count, workArr);
 
             // 5. Save the used housedholder scalar
@@ -296,7 +296,7 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
             // 4. apply the Householder reflector to A as a rank-2 update:
             // A = A - v*w' - w*v'
             rocblasCall_syr2_her2<T>(handle, uplo, j, scalars, A, shiftA + idx2D(0, j, lda), 1,
-                                     strideA, tau, 0, 1, strideP, A, lda, shiftA, strideA,
+                                     strideA, tau, 0, 1, strideP, A, shiftA, lda, strideA,
                                      batch_count, workArr);
 
             // 5. Save the used housedholder scalar

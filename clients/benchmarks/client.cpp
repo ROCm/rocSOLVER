@@ -34,6 +34,7 @@
 #include "testing_potf2_potrf.hpp"
 #include "testing_steqr.hpp"
 #include "testing_sterf.hpp"
+#include "testing_sygsx_hegsx.hpp"
 #include "testing_sytxx_hetxx.hpp"
 #include <boost/program_options.hpp>
 
@@ -223,6 +224,10 @@ try
 
         ("evect",
          po::value<char>(&argus.evect)->default_value('N'),
+         "Only applicable to certain routines")
+
+        ("itype",
+         po::value<char>(&argus.itype)->default_value('1'),
          "Only applicable to certain routines");
     // clang-format on
 
@@ -297,6 +302,10 @@ try
     // workmode
     if(argus.workmode != 'O' && argus.workmode != 'I')
         throw std::invalid_argument("Invalid value for --workmode");
+
+    // itype
+    if(argus.itype != '1' && argus.itype != '2' && argus.itype != '3')
+        throw std::invalid_argument("Invalid value for --itype");
 
     // select and dispatch function test/benchmark
     // (TODO) MOVE THIS TO A SEPARATE IMPROVED DISPATCH FUNCTION
@@ -1410,6 +1419,114 @@ try
             testing_steqr<float, rocblas_float_complex>(argus);
         else if(precision == 'z')
             testing_steqr<double, rocblas_double_complex>(argus);
+    }
+    else if(function == "sygs2")
+    {
+        if(precision == 's')
+            testing_sygsx_hegsx<false, false, 0, float>(argus);
+        else if(precision == 'd')
+            testing_sygsx_hegsx<false, false, 0, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sygs2_batched")
+    {
+        if(precision == 's')
+            testing_sygsx_hegsx<true, true, 0, float>(argus);
+        else if(precision == 'd')
+            testing_sygsx_hegsx<true, true, 0, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sygs2_strided_batched")
+    {
+        if(precision == 's')
+            testing_sygsx_hegsx<false, true, 0, float>(argus);
+        else if(precision == 'd')
+            testing_sygsx_hegsx<false, true, 0, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sygst")
+    {
+        if(precision == 's')
+            testing_sygsx_hegsx<false, false, 1, float>(argus);
+        else if(precision == 'd')
+            testing_sygsx_hegsx<false, false, 1, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sygst_batched")
+    {
+        if(precision == 's')
+            testing_sygsx_hegsx<true, true, 1, float>(argus);
+        else if(precision == 'd')
+            testing_sygsx_hegsx<true, true, 1, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "sygst_strided_batched")
+    {
+        if(precision == 's')
+            testing_sygsx_hegsx<false, true, 1, float>(argus);
+        else if(precision == 'd')
+            testing_sygsx_hegsx<false, true, 1, double>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hegs2")
+    {
+        if(precision == 'c')
+            testing_sygsx_hegsx<false, false, 0, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sygsx_hegsx<false, false, 0, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hegs2_batched")
+    {
+        if(precision == 'c')
+            testing_sygsx_hegsx<true, true, 0, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sygsx_hegsx<true, true, 0, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hegs2_strided_batched")
+    {
+        if(precision == 'c')
+            testing_sygsx_hegsx<false, true, 0, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sygsx_hegsx<false, true, 0, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hegst")
+    {
+        if(precision == 'c')
+            testing_sygsx_hegsx<false, false, 1, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sygsx_hegsx<false, false, 1, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hegst_batched")
+    {
+        if(precision == 'c')
+            testing_sygsx_hegsx<true, true, 1, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sygsx_hegsx<true, true, 1, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
+    }
+    else if(function == "hegst_strided_batched")
+    {
+        if(precision == 'c')
+            testing_sygsx_hegsx<false, true, 1, rocblas_float_complex>(argus);
+        else if(precision == 'z')
+            testing_sygsx_hegsx<false, true, 1, rocblas_double_complex>(argus);
+        else
+            throw std::invalid_argument("This function does not support the given --precision");
     }
     else
         throw std::invalid_argument("Invalid value for --function");

@@ -16,6 +16,30 @@ struct rocblas_index_value_t;
 #include "rocsolver_logger.hpp"
 #include <rocblas.h>
 
+// axpy
+template <typename T, typename U>
+rocblas_status rocblasCall_axpy(rocblas_handle handle,
+                                rocblas_int n,
+                                T* alpha,
+                                rocblas_stride stride_alpha,
+                                U x,
+                                rocblas_int shiftx,
+                                rocblas_int incx,
+                                rocblas_stride stridex,
+                                U y,
+                                rocblas_int shifty,
+                                rocblas_int incy,
+                                rocblas_stride stridey,
+                                rocblas_int batch_count)
+{
+    // TODO: How to get alpha for trace logging
+    //ROCBLAS_ENTER("axpy", "n:", n, "shiftX:", shiftx, "incx:", incx, "shiftY:", shifty, "incy:", incy, "bc:", batch_count);
+
+    return rocblas_axpy_template<ROCBLAS_AXPY_NB, T>(
+        handle, n, cast2constType<T>(alpha), stride_alpha, cast2constType<T>(x), shiftx, incx,
+        stridex, y, shifty, incy, stridey, batch_count);
+}
+
 // iamax
 template <bool ISBATCHED, typename T, typename S, typename U>
 rocblas_status rocblasCall_iamax(rocblas_handle handle,
@@ -907,8 +931,8 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_int incy,
                                      rocblas_stride stridey,
                                      V A,
-                                     rocblas_int lda,
                                      rocblas_int offsetA,
+                                     rocblas_int lda,
                                      rocblas_stride strideA,
                                      rocblas_int batch_count,
                                      T** work)
@@ -938,8 +962,8 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_int incy,
                                      rocblas_stride stridey,
                                      T* const A[],
-                                     rocblas_int lda,
                                      rocblas_int offsetA,
+                                     rocblas_int lda,
                                      rocblas_stride strideA,
                                      rocblas_int batch_count,
                                      T** work)
@@ -975,8 +999,8 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_int incy,
                                      rocblas_stride stridey,
                                      V A,
-                                     rocblas_int lda,
                                      rocblas_int offsetA,
+                                     rocblas_int lda,
                                      rocblas_stride strideA,
                                      rocblas_int batch_count,
                                      T** work)
@@ -1006,8 +1030,8 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_int incy,
                                      rocblas_stride stridey,
                                      T* const A[],
-                                     rocblas_int lda,
                                      rocblas_int offsetA,
+                                     rocblas_int lda,
                                      rocblas_stride strideA,
                                      rocblas_int batch_count,
                                      T** work)
@@ -1386,6 +1410,148 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
         handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb,
         cast2constPointer<T>(work), offsety, incy, stridey, batch_count);
+}
+
+// symm
+template <typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
+rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
+                                     rocblas_side side,
+                                     rocblas_fill uplo,
+                                     rocblas_int m,
+                                     rocblas_int n,
+                                     U alpha,
+                                     V A,
+                                     rocblas_int offsetA,
+                                     rocblas_int lda,
+                                     rocblas_stride strideA,
+                                     V B,
+                                     rocblas_int offsetB,
+                                     rocblas_int ldb,
+                                     rocblas_stride strideB,
+                                     U beta,
+                                     V C,
+                                     rocblas_int offsetC,
+                                     rocblas_int ldc,
+                                     rocblas_stride strideC,
+                                     rocblas_int batch_count)
+{
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("symm", "side:", side, "uplo:", uplo, "m:", m, "n:", n, "shiftA:", offsetA,
+                  "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
+                  "bc:", batch_count);
+
+    return rocblas_symm_template<false>(
+        handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+        strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
+        ldc, strideC, batch_count);
+}
+
+// hemm
+template <typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
+rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
+                                     rocblas_side side,
+                                     rocblas_fill uplo,
+                                     rocblas_int m,
+                                     rocblas_int n,
+                                     U alpha,
+                                     V A,
+                                     rocblas_int offsetA,
+                                     rocblas_int lda,
+                                     rocblas_stride strideA,
+                                     V B,
+                                     rocblas_int offsetB,
+                                     rocblas_int ldb,
+                                     rocblas_stride strideB,
+                                     U beta,
+                                     V C,
+                                     rocblas_int offsetC,
+                                     rocblas_int ldc,
+                                     rocblas_stride strideC,
+                                     rocblas_int batch_count)
+{
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("hemm", "side:", side, "uplo:", uplo, "m:", m, "n:", n, "shiftA:", offsetA,
+                  "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
+                  "bc:", batch_count);
+
+    return rocblas_symm_template<true>(
+        handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+        strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
+        ldc, strideC, batch_count);
+}
+
+// trsv memory sizes
+template <bool BATCHED, typename T>
+void rocblasCall_trsv_mem(rocblas_int m,
+                          rocblas_int batch_count,
+                          size_t* x_temp,
+                          size_t* x_temp_arr,
+                          size_t* invA,
+                          size_t* invA_arr)
+{
+    const rocblas_int BLOCK = ROCBLAS_TRSV_BLOCK;
+    const bool exact_blocks = (m % BLOCK) == 0;
+    size_t invA_bytes = sizeof(T) * BLOCK * m * batch_count;
+    size_t c_temp_bytes = (m / BLOCK) * (sizeof(T) * (BLOCK / 2) * (BLOCK / 2)) * batch_count;
+
+    // For the TRTRI last diagonal block we need remainder space if m % BLOCK != 0
+    if(!exact_blocks)
+    {
+        // TODO: Make this more accurate -- right now it's much larger than necessary
+        size_t remainder_bytes = sizeof(T) * ROCBLAS_TRTRI_NB * BLOCK * 2 * batch_count;
+
+        // C is the maximum of the temporary space needed for TRTRI
+        c_temp_bytes = std::max(c_temp_bytes, remainder_bytes);
+    }
+
+    // Temporary solution vector
+    // If the special solver can be used, then only BLOCK words are needed instead of m words
+    size_t x_temp_bytes
+        = exact_blocks ? sizeof(T) * BLOCK * batch_count : sizeof(T) * m * batch_count;
+
+    // X and C temporaries can share space, so the maximum size is allocated
+    size_t x_c_temp_bytes = std::max(x_temp_bytes, c_temp_bytes);
+    size_t arrBytes = BATCHED ? sizeof(T*) * batch_count : 0;
+    size_t xarrBytes = BATCHED ? sizeof(T*) * batch_count : 0;
+
+    // return required memory sizes
+    *x_temp = x_c_temp_bytes;
+    *x_temp_arr = xarrBytes;
+    *invA = invA_bytes;
+    *invA_arr = arrBytes;
+}
+
+// trsv
+template <bool BATCHED, typename T, typename U>
+rocblas_status rocblasCall_trsv(rocblas_handle handle,
+                                rocblas_fill uplo,
+                                rocblas_operation transA,
+                                rocblas_diagonal diag,
+                                rocblas_int m,
+                                U A,
+                                rocblas_int offset_A,
+                                rocblas_int lda,
+                                rocblas_stride stride_A,
+                                U B,
+                                rocblas_int offset_B,
+                                rocblas_int ldb,
+                                rocblas_stride stride_B,
+                                rocblas_int batch_count,
+                                void* x_temp,
+                                void* x_temp_arr,
+                                void* invA,
+                                void* invA_arr,
+                                T** workArr = nullptr)
+{
+    ROCBLAS_ENTER("trsv", "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
+                  "shiftA:", offset_A, "lda:", lda, "shiftB:", offset_B, "ldb:", ldb,
+                  "bc:", batch_count);
+
+    U supplied_invA = nullptr;
+    return rocblas_trsv_template<ROCBLAS_TRSV_BLOCK, BATCHED, T>(
+        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B, offset_B, ldb,
+        stride_B, batch_count, x_temp, x_temp_arr, invA, invA_arr, cast2constType(supplied_invA), 0,
+        0, 0);
 }
 
 // trsm memory sizes

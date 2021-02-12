@@ -649,3 +649,31 @@ __device__ void lasrt_increasing(const rocblas_int n, T* D, rocblas_int* stack)
         }
     }
 }
+
+/** AXPY computes a constant times a vector plus a vector. **/
+template <typename T, typename U, typename V>
+__global__ void axpy_kernel(const rocblas_int n,
+                            T* alpha,
+                            const rocblas_stride stride_alpha,
+                            U X,
+                            const rocblas_int shiftX,
+                            const rocblas_int incx,
+                            const rocblas_stride strideX,
+                            V Y,
+                            const rocblas_int shiftY,
+                            const rocblas_int incy,
+                            const rocblas_stride strideY)
+{
+    rocblas_int b = hipBlockIdx_x;
+    rocblas_int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+
+    if(i < n)
+    {
+        T* x = load_ptr_batch<T>(X, b, shiftX, strideX);
+        T* y = load_ptr_batch<T>(Y, b, shiftY, strideY);
+        T* a = alpha + b * stride_alpha;
+
+        // axpy
+        y[i * incy] = a[0] * x[i * incx] + y[i * incy];
+    }
+}

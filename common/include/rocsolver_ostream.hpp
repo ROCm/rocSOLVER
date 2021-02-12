@@ -388,6 +388,12 @@ public:
         return os << rocblas2char_evect(value);
     }
 
+    // rocsolver_itype output
+    friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_eform value)
+    {
+        return os << rocblas2char_eform(value);
+    }
+
     // rocsolver_status output
     friend rocsolver_ostream& operator<<(rocsolver_ostream& os, rocblas_status status)
     {
