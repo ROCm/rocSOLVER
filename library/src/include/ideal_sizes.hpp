@@ -65,8 +65,7 @@
 #define xxTRD_xxTD2_SWITCHSIZE 64
 
 // xxgs2/xxgst
-#define xxGST_xxGS2_BLOCKSIZE 32
-#define xxGST_xxGS2_SWITCHSIZE 64
+#define xxGST_xxGS2_BLOCKSIZE 64
 
 // gesvd
 // This value should be ~1.6 (to be tuned).
