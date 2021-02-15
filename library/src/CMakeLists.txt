@@ -66,6 +66,7 @@ set( rocsolver_lapack_source
   lapack/roclapack_getri_batched.cpp
   lapack/roclapack_getri_strided_batched.cpp
   lapack/roclapack_getri_outofplace_batched.cpp
+  # least squares solvers
   lapack/roclapack_gels.cpp
   lapack/roclapack_gels_batched.cpp
   lapack/roclapack_gels_strided_batched.cpp
@@ -89,24 +90,28 @@ set( rocsolver_lapack_source
   lapack/roclapack_gelqf.cpp
   lapack/roclapack_gelqf_batched.cpp
   lapack/roclapack_gelqf_strided_batched.cpp
-  # bidiagonalization and svd
+  # Matrix reductions (diagonalizations)
   lapack/roclapack_gebd2.cpp
   lapack/roclapack_gebd2_batched.cpp
   lapack/roclapack_gebd2_strided_batched.cpp
   lapack/roclapack_gebrd.cpp
   lapack/roclapack_gebrd_batched.cpp
   lapack/roclapack_gebrd_strided_batched.cpp
-  lapack/roclapack_gesvd.cpp
-  lapack/roclapack_gesvd_batched.cpp
-  lapack/roclapack_gesvd_strided_batched.cpp
-  # tridiagonalization and symmetric eigenvalues
   lapack/roclapack_sytd2_hetd2.cpp
   lapack/roclapack_sytd2_hetd2_batched.cpp
   lapack/roclapack_sytd2_hetd2_strided_batched.cpp
   lapack/roclapack_sytrd_hetrd.cpp
   lapack/roclapack_sytrd_hetrd_batched.cpp
   lapack/roclapack_sytrd_hetrd_strided_batched.cpp
-  # reduction of symmetric eigenproblems
+  # singular value decomposition
+  lapack/roclapack_gesvd.cpp
+  lapack/roclapack_gesvd_batched.cpp
+  lapack/roclapack_gesvd_strided_batched.cpp
+  # symmetric eigensolvers
+  lapack/roclapack_syev_heev.cpp
+  lapack/roclapack_syev_heev_batched.cpp
+  lapack/roclapack_syev_heev_strided_batched.cpp
+  # symmetric generalized eigensolvers
   lapack/roclapack_sygs2_hegs2.cpp
   lapack/roclapack_sygs2_hegs2_batched.cpp
   lapack/roclapack_sygs2_hegs2_strided_batched.cpp
