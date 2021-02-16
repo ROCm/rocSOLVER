@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <boost/format.hpp>
 #include <cstdarg>
+#include <cstdio>
 #include <limits>
 
 // If USE_ROCBLAS_REALLOC_ON_DEMAND is false, automatic reallocation is disable and we will manually
@@ -38,6 +38,20 @@ constexpr double get_epsilon()
 #define ROCSOLVER_TEST_CHECK(T, max_error, tol)
 #endif
 
+// format strings for rocsolver_bench_output
+template <typename T>
+static constexpr auto rocsolver_bench_specifier = "";
+template <>
+static constexpr auto rocsolver_bench_specifier<int> = "i";
+template <>
+static constexpr auto rocsolver_bench_specifier<long> = "li";
+template <>
+static constexpr auto rocsolver_bench_specifier<double> = "g";
+template <>
+static constexpr auto rocsolver_bench_specifier<char> = "c";
+template <>
+static constexpr auto rocsolver_bench_specifier<const char*> = "s";
+
 inline void rocsolver_bench_output()
 {
     // empty version
@@ -47,10 +61,24 @@ inline void rocsolver_bench_output()
 template <typename T, typename... Ts>
 inline void rocsolver_bench_output(T arg, Ts... args)
 {
-    using boost::format;
-    format f("%|-15|");
+    // create format string for given BUF_SIZE and type T
+    static const int BUF_SIZE = 15;
+    std::string format("%-");
+    format += std::to_string(BUF_SIZE);
+    format += rocsolver_bench_specifier<T>;
 
-    rocsolver_cout << f % arg;
+    // create string buffer
+    static char buffer[BUF_SIZE + 1];
+
+    // format string (with trailing ellipsis if needed)
+    int total = snprintf(buffer, BUF_SIZE + 1, format.c_str(), arg);
+    if(total > BUF_SIZE)
+        buffer[BUF_SIZE - 1] = buffer[BUF_SIZE - 2] = buffer[BUF_SIZE - 3] = '.';
+
+    // print
+    rocsolver_cout << buffer;
+    if(sizeof...(Ts) > 0)
+        rocsolver_cout << ' ';
     rocsolver_bench_output(args...);
 }
 

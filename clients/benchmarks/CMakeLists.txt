@@ -2,12 +2,6 @@
 # Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
-# set( Boost_DEBUG ON )
-set( Boost_USE_MULTITHREADED ON )
-set( Boost_DETAILED_FAILURE_MSG ON )
-set( Boost_ADDITIONAL_VERSIONS 1.65.1 1.65 )
-set( Boost_USE_STATIC_LIBS OFF )
-
 if(EXISTS /etc/redhat-release)
     if(CXX_VERSION_STRING MATCHES "clang")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread -stdlib=libstdc++ -std=c++14")
@@ -17,18 +11,6 @@ if(EXISTS /etc/redhat-release)
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread")
 endif()
-
-find_package( Boost COMPONENTS program_options )
-
-if( NOT Boost_FOUND )
-  message( STATUS "Dynamic boost libraries not found. Attempting to find static libraries " )
-  set( Boost_USE_STATIC_LIBS ON )
-  find_package( Boost COMPONENTS program_options )
-
-  if( NOT Boost_FOUND )
-    message( FATAL_ERROR "boost is a required dependency and is not found;  try adding boost path to CMAKE_PREFIX_PATH" )
-  endif( )
-endif( )
 
 set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
@@ -90,23 +72,21 @@ if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
       SYSTEM PRIVATE
         $<BUILD_INTERFACE:${CLANG_INCLUDE_DIR}>
         $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${OPENMP_INCLUDE_DIR}>
         )
 
-    target_link_libraries( rocsolver-bench PRIVATE ${Boost_LIBRARIES} ${OPENMP_LIBRARY} cblas lapack roc::rocsolver )
+    target_link_libraries( rocsolver-bench PRIVATE ${OPENMP_LIBRARY} cblas lapack roc::rocsolver )
 
 else()
     # External header includes included as system files
     target_include_directories( rocsolver-bench
       SYSTEM PRIVATE
         $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
         )
 
-    target_link_libraries( rocsolver-bench PRIVATE ${Boost_LIBRARIES} cblas lapack roc::rocsolver )
+    target_link_libraries( rocsolver-bench PRIVATE cblas lapack roc::rocsolver )
 endif()
 
 target_link_libraries( rocsolver-bench PRIVATE roc::rocblas )
