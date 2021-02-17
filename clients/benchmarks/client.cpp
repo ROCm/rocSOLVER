@@ -3,13 +3,13 @@
  * ************************************************************************ */
 
 #include "../rocblascommon/program_options.hpp"
+#include "rocsolver_dispatcher.hpp"
 #include "testing_bdsqr.hpp"
 #include "testing_gebd2_gebrd.hpp"
 #include "testing_gelq2_gelqf.hpp"
 #include "testing_gels.hpp"
 #include "testing_geql2_geqlf.hpp"
 #include "testing_geqr2_geqrf.hpp"
-#include "testing_gesvd.hpp"
 #include "testing_getf2_getrf.hpp"
 #include "testing_getf2_getrf_npvt.hpp"
 #include "testing_getri.hpp"
@@ -35,7 +35,6 @@
 #include "testing_potf2_potrf.hpp"
 #include "testing_steqr.hpp"
 #include "testing_sterf.hpp"
-#include "testing_sygsx_hegsx.hpp"
 #include "testing_sytxx_hetxx.hpp"
 
 int main(int argc, char* argv[])
@@ -747,39 +746,6 @@ try
         else if(precision == 'z')
             testing_getrs<false, true, rocblas_double_complex>(argus);
     }
-    else if(function == "gesvd")
-    {
-        if(precision == 's')
-            testing_gesvd<false, false, float>(argus);
-        else if(precision == 'd')
-            testing_gesvd<false, false, double>(argus);
-        else if(precision == 'c')
-            testing_gesvd<false, false, rocblas_float_complex>(argus);
-        else if(precision == 'z')
-            testing_gesvd<false, false, rocblas_double_complex>(argus);
-    }
-    else if(function == "gesvd_batched")
-    {
-        if(precision == 's')
-            testing_gesvd<true, true, float>(argus);
-        else if(precision == 'd')
-            testing_gesvd<true, true, double>(argus);
-        else if(precision == 'c')
-            testing_gesvd<true, true, rocblas_float_complex>(argus);
-        else if(precision == 'z')
-            testing_gesvd<true, true, rocblas_double_complex>(argus);
-    }
-    else if(function == "gesvd_strided_batched")
-    {
-        if(precision == 's')
-            testing_gesvd<false, true, float>(argus);
-        else if(precision == 'd')
-            testing_gesvd<false, true, double>(argus);
-        else if(precision == 'c')
-            testing_gesvd<false, true, rocblas_float_complex>(argus);
-        else if(precision == 'z')
-            testing_gesvd<false, true, rocblas_double_complex>(argus);
-    }
     else if(function == "getri")
     {
         if(precision == 's')
@@ -1418,116 +1384,8 @@ try
         else if(precision == 'z')
             testing_steqr<double, rocblas_double_complex>(argus);
     }
-    else if(function == "sygs2")
-    {
-        if(precision == 's')
-            testing_sygsx_hegsx<false, false, 0, float>(argus);
-        else if(precision == 'd')
-            testing_sygsx_hegsx<false, false, 0, double>(argus);
-        else
-            throw std::invalid_argument("This function does not support the given --precision");
-    }
-    else if(function == "sygs2_batched")
-    {
-        if(precision == 's')
-            testing_sygsx_hegsx<true, true, 0, float>(argus);
-        else if(precision == 'd')
-            testing_sygsx_hegsx<true, true, 0, double>(argus);
-        else
-            throw std::invalid_argument("This function does not support the given --precision");
-    }
-    else if(function == "sygs2_strided_batched")
-    {
-        if(precision == 's')
-            testing_sygsx_hegsx<false, true, 0, float>(argus);
-        else if(precision == 'd')
-            testing_sygsx_hegsx<false, true, 0, double>(argus);
-        else
-            throw std::invalid_argument("This function does not support the given --precision");
-    }
-    else if(function == "sygst")
-    {
-        if(precision == 's')
-            testing_sygsx_hegsx<false, false, 1, float>(argus);
-        else if(precision == 'd')
-            testing_sygsx_hegsx<false, false, 1, double>(argus);
-        else
-            throw std::invalid_argument("This function does not support the given --precision");
-    }
-    else if(function == "sygst_batched")
-    {
-        if(precision == 's')
-            testing_sygsx_hegsx<true, true, 1, float>(argus);
-        else if(precision == 'd')
-            testing_sygsx_hegsx<true, true, 1, double>(argus);
-        else
-            throw std::invalid_argument("This function does not support the given --precision");
-    }
-    else if(function == "sygst_strided_batched")
-    {
-        if(precision == 's')
-            testing_sygsx_hegsx<false, true, 1, float>(argus);
-        else if(precision == 'd')
-            testing_sygsx_hegsx<false, true, 1, double>(argus);
-        else
-            throw std::invalid_argument("This function does not support the given --precision");
-    }
-    else if(function == "hegs2")
-    {
-        if(precision == 'c')
-            testing_sygsx_hegsx<false, false, 0, rocblas_float_complex>(argus);
-        else if(precision == 'z')
-            testing_sygsx_hegsx<false, false, 0, rocblas_double_complex>(argus);
-        else
-            throw std::invalid_argument("This function does not support the given --precision");
-    }
-    else if(function == "hegs2_batched")
-    {
-        if(precision == 'c')
-            testing_sygsx_hegsx<true, true, 0, rocblas_float_complex>(argus);
-        else if(precision == 'z')
-            testing_sygsx_hegsx<true, true, 0, rocblas_double_complex>(argus);
-        else
-            throw std::invalid_argument("This function does not support the given --precision");
-    }
-    else if(function == "hegs2_strided_batched")
-    {
-        if(precision == 'c')
-            testing_sygsx_hegsx<false, true, 0, rocblas_float_complex>(argus);
-        else if(precision == 'z')
-            testing_sygsx_hegsx<false, true, 0, rocblas_double_complex>(argus);
-        else
-            throw std::invalid_argument("This function does not support the given --precision");
-    }
-    else if(function == "hegst")
-    {
-        if(precision == 'c')
-            testing_sygsx_hegsx<false, false, 1, rocblas_float_complex>(argus);
-        else if(precision == 'z')
-            testing_sygsx_hegsx<false, false, 1, rocblas_double_complex>(argus);
-        else
-            throw std::invalid_argument("This function does not support the given --precision");
-    }
-    else if(function == "hegst_batched")
-    {
-        if(precision == 'c')
-            testing_sygsx_hegsx<true, true, 1, rocblas_float_complex>(argus);
-        else if(precision == 'z')
-            testing_sygsx_hegsx<true, true, 1, rocblas_double_complex>(argus);
-        else
-            throw std::invalid_argument("This function does not support the given --precision");
-    }
-    else if(function == "hegst_strided_batched")
-    {
-        if(precision == 'c')
-            testing_sygsx_hegsx<false, true, 1, rocblas_float_complex>(argus);
-        else if(precision == 'z')
-            testing_sygsx_hegsx<false, true, 1, rocblas_double_complex>(argus);
-        else
-            throw std::invalid_argument("This function does not support the given --precision");
-    }
     else
-        throw std::invalid_argument("Invalid value for --function");
+        rocsolver_dispatcher::invoke(function, precision, argus);
 
     return 0;
 }
