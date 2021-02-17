@@ -126,7 +126,7 @@ add_library( rocsolver
 
 add_library( roc::rocsolver ALIAS rocsolver )
 
-target_link_libraries( rocsolver PRIVATE hip::device --rtlib=compiler-rt --unwindlib=libgcc )
+target_link_libraries( rocsolver PRIVATE roc::rocblas hip::device --rtlib=compiler-rt --unwindlib=libgcc )
 set_target_properties( rocsolver PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
 
 # In ROCm 4.0 and earlier, the default maximum threads per block is 256
