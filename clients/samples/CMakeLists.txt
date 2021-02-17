@@ -57,6 +57,10 @@ foreach( exe ${c_samples} ${cpp_samples} ${fortran_samples} )
     # GCC or hip-clang needs specific flags to turn on f16c intrinsics
     target_compile_options( ${exe} PRIVATE -mf16c )
   endif( )
+
+  if( NOT CUDA_FOUND )
+    target_link_libraries( ${exe} PRIVATE hip::host )
+  endif()
 endforeach( )
 
 foreach( exe ${cpp_samples} )
