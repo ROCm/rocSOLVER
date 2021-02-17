@@ -121,7 +121,6 @@ target_compile_definitions( rocsolver-test PRIVATE BUILD_WITH_TENSILE=0 GOOGLE_T
 target_include_directories( rocsolver-test
   PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../library/include>
 )
 
 #set( BLIS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/build/deps/blis/include/blis )
@@ -185,8 +184,6 @@ else()
 
     target_link_libraries( rocsolver-test PRIVATE ${GTEST_LIBRARIES} ${Boost_LIBRARIES} cblas lapack roc::rocsolver )
 endif()
-
-target_link_libraries( rocsolver-test PRIVATE roc::rocblas )
 
 if( CUDA_FOUND )
   target_include_directories( rocsolver-test

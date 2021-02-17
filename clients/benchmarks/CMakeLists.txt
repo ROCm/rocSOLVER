@@ -53,7 +53,6 @@ add_armor_flags( rocsolver-bench "${ARMOR_LEVEL}" )
 target_include_directories( rocsolver-bench
   PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../library/include>
 )
 
 if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
@@ -110,8 +109,6 @@ else()
 
     target_link_libraries( rocsolver-bench PRIVATE ${Boost_LIBRARIES} cblas lapack roc::rocsolver )
 endif()
-
-target_link_libraries( rocsolver-bench PRIVATE roc::rocblas )
 
 if( CUDA_FOUND )
   target_include_directories( rocsolver-bench
