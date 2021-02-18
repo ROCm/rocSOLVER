@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -71,9 +71,9 @@ TEST_P(STEQR, __float)
     Arguments arg = steqr_setup_arguments(GetParam());
 
     if(arg.N == 0 && arg.evect == 'N')
-        testing_steqr_bad_arg<float, float>();
+        testing_steqr_bad_arg<float>();
 
-    testing_steqr<float, float>(arg);
+    testing_steqr<float>(arg);
 }
 
 TEST_P(STEQR, __double)
@@ -81,9 +81,9 @@ TEST_P(STEQR, __double)
     Arguments arg = steqr_setup_arguments(GetParam());
 
     if(arg.N == 0 && arg.evect == 'N')
-        testing_steqr_bad_arg<double, double>();
+        testing_steqr_bad_arg<double>();
 
-    testing_steqr<double, double>(arg);
+    testing_steqr<double>(arg);
 }
 
 TEST_P(STEQR, __float_complex)
@@ -91,9 +91,9 @@ TEST_P(STEQR, __float_complex)
     Arguments arg = steqr_setup_arguments(GetParam());
 
     if(arg.N == 0 && arg.evect == 'N')
-        testing_steqr_bad_arg<float, rocblas_float_complex>();
+        testing_steqr_bad_arg<rocblas_float_complex>();
 
-    testing_steqr<float, rocblas_float_complex>(arg);
+    testing_steqr<rocblas_float_complex>(arg);
 }
 
 TEST_P(STEQR, __double_complex)
@@ -101,9 +101,9 @@ TEST_P(STEQR, __double_complex)
     Arguments arg = steqr_setup_arguments(GetParam());
 
     if(arg.N == 0 && arg.evect == 'N')
-        testing_steqr_bad_arg<double, rocblas_double_complex>();
+        testing_steqr_bad_arg<rocblas_double_complex>();
 
-    testing_steqr<double, rocblas_double_complex>(arg);
+    testing_steqr<rocblas_double_complex>(arg);
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
