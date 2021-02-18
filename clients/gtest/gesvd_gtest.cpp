@@ -133,90 +133,90 @@ Arguments gesvd_setup_arguments(gesvd_tuple tup)
     return arg;
 }
 
-template <bool BATCHED, bool STRIDED, typename T>
-void gesvd_test_fixture()
-{
-    Arguments arg = gesvd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<BATCHED, STRIDED, T>();
-
-    arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
-    testing_gesvd<BATCHED, STRIDED, T>(arg);
-}
-
 class GESVD : public ::TestWithParam<gesvd_tuple>
 {
 protected:
     GESVD() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void test_fixture()
+    {
+        Arguments arg = gesvd_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
+            testing_gesvd_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        testing_gesvd<BATCHED, STRIDED, T>(arg);
+    }
 };
 
 // non-batch tests
 
 TEST_P(GESVD, __float)
 {
-    gesvd_test_fixture<false, false, float>();
+    test_fixture<false, false, float>();
 }
 
 TEST_P(GESVD, __double)
 {
-    gesvd_test_fixture<false, false, double>();
+    test_fixture<false, false, double>();
 }
 
 TEST_P(GESVD, __float_complex)
 {
-    gesvd_test_fixture<false, false, rocblas_float_complex>();
+    test_fixture<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GESVD, __double_complex)
 {
-    gesvd_test_fixture<false, false, rocblas_double_complex>();
+    test_fixture<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(GESVD, batched__float)
 {
-    gesvd_test_fixture<true, true, float>();
+    test_fixture<true, true, float>();
 }
 
 TEST_P(GESVD, batched__double)
 {
-    gesvd_test_fixture<true, true, double>();
+    test_fixture<true, true, double>();
 }
 
 TEST_P(GESVD, batched__float_complex)
 {
-    gesvd_test_fixture<true, true, rocblas_float_complex>();
+    test_fixture<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GESVD, batched__double_complex)
 {
-    gesvd_test_fixture<true, true, rocblas_double_complex>();
+    test_fixture<true, true, rocblas_double_complex>();
 }
 
 // strided_batched tests
 
 TEST_P(GESVD, strided_batched__float)
 {
-    gesvd_test_fixture<false, true, float>();
+    test_fixture<false, true, float>();
 }
 
 TEST_P(GESVD, strided_batched__double)
 {
-    gesvd_test_fixture<false, true, double>();
+    test_fixture<false, true, double>();
 }
 
 TEST_P(GESVD, strided_batched__float_complex)
 {
-    gesvd_test_fixture<false, true, rocblas_float_complex>();
+    test_fixture<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GESVD, strided_batched__double_complex)
 {
-    gesvd_test_fixture<false, true, rocblas_double_complex>();
+    test_fixture<false, true, rocblas_double_complex>();
 }
 
 // daily_lapack tests normal execution with medium to large sizes
