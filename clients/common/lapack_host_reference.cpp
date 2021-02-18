@@ -1447,6 +1447,29 @@ void zhegst_(int* itype,
              int* ldb,
              int* info);
 
+void ssyev_(char* jobz, char* uplo, int* n, float* A, int* lda, float* D, float* E, int* sizeW, int* info);
+void dsyev_(char* jobz, char* uplo, int* n, double* A, int* lda, double* D, double* E, int* sizeW, int* info);
+void cheev_(char* jobz,
+            char* uplo,
+            int* n,
+            rocblas_float_complex* A,
+            int* lda,
+            float* D,
+            rocblas_float_complex* work,
+            int* sizeW,
+            float* E,
+            int* info);
+void zheev_(char* jobz,
+            char* uplo,
+            int* n,
+            rocblas_double_complex* A,
+            int* lda,
+            double* D,
+            rocblas_double_complex* work,
+            int* sizeW,
+            double* E,
+            int* info);
+
 #ifdef __cplusplus
 }
 #endif
@@ -5048,4 +5071,70 @@ void cblas_sygst_hegst<rocblas_double_complex>(rocblas_eform itype,
     int itypeI = rocblas2char_eform(itype) - '0';
     char uploC = rocblas2char_fill(uplo);
     zhegst_(&itypeI, &uploC, &n, A, &lda, B, &ldb, &info);
+}
+
+template <>
+void cblas_syev_heev<float, float>(rocblas_evect evect,
+                                   rocblas_fill uplo,
+                                   rocblas_int n,
+                                   float* A,
+                                   rocblas_int lda,
+                                   float* D,
+                                   float* E,
+                                   rocblas_int sizeW,
+                                   rocblas_int* info)
+{
+    char jobz = rocblas2char_evect(evect);
+    char uploC = rocblas2char_fill(uplo);
+    ssyev_(&jobz, &uploC, &n, A, &lda, D, E, &sizeW, info);
+}
+
+template <>
+void cblas_syev_heev<double, double>(rocblas_evect evect,
+                                     rocblas_fill uplo,
+                                     rocblas_int n,
+                                     double* A,
+                                     rocblas_int lda,
+                                     double* D,
+                                     double* E,
+                                     rocblas_int sizeW,
+                                     rocblas_int* info)
+{
+    char jobz = rocblas2char_evect(evect);
+    char uploC = rocblas2char_fill(uplo);
+    dsyev_(&jobz, &uploC, &n, A, &lda, D, E, &sizeW, info);
+}
+
+template <>
+void cblas_syev_heev<rocblas_float_complex, float>(rocblas_evect evect,
+                                                   rocblas_fill uplo,
+                                                   rocblas_int n,
+                                                   rocblas_float_complex* A,
+                                                   rocblas_int lda,
+                                                   float* D,
+                                                   float* E,
+                                                   rocblas_int sizeW,
+                                                   rocblas_int* info)
+{
+    char jobz = rocblas2char_evect(evect);
+    char uploC = rocblas2char_fill(uplo);
+    rocblas_float_complex work[sizeW];
+    cheev_(&jobz, &uploC, &n, A, &lda, D, work, &sizeW, E, info);
+}
+
+template <>
+void cblas_syev_heev<rocblas_double_complex, double>(rocblas_evect evect,
+                                                     rocblas_fill uplo,
+                                                     rocblas_int n,
+                                                     rocblas_double_complex* A,
+                                                     rocblas_int lda,
+                                                     double* D,
+                                                     double* E,
+                                                     rocblas_int sizeW,
+                                                     rocblas_int* info)
+{
+    char jobz = rocblas2char_evect(evect);
+    char uploC = rocblas2char_fill(uplo);
+    rocblas_double_complex work[sizeW];
+    zheev_(&jobz, &uploC, &n, A, &lda, D, work, &sizeW, E, info);
 }

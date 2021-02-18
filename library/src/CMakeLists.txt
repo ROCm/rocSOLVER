@@ -8,6 +8,81 @@ set( package_targets rocsolver )
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+set( rocsolver_lapack_source
+  # linear systems solvers
+  lapack/roclapack_getrs.cpp
+  lapack/roclapack_getrs_batched.cpp
+  lapack/roclapack_getrs_strided_batched.cpp
+  lapack/roclapack_getri.cpp
+  lapack/roclapack_getri_batched.cpp
+  lapack/roclapack_getri_strided_batched.cpp
+  lapack/roclapack_getri_outofplace_batched.cpp
+  # least squares solvers
+  lapack/roclapack_gels.cpp
+  lapack/roclapack_gels_batched.cpp
+  lapack/roclapack_gels_strided_batched.cpp
+  # triangular factorizations
+  lapack/roclapack_getf2.cpp
+  lapack/roclapack_getf2_batched.cpp
+  lapack/roclapack_getf2_strided_batched.cpp
+  lapack/roclapack_getrf.cpp
+  lapack/roclapack_getrf_batched.cpp
+  lapack/roclapack_getrf_strided_batched.cpp
+  lapack/roclapack_potf2.cpp
+  lapack/roclapack_potf2_batched.cpp
+  lapack/roclapack_potf2_strided_batched.cpp
+  lapack/roclapack_potrf.cpp
+  lapack/roclapack_potrf_batched.cpp
+  lapack/roclapack_potrf_strided_batched.cpp
+  # orthogonal factorizations
+  lapack/roclapack_geqr2.cpp
+  lapack/roclapack_geqr2_batched.cpp
+  lapack/roclapack_geqr2_strided_batched.cpp
+  lapack/roclapack_geql2.cpp
+  lapack/roclapack_geql2_batched.cpp
+  lapack/roclapack_geql2_strided_batched.cpp
+  lapack/roclapack_gelq2.cpp
+  lapack/roclapack_gelq2_batched.cpp
+  lapack/roclapack_gelq2_strided_batched.cpp
+  lapack/roclapack_geqrf.cpp
+  lapack/roclapack_geqrf_batched.cpp
+  lapack/roclapack_geqrf_ptr_batched.cpp
+  lapack/roclapack_geqrf_strided_batched.cpp
+  lapack/roclapack_geqlf.cpp
+  lapack/roclapack_geqlf_batched.cpp
+  lapack/roclapack_geqlf_strided_batched.cpp
+  lapack/roclapack_gelqf.cpp
+  lapack/roclapack_gelqf_batched.cpp
+  lapack/roclapack_gelqf_strided_batched.cpp
+  # Problem and matrix reductions (diagonalizations)
+  lapack/roclapack_gebd2.cpp
+  lapack/roclapack_gebd2_batched.cpp
+  lapack/roclapack_gebd2_strided_batched.cpp
+  lapack/roclapack_gebrd.cpp
+  lapack/roclapack_gebrd_batched.cpp
+  lapack/roclapack_gebrd_strided_batched.cpp
+  lapack/roclapack_sytd2_hetd2.cpp
+  lapack/roclapack_sytd2_hetd2_batched.cpp
+  lapack/roclapack_sytd2_hetd2_strided_batched.cpp
+  lapack/roclapack_sytrd_hetrd.cpp
+  lapack/roclapack_sytrd_hetrd_batched.cpp
+  lapack/roclapack_sytrd_hetrd_strided_batched.cpp
+  lapack/roclapack_sygs2_hegs2.cpp
+  lapack/roclapack_sygs2_hegs2_batched.cpp
+  lapack/roclapack_sygs2_hegs2_strided_batched.cpp
+  lapack/roclapack_sygst_hegst.cpp
+  lapack/roclapack_sygst_hegst_batched.cpp
+  lapack/roclapack_sygst_hegst_strided_batched.cpp
+  # singular value decomposition
+  lapack/roclapack_gesvd.cpp
+  lapack/roclapack_gesvd_batched.cpp
+  lapack/roclapack_gesvd_strided_batched.cpp
+  # symmetric eigensolvers
+  lapack/roclapack_syev_heev.cpp
+  lapack/roclapack_syev_heev_batched.cpp
+  lapack/roclapack_syev_heev_strided_batched.cpp
+)
+
 set( rocsolver_auxiliary_source
   # vector & matrix manipulations
   auxiliary/rocauxiliary_aliases.cpp
@@ -35,89 +110,13 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_ormql_unmql.cpp
   auxiliary/rocauxiliary_ormbr_unmbr.cpp
   auxiliary/rocauxiliary_ormtr_unmtr.cpp
-  # bidiagonal matrices and svd
+  # bidiagonal matrices
   auxiliary/rocauxiliary_bdsqr.cpp
   auxiliary/rocauxiliary_labrd.cpp
-  # tridiagonal matrices and eigensolvers
+  # tridiagonal matrices
   auxiliary/rocauxiliary_sterf.cpp
   auxiliary/rocauxiliary_steqr.cpp
   auxiliary/rocauxiliary_latrd.cpp
-)
-
-set( rocsolver_lapack_source
-  # triangular factorizations
-  lapack/roclapack_getf2.cpp
-  lapack/roclapack_getf2_batched.cpp
-  lapack/roclapack_getf2_strided_batched.cpp
-  lapack/roclapack_getrf.cpp
-  lapack/roclapack_getrf_batched.cpp
-  lapack/roclapack_getrf_strided_batched.cpp
-  lapack/roclapack_potf2.cpp
-  lapack/roclapack_potf2_batched.cpp
-  lapack/roclapack_potf2_strided_batched.cpp
-  lapack/roclapack_potrf.cpp
-  lapack/roclapack_potrf_batched.cpp
-  lapack/roclapack_potrf_strided_batched.cpp
-  # linear systems solvers
-  lapack/roclapack_getrs.cpp
-  lapack/roclapack_getrs_batched.cpp
-  lapack/roclapack_getrs_strided_batched.cpp
-  lapack/roclapack_getri.cpp
-  lapack/roclapack_getri_batched.cpp
-  lapack/roclapack_getri_strided_batched.cpp
-  lapack/roclapack_getri_outofplace_batched.cpp
-  # least squares solvers
-  lapack/roclapack_gels.cpp
-  lapack/roclapack_gels_batched.cpp
-  lapack/roclapack_gels_strided_batched.cpp
-  # orthogonal factorizations
-  lapack/roclapack_geqr2.cpp
-  lapack/roclapack_geqr2_batched.cpp
-  lapack/roclapack_geqr2_strided_batched.cpp
-  lapack/roclapack_geql2.cpp
-  lapack/roclapack_geql2_batched.cpp
-  lapack/roclapack_geql2_strided_batched.cpp
-  lapack/roclapack_gelq2.cpp
-  lapack/roclapack_gelq2_batched.cpp
-  lapack/roclapack_gelq2_strided_batched.cpp
-  lapack/roclapack_geqrf.cpp
-  lapack/roclapack_geqrf_batched.cpp
-  lapack/roclapack_geqrf_ptr_batched.cpp
-  lapack/roclapack_geqrf_strided_batched.cpp
-  lapack/roclapack_geqlf.cpp
-  lapack/roclapack_geqlf_batched.cpp
-  lapack/roclapack_geqlf_strided_batched.cpp
-  lapack/roclapack_gelqf.cpp
-  lapack/roclapack_gelqf_batched.cpp
-  lapack/roclapack_gelqf_strided_batched.cpp
-  # Matrix reductions (diagonalizations)
-  lapack/roclapack_gebd2.cpp
-  lapack/roclapack_gebd2_batched.cpp
-  lapack/roclapack_gebd2_strided_batched.cpp
-  lapack/roclapack_gebrd.cpp
-  lapack/roclapack_gebrd_batched.cpp
-  lapack/roclapack_gebrd_strided_batched.cpp
-  lapack/roclapack_sytd2_hetd2.cpp
-  lapack/roclapack_sytd2_hetd2_batched.cpp
-  lapack/roclapack_sytd2_hetd2_strided_batched.cpp
-  lapack/roclapack_sytrd_hetrd.cpp
-  lapack/roclapack_sytrd_hetrd_batched.cpp
-  lapack/roclapack_sytrd_hetrd_strided_batched.cpp
-  # singular value decomposition
-  lapack/roclapack_gesvd.cpp
-  lapack/roclapack_gesvd_batched.cpp
-  lapack/roclapack_gesvd_strided_batched.cpp
-  # symmetric eigensolvers
-  lapack/roclapack_syev_heev.cpp
-  lapack/roclapack_syev_heev_batched.cpp
-  lapack/roclapack_syev_heev_strided_batched.cpp
-  # symmetric generalized eigensolvers
-  lapack/roclapack_sygs2_hegs2.cpp
-  lapack/roclapack_sygs2_hegs2_batched.cpp
-  lapack/roclapack_sygs2_hegs2_strided_batched.cpp
-  lapack/roclapack_sygst_hegst.cpp
-  lapack/roclapack_sygst_hegst_batched.cpp
-  lapack/roclapack_sygst_hegst_strided_batched.cpp
 )
 
 set( auxiliaries

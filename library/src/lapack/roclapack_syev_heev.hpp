@@ -3,7 +3,7 @@
  * LAPACK routine (version 3.7.0) --
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
- *     April 2012
+ *     December 2016
  * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
@@ -15,6 +15,49 @@
 #include "rocblas.hpp"
 #include "roclapack_sytrd_hetrd.hpp"
 #include "rocsolver.h"
+
+/** Set results for the sacalr case (n=1) **/
+template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+__global__ void scalar_case(const rocblas_evect evect,
+                            U AA,
+                            const rocblas_stride strideA,
+                            T* DD,
+                            const rocblas_stride strideD,
+                            rocblas_int bc)
+{
+    int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if(b < bc)
+    {
+        T* A = load_ptr_batch<T>(AA, b, 0, strideA);
+        T* D = DD + b * strideD;
+        D[0] = A[0];
+
+        if(evect == rocblas_evect_original)
+            A[0] = T(1);
+    }
+}
+
+template <typename T, typename S, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+__global__ void scalar_case(const rocblas_evect evect,
+                            U AA,
+                            const rocblas_stride strideA,
+                            S* DD,
+                            const rocblas_stride strideD,
+                            rocblas_int bc)
+{
+    int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if(b < bc)
+    {
+        T* A = load_ptr_batch<T>(AA, b, 0, strideA);
+        S* D = DD + b * strideD;
+        D[0] = A[0].real();
+
+        if(evect == rocblas_evect_original)
+            A[0] = T(1);
+    }
+}
 
 /** Argument checking **/
 template <typename W, typename S>
@@ -130,11 +173,26 @@ rocblas_status rocsolver_syev_heev_template(rocblas_handle handle,
                     "lda:", lda, "bc:", batch_count);
 
     // quick return
-    if(n == 0 || batch_count == 0)
+    if(batch_count == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+    dim3 gridReset(blocksReset, 1, 1);
+    dim3 threads(BLOCKSIZE, 1, 1);
+
+    // info = 0
+    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+
+    // quick return
+    if(n == 0)
+        return rocblas_status_success;
+
+    // quick return for n = 1
+    //    if(n == 1)
+    //        hipLaunchKernelGGL(scalar_case<T>, gridReset, threads, 0, stream, evect, A, strideA, D, strideD, batch_count);
 
     return rocblas_status_success;
 }

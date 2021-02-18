@@ -21,13 +21,14 @@ rocblas_status rocsolver_syev_heev_strided_batched_impl(rocblas_handle handle,
 {
     const char* name = (!is_complex<T> ? "syev_strided_batched" : "heev_strided_batched");
     ROCSOLVER_ENTER_TOP(name, "--evect", evect, "--uplo", uplo, "-n", n, "--lda", lda, "--bsa",
-                        strideA);
+                        strideA, "--bsb", strideD, "--bsc", strideE);
 
     if(!handle)
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_syev_heev_argCheck(handle, evect, uplo, n, A, lda, D, E, info);
+    rocblas_status st
+        = rocsolver_syev_heev_argCheck(handle, evect, uplo, n, A, lda, D, E, info, batch_count);
     if(st != rocblas_status_continue)
         return st;
 
