@@ -255,7 +255,31 @@ __global__ void sterf_kernel(const rocblas_int n,
             info[bid]++;
 
     // Sort eigenvalues
-    lasrt_increasing(n, D, stack + bid * (2 * 32));
+    /** (TODO: the quick-sort method implemented in lasrt_increasing fails for some cases.
+        Substituting it here with a simple sorting algorithm. If more performance is required in
+        the future, lasrt_increasing should be debugged or another quick-sort method
+        could be implemented) **/
+    //lasrt_increasing(n, D, stack + bid * (2 * 32));
+
+    for(int ii = 1; ii < n; ii++)
+    {
+        l = ii - 1;
+        m = l;
+        p = D[l];
+        for(int j = ii; j < n; j++)
+        {
+            if(D[j] < p)
+            {
+                m = j;
+                p = D[j];
+            }
+        }
+        if(m != l)
+        {
+            D[m] = D[l];
+            D[l] = p;
+        }
+    }
 }
 
 template <typename T>

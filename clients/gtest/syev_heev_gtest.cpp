@@ -37,7 +37,7 @@ const vector<vector<int>> size_range = {
     {50, 60}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_size_range = {{192, 192}, {256, 270}, {300, 300}, {512, 550}};
+const vector<vector<int>> large_size_range = {{192, 192}, {256, 270}, {300, 300}};
 
 Arguments syev_heev_setup_arguments(syev_heev_tuple tup)
 {

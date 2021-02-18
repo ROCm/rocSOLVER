@@ -46,20 +46,22 @@ rocblas_status rocsolver_syev_heev_batched_impl(rocblas_handle handle,
     size_t size_Abyx_norms_tmptr, size_tmptau_trfact;
     // size of array of pointers (only for batched case)
     size_t size_workArr;
+    // size for temporary householder scalars
+    size_t size_tau;
 
     rocsolver_syev_heev_getMemorySize<true, T, S>(evect, uplo, n, batch_count, &size_scalars,
                                                   &size_work_stack, &size_Abyx_norms_tmptr,
-                                                  &size_tmptau_trfact, &size_workArr);
+                                                  &size_tmptau_trfact, &size_tau, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_stack,
                                                       size_Abyx_norms_tmptr, size_tmptau_trfact,
-                                                      size_workArr);
+                                                      size_tau, size_workArr);
 
     // memory workspace allocation
-    void *scalars, *work_stack, *Abyx_norms_tmptr, *tmptau_trfact, *workArr;
+    void *scalars, *work_stack, *Abyx_norms_tmptr, *tmptau_trfact, *tau, *workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_work_stack, size_Abyx_norms_tmptr,
-                              size_tmptau_trfact, size_workArr);
+                              size_tmptau_trfact, size_tau, size_workArr);
 
     if(!mem)
         return rocblas_status_memory_error;
@@ -68,14 +70,15 @@ rocblas_status rocsolver_syev_heev_batched_impl(rocblas_handle handle,
     work_stack = mem[1];
     Abyx_norms_tmptr = mem[2];
     tmptau_trfact = mem[3];
-    workArr = mem[4];
+    tau = mem[4];
+    workArr = mem[5];
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_syev_heev_template<true, false, T>(
         handle, evect, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE, info, batch_count,
-        (T*)scalars, work_stack, (T*)Abyx_norms_tmptr, (T*)tmptau_trfact, (T**)workArr);
+        (T*)scalars, work_stack, (T*)Abyx_norms_tmptr, (T*)tmptau_trfact, (T*)tau, (T**)workArr);
 }
 
 /*

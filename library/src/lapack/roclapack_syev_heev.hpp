@@ -105,6 +105,7 @@ void rocsolver_syev_heev_getMemorySize(const rocblas_evect evect,
                                        size_t* size_work_stack,
                                        size_t* size_Abyx_norms_tmptr,
                                        size_t* size_tmptau_trfact,
+                                       size_t* size_tau,
                                        size_t* size_workArr)
 {
     // if quick return, set workspace to zero
@@ -114,6 +115,7 @@ void rocsolver_syev_heev_getMemorySize(const rocblas_evect evect,
         *size_work_stack = 0;
         *size_Abyx_norms_tmptr = 0;
         *size_tmptau_trfact = 0;
+        *size_tau = 0;
         *size_workArr = 0;
         return;
     }
@@ -146,6 +148,9 @@ void rocsolver_syev_heev_getMemorySize(const rocblas_evect evect,
     *size_work_stack = std::max(w1, std::max(w2, w3));
     *size_Abyx_norms_tmptr = std::max(a1, a2);
     *size_tmptau_trfact = std::max(t1, t2);
+
+    // size of array for temporary householder scalars
+    *size_tau = sizeof(T) * n * batch_count;
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename W>
@@ -167,6 +172,7 @@ rocblas_status rocsolver_syev_heev_template(rocblas_handle handle,
                                             void* work_stack,
                                             T* Abyx_norms_tmptr,
                                             T* tmptau_trfact,
+                                            T* tau,
                                             T** workArr)
 {
     ROCSOLVER_ENTER("syev_heev", "evect:", evect, "uplo:", uplo, "n:", n, "shiftA:", shiftA,
@@ -190,9 +196,36 @@ rocblas_status rocsolver_syev_heev_template(rocblas_handle handle,
     if(n == 0)
         return rocblas_status_success;
 
-    // quick return for n = 1
-    //    if(n == 1)
-    //        hipLaunchKernelGGL(scalar_case<T>, gridReset, threads, 0, stream, evect, A, strideA, D, strideD, batch_count);
+    // quick return for n = 1 (scalar case)
+    if(n == 1)
+    {
+        hipLaunchKernelGGL(scalar_case<T>, gridReset, threads, 0, stream, evect, A, strideA, D,
+                           strideD, batch_count);
+        return rocblas_status_success;
+    }
+
+    // reduce A to tridiagonal form
+    rocsolver_sytrd_hetrd_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE,
+                                   tau, n, batch_count, scalars, (T*)work_stack, Abyx_norms_tmptr,
+                                   tmptau_trfact, workArr);
+
+    if(evect != rocblas_evect_original)
+    {
+        // only compute eigenvalues
+        rocsolver_sterf_template<S>(handle, n, D, 0, strideD, E, 0, strideE, info, batch_count,
+                                    (rocblas_int*)work_stack);
+    }
+    else
+    {
+        // update orthogonal matrix
+        rocsolver_orgtr_ungtr_template<BATCHED, STRIDED, T>(
+            handle, uplo, n, A, shiftA, lda, strideA, tau, n, batch_count, scalars, (T*)work_stack,
+            Abyx_norms_tmptr, tmptau_trfact, workArr);
+
+        // compute eigenvalues and eigenvectors
+        rocsolver_steqr_template<S, T>(handle, evect, n, D, 0, strideD, E, 0, strideE, A, shiftA,
+                                       lda, strideA, info, batch_count, work_stack);
+    }
 
     return rocblas_status_success;
 }
