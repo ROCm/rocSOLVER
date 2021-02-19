@@ -64,7 +64,7 @@ set(roclapack_test_source
     sygsx_hegsx_gtest.cpp
     # singular value decomposition
     gesvd_gtest.cpp
-    # eigensolvers
+    # symmetric eigensolvers
     syev_heev_gtest.cpp
     )
 
