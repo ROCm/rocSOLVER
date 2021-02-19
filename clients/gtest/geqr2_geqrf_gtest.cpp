@@ -69,6 +69,7 @@ Arguments geqrf_setup_arguments(geqrf_tuple tup)
     return arg;
 }
 
+template <bool BLOCKED>
 class GEQR2_GEQRF : public ::TestWithParam<geqrf_tuple>
 {
 protected:
@@ -76,7 +77,7 @@ protected:
     virtual void SetUp() {}
     virtual void TearDown() {}
 
-    template <bool BATCHED, bool STRIDED, bool BLOCKED, typename T>
+    template <bool BATCHED, bool STRIDED, typename T>
     void test_fixture()
     {
         Arguments arg = geqrf_setup_arguments(GetParam());
@@ -89,11 +90,11 @@ protected:
     }
 };
 
-class GEQR2 : public GEQR2_GEQRF
+class GEQR2 : public GEQR2_GEQRF<false>
 {
 };
 
-class GEQRF : public GEQR2_GEQRF
+class GEQRF : public GEQR2_GEQRF<true>
 {
 };
 
@@ -101,148 +102,148 @@ class GEQRF : public GEQR2_GEQRF
 
 TEST_P(GEQR2, __float)
 {
-    test_fixture<false, false, 0, float>();
+    test_fixture<false, false, float>();
 }
 
 TEST_P(GEQR2, __double)
 {
-    test_fixture<false, false, 0, double>();
+    test_fixture<false, false, double>();
 }
 
 TEST_P(GEQR2, __float_complex)
 {
-    test_fixture<false, false, 0, rocblas_float_complex>();
+    test_fixture<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GEQR2, __double_complex)
 {
-    test_fixture<false, false, 0, rocblas_double_complex>();
+    test_fixture<false, false, rocblas_double_complex>();
 }
 
 TEST_P(GEQRF, __float)
 {
-    test_fixture<false, false, 1, float>();
+    test_fixture<false, false, float>();
 }
 
 TEST_P(GEQRF, __double)
 {
-    test_fixture<false, false, 1, double>();
+    test_fixture<false, false, double>();
 }
 
 TEST_P(GEQRF, __float_complex)
 {
-    test_fixture<false, false, 1, rocblas_float_complex>();
+    test_fixture<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GEQRF, __double_complex)
 {
-    test_fixture<false, false, 1, rocblas_double_complex>();
+    test_fixture<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(GEQR2, batched__float)
 {
-    test_fixture<true, true, 0, float>();
+    test_fixture<true, true, float>();
 }
 
 TEST_P(GEQR2, batched__double)
 {
-    test_fixture<true, true, 0, double>();
+    test_fixture<true, true, double>();
 }
 
 TEST_P(GEQR2, batched__float_complex)
 {
-    test_fixture<true, true, 0, rocblas_float_complex>();
+    test_fixture<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GEQR2, batched__double_complex)
 {
-    test_fixture<true, true, 0, rocblas_double_complex>();
+    test_fixture<true, true, rocblas_double_complex>();
 }
 
 TEST_P(GEQRF, batched__float)
 {
-    test_fixture<true, true, 1, float>();
+    test_fixture<true, true, float>();
 }
 
 TEST_P(GEQRF, batched__double)
 {
-    test_fixture<true, true, 1, double>();
+    test_fixture<true, true, double>();
 }
 
 TEST_P(GEQRF, batched__float_complex)
 {
-    test_fixture<true, true, 1, rocblas_float_complex>();
+    test_fixture<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GEQRF, batched__double_complex)
 {
-    test_fixture<true, true, 1, rocblas_double_complex>();
+    test_fixture<true, true, rocblas_double_complex>();
 }
 
 // strided_batched cases
 
 TEST_P(GEQR2, strided_batched__float)
 {
-    test_fixture<false, true, 0, float>();
+    test_fixture<false, true, float>();
 }
 
 TEST_P(GEQR2, strided_batched__double)
 {
-    test_fixture<false, true, 0, double>();
+    test_fixture<false, true, double>();
 }
 
 TEST_P(GEQR2, strided_batched__float_complex)
 {
-    test_fixture<false, true, 0, rocblas_float_complex>();
+    test_fixture<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GEQR2, strided_batched__double_complex)
 {
-    test_fixture<false, true, 0, rocblas_double_complex>();
+    test_fixture<false, true, rocblas_double_complex>();
 }
 
 TEST_P(GEQRF, strided_batched__float)
 {
-    test_fixture<false, true, 1, float>();
+    test_fixture<false, true, float>();
 }
 
 TEST_P(GEQRF, strided_batched__double)
 {
-    test_fixture<false, true, 1, double>();
+    test_fixture<false, true, double>();
 }
 
 TEST_P(GEQRF, strided_batched__float_complex)
 {
-    test_fixture<false, true, 1, rocblas_float_complex>();
+    test_fixture<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GEQRF, strided_batched__double_complex)
 {
-    test_fixture<false, true, 1, rocblas_double_complex>();
+    test_fixture<false, true, rocblas_double_complex>();
 }
 
 // ptr_batched tests
 
 TEST_P(GEQRF, ptr_batched__float)
 {
-    test_fixture<true, false, 1, float>();
+    test_fixture<true, false, float>();
 }
 
 TEST_P(GEQRF, ptr_batched__double)
 {
-    test_fixture<true, false, 1, double>();
+    test_fixture<true, false, double>();
 }
 
 TEST_P(GEQRF, ptr_batched__float_complex)
 {
-    test_fixture<true, false, 1, rocblas_float_complex>();
+    test_fixture<true, false, rocblas_float_complex>();
 }
 
 TEST_P(GEQRF, ptr_batched__double_complex)
 {
-    test_fixture<true, false, 1, rocblas_double_complex>();
+    test_fixture<true, false, rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

@@ -71,6 +71,7 @@ Arguments orgql_setup_arguments(orgql_tuple tup)
     return arg;
 }
 
+template <bool BLOCKED>
 class ORGXL_UNGXL : public ::TestWithParam<orgql_tuple>
 {
 protected:
@@ -78,7 +79,7 @@ protected:
     virtual void SetUp() {}
     virtual void TearDown() {}
 
-    template <typename T, bool BLOCKED>
+    template <typename T>
     void test_fixture()
     {
         Arguments arg = orgql_setup_arguments(GetParam());
@@ -90,19 +91,19 @@ protected:
     }
 };
 
-class ORG2L : public ORGXL_UNGXL
+class ORG2L : public ORGXL_UNGXL<false>
 {
 };
 
-class UNG2L : public ORGXL_UNGXL
+class UNG2L : public ORGXL_UNGXL<false>
 {
 };
 
-class ORGQL : public ORGXL_UNGXL
+class ORGQL : public ORGXL_UNGXL<true>
 {
 };
 
-class UNGQL : public ORGXL_UNGXL
+class UNGQL : public ORGXL_UNGXL<true>
 {
 };
 
@@ -110,42 +111,42 @@ class UNGQL : public ORGXL_UNGXL
 
 TEST_P(ORG2L, __float)
 {
-    test_fixture<float, 0>();
+    test_fixture<float>();
 }
 
 TEST_P(ORG2L, __double)
 {
-    test_fixture<double, 0>();
+    test_fixture<double>();
 }
 
 TEST_P(UNG2L, __float_complex)
 {
-    test_fixture<rocblas_float_complex, 0>();
+    test_fixture<rocblas_float_complex>();
 }
 
 TEST_P(UNG2L, __double_complex)
 {
-    test_fixture<rocblas_double_complex, 0>();
+    test_fixture<rocblas_double_complex>();
 }
 
 TEST_P(ORGQL, __float)
 {
-    test_fixture<float, 1>();
+    test_fixture<float>();
 }
 
 TEST_P(ORGQL, __double)
 {
-    test_fixture<double, 1>();
+    test_fixture<double>();
 }
 
 TEST_P(UNGQL, __float_complex)
 {
-    test_fixture<rocblas_float_complex, 1>();
+    test_fixture<rocblas_float_complex>();
 }
 
 TEST_P(UNGQL, __double_complex)
 {
-    test_fixture<rocblas_double_complex, 1>();
+    test_fixture<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

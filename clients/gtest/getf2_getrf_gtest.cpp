@@ -77,6 +77,7 @@ Arguments getrf_setup_arguments(getrf_tuple tup)
     return arg;
 }
 
+template <bool BLOCKED>
 class GETF2_GETRF : public ::TestWithParam<getrf_tuple>
 {
 protected:
@@ -84,7 +85,7 @@ protected:
     virtual void SetUp() {}
     virtual void TearDown() {}
 
-    template <bool BATCHED, bool STRIDED, bool BLOCKED, typename T>
+    template <bool BATCHED, bool STRIDED, typename T>
     void test_fixture()
     {
         Arguments arg = getrf_setup_arguments(GetParam());
@@ -101,6 +102,7 @@ protected:
     }
 };
 
+template <bool BLOCKED>
 class GETF2_GETRF_NPVT : public ::TestWithParam<getrf_tuple>
 {
 protected:
@@ -108,7 +110,7 @@ protected:
     virtual void SetUp() {}
     virtual void TearDown() {}
 
-    template <bool BATCHED, bool STRIDED, bool BLOCKED, typename T>
+    template <bool BATCHED, bool STRIDED, typename T>
     void test_fixture()
     {
         Arguments arg = getrf_setup_arguments(GetParam());
@@ -125,263 +127,263 @@ protected:
     }
 };
 
-class GETF2 : public GETF2_GETRF
+class GETF2 : public GETF2_GETRF<false>
 {
 };
 
-class GETRF : public GETF2_GETRF
+class GETRF : public GETF2_GETRF<true>
 {
 };
 
-class GETF2_NPVT : public GETF2_GETRF_NPVT
+class GETF2_NPVT : public GETF2_GETRF_NPVT<false>
 {
 };
 
-class GETRF_NPVT : public GETF2_GETRF_NPVT
+class GETRF_NPVT : public GETF2_GETRF_NPVT<true>
 {
 };
 
 // non-batch tests
 TEST_P(GETF2_NPVT, __float)
 {
-    test_fixture<false, false, 0, float>();
+    test_fixture<false, false, float>();
 }
 
 TEST_P(GETF2_NPVT, __double)
 {
-    test_fixture<false, false, 0, double>();
+    test_fixture<false, false, double>();
 }
 
 TEST_P(GETF2_NPVT, __float_complex)
 {
-    test_fixture<false, false, 0, rocblas_float_complex>();
+    test_fixture<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GETF2_NPVT, __double_complex)
 {
-    test_fixture<false, false, 0, rocblas_double_complex>();
+    test_fixture<false, false, rocblas_double_complex>();
 }
 
 TEST_P(GETRF_NPVT, __float)
 {
-    test_fixture<false, false, 1, float>();
+    test_fixture<false, false, float>();
 }
 
 TEST_P(GETRF_NPVT, __double)
 {
-    test_fixture<false, false, 1, double>();
+    test_fixture<false, false, double>();
 }
 
 TEST_P(GETRF_NPVT, __float_complex)
 {
-    test_fixture<false, false, 1, rocblas_float_complex>();
+    test_fixture<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GETRF_NPVT, __double_complex)
 {
-    test_fixture<false, false, 1, rocblas_double_complex>();
+    test_fixture<false, false, rocblas_double_complex>();
 }
 
 TEST_P(GETF2, __float)
 {
-    test_fixture<false, false, 0, float>();
+    test_fixture<false, false, float>();
 }
 
 TEST_P(GETF2, __double)
 {
-    test_fixture<false, false, 0, double>();
+    test_fixture<false, false, double>();
 }
 
 TEST_P(GETF2, __float_complex)
 {
-    test_fixture<false, false, 0, rocblas_float_complex>();
+    test_fixture<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GETF2, __double_complex)
 {
-    test_fixture<false, false, 0, rocblas_double_complex>();
+    test_fixture<false, false, rocblas_double_complex>();
 }
 
 TEST_P(GETRF, __float)
 {
-    test_fixture<false, false, 1, float>();
+    test_fixture<false, false, float>();
 }
 
 TEST_P(GETRF, __double)
 {
-    test_fixture<false, false, 1, double>();
+    test_fixture<false, false, double>();
 }
 
 TEST_P(GETRF, __float_complex)
 {
-    test_fixture<false, false, 1, rocblas_float_complex>();
+    test_fixture<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GETRF, __double_complex)
 {
-    test_fixture<false, false, 1, rocblas_double_complex>();
+    test_fixture<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 TEST_P(GETF2_NPVT, batched__float)
 {
-    test_fixture<true, true, 0, float>();
+    test_fixture<true, true, float>();
 }
 
 TEST_P(GETF2_NPVT, batched__double)
 {
-    test_fixture<true, true, 0, double>();
+    test_fixture<true, true, double>();
 }
 
 TEST_P(GETF2_NPVT, batched__float_complex)
 {
-    test_fixture<true, true, 0, rocblas_float_complex>();
+    test_fixture<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GETF2_NPVT, batched__double_complex)
 {
-    test_fixture<true, true, 0, rocblas_double_complex>();
+    test_fixture<true, true, rocblas_double_complex>();
 }
 
 TEST_P(GETRF_NPVT, batched__float)
 {
-    test_fixture<true, true, 1, float>();
+    test_fixture<true, true, float>();
 }
 
 TEST_P(GETRF_NPVT, batched__double)
 {
-    test_fixture<true, true, 1, double>();
+    test_fixture<true, true, double>();
 }
 
 TEST_P(GETRF_NPVT, batched__float_complex)
 {
-    test_fixture<true, true, 1, rocblas_float_complex>();
+    test_fixture<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GETRF_NPVT, batched__double_complex)
 {
-    test_fixture<true, true, 1, rocblas_double_complex>();
+    test_fixture<true, true, rocblas_double_complex>();
 }
 
 TEST_P(GETF2, batched__float)
 {
-    test_fixture<true, true, 0, float>();
+    test_fixture<true, true, float>();
 }
 
 TEST_P(GETF2, batched__double)
 {
-    test_fixture<true, true, 0, double>();
+    test_fixture<true, true, double>();
 }
 
 TEST_P(GETF2, batched__float_complex)
 {
-    test_fixture<true, true, 0, rocblas_float_complex>();
+    test_fixture<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GETF2, batched__double_complex)
 {
-    test_fixture<true, true, 0, rocblas_double_complex>();
+    test_fixture<true, true, rocblas_double_complex>();
 }
 
 TEST_P(GETRF, batched__float)
 {
-    test_fixture<true, true, 1, float>();
+    test_fixture<true, true, float>();
 }
 
 TEST_P(GETRF, batched__double)
 {
-    test_fixture<true, true, 1, double>();
+    test_fixture<true, true, double>();
 }
 
 TEST_P(GETRF, batched__float_complex)
 {
-    test_fixture<true, true, 1, rocblas_float_complex>();
+    test_fixture<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GETRF, batched__double_complex)
 {
-    test_fixture<true, true, 1, rocblas_double_complex>();
+    test_fixture<true, true, rocblas_double_complex>();
 }
 
 // strided_batched cases
 TEST_P(GETF2_NPVT, strided_batched__float)
 {
-    test_fixture<false, true, 0, float>();
+    test_fixture<false, true, float>();
 }
 
 TEST_P(GETF2_NPVT, strided_batched__double)
 {
-    test_fixture<false, true, 0, double>();
+    test_fixture<false, true, double>();
 }
 
 TEST_P(GETF2_NPVT, strided_batched__float_complex)
 {
-    test_fixture<false, true, 0, rocblas_float_complex>();
+    test_fixture<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GETF2_NPVT, strided_batched__double_complex)
 {
-    test_fixture<false, true, 0, rocblas_double_complex>();
+    test_fixture<false, true, rocblas_double_complex>();
 }
 
 TEST_P(GETRF_NPVT, strided_batched__float)
 {
-    test_fixture<false, true, 1, float>();
+    test_fixture<false, true, float>();
 }
 
 TEST_P(GETRF_NPVT, strided_batched__double)
 {
-    test_fixture<false, true, 1, double>();
+    test_fixture<false, true, double>();
 }
 
 TEST_P(GETRF_NPVT, strided_batched__float_complex)
 {
-    test_fixture<false, true, 1, rocblas_float_complex>();
+    test_fixture<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GETRF_NPVT, strided_batched__double_complex)
 {
-    test_fixture<false, true, 1, rocblas_double_complex>();
+    test_fixture<false, true, rocblas_double_complex>();
 }
 
 TEST_P(GETF2, strided_batched__float)
 {
-    test_fixture<false, true, 0, float>();
+    test_fixture<false, true, float>();
 }
 
 TEST_P(GETF2, strided_batched__double)
 {
-    test_fixture<false, true, 0, double>();
+    test_fixture<false, true, double>();
 }
 
 TEST_P(GETF2, strided_batched__float_complex)
 {
-    test_fixture<false, true, 0, rocblas_float_complex>();
+    test_fixture<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GETF2, strided_batched__double_complex)
 {
-    test_fixture<false, true, 0, rocblas_double_complex>();
+    test_fixture<false, true, rocblas_double_complex>();
 }
 
 TEST_P(GETRF, strided_batched__float)
 {
-    test_fixture<false, true, 1, float>();
+    test_fixture<false, true, float>();
 }
 
 TEST_P(GETRF, strided_batched__double)
 {
-    test_fixture<false, true, 1, double>();
+    test_fixture<false, true, double>();
 }
 
 TEST_P(GETRF, strided_batched__float_complex)
 {
-    test_fixture<false, true, 1, rocblas_float_complex>();
+    test_fixture<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GETRF, strided_batched__double_complex)
 {
-    test_fixture<false, true, 1, rocblas_double_complex>();
+    test_fixture<false, true, rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

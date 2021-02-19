@@ -62,6 +62,7 @@ Arguments sytrd_setup_arguments(sytrd_tuple tup)
     return arg;
 }
 
+template <bool BLOCKED>
 class SYTXX_HETXX : public ::TestWithParam<sytrd_tuple>
 {
 protected:
@@ -69,7 +70,7 @@ protected:
     virtual void SetUp() {}
     virtual void TearDown() {}
 
-    template <bool BATCHED, bool STRIDED, bool BLOCKED, typename T>
+    template <bool BATCHED, bool STRIDED, typename T>
     void test_fixture()
     {
         Arguments arg = sytrd_setup_arguments(GetParam());
@@ -82,19 +83,19 @@ protected:
     }
 };
 
-class SYTD2 : public SYTXX_HETXX
+class SYTD2 : public SYTXX_HETXX<false>
 {
 };
 
-class SYTRD : public SYTXX_HETXX
+class HETD2 : public SYTXX_HETXX<false>
 {
 };
 
-class HETD2 : public SYTXX_HETXX
+class SYTRD : public SYTXX_HETXX<true>
 {
 };
 
-class HETRD : public SYTXX_HETXX
+class HETRD : public SYTXX_HETXX<true>
 {
 };
 
@@ -102,126 +103,126 @@ class HETRD : public SYTXX_HETXX
 
 TEST_P(SYTD2, __float)
 {
-    test_fixture<false, false, 0, float>();
+    test_fixture<false, false, float>();
 }
 
 TEST_P(SYTD2, __double)
 {
-    test_fixture<false, false, 0, double>();
+    test_fixture<false, false, double>();
 }
 
 TEST_P(HETD2, __float_complex)
 {
-    test_fixture<false, false, 0, rocblas_float_complex>();
+    test_fixture<false, false, rocblas_float_complex>();
 }
 
 TEST_P(HETD2, __double_complex)
 {
-    test_fixture<false, false, 0, rocblas_double_complex>();
+    test_fixture<false, false, rocblas_double_complex>();
 }
 
 TEST_P(SYTRD, __float)
 {
-    test_fixture<false, false, 1, float>();
+    test_fixture<false, false, float>();
 }
 
 TEST_P(SYTRD, __double)
 {
-    test_fixture<false, false, 1, double>();
+    test_fixture<false, false, double>();
 }
 
 TEST_P(HETRD, __float_complex)
 {
-    test_fixture<false, false, 1, rocblas_float_complex>();
+    test_fixture<false, false, rocblas_float_complex>();
 }
 
 TEST_P(HETRD, __double_complex)
 {
-    test_fixture<false, false, 1, rocblas_double_complex>();
+    test_fixture<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(SYTD2, batched__float)
 {
-    test_fixture<true, true, 0, float>();
+    test_fixture<true, true, float>();
 }
 
 TEST_P(SYTD2, batched__double)
 {
-    test_fixture<true, true, 0, double>();
+    test_fixture<true, true, double>();
 }
 
 TEST_P(HETD2, batched__float_complex)
 {
-    test_fixture<true, true, 0, rocblas_float_complex>();
+    test_fixture<true, true, rocblas_float_complex>();
 }
 
 TEST_P(HETD2, batched__double_complex)
 {
-    test_fixture<true, true, 0, rocblas_double_complex>();
+    test_fixture<true, true, rocblas_double_complex>();
 }
 
 TEST_P(SYTRD, batched__float)
 {
-    test_fixture<true, true, 1, float>();
+    test_fixture<true, true, float>();
 }
 
 TEST_P(SYTRD, batched__double)
 {
-    test_fixture<true, true, 1, double>();
+    test_fixture<true, true, double>();
 }
 
 TEST_P(HETRD, batched__float_complex)
 {
-    test_fixture<true, true, 1, rocblas_float_complex>();
+    test_fixture<true, true, rocblas_float_complex>();
 }
 
 TEST_P(HETRD, batched__double_complex)
 {
-    test_fixture<true, true, 1, rocblas_double_complex>();
+    test_fixture<true, true, rocblas_double_complex>();
 }
 
 // strided_batched cases
 
 TEST_P(SYTD2, strided_batched__float)
 {
-    test_fixture<false, true, 0, float>();
+    test_fixture<false, true, float>();
 }
 
 TEST_P(SYTD2, strided_batched__double)
 {
-    test_fixture<false, true, 0, double>();
+    test_fixture<false, true, double>();
 }
 
 TEST_P(HETD2, strided_batched__float_complex)
 {
-    test_fixture<false, true, 0, rocblas_float_complex>();
+    test_fixture<false, true, rocblas_float_complex>();
 }
 
 TEST_P(HETD2, strided_batched__double_complex)
 {
-    test_fixture<false, true, 0, rocblas_double_complex>();
+    test_fixture<false, true, rocblas_double_complex>();
 }
 
 TEST_P(SYTRD, strided_batched__float)
 {
-    test_fixture<false, true, 1, float>();
+    test_fixture<false, true, float>();
 }
 
 TEST_P(SYTRD, strided_batched__double)
 {
-    test_fixture<false, true, 1, double>();
+    test_fixture<false, true, double>();
 }
 
 TEST_P(HETRD, strided_batched__float_complex)
 {
-    test_fixture<false, true, 1, rocblas_float_complex>();
+    test_fixture<false, true, rocblas_float_complex>();
 }
 
 TEST_P(HETRD, strided_batched__double_complex)
 {
-    test_fixture<false, true, 1, rocblas_double_complex>();
+    test_fixture<false, true, rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

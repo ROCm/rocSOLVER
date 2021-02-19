@@ -96,6 +96,7 @@ Arguments ormqr_setup_arguments(ormqr_tuple tup)
     return arg;
 }
 
+template <bool BLOCKED>
 class ORMXR_UNMXR : public ::TestWithParam<ormqr_tuple>
 {
 protected:
@@ -103,7 +104,7 @@ protected:
     virtual void SetUp() {}
     virtual void TearDown() {}
 
-    template <typename T, bool BLOCKED>
+    template <typename T>
     void test_fixture()
     {
         Arguments arg = ormqr_setup_arguments(GetParam());
@@ -115,19 +116,19 @@ protected:
     }
 };
 
-class ORM2R : public ORMXR_UNMXR
+class ORM2R : public ORMXR_UNMXR<false>
 {
 };
 
-class UNM2R : public ORMXR_UNMXR
+class UNM2R : public ORMXR_UNMXR<false>
 {
 };
 
-class ORMQR : public ORMXR_UNMXR
+class ORMQR : public ORMXR_UNMXR<true>
 {
 };
 
-class UNMQR : public ORMXR_UNMXR
+class UNMQR : public ORMXR_UNMXR<true>
 {
 };
 
@@ -135,42 +136,42 @@ class UNMQR : public ORMXR_UNMXR
 
 TEST_P(ORM2R, __float)
 {
-    test_fixture<float, 0>();
+    test_fixture<float>();
 }
 
 TEST_P(ORM2R, __double)
 {
-    test_fixture<double, 0>();
+    test_fixture<double>();
 }
 
 TEST_P(UNM2R, __float_complex)
 {
-    test_fixture<rocblas_float_complex, 0>();
+    test_fixture<rocblas_float_complex>();
 }
 
 TEST_P(UNM2R, __double_complex)
 {
-    test_fixture<rocblas_double_complex, 0>();
+    test_fixture<rocblas_double_complex>();
 }
 
 TEST_P(ORMQR, __float)
 {
-    test_fixture<float, 1>();
+    test_fixture<float>();
 }
 
 TEST_P(ORMQR, __double)
 {
-    test_fixture<double, 1>();
+    test_fixture<double>();
 }
 
 TEST_P(UNMQR, __float_complex)
 {
-    test_fixture<rocblas_float_complex, 1>();
+    test_fixture<rocblas_float_complex>();
 }
 
 TEST_P(UNMQR, __double_complex)
 {
-    test_fixture<rocblas_double_complex, 1>();
+    test_fixture<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, ORM2R, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));

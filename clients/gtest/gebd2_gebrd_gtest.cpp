@@ -68,6 +68,7 @@ Arguments gebrd_setup_arguments(gebrd_tuple tup)
     return arg;
 }
 
+template <bool BLOCKED>
 class GEBD2_GEBRD : public ::TestWithParam<gebrd_tuple>
 {
 protected:
@@ -75,7 +76,7 @@ protected:
     virtual void SetUp() {}
     virtual void TearDown() {}
 
-    template <bool BATCHED, bool STRIDED, bool BLOCKED, typename T>
+    template <bool BATCHED, bool STRIDED, typename T>
     void test_fixture()
     {
         Arguments arg = gebrd_setup_arguments(GetParam());
@@ -88,11 +89,11 @@ protected:
     }
 };
 
-class GEBD2 : public GEBD2_GEBRD
+class GEBD2 : public GEBD2_GEBRD<false>
 {
 };
 
-class GEBRD : public GEBD2_GEBRD
+class GEBRD : public GEBD2_GEBRD<true>
 {
 };
 
@@ -100,126 +101,126 @@ class GEBRD : public GEBD2_GEBRD
 
 TEST_P(GEBD2, __float)
 {
-    test_fixture<false, false, 0, float>();
+    test_fixture<false, false, float>();
 }
 
 TEST_P(GEBD2, __double)
 {
-    test_fixture<false, false, 0, double>();
+    test_fixture<false, false, double>();
 }
 
 TEST_P(GEBD2, __float_complex)
 {
-    test_fixture<false, false, 0, rocblas_float_complex>();
+    test_fixture<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GEBD2, __double_complex)
 {
-    test_fixture<false, false, 0, rocblas_double_complex>();
+    test_fixture<false, false, rocblas_double_complex>();
 }
 
 TEST_P(GEBRD, __float)
 {
-    test_fixture<false, false, 1, float>();
+    test_fixture<false, false, float>();
 }
 
 TEST_P(GEBRD, __double)
 {
-    test_fixture<false, false, 1, double>();
+    test_fixture<false, false, double>();
 }
 
 TEST_P(GEBRD, __float_complex)
 {
-    test_fixture<false, false, 1, rocblas_float_complex>();
+    test_fixture<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GEBRD, __double_complex)
 {
-    test_fixture<false, false, 1, rocblas_double_complex>();
+    test_fixture<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(GEBD2, batched__float)
 {
-    test_fixture<true, true, 0, float>();
+    test_fixture<true, true, float>();
 }
 
 TEST_P(GEBD2, batched__double)
 {
-    test_fixture<true, true, 0, double>();
+    test_fixture<true, true, double>();
 }
 
 TEST_P(GEBD2, batched__float_complex)
 {
-    test_fixture<true, true, 0, rocblas_float_complex>();
+    test_fixture<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GEBD2, batched__double_complex)
 {
-    test_fixture<true, true, 0, rocblas_double_complex>();
+    test_fixture<true, true, rocblas_double_complex>();
 }
 
 TEST_P(GEBRD, batched__float)
 {
-    test_fixture<true, true, 1, float>();
+    test_fixture<true, true, float>();
 }
 
 TEST_P(GEBRD, batched__double)
 {
-    test_fixture<true, true, 1, double>();
+    test_fixture<true, true, double>();
 }
 
 TEST_P(GEBRD, batched__float_complex)
 {
-    test_fixture<true, true, 1, rocblas_float_complex>();
+    test_fixture<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GEBRD, batched__double_complex)
 {
-    test_fixture<true, true, 1, rocblas_double_complex>();
+    test_fixture<true, true, rocblas_double_complex>();
 }
 
 // strided_batched cases
 
 TEST_P(GEBD2, strided_batched__float)
 {
-    test_fixture<false, true, 0, float>();
+    test_fixture<false, true, float>();
 }
 
 TEST_P(GEBD2, strided_batched__double)
 {
-    test_fixture<false, true, 0, double>();
+    test_fixture<false, true, double>();
 }
 
 TEST_P(GEBD2, strided_batched__float_complex)
 {
-    test_fixture<false, true, 0, rocblas_float_complex>();
+    test_fixture<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GEBD2, strided_batched__double_complex)
 {
-    test_fixture<false, true, 0, rocblas_double_complex>();
+    test_fixture<false, true, rocblas_double_complex>();
 }
 
 TEST_P(GEBRD, strided_batched__float)
 {
-    test_fixture<false, true, 1, float>();
+    test_fixture<false, true, float>();
 }
 
 TEST_P(GEBRD, strided_batched__double)
 {
-    test_fixture<false, true, 1, double>();
+    test_fixture<false, true, double>();
 }
 
 TEST_P(GEBRD, strided_batched__float_complex)
 {
-    test_fixture<false, true, 1, rocblas_float_complex>();
+    test_fixture<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GEBRD, strided_batched__double_complex)
 {
-    test_fixture<false, true, 1, rocblas_double_complex>();
+    test_fixture<false, true, rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
