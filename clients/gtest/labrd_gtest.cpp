@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -86,50 +86,39 @@ protected:
     LABRD() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T>
+    void test_fixture()
+    {
+        Arguments arg = labrd_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.N == 0)
+            testing_labrd_bad_arg<T>();
+
+        testing_labrd<T>(arg);
+    }
 };
+
+// non-batch tests
 
 TEST_P(LABRD, __float)
 {
-    Arguments arg = labrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_labrd_bad_arg<float>();
-
-    arg.batch_count = 1;
-    testing_labrd<float>(arg);
+    test_fixture<float>();
 }
 
 TEST_P(LABRD, __double)
 {
-    Arguments arg = labrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_labrd_bad_arg<double>();
-
-    arg.batch_count = 1;
-    testing_labrd<double>(arg);
+    test_fixture<double>();
 }
 
 TEST_P(LABRD, __float_complex)
 {
-    Arguments arg = labrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_labrd_bad_arg<rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_labrd<rocblas_float_complex>(arg);
+    test_fixture<rocblas_float_complex>();
 }
 
 TEST_P(LABRD, __double_complex)
 {
-    Arguments arg = labrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_labrd_bad_arg<rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_labrd<rocblas_double_complex>(arg);
+    test_fixture<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -60,38 +60,36 @@ protected:
     MANAGED_MALLOC() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T>
+    void test_fixture()
+    {
+        Arguments arg = managed_malloc_setup_arguments(GetParam());
+
+        testing_managed_malloc<T>(arg);
+    }
 };
+
+// non-batch tests
 
 TEST_P(MANAGED_MALLOC, __float)
 {
-    Arguments arg = managed_malloc_setup_arguments(GetParam());
-
-    arg.batch_count = 1;
-    testing_managed_malloc<float>(arg);
+    test_fixture<float>();
 }
 
 TEST_P(MANAGED_MALLOC, __double)
 {
-    Arguments arg = managed_malloc_setup_arguments(GetParam());
-
-    arg.batch_count = 1;
-    testing_managed_malloc<double>(arg);
+    test_fixture<double>();
 }
 
 TEST_P(MANAGED_MALLOC, __float_complex)
 {
-    Arguments arg = managed_malloc_setup_arguments(GetParam());
-
-    arg.batch_count = 1;
-    testing_managed_malloc<rocblas_float_complex>(arg);
+    test_fixture<rocblas_float_complex>();
 }
 
 TEST_P(MANAGED_MALLOC, __double_complex)
 {
-    Arguments arg = managed_malloc_setup_arguments(GetParam());
-
-    arg.batch_count = 1;
-    testing_managed_malloc<rocblas_double_complex>(arg);
+    test_fixture<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

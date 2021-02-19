@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -88,116 +88,81 @@ Arguments ormql_setup_arguments(ormql_tuple tup)
     return arg;
 }
 
-class ORM2L : public ::TestWithParam<ormql_tuple>
+class ORMXL_UNMXL : public ::TestWithParam<ormql_tuple>
 {
 protected:
-    ORM2L() {}
+    ORMXL_UNMXL() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T, bool BLOCKED>
+    void test_fixture()
+    {
+        Arguments arg = ormql_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+            testing_ormxl_unmxl_bad_arg<T, BLOCKED>();
+
+        testing_ormxl_unmxl<T, BLOCKED>(arg);
+    }
 };
 
-class UNM2L : public ::TestWithParam<ormql_tuple>
+class ORM2L : public ORMXL_UNMXL
 {
-protected:
-    UNM2L() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
 
-class ORMQL : public ::TestWithParam<ormql_tuple>
+class UNM2L : public ORMXL_UNMXL
 {
-protected:
-    ORMQL() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
 
-class UNMQL : public ::TestWithParam<ormql_tuple>
+class ORMQL : public ORMXL_UNMXL
 {
-protected:
-    UNMQL() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
+
+class UNMQL : public ORMXL_UNMXL
+{
+};
+
+// non-batch tests
 
 TEST_P(ORM2L, __float)
 {
-    Arguments arg = ormql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormxl_unmxl_bad_arg<float, 0>();
-
-    testing_ormxl_unmxl<float, 0>(arg);
+    test_fixture<float, 0>();
 }
 
 TEST_P(ORM2L, __double)
 {
-    Arguments arg = ormql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormxl_unmxl_bad_arg<double, 0>();
-
-    testing_ormxl_unmxl<double, 0>(arg);
+    test_fixture<double, 0>();
 }
 
 TEST_P(UNM2L, __float_complex)
 {
-    Arguments arg = ormql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormxl_unmxl_bad_arg<rocblas_float_complex, 0>();
-
-    testing_ormxl_unmxl<rocblas_float_complex, 0>(arg);
+    test_fixture<rocblas_float_complex, 0>();
 }
 
 TEST_P(UNM2L, __double_complex)
 {
-    Arguments arg = ormql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormxl_unmxl_bad_arg<rocblas_double_complex, 0>();
-
-    testing_ormxl_unmxl<rocblas_double_complex, 0>(arg);
+    test_fixture<rocblas_double_complex, 0>();
 }
 
 TEST_P(ORMQL, __float)
 {
-    Arguments arg = ormql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormxl_unmxl_bad_arg<float, 1>();
-
-    testing_ormxl_unmxl<float, 1>(arg);
+    test_fixture<float, 1>();
 }
 
 TEST_P(ORMQL, __double)
 {
-    Arguments arg = ormql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormxl_unmxl_bad_arg<double, 1>();
-
-    testing_ormxl_unmxl<double, 1>(arg);
+    test_fixture<double, 1>();
 }
 
 TEST_P(UNMQL, __float_complex)
 {
-    Arguments arg = ormql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormxl_unmxl_bad_arg<rocblas_float_complex, 1>();
-
-    testing_ormxl_unmxl<rocblas_float_complex, 1>(arg);
+    test_fixture<rocblas_float_complex, 1>();
 }
 
 TEST_P(UNMQL, __double_complex)
 {
-    Arguments arg = ormql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormxl_unmxl_bad_arg<rocblas_double_complex, 1>();
-
-    testing_ormxl_unmxl<rocblas_double_complex, 1>(arg);
+    test_fixture<rocblas_double_complex, 1>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, ORM2L, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));

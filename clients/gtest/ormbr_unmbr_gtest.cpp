@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -112,64 +112,54 @@ Arguments ormbr_setup_arguments(ormbr_tuple tup)
     return arg;
 }
 
-class ORMBR : public ::TestWithParam<ormbr_tuple>
+class ORMBR_UNMBR : public ::TestWithParam<ormbr_tuple>
 {
 protected:
-    ORMBR() {}
+    ORMBR_UNMBR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T>
+    void test_fixture()
+    {
+        Arguments arg = ormbr_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
+           && arg.storev == 'C')
+            testing_ormbr_unmbr_bad_arg<T>();
+
+        testing_ormbr_unmbr<T>(arg);
+    }
 };
 
-class UNMBR : public ::TestWithParam<ormbr_tuple>
+class ORMBR : public ORMBR_UNMBR
 {
-protected:
-    UNMBR() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
+
+class UNMBR : public ORMBR_UNMBR
+{
+};
+
+// non-batch tests
 
 TEST_P(ORMBR, __float)
 {
-    Arguments arg = ormbr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
-       && arg.storev == 'C')
-        testing_ormbr_unmbr_bad_arg<float>();
-
-    testing_ormbr_unmbr<float>(arg);
+    test_fixture<float>();
 }
 
 TEST_P(ORMBR, __double)
 {
-    Arguments arg = ormbr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
-       && arg.storev == 'C')
-        testing_ormbr_unmbr_bad_arg<double>();
-
-    testing_ormbr_unmbr<double>(arg);
+    test_fixture<double>();
 }
 
 TEST_P(UNMBR, __float_complex)
 {
-    Arguments arg = ormbr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
-       && arg.storev == 'C')
-        testing_ormbr_unmbr_bad_arg<rocblas_float_complex>();
-
-    testing_ormbr_unmbr<rocblas_float_complex>(arg);
+    test_fixture<rocblas_float_complex>();
 }
 
 TEST_P(UNMBR, __double_complex)
 {
-    Arguments arg = ormbr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
-       && arg.storev == 'C')
-        testing_ormbr_unmbr_bad_arg<rocblas_double_complex>();
-
-    testing_ormbr_unmbr<rocblas_double_complex>(arg);
+    test_fixture<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, ORMBR, Combine(ValuesIn(large_size_range), ValuesIn(store)));

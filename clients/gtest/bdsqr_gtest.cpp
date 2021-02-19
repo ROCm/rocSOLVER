@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -91,46 +91,39 @@ protected:
     BDSQR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T>
+    void test_fixture()
+    {
+        Arguments arg = bdsqr_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.uplo_option == 'L')
+            testing_bdsqr_bad_arg<T>();
+
+        testing_bdsqr<T>(arg);
+    }
 };
+
+// non-batch tests
 
 TEST_P(BDSQR, __float)
 {
-    Arguments arg = bdsqr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.uplo_option == 'L')
-        testing_bdsqr_bad_arg<float>();
-
-    testing_bdsqr<float>(arg);
+    test_fixture<float>();
 }
 
 TEST_P(BDSQR, __double)
 {
-    Arguments arg = bdsqr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.uplo_option == 'L')
-        testing_bdsqr_bad_arg<double>();
-
-    testing_bdsqr<double>(arg);
+    test_fixture<double>();
 }
 
 TEST_P(BDSQR, __float_complex)
 {
-    Arguments arg = bdsqr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.uplo_option == 'L')
-        testing_bdsqr_bad_arg<rocblas_float_complex>();
-
-    testing_bdsqr<rocblas_float_complex>(arg);
+    test_fixture<rocblas_float_complex>();
 }
 
 TEST_P(BDSQR, __double_complex)
 {
-    Arguments arg = bdsqr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.uplo_option == 'L')
-        testing_bdsqr_bad_arg<rocblas_double_complex>();
-
-    testing_bdsqr<rocblas_double_complex>(arg);
+    test_fixture<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

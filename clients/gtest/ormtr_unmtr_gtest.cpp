@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -102,64 +102,54 @@ Arguments ormtr_setup_arguments(ormtr_tuple tup)
     return arg;
 }
 
-class ORMTR : public ::TestWithParam<ormtr_tuple>
+class ORMTR_UNMTR : public ::TestWithParam<ormtr_tuple>
 {
 protected:
-    ORMTR() {}
+    ORMTR_UNMTR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T>
+    void test_fixture()
+    {
+        Arguments arg = ormtr_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
+           && arg.uplo_option == 'U')
+            testing_ormtr_unmtr_bad_arg<T>();
+
+        testing_ormtr_unmtr<T>(arg);
+    }
 };
 
-class UNMTR : public ::TestWithParam<ormtr_tuple>
+class ORMTR : public ORMTR_UNMTR
 {
-protected:
-    UNMTR() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
+
+class UNMTR : public ORMTR_UNMTR
+{
+};
+
+// non-batch tests
 
 TEST_P(ORMTR, __float)
 {
-    Arguments arg = ormtr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
-       && arg.uplo_option == 'U')
-        testing_ormtr_unmtr_bad_arg<float>();
-
-    testing_ormtr_unmtr<float>(arg);
+    test_fixture<float>();
 }
 
 TEST_P(ORMTR, __double)
 {
-    Arguments arg = ormtr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
-       && arg.uplo_option == 'U')
-        testing_ormtr_unmtr_bad_arg<double>();
-
-    testing_ormtr_unmtr<double>(arg);
+    test_fixture<double>();
 }
 
 TEST_P(UNMTR, __float_complex)
 {
-    Arguments arg = ormtr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
-       && arg.uplo_option == 'U')
-        testing_ormtr_unmtr_bad_arg<rocblas_float_complex>();
-
-    testing_ormtr_unmtr<rocblas_float_complex>(arg);
+    test_fixture<rocblas_float_complex>();
 }
 
 TEST_P(UNMTR, __double_complex)
 {
-    Arguments arg = ormtr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
-       && arg.uplo_option == 'U')
-        testing_ormtr_unmtr_bad_arg<rocblas_double_complex>();
-
-    testing_ormtr_unmtr<rocblas_double_complex>(arg);
+    test_fixture<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, ORMTR, Combine(ValuesIn(large_size_range), ValuesIn(store)));

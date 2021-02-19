@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -62,306 +62,166 @@ Arguments sytrd_setup_arguments(sytrd_tuple tup)
     return arg;
 }
 
-class SYTD2 : public ::TestWithParam<sytrd_tuple>
+class SYTXX_HETXX : public ::TestWithParam<sytrd_tuple>
 {
 protected:
-    SYTD2() {}
+    SYTXX_HETXX() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, bool BLOCKED, typename T>
+    void test_fixture()
+    {
+        Arguments arg = sytrd_setup_arguments(GetParam());
+
+        if(arg.uplo_option == 'U' && arg.N == 0)
+            testing_sytxx_hetxx_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        testing_sytxx_hetxx<BATCHED, STRIDED, BLOCKED, T>(arg);
+    }
 };
 
-class SYTRD : public ::TestWithParam<sytrd_tuple>
+class SYTD2 : public SYTXX_HETXX
 {
-protected:
-    SYTRD() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
 
-class HETD2 : public ::TestWithParam<sytrd_tuple>
+class SYTRD : public SYTXX_HETXX
 {
-protected:
-    HETD2() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
 
-class HETRD : public ::TestWithParam<sytrd_tuple>
+class HETD2 : public SYTXX_HETXX
 {
-protected:
-    HETRD() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+};
+
+class HETRD : public SYTXX_HETXX
+{
 };
 
 // non-batch tests
 
 TEST_P(SYTD2, __float)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, false, 0, float>();
-
-    arg.batch_count = 1;
-    testing_sytxx_hetxx<false, false, 0, float>(arg);
+    test_fixture<false, false, 0, float>();
 }
 
 TEST_P(SYTD2, __double)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, false, 0, double>();
-
-    arg.batch_count = 1;
-    testing_sytxx_hetxx<false, false, 0, double>(arg);
+    test_fixture<false, false, 0, double>();
 }
 
 TEST_P(HETD2, __float_complex)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, false, 0, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_sytxx_hetxx<false, false, 0, rocblas_float_complex>(arg);
+    test_fixture<false, false, 0, rocblas_float_complex>();
 }
 
 TEST_P(HETD2, __double_complex)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, false, 0, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_sytxx_hetxx<false, false, 0, rocblas_double_complex>(arg);
+    test_fixture<false, false, 0, rocblas_double_complex>();
 }
 
 TEST_P(SYTRD, __float)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, false, 1, float>();
-
-    arg.batch_count = 1;
-    testing_sytxx_hetxx<false, false, 1, float>(arg);
+    test_fixture<false, false, 1, float>();
 }
 
 TEST_P(SYTRD, __double)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, false, 1, double>();
-
-    arg.batch_count = 1;
-    testing_sytxx_hetxx<false, false, 1, double>(arg);
+    test_fixture<false, false, 1, double>();
 }
 
 TEST_P(HETRD, __float_complex)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, false, 1, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_sytxx_hetxx<false, false, 1, rocblas_float_complex>(arg);
+    test_fixture<false, false, 1, rocblas_float_complex>();
 }
 
 TEST_P(HETRD, __double_complex)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, false, 1, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_sytxx_hetxx<false, false, 1, rocblas_double_complex>(arg);
+    test_fixture<false, false, 1, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(SYTD2, batched__float)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<true, true, 0, float>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<true, true, 0, float>(arg);
+    test_fixture<true, true, 0, float>();
 }
 
 TEST_P(SYTD2, batched__double)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<true, true, 0, double>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<true, true, 0, double>(arg);
+    test_fixture<true, true, 0, double>();
 }
 
 TEST_P(HETD2, batched__float_complex)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<true, true, 0, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<true, true, 0, rocblas_float_complex>(arg);
+    test_fixture<true, true, 0, rocblas_float_complex>();
 }
 
 TEST_P(HETD2, batched__double_complex)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<true, true, 0, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<true, true, 0, rocblas_double_complex>(arg);
+    test_fixture<true, true, 0, rocblas_double_complex>();
 }
 
 TEST_P(SYTRD, batched__float)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<true, true, 1, float>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<true, true, 1, float>(arg);
+    test_fixture<true, true, 1, float>();
 }
 
 TEST_P(SYTRD, batched__double)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<true, true, 1, double>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<true, true, 1, double>(arg);
+    test_fixture<true, true, 1, double>();
 }
 
 TEST_P(HETRD, batched__float_complex)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<true, true, 1, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<true, true, 1, rocblas_float_complex>(arg);
+    test_fixture<true, true, 1, rocblas_float_complex>();
 }
 
 TEST_P(HETRD, batched__double_complex)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<true, true, 1, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<true, true, 1, rocblas_double_complex>(arg);
+    test_fixture<true, true, 1, rocblas_double_complex>();
 }
 
 // strided_batched cases
 
 TEST_P(SYTD2, strided_batched__float)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, true, 0, float>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<false, true, 0, float>(arg);
+    test_fixture<false, true, 0, float>();
 }
 
 TEST_P(SYTD2, strided_batched__double)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, true, 0, double>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<false, true, 0, double>(arg);
+    test_fixture<false, true, 0, double>();
 }
 
 TEST_P(HETD2, strided_batched__float_complex)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, true, 0, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<false, true, 0, rocblas_float_complex>(arg);
+    test_fixture<false, true, 0, rocblas_float_complex>();
 }
 
 TEST_P(HETD2, strided_batched__double_complex)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, true, 0, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<false, true, 0, rocblas_double_complex>(arg);
+    test_fixture<false, true, 0, rocblas_double_complex>();
 }
 
 TEST_P(SYTRD, strided_batched__float)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, true, 1, float>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<false, true, 1, float>(arg);
+    test_fixture<false, true, 1, float>();
 }
 
 TEST_P(SYTRD, strided_batched__double)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, true, 1, double>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<false, true, 1, double>(arg);
+    test_fixture<false, true, 1, double>();
 }
 
 TEST_P(HETRD, strided_batched__float_complex)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, true, 1, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<false, true, 1, rocblas_float_complex>(arg);
+    test_fixture<false, true, 1, rocblas_float_complex>();
 }
 
 TEST_P(HETRD, strided_batched__double_complex)
 {
-    Arguments arg = sytrd_setup_arguments(GetParam());
-
-    if(arg.uplo_option == 'U' && arg.N == 0)
-        testing_sytxx_hetxx_bad_arg<false, true, 1, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_sytxx_hetxx<false, true, 1, rocblas_double_complex>(arg);
+    test_fixture<false, true, 1, rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -70,116 +70,81 @@ Arguments orgqr_setup_arguments(orgqr_tuple tup)
     return arg;
 }
 
-class ORG2R : public ::TestWithParam<orgqr_tuple>
+class ORGXR_UNGXR : public ::TestWithParam<orgqr_tuple>
 {
 protected:
-    ORG2R() {}
+    ORGXR_UNGXR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T, bool BLOCKED>
+    void test_fixture()
+    {
+        Arguments arg = orgqr_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.N == 0)
+            testing_orgxr_ungxr_bad_arg<T, BLOCKED>();
+
+        testing_orgxr_ungxr<T, BLOCKED>(arg);
+    }
 };
 
-class UNG2R : public ::TestWithParam<orgqr_tuple>
+class ORG2R : public ORGXR_UNGXR
 {
-protected:
-    UNG2R() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
 
-class ORGQR : public ::TestWithParam<orgqr_tuple>
+class UNG2R : public ORGXR_UNGXR
 {
-protected:
-    ORGQR() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
 
-class UNGQR : public ::TestWithParam<orgqr_tuple>
+class ORGQR : public ORGXR_UNGXR
 {
-protected:
-    UNGQR() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
+
+class UNGQR : public ORGXR_UNGXR
+{
+};
+
+// non-batch tests
 
 TEST_P(ORG2R, __float)
 {
-    Arguments arg = orgqr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxr_ungxr_bad_arg<float, 0>();
-
-    testing_orgxr_ungxr<float, 0>(arg);
+    test_fixture<float, 0>();
 }
 
 TEST_P(ORG2R, __double)
 {
-    Arguments arg = orgqr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxr_ungxr_bad_arg<double, 0>();
-
-    testing_orgxr_ungxr<double, 0>(arg);
+    test_fixture<double, 0>();
 }
 
 TEST_P(UNG2R, __float_complex)
 {
-    Arguments arg = orgqr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxr_ungxr_bad_arg<rocblas_float_complex, 0>();
-
-    testing_orgxr_ungxr<rocblas_float_complex, 0>(arg);
+    test_fixture<rocblas_float_complex, 0>();
 }
 
 TEST_P(UNG2R, __double_complex)
 {
-    Arguments arg = orgqr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxr_ungxr_bad_arg<rocblas_double_complex, 0>();
-
-    testing_orgxr_ungxr<rocblas_double_complex, 0>(arg);
+    test_fixture<rocblas_double_complex, 0>();
 }
 
 TEST_P(ORGQR, __float)
 {
-    Arguments arg = orgqr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxr_ungxr_bad_arg<float, 1>();
-
-    testing_orgxr_ungxr<float, 1>(arg);
+    test_fixture<float, 1>();
 }
 
 TEST_P(ORGQR, __double)
 {
-    Arguments arg = orgqr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxr_ungxr_bad_arg<double, 1>();
-
-    testing_orgxr_ungxr<double, 1>(arg);
+    test_fixture<double, 1>();
 }
 
 TEST_P(UNGQR, __float_complex)
 {
-    Arguments arg = orgqr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxr_ungxr_bad_arg<rocblas_float_complex, 1>();
-
-    testing_orgxr_ungxr<rocblas_float_complex, 1>(arg);
+    test_fixture<rocblas_float_complex, 1>();
 }
 
 TEST_P(UNGQR, __double_complex)
 {
-    Arguments arg = orgqr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxr_ungxr_bad_arg<rocblas_double_complex, 1>();
-
-    testing_orgxr_ungxr<rocblas_double_complex, 1>(arg);
+    test_fixture<rocblas_double_complex, 1>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -52,26 +52,29 @@ protected:
     LACGV() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T>
+    void test_fixture()
+    {
+        Arguments arg = lacgv_setup_arguments(GetParam());
+
+        if(arg.N == 0)
+            testing_lacgv_bad_arg<T>();
+
+        testing_lacgv<T>(arg);
+    }
 };
+
+// non-batch tests
 
 TEST_P(LACGV, __float_complex)
 {
-    Arguments arg = lacgv_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_lacgv_bad_arg<rocblas_float_complex>();
-
-    testing_lacgv<rocblas_float_complex>(arg);
+    test_fixture<rocblas_float_complex>();
 }
 
 TEST_P(LACGV, __double_complex)
 {
-    Arguments arg = lacgv_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_lacgv_bad_arg<rocblas_double_complex>();
-
-    testing_lacgv<rocblas_double_complex>(arg);
+    test_fixture<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, LACGV, ValuesIn(large_range));

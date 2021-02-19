@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -62,254 +62,110 @@ protected:
     GETRI() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void test_fixture()
+    {
+        Arguments arg = getri_setup_arguments(GetParam());
+
+        if(arg.N == 0)
+            testing_getri_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        if(arg.singular == 1)
+            testing_getri<BATCHED, STRIDED, T>(arg);
+
+        arg.singular = 0;
+        testing_getri<BATCHED, STRIDED, T>(arg);
+    }
 };
 
 // non-batch tests
 
 TEST_P(GETRI, __float)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<false, false, float>();
-
-    arg.batch_count = 1;
-    if(arg.singular == 1)
-        testing_getri<false, false, float>(arg);
-
-    arg.singular = 0;
-    testing_getri<false, false, float>(arg);
+    test_fixture<false, false, float>();
 }
 
 TEST_P(GETRI, __double)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<false, false, double>();
-
-    arg.batch_count = 1;
-    if(arg.singular == 1)
-        testing_getri<false, false, double>(arg);
-
-    arg.singular = 0;
-    testing_getri<false, false, double>(arg);
+    test_fixture<false, false, double>();
 }
 
 TEST_P(GETRI, __float_complex)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<false, false, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    if(arg.singular == 1)
-        testing_getri<false, false, rocblas_float_complex>(arg);
-
-    arg.singular = 0;
-    testing_getri<false, false, rocblas_float_complex>(arg);
+    test_fixture<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GETRI, __double_complex)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<false, false, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    if(arg.singular == 1)
-        testing_getri<false, false, rocblas_double_complex>(arg);
-
-    arg.singular = 0;
-    testing_getri<false, false, rocblas_double_complex>(arg);
+    test_fixture<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(GETRI, batched__float)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<true, true, float>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_getri<true, true, float>(arg);
-
-    arg.singular = 0;
-    testing_getri<true, true, float>(arg);
+    test_fixture<true, true, float>();
 }
 
 TEST_P(GETRI, batched__double)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<true, true, double>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_getri<true, true, double>(arg);
-
-    arg.singular = 0;
-    testing_getri<true, true, double>(arg);
+    test_fixture<true, true, double>();
 }
 
 TEST_P(GETRI, batched__float_complex)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<true, true, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_getri<true, true, rocblas_float_complex>(arg);
-
-    arg.singular = 0;
-    testing_getri<true, true, rocblas_float_complex>(arg);
+    test_fixture<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GETRI, batched__double_complex)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<true, true, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_getri<true, true, rocblas_double_complex>(arg);
-
-    arg.singular = 0;
-    testing_getri<true, true, rocblas_double_complex>(arg);
+    test_fixture<true, true, rocblas_double_complex>();
 }
 
 // strided_batched tests
 
 TEST_P(GETRI, strided_batched__float)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<false, true, float>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_getri<false, true, float>(arg);
-
-    arg.singular = 0;
-    testing_getri<false, true, float>(arg);
+    test_fixture<false, true, float>();
 }
 
 TEST_P(GETRI, strided_batched__double)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<false, true, double>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_getri<false, true, double>(arg);
-
-    arg.singular = 0;
-    testing_getri<false, true, double>(arg);
+    test_fixture<false, true, double>();
 }
 
 TEST_P(GETRI, strided_batched__float_complex)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<false, true, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_getri<false, true, rocblas_float_complex>(arg);
-
-    arg.singular = 0;
-    testing_getri<false, true, rocblas_float_complex>(arg);
+    test_fixture<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GETRI, strided_batched__double_complex)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<false, true, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_getri<false, true, rocblas_double_complex>(arg);
-
-    arg.singular = 0;
-    testing_getri<false, true, rocblas_double_complex>(arg);
+    test_fixture<false, true, rocblas_double_complex>();
 }
 
 // outofplace_batched tests
 
 TEST_P(GETRI, outofplace_batched__float)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<true, false, float>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_getri<true, false, float>(arg);
-
-    arg.singular = 0;
-    testing_getri<true, false, float>(arg);
+    test_fixture<true, false, float>();
 }
 
 TEST_P(GETRI, outofplace_batched__double)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<true, false, double>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_getri<true, false, double>(arg);
-
-    arg.singular = 0;
-    testing_getri<true, false, double>(arg);
+    test_fixture<true, false, double>();
 }
 
 TEST_P(GETRI, outofplace_batched__float_complex)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<true, false, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_getri<true, false, rocblas_float_complex>(arg);
-
-    arg.singular = 0;
-    testing_getri<true, false, rocblas_float_complex>(arg);
+    test_fixture<true, false, rocblas_float_complex>();
 }
 
 TEST_P(GETRI, outofplace_batched__double_complex)
 {
-    Arguments arg = getri_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_getri_bad_arg<true, false, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_getri<true, false, rocblas_double_complex>(arg);
-
-    arg.singular = 0;
-    testing_getri<true, false, rocblas_double_complex>(arg);
+    test_fixture<true, false, rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, GETRI, ValuesIn(large_matrix_size_range));

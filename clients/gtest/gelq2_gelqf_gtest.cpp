@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -69,290 +69,158 @@ Arguments gelqf_setup_arguments(gelqf_tuple tup)
     return arg;
 }
 
-class GELQ2 : public ::TestWithParam<gelqf_tuple>
+class GELQ2_GELQF : public ::TestWithParam<gelqf_tuple>
 {
 protected:
-    GELQ2() {}
+    GELQ2_GELQF() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, bool BLOCKED, typename T>
+    void test_fixture()
+    {
+        Arguments arg = gelqf_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.N == 0)
+            testing_gelq2_gelqf_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        testing_gelq2_gelqf<BATCHED, STRIDED, BLOCKED, T>(arg);
+    }
 };
 
-class GELQF : public ::TestWithParam<gelqf_tuple>
+class GELQ2 : public GELQ2_GELQF
 {
-protected:
-    GELQF() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+};
+
+class GELQF : public GELQ2_GELQF
+{
 };
 
 // non-batch tests
 
 TEST_P(GELQ2, __float)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, false, 0, float>();
-
-    arg.batch_count = 1;
-    testing_gelq2_gelqf<false, false, 0, float>(arg);
+    test_fixture<false, false, 0, float>();
 }
 
 TEST_P(GELQ2, __double)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, false, 0, double>();
-
-    arg.batch_count = 1;
-    testing_gelq2_gelqf<false, false, 0, double>(arg);
+    test_fixture<false, false, 0, double>();
 }
 
 TEST_P(GELQ2, __float_complex)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, false, 0, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_gelq2_gelqf<false, false, 0, rocblas_float_complex>(arg);
+    test_fixture<false, false, 0, rocblas_float_complex>();
 }
 
 TEST_P(GELQ2, __double_complex)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, false, 0, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_gelq2_gelqf<false, false, 0, rocblas_double_complex>(arg);
+    test_fixture<false, false, 0, rocblas_double_complex>();
 }
 
 TEST_P(GELQF, __float)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, false, 1, float>();
-
-    arg.batch_count = 1;
-    testing_gelq2_gelqf<false, false, 1, float>(arg);
+    test_fixture<false, false, 1, float>();
 }
 
 TEST_P(GELQF, __double)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, false, 1, double>();
-
-    arg.batch_count = 1;
-    testing_gelq2_gelqf<false, false, 1, double>(arg);
+    test_fixture<false, false, 1, double>();
 }
 
 TEST_P(GELQF, __float_complex)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, false, 1, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_gelq2_gelqf<false, false, 1, rocblas_float_complex>(arg);
+    test_fixture<false, false, 1, rocblas_float_complex>();
 }
 
 TEST_P(GELQF, __double_complex)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, false, 1, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_gelq2_gelqf<false, false, 1, rocblas_double_complex>(arg);
+    test_fixture<false, false, 1, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(GELQ2, batched__float)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<true, true, 0, float>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<true, true, 0, float>(arg);
+    test_fixture<true, true, 0, float>();
 }
 
 TEST_P(GELQ2, batched__double)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<true, true, 0, double>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<true, true, 0, double>(arg);
+    test_fixture<true, true, 0, double>();
 }
 
 TEST_P(GELQ2, batched__float_complex)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<true, true, 0, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<true, true, 0, rocblas_float_complex>(arg);
+    test_fixture<true, true, 0, rocblas_float_complex>();
 }
 
 TEST_P(GELQ2, batched__double_complex)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<true, true, 0, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<true, true, 0, rocblas_double_complex>(arg);
+    test_fixture<true, true, 0, rocblas_double_complex>();
 }
 
 TEST_P(GELQF, batched__float)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<true, true, 1, float>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<true, true, 1, float>(arg);
+    test_fixture<true, true, 1, float>();
 }
 
 TEST_P(GELQF, batched__double)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<true, true, 1, double>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<true, true, 1, double>(arg);
+    test_fixture<true, true, 1, double>();
 }
 
 TEST_P(GELQF, batched__float_complex)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<true, true, 1, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<true, true, 1, rocblas_float_complex>(arg);
+    test_fixture<true, true, 1, rocblas_float_complex>();
 }
 
 TEST_P(GELQF, batched__double_complex)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<true, true, 1, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<true, true, 1, rocblas_double_complex>(arg);
+    test_fixture<true, true, 1, rocblas_double_complex>();
 }
 
 // strided_batched cases
 
 TEST_P(GELQ2, strided_batched__float)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, true, 0, float>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<false, true, 0, float>(arg);
+    test_fixture<false, true, 0, float>();
 }
 
 TEST_P(GELQ2, strided_batched__double)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, true, 0, double>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<false, true, 0, double>(arg);
+    test_fixture<false, true, 0, double>();
 }
 
 TEST_P(GELQ2, strided_batched__float_complex)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, true, 0, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<false, true, 0, rocblas_float_complex>(arg);
+    test_fixture<false, true, 0, rocblas_float_complex>();
 }
 
 TEST_P(GELQ2, strided_batched__double_complex)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, true, 0, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<false, true, 0, rocblas_double_complex>(arg);
+    test_fixture<false, true, 0, rocblas_double_complex>();
 }
 
 TEST_P(GELQF, strided_batched__float)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, true, 1, float>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<false, true, 1, float>(arg);
+    test_fixture<false, true, 1, float>();
 }
 
 TEST_P(GELQF, strided_batched__double)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, true, 1, double>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<false, true, 1, double>(arg);
+    test_fixture<false, true, 1, double>();
 }
 
 TEST_P(GELQF, strided_batched__float_complex)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, true, 1, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<false, true, 1, rocblas_float_complex>(arg);
+    test_fixture<false, true, 1, rocblas_float_complex>();
 }
 
 TEST_P(GELQF, strided_batched__double_complex)
 {
-    Arguments arg = gelqf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gelq2_gelqf_bad_arg<false, true, 1, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_gelq2_gelqf<false, true, 1, rocblas_double_complex>(arg);
+    test_fixture<false, true, 1, rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
