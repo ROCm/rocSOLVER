@@ -115,7 +115,7 @@ add_executable( rocsolver-test ${roclapack_test_source} ${rocauxiliary_test_sour
 
 add_armor_flags( rocsolver-test "${ARMOR_LEVEL}" )
 
-target_compile_definitions( rocsolver-test PRIVATE BUILD_WITH_TENSILE=0 GOOGLE_TEST )
+target_compile_definitions( rocsolver-test PRIVATE GOOGLE_TEST )
 
 # Internal header includes
 target_include_directories( rocsolver-test
