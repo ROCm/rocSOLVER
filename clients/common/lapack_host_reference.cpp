@@ -5073,6 +5073,8 @@ void cblas_sygst_hegst<rocblas_double_complex>(rocblas_eform itype,
     zhegst_(&itypeI, &uploC, &n, A, &lda, B, &ldb, &info);
 }
 
+// sygst & hegst
+
 template <>
 void cblas_syev_heev<float, float>(rocblas_evect evect,
                                    rocblas_fill uplo,

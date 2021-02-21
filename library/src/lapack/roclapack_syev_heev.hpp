@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -16,7 +16,7 @@
 #include "roclapack_sytrd_hetrd.hpp"
 #include "rocsolver.h"
 
-/** Set results for the sacalr case (n=1) **/
+/** Set results for the scalar case (n=1) **/
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 __global__ void scalar_case(const rocblas_evect evect,
                             U AA,

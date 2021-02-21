@@ -16,12 +16,14 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Optimizations
 
 ### Changed
+- Sorting method in STERF as original quick-sort was failing for large sizes.
 
 ### Removed
 - Removed hcc compiler support
 
 ### Fixed
 - Fixed GELS overwriting B even when info != 0
+- Error when calling STEQR with n=1 from bacthed routines
 
 
 ## [rocSOLVER 3.11.0 for ROCm 4.1.0]

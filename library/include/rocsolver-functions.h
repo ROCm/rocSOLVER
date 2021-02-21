@@ -11277,7 +11277,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev(rocblas_handle handle,
     @param[in]
     strideD     rocblas_stride.\n
                 Stride from the start of one vector D_j to the next one D_(j+1).
-                There is no restriction for the value of strideD. Normal use case is strideD = n.
+                There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
     E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
                 This array is used to work internally with the tridiagonal matrix T_j associated to A_j.
@@ -11288,9 +11288,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev(rocblas_handle handle,
     @param[in]
     strideE     rocblas_stride.\n
                 Stride from the start of one vector E_j to the next one E_(j+1).
-                There is no restriction for the value of strideE. Normal use case is strideE = n.
+                There is no restriction for the value of strideE. Normal use case is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integres on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info_j = 0, successful exit for matrix A_j. If info_j = i > 0, the algorithm did not converge.
                 i elements of E_j did not converge to zero.
     @param[in]
@@ -11361,7 +11361,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_batched(rocblas_handle handle,
     @param[in]
     strideD     rocblas_stride.\n
                 Stride from the start of one vector D_j to the next one D_(j+1).
-                There is no restriction for the value of strideD. Normal use case is strideD = n.
+                There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
     E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
                 This array is used to work internally with the tridiagonal matrix T_j associated to A_j.
@@ -11372,9 +11372,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_batched(rocblas_handle handle,
     @param[in]
     strideE     rocblas_stride.\n
                 Stride from the start of one vector E_j to the next one E_(j+1).
-                There is no restriction for the value of strideE. Normal use case is strideE = n.
+                There is no restriction for the value of strideE. Normal use case is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integres on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info_j = 0, successful exit for matrix A_j. If info_j = i > 0, the algorithm did not converge.
                 i elements of E_j did not converge to zero.
     @param[in]
@@ -11442,14 +11442,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_batched(rocblas_handle handle,
     @param[in]
     strideA     rocblas_stride.\n
                 Stride from the start of one matrix A_j to the next one A_(j+1).
-                There is no restriction for the value of strideA. Normal use case is strideA = lda*n.
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
     D           pointer to type. Array on the GPU (the side depends on the value of strideD).\n
                 The eigenvalues of A_j in increasing order.
     @param[in]
     strideD     rocblas_stride.\n
                 Stride from the start of one vector D_j to the next one D_(j+1).
-                There is no restriction for the value of strideD. Normal use case is strideD = n.
+                There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
     E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
                 This array is used to work internally with the tridiagonal matrix T_j associated to A_j.
@@ -11460,9 +11460,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_batched(rocblas_handle handle,
     @param[in]
     strideE     rocblas_stride.\n
                 Stride from the start of one vector E_j to the next one E_(j+1).
-                There is no restriction for the value of strideE. Normal use case is strideE = n.
+                There is no restriction for the value of strideE. Normal use case is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integres on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info_j = 0, successful exit for matrix A_j. If info_j = i > 0, the algorithm did not converge.
                 i elements of E_j did not converge to zero.
     @param[in]
@@ -11532,14 +11532,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_strided_batched(rocblas_handle h
     @param[in]
     strideA     rocblas_stride.\n
                 Stride from the start of one matrix A_j to the next one A_(j+1).
-                There is no restriction for the value of strideA. Normal use case is strideA = lda*n.
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
     D           pointer to real type. Array on the GPU (the side depends on the value of strideD).\n
                 The eigenvalues of A_j in increasing order.
     @param[in]
     strideD     rocblas_stride.\n
                 Stride from the start of one vector D_j to the next one D_(j+1).
-                There is no restriction for the value of strideD. Normal use case is strideD = n.
+                There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
     E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
                 This array is used to work internally with the tridiagonal matrix T_j associated to A_j.
@@ -11550,9 +11550,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_strided_batched(rocblas_handle h
     @param[in]
     strideE     rocblas_stride.\n
                 Stride from the start of one vector E_j to the next one E_(j+1).
-                There is no restriction for the value of strideE. Normal use case is strideE = n.
+                There is no restriction for the value of strideE. Normal use case is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integres on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info_j = 0, successful exit for matrix A_j. If info_j = i > 0, the algorithm did not converge.
                 i elements of E_j did not converge to zero.
     @param[in]

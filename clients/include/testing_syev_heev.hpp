@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -169,25 +169,25 @@ void syev_heev_initData(const rocblas_handle handle,
     }
 }
 
-template <bool STRIDED, typename T, typename Wd, typename Td, typename Id, typename Wh, typename Th, typename Ih>
+template <bool STRIDED, typename T, typename Sd, typename Td, typename Id, typename Sh, typename Th, typename Ih>
 void syev_heev_getError(const rocblas_handle handle,
                         const rocblas_evect evect,
                         const rocblas_fill uplo,
                         const rocblas_int n,
-                        Wd& dA,
+                        Td& dA,
                         const rocblas_int lda,
                         const rocblas_stride stA,
-                        Td& dD,
+                        Sd& dD,
                         const rocblas_stride stD,
-                        Td& dE,
+                        Sd& dE,
                         const rocblas_stride stE,
                         Id& dinfo,
                         const rocblas_int bc,
-                        Wh& hA,
-                        Wh& hAres,
-                        Th& hD,
-                        Th& hDres,
-                        Th& hE,
+                        Th& hA,
+                        Th& hAres,
+                        Sh& hD,
+                        Sh& hDres,
+                        Sh& hE,
                         Ih& hinfo,
                         Ih& hinfoRes,
                         double* max_err)
@@ -199,10 +199,6 @@ void syev_heev_getError(const rocblas_handle handle,
     syev_heev_initData<true, true, T>(handle, evect, n, dA, lda, bc, hA, A);
 
     // execute computations
-    // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
-        cblas_syev_heev<T>(evect, uplo, n, hA[b], lda, hD[b], hE[b], lwork, hinfo[b]);
-
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, dA.data(), lda, stA,
                                             dD.data(), stD, dE.data(), stE, dinfo.data(), bc));
@@ -211,6 +207,10 @@ void syev_heev_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hinfoRes.transfer_from(dinfo));
     if(evect == rocblas_evect_original)
         CHECK_HIP_ERROR(hAres.transfer_from(dA));
+
+    // CPU lapack
+    for(rocblas_int b = 0; b < bc; ++b)
+        cblas_syev_heev<T>(evect, uplo, n, hA[b], lda, hD[b], hE[b], lwork, hinfo[b]);
 
     // Check info for non-convergence
     *max_err = 0;
@@ -262,23 +262,23 @@ void syev_heev_getError(const rocblas_handle handle,
     }
 }
 
-template <bool STRIDED, typename T, typename Wd, typename Td, typename Id, typename Wh, typename Th, typename Ih>
+template <bool STRIDED, typename T, typename Sd, typename Td, typename Id, typename Sh, typename Th, typename Ih>
 void syev_heev_getPerfData(const rocblas_handle handle,
                            const rocblas_evect evect,
                            const rocblas_fill uplo,
                            const rocblas_int n,
-                           Wd& dA,
+                           Td& dA,
                            const rocblas_int lda,
                            const rocblas_stride stA,
-                           Td& dD,
+                           Sd& dD,
                            const rocblas_stride stD,
-                           Td& dE,
+                           Sd& dE,
                            const rocblas_stride stE,
                            Id& dinfo,
                            const rocblas_int bc,
-                           Wh& hA,
-                           Th& hD,
-                           Th& hE,
+                           Th& hA,
+                           Sh& hD,
+                           Sh& hE,
                            Ih& hinfo,
                            double* gpu_time_used,
                            double* cpu_time_used,
@@ -368,16 +368,11 @@ void testing_syev_heev(Arguments argus)
     }
 
     // determine sizes
-    size_t size_Dres = 0;
-    size_t size_Ares = 0;
     size_t size_A = size_t(lda) * n;
     size_t size_D = n;
     size_t size_E = size_D;
-    if(argus.unit_check || argus.norm_check)
-    {
-        size_Ares = size_A;
-        size_Dres = size_D;
-    }
+    size_t size_Ares = (argus.unit_check || argus.norm_check) ? size_A : 0;
+    size_t size_Dres = (argus.unit_check || argus.norm_check) ? size_D : 0;
 
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
@@ -531,18 +526,18 @@ void testing_syev_heev(Arguments argus)
             if(BATCHED)
             {
                 rocsolver_bench_output("evect", "uplo", "n", "lda", "strideD", "strideE", "batch_c");
-                rocsolver_bench_output(evect, uplo, n, lda, stD, stE, bc);
+                rocsolver_bench_output(evectC, uploC, n, lda, stD, stE, bc);
             }
             else if(STRIDED)
             {
                 rocsolver_bench_output("evect", "uplo", "n", "lda", "strideA", "strideD", "strideE",
                                        "batch_c");
-                rocsolver_bench_output(evect, uplo, n, lda, stA, stD, stE, bc);
+                rocsolver_bench_output(evectC, uploC, n, lda, stA, stD, stE, bc);
             }
             else
             {
                 rocsolver_bench_output("evect", "uplo", "n", "lda");
-                rocsolver_bench_output(evect, uplo, n, lda);
+                rocsolver_bench_output(evectC, uploC, n, lda);
             }
             rocsolver_cout << "\n============================================\n";
             rocsolver_cout << "Results:\n";
