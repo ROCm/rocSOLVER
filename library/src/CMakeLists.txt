@@ -197,6 +197,7 @@ rocm_export_targets(
   TARGETS roc::rocsolver
   PREFIX rocsolver
   DEPENDS PACKAGE hip
+          PACKAGE rocblas
   NAMESPACE roc::
  )
 
