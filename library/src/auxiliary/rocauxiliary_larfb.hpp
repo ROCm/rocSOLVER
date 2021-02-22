@@ -70,14 +70,12 @@ void rocsolver_larfb_getMemorySize(const rocblas_side side,
                                    const rocblas_int n,
                                    const rocblas_int k,
                                    const rocblas_int batch_count,
-                                   size_t* size_work,
                                    size_t* size_tmptr,
                                    size_t* size_workArr)
 {
     // if quick return, no workspace needed
     if(m == 0 || n == 0 || batch_count == 0)
     {
-        *size_work = 0;
         *size_tmptr = 0;
         *size_workArr = 0;
         return;
@@ -96,9 +94,6 @@ void rocsolver_larfb_getMemorySize(const rocblas_side side,
         *size_workArr = sizeof(T*) * batch_count;
     else
         *size_workArr = 0;
-
-    // size of workspace
-    *size_work = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB * sizeof(T) * batch_count;
 }
 
 template <typename T, typename U>
@@ -173,7 +168,6 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
                                         const rocblas_int lda,
                                         const rocblas_stride strideA,
                                         const rocblas_int batch_count,
-                                        T* work,
                                         T* tmptr,
                                         T** workArr)
 {
@@ -301,8 +295,8 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
     // compute: V1' * A1
     //   or    A1 * V1
     rocblasCall_trmm<BATCHED, STRIDED, T>(handle, side, uploV, transp, rocblas_diagonal_unit, ldw,
-                                          order, &one, V, offsetV1, ldv, strideV, tmptr, 0, ldw,
-                                          strideW, batch_count, work, workArr);
+                                          order, &one, 0, V, offsetV1, ldv, strideV, tmptr, 0, ldw,
+                                          strideW, batch_count, workArr);
 
     // compute: V1' * A1 + V2' * A2
     //    or    A1 * V1 + A2 * V2
@@ -323,8 +317,8 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
     // compute: trans(T) * (V1' * A1 + V2' * A2)
     //    or    (A1 * V1 + A2 * V2) * trans(T)
     rocblasCall_trmm<false, STRIDED, T>(handle, side, uploT, transt, rocblas_diagonal_non_unit, ldw,
-                                        order, &one, F, shiftF, ldf, strideF, tmptr, 0, ldw,
-                                        strideW, batch_count, work, workArr);
+                                        order, &one, 0, F, shiftF, ldf, strideF, tmptr, 0, ldw,
+                                        strideW, batch_count, workArr);
 
     // compute: A2 - V2 * trans(T) * (V1' * A1 + V2' * A2)
     //    or    A2 - (A1 * V1 + A2 * V2) * trans(T) * V2'
@@ -350,8 +344,8 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
     // compute: V1 * trans(T) * (V1' * A1 + V2' * A2)
     //    or    (A1 * V1 + A2 * V2) * trans(T) * V1'
     rocblasCall_trmm<BATCHED, STRIDED, T>(handle, side, uploV, transp, rocblas_diagonal_unit, ldw,
-                                          order, &one, V, offsetV1, ldv, strideV, tmptr, 0, ldw,
-                                          strideW, batch_count, work, workArr);
+                                          order, &one, 0, V, offsetV1, ldv, strideV, tmptr, 0, ldw,
+                                          strideW, batch_count, workArr);
 
     // compute: A1 - V1 * trans(T) * (V1' * A1 + V2' * A2)
     //    or    A1 - (A1 * V1 + A2 * V2) * trans(T) * V1'

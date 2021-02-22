@@ -45,33 +45,29 @@ rocblas_status rocsolver_larfb_impl(rocblas_handle handle,
     rocblas_int batch_count = 1;
 
     // memory workspace sizes:
-    // size of re-usable workspace
-    size_t size_work;
     // size of array for temporary computations with
     // triangular part of V
     size_t size_tmptr;
     // size of arrays of pointers (for batched cases)
     size_t size_workArr;
-    rocsolver_larfb_getMemorySize<T, false>(side, m, n, k, batch_count, &size_work, &size_tmptr,
-                                            &size_workArr);
+    rocsolver_larfb_getMemorySize<T, false>(side, m, n, k, batch_count, &size_tmptr, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_work, size_tmptr, size_workArr);
+        return rocblas_set_optimal_device_memory_size(handle, size_tmptr, size_workArr);
 
     // memory workspace allocation
-    void *tmptr, *work, *workArr;
-    rocblas_device_malloc mem(handle, size_work, size_tmptr, size_workArr);
+    void *tmptr, *workArr;
+    rocblas_device_malloc mem(handle, size_tmptr, size_workArr);
     if(!mem)
         return rocblas_status_memory_error;
 
-    work = mem[0];
-    tmptr = mem[1];
-    workArr = mem[2];
+    tmptr = mem[0];
+    workArr = mem[1];
 
     //  execution
     return rocsolver_larfb_template<false, false, T>(
         handle, side, trans, direct, storev, m, n, k, V, shiftV, ldv, stridev, F, shiftF, ldf,
-        stridef, A, shiftA, lda, stridea, batch_count, (T*)work, (T*)tmptr, (T**)workArr);
+        stridef, A, shiftA, lda, stridea, batch_count, (T*)tmptr, (T**)workArr);
 }
 
 /*
