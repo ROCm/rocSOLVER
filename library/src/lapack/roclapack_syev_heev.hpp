@@ -144,7 +144,7 @@ void rocsolver_syev_heev_getMemorySize(const rocblas_evect evect,
     }
 
     // get max values
-    *size_work_stack = std::max({w1, w2, w3}); //std::max(w1, std::max(w2, w3));
+    *size_work_stack = std::max({w1, w2, w3});
     *size_Abyx_norms_tmptr = std::max(a1, a2);
     *size_tmptau_trfact = std::max(t1, t2);
 
