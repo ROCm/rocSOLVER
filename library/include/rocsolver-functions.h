@@ -11122,7 +11122,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_strided_batched(rocblas_handle 
     @param[in]
     evect       #rocblas_evect.\n
                 Specifies whether the eigenvectors are to be computed.
-                If evect =  rocblas_evect_original the eigenvectors are computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
     uplo        rocblas_fill.\n
                 Specifies whether the upper or lower part of the symmetric matrix A is stored.
@@ -11188,7 +11189,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev(rocblas_handle handle,
     @param[in]
     evect       #rocblas_evect.\n
                 Specifies whether the eigenvectors are to be computed.
-                If evect =  rocblas_evect_original the eigenvectors are computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
     uplo        rocblas_fill.\n
                 Specifies whether the upper or lower part of the Hermitian matrix A is stored.
@@ -11255,7 +11257,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev(rocblas_handle handle,
     @param[in]
     evect       #rocblas_evect.\n
                 Specifies whether the eigenvectors are to be computed.
-                If evect =  rocblas_evect_original the eigenvectors are computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
     uplo        rocblas_fill.\n
                 Specifies whether the upper or lower part of the symmetric matrices A_j is stored.
@@ -11339,7 +11342,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_batched(rocblas_handle handle,
     @param[in]
     evect       #rocblas_evect.\n
                 Specifies whether the eigenvectors are to be computed.
-                If evect =  rocblas_evect_original the eigenvectors are computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
     uplo        rocblas_fill.\n
                 Specifies whether the upper or lower part of the Hermitian matrices A_j is stored.
@@ -11423,7 +11427,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_batched(rocblas_handle handle,
     @param[in]
     evect       #rocblas_evect.\n
                 Specifies whether the eigenvectors are to be computed.
-                If evect =  rocblas_evect_original the eigenvectors are computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
     uplo        rocblas_fill.\n
                 Specifies whether the upper or lower part of the symmetric matrices A_j is stored.
@@ -11513,7 +11518,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_strided_batched(rocblas_handle h
     @param[in]
     evect       #rocblas_evect.\n
                 Specifies whether the eigenvectors are to be computed.
-                If evect =  rocblas_evect_original the eigenvectors are computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
     uplo        rocblas_fill.\n
                 Specifies whether the upper or lower part of the Hermitian matrices A_j is stored.

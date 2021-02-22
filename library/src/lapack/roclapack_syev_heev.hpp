@@ -31,7 +31,7 @@ __global__ void scalar_case(const rocblas_evect evect,
     {
         T* A = load_ptr_batch<T>(AA, b, 0, strideA);
         T* D = DD + b * strideD;
-        D[0] = A[0];
+        D[0] = std::real(A[0]);
 
         if(evect == rocblas_evect_original)
             A[0] = T(1);
@@ -75,8 +75,7 @@ rocblas_status rocsolver_syev_heev_argCheck(rocblas_handle handle,
     // order is important for unit tests:
 
     // 1. invalid/non-supported values
-    if((evect != rocblas_evect_original && evect != rocblas_evect_none
-        && evect != rocblas_evect_tridiagonal)
+    if((evect != rocblas_evect_original && evect != rocblas_evect_none)
        || (uplo != rocblas_fill_lower && uplo != rocblas_fill_upper))
         return rocblas_status_invalid_value;
 
@@ -145,7 +144,7 @@ void rocsolver_syev_heev_getMemorySize(const rocblas_evect evect,
     }
 
     // get max values
-    *size_work_stack = std::max(w1, std::max(w2, w3));
+    *size_work_stack = std::max({w1, w2, w3}); //std::max(w1, std::max(w2, w3));
     *size_Abyx_norms_tmptr = std::max(a1, a2);
     *size_tmptau_trfact = std::max(t1, t2);
 

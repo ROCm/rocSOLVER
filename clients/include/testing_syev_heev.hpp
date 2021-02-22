@@ -348,7 +348,7 @@ void testing_syev_heev(Arguments argus)
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
-    if(uplo == rocblas_fill_full)
+    if(uplo == rocblas_fill_full || evect == rocblas_evect_tridiagonal)
     {
         if(BATCHED)
             EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n,

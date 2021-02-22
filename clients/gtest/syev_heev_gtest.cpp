@@ -11,7 +11,7 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<vector<int>, vector<char>> syev_heev_tuple;
+typedef std::tuple<vector<int>, vector<rocsolver_op_char>> syev_heev_tuple;
 
 // each size_range vector is a {n, lda}
 
@@ -20,7 +20,7 @@ typedef std::tuple<vector<int>, vector<char>> syev_heev_tuple;
 // case when n == 0, evect == N, and uplo = L will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
-const vector<vector<char>> op_range = {{'N', 'L'}, {'N', 'U'}, {'V', 'L'}, {'V', 'U'}};
+const vector<vector<rocsolver_op_char>> op_range = {{'N', 'L'}, {'N', 'U'}, {'V', 'L'}, {'V', 'U'}};
 
 // for checkin_lapack tests
 const vector<vector<int>> size_range = {
@@ -42,7 +42,7 @@ const vector<vector<int>> large_size_range = {{192, 192}, {256, 270}, {300, 300}
 Arguments syev_heev_setup_arguments(syev_heev_tuple tup)
 {
     vector<int> size = std::get<0>(tup);
-    vector<char> op = std::get<1>(tup);
+    vector<rocsolver_op_char> op = std::get<1>(tup);
 
     Arguments arg;
 
