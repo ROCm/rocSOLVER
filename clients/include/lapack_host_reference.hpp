@@ -525,3 +525,14 @@ void cblas_sygst_hegst(rocblas_eform itype,
                        rocblas_int lda,
                        T* B,
                        rocblas_int ldb);
+
+template <typename T, typename S>
+void cblas_syev_heev(rocblas_evect evect,
+                     rocblas_fill uplo,
+                     rocblas_int n,
+                     T* A,
+                     rocblas_int lda,
+                     S* D,
+                     S* E,
+                     rocblas_int size_w,
+                     rocblas_int* info);
