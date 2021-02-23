@@ -58,10 +58,8 @@ set( INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR} )
 add_subdirectory( src )
 
 # Package specific CPACK vars
-if( NOT USE_CUDA )
-  set( CPACK_DEBIAN_PACKAGE_DEPENDS "rocblas (>= 2.37.0)" )
-  set( CPACK_RPM_PACKAGE_REQUIRES "rocblas >= 2.37.0" )
-endif( )
+set( CPACK_DEBIAN_PACKAGE_DEPENDS "rocblas (= 2.37.0)" )
+set( CPACK_RPM_PACKAGE_REQUIRES "rocblas = 2.37.0" )
 
 if( OS_ID_sles )
   set( RPM_REQUIREMENTS "${RPM_REQUIREMENTS}, libLLVM7 >= 7.0.1")
