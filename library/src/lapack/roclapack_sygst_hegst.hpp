@@ -64,12 +64,6 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
             *size_store_invA = max(*size_store_invA, max(temp3, temp7));
             *size_invA_arr = max(*size_invA_arr, max(temp4, temp8));
         }
-        else
-        {
-            // extra requirements for calling TRMM
-            temp1 = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB * sizeof(T) * batch_count;
-            *size_work_x_temp = max(*size_work_x_temp, temp1);
-        }
     }
 }
 
@@ -233,9 +227,8 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
 
                 rocblasCall_trmm<BATCHED, STRIDED, T>(
                     handle, rocblas_side_left, uplo, rocblas_operation_none,
-                    rocblas_diagonal_non_unit, k, kb, &t_one, B, shiftB, ldb, strideB, A,
-                    shiftA + idx2D(0, k, lda), lda, strideA, batch_count, (T*)work_x_temp,
-                    (T**)workArr_temp_arr);
+                    rocblas_diagonal_non_unit, k, kb, &t_one, 0, B, shiftB, ldb, strideB, A,
+                    shiftA + idx2D(0, k, lda), lda, strideA, batch_count, (T**)workArr_temp_arr);
 
                 rocblasCall_symm_hemm<T>(handle, rocblas_side_right, uplo, k, kb, &t_half, A,
                                          shiftA + idx2D(k, k, lda), lda, strideA, B,
@@ -254,9 +247,9 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
 
                 rocblasCall_trmm<BATCHED, STRIDED, T>(
                     handle, rocblas_side_right, uplo, rocblas_operation_conjugate_transpose,
-                    rocblas_diagonal_non_unit, k, kb, &t_one, B, shiftB + idx2D(k, k, ldb), ldb,
+                    rocblas_diagonal_non_unit, k, kb, &t_one, 0, B, shiftB + idx2D(k, k, ldb), ldb,
                     strideB, A, shiftA + idx2D(0, k, lda), lda, strideA, batch_count,
-                    (T*)work_x_temp, (T**)workArr_temp_arr);
+                    (T**)workArr_temp_arr);
 
                 rocsolver_sygs2_hegs2_template<BATCHED, T>(
                     handle, itype, uplo, kb, A, shiftA + idx2D(k, k, lda), lda, strideA, B,
@@ -273,9 +266,8 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
 
                 rocblasCall_trmm<BATCHED, STRIDED, T>(
                     handle, rocblas_side_right, uplo, rocblas_operation_none,
-                    rocblas_diagonal_non_unit, kb, k, &t_one, B, shiftB, ldb, strideB, A,
-                    shiftA + idx2D(k, 0, lda), lda, strideA, batch_count, (T*)work_x_temp,
-                    (T**)workArr_temp_arr);
+                    rocblas_diagonal_non_unit, kb, k, &t_one, 0, B, shiftB, ldb, strideB, A,
+                    shiftA + idx2D(k, 0, lda), lda, strideA, batch_count, (T**)workArr_temp_arr);
 
                 rocblasCall_symm_hemm<T>(handle, rocblas_side_left, uplo, kb, k, &t_half, A,
                                          shiftA + idx2D(k, k, lda), lda, strideA, B,
@@ -294,9 +286,9 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
 
                 rocblasCall_trmm<BATCHED, STRIDED, T>(
                     handle, rocblas_side_left, uplo, rocblas_operation_conjugate_transpose,
-                    rocblas_diagonal_non_unit, kb, k, &t_one, B, shiftB + idx2D(k, k, ldb), ldb,
+                    rocblas_diagonal_non_unit, kb, k, &t_one, 0, B, shiftB + idx2D(k, k, ldb), ldb,
                     strideB, A, shiftA + idx2D(k, 0, lda), lda, strideA, batch_count,
-                    (T*)work_x_temp, (T**)workArr_temp_arr);
+                    (T**)workArr_temp_arr);
 
                 rocsolver_sygs2_hegs2_template<BATCHED, T>(
                     handle, itype, uplo, kb, A, shiftA + idx2D(k, k, lda), lda, strideA, B,

@@ -37,7 +37,7 @@ void rocsolver_orglq_unglq_getMemorySize(const rocblas_int m,
         return;
     }
 
-    size_t s1, s2, s3, unused;
+    size_t temp, unused;
     rocsolver_orgl2_ungl2_getMemorySize<T, BATCHED>(m, n, batch_count, size_scalars,
                                                     size_Abyx_tmptr, size_workArr);
 
@@ -55,12 +55,11 @@ void rocsolver_orglq_unglq_getMemorySize(const rocblas_int m,
 
         // size of workspace is maximum of what is needed by larft and larfb.
         // size of Abyx_tmptr is maximum of what is needed by orgl2/ungl2 and larfb.
-        rocsolver_larft_getMemorySize<T, BATCHED>(n, jb, batch_count, &unused, &s1, &unused);
+        rocsolver_larft_getMemorySize<T, BATCHED>(n, jb, batch_count, &unused, size_work, &unused);
         rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_left, m - jb, n, jb, batch_count,
-                                                  &s2, &s3, &unused);
+                                                  &temp, &unused);
 
-        *size_work = max(s1, s2);
-        *size_Abyx_tmptr = *size_Abyx_tmptr >= s3 ? *size_Abyx_tmptr : s3;
+        *size_Abyx_tmptr = *size_Abyx_tmptr >= temp ? *size_Abyx_tmptr : temp;
 
         // size of temporary array for triangular factor
         *size_trfact = sizeof(T) * jb * jb * batch_count;
@@ -142,7 +141,7 @@ rocblas_status rocsolver_orglq_unglq_template(rocblas_handle handle,
                 handle, rocblas_side_right, rocblas_operation_conjugate_transpose,
                 rocblas_forward_direction, rocblas_row_wise, m - j - jb, n - j, jb, A,
                 shiftA + idx2D(j, j, lda), lda, strideA, trfact, 0, ldw, strideW, A,
-                shiftA + idx2D(j + jb, j, lda), lda, strideA, batch_count, work, Abyx_tmptr, workArr);
+                shiftA + idx2D(j + jb, j, lda), lda, strideA, batch_count, Abyx_tmptr, workArr);
         }
 
         // now compute the current block and set to zero
