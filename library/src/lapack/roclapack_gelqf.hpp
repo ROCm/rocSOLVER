@@ -45,7 +45,7 @@ void rocsolver_gelqf_getMemorySize(const rocblas_int m,
     }
     else
     {
-        size_t w1, w2, w3, unused, s1, s2;
+        size_t w1, w2, unused, s1, s2;
         rocblas_int jb = GExQF_GExQ2_BLOCKSIZE;
 
         // size to store the temporary triangular factor
@@ -60,9 +60,9 @@ void rocsolver_gelqf_getMemorySize(const rocblas_int m,
 
         // requirements for calling LARFB
         rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_right, m - jb, n, jb, batch_count,
-                                                  &w3, &s2, &unused);
+                                                  &s2, &unused);
 
-        *size_work_workArr = max(w1, max(w2, w3));
+        *size_work_workArr = max(w1, w2);
         *size_diag_tmptr = max(s1, s2);
 
         // size of workArr is double to accomodate
@@ -133,7 +133,7 @@ rocblas_status rocsolver_gelqf_template(rocblas_handle handle,
                 handle, rocblas_side_right, rocblas_operation_none, rocblas_forward_direction,
                 rocblas_row_wise, m - j - jb, n - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
                 Abyx_norms_trfact, 0, ldw, strideW, A, shiftA + idx2D(j + jb, j, lda), lda, strideA,
-                batch_count, (T*)work_workArr, diag_tmptr, workArr);
+                batch_count, diag_tmptr, workArr);
         }
         j += GExQF_GExQ2_BLOCKSIZE;
     }
