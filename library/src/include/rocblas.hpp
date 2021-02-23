@@ -795,7 +795,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
 }
 
 // trmm
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename U, typename V>
 rocblas_status rocblasCall_trmm(rocblas_handle handle,
                                 rocblas_side side,
                                 rocblas_fill uplo,
@@ -804,29 +804,28 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
                                 rocblas_int m,
                                 rocblas_int n,
                                 U alpha,
-                                T* A,
+                                rocblas_stride stride_alpha,
+                                V A,
                                 rocblas_int offsetA,
                                 rocblas_int lda,
                                 rocblas_stride strideA,
-                                T* B,
+                                V B,
                                 rocblas_int offsetB,
                                 rocblas_int ldb,
                                 rocblas_stride strideB,
                                 rocblas_int batch_count,
-                                T* work,
-                                T** workArr)
+                                T** workArr = nullptr)
 {
     // TODO: How to get alpha for trace logging
     ROCBLAS_ENTER("trmm", "side:", side, "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
                   "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftB:", offsetB, "ldb:", ldb,
                   "bc:", batch_count);
 
-    constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
-    constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
+    constexpr rocblas_int nb = (!is_complex<T> ? ROCBLAS_TRMM_REAL_NB : ROCBLAS_TRMM_COMPLEX_NB);
 
-    return rocblas_trmm_template<BATCHED, nb, nb, T>(
-        handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), cast2constType<T>(A),
-        offsetA, lda, strideA, B, offsetB, ldb, strideB, batch_count, work, strideW);
+    return rocblas_trmm_recursive_template<nb, BATCHED, T>(
+        handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), stride_alpha,
+        cast2constType<T>(A), offsetA, lda, strideA, B, offsetB, ldb, strideB, batch_count);
 }
 
 // trmm overload
@@ -839,48 +838,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
                                 rocblas_int m,
                                 rocblas_int n,
                                 U alpha,
-                                T* const* A,
-                                rocblas_int offsetA,
-                                rocblas_int lda,
-                                rocblas_stride strideA,
-                                T* const* B,
-                                rocblas_int offsetB,
-                                rocblas_int ldb,
-                                rocblas_stride strideB,
-                                rocblas_int batch_count,
-                                T* work,
-                                T** workArr)
-{
-    // TODO: How to get alpha for trace logging
-    ROCBLAS_ENTER("trmm", "side:", side, "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
-                  "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftB:", offsetB, "ldb:", ldb,
-                  "bc:", batch_count);
-
-    constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
-    constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
-
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
-    rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, work, strideW,
-                       batch_count);
-
-    return rocblas_trmm_template<BATCHED, nb, nb, T>(
-        handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), cast2constType<T>(A),
-        offsetA, lda, strideA, B, offsetB, ldb, strideB, batch_count, cast2constPointer<T>(workArr),
-        strideW);
-}
-
-// trmm overload
-template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status rocblasCall_trmm(rocblas_handle handle,
-                                rocblas_side side,
-                                rocblas_fill uplo,
-                                rocblas_operation transA,
-                                rocblas_diagonal diag,
-                                rocblas_int m,
-                                rocblas_int n,
-                                U alpha,
+                                rocblas_stride stride_alpha,
                                 T* const* A,
                                 rocblas_int offsetA,
                                 rocblas_int lda,
@@ -890,7 +848,6 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
                                 rocblas_int ldb,
                                 rocblas_stride strideB,
                                 rocblas_int batch_count,
-                                T* work,
                                 T** workArr)
 {
     // TODO: How to get alpha for trace logging
@@ -898,8 +855,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
                   "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftB:", offsetB, "ldb:", ldb,
                   "bc:", batch_count);
 
-    constexpr rocblas_int nb = ROCBLAS_TRMM_NB;
-    constexpr rocblas_stride strideW = 2 * ROCBLAS_TRMM_NB * ROCBLAS_TRMM_NB;
+    constexpr rocblas_int nb = (!is_complex<T> ? ROCBLAS_TRMM_REAL_NB : ROCBLAS_TRMM_COMPLEX_NB);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -907,13 +863,11 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
 
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, B, strideB,
                        batch_count);
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr + batch_count, work,
-                       strideW, batch_count);
 
-    return rocblas_trmm_template<BATCHED, nb, nb, T>(
-        handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), cast2constType<T>(A),
-        offsetA, lda, strideA, cast2constPointer<T>(workArr), offsetB, ldb, strideB, batch_count,
-        cast2constPointer<T>(workArr + batch_count), strideW);
+    return rocblas_trmm_recursive_template<nb, BATCHED, T>(
+        handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), stride_alpha,
+        cast2constType<T>(A), offsetA, lda, strideA, cast2constPointer<T>(workArr), offsetB, ldb,
+        strideB, batch_count);
 }
 
 // syr2

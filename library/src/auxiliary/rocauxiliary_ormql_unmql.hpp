@@ -38,7 +38,7 @@ void rocsolver_ormql_unmql_getMemorySize(const rocblas_side side,
         return;
     }
 
-    size_t s1, s2, unused;
+    size_t unused;
     rocsolver_orm2l_unm2l_getMemorySize<T, BATCHED>(side, m, n, k, batch_count, size_scalars,
                                                     size_AbyxORwork, size_diagORtmptr, size_workArr);
 
@@ -47,15 +47,12 @@ void rocsolver_ormql_unmql_getMemorySize(const rocblas_side side,
         rocblas_int jb = ORMxx_ORMxx_BLOCKSIZE;
 
         // requirements for calling larft
-        rocsolver_larft_getMemorySize<T, BATCHED>(max(m, n), min(jb, k), batch_count, &unused, &s1,
-                                                  &unused);
+        rocsolver_larft_getMemorySize<T, BATCHED>(max(m, n), min(jb, k), batch_count, &unused,
+                                                  size_AbyxORwork, &unused);
 
         // requirements for calling larfb
-        rocsolver_larfb_getMemorySize<T, BATCHED>(side, m, n, min(jb, k), batch_count, &s2,
+        rocsolver_larfb_getMemorySize<T, BATCHED>(side, m, n, min(jb, k), batch_count,
                                                   size_diagORtmptr, &unused);
-
-        // size of workspace is maximum of what is needed by larft and larfb
-        *size_AbyxORwork = max(s1, s2);
 
         // size of temporary array for triangular factor
         *size_trfact = sizeof(T) * jb * jb * batch_count;
@@ -167,7 +164,7 @@ rocblas_status rocsolver_ormql_unmql_template(rocblas_handle handle,
         rocsolver_larfb_template<BATCHED, STRIDED, T>(
             handle, side, trans, rocblas_backward_direction, rocblas_column_wise, nrow, ncol, ib, A,
             shiftA + idx2D(0, i, lda), lda, strideA, trfact, 0, ldw, strideW, C, shiftC, ldc,
-            strideC, batch_count, AbyxORwork, diagORtmptr, workArr);
+            strideC, batch_count, diagORtmptr, workArr);
     }
 
     return rocblas_status_success;

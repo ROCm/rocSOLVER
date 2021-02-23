@@ -553,6 +553,9 @@ __device__ void laev2(T& a, T& b, T& c, T& rt1, T& rt2, T& cs1, T& sn1)
 template <typename T>
 __device__ void lasrt_increasing(const rocblas_int n, T* D, rocblas_int* stack)
 {
+    /** (TODO: Current implementation is failling for large sizes. Not removed for now
+        as quick-sort methods could be required for performance purposes in the future.
+        It should be debugged some time.) **/
     T d1, d2, d3, dmnmx, temp;
     constexpr rocblas_int select = 20;
     constexpr rocblas_int lds = 32;
