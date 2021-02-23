@@ -49,25 +49,34 @@ set(roclapack_test_source
     # linear systems solvers
     getrs_gtest.cpp
     getri_gtest.cpp
+    # least squares solvers
     gels_gtest.cpp
     # triangular factorizations
     getf2_getrf_gtest.cpp
     potf2_potrf_gtest.cpp
-    # bidiagonal matrices and svd
-    gebd2_gebrd_gtest.cpp
-    gesvd_gtest.cpp
-    labrd_gtest.cpp
-    bdsqr_gtest.cpp
-    # tridiagonal matrices and eigensolvers
-    sytxx_hetxx_gtest.cpp
-    sygsx_hegsx_gtest.cpp
-    sterf_gtest.cpp
-    steqr_gtest.cpp
-    latrd_gtest.cpp
     # orthogonal factorizations
     geqr2_geqrf_gtest.cpp
     geql2_geqlf_gtest.cpp
     gelq2_gelqf_gtest.cpp
+    # problem and matrix reductions (diagonalizations)
+    gebd2_gebrd_gtest.cpp
+    sytxx_hetxx_gtest.cpp
+    sygsx_hegsx_gtest.cpp
+    # singular value decomposition
+    gesvd_gtest.cpp
+    # symmetric eigensolvers
+    syev_heev_gtest.cpp
+    )
+
+set(rocauxiliary_test_source
+    # vector & matrix manipulations
+    lacgv_gtest.cpp
+    laswp_gtest.cpp
+    # householder reflections
+    larf_gtest.cpp
+    larfg_gtest.cpp
+    larft_gtest.cpp
+    larfb_gtest.cpp
     # orthonormal/unitary matrices
     orgxr_ungxr_gtest.cpp
     orglx_unglx_gtest.cpp
@@ -79,28 +88,30 @@ set(roclapack_test_source
     ormxl_unmxl_gtest.cpp
     ormbr_unmbr_gtest.cpp
     ormtr_unmtr_gtest.cpp
-    # householder reflections
-    larf_gtest.cpp
-    larfg_gtest.cpp
-    larft_gtest.cpp
-    larfb_gtest.cpp
-    # vector & matrix manipulations
-    lacgv_gtest.cpp
-    laswp_gtest.cpp
+    # bidiagonal matrices
+    labrd_gtest.cpp
+    bdsqr_gtest.cpp
+    # tridiagonal matrices
+    sterf_gtest.cpp
+    steqr_gtest.cpp
+    latrd_gtest.cpp
+    )
+
+set(others_test_source
     # unified memory model
     managed_malloc_gtest.cpp
     )
 
 set(rocsolver_test_source
     rocsolver_gtest_main.cpp
-)
+    )
 
 set( rocsolver_benchmark_common
       ../common/lapack_host_reference.cpp
       ../rocblascommon/utility.cpp
     )
 
-add_executable( rocsolver-test ${roclapack_test_source} ${rocsolver_test_source} ${rocsolver_benchmark_common} )
+add_executable( rocsolver-test ${roclapack_test_source} ${rocauxiliary_test_source} ${others_test_source} ${rocsolver_test_source} ${rocsolver_benchmark_common} )
 
 add_armor_flags( rocsolver-test "${ARMOR_LEVEL}" )
 

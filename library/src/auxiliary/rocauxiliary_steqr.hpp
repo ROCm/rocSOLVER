@@ -381,7 +381,8 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
 
     // quick return
     if(n == 1 && compc != rocblas_evect_none)
-        hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, C, batch_count, 1);
+        hipLaunchKernelGGL(reset_batch_info<T>, dim3(1, batch_count), dim3(1, 1), 0, stream, C,
+                           strideC, n, 1);
     if(n <= 1)
         return rocblas_status_success;
 

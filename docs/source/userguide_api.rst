@@ -80,7 +80,7 @@ LAPACK Auxiliary Functions
 
 These are functions that support more advanced LAPACK routines.
 
-Complex vector manipulations
+Vector and Matrix manipulations
 --------------------------------------
 
 rocsolver_<type>lacgv()
@@ -88,9 +88,6 @@ rocsolver_<type>lacgv()
 .. doxygenfunction:: rocsolver_zlacgv
    :outline:
 .. doxygenfunction:: rocsolver_clacgv
-
-Matrix permutations and manipulations
---------------------------------------
 
 rocsolver_<type>laswp()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -101,6 +98,7 @@ rocsolver_<type>laswp()
 .. doxygenfunction:: rocsolver_dlaswp
    :outline:
 .. doxygenfunction:: rocsolver_slaswp
+
 
 Householder reflexions
 --------------------------
@@ -145,6 +143,7 @@ rocsolver_<type>larfb()
    :outline:
 .. doxygenfunction:: rocsolver_slarfb
 
+
 Bidiagonal forms
 --------------------------
 
@@ -182,6 +181,21 @@ rocsolver_<type>latrd()
    :outline:
 .. doxygenfunction:: rocsolver_slatrd
 
+rocsolver_<type>sterf()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsterf
+   :outline:
+.. doxygenfunction:: rocsolver_ssterf
+
+rocsolver_<type>steqr()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zsteqr
+   :outline:
+.. doxygenfunction:: rocsolver_csteqr
+   :outline:
+.. doxygenfunction:: rocsolver_dsteqr
+   :outline:
+.. doxygenfunction:: rocsolver_ssteqr
 
 
 Orthonormal matrices
@@ -283,6 +297,7 @@ rocsolver_<type>ormtr()
    :outline:
 .. doxygenfunction:: rocsolver_sormtr
 
+
 Unitary matrices
 ---------------------------
 
@@ -382,25 +397,6 @@ rocsolver_<type>unmtr()
    :outline:
 .. doxygenfunction:: rocsolver_cunmtr
 
-Eigensolvers
---------------------------
-
-rocsolver_<type>sterf()
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygenfunction:: rocsolver_dsterf
-   :outline:
-.. doxygenfunction:: rocsolver_ssterf
-
-rocsolver_<type>steqr()
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygenfunction:: rocsolver_zsteqr
-   :outline:
-.. doxygenfunction:: rocsolver_csteqr
-   :outline:
-.. doxygenfunction:: rocsolver_dsteqr
-   :outline:
-.. doxygenfunction:: rocsolver_ssteqr
-
 
 
 LAPACK Functions
@@ -408,7 +404,7 @@ LAPACK Functions
 
 LAPACK routines solve complex Numerical Linear Algebra problems.
 
-Special Matrix Factorizations
+Triangular Factorizations
 ---------------------------------
 
 rocsolver_<type>potf2()
@@ -471,10 +467,6 @@ rocsolver_<type>potrf_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_spotrf_strided_batched
 
-
-General Matrix Factorizations
-------------------------------
-
 rocsolver_<type>getf2()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_zgetf2
@@ -534,6 +526,10 @@ rocsolver_<type>getrf_strided_batched()
 .. doxygenfunction:: rocsolver_dgetrf_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgetrf_strided_batched
+
+
+Orthogonal Factorizations
+---------------------------------
 
 rocsolver_<type>geqr2()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -721,37 +717,8 @@ rocsolver_<type>gelqf_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgelqf_strided_batched
 
-rocsolver_<type>gels()
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygenfunction:: rocsolver_zgels
-   :outline:
-.. doxygenfunction:: rocsolver_cgels
-   :outline:
-.. doxygenfunction:: rocsolver_dgels
-   :outline:
-.. doxygenfunction:: rocsolver_sgels
 
-rocsolver_<type>gels_batched()
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygenfunction:: rocsolver_zgels_batched
-   :outline:
-.. doxygenfunction:: rocsolver_cgels_batched
-   :outline:
-.. doxygenfunction:: rocsolver_dgels_batched
-   :outline:
-.. doxygenfunction:: rocsolver_sgels_batched
-
-rocsolver_<type>gels_strided_batched()
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. doxygenfunction:: rocsolver_zgels_strided_batched
-   :outline:
-.. doxygenfunction:: rocsolver_cgels_strided_batched
-   :outline:
-.. doxygenfunction:: rocsolver_dgels_strided_batched
-   :outline:
-.. doxygenfunction:: rocsolver_sgels_strided_batched
-
-General Matrix Diagonalizations
+Problem and matrix reductions
 -------------------------------
 
 rocsolver_<type>gebd2()
@@ -813,10 +780,6 @@ rocsolver_<type>gebrd_strided_batched()
 .. doxygenfunction:: rocsolver_dgebrd_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgebrd_strided_batched
-
-
-Symmetric Matrix Diagonalizations
----------------------------------
 
 rocsolver_<type>sytd2()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -889,10 +852,6 @@ rocsolver_<type>hetrd_strided_batched()
 .. doxygenfunction:: rocsolver_zhetrd_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_chetrd_strided_batched
-
-
-Generalized Eigensolvers
----------------------------------
 
 rocsolver_<type>sygs2()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -967,7 +926,7 @@ rocsolver_<type>hegst_strided_batched()
 .. doxygenfunction:: rocsolver_chegst_strided_batched
 
 
-General Matrix Inversion
+Linear-systems solvers
 --------------------------
 
 rocsolver_<type>getri()
@@ -1000,9 +959,6 @@ rocsolver_<type>getri_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgetri_strided_batched
 
-General Systems Solvers
---------------------------
-
 rocsolver_<type>getrs()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_zgetrs
@@ -1034,8 +990,82 @@ rocsolver_<type>getrs_strided_batched()
 .. doxygenfunction:: rocsolver_sgetrs_strided_batched
 
 
-General Matrix Singular Value Decomposition
-------------------------------------------------
+Least-squares solvers
+------------------------
+
+rocsolver_<type>gels()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgels
+   :outline:
+.. doxygenfunction:: rocsolver_cgels
+   :outline:
+.. doxygenfunction:: rocsolver_dgels
+   :outline:
+.. doxygenfunction:: rocsolver_sgels
+
+rocsolver_<type>gels_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgels_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgels_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgels_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgels_batched
+
+rocsolver_<type>gels_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgels_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgels_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgels_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgels_strided_batched
+
+
+Symmetric Eigensolvers
+--------------------------------
+
+rocsolver_<type>syev()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsyev
+   :outline:
+.. doxygenfunction:: rocsolver_ssyev
+
+rocsolver_<type>syev_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsyev_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssyev_batched
+
+rocsolver_<type>syev_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsyev_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssyev_strided_batched
+
+rocsolver_<type>heev()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zheev
+   :outline:
+.. doxygenfunction:: rocsolver_cheev
+
+rocsolver_<type>heev_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zheev_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cheev_batched
+
+rocsolver_<type>heev_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zheev_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cheev_strided_batched
+
+
+Singular Value Decomposition
+--------------------------------
 
 rocsolver_<type>gesvd()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1074,7 +1104,7 @@ Lapack-like Functions
 
 Other Lapack-like routines provided by rocSOLVER.
 
-General Matrix Factorizations
+Triangular Factorizations
 ---------------------------------
 
 rocsolver_<type>getf2_npvt()
