@@ -4,9 +4,10 @@
 
 #pragma once
 
-#include <boost/format.hpp>
 #include <cstdarg>
+#include <ios>
 #include <limits>
+#include <sstream>
 
 // If USE_ROCBLAS_REALLOC_ON_DEMAND is false, automatic reallocation is disable and we will manually
 // reallocate workspace
@@ -47,10 +48,12 @@ inline void rocsolver_bench_output()
 template <typename T, typename... Ts>
 inline void rocsolver_bench_output(T arg, Ts... args)
 {
-    using boost::format;
-    format f("%|-15|");
+    std::stringstream ss;
+    ss << std::left << std::setw(15) << arg;
 
-    rocsolver_cout << f % arg;
+    rocsolver_cout << ss.str();
+    if(sizeof...(Ts) > 0)
+        rocsolver_cout << ' ';
     rocsolver_bench_output(args...);
 }
 

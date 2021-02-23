@@ -45,9 +45,11 @@ void steqr_checkBadArgs(const rocblas_handle handle,
         rocblas_status_success);
 }
 
-template <typename S, typename T>
+template <typename T>
 void testing_steqr_bad_arg()
 {
+    using S = decltype(std::real(T{}));
+
     // safe arguments
     rocblas_local_handle handle;
     rocblas_evect compc = rocblas_evect_original;
@@ -126,7 +128,7 @@ void steqr_initData(const rocblas_handle handle,
     }
 }
 
-template <typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
+template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void steqr_getError(const rocblas_handle handle,
                     const rocblas_evect compc,
                     const rocblas_int n,
@@ -144,6 +146,8 @@ void steqr_getError(const rocblas_handle handle,
                     Uh& hInfo,
                     double* max_err)
 {
+    using S = decltype(std::real(T{}));
+
     // input data initialization
     steqr_initData<true, true, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
@@ -206,7 +210,7 @@ void steqr_getError(const rocblas_handle handle,
     }
 }
 
-template <typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
+template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void steqr_getPerfData(const rocblas_handle handle,
                        const rocblas_evect compc,
                        const rocblas_int n,
@@ -224,6 +228,8 @@ void steqr_getPerfData(const rocblas_handle handle,
                        const rocblas_int hot_calls,
                        const bool perf)
 {
+    using S = decltype(std::real(T{}));
+
     size_t size_W = (compc == rocblas_evect_none ? 0 : 2 * n - 2);
     std::vector<S> hW(size_W);
 
@@ -267,9 +273,11 @@ void steqr_getPerfData(const rocblas_handle handle,
     *gpu_time_used /= hot_calls;
 }
 
-template <typename S, typename T>
+template <typename T>
 void testing_steqr(Arguments argus)
 {
+    using S = decltype(std::real(T{}));
+
     // get arguments
     rocblas_local_handle handle;
     rocblas_int n = argus.N;
@@ -351,13 +359,13 @@ void testing_steqr(Arguments argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        steqr_getError<S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hDRes, hE, hERes, hC,
-                             hCRes, hInfo, &max_error);
+        steqr_getError<T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hDRes, hE, hERes, hC, hCRes,
+                          hInfo, &max_error);
 
     // collect performance data
     if(argus.timing)
-        steqr_getPerfData<S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo,
-                                &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
+        steqr_getPerfData<T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo,
+                             &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -64,46 +64,39 @@ protected:
     STEQR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T>
+    void run_tests()
+    {
+        Arguments arg = steqr_setup_arguments(GetParam());
+
+        if(arg.N == 0 && arg.evect == 'N')
+            testing_steqr_bad_arg<T>();
+
+        testing_steqr<T>(arg);
+    }
 };
+
+// non-batch tests
 
 TEST_P(STEQR, __float)
 {
-    Arguments arg = steqr_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N')
-        testing_steqr_bad_arg<float, float>();
-
-    testing_steqr<float, float>(arg);
+    run_tests<float>();
 }
 
 TEST_P(STEQR, __double)
 {
-    Arguments arg = steqr_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N')
-        testing_steqr_bad_arg<double, double>();
-
-    testing_steqr<double, double>(arg);
+    run_tests<double>();
 }
 
 TEST_P(STEQR, __float_complex)
 {
-    Arguments arg = steqr_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N')
-        testing_steqr_bad_arg<float, rocblas_float_complex>();
-
-    testing_steqr<float, rocblas_float_complex>(arg);
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(STEQR, __double_complex)
 {
-    Arguments arg = steqr_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N')
-        testing_steqr_bad_arg<double, rocblas_double_complex>();
-
-    testing_steqr<double, rocblas_double_complex>(arg);
+    run_tests<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

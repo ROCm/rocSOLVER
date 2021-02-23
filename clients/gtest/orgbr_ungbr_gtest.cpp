@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -85,60 +85,53 @@ Arguments orgbr_setup_arguments(orgbr_tuple tup)
     return arg;
 }
 
-class ORGBR : public ::TestWithParam<orgbr_tuple>
+class ORGBR_UNGBR : public ::TestWithParam<orgbr_tuple>
 {
 protected:
-    ORGBR() {}
+    ORGBR_UNGBR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T>
+    void run_tests()
+    {
+        Arguments arg = orgbr_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.N == 0 && arg.storev == 'C')
+            testing_orgbr_ungbr_bad_arg<T>();
+
+        testing_orgbr_ungbr<T>(arg);
+    }
 };
 
-class UNGBR : public ::TestWithParam<orgbr_tuple>
+class ORGBR : public ORGBR_UNGBR
 {
-protected:
-    UNGBR() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
+
+class UNGBR : public ORGBR_UNGBR
+{
+};
+
+// non-batch tests
 
 TEST_P(ORGBR, __float)
 {
-    Arguments arg = orgbr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.storev == 'C')
-        testing_orgbr_ungbr_bad_arg<float>();
-
-    testing_orgbr_ungbr<float>(arg);
+    run_tests<float>();
 }
 
 TEST_P(ORGBR, __double)
 {
-    Arguments arg = orgbr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.storev == 'C')
-        testing_orgbr_ungbr_bad_arg<double>();
-
-    testing_orgbr_ungbr<double>(arg);
+    run_tests<double>();
 }
 
 TEST_P(UNGBR, __float_complex)
 {
-    Arguments arg = orgbr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.storev == 'C')
-        testing_orgbr_ungbr_bad_arg<rocblas_float_complex>();
-
-    testing_orgbr_ungbr<rocblas_float_complex>(arg);
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(UNGBR, __double_complex)
 {
-    Arguments arg = orgbr_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.storev == 'C')
-        testing_orgbr_ungbr_bad_arg<rocblas_double_complex>();
-
-    testing_orgbr_ungbr<rocblas_double_complex>(arg);
+    run_tests<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, ORGBR, Combine(ValuesIn(large_size_range), ValuesIn(store)));

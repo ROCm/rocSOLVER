@@ -100,192 +100,88 @@ protected:
     GELS() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = gels_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.K == 0)
+            testing_gels_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        if(arg.singular == 1)
+            testing_gels<BATCHED, STRIDED, T>(arg);
+
+        arg.singular = 0;
+        testing_gels<BATCHED, STRIDED, T>(arg);
+    }
 };
 
 // non-batch tests
 
 TEST_P(GELS, __float)
 {
-    Arguments arg = gels_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.K == 0)
-        testing_gels_bad_arg<false, false, float>();
-
-    arg.batch_count = 1;
-    if(arg.singular == 1)
-        testing_gels<false, false, float>(arg);
-
-    arg.singular = 0;
-    testing_gels<false, false, float>(arg);
+    run_tests<false, false, float>();
 }
 
 TEST_P(GELS, __double)
 {
-    Arguments arg = gels_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.K == 0)
-        testing_gels_bad_arg<false, false, double>();
-
-    arg.batch_count = 1;
-    if(arg.singular == 1)
-        testing_gels<false, false, double>(arg);
-
-    arg.singular = 0;
-    testing_gels<false, false, double>(arg);
+    run_tests<false, false, double>();
 }
 
 TEST_P(GELS, __float_complex)
 {
-    Arguments arg = gels_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.K == 0)
-        testing_gels_bad_arg<false, false, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    if(arg.singular == 1)
-        testing_gels<false, false, rocblas_float_complex>(arg);
-
-    arg.singular = 0;
-    testing_gels<false, false, rocblas_float_complex>(arg);
+    run_tests<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GELS, __double_complex)
 {
-    Arguments arg = gels_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.K == 0)
-        testing_gels_bad_arg<false, false, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    if(arg.singular == 1)
-        testing_gels<false, false, rocblas_double_complex>(arg);
-
-    arg.singular = 0;
-    testing_gels<false, false, rocblas_double_complex>(arg);
+    run_tests<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(GELS, batched__float)
 {
-    Arguments arg = gels_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.K == 0)
-        testing_gels_bad_arg<true, true, float>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_gels<true, true, float>(arg);
-
-    arg.singular = 0;
-    testing_gels<true, true, float>(arg);
+    run_tests<true, true, float>();
 }
 
 TEST_P(GELS, batched__double)
 {
-    Arguments arg = gels_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.K == 0)
-        testing_gels_bad_arg<true, true, double>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_gels<true, true, double>(arg);
-
-    arg.singular = 0;
-    testing_gels<true, true, double>(arg);
+    run_tests<true, true, double>();
 }
 
 TEST_P(GELS, batched__float_complex)
 {
-    Arguments arg = gels_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.K == 0)
-        testing_gels_bad_arg<true, true, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_gels<true, true, rocblas_float_complex>(arg);
-
-    arg.singular = 0;
-    testing_gels<true, true, rocblas_float_complex>(arg);
+    run_tests<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GELS, batched__double_complex)
 {
-    Arguments arg = gels_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.K == 0)
-        testing_gels_bad_arg<true, true, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_gels<true, true, rocblas_double_complex>(arg);
-
-    arg.singular = 0;
-    testing_gels<true, true, rocblas_double_complex>(arg);
+    run_tests<true, true, rocblas_double_complex>();
 }
 
 // strided_batched tests
 
 TEST_P(GELS, strided_batched__float)
 {
-    Arguments arg = gels_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.K == 0)
-        testing_gels_bad_arg<false, true, float>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_gels<false, true, float>(arg);
-
-    arg.singular = 0;
-    testing_gels<false, true, float>(arg);
+    run_tests<false, true, float>();
 }
 
 TEST_P(GELS, strided_batched__double)
 {
-    Arguments arg = gels_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.K == 0)
-        testing_gels_bad_arg<false, true, double>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_gels<false, true, double>(arg);
-
-    arg.singular = 0;
-    testing_gels<false, true, double>(arg);
+    run_tests<false, true, double>();
 }
 
 TEST_P(GELS, strided_batched__float_complex)
 {
-    Arguments arg = gels_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.K == 0)
-        testing_gels_bad_arg<false, true, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_gels<false, true, rocblas_float_complex>(arg);
-
-    arg.singular = 0;
-    testing_gels<false, true, rocblas_float_complex>(arg);
+    run_tests<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GELS, strided_batched__double_complex)
 {
-    Arguments arg = gels_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.K == 0)
-        testing_gels_bad_arg<false, true, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    if(arg.singular == 1)
-        testing_gels<false, true, rocblas_double_complex>(arg);
-
-    arg.singular = 0;
-    testing_gels<false, true, rocblas_double_complex>(arg);
+    run_tests<false, true, rocblas_double_complex>();
 }
 
 // daily_lapack tests normal execution with medium to large sizes

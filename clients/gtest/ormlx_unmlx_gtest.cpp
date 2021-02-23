@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -88,116 +88,82 @@ Arguments ormlq_setup_arguments(ormlq_tuple tup)
     return arg;
 }
 
-class ORML2 : public ::TestWithParam<ormlq_tuple>
+template <bool BLOCKED>
+class ORMLX_UNMLX : public ::TestWithParam<ormlq_tuple>
 {
 protected:
-    ORML2() {}
+    ORMLX_UNMLX() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T>
+    void run_tests()
+    {
+        Arguments arg = ormlq_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+            testing_ormlx_unmlx_bad_arg<T, BLOCKED>();
+
+        testing_ormlx_unmlx<T, BLOCKED>(arg);
+    }
 };
 
-class UNML2 : public ::TestWithParam<ormlq_tuple>
+class ORML2 : public ORMLX_UNMLX<false>
 {
-protected:
-    UNML2() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
 
-class ORMLQ : public ::TestWithParam<ormlq_tuple>
+class UNML2 : public ORMLX_UNMLX<false>
 {
-protected:
-    ORMLQ() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
 
-class UNMLQ : public ::TestWithParam<ormlq_tuple>
+class ORMLQ : public ORMLX_UNMLX<true>
 {
-protected:
-    UNMLQ() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
+
+class UNMLQ : public ORMLX_UNMLX<true>
+{
+};
+
+// non-batch tests
 
 TEST_P(ORML2, __float)
 {
-    Arguments arg = ormlq_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormlx_unmlx_bad_arg<float, 0>();
-
-    testing_ormlx_unmlx<float, 0>(arg);
+    run_tests<float>();
 }
 
 TEST_P(ORML2, __double)
 {
-    Arguments arg = ormlq_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormlx_unmlx_bad_arg<double, 0>();
-
-    testing_ormlx_unmlx<double, 0>(arg);
+    run_tests<double>();
 }
 
 TEST_P(UNML2, __float_complex)
 {
-    Arguments arg = ormlq_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormlx_unmlx_bad_arg<rocblas_float_complex, 0>();
-
-    testing_ormlx_unmlx<rocblas_float_complex, 0>(arg);
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(UNML2, __double_complex)
 {
-    Arguments arg = ormlq_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormlx_unmlx_bad_arg<rocblas_double_complex, 0>();
-
-    testing_ormlx_unmlx<rocblas_double_complex, 0>(arg);
+    run_tests<rocblas_double_complex>();
 }
 
 TEST_P(ORMLQ, __float)
 {
-    Arguments arg = ormlq_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormlx_unmlx_bad_arg<float, 1>();
-
-    testing_ormlx_unmlx<float, 1>(arg);
+    run_tests<float>();
 }
 
 TEST_P(ORMLQ, __double)
 {
-    Arguments arg = ormlq_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormlx_unmlx_bad_arg<double, 1>();
-
-    testing_ormlx_unmlx<double, 1>(arg);
+    run_tests<double>();
 }
 
 TEST_P(UNMLQ, __float_complex)
 {
-    Arguments arg = ormlq_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormlx_unmlx_bad_arg<rocblas_float_complex, 1>();
-
-    testing_ormlx_unmlx<rocblas_float_complex, 1>(arg);
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(UNMLQ, __double_complex)
 {
-    Arguments arg = ormlq_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
-        testing_ormlx_unmlx_bad_arg<rocblas_double_complex, 1>();
-
-    testing_ormlx_unmlx<rocblas_double_complex, 1>(arg);
+    run_tests<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, ORML2, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));

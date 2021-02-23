@@ -5,7 +5,6 @@
 #pragma once
 
 #include "rocsolver_ostream.hpp"
-#include <boost/format.hpp>
 
 /*
  * ===========================================================================
@@ -13,6 +12,9 @@
  *    library and rocSOLVER client code.
  * ===========================================================================
  */
+
+/* =============================================================================================== */
+/* Timing functions.                                                                               */
 
 /*! \brief  CPU Timer(in microsecond): synchronize with the default device and
  * return wall time */
@@ -25,6 +27,9 @@ double get_time_us_sync(hipStream_t stream);
 /*! \brief  CPU Timer(in microsecond): no GPU synchronization and return wall
  * time */
 double get_time_us_no_sync();
+
+/* =============================================================================================== */
+/* Print functions.                                                                                */
 
 template <typename T, typename... Ts>
 void print_list(rocsolver_ostream& os, const char* sep, T arg, Ts... args)
