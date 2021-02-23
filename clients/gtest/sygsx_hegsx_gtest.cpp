@@ -65,306 +65,167 @@ Arguments sygst_setup_arguments(sygst_tuple tup)
     return arg;
 }
 
-class SYGS2 : public ::TestWithParam<sygst_tuple>
+template <bool BLOCKED>
+class SYGSX_HEGSX : public ::TestWithParam<sygst_tuple>
 {
 protected:
-    SYGS2() {}
+    SYGSX_HEGSX() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = sygst_setup_arguments(GetParam());
+
+        if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
+            testing_sygsx_hegsx_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        testing_sygsx_hegsx<BATCHED, STRIDED, BLOCKED, T>(arg);
+    }
 };
 
-class SYGST : public ::TestWithParam<sygst_tuple>
+class SYGS2 : public SYGSX_HEGSX<false>
 {
-protected:
-    SYGST() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
 
-class HEGS2 : public ::TestWithParam<sygst_tuple>
+class HEGS2 : public SYGSX_HEGSX<false>
 {
-protected:
-    HEGS2() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
 
-class HEGST : public ::TestWithParam<sygst_tuple>
+class SYGST : public SYGSX_HEGSX<true>
 {
-protected:
-    HEGST() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+};
+
+class HEGST : public SYGSX_HEGSX<true>
+{
 };
 
 // non-batch tests
 
 TEST_P(SYGS2, __float)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, false, 0, float>();
-
-    arg.batch_count = 1;
-    testing_sygsx_hegsx<false, false, 0, float>(arg);
+    run_tests<false, false, float>();
 }
 
 TEST_P(SYGS2, __double)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, false, 0, double>();
-
-    arg.batch_count = 1;
-    testing_sygsx_hegsx<false, false, 0, double>(arg);
+    run_tests<false, false, double>();
 }
 
 TEST_P(HEGS2, __float_complex)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, false, 0, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_sygsx_hegsx<false, false, 0, rocblas_float_complex>(arg);
+    run_tests<false, false, rocblas_float_complex>();
 }
 
 TEST_P(HEGS2, __double_complex)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, false, 0, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_sygsx_hegsx<false, false, 0, rocblas_double_complex>(arg);
+    run_tests<false, false, rocblas_double_complex>();
 }
 
 TEST_P(SYGST, __float)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, false, 1, float>();
-
-    arg.batch_count = 1;
-    testing_sygsx_hegsx<false, false, 1, float>(arg);
+    run_tests<false, false, float>();
 }
 
 TEST_P(SYGST, __double)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, false, 1, double>();
-
-    arg.batch_count = 1;
-    testing_sygsx_hegsx<false, false, 1, double>(arg);
+    run_tests<false, false, double>();
 }
 
 TEST_P(HEGST, __float_complex)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, false, 1, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_sygsx_hegsx<false, false, 1, rocblas_float_complex>(arg);
+    run_tests<false, false, rocblas_float_complex>();
 }
 
 TEST_P(HEGST, __double_complex)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, false, 1, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_sygsx_hegsx<false, false, 1, rocblas_double_complex>(arg);
+    run_tests<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(SYGS2, batched__float)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<true, true, 0, float>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<true, true, 0, float>(arg);
+    run_tests<true, true, float>();
 }
 
 TEST_P(SYGS2, batched__double)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<true, true, 0, double>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<true, true, 0, double>(arg);
+    run_tests<true, true, double>();
 }
 
 TEST_P(HEGS2, batched__float_complex)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<true, true, 0, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<true, true, 0, rocblas_float_complex>(arg);
+    run_tests<true, true, rocblas_float_complex>();
 }
 
 TEST_P(HEGS2, batched__double_complex)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<true, true, 0, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<true, true, 0, rocblas_double_complex>(arg);
+    run_tests<true, true, rocblas_double_complex>();
 }
 
 TEST_P(SYGST, batched__float)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<true, true, 1, float>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<true, true, 1, float>(arg);
+    run_tests<true, true, float>();
 }
 
 TEST_P(SYGST, batched__double)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<true, true, 1, double>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<true, true, 1, double>(arg);
+    run_tests<true, true, double>();
 }
 
 TEST_P(HEGST, batched__float_complex)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<true, true, 1, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<true, true, 1, rocblas_float_complex>(arg);
+    run_tests<true, true, rocblas_float_complex>();
 }
 
 TEST_P(HEGST, batched__double_complex)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<true, true, 1, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<true, true, 1, rocblas_double_complex>(arg);
+    run_tests<true, true, rocblas_double_complex>();
 }
 
 // strided_batched cases
 
 TEST_P(SYGS2, strided_batched__float)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, true, 0, float>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<false, true, 0, float>(arg);
+    run_tests<false, true, float>();
 }
 
 TEST_P(SYGS2, strided_batched__double)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, true, 0, double>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<false, true, 0, double>(arg);
+    run_tests<false, true, double>();
 }
 
 TEST_P(HEGS2, strided_batched__float_complex)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, true, 0, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<false, true, 0, rocblas_float_complex>(arg);
+    run_tests<false, true, rocblas_float_complex>();
 }
 
 TEST_P(HEGS2, strided_batched__double_complex)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, true, 0, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<false, true, 0, rocblas_double_complex>(arg);
+    run_tests<false, true, rocblas_double_complex>();
 }
 
 TEST_P(SYGST, strided_batched__float)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, true, 1, float>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<false, true, 1, float>(arg);
+    run_tests<false, true, float>();
 }
 
 TEST_P(SYGST, strided_batched__double)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, true, 1, double>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<false, true, 1, double>(arg);
+    run_tests<false, true, double>();
 }
 
 TEST_P(HEGST, strided_batched__float_complex)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, true, 1, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<false, true, 1, rocblas_float_complex>(arg);
+    run_tests<false, true, rocblas_float_complex>();
 }
 
 TEST_P(HEGST, strided_batched__double_complex)
 {
-    Arguments arg = sygst_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygsx_hegsx_bad_arg<false, true, 1, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_sygsx_hegsx<false, true, 1, rocblas_double_complex>(arg);
+    run_tests<false, true, rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

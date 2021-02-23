@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -52,60 +52,53 @@ Arguments orgtr_setup_arguments(orgtr_tuple tup)
     return arg;
 }
 
-class ORGTR : public ::TestWithParam<orgtr_tuple>
+class ORGTR_UNGTR : public ::TestWithParam<orgtr_tuple>
 {
 protected:
-    ORGTR() {}
+    ORGTR_UNGTR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T>
+    void run_tests()
+    {
+        Arguments arg = orgtr_setup_arguments(GetParam());
+
+        if(arg.N == 0 && arg.uplo_option == 'U')
+            testing_orgtr_ungtr_bad_arg<T>();
+
+        testing_orgtr_ungtr<T>(arg);
+    }
 };
 
-class UNGTR : public ::TestWithParam<orgtr_tuple>
+class ORGTR : public ORGTR_UNGTR
 {
-protected:
-    UNGTR() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
+
+class UNGTR : public ORGTR_UNGTR
+{
+};
+
+// non-batch tests
 
 TEST_P(ORGTR, __float)
 {
-    Arguments arg = orgtr_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.uplo_option == 'U')
-        testing_orgtr_ungtr_bad_arg<float>();
-
-    testing_orgtr_ungtr<float>(arg);
+    run_tests<float>();
 }
 
 TEST_P(ORGTR, __double)
 {
-    Arguments arg = orgtr_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.uplo_option == 'U')
-        testing_orgtr_ungtr_bad_arg<double>();
-
-    testing_orgtr_ungtr<double>(arg);
+    run_tests<double>();
 }
 
 TEST_P(UNGTR, __float_complex)
 {
-    Arguments arg = orgtr_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.uplo_option == 'U')
-        testing_orgtr_ungtr_bad_arg<rocblas_float_complex>();
-
-    testing_orgtr_ungtr<rocblas_float_complex>(arg);
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(UNGTR, __double_complex)
 {
-    Arguments arg = orgtr_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.uplo_option == 'U')
-        testing_orgtr_ungtr_bad_arg<rocblas_double_complex>();
-
-    testing_orgtr_ungtr<rocblas_double_complex>(arg);
+    run_tests<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, ORGTR, Combine(ValuesIn(large_size_range), ValuesIn(uplo)));

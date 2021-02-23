@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -69,336 +69,181 @@ Arguments geqrf_setup_arguments(geqrf_tuple tup)
     return arg;
 }
 
-class GEQR2 : public ::TestWithParam<geqrf_tuple>
+template <bool BLOCKED>
+class GEQR2_GEQRF : public ::TestWithParam<geqrf_tuple>
 {
 protected:
-    GEQR2() {}
+    GEQR2_GEQRF() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = geqrf_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.N == 0)
+            testing_geqr2_geqrf_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        testing_geqr2_geqrf<BATCHED, STRIDED, BLOCKED, T>(arg);
+    }
 };
 
-class GEQRF : public ::TestWithParam<geqrf_tuple>
+class GEQR2 : public GEQR2_GEQRF<false>
 {
-protected:
-    GEQRF() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+};
+
+class GEQRF : public GEQR2_GEQRF<true>
+{
 };
 
 // non-batch tests
 
 TEST_P(GEQR2, __float)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, false, 0, float>();
-
-    arg.batch_count = 1;
-    testing_geqr2_geqrf<false, false, 0, float>(arg);
+    run_tests<false, false, float>();
 }
 
 TEST_P(GEQR2, __double)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, false, 0, double>();
-
-    arg.batch_count = 1;
-    testing_geqr2_geqrf<false, false, 0, double>(arg);
+    run_tests<false, false, double>();
 }
 
 TEST_P(GEQR2, __float_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, false, 0, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_geqr2_geqrf<false, false, 0, rocblas_float_complex>(arg);
+    run_tests<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GEQR2, __double_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, false, 0, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_geqr2_geqrf<false, false, 0, rocblas_double_complex>(arg);
+    run_tests<false, false, rocblas_double_complex>();
 }
 
 TEST_P(GEQRF, __float)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, false, 1, float>();
-
-    arg.batch_count = 1;
-    testing_geqr2_geqrf<false, false, 1, float>(arg);
+    run_tests<false, false, float>();
 }
 
 TEST_P(GEQRF, __double)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, false, 1, double>();
-
-    arg.batch_count = 1;
-    testing_geqr2_geqrf<false, false, 1, double>(arg);
+    run_tests<false, false, double>();
 }
 
 TEST_P(GEQRF, __float_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, false, 1, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_geqr2_geqrf<false, false, 1, rocblas_float_complex>(arg);
+    run_tests<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GEQRF, __double_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, false, 1, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_geqr2_geqrf<false, false, 1, rocblas_double_complex>(arg);
+    run_tests<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(GEQR2, batched__float)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<true, true, 0, float>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<true, true, 0, float>(arg);
+    run_tests<true, true, float>();
 }
 
 TEST_P(GEQR2, batched__double)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<true, true, 0, double>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<true, true, 0, double>(arg);
+    run_tests<true, true, double>();
 }
 
 TEST_P(GEQR2, batched__float_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<true, true, 0, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<true, true, 0, rocblas_float_complex>(arg);
+    run_tests<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GEQR2, batched__double_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<true, true, 0, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<true, true, 0, rocblas_double_complex>(arg);
+    run_tests<true, true, rocblas_double_complex>();
 }
 
 TEST_P(GEQRF, batched__float)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<true, true, 1, float>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<true, true, 1, float>(arg);
+    run_tests<true, true, float>();
 }
 
 TEST_P(GEQRF, batched__double)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<true, true, 1, double>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<true, true, 1, double>(arg);
+    run_tests<true, true, double>();
 }
 
 TEST_P(GEQRF, batched__float_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<true, true, 1, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<true, true, 1, rocblas_float_complex>(arg);
+    run_tests<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GEQRF, batched__double_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<true, true, 1, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<true, true, 1, rocblas_double_complex>(arg);
+    run_tests<true, true, rocblas_double_complex>();
 }
 
 // strided_batched cases
 
 TEST_P(GEQR2, strided_batched__float)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, true, 0, float>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<false, true, 0, float>(arg);
+    run_tests<false, true, float>();
 }
 
 TEST_P(GEQR2, strided_batched__double)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, true, 0, double>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<false, true, 0, double>(arg);
+    run_tests<false, true, double>();
 }
 
 TEST_P(GEQR2, strided_batched__float_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, true, 0, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<false, true, 0, rocblas_float_complex>(arg);
+    run_tests<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GEQR2, strided_batched__double_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, true, 0, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<false, true, 0, rocblas_double_complex>(arg);
+    run_tests<false, true, rocblas_double_complex>();
 }
 
 TEST_P(GEQRF, strided_batched__float)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, true, 1, float>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<false, true, 1, float>(arg);
+    run_tests<false, true, float>();
 }
 
 TEST_P(GEQRF, strided_batched__double)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, true, 1, double>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<false, true, 1, double>(arg);
+    run_tests<false, true, double>();
 }
 
 TEST_P(GEQRF, strided_batched__float_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, true, 1, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<false, true, 1, rocblas_float_complex>(arg);
+    run_tests<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GEQRF, strided_batched__double_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<false, true, 1, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<false, true, 1, rocblas_double_complex>(arg);
+    run_tests<false, true, rocblas_double_complex>();
 }
 
 // ptr_batched tests
 
 TEST_P(GEQRF, ptr_batched__float)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<true, false, 1, float>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<true, false, 1, float>(arg);
+    run_tests<true, false, float>();
 }
 
 TEST_P(GEQRF, ptr_batched__double)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<true, false, 1, double>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<true, false, 1, double>(arg);
+    run_tests<true, false, double>();
 }
 
 TEST_P(GEQRF, ptr_batched__float_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<true, false, 1, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<true, false, 1, rocblas_float_complex>(arg);
+    run_tests<true, false, rocblas_float_complex>();
 }
 
 TEST_P(GEQRF, ptr_batched__double_complex)
 {
-    Arguments arg = geqrf_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_geqr2_geqrf_bad_arg<true, false, 1, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_geqr2_geqrf<true, false, 1, rocblas_double_complex>(arg);
+    run_tests<true, false, rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

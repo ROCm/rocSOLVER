@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -71,116 +71,82 @@ Arguments orgql_setup_arguments(orgql_tuple tup)
     return arg;
 }
 
-class ORG2L : public ::TestWithParam<orgql_tuple>
+template <bool BLOCKED>
+class ORGXL_UNGXL : public ::TestWithParam<orgql_tuple>
 {
 protected:
-    ORG2L() {}
+    ORGXL_UNGXL() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T>
+    void run_tests()
+    {
+        Arguments arg = orgql_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.N == 0)
+            testing_orgxl_ungxl_bad_arg<T, BLOCKED>();
+
+        testing_orgxl_ungxl<T, BLOCKED>(arg);
+    }
 };
 
-class UNG2L : public ::TestWithParam<orgql_tuple>
+class ORG2L : public ORGXL_UNGXL<false>
 {
-protected:
-    UNG2L() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
 
-class ORGQL : public ::TestWithParam<orgql_tuple>
+class UNG2L : public ORGXL_UNGXL<false>
 {
-protected:
-    ORGQL() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
 
-class UNGQL : public ::TestWithParam<orgql_tuple>
+class ORGQL : public ORGXL_UNGXL<true>
 {
-protected:
-    UNGQL() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
+
+class UNGQL : public ORGXL_UNGXL<true>
+{
+};
+
+// non-batch tests
 
 TEST_P(ORG2L, __float)
 {
-    Arguments arg = orgql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxl_ungxl_bad_arg<float, 0>();
-
-    testing_orgxl_ungxl<float, 0>(arg);
+    run_tests<float>();
 }
 
 TEST_P(ORG2L, __double)
 {
-    Arguments arg = orgql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxl_ungxl_bad_arg<double, 0>();
-
-    testing_orgxl_ungxl<double, 0>(arg);
+    run_tests<double>();
 }
 
 TEST_P(UNG2L, __float_complex)
 {
-    Arguments arg = orgql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxl_ungxl_bad_arg<rocblas_float_complex, 0>();
-
-    testing_orgxl_ungxl<rocblas_float_complex, 0>(arg);
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(UNG2L, __double_complex)
 {
-    Arguments arg = orgql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxl_ungxl_bad_arg<rocblas_double_complex, 0>();
-
-    testing_orgxl_ungxl<rocblas_double_complex, 0>(arg);
+    run_tests<rocblas_double_complex>();
 }
 
 TEST_P(ORGQL, __float)
 {
-    Arguments arg = orgql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxl_ungxl_bad_arg<float, 1>();
-
-    testing_orgxl_ungxl<float, 1>(arg);
+    run_tests<float>();
 }
 
 TEST_P(ORGQL, __double)
 {
-    Arguments arg = orgql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxl_ungxl_bad_arg<double, 1>();
-
-    testing_orgxl_ungxl<double, 1>(arg);
+    run_tests<double>();
 }
 
 TEST_P(UNGQL, __float_complex)
 {
-    Arguments arg = orgql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxl_ungxl_bad_arg<rocblas_float_complex, 1>();
-
-    testing_orgxl_ungxl<rocblas_float_complex, 1>(arg);
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(UNGQL, __double_complex)
 {
-    Arguments arg = orgql_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_orgxl_ungxl_bad_arg<rocblas_double_complex, 1>();
-
-    testing_orgxl_ungxl<rocblas_double_complex, 1>(arg);
+    run_tests<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

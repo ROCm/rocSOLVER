@@ -68,158 +68,98 @@ Arguments sygv_setup_arguments(sygv_tuple tup)
     return arg;
 }
 
-class SYGV : public ::TestWithParam<sygv_tuple>
+class SYGV_HEGV : public ::TestWithParam<sygv_tuple>
 {
 protected:
-    SYGV() {}
+    SYGV_HEGV() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = sygv_setup_arguments(GetParam());
+
+        if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
+            testing_sygv_hegv_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = 1;
+        testing_sygv_hegv<BATCHED, STRIDED, T>(arg);
+    }
 };
 
-class HEGV : public ::TestWithParam<sygv_tuple>
+class SYGV : public SYGV_HEGV
 {
-protected:
-    HEGV() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+};
+
+class HEGV : public SYGV_HEGV
+{
 };
 
 // non-batch tests
 
 TEST_P(SYGV, __float)
 {
-    Arguments arg = sygv_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygv_hegv_bad_arg<false, false, float>();
-
-    arg.batch_count = 1;
-    testing_sygv_hegv<false, false, float>(arg);
+    run_tests<false, false, float>();
 }
 
 TEST_P(SYGV, __double)
 {
-    Arguments arg = sygv_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygv_hegv_bad_arg<false, false, double>();
-
-    arg.batch_count = 1;
-    testing_sygv_hegv<false, false, double>(arg);
+    run_tests<false, false, double>();
 }
 
 TEST_P(HEGV, __float_complex)
 {
-    Arguments arg = sygv_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygv_hegv_bad_arg<false, false, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_sygv_hegv<false, false, rocblas_float_complex>(arg);
+    run_tests<false, false, rocblas_float_complex>();
 }
 
 TEST_P(HEGV, __double_complex)
 {
-    Arguments arg = sygv_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygv_hegv_bad_arg<false, false, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_sygv_hegv<false, false, rocblas_double_complex>(arg);
+    run_tests<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(SYGV, batched__float)
 {
-    Arguments arg = sygv_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygv_hegv_bad_arg<true, true, float>();
-
-    arg.batch_count = 3;
-    testing_sygv_hegv<true, true, float>(arg);
+    run_tests<true, true, float>();
 }
 
 TEST_P(SYGV, batched__double)
 {
-    Arguments arg = sygv_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygv_hegv_bad_arg<true, true, double>();
-
-    arg.batch_count = 3;
-    testing_sygv_hegv<true, true, double>(arg);
+    run_tests<true, true, double>();
 }
 
 TEST_P(HEGV, batched__float_complex)
 {
-    Arguments arg = sygv_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygv_hegv_bad_arg<true, true, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_sygv_hegv<true, true, rocblas_float_complex>(arg);
+    run_tests<true, true, rocblas_float_complex>();
 }
 
 TEST_P(HEGV, batched__double_complex)
 {
-    Arguments arg = sygv_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygv_hegv_bad_arg<true, true, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_sygv_hegv<true, true, rocblas_double_complex>(arg);
+    run_tests<true, true, rocblas_double_complex>();
 }
 
 // strided_batched cases
 
 TEST_P(SYGV, strided_batched__float)
 {
-    Arguments arg = sygv_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygv_hegv_bad_arg<false, true, float>();
-
-    arg.batch_count = 3;
-    testing_sygv_hegv<false, true, float>(arg);
+    run_tests<false, true, float>();
 }
 
 TEST_P(SYGV, strided_batched__double)
 {
-    Arguments arg = sygv_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygv_hegv_bad_arg<false, true, double>();
-
-    arg.batch_count = 3;
-    testing_sygv_hegv<false, true, double>(arg);
+    run_tests<false, true, double>();
 }
 
 TEST_P(HEGV, strided_batched__float_complex)
 {
-    Arguments arg = sygv_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygv_hegv_bad_arg<false, true, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_sygv_hegv<false, true, rocblas_float_complex>(arg);
+    run_tests<false, true, rocblas_float_complex>();
 }
 
 TEST_P(HEGV, strided_batched__double_complex)
 {
-    Arguments arg = sygv_setup_arguments(GetParam());
-
-    if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
-        testing_sygv_hegv_bad_arg<false, true, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_sygv_hegv<false, true, rocblas_double_complex>(arg);
+    run_tests<false, true, rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
