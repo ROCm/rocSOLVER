@@ -72,7 +72,7 @@ protected:
     virtual void TearDown() {}
 
     template <typename T>
-    void test_fixture()
+    void run_tests()
     {
         Arguments arg = laswp_setup_arguments(GetParam());
 
@@ -87,22 +87,22 @@ protected:
 
 TEST_P(LASWP, __float)
 {
-    test_fixture<float>();
+    run_tests<float>();
 }
 
 TEST_P(LASWP, __double)
 {
-    test_fixture<double>();
+    run_tests<double>();
 }
 
 TEST_P(LASWP, __float_complex)
 {
-    test_fixture<rocblas_float_complex>();
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(LASWP, __double_complex)
 {
-    test_fixture<rocblas_double_complex>();
+    run_tests<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, LASWP, Combine(ValuesIn(large_range1), ValuesIn(large_range2)));

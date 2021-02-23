@@ -97,7 +97,7 @@ protected:
     virtual void TearDown() {}
 
     template <typename T>
-    void test_fixture()
+    void run_tests()
     {
         Arguments arg = ormql_setup_arguments(GetParam());
 
@@ -128,42 +128,42 @@ class UNMQL : public ORMXL_UNMXL<true>
 
 TEST_P(ORM2L, __float)
 {
-    test_fixture<float>();
+    run_tests<float>();
 }
 
 TEST_P(ORM2L, __double)
 {
-    test_fixture<double>();
+    run_tests<double>();
 }
 
 TEST_P(UNM2L, __float_complex)
 {
-    test_fixture<rocblas_float_complex>();
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(UNM2L, __double_complex)
 {
-    test_fixture<rocblas_double_complex>();
+    run_tests<rocblas_double_complex>();
 }
 
 TEST_P(ORMQL, __float)
 {
-    test_fixture<float>();
+    run_tests<float>();
 }
 
 TEST_P(ORMQL, __double)
 {
-    test_fixture<double>();
+    run_tests<double>();
 }
 
 TEST_P(UNMQL, __float_complex)
 {
-    test_fixture<rocblas_float_complex>();
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(UNMQL, __double_complex)
 {
-    test_fixture<rocblas_double_complex>();
+    run_tests<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, ORM2L, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));

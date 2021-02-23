@@ -80,7 +80,7 @@ protected:
     virtual void TearDown() {}
 
     template <typename T>
-    void test_fixture()
+    void run_tests()
     {
         Arguments arg = orgql_setup_arguments(GetParam());
 
@@ -111,42 +111,42 @@ class UNGQL : public ORGXL_UNGXL<true>
 
 TEST_P(ORG2L, __float)
 {
-    test_fixture<float>();
+    run_tests<float>();
 }
 
 TEST_P(ORG2L, __double)
 {
-    test_fixture<double>();
+    run_tests<double>();
 }
 
 TEST_P(UNG2L, __float_complex)
 {
-    test_fixture<rocblas_float_complex>();
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(UNG2L, __double_complex)
 {
-    test_fixture<rocblas_double_complex>();
+    run_tests<rocblas_double_complex>();
 }
 
 TEST_P(ORGQL, __float)
 {
-    test_fixture<float>();
+    run_tests<float>();
 }
 
 TEST_P(ORGQL, __double)
 {
-    test_fixture<double>();
+    run_tests<double>();
 }
 
 TEST_P(UNGQL, __float_complex)
 {
-    test_fixture<rocblas_float_complex>();
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(UNGQL, __double_complex)
 {
-    test_fixture<rocblas_double_complex>();
+    run_tests<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

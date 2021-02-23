@@ -79,7 +79,7 @@ protected:
     virtual void TearDown() {}
 
     template <typename T>
-    void test_fixture()
+    void run_tests()
     {
         Arguments arg = orgqr_setup_arguments(GetParam());
 
@@ -110,42 +110,42 @@ class UNGQR : public ORGXR_UNGXR<true>
 
 TEST_P(ORG2R, __float)
 {
-    test_fixture<float>();
+    run_tests<float>();
 }
 
 TEST_P(ORG2R, __double)
 {
-    test_fixture<double>();
+    run_tests<double>();
 }
 
 TEST_P(UNG2R, __float_complex)
 {
-    test_fixture<rocblas_float_complex>();
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(UNG2R, __double_complex)
 {
-    test_fixture<rocblas_double_complex>();
+    run_tests<rocblas_double_complex>();
 }
 
 TEST_P(ORGQR, __float)
 {
-    test_fixture<float>();
+    run_tests<float>();
 }
 
 TEST_P(ORGQR, __double)
 {
-    test_fixture<double>();
+    run_tests<double>();
 }
 
 TEST_P(UNGQR, __float_complex)
 {
-    test_fixture<rocblas_float_complex>();
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(UNGQR, __double_complex)
 {
-    test_fixture<rocblas_double_complex>();
+    run_tests<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

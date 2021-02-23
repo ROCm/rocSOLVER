@@ -51,7 +51,7 @@ protected:
     virtual void TearDown() {}
 
     template <typename T>
-    void test_fixture()
+    void run_tests()
     {
         Arguments arg = sterf_setup_arguments(GetParam());
 
@@ -66,12 +66,12 @@ protected:
 
 TEST_P(STERF, __float)
 {
-    test_fixture<float>();
+    run_tests<float>();
 }
 
 TEST_P(STERF, __double)
 {
-    test_fixture<double>();
+    run_tests<double>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, STERF, ValuesIn(large_matrix_size_range));

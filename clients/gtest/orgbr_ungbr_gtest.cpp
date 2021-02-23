@@ -93,7 +93,7 @@ protected:
     virtual void TearDown() {}
 
     template <typename T>
-    void test_fixture()
+    void run_tests()
     {
         Arguments arg = orgbr_setup_arguments(GetParam());
 
@@ -116,22 +116,22 @@ class UNGBR : public ORGBR_UNGBR
 
 TEST_P(ORGBR, __float)
 {
-    test_fixture<float>();
+    run_tests<float>();
 }
 
 TEST_P(ORGBR, __double)
 {
-    test_fixture<double>();
+    run_tests<double>();
 }
 
 TEST_P(UNGBR, __float_complex)
 {
-    test_fixture<rocblas_float_complex>();
+    run_tests<rocblas_float_complex>();
 }
 
 TEST_P(UNGBR, __double_complex)
 {
-    test_fixture<rocblas_double_complex>();
+    run_tests<rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, ORGBR, Combine(ValuesIn(large_size_range), ValuesIn(store)));

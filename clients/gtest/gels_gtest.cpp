@@ -102,7 +102,7 @@ protected:
     virtual void TearDown() {}
 
     template <bool BATCHED, bool STRIDED, typename T>
-    void test_fixture()
+    void run_tests()
     {
         Arguments arg = gels_setup_arguments(GetParam());
 
@@ -122,66 +122,66 @@ protected:
 
 TEST_P(GELS, __float)
 {
-    test_fixture<false, false, float>();
+    run_tests<false, false, float>();
 }
 
 TEST_P(GELS, __double)
 {
-    test_fixture<false, false, double>();
+    run_tests<false, false, double>();
 }
 
 TEST_P(GELS, __float_complex)
 {
-    test_fixture<false, false, rocblas_float_complex>();
+    run_tests<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GELS, __double_complex)
 {
-    test_fixture<false, false, rocblas_double_complex>();
+    run_tests<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(GELS, batched__float)
 {
-    test_fixture<true, true, float>();
+    run_tests<true, true, float>();
 }
 
 TEST_P(GELS, batched__double)
 {
-    test_fixture<true, true, double>();
+    run_tests<true, true, double>();
 }
 
 TEST_P(GELS, batched__float_complex)
 {
-    test_fixture<true, true, rocblas_float_complex>();
+    run_tests<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GELS, batched__double_complex)
 {
-    test_fixture<true, true, rocblas_double_complex>();
+    run_tests<true, true, rocblas_double_complex>();
 }
 
 // strided_batched tests
 
 TEST_P(GELS, strided_batched__float)
 {
-    test_fixture<false, true, float>();
+    run_tests<false, true, float>();
 }
 
 TEST_P(GELS, strided_batched__double)
 {
-    test_fixture<false, true, double>();
+    run_tests<false, true, double>();
 }
 
 TEST_P(GELS, strided_batched__float_complex)
 {
-    test_fixture<false, true, rocblas_float_complex>();
+    run_tests<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GELS, strided_batched__double_complex)
 {
-    test_fixture<false, true, rocblas_double_complex>();
+    run_tests<false, true, rocblas_double_complex>();
 }
 
 // daily_lapack tests normal execution with medium to large sizes
