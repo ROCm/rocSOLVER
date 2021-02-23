@@ -46,7 +46,7 @@ on GitHub. Download the code and checkout the desired branch using:
     cd rocSOLVER
 
 To build from source, some external dependencies such as CMake and Python are required. Additionally, if the library clients
-are to be built (by default they are not), then LAPACK, Boost and GoogleTest will be also required. (The library clients: rocsolver-test and rocsolver-bench,
+are to be built (by default they are not), then LAPACK and GoogleTest will be also required. (The library clients: rocsolver-test and rocsolver-bench,
 provide the infrastructure for testing and benchmarking rocSOLVER. For more details on the library clients see the Design
 Documentation here: :ref:`clients_label`).
 
@@ -205,7 +205,6 @@ how to install each dependency at their corresponding documentation sources:
 
 * `CMake <https://cmake.org/>`_ (version >3.5 is required).
 * `Python <https://www.python.org/>`_ (version >2.7 is required. Python is installed by default in some systems like Ubuntu).
-* `Boost <https://www.boost.org/>`_
 * `LAPACK <https://github.com/Reference-LAPACK/lapack-release>`_ (which internally depends on a Fortran compiler), and
 * `GoogleTest <https://github.com/google/googletest>`_
 

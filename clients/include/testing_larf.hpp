@@ -322,7 +322,7 @@ void testing_larf(Arguments argus)
             rocsolver_cout << "Arguments:\n";
             rocsolver_cout << "============================================\n";
             rocsolver_bench_output("side", "m", "n", "inc", "lda");
-            rocsolver_bench_output(side, m, n, inc, lda);
+            rocsolver_bench_output(sideC, m, n, inc, lda);
 
             rocsolver_cout << "\n============================================\n";
             rocsolver_cout << "Results:\n";

@@ -139,144 +139,84 @@ protected:
     GESVD() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = gesvd_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
+            testing_gesvd_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        testing_gesvd<BATCHED, STRIDED, T>(arg);
+    }
 };
 
 // non-batch tests
 
 TEST_P(GESVD, __float)
 {
-    Arguments arg = gesvd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false, false, float>();
-
-    arg.batch_count = 1;
-    testing_gesvd<false, false, float>(arg);
+    run_tests<false, false, float>();
 }
 
 TEST_P(GESVD, __double)
 {
-    Arguments arg = gesvd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false, false, double>();
-
-    arg.batch_count = 1;
-    testing_gesvd<false, false, double>(arg);
+    run_tests<false, false, double>();
 }
 
 TEST_P(GESVD, __float_complex)
 {
-    Arguments arg = gesvd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false, false, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_gesvd<false, false, rocblas_float_complex>(arg);
+    run_tests<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GESVD, __double_complex)
 {
-    Arguments arg = gesvd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false, false, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_gesvd<false, false, rocblas_double_complex>(arg);
+    run_tests<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(GESVD, batched__float)
 {
-    Arguments arg = gesvd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<true, true, float>();
-
-    arg.batch_count = 3;
-    testing_gesvd<true, true, float>(arg);
+    run_tests<true, true, float>();
 }
 
 TEST_P(GESVD, batched__double)
 {
-    Arguments arg = gesvd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<true, true, double>();
-
-    arg.batch_count = 3;
-    testing_gesvd<true, true, double>(arg);
+    run_tests<true, true, double>();
 }
 
 TEST_P(GESVD, batched__float_complex)
 {
-    Arguments arg = gesvd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<true, true, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_gesvd<true, true, rocblas_float_complex>(arg);
+    run_tests<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GESVD, batched__double_complex)
 {
-    Arguments arg = gesvd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<true, true, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_gesvd<true, true, rocblas_double_complex>(arg);
+    run_tests<true, true, rocblas_double_complex>();
 }
 
 // strided_batched tests
 
 TEST_P(GESVD, strided_batched__float)
 {
-    Arguments arg = gesvd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false, true, float>();
-
-    arg.batch_count = 3;
-    testing_gesvd<false, true, float>(arg);
+    run_tests<false, true, float>();
 }
 
 TEST_P(GESVD, strided_batched__double)
 {
-    Arguments arg = gesvd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false, true, double>();
-
-    arg.batch_count = 3;
-    testing_gesvd<false, true, double>(arg);
+    run_tests<false, true, double>();
 }
 
 TEST_P(GESVD, strided_batched__float_complex)
 {
-    Arguments arg = gesvd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false, true, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_gesvd<false, true, rocblas_float_complex>(arg);
+    run_tests<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GESVD, strided_batched__double_complex)
 {
-    Arguments arg = gesvd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
-        testing_gesvd_bad_arg<false, true, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_gesvd<false, true, rocblas_double_complex>(arg);
+    run_tests<false, true, rocblas_double_complex>();
 }
 
 // daily_lapack tests normal execution with medium to large sizes

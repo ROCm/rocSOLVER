@@ -63,158 +63,98 @@ Arguments syev_heev_setup_arguments(syev_heev_tuple tup)
     return arg;
 }
 
-class SYEV : public ::TestWithParam<syev_heev_tuple>
+class SYEV_HEEV : public ::TestWithParam<syev_heev_tuple>
 {
 protected:
-    SYEV() {}
+    SYEV_HEEV() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = syev_heev_setup_arguments(GetParam());
+
+        if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
+            testing_syev_heev_bad_arg<BATCHED, STRIDED, float>();
+
+        arg.batch_count = 1;
+        testing_syev_heev<BATCHED, STRIDED, float>(arg);
+    }
 };
 
-class HEEV : public ::TestWithParam<syev_heev_tuple>
+class SYEV : public SYEV_HEEV
 {
-protected:
-    HEEV() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+};
+
+class HEEV : public SYEV_HEEV
+{
 };
 
 // non-batch tests
 
 TEST_P(SYEV, __float)
 {
-    Arguments arg = syev_heev_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
-        testing_syev_heev_bad_arg<false, false, float>();
-
-    arg.batch_count = 1;
-    testing_syev_heev<false, false, float>(arg);
+    run_tests<false, false, float>();
 }
 
 TEST_P(SYEV, __double)
 {
-    Arguments arg = syev_heev_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
-        testing_syev_heev_bad_arg<false, false, double>();
-
-    arg.batch_count = 1;
-    testing_syev_heev<false, false, double>(arg);
+    run_tests<false, false, double>();
 }
 
 TEST_P(HEEV, __float_complex)
 {
-    Arguments arg = syev_heev_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
-        testing_syev_heev_bad_arg<false, false, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_syev_heev<false, false, rocblas_float_complex>(arg);
+    run_tests<false, false, rocblas_float_complex>();
 }
 
 TEST_P(HEEV, __double_complex)
 {
-    Arguments arg = syev_heev_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
-        testing_syev_heev_bad_arg<false, false, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_syev_heev<false, false, rocblas_double_complex>(arg);
+    run_tests<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(SYEV, batched__float)
 {
-    Arguments arg = syev_heev_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
-        testing_syev_heev_bad_arg<true, true, float>();
-
-    arg.batch_count = 3;
-    testing_syev_heev<true, true, float>(arg);
+    run_tests<true, true, float>();
 }
 
 TEST_P(SYEV, batched__double)
 {
-    Arguments arg = syev_heev_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
-        testing_syev_heev_bad_arg<true, true, double>();
-
-    arg.batch_count = 3;
-    testing_syev_heev<true, true, double>(arg);
+    run_tests<true, true, double>();
 }
 
 TEST_P(HEEV, batched__float_complex)
 {
-    Arguments arg = syev_heev_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
-        testing_syev_heev_bad_arg<true, true, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_syev_heev<true, true, rocblas_float_complex>(arg);
+    run_tests<true, true, rocblas_float_complex>();
 }
 
 TEST_P(HEEV, batched__double_complex)
 {
-    Arguments arg = syev_heev_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
-        testing_syev_heev_bad_arg<true, true, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_syev_heev<true, true, rocblas_double_complex>(arg);
+    run_tests<true, true, rocblas_double_complex>();
 }
 
 // strided_batched tests
 
 TEST_P(SYEV, strided_batched__float)
 {
-    Arguments arg = syev_heev_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
-        testing_syev_heev_bad_arg<false, true, float>();
-
-    arg.batch_count = 3;
-    testing_syev_heev<false, true, float>(arg);
+    run_tests<false, true, float>();
 }
 
 TEST_P(SYEV, strided_batched__double)
 {
-    Arguments arg = syev_heev_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
-        testing_syev_heev_bad_arg<false, true, double>();
-
-    arg.batch_count = 3;
-    testing_syev_heev<false, true, double>(arg);
+    run_tests<false, true, double>();
 }
 
 TEST_P(HEEV, strided_batched__float_complex)
 {
-    Arguments arg = syev_heev_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
-        testing_syev_heev_bad_arg<false, true, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_syev_heev<false, true, rocblas_float_complex>(arg);
+    run_tests<false, true, rocblas_float_complex>();
 }
 
 TEST_P(HEEV, strided_batched__double_complex)
 {
-    Arguments arg = syev_heev_setup_arguments(GetParam());
-
-    if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
-        testing_syev_heev_bad_arg<false, true, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_syev_heev<false, true, rocblas_double_complex>(arg);
+    run_tests<false, true, rocblas_double_complex>();
 }
 
 // daily_lapack tests normal execution with medium to large sizes

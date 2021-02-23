@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -68,290 +68,159 @@ Arguments gebrd_setup_arguments(gebrd_tuple tup)
     return arg;
 }
 
-class GEBD2 : public ::TestWithParam<gebrd_tuple>
+template <bool BLOCKED>
+class GEBD2_GEBRD : public ::TestWithParam<gebrd_tuple>
 {
 protected:
-    GEBD2() {}
+    GEBD2_GEBRD() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = gebrd_setup_arguments(GetParam());
+
+        if(arg.M == 0 && arg.N == 0)
+            testing_gebd2_gebrd_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        testing_gebd2_gebrd<BATCHED, STRIDED, BLOCKED, T>(arg);
+    }
 };
 
-class GEBRD : public ::TestWithParam<gebrd_tuple>
+class GEBD2 : public GEBD2_GEBRD<false>
 {
-protected:
-    GEBRD() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+};
+
+class GEBRD : public GEBD2_GEBRD<true>
+{
 };
 
 // non-batch tests
 
 TEST_P(GEBD2, __float)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, false, 0, float>();
-
-    arg.batch_count = 1;
-    testing_gebd2_gebrd<false, false, 0, float>(arg);
+    run_tests<false, false, float>();
 }
 
 TEST_P(GEBD2, __double)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, false, 0, double>();
-
-    arg.batch_count = 1;
-    testing_gebd2_gebrd<false, false, 0, double>(arg);
+    run_tests<false, false, double>();
 }
 
 TEST_P(GEBD2, __float_complex)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, false, 0, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_gebd2_gebrd<false, false, 0, rocblas_float_complex>(arg);
+    run_tests<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GEBD2, __double_complex)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, false, 0, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_gebd2_gebrd<false, false, 0, rocblas_double_complex>(arg);
+    run_tests<false, false, rocblas_double_complex>();
 }
 
 TEST_P(GEBRD, __float)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, false, 1, float>();
-
-    arg.batch_count = 1;
-    testing_gebd2_gebrd<false, false, 1, float>(arg);
+    run_tests<false, false, float>();
 }
 
 TEST_P(GEBRD, __double)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, false, 1, double>();
-
-    arg.batch_count = 1;
-    testing_gebd2_gebrd<false, false, 1, double>(arg);
+    run_tests<false, false, double>();
 }
 
 TEST_P(GEBRD, __float_complex)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, false, 1, rocblas_float_complex>();
-
-    arg.batch_count = 1;
-    testing_gebd2_gebrd<false, false, 1, rocblas_float_complex>(arg);
+    run_tests<false, false, rocblas_float_complex>();
 }
 
 TEST_P(GEBRD, __double_complex)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, false, 1, rocblas_double_complex>();
-
-    arg.batch_count = 1;
-    testing_gebd2_gebrd<false, false, 1, rocblas_double_complex>(arg);
+    run_tests<false, false, rocblas_double_complex>();
 }
 
 // batched tests
 
 TEST_P(GEBD2, batched__float)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<true, true, 0, float>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<true, true, 0, float>(arg);
+    run_tests<true, true, float>();
 }
 
 TEST_P(GEBD2, batched__double)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<true, true, 0, double>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<true, true, 0, double>(arg);
+    run_tests<true, true, double>();
 }
 
 TEST_P(GEBD2, batched__float_complex)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<true, true, 0, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<true, true, 0, rocblas_float_complex>(arg);
+    run_tests<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GEBD2, batched__double_complex)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<true, true, 0, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<true, true, 0, rocblas_double_complex>(arg);
+    run_tests<true, true, rocblas_double_complex>();
 }
 
 TEST_P(GEBRD, batched__float)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<true, true, 1, float>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<true, true, 1, float>(arg);
+    run_tests<true, true, float>();
 }
 
 TEST_P(GEBRD, batched__double)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<true, true, 1, double>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<true, true, 1, double>(arg);
+    run_tests<true, true, double>();
 }
 
 TEST_P(GEBRD, batched__float_complex)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<true, true, 1, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<true, true, 1, rocblas_float_complex>(arg);
+    run_tests<true, true, rocblas_float_complex>();
 }
 
 TEST_P(GEBRD, batched__double_complex)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<true, true, 1, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<true, true, 1, rocblas_double_complex>(arg);
+    run_tests<true, true, rocblas_double_complex>();
 }
 
 // strided_batched cases
 
 TEST_P(GEBD2, strided_batched__float)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, true, 0, float>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<false, true, 0, float>(arg);
+    run_tests<false, true, float>();
 }
 
 TEST_P(GEBD2, strided_batched__double)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, true, 0, double>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<false, true, 0, double>(arg);
+    run_tests<false, true, double>();
 }
 
 TEST_P(GEBD2, strided_batched__float_complex)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, true, 0, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<false, true, 0, rocblas_float_complex>(arg);
+    run_tests<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GEBD2, strided_batched__double_complex)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, true, 0, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<false, true, 0, rocblas_double_complex>(arg);
+    run_tests<false, true, rocblas_double_complex>();
 }
 
 TEST_P(GEBRD, strided_batched__float)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, true, 1, float>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<false, true, 1, float>(arg);
+    run_tests<false, true, float>();
 }
 
 TEST_P(GEBRD, strided_batched__double)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, true, 1, double>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<false, true, 1, double>(arg);
+    run_tests<false, true, double>();
 }
 
 TEST_P(GEBRD, strided_batched__float_complex)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, true, 1, rocblas_float_complex>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<false, true, 1, rocblas_float_complex>(arg);
+    run_tests<false, true, rocblas_float_complex>();
 }
 
 TEST_P(GEBRD, strided_batched__double_complex)
 {
-    Arguments arg = gebrd_setup_arguments(GetParam());
-
-    if(arg.M == 0 && arg.N == 0)
-        testing_gebd2_gebrd_bad_arg<false, true, 1, rocblas_double_complex>();
-
-    arg.batch_count = 3;
-    testing_gebd2_gebrd<false, true, 1, rocblas_double_complex>(arg);
+    run_tests<false, true, rocblas_double_complex>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

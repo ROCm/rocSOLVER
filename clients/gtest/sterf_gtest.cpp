@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -49,26 +49,29 @@ protected:
     STERF() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+    template <typename T>
+    void run_tests()
+    {
+        Arguments arg = sterf_setup_arguments(GetParam());
+
+        if(arg.N == 0)
+            testing_sterf_bad_arg<T>();
+
+        testing_sterf<T>(arg);
+    }
 };
+
+// non-batch tests
 
 TEST_P(STERF, __float)
 {
-    Arguments arg = sterf_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_sterf_bad_arg<float>();
-
-    testing_sterf<float>(arg);
+    run_tests<float>();
 }
 
 TEST_P(STERF, __double)
 {
-    Arguments arg = sterf_setup_arguments(GetParam());
-
-    if(arg.N == 0)
-        testing_sterf_bad_arg<double>();
-
-    testing_sterf<double>(arg);
+    run_tests<double>();
 }
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, STERF, ValuesIn(large_matrix_size_range));
