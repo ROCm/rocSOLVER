@@ -41,6 +41,7 @@
 #include "testing_potf2_potrf.hpp"
 #include "testing_steqr.hpp"
 #include "testing_sterf.hpp"
+#include "testing_syev_heev.hpp"
 #include "testing_sygsx_hegsx.hpp"
 #include "testing_sytxx_hetxx.hpp"
 
@@ -190,6 +191,10 @@ class rocsolver_dispatcher
             {"sygst", testing_sygsx_hegsx<false, false, 1, T>},
             {"sygst_batched", testing_sygsx_hegsx<true, true, 1, T>},
             {"sygst_strided_batched", testing_sygsx_hegsx<false, true, 1, T>},
+            // syev
+            {"syev", testing_syev_heev<false, false, T>},
+            {"syev_batched", testing_syev_heev<true, true, T>},
+            {"syev_strided_batched", testing_syev_heev<false, true, T>},
         };
 
         // Grab function from the map and execute
@@ -241,6 +246,10 @@ class rocsolver_dispatcher
             {"hegst", testing_sygsx_hegsx<false, false, 1, T>},
             {"hegst_batched", testing_sygsx_hegsx<true, true, 1, T>},
             {"hegst_strided_batched", testing_sygsx_hegsx<false, true, 1, T>},
+            // heev
+            {"heev", testing_syev_heev<false, false, T>},
+            {"heev_batched", testing_syev_heev<true, true, T>},
+            {"heev_strided_batched", testing_syev_heev<false, true, T>},
         };
 
         // Grab function from the map and execute
