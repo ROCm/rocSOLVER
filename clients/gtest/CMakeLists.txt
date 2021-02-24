@@ -5,22 +5,9 @@
 # For debugging, uncomment this
 # set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g -O0" )
 
-if(EXISTS /etc/redhat-release)
-    if(CXX_VERSION_STRING MATCHES "clang")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread -stdlib=libstdc++ -std=c++14")
-    else()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread")
-    endif()
-else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread")
-endif()
-
 # Linking lapack library requires fortran flags
 enable_language( Fortran )
-find_package( cblas CONFIG REQUIRED )
-if( NOT cblas_FOUND )
-  message( FATAL_ERROR "cblas is a required dependency and is not found;  try adding cblas path to CMAKE_PREFIX_PATH" )
-endif( )
+find_package( cblas REQUIRED CONFIG )
 
 find_package( GTest REQUIRED )
 
@@ -101,65 +88,19 @@ target_include_directories( rocsolver-test
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
 )
 
-#set( BLIS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/build/deps/blis/include/blis )
-#set( BLIS_LIBRARY ${CMAKE_SOURCE_DIR}/build/deps/blis/lib/libblis.so )
+# External header includes included as system files
+target_include_directories( rocsolver-test
+  SYSTEM PRIVATE
+    $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
+    $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
+    )
 
-if( OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
-    if( OS_ID_rhel OR OS_ID_centos)
-        if( EXISTS "/usr/lib/gcc/x86_64-redhat-linux/8/" )
-            set( ROCM_OPENMP_PATH /usr/lib/gcc/x86_64-redhat-linux/8 )
-        else()
-            set( ROCM_OPENMP_PATH /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7 )
-        endif()
-
-        # defer OpenMP include as search order must come after clang
-        set( XXX_OPENMP_INCLUDE_DIR ${ROCM_OPENMP_PATH}/include )
-        set( OPENMP_LIBRARY ${ROCM_OPENMP_PATH}/libgomp.so )
-        if( CXX_VERSION_STRING MATCHES "clang")
-            set( XXX_OPENMP_INCLUDE_DIR ${ROCM_OPENMP_PATH}/include )
-        endif()
-    else()
-    #SLES
-        set( XXX_OPENMP_INCLUDE_DIR /usr/lib64/gcc/x86_64-suse-linux/7/include/ )
-        set( OPENMP_LIBRARY /usr/lib64/gcc/x86_64-suse-linux/7/libgomp.so )
-    endif()
-
-    message(STATUS "RocmPath: ${ROCM_PATH}")
-    if(EXISTS ${ROCM_PATH}/llvm/lib/clang/13.0.0/include/immintrin.h AND CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
-        set( CLANG_INCLUDE_DIR ${ROCM_PATH}/llvm/lib/clang/13.0.0/include )
-    elseif(EXISTS ${ROCM_PATH}/llvm/lib/clang/12.0.0/include/immintrin.h AND CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
-        set( CLANG_INCLUDE_DIR ${ROCM_PATH}/llvm/lib/clang/12.0.0/include )
-    elseif(EXISTS ${ROCM_PATH}/llvm/lib/clang/11.0.0/include/immintrin.h AND CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
-        set( CLANG_INCLUDE_DIR ${ROCM_PATH}/llvm/lib/clang/11.0.0/include )
-    else()
-        set( CLANG_INCLUDE_DIR )
-    endif()
-
-    # External header includes included as system files
-    target_include_directories( rocsolver-test
-      SYSTEM PRIVATE
-        $<BUILD_INTERFACE:${CLANG_INCLUDE_DIR}>
-#        $<BUILD_INTERFACE:${BLIS_INCLUDE_DIR}>
-        $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${GTEST_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${OPENMP_INCLUDE_DIR}>
-        )
-
-    target_link_libraries( rocsolver-test PRIVATE ${GTEST_LIBRARIES} ${OPENMP_LIBRARY} cblas lapack roc::rocsolver )
-
-else()
-    # External header includes included as system files
-    target_include_directories( rocsolver-test
-      SYSTEM PRIVATE
-        $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${GTEST_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
-#        $<BUILD_INTERFACE:${BLIS_INCLUDE_DIR}>
-        )
-
-    target_link_libraries( rocsolver-test PRIVATE ${GTEST_LIBRARIES} cblas lapack roc::rocsolver )
-endif()
+target_link_libraries( rocsolver-test PRIVATE
+  cblas
+  lapack
+  GTest::GTest
+  roc::rocsolver
+)
 
 if( CUDA_FOUND )
   target_include_directories( rocsolver-test
@@ -178,20 +119,13 @@ if( CMAKE_COMPILER_IS_GNUCXX OR CXX_VERSION_STRING MATCHES "clang")
   target_compile_options( rocsolver-test PRIVATE -mf16c )
 endif( )
 
-if( CXX_VERSION_STRING MATCHES "clang" )
-  target_link_libraries( rocsolver-test PRIVATE -lpthread -lstdc++ -lm )
-  if(OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
-    set(CMAKE_CXX_FLAGS "-isystem ${CLANG_INCLUDE_DIR} -isystem ${XXX_OPENMP_INCLUDE_DIR} ${CMAKE_CXX_FLAGS}")
-  endif( )
-else( )
-  if(OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
-    set(CMAKE_CXX_FLAGS "-isystem ${CLANG_INCLUDE_DIR} -isystem ${XXX_OPENMP_INCLUDE_DIR} ${CMAKE_CXX_FLAGS}")
-  endif( )
-  set(CMAKE_CXX_FLAGS "-isystem ${ROCM_PATH}/include ${CMAKE_CXX_FLAGS}")
-endif( )
-
-set_target_properties( rocsolver-test PROPERTIES CXX_EXTENSIONS NO )
-set_target_properties( rocsolver-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
+target_link_libraries( rocsolver-test PRIVATE m )
+set_target_properties( rocsolver-test PROPERTIES
+  CXX_STANDARD 14
+  CXX_STANDARD_REQUIRED ON
+  CXX_EXTENSIONS OFF
+  RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging"
+)
 target_compile_definitions( rocsolver-test PRIVATE ROCM_USE_FLOAT16 )
 
 target_link_libraries( rocsolver-test PRIVATE rocsolver-common clients-common )
