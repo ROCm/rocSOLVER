@@ -218,7 +218,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
 
     rocblas_int blk = get_blksize<ISBATCHED, PIVOT>(dim);
 
-    rocsolver_cout << blk << "...\n";
     if(blk == 1)
         return rocsolver_getf2_template<ISBATCHED, PIVOT, T>(handle, m, n, A, shiftA, lda, strideA,
                                                              ipiv, shiftP, strideP, info, batch_count,
