@@ -14,6 +14,62 @@
 #include "roclapack_getf2.hpp"
 #include "rocsolver.h"
 
+inline rocblas_int get_index(rocblas_int* intervals, rocblas_int max, rocblas_int dim)
+{
+    rocblas_int i;
+
+    for(i = 0; i < max; ++i)
+    {
+        if(dim < intervals[i])
+            break;
+    }
+
+    return i;
+}
+
+template <bool ISBATCHED, bool PIVOT>
+rocblas_int get_blksize(rocblas_int dim)
+{
+    rocblas_int blk;
+
+    if(ISBATCHED)
+    {
+        if(PIVOT)
+        {
+            rocblas_int size[] = {GETRF_BATCH_BLKSIZES};
+            rocblas_int intervals[] = {GETRF_BATCH_INTERVALS};
+            rocblas_int max = GETRF_BATCH_NUM_INTERVALS;
+            blk = size[get_index(intervals, max, dim)];
+        }
+        else
+        {
+            rocblas_int size[] = {GETRF_NPVT_BATCH_BLKSIZES};
+            rocblas_int intervals[] = {GETRF_NPVT_BATCH_INTERVALS};
+            rocblas_int max = GETRF_NPVT_BATCH_NUM_INTERVALS;
+            blk = size[get_index(intervals, max, dim)];
+        }
+    }
+    else
+    {
+        if(PIVOT)
+        {
+            rocblas_int size[] = {GETRF_BLKSIZES};
+            rocblas_int intervals[] = {GETRF_INTERVALS};
+            rocblas_int max = GETRF_NUM_INTERVALS;
+            blk = size[get_index(intervals, max, dim)];
+        }
+        else
+        {
+            rocblas_int size[] = {GETRF_NPVT_BLKSIZES};
+            rocblas_int intervals[] = {GETRF_NPVT_INTERVALS};
+            rocblas_int max = GETRF_NPVT_NUM_INTERVALS;
+            blk = size[get_index(intervals, max, dim)];
+        }
+    }
+
+    return blk;
+}
+
 template <typename U>
 __global__ void getrf_check_singularity(const rocblas_int n,
                                         const rocblas_int j,
@@ -37,43 +93,6 @@ __global__ void getrf_check_singularity(const rocblas_int n,
         ipiv = ipivA + id * strideP + shiftP;
         ipiv[tid] += j;
     }
-}
-
-template <bool ISBATCHED, bool PIVOT>
-rocblas_int get_blksize(rocblas_int dim)
-{
-    rocblas_int max;
-    rocblas_int i;
-
-#if ISBATCHED
-#if PIVOT
-    std::vector<rocblas_int> size{GETRF_BLKSIZES_BATCH};
-    std::vector<rocblas_int> intervals{GETRF_INTERVALS_BATCH};
-    max = GETRF_NUM_INTERVALS_BATCH;
-#else
-    std::vector<rocblas_int> size{GETRF_NPVT_BLKSIZES_BATCH};
-    std::vector<rocblas_int> intervals{GETRF_NPVT_INTERVALS_BATCH};
-    max = GETRF_NPVT_NUM_INTERVALS_BATCH;
-#endif
-#else
-#if PIVOT
-    std::vector<rocblas_int> size{GETRF_BLKSIZES_NORMAL};
-    std::vector<rocblas_int> intervals{GETRF_INTERVALS_NORMAL};
-    max = GETRF_NUM_INTERVALS_NORMAL;
-#else
-    std::vector<rocblas_int> size{GETRF_NPVT_BLKSIZES_NORMAL};
-    std::vector<rocblas_int> intervals{GETRF_NPVT_INTERVALS_NORMAL};
-    max = GETRF_NPVT_NUM_INTERVALS_NORMAL;
-#endif
-#endif
-
-    for(i = 0; i < max; ++i)
-    {
-        if(dim < intervals[i])
-            break;
-    }
-
-    return size[i];
 }
 
 template <bool BATCHED, bool STRIDED, bool PIVOT, typename T, typename S>
