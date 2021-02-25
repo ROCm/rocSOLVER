@@ -70,6 +70,20 @@ void cblas_symv_hemv(rocblas_fill uplo,
                      rocblas_int incy);
 
 template <typename T>
+void cblas_symm_hemm(rocblas_side side,
+                     rocblas_fill uplo,
+                     rocblas_int m,
+                     rocblas_int n,
+                     T alpha,
+                     T* A,
+                     rocblas_int lda,
+                     T* B,
+                     rocblas_int ldb,
+                     T beta,
+                     T* C,
+                     rocblas_int ldc);
+
+template <typename T>
 void cblas_gemm(rocblas_operation transA,
                 rocblas_operation transB,
                 rocblas_int m,
@@ -536,3 +550,36 @@ void cblas_syev_heev(rocblas_evect evect,
                      S* E,
                      rocblas_int size_w,
                      rocblas_int* info);
+
+template <typename S, typename T>
+void cblas_sygv_hegv(rocblas_eform itype,
+                     rocblas_evect jobz,
+                     rocblas_fill uplo,
+                     rocblas_int n,
+                     T* A,
+                     rocblas_int lda,
+                     T* B,
+                     rocblas_int ldb,
+                     S* W,
+                     T* work,
+                     rocblas_int lwork,
+                     S* rwork,
+                     rocblas_int* info);
+
+template <typename S, typename T>
+void cblas_sygvd_hegvd(rocblas_eform itype,
+                       rocblas_evect jobz,
+                       rocblas_fill uplo,
+                       rocblas_int n,
+                       T* A,
+                       rocblas_int lda,
+                       T* B,
+                       rocblas_int ldb,
+                       S* W,
+                       T* work,
+                       rocblas_int lwork,
+                       S* rwork,
+                       rocblas_int lrwork,
+                       rocblas_int* iwork,
+                       rocblas_int liwork,
+                       rocblas_int* info);

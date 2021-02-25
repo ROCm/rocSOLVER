@@ -43,6 +43,7 @@
 #include "testing_sterf.hpp"
 #include "testing_syev_heev.hpp"
 #include "testing_sygsx_hegsx.hpp"
+#include "testing_sygv_hegv.hpp"
 #include "testing_sytxx_hetxx.hpp"
 
 struct str_less
@@ -195,6 +196,10 @@ class rocsolver_dispatcher
             {"syev", testing_syev_heev<false, false, T>},
             {"syev_batched", testing_syev_heev<true, true, T>},
             {"syev_strided_batched", testing_syev_heev<false, true, T>},
+            // sygv
+            {"sygv", testing_sygv_hegv<false, false, T>},
+            {"sygv_batched", testing_sygv_hegv<true, true, T>},
+            {"sygv_strided_batched", testing_sygv_hegv<false, true, T>},
         };
 
         // Grab function from the map and execute
@@ -250,6 +255,10 @@ class rocsolver_dispatcher
             {"heev", testing_syev_heev<false, false, T>},
             {"heev_batched", testing_syev_heev<true, true, T>},
             {"heev_strided_batched", testing_syev_heev<false, true, T>},
+            // hegv
+            {"hegv", testing_sygv_hegv<false, false, T>},
+            {"hegv_batched", testing_sygv_hegv<true, true, T>},
+            {"hegv_strided_batched", testing_sygv_hegv<false, true, T>},
         };
 
         // Grab function from the map and execute

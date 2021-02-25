@@ -79,10 +79,10 @@ protected:
         Arguments arg = sygst_setup_arguments(GetParam());
 
         if(arg.itype == '1' && arg.uplo_option == 'U' && arg.N == 0)
-            testing_sygsx_hegsx_bad_arg<BATCHED, STRIDED, BLOCKED, float>();
+            testing_sygsx_hegsx_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
-        testing_sygsx_hegsx<BATCHED, STRIDED, BLOCKED, float>(arg);
+        testing_sygsx_hegsx<BATCHED, STRIDED, BLOCKED, T>(arg);
     }
 };
 
