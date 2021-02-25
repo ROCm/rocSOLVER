@@ -48,6 +48,7 @@ set(roclapack_test_source
     gesvd_gtest.cpp
     # symmetric eigensolvers
     syev_heev_gtest.cpp
+    sygv_hegv_gtest.cpp
     )
 
 set(rocauxiliary_test_source

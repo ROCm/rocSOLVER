@@ -150,8 +150,7 @@ void print_device_matrix(rocsolver_ostream& os,
     print_host_matrix<T>(os, name, m, n, hA, lda);
 }
 
-/*! \brief  Debugging purpose, print out CPU and GPU result matrix, not valid in
- * complex number  */
+/*! \brief  Debugging purpose, print out CPU and GPU result matrix */
 template <typename T>
 void print_host_matrix(rocsolver_ostream& os,
                        const std::string name,
@@ -167,6 +166,54 @@ void print_host_matrix(rocsolver_ostream& os,
         {
             os << "matrix  col " << i << ", row " << j << ", CPU result=" << CPU_result[j + i * lda]
                << ", GPU result=" << GPU_result[j + i * lda] << '\n';
+        }
+    }
+    os << std::endl;
+}
+
+template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+void print_host_matrix(rocsolver_ostream& os,
+                       const std::string name,
+                       const rocblas_int m,
+                       const rocblas_int n,
+                       T* CPU_result,
+                       T* GPU_result,
+                       const rocblas_int lda,
+                       double error_tolerance)
+{
+    for(size_t i = 0; i < m; i++)
+    {
+        for(size_t j = 0; j < n; j++)
+        {
+            T comp = (CPU_result[j + i * lda] - GPU_result[j + i * lda]) / CPU_result[j + i * lda];
+            if(abs(comp) > error_tolerance)
+                os << "matrix  col " << i << ", row " << j
+                   << ", CPU result=" << CPU_result[j + i * lda]
+                   << ", GPU result=" << GPU_result[j + i * lda] << '\n';
+        }
+    }
+    os << std::endl;
+}
+
+template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+void print_host_matrix(rocsolver_ostream& os,
+                       const std::string name,
+                       const rocblas_int m,
+                       const rocblas_int n,
+                       T* CPU_result,
+                       T* GPU_result,
+                       const rocblas_int lda,
+                       double error_tolerance)
+{
+    for(size_t i = 0; i < m; i++)
+    {
+        for(size_t j = 0; j < n; j++)
+        {
+            T comp = (CPU_result[j + i * lda] - GPU_result[j + i * lda]) / CPU_result[j + i * lda];
+            if(sqrt(comp.real() * comp.real() + comp.imag() * comp.imag()) > error_tolerance)
+                os << "matrix  col " << i << ", row " << j
+                   << ", CPU result=" << CPU_result[j + i * lda]
+                   << ", GPU result=" << GPU_result[j + i * lda] << '\n';
         }
     }
     os << std::endl;

@@ -9,9 +9,12 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Reductions of generalized symmetric- and hermitian-definite eigenproblems:
     - SYGS2, SYGST (with batched and strided\_batched versions)
     - HEGS2, HEGST (with batched and strided\_batched versions)
-- Symmetric and Hermitian matrix Eigensolvers
+- Symmetric and hermitian matrix eigensolvers:
     - SYEV (with batched and strided\_batched versions)
     - HEEV (with batched and strided\_batched versions)
+- Generalized symmetric- and hermitian-definite eigensolvers:
+    - SYGV (with batched and strided\_batched versions)
+    - HEGV (with batched and strided\_batched versions)
 
 ### Optimizations
 

@@ -76,10 +76,10 @@ protected:
         Arguments arg = syev_heev_setup_arguments(GetParam());
 
         if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
-            testing_syev_heev_bad_arg<BATCHED, STRIDED, float>();
+            testing_syev_heev_bad_arg<BATCHED, STRIDED, T>();
 
-        arg.batch_count = 1;
-        testing_syev_heev<BATCHED, STRIDED, float>(arg);
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        testing_syev_heev<BATCHED, STRIDED, T>(arg);
     }
 };
 
