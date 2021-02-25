@@ -82,7 +82,7 @@ rocblas_status rocsolver_sygv_hegv_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_sygv_hegv_template<false, false, S, T>(
+    return rocsolver_sygv_hegv_template<false, false, T>(
         handle, itype, jobz, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, D, strideD,
         E, strideE, info, batch_count, (T*)scalars, work1, work2, work3, work4, pivots_workArr,
         (rocblas_int*)iinfo, optim_mem);

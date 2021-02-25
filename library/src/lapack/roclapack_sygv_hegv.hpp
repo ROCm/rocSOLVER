@@ -136,7 +136,7 @@ rocblas_status rocsolver_sygv_hegv_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, bool STRIDED, typename S, typename T, typename U, bool COMPLEX = is_complex<T>>
+template <bool BATCHED, bool STRIDED, typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
                                             const rocblas_eform itype,
                                             const rocblas_evect jobz,
@@ -200,10 +200,16 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
                                             batch_count, scalars, work1, work2, work3, work4,
                                             (T*)pivots_workArr, iinfo, optim_mem);
 
+    /** (TODO: Strictly speaking, computations should stop here is B is not positive definite.
+        A should not be modified in this case as no eigenvalues or eigenvectors can be computed.
+        Need to find a way to do this efficiently; for now A will be destroyed in the non
+        positive-definite case) **/
+
     // reduce to standard eigenvalue problem and solve
     rocsolver_sygst_hegst_template<BATCHED, STRIDED, S, T>(
         handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
         scalars, work1, work2, work3, work4, optim_mem);
+
     rocsolver_syev_heev_template<BATCHED, STRIDED, T>(
         handle, jobz, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE, iinfo, batch_count,
         scalars, work1, (T*)work2, (T*)work3, (T*)work4, (T**)pivots_workArr);
@@ -211,16 +217,22 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
     // combine info from POTRF with info from SYEV/HEEV
     hipLaunchKernelGGL(sygv_update_info, gridReset, threads, 0, stream, info, iinfo, n, batch_count);
 
+    /** (TODO: Similarly, if only neig < n eigenvalues converged, TRSMM or TRMM below should not
+        work with the entire matrix. Need to find a way to do this efficiently; for now we ignore
+        iinfo and set neig = n) **/
+
+    rocblas_int neig = n; //number of converged eigenvalues
+
+    // backtransform eigenvectors
     if(jobz == rocblas_evect_original)
     {
-        // backtransform eigenvectors
         if(itype == rocblas_eform_ax || itype == rocblas_eform_abx)
         {
             rocblas_operation trans
                 = (uplo == rocblas_fill_upper ? rocblas_operation_none
                                               : rocblas_operation_conjugate_transpose);
             rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, uplo, trans,
-                                         rocblas_diagonal_non_unit, n, n, &one, B, shiftB, ldb,
+                                         rocblas_diagonal_non_unit, n, neig, &one, B, shiftB, ldb,
                                          strideB, A, shiftA, lda, strideA, batch_count, optim_mem,
                                          work1, work2, work3, work4);
         }
@@ -230,8 +242,8 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
                 = (uplo == rocblas_fill_upper ? rocblas_operation_conjugate_transpose
                                               : rocblas_operation_none);
             rocblasCall_trmm<BATCHED, STRIDED, T>(
-                handle, rocblas_side_left, uplo, trans, rocblas_diagonal_non_unit, n, n, &one, 0, B,
-                shiftB, ldb, strideB, A, shiftA, lda, strideA, batch_count, (T**)pivots_workArr);
+                handle, rocblas_side_left, uplo, trans, rocblas_diagonal_non_unit, n, neig, &one, 0,
+                B, shiftB, ldb, strideB, A, shiftA, lda, strideA, batch_count, (T**)pivots_workArr);
         }
     }
 

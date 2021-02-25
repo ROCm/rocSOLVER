@@ -11631,8 +11631,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_strided_batched(rocblas_handle h
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the symmetric matrix A. On exit, if jobz is original,
               the matrix Z of eigenvectors, normalized as follows:
-              1. If itype is ax or abx, as Z' * B * Z;
-              2. If itype is bax, as Z' * inv(B) * Z.
+              1. If itype is ax or abx, as Z' * B * Z = I;
+              2. If itype is bax, as Z' * inv(B) * Z = I.
               Otherwise, if jobz is none, then the upper or lower triangular
               part of the matrix A (including the diagonal) is destroyed,
               depending on the value of uplo.
@@ -11644,7 +11644,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_strided_batched(rocblas_handle h
               On entry, the symmetric positive definite matrix B. On exit, the
               triangular factor of B as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
     @param[out]
     D         pointer to type. Array on the GPU of dimension n.\n
@@ -11729,8 +11729,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv(rocblas_handle handle,
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the hermitian matrix A. On exit, if jobz is original,
               the matrix Z of eigenvectors, normalized as follows:
-              1. If itype is ax or abx, as Z' * B * Z;
-              2. If itype is bax, as Z' * inv(B) * Z.
+              1. If itype is ax or abx, as Z' * B * Z = I;
+              2. If itype is bax, as Z' * inv(B) * Z = I.
               Otherwise, if jobz is none, then the upper or lower triangular
               part of the matrix A (including the diagonal) is destroyed,
               depending on the value of uplo.
@@ -11742,7 +11742,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv(rocblas_handle handle,
               On entry, the hermitian positive definite matrix B. On exit, the
               triangular factor of B as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
     @param[out]
     D         pointer to real type. Array on the GPU of dimension n.\n
@@ -11827,8 +11827,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv(rocblas_handle handle,
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
               On entry, the symmetric matrices A_i. On exit, if jobz is original,
               the matrix Z_i of eigenvectors, normalized as follows:
-              1. If itype is ax or abx, as Z_i' * B_i * Z_i;
-              2. If itype is bax, as Z_i' * inv(B_i) * Z_i.
+              1. If itype is ax or abx, as Z_i' * B_i * Z_i = I;
+              2. If itype is bax, as Z_i' * inv(B_i) * Z_i = I.
               Otherwise, if jobz is none, then the upper or lower triangular
               part of the matrices A_i (including the diagonal) are destroyed,
               depending on the value of uplo.
@@ -11840,7 +11840,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv(rocblas_handle handle,
               On entry, the symmetric positive definite matrices B_i. On exit, the
               triangular factor of B_i as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
     @param[out]
     D         pointer to type. Array on the GPU (the size depends on the value of strideD).\n
@@ -11942,8 +11942,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
               On entry, the hermitian matrices A_i. On exit, if jobz is original,
               the matrix Z_i of eigenvectors, normalized as follows:
-              1. If itype is ax or abx, as Z_i' * B_i * Z_i;
-              2. If itype is bax, as Z_i' * inv(B_i) * Z_i.
+              1. If itype is ax or abx, as Z_i' * B_i * Z_i = I;
+              2. If itype is bax, as Z_i' * inv(B_i) * Z_i = I.
               Otherwise, if jobz is none, then the upper or lower triangular
               part of the matrices A_i (including the diagonal) are destroyed,
               depending on the value of uplo.
@@ -11955,7 +11955,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
               On entry, the hermitian positive definite matrices B_i. On exit, the
               triangular factor of B_i as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
     @param[out]
     D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
@@ -12057,8 +12057,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
               On entry, the symmetric matrices A_i. On exit, if jobz is original,
               the matrix Z_i of eigenvectors, normalized as follows:
-              1. If itype is ax or abx, as Z_i' * B_i * Z_i;
-              2. If itype is bax, as Z_i' * inv(B_i) * Z_i.
+              1. If itype is ax or abx, as Z_i' * B_i * Z_i = I;
+              2. If itype is bax, as Z_i' * inv(B_i) * Z_i = I.
               Otherwise, if jobz is none, then the upper or lower triangular
               part of the matrices A_i (including the diagonal) are destroyed,
               depending on the value of uplo.
@@ -12074,7 +12074,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
               On entry, the symmetric positive definite matrices B_i. On exit, the
               triangular factor of B_i as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
     @param[in]
     strideB   rocblas_stride.\n
@@ -12184,8 +12184,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_strided_batched(rocblas_handle h
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
               On entry, the hermitian matrices A_i. On exit, if jobz is original,
               the matrix Z_i of eigenvectors, normalized as follows:
-              1. If itype is ax or abx, as Z_i' * B_i * Z_i;
-              2. If itype is bax, as Z_i' * inv(B_i) * Z_i.
+              1. If itype is ax or abx, as Z_i' * B_i * Z_i = I;
+              2. If itype is bax, as Z_i' * inv(B_i) * Z_i = I.
               Otherwise, if jobz is none, then the upper or lower triangular
               part of the matrices A_i (including the diagonal) are destroyed,
               depending on the value of uplo.
@@ -12201,7 +12201,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_strided_batched(rocblas_handle h
               On entry, the hermitian positive definite matrices B_i. On exit, the
               triangular factor of B_i as returned by POTRF.
     @param[in]
-    ldb       rocblas_int. lda >= n.\n
+    ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
     @param[in]
     strideB   rocblas_stride.\n

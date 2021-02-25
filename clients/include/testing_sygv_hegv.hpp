@@ -82,7 +82,8 @@ void sygv_hegv_checkBadArgs(const rocblas_handle handle,
     // quick return with zero batch_count if applicable
     if(STRIDED)
         EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA, lda,
-                                                  stA, dB, ldb, stB, dD, stD, dE, stE, dInfo, 0),
+                                                  stA, dB, ldb, stB, dD, stD, dE, stE,
+                                                  (rocblas_int*)nullptr, 0),
                               rocblas_status_success);
 }
 
@@ -159,29 +160,49 @@ void sygv_hegv_initData(const rocblas_handle handle,
                         Th& hB,
                         host_strided_batch_vector<T>& A,
                         host_strided_batch_vector<T>& B,
-                        bool test)
+                        const bool test,
+                        const bool singular)
 {
     if(CPU)
     {
         rocblas_int info;
-        rocblas_init<T>(A, true);
-        rocblas_init<T>(B, false);
+        rocblas_init<T>(hA, true);
+        rocblas_init<T>(hB, false);
 
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            // make A hermitian and scale to ensure positive definiteness
-            cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, n, n,
-                       (T)1.0, A[b], lda, A[b], lda, (T)0.0, hA[b], lda);
-
             for(rocblas_int i = 0; i < n; i++)
-                hA[b][i + i * lda] += 400;
+            {
+                for(rocblas_int j = 0; j < n; j++)
+                {
+                    if(i == j)
+                    {
+                        hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) + 400;
+                        hB[b][i + j * ldb] = std::real(hB[b][i + j * ldb]) + 400;
+                    }
+                    else
+                    {
+                        hA[b][i + j * lda] -= 4;
+                    }
+                }
+            }
 
-            // make B hermitian and scale to ensure positive definiteness
-            cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, n, n,
-                       (T)1.0, B[b], ldb, B[b], ldb, (T)0.0, hB[b], ldb);
-
-            for(rocblas_int i = 0; i < n; i++)
-                hB[b][i + i * lda] += 400;
+            if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
+            {
+                // make some matrices B not positive definite
+                // always the same elements for debugging purposes
+                // the algorithm must detect the lower order of the principal minors <= 0
+                // in those matrices in the batch that are non positive definite
+                rocblas_int i = n / 4 + b;
+                i -= (i / n) * n;
+                hB[b][i + i * ldb] = 0;
+                i = n / 2 + b;
+                i -= (i / n) * n;
+                hB[b][i + i * ldb] = 0;
+                i = n - 1 + b;
+                i -= (i / n) * n;
+                hB[b][i + i * ldb] = 0;
+            }
 
             // store A and B for testing purposes
             if(test && jobz != rocblas_evect_none)
@@ -239,7 +260,8 @@ void sygv_hegv_getError(const rocblas_handle handle,
                         Uh& hDRes,
                         Vh& hInfo,
                         Vh& hInfoRes,
-                        double* max_err)
+                        double* max_err,
+                        const bool singular)
 {
     using S = decltype(std::real(T{}));
     host_strided_batch_vector<T> A(lda * n, 1, lda * n, bc);
@@ -252,33 +274,45 @@ void sygv_hegv_getError(const rocblas_handle handle,
 
     // input data initialization
     sygv_hegv_initData<true, true, T>(handle, itype, jobz, n, dA, lda, stA, dB, ldb, stB, bc, hA,
-                                      hB, A, B, true);
+                                      hB, A, B, true, singular);
 
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA.data(), lda,
                                             stA, dB.data(), ldb, stB, dD.data(), stD, dE.data(),
                                             stE, dInfo.data(), bc));
+
     CHECK_HIP_ERROR(hDRes.transfer_from(dD));
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
     if(jobz != rocblas_evect_none)
         CHECK_HIP_ERROR(hARes.transfer_from(dA));
 
+    // CPU lapack
+    for(rocblas_int b = 0; b < bc; ++b)
+    {
+        cblas_sygv_hegv(itype, jobz, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(), lwork,
+                        rwork.data(), hInfo[b]);
+    }
+
+    // (We expect the used input matrices to always converge. Testing
+    // implicitly the equivalent non-converged matrix is very complicated and it boils
+    // down to essentially run the algorithm again and until convergence is achieved.
+    // We do test with indefinite matrices B).
+
+    // check info for non-convergence and/or positive-definiteness
+    *max_err = 0;
+    for(rocblas_int b = 0; b < bc; ++b)
+        if(hInfo[b][0] != hInfoRes[b][0])
+            *max_err += 1;
+
+    double err;
+
     if(jobz == rocblas_evect_none)
     {
         // only eigenvalues needed; can compare with LAPACK
 
-        // CPU lapack
-        for(rocblas_int b = 0; b < bc; ++b)
-        {
-            cblas_sygv_hegv<S, T>(itype, jobz, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(),
-                                  lwork, rwork.data(), hInfo[b]);
-        }
-
         // error is ||hD - hDRes|| / ||hD||
         // using frobenius norm
-        double err;
-        *max_err = 0;
         for(rocblas_int b = 0; b < bc; ++b)
         {
             if(hInfoRes[b][0] == 0)
@@ -287,21 +321,12 @@ void sygv_hegv_getError(const rocblas_handle handle,
                 *max_err = err > *max_err ? err : *max_err;
             }
         }
-
-        // also check info for non-convergence
-        err = 0;
-        for(rocblas_int b = 0; b < bc; ++b)
-            if(hInfo[b][0] != hInfoRes[b][0])
-                err++;
-        *max_err += err;
     }
     else
     {
         // both eigenvalues and eigenvectors needed; need to implicitly test
         // eigenvectors due to non-uniqueness of eigenvectors under scaling
 
-        double err;
-        *max_err = 0;
         for(rocblas_int b = 0; b < bc; ++b)
         {
             if(hInfoRes[b][0] == 0)
@@ -378,11 +403,12 @@ void sygv_hegv_getPerfData(const rocblas_handle handle,
                            double* gpu_time_used,
                            double* cpu_time_used,
                            const rocblas_int hot_calls,
-                           const bool perf)
+                           const bool perf,
+                           const bool singular)
 {
     using S = decltype(std::real(T{}));
-    host_strided_batch_vector<T> A(lda * n, 1, lda * n, bc);
-    host_strided_batch_vector<T> B(ldb * n, 1, ldb * n, bc);
+    host_strided_batch_vector<T> A(1, 1, 1, 1);
+    host_strided_batch_vector<T> B(1, 1, 1, 1);
 
     rocblas_int lwork = (is_complex<T> ? 2 * n - 1 : 3 * n - 1);
     rocblas_int lrwork = (is_complex<T> ? 3 * n - 2 : 0);
@@ -392,7 +418,7 @@ void sygv_hegv_getPerfData(const rocblas_handle handle,
     if(!perf)
     {
         sygv_hegv_initData<true, false, T>(handle, itype, jobz, n, dA, lda, stA, dB, ldb, stB, bc,
-                                           hA, hB, A, B, false);
+                                           hA, hB, A, B, false, singular);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
@@ -405,13 +431,13 @@ void sygv_hegv_getPerfData(const rocblas_handle handle,
     }
 
     sygv_hegv_initData<true, false, T>(handle, itype, jobz, n, dA, lda, stA, dB, ldb, stB, bc, hA,
-                                       hB, A, B, false);
+                                       hB, A, B, false, singular);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         sygv_hegv_initData<false, true, T>(handle, itype, jobz, n, dA, lda, stA, dB, ldb, stB, bc,
-                                           hA, hB, A, B, false);
+                                           hA, hB, A, B, false, singular);
 
         CHECK_ROCBLAS_ERROR(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA.data(),
                                                 lda, stA, dB.data(), ldb, stB, dD.data(), stD,
@@ -426,7 +452,7 @@ void sygv_hegv_getPerfData(const rocblas_handle handle,
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         sygv_hegv_initData<false, true, T>(handle, itype, jobz, n, dA, lda, stA, dB, ldb, stB, bc,
-                                           hA, hB, A, B, false);
+                                           hA, hB, A, B, false, singular);
 
         start = get_time_us_sync(stream);
         rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA.data(), lda, stA, dB.data(),
@@ -463,7 +489,26 @@ void testing_sygv_hegv(Arguments argus)
     rocblas_stride stDRes = (argus.unit_check || argus.norm_check) ? stD : 0;
 
     // check non-supported values
-    // N/A
+    if(uplo == rocblas_fill_full || jobz == rocblas_evect_tridiagonal)
+    {
+        if(BATCHED)
+            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n,
+                                                      (T* const*)nullptr, lda, stA,
+                                                      (T* const*)nullptr, ldb, stB, (S*)nullptr, stD,
+                                                      (S*)nullptr, stE, (rocblas_int*)nullptr, bc),
+                                  rocblas_status_invalid_size);
+        else
+            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n,
+                                                      (T*)nullptr, lda, stA, (T*)nullptr, ldb, stB,
+                                                      (S*)nullptr, stD, (S*)nullptr, stE,
+                                                      (rocblas_int*)nullptr, bc),
+                                  rocblas_status_invalid_size);
+
+        if(argus.timing)
+            ROCSOLVER_BENCH_INFORM(2);
+
+        return;
+    }
 
     // determine sizes
     size_t size_A = size_t(lda) * n;
@@ -559,13 +604,14 @@ void testing_sygv_hegv(Arguments argus)
         if(argus.unit_check || argus.norm_check)
             sygv_hegv_getError<STRIDED, T>(handle, itype, jobz, uplo, n, dA, lda, stA, dB, ldb, stB,
                                            dD, stD, dE, stE, dInfo, bc, hA, hARes, hB, hD, hDRes,
-                                           hInfo, hInfoRes, &max_error);
+                                           hInfo, hInfoRes, &max_error, argus.singular);
 
         // collect performance data
         if(argus.timing)
             sygv_hegv_getPerfData<STRIDED, T>(handle, itype, jobz, uplo, n, dA, lda, stA, dB, ldb,
                                               stB, dD, stD, dE, stE, dInfo, bc, hA, hB, hD, hInfo,
-                                              &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
+                                              &gpu_time_used, &cpu_time_used, hot_calls, argus.perf,
+                                              argus.singular);
     }
 
     else
@@ -610,13 +656,14 @@ void testing_sygv_hegv(Arguments argus)
         if(argus.unit_check || argus.norm_check)
             sygv_hegv_getError<STRIDED, T>(handle, itype, jobz, uplo, n, dA, lda, stA, dB, ldb, stB,
                                            dD, stD, dE, stE, dInfo, bc, hA, hARes, hB, hD, hDRes,
-                                           hInfo, hInfoRes, &max_error);
+                                           hInfo, hInfoRes, &max_error, argus.singular);
 
         // collect performance data
         if(argus.timing)
             sygv_hegv_getPerfData<STRIDED, T>(handle, itype, jobz, uplo, n, dA, lda, stA, dB, ldb,
                                               stB, dD, stD, dE, stE, dInfo, bc, hA, hB, hD, hInfo,
-                                              &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
+                                              &gpu_time_used, &cpu_time_used, hot_calls, argus.perf,
+                                              argus.singular);
     }
 
     // validate results for rocsolver-test

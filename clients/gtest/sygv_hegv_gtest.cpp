@@ -11,47 +11,50 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<vector<int>, vector<char>> sygv_tuple;
+typedef std::tuple<vector<int>, vector<rocsolver_op_char>> sygv_tuple;
 
-// each matrix_size_range is a {n, lda, ldb}
+// each matrix_size_range is a {n, lda, ldb, singular}
+// if singular = 1, then the used matrix for the tests is not positive definite
 
 // each type_range is a {itype, jobz, uplo}
 
 // case when n = 0, itype = 1, jobz = 'N', and uplo = U will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
-const vector<vector<char>> type_range = {{'1', 'N', 'L'}, {'2', 'V', 'L'}, {'3', 'N', 'L'},
-                                         {'1', 'V', 'U'}, {'2', 'N', 'U'}, {'3', 'V', 'U'}};
+const vector<vector<rocsolver_op_char>> type_range
+    = {{'1', 'N', 'U'}, {'2', 'N', 'L'}, {'3', 'N', 'U'},
+       {'1', 'V', 'L'}, {'2', 'V', 'U'}, {'3', 'V', 'L'}};
 
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
     // quick return
-    {0, 1, 1},
+    {0, 1, 1, 0},
     // invalid
-    {-1, 1, 1},
-    {20, 5, 5},
+    {-1, 1, 1, 0},
+    {20, 5, 5, 0},
     // normal (valid) samples
-    {50, 50, 50},
-    {70, 100, 110},
-    {130, 130, 130}};
+    {20, 30, 20, 1},
+    {35, 35, 35, 0},
+    {50, 50, 60, 1}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
-    {192, 192, 192},
-    {256, 270, 280},
-    {300, 300, 300},
+    {192, 192, 192, 0},
+    {256, 270, 256, 0},
+    {300, 300, 310, 0},
 };
 
 Arguments sygv_setup_arguments(sygv_tuple tup)
 {
     vector<int> matrix_size = std::get<0>(tup);
-    vector<char> type = std::get<1>(tup);
+    vector<rocsolver_op_char> type = std::get<1>(tup);
 
     Arguments arg;
 
     arg.N = matrix_size[0];
     arg.lda = matrix_size[1];
     arg.ldb = matrix_size[2];
+    arg.singular = matrix_size[3];
 
     arg.itype = type[0];
     arg.evect = type[1];
@@ -83,7 +86,11 @@ protected:
         if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
             testing_sygv_hegv_bad_arg<BATCHED, STRIDED, T>();
 
-        arg.batch_count = 1;
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        if(arg.singular == 1)
+            testing_sygv_hegv<BATCHED, STRIDED, T>(arg);
+
+        arg.singular = 0;
         testing_sygv_hegv<BATCHED, STRIDED, T>(arg);
     }
 };
