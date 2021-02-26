@@ -4,12 +4,16 @@
 
 // Predeclare rocsolver_abort_once() for friend declaration in
 // rocsolver_ostream.hpp
-static void rocsolver_abort_once [[noreturn]] ();
+namespace ROCSOLVER_COMMON_NAMESPACE {
+  static void rocsolver_abort_once [[noreturn]] ();
+}
 
 #include "rocsolver_ostream.hpp"
 #include <csignal>
 #include <fcntl.h>
 #include <type_traits>
+
+namespace ROCSOLVER_COMMON_NAMESPACE {
 
 /***********************************************************************
  * rocsolver_ostream functions                                           *
@@ -354,4 +358,6 @@ rocsolver_ostream::worker::worker(int fd)
 
     // Detatch from the worker thread
     thread.detach();
+}
+
 }

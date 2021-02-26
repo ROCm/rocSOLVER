@@ -27,6 +27,8 @@
 #include <unistd.h>
 #include <utility>
 
+namespace ROCSOLVER_COMMON_NAMESPACE {
+
 /*****************************************************************************
  * rocBLAS output streams                                                    *
  *****************************************************************************/
@@ -426,3 +428,7 @@ public:
     static std::ostream& yaml_on(std::ostream& os);
     static std::ostream& yaml_off(std::ostream& os);
 };
+
+}
+
+using namespace ROCSOLVER_COMMON_NAMESPACE;
