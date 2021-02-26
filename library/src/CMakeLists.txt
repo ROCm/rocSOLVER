@@ -123,8 +123,6 @@ set( rocsolver_auxiliary_source
 )
 
 set( auxiliaries
-  ../../common/src/common_host_helpers.cpp
-  ../../common/src/rocsolver_ostream.cpp
   common/buildinfo.cpp
   common/rocsolver_logger.cpp
 )
@@ -144,6 +142,7 @@ target_link_libraries( rocsolver
   PUBLIC
     roc::rocblas
   PRIVATE
+    rocsolver-common
     hip::device
     --rtlib=compiler-rt
     --unwindlib=libgcc
@@ -158,9 +157,11 @@ target_compile_options( rocsolver PRIVATE -Wno-pass-failed )
 
 target_include_directories( rocsolver
   PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
-          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
           $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
           $<INSTALL_INTERFACE:include>
+  PRIVATE
+          ${CMAKE_CURRENT_SOURCE_DIR}/include
+          ${CMAKE_CURRENT_SOURCE_DIR}
           )
 
 set_target_properties( rocsolver PROPERTIES CXX_EXTENSIONS NO )
@@ -181,7 +182,11 @@ if(OPTIMAL)
   target_compile_definitions(rocsolver PRIVATE OPTIMAL)
 endif( )
 
-target_compile_definitions( rocsolver PRIVATE ROCM_USE_FLOAT16 )
+target_compile_definitions( rocsolver
+  PRIVATE
+    ROCM_USE_FLOAT16
+    ROCSOLVER_COMMON_NAMESPACE=rocsolver_lib
+)
 
 add_armor_flags( rocsolver "${ARMOR_LEVEL}" )
 

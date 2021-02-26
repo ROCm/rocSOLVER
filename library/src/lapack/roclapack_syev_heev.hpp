@@ -9,9 +9,9 @@
 
 #pragma once
 
-#include "../auxiliary/rocauxiliary_orgtr_ungtr.hpp"
-#include "../auxiliary/rocauxiliary_steqr.hpp"
-#include "../auxiliary/rocauxiliary_sterf.hpp"
+#include "auxiliary/rocauxiliary_orgtr_ungtr.hpp"
+#include "auxiliary/rocauxiliary_steqr.hpp"
+#include "auxiliary/rocauxiliary_sterf.hpp"
 #include "rocblas.hpp"
 #include "roclapack_sytrd_hetrd.hpp"
 #include "rocsolver.h"

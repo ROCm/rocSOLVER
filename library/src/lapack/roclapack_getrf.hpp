@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "../auxiliary/rocauxiliary_laswp.hpp"
+#include "auxiliary/rocauxiliary_laswp.hpp"
 #include "rocblas.hpp"
 #include "roclapack_getf2.hpp"
 #include "rocsolver.h"

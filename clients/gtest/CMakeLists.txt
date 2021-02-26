@@ -89,12 +89,7 @@ set(rocsolver_test_source
     rocsolver_gtest_main.cpp
     )
 
-set( rocsolver_benchmark_common
-      ../common/lapack_host_reference.cpp
-      ../rocblascommon/utility.cpp
-    )
-
-add_executable( rocsolver-test ${roclapack_test_source} ${rocauxiliary_test_source} ${others_test_source} ${rocsolver_test_source} ${rocsolver_benchmark_common} )
+add_executable( rocsolver-test ${roclapack_test_source} ${rocauxiliary_test_source} ${others_test_source} ${rocsolver_test_source} )
 
 add_armor_flags( rocsolver-test "${ARMOR_LEVEL}" )
 
@@ -198,3 +193,5 @@ endif( )
 set_target_properties( rocsolver-test PROPERTIES CXX_EXTENSIONS NO )
 set_target_properties( rocsolver-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
 target_compile_definitions( rocsolver-test PRIVATE ROCM_USE_FLOAT16 )
+
+target_link_libraries( rocsolver-test PRIVATE rocsolver-common clients-common )

@@ -48,7 +48,7 @@ rocblas_eform
 Logging Functions
 ============================
 
-These are functions that enable and control rocSOLVER's multi-level logging capabilities.
+These are functions that enable and control rocSOLVER's :ref:`logging-label` capabilities.
 
 Logging set-up and tear-down
 --------------------------------------

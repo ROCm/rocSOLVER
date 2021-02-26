@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "../auxiliary/rocauxiliary_ormqr_unmqr.hpp"
+#include "auxiliary/rocauxiliary_ormqr_unmqr.hpp"
 #include "rocblas.hpp"
 #include "roclapack_geqrf.hpp"
 #include "rocsolver.h"

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../../../common/include/common_host_helpers.hpp"
+#include "common_host_helpers.hpp"
 #include "lib_host_helpers.hpp"
 #include "rocsolver.h"
 #include <memory>

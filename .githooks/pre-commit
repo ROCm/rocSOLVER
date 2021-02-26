@@ -20,7 +20,18 @@ else
 fi
 
 if [[ "$1" == "--reformat" ]]; then
-    files=$(git ls-files --exclude-standard)
+    if [[ "$#" -eq 1 ]]; then
+        # --reformat on its own applies to all files in the repo
+        files=$(git ls-files --exclude-standard)
+    elif [[ "$#" -eq 2 ]] && git rev-parse --verify "$2" >/dev/null 2>&1; then
+        # --reformat with one following argument tries to interpret that as a version,
+        # and reformats all files changed since that version
+        files=$(git diff-index --name-only "$2")
+    else
+        # --reformat with more than one argument, or one argument that is not a version
+        # interprets the arguments as files to reformat
+        files="${@:2}"
+    fi
 else
     files=$(git diff-index --cached --name-only $against)
 fi

@@ -2,7 +2,7 @@
  * Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "../rocblascommon/program_options.hpp"
+#include "rocblascommon/program_options.hpp"
 #include "rocsolver_dispatcher.hpp"
 
 int main(int argc, char* argv[])
