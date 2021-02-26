@@ -157,9 +157,10 @@ target_compile_options( rocsolver PRIVATE -Wno-pass-failed )
 
 target_include_directories( rocsolver
   PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
-          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
           $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
           $<INSTALL_INTERFACE:include>
+  PRIVATE
+          ${CMAKE_CURRENT_SOURCE_DIR}/include
           )
 
 set_target_properties( rocsolver PROPERTIES CXX_EXTENSIONS NO )
