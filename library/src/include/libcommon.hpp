@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "rocsolver_ostream.hpp"
 #include "rocblascommon/utility.hpp"
+#include "rocsolver_ostream.hpp"
 #include <string>
 #include <vector>

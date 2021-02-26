@@ -8,8 +8,8 @@
  * timing functions                                                    *
  ***********************************************************************/
 
-namespace ROCSOLVER_COMMON_NAMESPACE {
-
+namespace ROCSOLVER_COMMON_NAMESPACE
+{
 /*! \brief  CPU Timer(in microsecond): synchronize with the default device and
  * return wall time */
 double get_time_us()

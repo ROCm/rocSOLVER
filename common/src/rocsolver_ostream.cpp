@@ -4,8 +4,9 @@
 
 // Predeclare rocsolver_abort_once() for friend declaration in
 // rocsolver_ostream.hpp
-namespace ROCSOLVER_COMMON_NAMESPACE {
-  static void rocsolver_abort_once [[noreturn]] ();
+namespace ROCSOLVER_COMMON_NAMESPACE
+{
+static void rocsolver_abort_once [[noreturn]] ();
 }
 
 #include "rocsolver_ostream.hpp"
@@ -13,8 +14,8 @@ namespace ROCSOLVER_COMMON_NAMESPACE {
 #include <fcntl.h>
 #include <type_traits>
 
-namespace ROCSOLVER_COMMON_NAMESPACE {
-
+namespace ROCSOLVER_COMMON_NAMESPACE
+{
 /***********************************************************************
  * rocsolver_ostream functions                                           *
  ***********************************************************************/
@@ -235,8 +236,7 @@ std::ostream& rocsolver_ostream::yaml_off(std::ostream& os)
 }
 
 // IO Manipulators
-rocsolver_ostream& operator<<(rocsolver_ostream& os,
-                                               std::ostream& (*pf)(std::ostream&))
+rocsolver_ostream& operator<<(rocsolver_ostream& os, std::ostream& (*pf)(std::ostream&))
 {
     // Turn YAML formatting on or off
     if(pf == rocsolver_ostream::yaml_on)

@@ -27,8 +27,8 @@
 #include <unistd.h>
 #include <utility>
 
-namespace ROCSOLVER_COMMON_NAMESPACE {
-
+namespace ROCSOLVER_COMMON_NAMESPACE
+{
 /*****************************************************************************
  * rocBLAS output streams                                                    *
  *****************************************************************************/
