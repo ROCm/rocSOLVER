@@ -79,8 +79,6 @@ const vector<vector<int>> large_opt_range
 const vector<vector<int>> knownbug_size_range
     = {{300, 120, 0}, {300, 120, 1}, {120, 300, 0}, {120, 300, 1}};
 
-const vector<vector<int>> knownbug_opt_range = {{0, 0, 0, 3, 0}, {0, 0, 0, 1, 3}, {0, 0, 0, 3, 2}};
-
 Arguments gesvd_setup_arguments(gesvd_tuple tup)
 {
     vector<int> size = std::get<0>(tup);
@@ -236,4 +234,4 @@ INSTANTIATE_TEST_SUITE_P(checkin_lapack, GESVD, Combine(ValuesIn(size_range), Va
 // known-bugs tests
 INSTANTIATE_TEST_SUITE_P(known_bug_lapack,
                          GESVD,
-                         Combine(ValuesIn(knownbug_size_range), ValuesIn(knownbug_opt_range)));
+                         Combine(ValuesIn(knownbug_size_range), ValuesIn(large_opt_range)));
