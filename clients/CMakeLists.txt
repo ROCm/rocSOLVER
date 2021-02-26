@@ -48,12 +48,23 @@ endif()
 # The presense of hip is not sufficient to determine if we want a rocm or cuda backend
 find_package( CUDA QUIET )
 
-if( BUILD_CLIENTS_BENCHMARKS )
-  add_subdirectory( benchmarks )
-endif( )
+if( BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS )
+  add_library( clients-common INTERFACE )
+  target_include_directories( clients-common INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+  set( common_source_files
+    common/lapack_host_reference.cpp
+    rocblascommon/utility.cpp
+  )
+  prepend_path( "${CMAKE_CURRENT_SOURCE_DIR}/" common_source_files common_source_paths )
+  target_sources( clients-common INTERFACE ${common_source_paths} )
 
-if( BUILD_CLIENTS_TESTS )
-  add_subdirectory( gtest )
+  if( BUILD_CLIENTS_BENCHMARKS )
+    add_subdirectory( benchmarks )
+  endif( )
+
+  if( BUILD_CLIENTS_TESTS )
+    add_subdirectory( gtest )
+  endif( )
 endif( )
 
 if( BUILD_CLIENTS_SAMPLES )
