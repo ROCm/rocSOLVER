@@ -1,3 +1,4 @@
+.. _logging-label:
 
 *************************
 Multi-level Logging

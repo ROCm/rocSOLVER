@@ -22,12 +22,7 @@ if( NOT cblas_FOUND )
   message( FATAL_ERROR "cblas is a required dependency and is not found;  try adding cblas path to CMAKE_PREFIX_PATH" )
 endif( )
 
-set( rocsolver_benchmark_common
-      ../common/lapack_host_reference.cpp
-      ../rocblascommon/utility.cpp
-    )
-
-add_executable( rocsolver-bench client.cpp ${rocsolver_benchmark_common} )
+add_executable( rocsolver-bench client.cpp )
 
 add_armor_flags( rocsolver-bench "${ARMOR_LEVEL}" )
 
@@ -122,3 +117,5 @@ endif( )
 set_target_properties( rocsolver-bench PROPERTIES CXX_EXTENSIONS NO )
 set_target_properties( rocsolver-bench PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
 target_compile_definitions( rocsolver-bench PRIVATE ROCM_USE_FLOAT16 )
+
+target_link_libraries( rocsolver-bench PRIVATE rocsolver-common clients-common )

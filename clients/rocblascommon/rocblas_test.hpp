@@ -19,7 +19,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include "../../common/include/rocsolver_ostream.hpp"
+#include "rocsolver_ostream.hpp"
 
 // Suppress warnings about hipMalloc(), hipFree() except in rocblas-test and
 // rocblas-bench

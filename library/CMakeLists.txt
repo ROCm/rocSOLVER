@@ -58,7 +58,7 @@ set( INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR} )
 add_subdirectory( src )
 
 # Package specific CPACK vars
-set( CPACK_DEBIAN_PACKAGE_DEPENDS "rocblas (>= 2.37), rocblas (< 2.38)" )
+set( CPACK_DEBIAN_PACKAGE_DEPENDS "rocblas (>= 2.37), rocblas (<< 2.38)" )
 set( CPACK_RPM_PACKAGE_REQUIRES "rocblas >= 2.37, rocblas < 2.38" )
 
 if( OS_ID_sles )

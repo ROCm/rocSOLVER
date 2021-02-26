@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include "../auxiliary/rocauxiliary_larfb.hpp"
-#include "../auxiliary/rocauxiliary_larft.hpp"
+#include "auxiliary/rocauxiliary_larfb.hpp"
+#include "auxiliary/rocauxiliary_larft.hpp"
 #include "rocblas.hpp"
 #include "roclapack_gelq2.hpp"
 #include "rocsolver.h"
