@@ -5,6 +5,6 @@
 #pragma once
 
 #include "rocsolver_ostream.hpp"
-#include "../rocblascommon/utility.hpp"
+#include "rocblascommon/utility.hpp"
 #include <string>
 #include <vector>

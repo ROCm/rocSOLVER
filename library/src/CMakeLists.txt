@@ -161,6 +161,7 @@ target_include_directories( rocsolver
           $<INSTALL_INTERFACE:include>
   PRIVATE
           ${CMAKE_CURRENT_SOURCE_DIR}/include
+          ${CMAKE_CURRENT_SOURCE_DIR}
           )
 
 set_target_properties( rocsolver PROPERTIES CXX_EXTENSIONS NO )

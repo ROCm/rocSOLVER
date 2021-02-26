@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "../auxiliary/rocauxiliary_lacgv.hpp"
+#include "auxiliary/rocauxiliary_lacgv.hpp"
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
