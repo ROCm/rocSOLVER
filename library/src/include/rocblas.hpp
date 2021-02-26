@@ -702,6 +702,11 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_int batch_count,
                                 T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("gemm", "transA:", trans_a, "transB:", trans_b, "m:", m, "n:", n, "k:", k,
+                  "shiftA:", offset_a, "lda:", ld_a, "shiftB:", offset_b, "ldb:", ld_b,
+                  "shiftC:", offset_c, "ldc:", ld_c, "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -741,6 +746,11 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_int batch_count,
                                 T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("gemm", "transA:", trans_a, "transB:", trans_b, "m:", m, "n:", n, "k:", k,
+                  "shiftA:", offset_a, "lda:", ld_a, "shiftB:", offset_b, "ldb:", ld_b,
+                  "shiftC:", offset_c, "ldc:", ld_c, "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -780,6 +790,11 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_int batch_count,
                                 T** work)
 {
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER("gemm", "transA:", trans_a, "transB:", trans_b, "m:", m, "n:", n, "k:", k,
+                  "shiftA:", offset_a, "lda:", ld_a, "shiftB:", offset_b, "ldb:", ld_b,
+                  "shiftC:", offset_c, "ldc:", ld_c, "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
