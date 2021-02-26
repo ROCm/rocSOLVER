@@ -30,6 +30,10 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Added `roc::rocblas` to the `roc::rocsolver` CMake usage requirements
 - Added rocblas to the dependency list of the rocsolver deb and rpm packages
 
+### Known Issues
+- Thin-SVD implementation is failing in some cases (in particular m=300, n=120) due to a possible
+  bug in the gemm\_batched routines of rocBLAS.
+
 
 ## [rocSOLVER 3.11.0 for ROCm 4.1.0]
 ### Added
