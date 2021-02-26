@@ -123,8 +123,6 @@ set( rocsolver_auxiliary_source
 )
 
 set( auxiliaries
-  ../../common/src/common_host_helpers.cpp
-  ../../common/src/rocsolver_ostream.cpp
   common/buildinfo.cpp
   common/rocsolver_logger.cpp
 )
@@ -144,6 +142,7 @@ target_link_libraries( rocsolver
   PUBLIC
     roc::rocblas
   PRIVATE
+    rocsolver-common
     hip::device
     --rtlib=compiler-rt
     --unwindlib=libgcc

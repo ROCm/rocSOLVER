@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../../common/include/rocsolver_datatype2string.hpp"
+#include "rocsolver_datatype2string.hpp"
 #include "clientcommon.hpp"
 #include <rocblas.h>
 

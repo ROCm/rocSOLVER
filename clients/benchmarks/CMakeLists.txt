@@ -122,3 +122,5 @@ endif( )
 set_target_properties( rocsolver-bench PROPERTIES CXX_EXTENSIONS NO )
 set_target_properties( rocsolver-bench PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
 target_compile_definitions( rocsolver-bench PRIVATE ROCM_USE_FLOAT16 )
+
+target_link_libraries( rocsolver-bench PRIVATE rocsolver-common )

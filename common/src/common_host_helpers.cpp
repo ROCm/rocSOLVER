@@ -2,7 +2,7 @@
  * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "../include/common_host_helpers.hpp"
+#include "common_host_helpers.hpp"
 
 /***********************************************************************
  * timing functions                                                    *
@@ -10,7 +10,7 @@
 
 /*! \brief  CPU Timer(in microsecond): synchronize with the default device and
  * return wall time */
-ROCSOLVER_EXPORT double get_time_us()
+double get_time_us()
 {
     hipDeviceSynchronize();
     struct timespec tv;
@@ -20,7 +20,7 @@ ROCSOLVER_EXPORT double get_time_us()
 
 /*! \brief  CPU Timer(in microsecond): synchronize with given queue/stream and
  * return wall time */
-ROCSOLVER_EXPORT double get_time_us_sync(hipStream_t stream)
+double get_time_us_sync(hipStream_t stream)
 {
     hipStreamSynchronize(stream);
     struct timespec tv;
@@ -29,7 +29,7 @@ ROCSOLVER_EXPORT double get_time_us_sync(hipStream_t stream)
 }
 
 /*! \brief  CPU Timer(in microsecond): no GPU synchronization */
-ROCSOLVER_EXPORT double get_time_us_no_sync()
+double get_time_us_no_sync()
 {
     struct timespec tv;
     clock_gettime(CLOCK_MONOTONIC, &tv);

@@ -6,7 +6,7 @@
 // rocsolver_ostream.hpp
 static void rocsolver_abort_once [[noreturn]] ();
 
-#include "../include/rocsolver_ostream.hpp"
+#include "rocsolver_ostream.hpp"
 #include <csignal>
 #include <fcntl.h>
 #include <type_traits>
@@ -97,7 +97,7 @@ std::shared_ptr<rocsolver_ostream::worker> rocsolver_ostream::get_worker(int fd)
 }
 
 // Construct rocsolver_ostream from a file descriptor
-ROCSOLVER_EXPORT rocsolver_ostream::rocsolver_ostream(int fd)
+rocsolver_ostream::rocsolver_ostream(int fd)
     : worker_ptr(get_worker(fd))
 {
     if(!worker_ptr)
@@ -109,7 +109,7 @@ ROCSOLVER_EXPORT rocsolver_ostream::rocsolver_ostream(int fd)
 
 // Construct rocsolver_ostream from a filename opened for writing with
 // truncation
-ROCSOLVER_EXPORT rocsolver_ostream::rocsolver_ostream(const char* filename)
+rocsolver_ostream::rocsolver_ostream(const char* filename)
 {
     int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC | O_APPEND | O_CLOEXEC, 0644);
     worker_ptr = get_worker(fd);
@@ -122,7 +122,7 @@ ROCSOLVER_EXPORT rocsolver_ostream::rocsolver_ostream(const char* filename)
 }
 
 // Flush the output
-ROCSOLVER_EXPORT void rocsolver_ostream::flush()
+void rocsolver_ostream::flush()
 {
     // Flush only if this stream contains a worker (i.e., is not a string)
     if(worker_ptr)
@@ -144,7 +144,7 @@ ROCSOLVER_EXPORT void rocsolver_ostream::flush()
  ***********************************************************************/
 
 // Floating-point output
-ROCSOLVER_EXPORT rocsolver_ostream& operator<<(rocsolver_ostream& os, double x)
+rocsolver_ostream& operator<<(rocsolver_ostream& os, double x)
 {
     if(!os.yaml)
         os.os << x;
@@ -178,7 +178,7 @@ ROCSOLVER_EXPORT rocsolver_ostream& operator<<(rocsolver_ostream& os, double x)
 }
 
 // bool output
-ROCSOLVER_EXPORT rocsolver_ostream& operator<<(rocsolver_ostream& os, bool b)
+rocsolver_ostream& operator<<(rocsolver_ostream& os, bool b)
 {
     if(os.yaml)
         os.os << (b ? "true" : "false");
@@ -188,7 +188,7 @@ ROCSOLVER_EXPORT rocsolver_ostream& operator<<(rocsolver_ostream& os, bool b)
 }
 
 // Character output
-ROCSOLVER_EXPORT rocsolver_ostream& operator<<(rocsolver_ostream& os, char c)
+rocsolver_ostream& operator<<(rocsolver_ostream& os, char c)
 {
     if(os.yaml)
     {
@@ -201,7 +201,7 @@ ROCSOLVER_EXPORT rocsolver_ostream& operator<<(rocsolver_ostream& os, char c)
 }
 
 // String output
-ROCSOLVER_EXPORT rocsolver_ostream& operator<<(rocsolver_ostream& os, const char* s)
+rocsolver_ostream& operator<<(rocsolver_ostream& os, const char* s)
 {
     if(os.yaml)
         os.os << std::quoted(s);
@@ -210,7 +210,7 @@ ROCSOLVER_EXPORT rocsolver_ostream& operator<<(rocsolver_ostream& os, const char
     return os;
 }
 
-ROCSOLVER_EXPORT rocsolver_ostream& operator<<(rocsolver_ostream& os, const std::string& s)
+rocsolver_ostream& operator<<(rocsolver_ostream& os, const std::string& s)
 {
     if(os.yaml)
         os.os << std::quoted(s);
@@ -220,18 +220,18 @@ ROCSOLVER_EXPORT rocsolver_ostream& operator<<(rocsolver_ostream& os, const std:
 }
 
 // YAML Manipulators (only used for their addresses now)
-ROCSOLVER_EXPORT std::ostream& rocsolver_ostream::yaml_on(std::ostream& os)
+std::ostream& rocsolver_ostream::yaml_on(std::ostream& os)
 {
     return os;
 }
 
-ROCSOLVER_EXPORT std::ostream& rocsolver_ostream::yaml_off(std::ostream& os)
+std::ostream& rocsolver_ostream::yaml_off(std::ostream& os)
 {
     return os;
 }
 
 // IO Manipulators
-ROCSOLVER_EXPORT rocsolver_ostream& operator<<(rocsolver_ostream& os,
+rocsolver_ostream& operator<<(rocsolver_ostream& os,
                                                std::ostream& (*pf)(std::ostream&))
 {
     // Turn YAML formatting on or off

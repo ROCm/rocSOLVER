@@ -157,6 +157,7 @@ find_package( rocblas REQUIRED CONFIG PATHS ${ROCM_PATH} )
 get_imported_target_location( location roc::rocblas )
 message(STATUS "Found rocBLAS: ${location}")
 
+add_subdirectory( common )
 add_subdirectory( library )
 
 # Build clients of the library

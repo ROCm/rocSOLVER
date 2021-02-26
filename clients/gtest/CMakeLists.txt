@@ -198,3 +198,5 @@ endif( )
 set_target_properties( rocsolver-test PROPERTIES CXX_EXTENSIONS NO )
 set_target_properties( rocsolver-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
 target_compile_definitions( rocsolver-test PRIVATE ROCM_USE_FLOAT16 )
+
+target_link_libraries( rocsolver-test PRIVATE rocsolver-common )
