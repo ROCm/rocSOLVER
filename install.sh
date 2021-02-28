@@ -186,11 +186,11 @@ install_packages( )
   local library_dependencies_sles=( "make" "cmake" "rpm-build")
 
   # dependencies to build the client
-  local client_dependencies_ubuntu=( "gfortran" "libomp-dev" )
-  local client_dependencies_centos_7=( "devtoolset-7-gcc-gfortran" "libgomp" )
-  local client_dependencies_centos_8=( "gcc-gfortran" "libgomp" )
-  local client_dependencies_fedora=( "gcc-gfortran" "libgomp" )
-  local client_dependencies_sles=( "gcc-fortran" "libgomp1" )
+  local client_dependencies_ubuntu=( "gfortran" )
+  local client_dependencies_centos_7=( "devtoolset-7-gcc-gfortran" )
+  local client_dependencies_centos_8=( "gcc-gfortran" )
+  local client_dependencies_fedora=( "gcc-gfortran" )
+  local client_dependencies_sles=( "gcc-fortran" )
 
   case "${ID}" in
     ubuntu)
