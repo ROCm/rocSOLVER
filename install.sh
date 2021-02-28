@@ -186,11 +186,11 @@ install_packages( )
   local library_dependencies_sles=( "make" "cmake" "rpm-build")
 
   # dependencies to build the client
-  local client_dependencies_ubuntu=( "gfortran" "libomp-dev" "libboost-program-options-dev")
-  local client_dependencies_centos_7=( "devtoolset-7-gcc-gfortran" "libgomp" "boost-devel" )
-  local client_dependencies_centos_8=( "gcc-gfortran" "libgomp" "boost-devel" )
-  local client_dependencies_fedora=( "gcc-gfortran" "libgomp" "boost-devel" )
-  local client_dependencies_sles=( "gcc-fortran" "libgomp1" "libboost_program_options1_66_0-devel" )
+  local client_dependencies_ubuntu=( "gfortran" "libomp-dev" )
+  local client_dependencies_centos_7=( "devtoolset-7-gcc-gfortran" "libgomp" )
+  local client_dependencies_centos_8=( "gcc-gfortran" "libgomp" )
+  local client_dependencies_fedora=( "gcc-gfortran" "libgomp" )
+  local client_dependencies_sles=( "gcc-fortran" "libgomp1" )
 
   case "${ID}" in
     ubuntu)
