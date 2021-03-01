@@ -10,12 +10,6 @@ add_executable( rocsolver-bench client.cpp )
 
 add_armor_flags( rocsolver-bench "${ARMOR_LEVEL}" )
 
-# Internal header includes
-target_include_directories( rocsolver-bench
-  PRIVATE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-)
-
 # External header includes
 target_include_directories( rocsolver-bench
   SYSTEM PRIVATE

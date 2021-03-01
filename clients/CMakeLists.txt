@@ -43,7 +43,10 @@ find_package( CUDA QUIET )
 
 if( BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS )
   add_library( clients-common INTERFACE )
-  target_include_directories( clients-common INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+  target_include_directories( clients-common INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+  )
   set( common_source_files
     common/lapack_host_reference.cpp
     rocblascommon/utility.cpp

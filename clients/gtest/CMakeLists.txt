@@ -79,12 +79,6 @@ add_armor_flags( rocsolver-test "${ARMOR_LEVEL}" )
 
 target_compile_definitions( rocsolver-test PRIVATE GOOGLE_TEST )
 
-# Internal header includes
-target_include_directories( rocsolver-test
-  PRIVATE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-)
-
 # External header includes included as system files
 target_include_directories( rocsolver-test
   SYSTEM PRIVATE
