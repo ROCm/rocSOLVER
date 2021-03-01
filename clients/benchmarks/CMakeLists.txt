@@ -2,9 +2,6 @@
 # Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
-set( THREADS_PREFER_PTHREAD_FLAG ON )
-find_package( Threads REQUIRED )
-
 # Linking lapack library requires fortran flags
 enable_language( Fortran )
 find_package( cblas REQUIRED CONFIG )

@@ -11,9 +11,6 @@ find_package( cblas REQUIRED CONFIG )
 
 find_package( GTest REQUIRED )
 
-set( THREADS_PREFER_PTHREAD_FLAG ON )
-find_package( Threads REQUIRED )
-
 set(roclapack_test_source
     # linear systems solvers
     getrs_gtest.cpp
