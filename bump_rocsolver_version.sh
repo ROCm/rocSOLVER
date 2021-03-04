@@ -1,10 +1,10 @@
 #!/bin/sh
 
 # This script needs to be edited to bump rocsolver version for new release.
-# - run this script in develop after merging develop/staging into master
+# - run this script in develop after merging develop/staging into master at the feature-complete date
 
-OLD_ROCSOLVER_VERSION="3.13.0"  #To release in April/May 2021
-NEW_ROCSOLVER_VERSION="3.14.0"
+OLD_ROCSOLVER_VERSION="3.13.0"  # Distributed with ROCm 4.3
+NEW_ROCSOLVER_VERSION="3.14.0"  # Distributed with ROCm 4.4
 sed -i "s/${OLD_ROCSOLVER_VERSION}/${NEW_ROCSOLVER_VERSION}/g" CMakeLists.txt
 
 # for documentation
