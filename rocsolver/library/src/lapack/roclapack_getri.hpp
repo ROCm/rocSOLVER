@@ -121,7 +121,7 @@ __global__ void __launch_bounds__(WAVESIZE) getri_kernel_small(U AA,
         if(jp != j)
         {
             temp = rA[j];
-            rA[j] = rA[jp];
+            rA[j] = T(rA[jp]);
             rA[jp] = temp;
         }
     }
