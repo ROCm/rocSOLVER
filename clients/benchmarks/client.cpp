@@ -207,6 +207,8 @@ try
         return 0;
     }
 
+    argus.populate(vm);
+
     // catch invalid arguments for:
 
     // precision

@@ -15,7 +15,7 @@ typedef std::tuple<vector<int>, vector<int>> ormtr_tuple;
 
 // each size_range vector is a {M, N}
 
-// each store vector is a {lda, ldc, s, t, u}
+// each store_range vector is a {lda, ldc, s, t, u}
 // if lda = -1, then lda < limit (invalid size)
 // if lda = 0, then lda = limit
 // if lda = 1, then lda > limit
@@ -34,7 +34,7 @@ typedef std::tuple<vector<int>, vector<int>> ormtr_tuple;
 // will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
-const vector<vector<int>> store = {
+const vector<vector<int>> store_range = {
     // invalid
     {-1, 0, 0, 0, 0},
     {0, -1, 0, 0, 0},
@@ -152,10 +152,14 @@ TEST_P(UNMTR, __double_complex)
     run_tests<rocblas_double_complex>();
 }
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, ORMTR, Combine(ValuesIn(large_size_range), ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         ORMTR,
+                         Combine(ValuesIn(large_size_range), ValuesIn(store_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORMTR, Combine(ValuesIn(size_range), ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORMTR, Combine(ValuesIn(size_range), ValuesIn(store_range)));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, UNMTR, Combine(ValuesIn(large_size_range), ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         UNMTR,
+                         Combine(ValuesIn(large_size_range), ValuesIn(store_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNMTR, Combine(ValuesIn(size_range), ValuesIn(store)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNMTR, Combine(ValuesIn(size_range), ValuesIn(store_range)));

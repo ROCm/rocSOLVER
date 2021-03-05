@@ -5,14 +5,50 @@
 #pragma once
 
 #include "rocblas.h"
+#include "rocblascommon/program_options.hpp"
 
-/* (TODO: The default values most be reviewed. Some combinations don't actually
-    work for most of the tests) */
-
-// See the rocsolver-bench command-line options for a description of these arguments.
-class Arguments
+class Arguments : public std::map<std::string, variable_value>
 {
 public:
+    // test options
+    rocblas_int norm_check = 0;
+    rocblas_int unit_check = 1;
+    rocblas_int timing = 0;
+    rocblas_int perf = 0;
+    rocblas_int singular = 0;
+    rocblas_int iters = 5;
+    rocblas_int batch_count = 1;
+
+    // get and set function arguments
+    template <typename T>
+    const T& get(const std::string& name) const
+    {
+        return at(name).as<T>();
+    }
+
+    template <typename T>
+    const T& get(const std::string& name, const T& default_value) const
+    {
+        auto val = find(name);
+        if(val != end() && !val->second.empty() && !val->second.defaulted())
+            return val->second.as<T>();
+        else
+            return default_value;
+    }
+
+    template <typename T>
+    void set(const std::string& name, const T& val)
+    {
+        (*this)[name] = variable_value(val, false);
+    }
+
+    void populate(const variables_map& vm)
+    {
+        for(auto& pair : vm)
+            (*this)[pair.first] = pair.second;
+    }
+
+    // TODO: Remove these fields
     rocblas_int M = 128;
     rocblas_int N = 128;
     rocblas_int K = 128;
@@ -31,10 +67,6 @@ public:
     rocblas_int incd = 1;
     rocblas_int incb = 1;
 
-    rocblas_int start = 1024;
-    rocblas_int end = 10240;
-    rocblas_int step = 1000;
-
     double alpha = 1.0;
     double beta = 0.0;
 
@@ -50,22 +82,12 @@ public:
     char right_svect = 'N';
     char evect = 'N';
 
-    rocblas_int apiCallCount = 1;
-    rocblas_int batch_count = 5;
-
     rocblas_int bsa = 128 * 128;
     rocblas_int bsb = 128 * 128;
     rocblas_int bsc = 128 * 128;
     rocblas_int bsp = 128;
     rocblas_int bs5 = 128;
 
-    rocblas_int norm_check = 0;
-    rocblas_int unit_check = 1;
-    rocblas_int timing = 0;
-    rocblas_int perf = 0;
-    rocblas_int singular = 0;
-
-    rocblas_int iters = 5;
     char workmode = 'O';
     char itype = '1';
 };
