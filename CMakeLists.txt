@@ -115,7 +115,7 @@ message (STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
 # keeping versioning according to ROCm release
-set ( VERSION_STRING "3.11.0" )
+set ( VERSION_STRING "3.12.0" )
 rocm_setup_version( VERSION ${VERSION_STRING} )
 
 # NOTE:  workaround until hcc & hip cmake modules fixes symlink logic in their config files; remove when fixed
