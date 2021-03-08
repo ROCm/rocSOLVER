@@ -12,19 +12,10 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Removed
 
 ### Fixed
+- Thin-SVD known failing tests. 
 
 ### Known Issues
 
-### Deprecated
-
-### Removed
-
-### Fixed
-- Thin-SVD failing tests. 
-
-### Known Issues
-
-### Security
 
 ## [rocSOLVER 3.12.0 for ROCm 4.2.0]
 ### Added
