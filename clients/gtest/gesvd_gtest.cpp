@@ -87,49 +87,45 @@ Arguments gesvd_setup_arguments(gesvd_tuple tup)
     Arguments arg;
 
     // sizes
-    arg.M = size[0];
-    arg.N = size[1];
+    rocblas_int m = size[0];
+    rocblas_int n = size[1];
+    arg.set<rocblas_int>("m", m);
+    arg.set<rocblas_int>("n", n);
 
     // fast algorithm
     if(size[2] == 0)
-        arg.workmode = 'I';
+        arg.set<char>("fast_alg", 'I');
     else
-        arg.workmode = 'O';
+        arg.set<char>("fast_alg", 'O');
 
     // leading dimensions
-    arg.lda = arg.M; // lda
-    arg.ldb = arg.M; // ldu
-    arg.ldv = opt[4] == 2 ? arg.N : min(arg.M, arg.N); // ldv
-    arg.lda += opt[0] * 10;
-    arg.ldb += opt[1] * 10;
-    arg.ldv += opt[2] * 10;
+    arg.set<rocblas_int>("lda", m + opt[0] * 10);
+    arg.set<rocblas_int>("ldu", m + opt[1] * 10);
+    if(opt[4] == 2)
+        arg.set<rocblas_int>("ldv", n + opt[2] * 10);
+    else
+        arg.set<rocblas_int>("ldv", min(m, n) + opt[2] * 10);
 
     // vector options
     if(opt[3] == 0)
-        arg.left_svect = 'O';
+        arg.set<char>("left_svect", 'O');
     else if(opt[3] == 1)
-        arg.left_svect = 'S';
+        arg.set<char>("left_svect", 'S');
     else if(opt[3] == 2)
-        arg.left_svect = 'A';
+        arg.set<char>("left_svect", 'A');
     else
-        arg.left_svect = 'N';
+        arg.set<char>("left_svect", 'N');
 
     if(opt[4] == 0)
-        arg.right_svect = 'O';
+        arg.set<char>("right_svect", 'O');
     else if(opt[4] == 1)
-        arg.right_svect = 'S';
+        arg.set<char>("right_svect", 'S');
     else if(opt[4] == 2)
-        arg.right_svect = 'A';
+        arg.set<char>("right_svect", 'A');
     else
-        arg.right_svect = 'N';
+        arg.set<char>("right_svect", 'N');
 
-    // only testing standard use case for strides
-    // strides are ignored in normal and batched tests
-    arg.bsa = arg.lda * arg.N; // strideA
-    arg.bsb = min(arg.M, arg.N); // strideS
-    arg.bsc = arg.ldb * arg.M; // strideU
-    arg.bsp = arg.ldv * arg.N; // strideV
-    arg.bs5 = arg.bsb; // strideE
+    // only testing standard use case/defaults for strides
 
     arg.timing = 0;
 
@@ -148,7 +144,8 @@ protected:
     {
         Arguments arg = gesvd_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.N == 0 && arg.left_svect == 'N' && arg.right_svect == 'N')
+        if(arg.get<rocblas_int>("m") == 0 && arg.get<rocblas_int>("n") == 0
+           && arg.get<char>("left_svect") == 'N' && arg.get<char>("right_svect") == 'N')
             testing_gesvd_bad_arg<BATCHED, STRIDED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);

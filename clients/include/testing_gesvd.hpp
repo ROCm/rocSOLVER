@@ -460,21 +460,21 @@ void testing_gesvd(Arguments argus)
 
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int m = argus.M;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_int ldu = argus.ldb;
-    rocblas_int ldv = argus.ldv;
-    rocblas_stride stA = argus.bsa;
-    rocblas_stride stS = argus.bsb;
-    rocblas_stride stU = argus.bsc;
-    rocblas_stride stV = argus.bsp;
-    rocblas_stride stE = argus.bs5;
+    char leftvC = argus.get<char>("left_svect");
+    char rightvC = argus.get<char>("right_svect");
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int lda = argus.get<rocblas_int>("lda", m);
+    rocblas_int ldu = argus.get<rocblas_int>("ldu", m);
+    rocblas_int ldv = argus.get<rocblas_int>("ldv", (rightvC == 'A' ? n : min(m, n)));
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stS = argus.get<rocblas_stride>("strideS", min(m, n));
+    rocblas_stride stU = argus.get<rocblas_stride>("strideU", ldu * m);
+    rocblas_stride stV = argus.get<rocblas_stride>("strideV", ldv * n);
+    rocblas_stride stE = argus.get<rocblas_stride>("strideE", min(m, n) - 1);
+    char faC = argus.get<char>("fast_alg");
     rocblas_int bc = argus.batch_count;
 
-    char faC = argus.workmode;
-    char leftvC = argus.left_svect;
-    char rightvC = argus.right_svect;
     rocblas_svect leftv = char2rocblas_svect(leftvC);
     rocblas_svect rightv = char2rocblas_svect(rightvC);
     rocblas_workmode fa = char2rocblas_workmode(faC);
@@ -543,7 +543,7 @@ void testing_gesvd(Arguments argus)
     size_t size_VT = 0;
     size_t size_A = size_t(lda) * n;
     size_t size_S = size_t(min(m, n));
-    size_t size_E = size_S;
+    size_t size_E = size_t(min(m, n) - 1);
     size_t size_V = size_t(ldv) * n;
     size_t size_U = size_t(ldu) * m;
     if(argus.unit_check || argus.norm_check)

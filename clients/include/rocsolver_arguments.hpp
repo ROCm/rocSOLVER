@@ -48,6 +48,14 @@ public:
             (*this)[pair.first] = pair.second;
     }
 
+    // validate function arguments
+    void validate_svect(const std::string name)
+    {
+        char svect = at(name).as<char>();
+        if(svect != 'A' && svect != 'S' && svect != 'O' && svect != 'N')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
     // TODO: Remove these fields
     rocblas_int M = 128;
     rocblas_int N = 128;
@@ -78,15 +86,12 @@ public:
     char diag_option = 'N';
     char direct_option = 'F';
     char storev = 'C';
-    char left_svect = 'N';
-    char right_svect = 'N';
     char evect = 'N';
 
     rocblas_int bsa = 128 * 128;
     rocblas_int bsb = 128 * 128;
     rocblas_int bsc = 128 * 128;
     rocblas_int bsp = 128;
-    rocblas_int bs5 = 128;
 
     char workmode = 'O';
     char itype = '1';
