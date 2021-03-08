@@ -276,11 +276,13 @@ void gesvd_getError(const rocblas_handle handle,
     // input data initialization
     gesvd_initData<true, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A);
 
-    // execute computations
-    // complementary execution (to compute all singular vectors if needed)
-    CHECK_ROCBLAS_ERROR(rocsolver_gesvd(
-        STRIDED, handle, left_svectT, right_svectT, mT, nT, dA.data(), lda, stA, dS.data(), stS,
-        dUT.data(), lduT, stUT, dVT.data(), ldvT, stVT, dE.data(), stE, rocblas_inplace, dinfo.data(), bc)); 
+    // execute computations:
+    // complementary execution to compute all singular vectors if needed (always in-place to ensure
+    // we don't combine results computed by gemm_bacthed with results computed by gemm_strided_batched)
+    CHECK_ROCBLAS_ERROR(rocsolver_gesvd(STRIDED, handle, left_svectT, right_svectT, mT, nT,
+                                        dA.data(), lda, stA, dS.data(), stS, dUT.data(), lduT, stUT,
+                                        dVT.data(), ldvT, stVT, dE.data(), stE, rocblas_inplace,
+                                        dinfo.data(), bc));
 
     if(left_svect == rocblas_svect_none && right_svect != rocblas_svect_none)
         CHECK_HIP_ERROR(Ures.transfer_from(dUT));
@@ -790,7 +792,7 @@ void testing_gesvd(Arguments argus)
     {
         if(svects)
             max_error = (max_error >= max_errorv) ? max_error : max_errorv;
-       
+
         if(!argus.perf)
         {
             rocsolver_cout << "\n============================================\n";

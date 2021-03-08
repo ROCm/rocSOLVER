@@ -12,7 +12,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Removed
 
 ### Fixed
-- Thin-SVD known failing tests. 
+- Fixed known Thin-SVD failing tests.
 
 ### Known Issues
 
