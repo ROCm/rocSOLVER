@@ -12,14 +12,7 @@ if( NOT DEFINED CMAKE_CONFIGURATION_TYPES AND NOT DEFINED CMAKE_BUILD_TYPE )
   )
 endif()
 
-# This project may compile dependencies for clients
 project( rocsolver-clients LANGUAGES C CXX Fortran )
-
-if(OS_ID_rhel OR OS_ID_centos OR OS_ID_sles)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libgomp -pthread")
-else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -pthread")
-endif()
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -50,7 +43,10 @@ find_package( CUDA QUIET )
 
 if( BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS )
   add_library( clients-common INTERFACE )
-  target_include_directories( clients-common INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+  target_include_directories( clients-common INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+  )
   set( common_source_files
     common/lapack_host_reference.cpp
     rocblascommon/utility.cpp

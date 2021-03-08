@@ -147,7 +147,6 @@ target_link_libraries( rocsolver
     --rtlib=compiler-rt
     --unwindlib=libgcc
 )
-set_target_properties( rocsolver PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON )
 
 # In ROCm 4.0 and earlier, the default maximum threads per block is 256
 target_compile_options( rocsolver PRIVATE --gpu-max-threads-per-block=1024 )
@@ -164,7 +163,6 @@ target_include_directories( rocsolver
           ${CMAKE_CURRENT_SOURCE_DIR}
           )
 
-set_target_properties( rocsolver PROPERTIES CXX_EXTENSIONS NO )
 set_target_properties( rocsolver PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
 rocm_set_soversion(rocsolver ${rocsolver_SOVERSION})
 
