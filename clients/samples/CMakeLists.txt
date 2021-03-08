@@ -42,13 +42,17 @@ set( fortran_samples
 foreach( exe ${c_samples} ${cpp_samples} ${fortran_samples} )
   target_link_libraries( ${exe} PRIVATE roc::rocsolver )
 
-  set_target_properties( ${exe} PROPERTIES CXX_EXTENSIONS NO )
-  set_target_properties( ${exe} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
+  set_target_properties( ${exe} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging"
+  )
+endforeach( )
 
-  if( CMAKE_COMPILER_IS_GNUCXX OR CXX_VERSION_STRING MATCHES "clang" )
-    # GCC or hip-clang needs specific flags to turn on f16c intrinsics
-    target_compile_options( ${exe} PRIVATE -mf16c )
-  endif( )
+foreach( exe ${cpp_samples} )
+  set_target_properties( ${exe} PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+  )
 endforeach( )
 
 foreach( exe ${c_samples} )
