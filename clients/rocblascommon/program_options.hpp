@@ -108,10 +108,7 @@ class variable_value
 
 public:
     // Constructor
-    explicit variable_value()
-        : m_val(nullptr)
-    {
-    }
+    explicit variable_value() = default;
 
     template <typename T>
     explicit variable_value(const T& xv, bool xdefaulted)
@@ -138,8 +135,7 @@ public:
     template <typename T>
     const T& as() const
     {
-        value<T>* val = dynamic_cast<value<T>*>(m_val.get());
-        if(val)
+        if(value<T>* val = dynamic_cast<value<T>*>(m_val.get()))
             return val->get_value();
         else
             throw std::logic_error("Internal error: Invalid cast");
@@ -179,13 +175,7 @@ class options_description
         desc_option(const desc_option&) = delete;
 
         // Move constructor
-        desc_option(desc_option&& other)
-            : m_opts(std::move(other.m_opts))
-            , m_val(other.m_val)
-            , m_desc(std::move(other.m_desc))
-        {
-            other.m_val = nullptr;
-        }
+        desc_option(desc_option&& other) = default;
 
         // Accessors
         const std::string& get_opts() const
@@ -208,59 +198,59 @@ class options_description
         {
             // We test all supported types with dynamic_cast and parse accordingly
             bool match = false;
-            if(dynamic_cast<value<int32_t>*>(m_val.get()))
+            if(auto* ptr = dynamic_cast<value<int32_t>*>(m_val.get()))
             {
                 int32_t val;
                 match = argc && sscanf(*argv, "%" SCNd32, &val) == 1;
-                dynamic_cast<value<int32_t>*>(m_val.get())->actual_value(val);
+                ptr->actual_value(val);
             }
-            else if(dynamic_cast<value<uint32_t>*>(m_val.get()))
+            else if(auto* ptr = dynamic_cast<value<uint32_t>*>(m_val.get()))
             {
                 uint32_t val;
                 match = argc && sscanf(*argv, "%" SCNu32, &val) == 1;
-                dynamic_cast<value<uint32_t>*>(m_val.get())->actual_value(val);
+                ptr->actual_value(val);
             }
-            else if(dynamic_cast<value<int64_t>*>(m_val.get()))
+            else if(auto* ptr = dynamic_cast<value<int64_t>*>(m_val.get()))
             {
                 int64_t val;
                 match = argc && sscanf(*argv, "%" SCNd64, &val) == 1;
-                dynamic_cast<value<int64_t>*>(m_val.get())->actual_value(val);
+                ptr->actual_value(val);
             }
-            else if(dynamic_cast<value<uint64_t>*>(m_val.get()))
+            else if(auto* ptr = dynamic_cast<value<uint64_t>*>(m_val.get()))
             {
                 uint64_t val;
                 match = argc && sscanf(*argv, "%" SCNu64, &val) == 1;
-                dynamic_cast<value<uint64_t>*>(m_val.get())->actual_value(val);
+                ptr->actual_value(val);
             }
-            else if(dynamic_cast<value<float>*>(m_val.get()))
+            else if(auto* ptr = dynamic_cast<value<float>*>(m_val.get()))
             {
                 float val;
                 match = argc && sscanf(*argv, "%f", &val) == 1;
-                dynamic_cast<value<float>*>(m_val.get())->actual_value(val);
+                ptr->actual_value(val);
             }
-            else if(dynamic_cast<value<double>*>(m_val.get()))
+            else if(auto* ptr = dynamic_cast<value<double>*>(m_val.get()))
             {
                 double val;
                 match = argc && sscanf(*argv, "%lf", &val) == 1;
-                dynamic_cast<value<double>*>(m_val.get())->actual_value(val);
+                ptr->actual_value(val);
             }
-            else if(dynamic_cast<value<char>*>(m_val.get()))
+            else if(auto* ptr = dynamic_cast<value<char>*>(m_val.get()))
             {
                 char val;
                 match = argc && sscanf(*argv, " %c", &val) == 1;
-                dynamic_cast<value<char>*>(m_val.get())->actual_value(val);
+                ptr->actual_value(val);
             }
-            else if(dynamic_cast<value<bool>*>(m_val.get()))
+            else if(auto* ptr = dynamic_cast<value<bool>*>(m_val.get()))
             {
                 // We handle bool specially, setting the value to true without argument
-                dynamic_cast<value<bool>*>(m_val.get())->actual_value(true);
+                ptr->actual_value(true);
                 return;
             }
-            else if(dynamic_cast<value<std::string>*>(m_val.get()))
+            else if(auto* ptr = dynamic_cast<value<std::string>*>(m_val.get()))
             {
                 if(argc)
                 {
-                    dynamic_cast<value<std::string>*>(m_val.get())->actual_value(*argv);
+                    ptr->actual_value(*argv);
                     match = true;
                 }
             }
@@ -301,6 +291,7 @@ class options_description
         }
     };
 
+    // Parse an option at the current (argc, argv) position
     void parse_option(int& argc, char**& argv, variables_map& vm, bool ignoreUnknown) const
     {
         // Iterate across all options
