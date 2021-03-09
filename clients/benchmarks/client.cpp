@@ -137,10 +137,9 @@ try
          value<rocblas_stride>(),
          "Stride for matrices/vectors E.")
 
-        ("bsp",
-         value<rocblas_int>(&argus.bsp)->default_value(1024),
-         "Specific stride of batched pivots vector Ipiv, is only applicable to batched and strided_batched"
-         "factorizations: min(first dimension, second dimension).")
+        ("strideP",
+         value<rocblas_stride>(),
+         "Stride for vectors tau and ipiv.")
 
         ("strideS",
          value<rocblas_stride>(),

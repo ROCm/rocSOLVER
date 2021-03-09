@@ -387,16 +387,17 @@ void testing_sytxx_hetxx(Arguments& argus)
 
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_stride stA = argus.bsa;
-    rocblas_stride stD = argus.bsp;
-    rocblas_stride stE = argus.bsp;
-    rocblas_stride stP = argus.bsp;
+    char uploC = argus.get<char>("uplo");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int lda = argus.get<rocblas_int>("lda", n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stD = argus.get<rocblas_stride>("strideD", n);
+    rocblas_stride stE = argus.get<rocblas_stride>("strideE", n - 1);
+    rocblas_stride stP = argus.get<rocblas_stride>("strideP", n - 1);
     rocblas_int bc = argus.batch_count;
-    rocblas_int hot_calls = argus.iters;
-    char uploC = argus.uplo_option;
+
     rocblas_fill uplo = char2rocblas_fill(uploC);
+    rocblas_int hot_calls = argus.iters;
 
     rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
 
@@ -423,8 +424,8 @@ void testing_sytxx_hetxx(Arguments& argus)
     // determine sizes
     size_t size_A = lda * n;
     size_t size_D = n;
-    size_t size_E = n;
-    size_t size_tau = n;
+    size_t size_E = n - 1;
+    size_t size_tau = n - 1;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
@@ -569,13 +570,15 @@ void testing_sytxx_hetxx(Arguments& argus)
             rocsolver_cout << "============================================\n";
             if(BATCHED)
             {
-                rocsolver_bench_output("uplo", "n", "lda", "strideP", "batch_c");
-                rocsolver_bench_output(uploC, n, lda, stP, bc);
+                rocsolver_bench_output("uplo", "n", "lda", "strideD", "strideE", "strideP",
+                                       "batch_c");
+                rocsolver_bench_output(uploC, n, lda, stD, stE, stP, bc);
             }
             else if(STRIDED)
             {
-                rocsolver_bench_output("uplo", "n", "lda", "strideA", "strideP", "batch_c");
-                rocsolver_bench_output(uploC, n, lda, stA, stP, bc);
+                rocsolver_bench_output("uplo", "n", "lda", "strideA", "strideD", "strideE",
+                                       "strideP", "batch_c");
+                rocsolver_bench_output(uploC, n, lda, stA, stD, stE, stP, bc);
             }
             else
             {
