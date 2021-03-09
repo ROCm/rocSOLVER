@@ -278,7 +278,7 @@ void gesvd_getError(const rocblas_handle handle,
 
     // execute computations:
     // complementary execution to compute all singular vectors if needed (always in-place to ensure
-    // we don't combine results computed by gemm_bacthed with results computed by gemm_strided_batched)
+    // we don't combine results computed by gemm_batched with results computed by gemm_strided_batched)
     CHECK_ROCBLAS_ERROR(rocsolver_gesvd(STRIDED, handle, left_svectT, right_svectT, mT, nT,
                                         dA.data(), lda, stA, dS.data(), stS, dUT.data(), lduT, stUT,
                                         dVT.data(), ldvT, stVT, dE.data(), stE, rocblas_inplace,
