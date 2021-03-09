@@ -18,8 +18,8 @@ rocblas_status rocsolver_sygs2_hegs2_strided_batched_impl(rocblas_handle handle,
                                                           const rocblas_int batch_count)
 {
     const char* name = (!is_complex<T> ? "sygs2_strided_batched" : "hegs2_strided_batched");
-    ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--uplo", uplo, "-n", n, "--lda", lda, "--bsa",
-                        strideA, "--ldb", ldb, "--bsb", strideB, "--batch", batch_count);
+    ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--uplo", uplo, "-n", n, "--lda", lda, "--strideA",
+                        strideA, "--ldb", ldb, "--strideB", strideB, "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;
