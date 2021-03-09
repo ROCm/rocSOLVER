@@ -259,7 +259,7 @@ void ormtr_unmtr_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T, bool COMPLEX = is_complex<T>>
-void testing_ormtr_unmtr(Arguments argus)
+void testing_ormtr_unmtr(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

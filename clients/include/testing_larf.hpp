@@ -211,7 +211,7 @@ void larf_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_larf(Arguments argus)
+void testing_larf(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

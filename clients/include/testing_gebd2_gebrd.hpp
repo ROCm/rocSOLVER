@@ -402,7 +402,7 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, bool GEBRD, typename T>
-void testing_gebd2_gebrd(Arguments argus)
+void testing_gebd2_gebrd(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 

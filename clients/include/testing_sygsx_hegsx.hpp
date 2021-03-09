@@ -276,7 +276,7 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, bool SYGST, typename T>
-void testing_sygsx_hegsx(Arguments argus)
+void testing_sygsx_hegsx(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

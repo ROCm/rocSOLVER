@@ -243,7 +243,7 @@ void latrd_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_latrd(Arguments argus)
+void testing_latrd(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 

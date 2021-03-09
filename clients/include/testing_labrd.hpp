@@ -282,7 +282,7 @@ void labrd_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_labrd(Arguments argus)
+void testing_labrd(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 

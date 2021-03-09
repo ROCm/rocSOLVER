@@ -338,7 +338,7 @@ void gels_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_gels(Arguments argus)
+void testing_gels(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

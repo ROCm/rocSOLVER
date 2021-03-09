@@ -144,8 +144,8 @@ protected:
     {
         Arguments arg = gesvd_setup_arguments(GetParam());
 
-        if(arg.get<rocblas_int>("m") == 0 && arg.get<rocblas_int>("n") == 0
-           && arg.get<char>("left_svect") == 'N' && arg.get<char>("right_svect") == 'N')
+        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0
+           && arg.peek<char>("left_svect") == 'N' && arg.peek<char>("right_svect") == 'N')
             testing_gesvd_bad_arg<BATCHED, STRIDED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);

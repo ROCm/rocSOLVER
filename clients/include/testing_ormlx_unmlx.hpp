@@ -257,7 +257,7 @@ void ormlx_unmlx_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T, bool MLQ, bool COMPLEX = is_complex<T>>
-void testing_ormlx_unmlx(Arguments argus)
+void testing_ormlx_unmlx(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

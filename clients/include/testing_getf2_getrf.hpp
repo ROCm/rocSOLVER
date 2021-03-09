@@ -319,7 +319,7 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, bool GETRF, typename T>
-void testing_getf2_getrf(Arguments argus)
+void testing_getf2_getrf(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

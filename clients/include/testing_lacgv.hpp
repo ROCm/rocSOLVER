@@ -141,7 +141,7 @@ void lacgv_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_lacgv(Arguments argus)
+void testing_lacgv(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

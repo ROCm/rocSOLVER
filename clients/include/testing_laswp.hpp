@@ -183,7 +183,7 @@ void laswp_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_laswp(Arguments argus)
+void testing_laswp(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

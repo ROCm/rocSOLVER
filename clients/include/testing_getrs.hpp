@@ -285,7 +285,7 @@ void getrs_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_getrs(Arguments argus)
+void testing_getrs(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

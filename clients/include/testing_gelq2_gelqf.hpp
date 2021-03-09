@@ -245,7 +245,7 @@ void gelq2_gelqf_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, bool GELQF, typename T>
-void testing_gelq2_gelqf(Arguments argus)
+void testing_gelq2_gelqf(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

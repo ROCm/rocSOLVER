@@ -229,7 +229,7 @@ void orgbr_ungbr_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_orgbr_ungbr(Arguments argus)
+void testing_orgbr_ungbr(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

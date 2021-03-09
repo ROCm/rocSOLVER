@@ -381,7 +381,7 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, bool SYTRD, typename T>
-void testing_sytxx_hetxx(Arguments argus)
+void testing_sytxx_hetxx(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 

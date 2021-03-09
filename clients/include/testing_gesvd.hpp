@@ -454,7 +454,7 @@ void gesvd_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_gesvd(Arguments argus)
+void testing_gesvd(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 

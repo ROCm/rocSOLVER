@@ -166,7 +166,7 @@ void managed_malloc_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_managed_malloc(Arguments argus)
+void testing_managed_malloc(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 

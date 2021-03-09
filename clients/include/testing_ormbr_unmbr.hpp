@@ -286,7 +286,7 @@ void ormbr_unmbr_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T, bool COMPLEX = is_complex<T>>
-void testing_ormbr_unmbr(Arguments argus)
+void testing_ormbr_unmbr(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

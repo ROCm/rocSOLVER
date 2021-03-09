@@ -193,7 +193,7 @@ void orglx_unglx_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T, bool GLQ>
-void testing_orglx_unglx(Arguments argus)
+void testing_orglx_unglx(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

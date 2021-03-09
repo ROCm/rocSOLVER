@@ -274,7 +274,7 @@ void potf2_potrf_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, bool POTRF, typename T>
-void testing_potf2_potrf(Arguments argus)
+void testing_potf2_potrf(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

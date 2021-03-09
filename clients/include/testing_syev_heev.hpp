@@ -328,7 +328,7 @@ void syev_heev_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_syev_heev(Arguments argus)
+void testing_syev_heev(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 

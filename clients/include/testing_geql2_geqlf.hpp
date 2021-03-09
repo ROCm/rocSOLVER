@@ -245,7 +245,7 @@ void geql2_geqlf_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, bool GEQLF, typename T>
-void testing_geql2_geqlf(Arguments argus)
+void testing_geql2_geqlf(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

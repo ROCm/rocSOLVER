@@ -6,10 +6,29 @@
 
 #include "rocblas.h"
 #include "rocblascommon/program_options.hpp"
+#include "rocsolver_ostream.hpp"
+#include <set>
+#include <sstream>
 
-class Arguments : public std::map<std::string, variable_value>
+class Arguments : private std::map<std::string, variable_value>
 {
+    using base = std::map<std::string, variable_value>;
+
+    std::set<std::string> to_consume;
+
 public:
+    ~Arguments()
+    {
+        if(to_consume.size() > 0)
+        {
+            std::stringstream ss;
+            ss << "WARNING: Not all arguments were consumed:";
+            for(std::string name : to_consume)
+                ss << ' ' << name;
+            rocsolver_cerr << ss.str() << std::endl;
+        }
+    }
+
     // test options
     rocblas_int norm_check = 0;
     rocblas_int unit_check = 1;
@@ -21,14 +40,22 @@ public:
 
     // get and set function arguments
     template <typename T>
-    const T& get(const std::string& name) const
+    const T& peek(const std::string& name) const
     {
         return at(name).as<T>();
     }
 
     template <typename T>
-    const T& get(const std::string& name, const T& default_value) const
+    const T& get(const std::string& name)
     {
+        to_consume.erase(name);
+        return at(name).as<T>();
+    }
+
+    template <typename T>
+    const T& get(const std::string& name, const T& default_value)
+    {
+        to_consume.erase(name);
         auto val = find(name);
         if(val != end() && !val->second.empty() && !val->second.defaulted())
             return val->second.as<T>();
@@ -39,13 +66,30 @@ public:
     template <typename T>
     void set(const std::string& name, const T& val)
     {
-        (*this)[name] = variable_value(val, false);
+        to_consume.insert(name);
+        base::operator[](name) = variable_value(val, false);
     }
 
     void populate(const variables_map& vm)
     {
         for(auto& pair : vm)
-            (*this)[pair.first] = pair.second;
+        {
+            base::operator[](pair.first) = pair.second;
+
+            if(!pair.second.empty() && !pair.second.defaulted())
+                to_consume.insert(pair.first);
+        }
+
+        // remove test arguments
+        to_consume.erase("help");
+        to_consume.erase("function");
+        to_consume.erase("precision");
+        to_consume.erase("batch_count");
+        to_consume.erase("verify");
+        to_consume.erase("iters");
+        to_consume.erase("perf");
+        to_consume.erase("singular");
+        to_consume.erase("device");
     }
 
     // validate function arguments

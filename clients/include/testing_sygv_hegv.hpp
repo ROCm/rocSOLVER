@@ -463,7 +463,7 @@ void sygv_hegv_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_sygv_hegv(Arguments argus)
+void testing_sygv_hegv(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 

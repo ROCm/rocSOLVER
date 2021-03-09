@@ -79,8 +79,8 @@ protected:
     {
         Arguments arg = sygv_setup_arguments(GetParam());
 
-        if(arg.get<char>("itype") == '1' && arg.get<char>("jobz") == 'N'
-           && arg.get<char>("uplo") == 'U' && arg.get<rocblas_int>("n") == 0)
+        if(arg.peek<char>("itype") == '1' && arg.peek<char>("jobz") == 'N'
+           && arg.peek<char>("uplo") == 'U' && arg.peek<rocblas_int>("n") == 0)
             testing_sygv_hegv_bad_arg<BATCHED, STRIDED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);

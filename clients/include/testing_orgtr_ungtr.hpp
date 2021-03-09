@@ -190,7 +190,7 @@ void orgtr_ungtr_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_orgtr_ungtr(Arguments argus)
+void testing_orgtr_ungtr(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;

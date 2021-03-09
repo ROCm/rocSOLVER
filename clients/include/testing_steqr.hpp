@@ -274,7 +274,7 @@ void steqr_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_steqr(Arguments argus)
+void testing_steqr(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 

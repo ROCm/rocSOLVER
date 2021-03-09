@@ -315,7 +315,7 @@ void getri_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_getri(Arguments argus)
+void testing_getri(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
