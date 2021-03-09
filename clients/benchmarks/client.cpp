@@ -213,8 +213,8 @@ try
          "Computation type for right singular vectors. Only applicable to certain routines.")
 
         ("evect",
-         value<char>(&argus.evect)->default_value('N'),
-         "Only applicable to certain routines")
+         value<char>()->default_value('N'),
+         "Computation type for eigenvectors. Only applicable to certain routines.")
 
         ("jobz",
          value<char>()->default_value('N'),
@@ -281,12 +281,8 @@ try
 
     argus.validate_svect("left_svect");
     argus.validate_svect("right_svect");
-
-    // evect
-    if(argus.evect != 'V' && argus.evect != 'I' && argus.evect != 'N')
-        throw std::invalid_argument("Invalid value for --evect");
-
     argus.validate_workmode("fast_alg");
+    argus.validate_evect("evect");
     argus.validate_evect("jobz");
     argus.validate_itype("itype");
 
