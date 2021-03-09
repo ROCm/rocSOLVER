@@ -12,6 +12,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Removed
 
 ### Fixed
+- Fixed known issues with Thin-SVD. The problem was identified in the test specification, not in the thin-SVD
+  implementation or the rocBLAS gemm\_batched routines.
 
 ### Known Issues
 
