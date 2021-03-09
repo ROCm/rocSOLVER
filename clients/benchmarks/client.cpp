@@ -95,9 +95,8 @@ try
          "Leading dimension of matrices A")
 
         ("ldb",
-         value<rocblas_int>(&argus.ldb)->default_value(1024),
-         "Specific leading dimension of matrix B, is only applicable to BLAS-2 & BLAS-3: the number "
-         "of rows.")
+         value<rocblas_int>(),
+         "Leading dimension of matrices B")
 
         ("ldc",
          value<rocblas_int>(&argus.ldc)->default_value(1024),
@@ -121,15 +120,18 @@ try
          value<rocblas_stride>(),
          "Stride for matrices/vectors A.")
 
-        ("bsb",
-         value<rocblas_int>(&argus.bsb)->default_value(1024*1024),
-         "Specific stride of strided_batched matrix B, is only applicable to strided batched"
-         "BLAS-2 and BLAS-3: second dimension * leading dimension.")
+        ("strideB",
+         value<rocblas_stride>(),
+         "Stride for matrices/vectors B.")
 
         ("bsc",
          value<rocblas_int>(&argus.bsc)->default_value(1024*1024),
          "Specific stride of strided_batched matrix B, is only applicable to strided batched"
          "BLAS-2 and BLAS-3: second dimension * leading dimension.")
+
+        ("strideD",
+         value<rocblas_stride>(),
+         "Stride for matrices/vectors D.")
 
         ("strideE",
          value<rocblas_stride>(),
@@ -187,8 +189,8 @@ try
          "L = left, R = right. Only applicable to certain routines")
 
         ("uplo",
-         value<char>(&argus.uplo_option)->default_value('U'),
-         "U = upper, L = lower. Only applicable to certain routines")
+         value<char>()->default_value('U'),
+         "U = upper, L = lower. Only applicable to certain routines.")
 
         ("direct",
          value<char>(&argus.direct_option)->default_value('F'),
@@ -214,9 +216,13 @@ try
          value<char>(&argus.evect)->default_value('N'),
          "Only applicable to certain routines")
 
+        ("jobz",
+         value<char>()->default_value('N'),
+         "Computation type for eigenvectors. Only applicable to certain routines.")
+
         ("itype",
-         value<char>(&argus.itype)->default_value('1'),
-         "Only applicable to certain routines");
+         value<char>()->default_value('1'),
+         "Problem type for generalized eigenproblems. Only applicable to certain routines.");
     // clang-format on
 
     variables_map vm;
@@ -263,9 +269,7 @@ try
     if(argus.side_option != 'L' && argus.side_option != 'R' && argus.side_option != 'B')
         throw std::invalid_argument("Invalid value for --side");
 
-    // uplo
-    if(argus.uplo_option != 'U' && argus.uplo_option != 'L' && argus.uplo_option != 'F')
-        throw std::invalid_argument("Invalid value for --uplo");
+    argus.validate_fill("uplo");
 
     // direct
     if(argus.direct_option != 'F' && argus.direct_option != 'B')
@@ -282,13 +286,9 @@ try
     if(argus.evect != 'V' && argus.evect != 'I' && argus.evect != 'N')
         throw std::invalid_argument("Invalid value for --evect");
 
-    // workmode
-    if(argus.workmode != 'O' && argus.workmode != 'I')
-        throw std::invalid_argument("Invalid value for --workmode");
-
-    // itype
-    if(argus.itype != '1' && argus.itype != '2' && argus.itype != '3')
-        throw std::invalid_argument("Invalid value for --itype");
+    argus.validate_workmode("fast_alg");
+    argus.validate_evect("jobz");
+    argus.validate_itype("itype");
 
     // select and dispatch function test/benchmark
     rocsolver_dispatcher::invoke(function, precision, argus);

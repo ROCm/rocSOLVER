@@ -49,10 +49,38 @@ public:
     }
 
     // validate function arguments
+    void validate_fill(const std::string name)
+    {
+        char uplo = at(name).as<char>();
+        if(uplo != 'U' && uplo != 'L' && uplo != 'F')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
     void validate_svect(const std::string name)
     {
         char svect = at(name).as<char>();
         if(svect != 'A' && svect != 'S' && svect != 'O' && svect != 'N')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
+    void validate_workmode(const std::string name)
+    {
+        char workmode = at(name).as<char>();
+        if(workmode != 'O' && workmode != 'I')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
+    void validate_evect(const std::string name)
+    {
+        char evect = at(name).as<char>();
+        if(evect != 'V' && evect != 'I' && evect != 'N')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
+    void validate_itype(const std::string name)
+    {
+        char itype = at(name).as<char>();
+        if(itype != '1' && itype != '2' && itype != '3')
             throw std::invalid_argument("Invalid value for " + name);
     }
 

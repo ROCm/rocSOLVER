@@ -469,17 +469,18 @@ void testing_sygv_hegv(Arguments argus)
 
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_int ldb = argus.ldb;
-    rocblas_stride stA = argus.bsa;
-    rocblas_stride stB = argus.bsb;
-    rocblas_stride stD = argus.bsc;
-    rocblas_stride stE = argus.bsp;
+    char itypeC = argus.get<char>("itype");
+    char jobzC = argus.get<char>("jobz");
+    char uploC = argus.get<char>("uplo");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int lda = argus.get<rocblas_int>("lda", n);
+    rocblas_int ldb = argus.get<rocblas_int>("ldb", n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * n);
+    rocblas_stride stD = argus.get<rocblas_stride>("strideD", n);
+    rocblas_stride stE = argus.get<rocblas_stride>("strideE", n);
     rocblas_int bc = argus.batch_count;
-    char itypeC = argus.itype;
-    char jobzC = argus.evect;
-    char uploC = argus.uplo_option;
+
     rocblas_eform itype = char2rocblas_eform(itypeC);
     rocblas_evect jobz = char2rocblas_evect(jobzC);
     rocblas_fill uplo = char2rocblas_fill(uploC);

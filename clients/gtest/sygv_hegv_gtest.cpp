@@ -51,22 +51,18 @@ Arguments sygv_setup_arguments(sygv_tuple tup)
 
     Arguments arg;
 
-    arg.N = matrix_size[0];
-    arg.lda = matrix_size[1];
-    arg.ldb = matrix_size[2];
-    arg.singular = matrix_size[3];
+    arg.set<rocblas_int>("n", matrix_size[0]);
+    arg.set<rocblas_int>("lda", matrix_size[1]);
+    arg.set<rocblas_int>("ldb", matrix_size[2]);
 
-    arg.itype = type[0];
-    arg.evect = type[1];
-    arg.uplo_option = type[2];
+    arg.set<char>("itype", type[0]);
+    arg.set<char>("jobz", type[1]);
+    arg.set<char>("uplo", type[2]);
+
+    // only testing standard use case/defaults for strides
 
     arg.timing = 0;
-
-    // only testing standard use case for strides
-    // strides are ignored in normal and batched tests
-    arg.bsa = arg.lda * arg.N;
-    arg.bsb = arg.ldb * arg.N;
-    arg.bsp = arg.N;
+    arg.singular = matrix_size[3];
 
     return arg;
 }
@@ -83,7 +79,8 @@ protected:
     {
         Arguments arg = sygv_setup_arguments(GetParam());
 
-        if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
+        if(arg.get<char>("itype") == '1' && arg.get<char>("jobz") == 'N'
+           && arg.get<char>("uplo") == 'U' && arg.get<rocblas_int>("n") == 0)
             testing_sygv_hegv_bad_arg<BATCHED, STRIDED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);

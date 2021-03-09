@@ -24,9 +24,9 @@ rocblas_status rocsolver_sygv_hegv_strided_batched_impl(rocblas_handle handle,
                                                         const rocblas_int batch_count)
 {
     const char* name = (!is_complex<T> ? "sygv_strided_batched" : "hegv_strided_batched");
-    ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--evect", jobz, "--uplo", uplo, "-n", n, "--lda",
-                        lda, "--bsa", strideA, "--ldb", ldb, "--bsb", strideB, "--bsc", strideD,
-                        "--bsp", strideE, "--batch", batch_count);
+    ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--jobz", jobz, "--uplo", uplo, "-n", n, "--lda",
+                        lda, "--strideA", strideA, "--ldb", ldb, "--strideB", strideB, "--strideD",
+                        strideD, "--strideE", strideE, "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;
