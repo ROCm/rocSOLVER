@@ -14,8 +14,8 @@ rocblas_status rocsolver_potrf_strided_batched_impl(rocblas_handle handle,
                                                     rocblas_int* info,
                                                     const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER_TOP("potrf_strided_batched", "--uplo", uplo, "-n", n, "--lda", lda, "--bsa",
-                        strideA, "--batch", batch_count);
+    ROCSOLVER_ENTER_TOP("potrf_strided_batched", "--uplo", uplo, "-n", n, "--lda", lda, "--strideA",
+                        strideA, "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;

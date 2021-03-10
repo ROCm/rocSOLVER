@@ -278,13 +278,14 @@ void testing_potf2_potrf(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_stride stA = argus.bsa;
+    char uploC = argus.get<char>("uplo");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int lda = argus.get<rocblas_int>("lda", n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
     rocblas_int bc = argus.batch_count;
-    rocblas_int hot_calls = argus.iters;
-    char uploC = argus.uplo_option;
+
     rocblas_fill uplo = char2rocblas_fill(uploC);
+    rocblas_int hot_calls = argus.iters;
 
     // hARes should always be allocated (used in initData)
     size_t stARes = stA;
