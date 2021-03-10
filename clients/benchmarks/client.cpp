@@ -72,6 +72,11 @@ try
          "Matrix/vector size parameter. Typically, the number of columns of a matrix,"
          "or the order of a system or transformation.")
 
+        ("nrhs",
+         value<rocblas_int>()->default_value(128),
+         "Matrix/vector size parameter. Typically, the number of columns of a matrix"
+         "on the right-hand side.")
+
         ("sizek,k",
          value<rocblas_int>(&argus.K)->default_value(1024),
          "Specific...  the number of columns in "
@@ -170,8 +175,8 @@ try
          value<double>(&argus.beta)->default_value(0.0), "specifies the scalar beta")
 
         // transpose options
-        ("transposeA",
-         value<char>(&argus.transA_option)->default_value('N'),
+        ("trans",
+         value<char>()->default_value('N'),
          "N = no transpose, T = transpose, C = conjugate transpose.")
 
         ("transposeB",
@@ -252,9 +257,7 @@ try
     }
     set_device(device_id);
 
-    // operation transA
-    if(argus.transA_option != 'N' && argus.transA_option != 'T' && argus.transA_option != 'C')
-        throw std::invalid_argument("Invalid value for --transposeA");
+    argus.validate_operation("trans");
 
     // operation transB
     if(argus.transB_option != 'N' && argus.transB_option != 'T' && argus.transB_option != 'C')

@@ -7101,7 +7101,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(rocblas_handle handle,
     @param[in]
     strideP     rocblas_stride.\n
                 Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-                There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[in,out]
     B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
                 On entry, the right hand side matrices B_j.
@@ -7205,7 +7205,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
     @param[in]
     strideP     rocblas_stride.\n
                 Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-                There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[in,out]
     B           pointer to type. Array on the GPU (size depends on the value of strideB).\n
                 On entry, the right hand side matrices B_j.

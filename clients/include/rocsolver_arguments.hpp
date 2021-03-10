@@ -94,6 +94,13 @@ public:
     }
 
     // validate function arguments
+    void validate_operation(const std::string name)
+    {
+        char trans = at(name).as<char>();
+        if(trans != 'N' && trans != 'T' && trans != 'C')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
     void validate_fill(const std::string name)
     {
         char uplo = at(name).as<char>();
