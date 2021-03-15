@@ -276,11 +276,13 @@ void gesvd_getError(const rocblas_handle handle,
     // input data initialization
     gesvd_initData<true, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A);
 
-    // execute computations
-    // complementary execution (to compute all singular vectors if needed)
-    CHECK_ROCBLAS_ERROR(rocsolver_gesvd(
-        STRIDED, handle, left_svectT, right_svectT, mT, nT, dA.data(), lda, stA, dS.data(), stS,
-        dUT.data(), lduT, stUT, dVT.data(), ldvT, stVT, dE.data(), stE, fa, dinfo.data(), bc));
+    // execute computations:
+    // complementary execution to compute all singular vectors if needed (always in-place to ensure
+    // we don't combine results computed by gemm_batched with results computed by gemm_strided_batched)
+    CHECK_ROCBLAS_ERROR(rocsolver_gesvd(STRIDED, handle, left_svectT, right_svectT, mT, nT,
+                                        dA.data(), lda, stA, dS.data(), stS, dUT.data(), lduT, stUT,
+                                        dVT.data(), ldvT, stVT, dE.data(), stE, rocblas_inplace,
+                                        dinfo.data(), bc));
 
     if(left_svect == rocblas_svect_none && right_svect != rocblas_svect_none)
         CHECK_HIP_ERROR(Ures.transfer_from(dUT));
@@ -514,6 +516,7 @@ void testing_gesvd(Arguments& argus)
     rocblas_int mT = 0;
     rocblas_int nT = 0;
     bool svects = (leftv != rocblas_svect_none || rightv != rocblas_svect_none);
+
     if(svects)
     {
         if(leftv == rocblas_svect_none)
@@ -522,6 +525,8 @@ void testing_gesvd(Arguments& argus)
             lduT = m;
             mT = m;
             nT = n;
+            if((n > m && fa == rocblas_outofplace) || (n > m && rightv == rocblas_svect_overwrite))
+                rightvT = rocblas_svect_overwrite;
         }
         if(rightv == rocblas_svect_none)
         {
@@ -529,6 +534,8 @@ void testing_gesvd(Arguments& argus)
             ldvT = n;
             mT = m;
             nT = n;
+            if((m >= n && fa == rocblas_outofplace) || (m >= n && leftv == rocblas_svect_overwrite))
+                leftvT = rocblas_svect_overwrite;
         }
     }
 
@@ -783,10 +790,11 @@ void testing_gesvd(Arguments& argus)
     // output results for rocsolver-bench
     if(argus.timing)
     {
+        if(svects)
+            max_error = (max_error >= max_errorv) ? max_error : max_errorv;
+
         if(!argus.perf)
         {
-            if(svects)
-                max_error = (max_error >= max_errorv) ? max_error : max_errorv;
             rocsolver_cout << "\n============================================\n";
             rocsolver_cout << "Arguments:\n";
             rocsolver_cout << "============================================\n";

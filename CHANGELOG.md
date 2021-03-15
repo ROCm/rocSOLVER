@@ -2,6 +2,22 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
+## [(Unreleased) rocSOLVER for ROCm 4.3.0]
+### Added
+
+### Optimizations
+
+### Changed
+
+### Removed
+
+### Fixed
+- Fixed known issues with Thin-SVD. The problem was identified in the test specification, not in the thin-SVD
+  implementation or the rocBLAS gemm\_batched routines.
+
+### Known Issues
+
+
 ## [rocSOLVER 3.12.0 for ROCm 4.2.0]
 ### Added
 - Multi-level logging functionality

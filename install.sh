@@ -163,21 +163,6 @@ install_zypper_packages( )
     done
 }
 
-install_msgpack_from_source( )
-{
-    if [[ ! -d "${build_dir}/deps/msgpack-c" ]]; then
-      pushd .
-      mkdir -p "${build_dir}/deps"
-      cd "${build_dir}/deps"
-      git clone -b cpp-3.0.1 https://github.com/msgpack/msgpack-c.git
-      cd msgpack-c
-      CXX=${cxx} CC=${cc} ${cmake_executable} -DMSGPACK_BUILD_TESTS=OFF -DMSGPACK_BUILD_EXAMPLES=OFF .
-      make
-      elevate_if_not_root make install
-      popd
-    fi
-}
-
 # Take an array of packages as input, and delegate the work to the appropriate distro installer
 # prereq: ${ID} must be defined before calling
 # prereq: ${build_clients} must be defined before calling
@@ -193,42 +178,19 @@ install_packages( )
     exit 2
   fi
 
-  # dependencies needed to build the rocblas library
-  local library_dependencies_ubuntu=( "make" "cmake-curses-gui" "pkg-config"
-                                      "python2.7" "python3" "python-yaml" "python3-yaml" "python3*-distutils"
-                                      "llvm-6.0-dev" "zlib1g-dev" "wget")
-  local library_dependencies_centos_7=( "epel-release"
-                                      "make" "cmake3" "rpm-build"
-                                      "python34" "PyYAML" "python3*-PyYAML" "python3*-distutils-extra"
-                                      "gcc-c++" "llvm7.0-devel" "llvm7.0-static"
-                                      "zlib-devel" "wget" )
-  local library_dependencies_centos_8=( "epel-release"
-                                        "make" "rpm-build" "cmake3"
-                                        "python3" "python3-pyyaml" "gcc-c++" "zlib-devel" "wget" )
-  local library_dependencies_fedora=( "make" "cmake" "rpm-build"
-                                      "python34" "PyYAML" "python3*-PyYAML" "python3*-distutils-extra"
-                                      "gcc-c++" "libcxx-devel" "zlib-devel" "wget" )
-  local library_dependencies_sles=(   "make" "cmake" "python3-PyYAM" "python3-distutils-extra"
-                                      "gcc-c++" "libcxxtools9" "rpm-build" "wget" )
-
-  library_dependencies_ubuntu+=( "rocm-dev" )
-  library_dependencies_centos_7+=( "rocm-dev" )
-  library_dependencies_centos_8+=( "rocm-dev" )
-  library_dependencies_fedora+=( "rocm-dev" )
-  library_dependencies_sles+=( "rocm-dev" )
-
-  case "${ID}" in
-    centos|rhel|sles|opensuse-leap)
-      install_msgpack_from_source
-      ;;
-  esac
+  # dependencies needed to build the rocsolver library
+  local library_dependencies_ubuntu=( "make" "cmake")
+  local library_dependencies_centos_7=( "epel-release" "make" "cmake3" "rpm-build")
+  local library_dependencies_centos_8=( "epel-release" "make" "cmake3" "rpm-build")
+  local library_dependencies_fedora=( "make" "cmake" "rpm-build")
+  local library_dependencies_sles=( "make" "cmake" "rpm-build")
 
   # dependencies to build the client
-  local client_dependencies_ubuntu=( "gfortran" "libomp-dev" "libboost-program-options-dev")
-  local client_dependencies_centos_7=( "devtoolset-7-gcc-gfortran" "libgomp" "boost-devel" )
-  local client_dependencies_centos_8=( "gcc-gfortran" "libgomp" "boost-devel" )
-  local client_dependencies_fedora=( "gcc-gfortran" "libgomp" "boost-devel" )
-  local client_dependencies_sles=( "gcc-fortran" "libgomp1" "libboost_program_options1_66_0-devel" )
+  local client_dependencies_ubuntu=( "gfortran" )
+  local client_dependencies_centos_7=( "devtoolset-7-gcc-gfortran" )
+  local client_dependencies_centos_8=( "gcc-gfortran" )
+  local client_dependencies_fedora=( "gcc-gfortran" )
+  local client_dependencies_sles=( "gcc-fortran" )
 
   case "${ID}" in
     ubuntu)
