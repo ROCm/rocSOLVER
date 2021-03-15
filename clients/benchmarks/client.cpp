@@ -26,7 +26,7 @@ try
     // take arguments and set default values
     // clang-format off
     options_description desc("rocsolver client command line options");
-    desc.add_options()("help,h", "produces this help message.")
+    desc.add_options()("help,h", "Produces this help message.")
 
         // test options
         ("function,f",
@@ -162,11 +162,6 @@ try
          value<rocblas_stride>(),
          "Stride for matrices/vectors B.")
 
-        ("bsc",
-         value<rocblas_int>(&argus.bsc)->default_value(1024*1024),
-         "Specific stride of strided_batched matrix B, is only applicable to strided batched"
-         "BLAS-2 and BLAS-3: second dimension * leading dimension.")
-
         ("strideD",
          value<rocblas_stride>(),
          "Stride for matrices/vectors D.")
@@ -195,36 +190,15 @@ try
          value<rocblas_stride>(),
          "Stride for matrices/vectors V.")
 
-        // increment options
+        // other options
         ("incx",
          value<rocblas_int>()->default_value(1),
          "Increment between values in vector x.")
 
-        ("incy",
-         value<rocblas_int>(&argus.incy)->default_value(1),
-         "increment between values in y vector")
-
-        // coefficient options
-        ("alpha",
-         value<double>(&argus.alpha)->default_value(1.0), "specifies the scalar alpha")
-
-        ("beta",
-         value<double>(&argus.beta)->default_value(0.0), "specifies the scalar beta")
-
-        // transpose options
         ("trans",
          value<char>()->default_value('N'),
          "N = no transpose, T = transpose, C = conjugate transpose.")
 
-        ("transposeB",
-         value<char>(&argus.transB_option)->default_value('N'),
-         "N = no transpose, T = transpose, C = conjugate transpose.")
-
-        ("transposeH",
-         value<char>(&argus.transH_option)->default_value('N'),
-         "N = no transpose, T = transpose, C = conjugate transpose.")
-
-        // other options
         ("k1",
          value<rocblas_int>()->default_value(1),
          "First index for row interchange. Only applicable to laswp.")
@@ -277,7 +251,26 @@ try
     // print help message
     if(vm.count("help"))
     {
-        rocsolver_cout << desc << std::endl;
+        rocsolver_cout
+            << "\nrocSOLVER benchmark client help.\n\n"
+            << "Usage: ./rocsolver-bench <options>\n\n"
+            << "In addition to some common general options, the following list of options "
+               "corresponds to all the parameters\n"
+            << "that might be needed to test a given rocSOLVER function. The parameters are named "
+               "as in the API user guide.\n"
+            << "The arrays are initialized internally by the program with random values.\n\n"
+            << "Note: When a required parameter/option is not provided, it will take the default "
+               "value as listed below.\n"
+            << "If no default value is defined, the program will try to calculate a suitable value "
+               "depending on the context\n"
+            << "of the problem and the tested function; if this is not possible, the program will "
+               "abort with error.\n\n"
+            << "Example: ./rocsolver-bench -f getf2_batched -m 30 --lda 75 --batch_count 350\n"
+            << "This will test getf2_batched with a set of 350 random 30x128 matrices. strideP "
+               "will "
+               "be set to be equal to 30.\n\n"
+            << "Options:\n"
+            << desc << std::endl;
         return 0;
     }
 

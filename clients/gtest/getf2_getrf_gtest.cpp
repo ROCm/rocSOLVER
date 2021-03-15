@@ -112,7 +112,7 @@ protected:
     {
         Arguments arg = getrf_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.N == 0)
+        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0)
             testing_getf2_getrf_npvt_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);

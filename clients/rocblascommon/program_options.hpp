@@ -380,24 +380,6 @@ public:
     // Formatted output of command-line arguments description
     friend std::ostream& operator<<(std::ostream& os, const options_description& d)
     {
-        os << "\nrocSOLVER benchmark client help.\n\n"
-           << "Usage: ./rocsolver-bench <options>\n\n"
-           << "In addition to some common general options, the following list of options "
-              "corresponds to all the parameters\n"
-           << "that might be needed to test a given rocSOLVER function. The parameters are named "
-              "as in the API user guide.\n"
-           << "The arrays are initialized internally by the program with random values.\n\n"
-           << "Note: When a required parameter/option is not provided, it will take the default "
-              "value as listed below.\n"
-           << "If no default value is defined, the program will try to calculate a suitable value "
-              "depending on the context\n"
-           << "of the problem and the tested function; if this is not possible, the program will "
-              "abort with error.\n\n"
-           << "Example: ./rocsolver-bench -f getf2_batched -m 30 --lda 75 --batch_count 350\n"
-           << "This will test getf2_batched with a set of 350 random 30x128 matrices. strideP will "
-              "be set to be equal to 30.\n\n"
-           << "Options:\n";
-
         // Iterate across all options
         for(const auto& opt : d.m_optlist)
         {
