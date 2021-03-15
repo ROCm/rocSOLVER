@@ -345,21 +345,22 @@ void testing_larfb(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int k = argus.K;
-    rocblas_int m = argus.M;
-    rocblas_int n = argus.N;
-    rocblas_int ldv = argus.ldv;
-    rocblas_int lda = argus.lda;
-    rocblas_int ldt = argus.ldt;
-    rocblas_int hot_calls = argus.iters;
-    char sideC = argus.side_option;
-    char transC = argus.transH_option;
-    char directC = argus.direct_option;
-    char storevC = argus.storev;
+    char sideC = argus.get<char>("side");
+    char transC = argus.get<char>("trans");
+    char directC = argus.get<char>("direct");
+    char storevC = argus.get<char>("storev");
+    rocblas_int k = argus.get<rocblas_int>("k");
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int ldv = argus.get<rocblas_int>("ldv", storevC == 'R' ? k : (sideC == 'L' ? m : n));
+    rocblas_int lda = argus.get<rocblas_int>("lda", m);
+    rocblas_int ldt = argus.get<rocblas_int>("ldt", k);
+
     rocblas_side side = char2rocblas_side(sideC);
     rocblas_operation trans = char2rocblas_operation(transC);
     rocblas_direct direct = char2rocblas_direct(directC);
     rocblas_storev storev = char2rocblas_storev(storevC);
+    rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
     if(side != rocblas_side_left && side != rocblas_side_right)

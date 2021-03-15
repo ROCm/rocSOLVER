@@ -96,19 +96,19 @@ try
         // leading dimension options
         ("lda",
          value<rocblas_int>(),
-         "Leading dimension of matrices A")
+         "Leading dimension of matrices A.")
 
         ("ldb",
          value<rocblas_int>(),
-         "Leading dimension of matrices B")
+         "Leading dimension of matrices B.")
 
         ("ldc",
          value<rocblas_int>(),
-         "Leading dimension of matrices C")
+         "Leading dimension of matrices C.")
 
         ("ldt",
-         value<rocblas_int>(&argus.ldt)->default_value(1024),
-         "Specific leading dimension.")
+         value<rocblas_int>(),
+         "Leading dimension of matrices T.")
 
         ("ldu",
          value<rocblas_int>(),
@@ -211,20 +211,20 @@ try
          "Last index for row interchange. Only applicable to laswp.")
 
         ("side",
-         value<char>(&argus.side_option)->default_value('L'),
-         "L = left, R = right. Only applicable to certain routines")
+         value<char>()->default_value('L'),
+         "L = left, R = right. Only applicable to certain routines.")
 
         ("uplo",
          value<char>()->default_value('U'),
          "U = upper, L = lower. Only applicable to certain routines.")
 
         ("direct",
-         value<char>(&argus.direct_option)->default_value('F'),
-         "F = forward, B = backward. Only applicable to certain routines")
+         value<char>()->default_value('F'),
+         "F = forward, B = backward. Only applicable to certain routines.")
 
         ("storev",
-         value<char>(&argus.storev)->default_value('C'),
-         "C = column_wise, R = row_wise. Only applicable to certain routines")
+         value<char>()->default_value('C'),
+         "C = column_wise, R = row_wise. Only applicable to certain routines.")
 
         ("fast_alg",
          value<char>()->default_value('O'),
@@ -289,20 +289,10 @@ try
     if(argus.transH_option != 'N' && argus.transH_option != 'T' && argus.transH_option != 'C')
         throw std::invalid_argument("Invalid value for --transposeH");
 
-    // side
-    if(argus.side_option != 'L' && argus.side_option != 'R' && argus.side_option != 'B')
-        throw std::invalid_argument("Invalid value for --side");
-
+    argus.validate_side("side");
     argus.validate_fill("uplo");
-
-    // direct
-    if(argus.direct_option != 'F' && argus.direct_option != 'B')
-        throw std::invalid_argument("Invalid value for --direct");
-
-    // storev
-    if(argus.storev != 'R' && argus.storev != 'C')
-        throw std::invalid_argument("Invalid value for --storev");
-
+    argus.validate_direct("direct");
+    argus.validate_storev("storev");
     argus.validate_svect("left_svect");
     argus.validate_svect("right_svect");
     argus.validate_workmode("fast_alg");

@@ -77,19 +77,17 @@ Arguments larfb_setup_arguments(larfb_tuple tup)
 
     Arguments arg;
 
-    arg.M = order_size[0];
-    arg.N = order_size[1];
-    arg.lda = order_size[2];
-    arg.ldv = order_size[4];
+    arg.set<rocblas_int>("m", order_size[0]);
+    arg.set<rocblas_int>("n", order_size[1]);
+    arg.set<rocblas_int>("lda", order_size[2]);
+    arg.set<char>("side", order_size[3] == 0 ? 'L' : 'R');
+    arg.set<rocblas_int>("ldv", order_size[4]);
+    arg.set<char>("storev", order_size[5] == 1 ? 'R' : 'C');
 
-    arg.side_option = order_size[3] == 0 ? 'L' : 'R';
-
-    arg.K = reflector_size[0];
-    arg.ldt = reflector_size[1];
-
-    arg.direct_option = reflector_size[2] == 1 ? 'B' : 'F';
-    arg.transH_option = reflector_size[3] == 0 ? 'N' : (reflector_size[3] == 1 ? 'T' : 'C');
-    arg.storev = order_size[5] == 1 ? 'R' : 'C';
+    arg.set<rocblas_int>("k", reflector_size[0]);
+    arg.set<rocblas_int>("ldt", reflector_size[1]);
+    arg.set<char>("direct", reflector_size[2] == 1 ? 'B' : 'F');
+    arg.set<char>("trans", reflector_size[3] == 0 ? 'N' : (reflector_size[3] == 1 ? 'T' : 'C'));
 
     arg.timing = 0;
 
@@ -108,7 +106,7 @@ protected:
     {
         Arguments arg = larfb_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.K == 0)
+        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("k") == 0)
             testing_larfb_bad_arg<T>();
 
         testing_larfb<T>(arg);

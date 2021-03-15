@@ -101,10 +101,31 @@ public:
             throw std::invalid_argument("Invalid value for " + name);
     }
 
+    void validate_side(const std::string name)
+    {
+        char side = at(name).as<char>();
+        if(side != 'L' && side != 'R' && side != 'B')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
     void validate_fill(const std::string name)
     {
         char uplo = at(name).as<char>();
         if(uplo != 'U' && uplo != 'L' && uplo != 'F')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
+    void validate_direct(const std::string name)
+    {
+        char direct = at(name).as<char>();
+        if(direct != 'F' && direct != 'B')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
+    void validate_storev(const std::string name)
+    {
+        char storev = at(name).as<char>();
+        if(storev != 'R' && storev != 'C')
             throw std::invalid_argument("Invalid value for " + name);
     }
 
