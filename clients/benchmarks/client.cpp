@@ -50,12 +50,13 @@ try
         ("verify,v",
          value<rocblas_int>(&argus.norm_check)->default_value(0),
             "Validate GPU results with CPU? 0 = No, 1 = Yes.\n"
-            "                           This will additionaly print the relative error of the computations.\n"
+            "                           This will additionally print the relative error of the computations.\n"
             "                           ")
 
         ("iters,i",
          value<rocblas_int>(&argus.iters)->default_value(10),
-            "Iterations to run inside the GPU timing loop. Reported time will be the average.\n"
+            "Iterations to run inside the GPU timing loop.\n"
+            "                           Reported time will be the average.\n"
             "                           ")
 
         ("perf",
@@ -78,7 +79,7 @@ try
         // size options
         ("m",
          value<rocblas_int>()->default_value(128),
-            "Matrix size parameter.\n"
+            "Matrix/vector size parameter.\n"
             "                           Typically, the number of rows of a matrix.\n"
             "                           ")
 
@@ -90,158 +91,226 @@ try
             "                           ")
 
         ("k",
-         value<rocblas_int>(),
-            "Typically, a sub-dimension of a problem.\n"
-            "                           The number of Householder reflexions in a transformation, for example.\n")
-
-//
-// KEEP USING SAME FORMAT FOR ALL NAMES/ARGUMENTS ONCE DEFINED
-//
-//
+         value<rocblas_int>()->default_value(128),
+            "Matrix/vector size parameter.\n"
+            "                           Typically, the number of Householder reflections in a transformation.\n"
+            "                           ")
 
         ("nrhs",
          value<rocblas_int>()->default_value(128),
-         "Matrix/vector size parameter. Typically, the number of columns of a matrix"
-         "on the right-hand side.")
-
-        ("nc",
-         value<rocblas_int>()->default_value(128),
-         "Matrix/vector size parameter. The number of columns of matrix C. Only applicable to bdsqr.")
-
-        ("nu",
-         value<rocblas_int>()->default_value(128),
-         "Matrix/vector size parameter. The number of columns of matrix U. Only applicable to bdsqr.")
-
-        ("nv",
-         value<rocblas_int>()->default_value(128),
-         "Matrix/vector size parameter. The number of columns of matrix V. Only applicable to bdsqr.")
+            "Matrix/vector size parameter.\n"
+            "                           Typically, the number of columns of a matrix on the right-hand side.\n"
+            "                           ")
 
         // leading dimension options
         ("lda",
          value<rocblas_int>(),
-         "Leading dimension of matrices A.")
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices A.\n"
+            "                           ")
 
         ("ldb",
          value<rocblas_int>(),
-         "Leading dimension of matrices B.")
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices B.\n"
+            "                           ")
 
         ("ldc",
          value<rocblas_int>(),
-         "Leading dimension of matrices C.")
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices C.\n"
+            "                           ")
 
         ("ldt",
          value<rocblas_int>(),
-         "Leading dimension of matrices T.")
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices T.\n"
+            "                           ")
 
         ("ldu",
          value<rocblas_int>(),
-         "Leading dimension of matrices U.")
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices U.\n"
+            "                           ")
 
         ("ldv",
          value<rocblas_int>(),
-         "Leading dimension of matrices V.")
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices V.\n"
+            "                           ")
 
         ("ldw",
          value<rocblas_int>(),
-         "Leading dimension of matrices W.")
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices W.\n"
+            "                           ")
 
         ("ldx",
          value<rocblas_int>(),
-         "Leading dimension of matrices X.")
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices X.\n"
+            "                           ")
 
         ("ldy",
          value<rocblas_int>(),
-         "Leading dimension of matrices Y.")
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices Y.\n"
+            "                           ")
 
         // stride options
         ("strideA",
          value<rocblas_stride>(),
-         "Stride for matrices/vectors A.")
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors A.\n"
+            "                           ")
 
         ("strideB",
          value<rocblas_stride>(),
-         "Stride for matrices/vectors B.")
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors B.\n"
+            "                           ")
 
         ("strideD",
          value<rocblas_stride>(),
-         "Stride for matrices/vectors D.")
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors D.\n"
+            "                           ")
 
         ("strideE",
          value<rocblas_stride>(),
-         "Stride for matrices/vectors E.")
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors E.\n"
+            "                           ")
 
         ("strideQ",
          value<rocblas_stride>(),
-         "Stride for vectors tau and ipiv.")
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for vectors tau and ipiv.\n"
+            "                           ")
 
         ("strideP",
          value<rocblas_stride>(),
-         "Stride for vectors tau and ipiv.")
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for vectors tau and ipiv.\n"
+            "                           ")
 
         ("strideS",
          value<rocblas_stride>(),
-         "Stride for matrices/vectors S.")
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors S.\n"
+            "                           ")
 
         ("strideU",
          value<rocblas_stride>(),
-         "Stride for matrices/vectors U.")
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors U.\n"
+            "                           ")
 
         ("strideV",
          value<rocblas_stride>(),
-         "Stride for matrices/vectors V.")
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors V.\n"
+            "                           ")
+
+        // bdsqr options
+        ("nc",
+         value<rocblas_int>()->default_value(128),
+            "The number of columns of matrix C.\n"
+            "                           Only applicable to bdsqr.\n"
+            "                           ")
+
+        ("nu",
+         value<rocblas_int>()->default_value(128),
+            "The number of columns of matrix U.\n"
+            "                           Only applicable to bdsqr.\n"
+            "                           ")
+
+        ("nv",
+         value<rocblas_int>()->default_value(128),
+            "The number of columns of matrix V.\n"
+            "                           Only applicable to bdsqr.\n"
+            "                           ")
+
+        // laswp options
+        ("k1",
+         value<rocblas_int>()->default_value(1),
+            "First index for row interchange.\n"
+            "                           Only applicable to laswp.\n"
+            "                           ")
+
+        ("k2",
+         value<rocblas_int>()->default_value(2),
+            "Last index for row interchange.\n"
+            "                           Only applicable to laswp.\n"
+            "                           ")
+
+        // gesvd options
+        ("fast_alg",
+         value<char>()->default_value('O'),
+            "Enables out-of-place computations.\n"
+            "                           Only applicable to gesvd.\n"
+            "                           ")
+
+        ("left_svect",
+         value<char>()->default_value('N'),
+            "Computation type for left singular vectors.\n"
+            "                           Only applicable to gesvd.\n"
+            "                           ")
+
+        ("right_svect",
+         value<char>()->default_value('N'),
+            "Computation type for right singular vectors.\n"
+            "                           Only applicable to gesvd.\n"
+            "                           ")
 
         // other options
         ("incx",
          value<rocblas_int>()->default_value(1),
-         "Increment between values in vector x.")
+            "Increment between values in vector x.\n"
+            "                           Only applicable to certain routines.\n"
+            "                           ")
 
         ("trans",
          value<char>()->default_value('N'),
-         "N = no transpose, T = transpose, C = conjugate transpose.")
-
-        ("k1",
-         value<rocblas_int>()->default_value(1),
-         "First index for row interchange. Only applicable to laswp.")
-
-        ("k2",
-         value<rocblas_int>()->default_value(2),
-         "Last index for row interchange. Only applicable to laswp.")
+            "N = no transpose, T = transpose, C = conjugate transpose.\n"
+            "                           Only applicable to certain routines.\n"
+            "                           ")
 
         ("side",
          value<char>()->default_value('L'),
-         "L = left, R = right. Only applicable to certain routines.")
+            "L = left, R = right.\n"
+            "                           Only applicable to certain routines.\n"
+            "                           ")
 
         ("uplo",
          value<char>()->default_value('U'),
-         "U = upper, L = lower. Only applicable to certain routines.")
+            "U = upper, L = lower.\n"
+            "                           Only applicable to certain routines.\n"
+            "                           ")
 
         ("direct",
          value<char>()->default_value('F'),
-         "F = forward, B = backward. Only applicable to certain routines.")
+            "F = forward, B = backward.\n"
+            "                           Only applicable to certain routines.\n"
+            "                           ")
 
         ("storev",
          value<char>()->default_value('C'),
-         "C = column_wise, R = row_wise. Only applicable to certain routines.")
-
-        ("fast_alg",
-         value<char>()->default_value('O'),
-         "Enables out-of-place computations. Only applicable to gesvd.")
-
-        ("left_svect",
-         value<char>()->default_value('N'),
-         "Computation type for left singular vectors. Only applicable to gesvd.")
-
-        ("right_svect",
-         value<char>()->default_value('N'),
-         "Computation type for right singular vectors. Only applicable to gesvd.")
+            "C = column_wise, R = row_wise.\n"
+            "                           Only applicable to certain routines.\n"
+            "                           ")
 
         ("evect",
          value<char>()->default_value('N'),
-         "Computation type for eigenvectors. Only applicable to certain routines.")
+            "Computation type for eigenvectors.\n"
+            "                           Only applicable to certain routines.\n"
+            "                           ")
 
         ("itype",
          value<char>()->default_value('1'),
-         "Problem type for generalized eigenproblems. Only applicable to certain routines.");
+            "Problem type for generalized eigenproblems.\n"
+            "                           Only applicable to certain routines.\n"
+            "                           ");
     // clang-format on
 
     variables_map vm;
