@@ -13,7 +13,7 @@
 
 template <typename S, typename T, typename U>
 void steqr_checkBadArgs(const rocblas_handle handle,
-                        const rocblas_evect compc,
+                        const rocblas_evect evect,
                         const rocblas_int n,
                         S dD,
                         S dE,
@@ -22,7 +22,7 @@ void steqr_checkBadArgs(const rocblas_handle handle,
                         U dInfo)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(nullptr, compc, n, dD, dE, dC, ldc, dInfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(nullptr, evect, n, dD, dE, dC, ldc, dInfo),
                           rocblas_status_invalid_handle);
 
     // values
@@ -30,18 +30,18 @@ void steqr_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_value);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, compc, n, (S) nullptr, dE, dC, ldc, dInfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, evect, n, (S) nullptr, dE, dC, ldc, dInfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, compc, n, dD, (S) nullptr, dC, ldc, dInfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, evect, n, dD, (S) nullptr, dC, ldc, dInfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, compc, n, dD, dE, (T) nullptr, ldc, dInfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, evect, n, dD, dE, (T) nullptr, ldc, dInfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, compc, n, dD, dE, dC, ldc, (U) nullptr),
+    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, evect, n, dD, dE, dC, ldc, (U) nullptr),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_steqr(handle, compc, 0, (S) nullptr, (S) nullptr, (T) nullptr, ldc, dInfo),
+        rocsolver_steqr(handle, evect, 0, (S) nullptr, (S) nullptr, (T) nullptr, ldc, dInfo),
         rocblas_status_success);
 }
 
@@ -52,7 +52,7 @@ void testing_steqr_bad_arg()
 
     // safe arguments
     rocblas_local_handle handle;
-    rocblas_evect compc = rocblas_evect_original;
+    rocblas_evect evect = rocblas_evect_original;
     rocblas_int n = 1;
     rocblas_int ldc = 1;
 
@@ -67,12 +67,12 @@ void testing_steqr_bad_arg()
     CHECK_HIP_ERROR(dInfo.memcheck());
 
     // check bad arguments
-    steqr_checkBadArgs(handle, compc, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data());
+    steqr_checkBadArgs(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data());
 }
 
 template <bool CPU, bool GPU, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void steqr_initData(const rocblas_handle handle,
-                    const rocblas_evect compc,
+                    const rocblas_evect evect,
                     const rocblas_int n,
                     Sd& dD,
                     Sd& dE,
@@ -102,7 +102,7 @@ void steqr_initData(const rocblas_handle handle,
         hE[0][k - 1] = 0;
 
         // initialize C to the identity matrix
-        if(compc == rocblas_evect_original)
+        if(evect == rocblas_evect_original)
         {
             for(rocblas_int i = 0; i < n; i++)
             {
@@ -123,14 +123,14 @@ void steqr_initData(const rocblas_handle handle,
         CHECK_HIP_ERROR(dD.transfer_from(hD));
         CHECK_HIP_ERROR(dE.transfer_from(hE));
 
-        if(compc == rocblas_evect_original)
+        if(evect == rocblas_evect_original)
             CHECK_HIP_ERROR(dC.transfer_from(hC));
     }
 }
 
 template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void steqr_getError(const rocblas_handle handle,
-                    const rocblas_evect compc,
+                    const rocblas_evect evect,
                     const rocblas_int n,
                     Sd& dD,
                     Sd& dE,
@@ -149,18 +149,18 @@ void steqr_getError(const rocblas_handle handle,
     using S = decltype(std::real(T{}));
 
     // input data initialization
-    steqr_initData<true, true, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
+    steqr_initData<true, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(
-        rocsolver_steqr(handle, compc, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()));
+        rocsolver_steqr(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()));
     CHECK_HIP_ERROR(hDRes.transfer_from(dD));
     CHECK_HIP_ERROR(hERes.transfer_from(dE));
-    if(compc != rocblas_evect_none)
+    if(evect != rocblas_evect_none)
         CHECK_HIP_ERROR(hCRes.transfer_from(dC));
 
-    if(compc == rocblas_evect_none)
+    if(evect == rocblas_evect_none)
     {
         // only eigenvalues needed; can compare with LAPACK
 
@@ -212,7 +212,7 @@ void steqr_getError(const rocblas_handle handle,
 
 template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void steqr_getPerfData(const rocblas_handle handle,
-                       const rocblas_evect compc,
+                       const rocblas_evect evect,
                        const rocblas_int n,
                        Sd& dD,
                        Sd& dE,
@@ -230,30 +230,30 @@ void steqr_getPerfData(const rocblas_handle handle,
 {
     using S = decltype(std::real(T{}));
 
-    size_t size_W = (compc == rocblas_evect_none ? 0 : 2 * n - 2);
+    size_t size_W = (evect == rocblas_evect_none ? 0 : 2 * n - 2);
     std::vector<S> hW(size_W);
 
     if(!perf)
     {
-        steqr_initData<true, false, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
+        steqr_initData<true, false, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
                                           hInfo);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_steqr<S, T>(compc, n, hD[0], hE[0], hC[0], ldc, hW.data());
+        cblas_steqr<S, T>(evect, n, hD[0], hE[0], hC[0], ldc, hW.data());
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    steqr_initData<true, false, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
+    steqr_initData<true, false, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        steqr_initData<false, true, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
+        steqr_initData<false, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
                                           hInfo);
 
         CHECK_ROCBLAS_ERROR(
-            rocsolver_steqr(handle, compc, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()));
+            rocsolver_steqr(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()));
     }
 
     // gpu-lapack performance
@@ -263,11 +263,11 @@ void steqr_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        steqr_initData<false, true, S, T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
+        steqr_initData<false, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
                                           hInfo);
 
         start = get_time_us_sync(stream);
-        rocsolver_steqr(handle, compc, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data());
+        rocsolver_steqr(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data());
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
@@ -280,11 +280,12 @@ void testing_steqr(Arguments& argus)
 
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.N;
-    rocblas_int ldc = argus.ldc;
+    char evectC = argus.get<char>("evect");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int ldc = argus.get<rocblas_int>("ldc", n);
+
+    rocblas_evect evect = char2rocblas_evect(evectC);
     rocblas_int hot_calls = argus.iters;
-    char compcC = argus.evect;
-    rocblas_evect compc = char2rocblas_evect(compcC);
 
     // check non-supported values
     // N/A
@@ -300,10 +301,10 @@ void testing_steqr(Arguments& argus)
     size_t size_CRes = (argus.unit_check || argus.norm_check) ? size_C : 0;
 
     // check invalid sizes
-    bool invalid_size = (n < 0 || (compc != rocblas_evect_none && ldc < n));
+    bool invalid_size = (n < 0 || (evect != rocblas_evect_none && ldc < n));
     if(invalid_size)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, compc, n, (S*)nullptr, (S*)nullptr,
+        EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, evect, n, (S*)nullptr, (S*)nullptr,
                                               (T*)nullptr, ldc, (rocblas_int*)nullptr),
                               rocblas_status_invalid_size);
 
@@ -317,7 +318,7 @@ void testing_steqr(Arguments& argus)
     if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_steqr(handle, compc, n, (S*)nullptr, (S*)nullptr, (T*)nullptr,
+        CHECK_ALLOC_QUERY(rocsolver_steqr(handle, evect, n, (S*)nullptr, (S*)nullptr, (T*)nullptr,
                                           ldc, (rocblas_int*)nullptr));
 
         size_t size;
@@ -349,7 +350,7 @@ void testing_steqr(Arguments& argus)
     if(n == 0)
     {
         EXPECT_ROCBLAS_STATUS(
-            rocsolver_steqr(handle, compc, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()),
+            rocsolver_steqr(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()),
             rocblas_status_success);
         if(argus.timing)
             ROCSOLVER_BENCH_INFORM(0);
@@ -359,12 +360,12 @@ void testing_steqr(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        steqr_getError<T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hDRes, hE, hERes, hC, hCRes,
+        steqr_getError<T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hDRes, hE, hERes, hC, hCRes,
                           hInfo, &max_error);
 
     // collect performance data
     if(argus.timing)
-        steqr_getPerfData<T>(handle, compc, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo,
+        steqr_getPerfData<T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo,
                              &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
 
     // validate results for rocsolver-test
@@ -380,8 +381,8 @@ void testing_steqr(Arguments& argus)
             rocsolver_cout << "\n============================================\n";
             rocsolver_cout << "Arguments:\n";
             rocsolver_cout << "============================================\n";
-            rocsolver_bench_output("compc", "n", "ldc");
-            rocsolver_bench_output(compcC, n, ldc);
+            rocsolver_bench_output("evect", "n", "ldc");
+            rocsolver_bench_output(evectC, n, ldc);
 
             rocsolver_cout << "\n============================================\n";
             rocsolver_cout << "Results:\n";

@@ -85,27 +85,23 @@ Arguments ormbr_setup_arguments(ormbr_tuple tup)
 
     Arguments arg;
 
-    arg.storev = store[4] == 0 ? 'C' : 'R';
-    arg.transA_option = (store[3] == 0 ? 'N' : (store[3] == 1 ? 'T' : 'C'));
-    arg.side_option = store[2] == 0 ? 'L' : 'R';
+    rocblas_int m = size[0];
+    rocblas_int n = size[1];
+    rocblas_int k = size[2];
+    arg.set<rocblas_int>("m", m);
+    arg.set<rocblas_int>("n", n);
+    arg.set<rocblas_int>("k", k);
 
-    arg.K = size[2];
-    arg.N = size[1];
-    arg.M = size[0];
+    rocblas_int nq = store[2] == 0 ? m : n;
 
-    arg.ldc = arg.M + store[1] * 10;
-
-    int nq = arg.side_option == 'L' ? arg.M : arg.N;
-    if(arg.storev == 'C')
-    {
-        arg.lda = nq;
-    }
+    if(store[4] == 0)
+        arg.set<rocblas_int>("lda", nq + store[0] * 10);
     else
-    {
-        arg.lda = min(nq, arg.K);
-    }
-
-    arg.lda += store[0] * 10;
+        arg.set<rocblas_int>("lda", min(nq, k) + store[0] * 10);
+    arg.set<rocblas_int>("ldc", m + store[1] * 10);
+    arg.set<char>("side", store[2] == 0 ? 'L' : 'R');
+    arg.set<char>("trans", (store[3] == 0 ? 'N' : (store[3] == 1 ? 'T' : 'C')));
+    arg.set<char>("storev", store[4] == 0 ? 'C' : 'R');
 
     arg.timing = 0;
 
@@ -124,8 +120,9 @@ protected:
     {
         Arguments arg = ormbr_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
-           && arg.storev == 'C')
+        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 1
+           && arg.peek<char>("side") == 'L' && arg.peek<char>("trans") == 'T'
+           && arg.peek<char>("storev") == 'C')
             testing_ormbr_unmbr_bad_arg<T>();
 
         testing_ormbr_unmbr<T>(arg);

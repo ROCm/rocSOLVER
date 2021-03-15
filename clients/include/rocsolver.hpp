@@ -1213,7 +1213,7 @@ inline rocblas_status
 
 /******************** STEQR ********************/
 inline rocblas_status rocsolver_steqr(rocblas_handle handle,
-                                      rocblas_evect compc,
+                                      rocblas_evect evect,
                                       rocblas_int n,
                                       float* D,
                                       float* E,
@@ -1221,11 +1221,11 @@ inline rocblas_status rocsolver_steqr(rocblas_handle handle,
                                       rocblas_int ldc,
                                       rocblas_int* info)
 {
-    return rocsolver_ssteqr(handle, compc, n, D, E, C, ldc, info);
+    return rocsolver_ssteqr(handle, evect, n, D, E, C, ldc, info);
 }
 
 inline rocblas_status rocsolver_steqr(rocblas_handle handle,
-                                      rocblas_evect compc,
+                                      rocblas_evect evect,
                                       rocblas_int n,
                                       double* D,
                                       double* E,
@@ -1233,11 +1233,11 @@ inline rocblas_status rocsolver_steqr(rocblas_handle handle,
                                       rocblas_int ldc,
                                       rocblas_int* info)
 {
-    return rocsolver_dsteqr(handle, compc, n, D, E, C, ldc, info);
+    return rocsolver_dsteqr(handle, evect, n, D, E, C, ldc, info);
 }
 
 inline rocblas_status rocsolver_steqr(rocblas_handle handle,
-                                      rocblas_evect compc,
+                                      rocblas_evect evect,
                                       rocblas_int n,
                                       float* D,
                                       float* E,
@@ -1245,11 +1245,11 @@ inline rocblas_status rocsolver_steqr(rocblas_handle handle,
                                       rocblas_int ldc,
                                       rocblas_int* info)
 {
-    return rocsolver_csteqr(handle, compc, n, D, E, C, ldc, info);
+    return rocsolver_csteqr(handle, evect, n, D, E, C, ldc, info);
 }
 
 inline rocblas_status rocsolver_steqr(rocblas_handle handle,
-                                      rocblas_evect compc,
+                                      rocblas_evect evect,
                                       rocblas_int n,
                                       double* D,
                                       double* E,
@@ -1257,7 +1257,7 @@ inline rocblas_status rocsolver_steqr(rocblas_handle handle,
                                       rocblas_int ldc,
                                       rocblas_int* info)
 {
-    return rocsolver_zsteqr(handle, compc, n, D, E, C, ldc, info);
+    return rocsolver_zsteqr(handle, evect, n, D, E, C, ldc, info);
 }
 /********************************************************/
 

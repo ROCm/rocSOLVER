@@ -54,11 +54,13 @@ Arguments laswp_setup_arguments(laswp_tuple tup)
 
     Arguments arg;
 
-    arg.N = matrix_size[0];
-    arg.lda = matrix_size[1];
-    arg.k1 = pivots[0];
-    arg.k2 = pivots[1];
-    arg.incx = pivots[2];
+    arg.set<rocblas_int>("n", matrix_size[0]);
+    arg.set<rocblas_int>("lda", matrix_size[1]);
+
+    arg.set<rocblas_int>("k1", pivots[0]);
+    arg.set<rocblas_int>("k2", pivots[1]);
+    arg.set<rocblas_int>("incx", pivots[2]);
+
     arg.timing = 0;
 
     return arg;
@@ -76,7 +78,8 @@ protected:
     {
         Arguments arg = laswp_setup_arguments(GetParam());
 
-        if(arg.N == 0 && arg.k1 == 1 && arg.k2 == 3)
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("k1") == 1
+           && arg.peek<rocblas_int>("k2") == 3)
             testing_laswp_bad_arg<T>();
 
         testing_laswp<T>(arg);

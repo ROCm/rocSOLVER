@@ -21,8 +21,9 @@ rocblas_status rocsolver_gebrd_strided_batched_impl(rocblas_handle handle,
                                                     const rocblas_stride strideP,
                                                     const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER_TOP("gebrd_strided_batched", "-m", m, "-n", n, "--lda", lda, "--bsa", strideA,
-                        "--bsp", strideP, "--batch", batch_count);
+    ROCSOLVER_ENTER_TOP("gebrd_strided_batched", "-m", m, "-n", n, "--lda", lda, "--strideA",
+                        strideA, "--strideD", strideD, "--strideE", strideE, "--strideQ", strideQ,
+                        "--strideP", strideP, "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;

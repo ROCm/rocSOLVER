@@ -197,10 +197,10 @@ void testing_orglx_unglx(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int k = argus.K;
-    rocblas_int m = argus.M;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
+    rocblas_int k = argus.get<rocblas_int>("k");
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values

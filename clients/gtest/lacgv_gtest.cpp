@@ -40,8 +40,8 @@ Arguments lacgv_setup_arguments(lacgv_tuple tup)
 {
     Arguments arg;
 
-    arg.N = tup[0];
-    arg.incx = tup[1];
+    arg.set<rocblas_int>("n", tup[0]);
+    arg.set<rocblas_int>("incx", tup[1]);
 
     return arg;
 }
@@ -58,7 +58,7 @@ protected:
     {
         Arguments arg = lacgv_setup_arguments(GetParam());
 
-        if(arg.N == 0)
+        if(arg.peek<rocblas_int>("n") == 0)
             testing_lacgv_bad_arg<T>();
 
         testing_lacgv<T>(arg);

@@ -20,7 +20,7 @@ rocblas_status rocsolver_labrd_impl(rocblas_handle handle,
                                     U Y,
                                     const rocblas_int ldy)
 {
-    ROCSOLVER_ENTER_TOP("labrd", "-m", m, "-n", n, "-k", k, "--lda", lda, "--ldb", ldx, "--ldc", ldy);
+    ROCSOLVER_ENTER_TOP("labrd", "-m", m, "-n", n, "-k", k, "--lda", lda, "--ldx", ldx, "--ldy", ldy);
 
     if(!handle)
         return rocblas_status_invalid_handle;

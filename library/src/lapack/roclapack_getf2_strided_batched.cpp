@@ -17,8 +17,8 @@ rocblas_status rocsolver_getf2_strided_batched_impl(rocblas_handle handle,
                                                     const rocblas_int batch_count)
 {
     const char* name = (PIVOT ? "getf2_strided_batched" : "getf2_npvt_strided_batched");
-    ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "--lda", lda, "--bsa", strideA, "--bsp", strideP,
-                        "--batch", batch_count);
+    ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "--lda", lda, "--strideA", strideA, "--strideP",
+                        strideP, "--batch_count", batch_count);
 
     using S = decltype(std::real(T{}));
 

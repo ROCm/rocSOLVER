@@ -261,16 +261,17 @@ void testing_ormxl_unmxl(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int k = argus.K;
-    rocblas_int m = argus.M;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_int ldc = argus.ldc;
-    rocblas_int hot_calls = argus.iters;
-    char sideC = argus.side_option;
-    char transC = argus.transA_option;
+    char sideC = argus.get<char>("side");
+    char transC = argus.get<char>("trans");
+    rocblas_int k = argus.get<rocblas_int>("k");
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int lda = argus.get<rocblas_int>("lda", sideC == 'L' ? m : n);
+    rocblas_int ldc = argus.get<rocblas_int>("ldc", m);
+
     rocblas_side side = char2rocblas_side(sideC);
     rocblas_operation trans = char2rocblas_operation(transC);
+    rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
     bool invalid_value

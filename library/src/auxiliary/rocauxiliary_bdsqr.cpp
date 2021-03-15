@@ -21,8 +21,8 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
                                     const rocblas_int ldc,
                                     rocblas_int* info)
 {
-    ROCSOLVER_ENTER_TOP("bdsqr", "--uplo", uplo, "-m", n, "-n", nv, "-k", nu, "--size4", nc,
-                        "--lda", ldv, "--ldb", ldu, "--ldc", ldc);
+    ROCSOLVER_ENTER_TOP("bdsqr", "--uplo", uplo, "-n", n, "--nv", nv, "--nu", nu, "--nc", nc,
+                        "--ldv", ldv, "--ldu", ldu, "--ldc", ldc);
 
     if(!handle)
         return rocblas_status_invalid_handle;

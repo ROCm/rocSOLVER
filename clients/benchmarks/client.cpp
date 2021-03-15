@@ -99,36 +99,39 @@ try
 //
 //
 
+        ("nrhs",
+         value<rocblas_int>()->default_value(128),
+         "Matrix/vector size parameter. Typically, the number of columns of a matrix"
+         "on the right-hand side.")
 
-        ("size4,S4",
-         value<rocblas_int>(&argus.S4)->default_value(1024),
-         "Extra size value.")
+        ("nc",
+         value<rocblas_int>()->default_value(128),
+         "Matrix/vector size parameter. The number of columns of matrix C. Only applicable to bdsqr.")
 
-        ("k1",
-         value<rocblas_int>(&argus.k1)->default_value(1),
-         "First index for row interchange, used with laswp. ")
+        ("nu",
+         value<rocblas_int>()->default_value(128),
+         "Matrix/vector size parameter. The number of columns of matrix U. Only applicable to bdsqr.")
 
-        ("k2",
-         value<rocblas_int>(&argus.k2)->default_value(2),
-         "Last index for row interchange, used with laswp. ")
+        ("nv",
+         value<rocblas_int>()->default_value(128),
+         "Matrix/vector size parameter. The number of columns of matrix V. Only applicable to bdsqr.")
 
         // leading dimension options
         ("lda",
          value<rocblas_int>(),
-         "Leading dimension of matrices A")
+         "Leading dimension of matrices A.")
 
         ("ldb",
          value<rocblas_int>(),
-         "Leading dimension of matrices B")
+         "Leading dimension of matrices B.")
 
         ("ldc",
-         value<rocblas_int>(&argus.ldc)->default_value(1024),
-         "Specific leading dimension of matrix C, is only applicable to BLAS-2 & "
-         "BLAS-3: the number of rows.")
+         value<rocblas_int>(),
+         "Leading dimension of matrices C.")
 
         ("ldt",
-         value<rocblas_int>(&argus.ldt)->default_value(1024),
-         "Specific leading dimension.")
+         value<rocblas_int>(),
+         "Leading dimension of matrices T.")
 
         ("ldu",
          value<rocblas_int>(),
@@ -137,6 +140,18 @@ try
         ("ldv",
          value<rocblas_int>(),
          "Leading dimension of matrices V.")
+
+        ("ldw",
+         value<rocblas_int>(),
+         "Leading dimension of matrices W.")
+
+        ("ldx",
+         value<rocblas_int>(),
+         "Leading dimension of matrices X.")
+
+        ("ldy",
+         value<rocblas_int>(),
+         "Leading dimension of matrices Y.")
 
         // stride options
         ("strideA",
@@ -160,10 +175,13 @@ try
          value<rocblas_stride>(),
          "Stride for matrices/vectors E.")
 
-        ("bsp",
-         value<rocblas_int>(&argus.bsp)->default_value(1024),
-         "Specific stride of batched pivots vector Ipiv, is only applicable to batched and strided_batched"
-         "factorizations: min(first dimension, second dimension).")
+        ("strideQ",
+         value<rocblas_stride>(),
+         "Stride for vectors tau and ipiv.")
+
+        ("strideP",
+         value<rocblas_stride>(),
+         "Stride for vectors tau and ipiv.")
 
         ("strideS",
          value<rocblas_stride>(),
@@ -179,8 +197,8 @@ try
 
         // increment options
         ("incx",
-         value<rocblas_int>(&argus.incx)->default_value(1),
-         "increment between values in x vector")
+         value<rocblas_int>()->default_value(1),
+         "Increment between values in vector x.")
 
         ("incy",
          value<rocblas_int>(&argus.incy)->default_value(1),
@@ -194,8 +212,8 @@ try
          value<double>(&argus.beta)->default_value(0.0), "specifies the scalar beta")
 
         // transpose options
-        ("transposeA",
-         value<char>(&argus.transA_option)->default_value('N'),
+        ("trans",
+         value<char>()->default_value('N'),
          "N = no transpose, T = transpose, C = conjugate transpose.")
 
         ("transposeB",
@@ -207,33 +225,41 @@ try
          "N = no transpose, T = transpose, C = conjugate transpose.")
 
         // other options
+        ("k1",
+         value<rocblas_int>()->default_value(1),
+         "First index for row interchange. Only applicable to laswp.")
+
+        ("k2",
+         value<rocblas_int>()->default_value(2),
+         "Last index for row interchange. Only applicable to laswp.")
+
         ("side",
-         value<char>(&argus.side_option)->default_value('L'),
-         "L = left, R = right. Only applicable to certain routines")
+         value<char>()->default_value('L'),
+         "L = left, R = right. Only applicable to certain routines.")
 
         ("uplo",
          value<char>()->default_value('U'),
          "U = upper, L = lower. Only applicable to certain routines.")
 
         ("direct",
-         value<char>(&argus.direct_option)->default_value('F'),
-         "F = forward, B = backward. Only applicable to certain routines")
+         value<char>()->default_value('F'),
+         "F = forward, B = backward. Only applicable to certain routines.")
 
         ("storev",
-         value<char>(&argus.storev)->default_value('C'),
-         "C = column_wise, R = row_wise. Only applicable to certain routines")
+         value<char>()->default_value('C'),
+         "C = column_wise, R = row_wise. Only applicable to certain routines.")
 
         ("fast_alg",
          value<char>()->default_value('O'),
-         "Enables out-of-place computations. Only applicable to certain routines.")
+         "Enables out-of-place computations. Only applicable to gesvd.")
 
         ("left_svect",
          value<char>()->default_value('N'),
-         "Computation type for left singular vectors. Only applicable to certain routines.")
+         "Computation type for left singular vectors. Only applicable to gesvd.")
 
         ("right_svect",
          value<char>()->default_value('N'),
-         "Computation type for right singular vectors. Only applicable to certain routines.")
+         "Computation type for right singular vectors. Only applicable to gesvd.")
 
         ("evect",
          value<char>()->default_value('N'),
@@ -270,33 +296,11 @@ try
     try
     {
         argus.validate_precision("precision");
-
-        // operation transA
-        if(argus.transA_option != 'N' && argus.transA_option != 'T' && argus.transA_option != 'C')
-            throw std::invalid_argument("Invalid value for --transposeA");
-
-        // operation transB
-        if(argus.transB_option != 'N' && argus.transB_option != 'T' && argus.transB_option != 'C')
-            throw std::invalid_argument("Invalid value for --transposeB");
-
-        // operation transH
-        if(argus.transH_option != 'N' && argus.transH_option != 'T' && argus.transH_option != 'C')
-            throw std::invalid_argument("Invalid value for --transposeH");
-
-        // side
-        if(argus.side_option != 'L' && argus.side_option != 'R' && argus.side_option != 'B')
-            throw std::invalid_argument("Invalid value for --side");
-
+        argus.validate_operation("trans");
+        argus.validate_side("side");
         argus.validate_fill("uplo");
-
-        // direct
-        if(argus.direct_option != 'F' && argus.direct_option != 'B')
-            throw std::invalid_argument("Invalid value for --direct");
-
-        // storev
-        if(argus.storev != 'R' && argus.storev != 'C')
-            throw std::invalid_argument("Invalid value for --storev");
-
+        argus.validate_direct("direct");
+        argus.validate_storev("storev");
         argus.validate_svect("left_svect");
         argus.validate_svect("right_svect");
         argus.validate_workmode("fast_alg");

@@ -58,12 +58,12 @@ Arguments larf_setup_arguments(larf_tuple tup)
 
     Arguments arg;
 
-    arg.M = matrix_size[0];
-    arg.N = matrix_size[1];
-    arg.lda = matrix_size[2];
-    arg.incx = inc[0];
+    arg.set<rocblas_int>("m", matrix_size[0]);
+    arg.set<rocblas_int>("n", matrix_size[1]);
+    arg.set<rocblas_int>("lda", matrix_size[2]);
 
-    arg.side_option = inc[1] == 1 ? 'R' : 'L';
+    arg.set<rocblas_int>("incx", inc[0]);
+    arg.set<char>("side", inc[1] == 1 ? 'R' : 'L');
 
     arg.timing = 0;
 
@@ -82,7 +82,7 @@ protected:
     {
         Arguments arg = larf_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.incx == 0)
+        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("incx") == 0)
             testing_larf_bad_arg<T>();
 
         testing_larf<T>(arg);

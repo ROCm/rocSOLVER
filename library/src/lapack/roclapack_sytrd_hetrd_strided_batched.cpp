@@ -20,8 +20,9 @@ rocblas_status rocsolver_sytrd_hetrd_strided_batched_impl(rocblas_handle handle,
                                                           const rocblas_int batch_count)
 {
     const char* name = (!is_complex<T> ? "sytrd_strided_batched" : "hetrd_strided_batched");
-    ROCSOLVER_ENTER_TOP(name, "--uplo", uplo, "-n", n, "--lda", lda, "--bsa", strideA, "--bsp",
-                        strideP, "--batch", batch_count);
+    ROCSOLVER_ENTER_TOP(name, "--uplo", uplo, "-n", n, "--lda", lda, "--strideA", strideA,
+                        "--strideD", strideD, "--strideE", strideE, "--strideP", strideP,
+                        "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;

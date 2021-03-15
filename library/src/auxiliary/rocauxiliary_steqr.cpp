@@ -6,7 +6,7 @@
 
 template <typename S, typename T>
 rocblas_status rocsolver_steqr_impl(rocblas_handle handle,
-                                    const rocblas_evect compc,
+                                    const rocblas_evect evect,
                                     const rocblas_int n,
                                     S* D,
                                     S* E,
@@ -14,13 +14,13 @@ rocblas_status rocsolver_steqr_impl(rocblas_handle handle,
                                     const rocblas_int ldc,
                                     rocblas_int* info)
 {
-    ROCSOLVER_ENTER_TOP("sterf", "--evect", compc, "-n", n, "--ldc", ldc);
+    ROCSOLVER_ENTER_TOP("sterf", "--evect", evect, "-n", n, "--ldc", ldc);
 
     if(!handle)
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_steqr_argCheck(handle, compc, n, D, E, C, ldc, info);
+    rocblas_status st = rocsolver_steqr_argCheck(handle, evect, n, D, E, C, ldc, info);
     if(st != rocblas_status_continue)
         return st;
 
@@ -38,7 +38,7 @@ rocblas_status rocsolver_steqr_impl(rocblas_handle handle,
     // memory workspace sizes:
     // size for lasrt stack/steqr workspace
     size_t size_work_stack;
-    rocsolver_steqr_getMemorySize<S, T>(compc, n, batch_count, &size_work_stack);
+    rocsolver_steqr_getMemorySize<S, T>(evect, n, batch_count, &size_work_stack);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work_stack);
@@ -52,7 +52,7 @@ rocblas_status rocsolver_steqr_impl(rocblas_handle handle,
     work_stack = mem[0];
 
     // execution
-    return rocsolver_steqr_template<S, T>(handle, compc, n, D, shiftD, strideD, E, shiftE, strideE,
+    return rocsolver_steqr_template<S, T>(handle, evect, n, D, shiftD, strideD, E, shiftE, strideE,
                                           C, shiftC, ldc, strideC, info, batch_count, work_stack);
 }
 
@@ -65,7 +65,7 @@ rocblas_status rocsolver_steqr_impl(rocblas_handle handle,
 extern "C" {
 
 rocblas_status rocsolver_ssteqr(rocblas_handle handle,
-                                const rocblas_evect compc,
+                                const rocblas_evect evect,
                                 const rocblas_int n,
                                 float* D,
                                 float* E,
@@ -73,11 +73,11 @@ rocblas_status rocsolver_ssteqr(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_steqr_impl<float, float>(handle, compc, n, D, E, C, ldc, info);
+    return rocsolver_steqr_impl<float, float>(handle, evect, n, D, E, C, ldc, info);
 }
 
 rocblas_status rocsolver_dsteqr(rocblas_handle handle,
-                                const rocblas_evect compc,
+                                const rocblas_evect evect,
                                 const rocblas_int n,
                                 double* D,
                                 double* E,
@@ -85,11 +85,11 @@ rocblas_status rocsolver_dsteqr(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_steqr_impl<double, double>(handle, compc, n, D, E, C, ldc, info);
+    return rocsolver_steqr_impl<double, double>(handle, evect, n, D, E, C, ldc, info);
 }
 
 rocblas_status rocsolver_csteqr(rocblas_handle handle,
-                                const rocblas_evect compc,
+                                const rocblas_evect evect,
                                 const rocblas_int n,
                                 float* D,
                                 float* E,
@@ -97,11 +97,11 @@ rocblas_status rocsolver_csteqr(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_steqr_impl<float, rocblas_float_complex>(handle, compc, n, D, E, C, ldc, info);
+    return rocsolver_steqr_impl<float, rocblas_float_complex>(handle, evect, n, D, E, C, ldc, info);
 }
 
 rocblas_status rocsolver_zsteqr(rocblas_handle handle,
-                                const rocblas_evect compc,
+                                const rocblas_evect evect,
                                 const rocblas_int n,
                                 double* D,
                                 double* E,
@@ -109,7 +109,7 @@ rocblas_status rocsolver_zsteqr(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_steqr_impl<double, rocblas_double_complex>(handle, compc, n, D, E, C, ldc, info);
+    return rocsolver_steqr_impl<double, rocblas_double_complex>(handle, evect, n, D, E, C, ldc, info);
 }
 
 } // extern C

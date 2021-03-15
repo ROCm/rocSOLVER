@@ -187,11 +187,12 @@ void testing_laswp(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_int k1 = argus.k1;
-    rocblas_int k2 = argus.k2;
-    rocblas_int inc = argus.incx;
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int lda = argus.get<rocblas_int>("lda", 1);
+    rocblas_int k1 = argus.get<rocblas_int>("k1");
+    rocblas_int k2 = argus.get<rocblas_int>("k2");
+    rocblas_int inc = argus.get<rocblas_int>("incx");
+
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values

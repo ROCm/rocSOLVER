@@ -1731,7 +1731,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(rocblas_handle handle,
                 column (if uplo indicates lower) has the Householder vector v(i) as returned
                 by SYTRD. On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension n-1.\n
@@ -3438,12 +3438,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsterf(rocblas_handle handle,
     as returned by, e.g., SYTRD or HETRD. If the tridiagonal matrix is the
     reduced form of a full symmetric/Hermitian matrix as returned by, e.g.,
     SYTRD or HETRD, then the eigenvectors of the original matrix can also
-    be computed, depending on the value of compC.
+    be computed, depending on the value of evect.
 
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    compC     #rocblas_evect.\n
+    evect     #rocblas_evect.\n
               Specifies how the eigenvectors are computed.
     @param[in]
     n         rocblas_int. n >= 0.\n
@@ -3464,17 +3464,17 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsterf(rocblas_handle handle,
               eigenvalues).
     @param[inout]
     C         pointer to type. Array on the GPU of dimension ldc*n.\n
-              On entry, if compC is original, the orthogonal/unitary matrix
+              On entry, if evect is original, the orthogonal/unitary matrix
               used for the reduction to tridiagonal form as returned by, e.g.,
               ORGTR or UNGTR.
               On exit, it is overwritten with the eigenvectors of the original
-              symmetric/Hermitian matrix (if compC is original), or the
-              eigenvectors of the tridiagonal matrix (if compC is tridiagonal).
-              (Not referenced if compC is none).
+              symmetric/Hermitian matrix (if evect is original), or the
+              eigenvectors of the tridiagonal matrix (if evect is tridiagonal).
+              (Not referenced if evect is none).
     @param[in]
-    ldc       rocblas_int. ldc >= n if compc is original or tridiagonal.\n
+    ldc       rocblas_int. ldc >= n if evect is original or tridiagonal.\n
               Specifies the leading dimension of C.
-              (Not referenced if compC is none).
+              (Not referenced if evect is none).
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
               If info = 0, successful exit.
@@ -3484,7 +3484,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsterf(rocblas_handle handle,
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssteqr(rocblas_handle handle,
-                                                 const rocblas_evect compC,
+                                                 const rocblas_evect evect,
                                                  const rocblas_int n,
                                                  float* D,
                                                  float* E,
@@ -3493,7 +3493,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssteqr(rocblas_handle handle,
                                                  rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsteqr(rocblas_handle handle,
-                                                 const rocblas_evect compC,
+                                                 const rocblas_evect evect,
                                                  const rocblas_int n,
                                                  double* D,
                                                  double* E,
@@ -3502,7 +3502,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsteqr(rocblas_handle handle,
                                                  rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_csteqr(rocblas_handle handle,
-                                                 const rocblas_evect compC,
+                                                 const rocblas_evect evect,
                                                  const rocblas_int n,
                                                  float* D,
                                                  float* E,
@@ -3511,7 +3511,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_csteqr(rocblas_handle handle,
                                                  rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zsteqr(rocblas_handle handle,
-                                                 const rocblas_evect compC,
+                                                 const rocblas_evect evect,
                                                  const rocblas_int n,
                                                  double* D,
                                                  double* E,
@@ -7101,7 +7101,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(rocblas_handle handle,
     @param[in]
     strideP     rocblas_stride.\n
                 Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-                There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[in,out]
     B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
                 On entry, the right hand side matrices B_j.
@@ -7205,7 +7205,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
     @param[in]
     strideP     rocblas_stride.\n
                 Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-                There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[in,out]
     B           pointer to type. Array on the GPU (size depends on the value of strideB).\n
                 On entry, the right hand side matrices B_j.

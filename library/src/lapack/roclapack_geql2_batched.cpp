@@ -14,8 +14,8 @@ rocblas_status rocsolver_geql2_batched_impl(rocblas_handle handle,
                                             const rocblas_stride stridep,
                                             const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER_TOP("geql2_batched", "-m", m, "-n", n, "--lda", lda, "--bsp", stridep,
-                        "--batch", batch_count);
+    ROCSOLVER_ENTER_TOP("geql2_batched", "-m", m, "-n", n, "--lda", lda, "--strideP", stridep,
+                        "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;

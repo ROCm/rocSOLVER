@@ -75,21 +75,18 @@ Arguments gels_setup_arguments(gels_tuple tup)
 
     Arguments arg;
 
-    arg.M = std::get<0>(matrix_sizeA);
-    arg.N = std::get<1>(matrix_sizeA);
-    arg.lda = std::get<2>(matrix_sizeA);
-    arg.ldb = std::get<3>(matrix_sizeA);
-    arg.singular = std::get<4>(matrix_sizeA);
+    arg.set<rocblas_int>("m", std::get<0>(matrix_sizeA));
+    arg.set<rocblas_int>("n", std::get<1>(matrix_sizeA));
+    arg.set<rocblas_int>("lda", std::get<2>(matrix_sizeA));
+    arg.set<rocblas_int>("ldb", std::get<3>(matrix_sizeA));
 
-    arg.K = std::get<0>(matrix_sizeB);
-    arg.transA_option = std::get<1>(matrix_sizeB);
+    arg.set<rocblas_int>("nrhs", std::get<0>(matrix_sizeB));
+    arg.set<char>("trans", std::get<1>(matrix_sizeB));
+
+    // only testing standard use case/defaults for strides
 
     arg.timing = 0;
-
-    // only testing standard use case for strides
-    // strides are ignored in normal and batched tests
-    arg.bsa = arg.lda * arg.N;
-    arg.bsb = arg.ldb * arg.K;
+    arg.singular = std::get<4>(matrix_sizeA);
 
     return arg;
 }
@@ -106,7 +103,7 @@ protected:
     {
         Arguments arg = gels_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.K == 0)
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nrhs") == 0)
             testing_gels_bad_arg<BATCHED, STRIDED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);

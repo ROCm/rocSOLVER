@@ -334,15 +334,15 @@ void testing_syev_heev(Arguments& argus)
 
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_stride stA = argus.bsa;
-    rocblas_stride stD = argus.bsb;
-    rocblas_stride stE = argus.bsc;
+    char evectC = argus.get<char>("evect");
+    char uploC = argus.get<char>("uplo");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int lda = argus.get<rocblas_int>("lda", n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stD = argus.get<rocblas_stride>("strideD", n);
+    rocblas_stride stE = argus.get<rocblas_stride>("strideE", n);
     rocblas_int bc = argus.batch_count;
 
-    char evectC = argus.evect;
-    char uploC = argus.uplo_option;
     rocblas_evect evect = char2rocblas_evect(evectC);
     rocblas_fill uplo = char2rocblas_fill(uploC);
     rocblas_int hot_calls = argus.iters;

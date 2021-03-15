@@ -173,7 +173,7 @@ void testing_sterf(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.N;
+    rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values

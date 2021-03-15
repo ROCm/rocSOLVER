@@ -17,7 +17,7 @@ rocblas_status rocsolver_sygst_hegst_batched_impl(rocblas_handle handle,
 {
     const char* name = (!is_complex<T> ? "sygst_batched" : "hegst_batched");
     ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--uplo", uplo, "-n", n, "--lda", lda, "--ldb", ldb,
-                        "--batch", batch_count);
+                        "--batch_count", batch_count);
 
     using S = decltype(std::real(T{}));
 

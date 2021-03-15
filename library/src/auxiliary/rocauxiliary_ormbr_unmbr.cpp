@@ -19,8 +19,8 @@ rocblas_status rocsolver_ormbr_unmbr_impl(rocblas_handle handle,
                                           const rocblas_int ldc)
 {
     const char* name = (!is_complex<T> ? "ormbr" : "unmbr");
-    ROCSOLVER_ENTER_TOP(name, "--storev", storev, "--side", side, "--transposeA", trans, "-m", m,
-                        "-n", n, "-k", k, "--lda", lda, "--ldc", ldc);
+    ROCSOLVER_ENTER_TOP(name, "--storev", storev, "--side", side, "--trans", trans, "-m", m, "-n",
+                        n, "-k", k, "--lda", lda, "--ldc", ldc);
 
     if(!handle)
         return rocblas_status_invalid_handle;
