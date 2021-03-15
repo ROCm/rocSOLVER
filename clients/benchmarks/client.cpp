@@ -22,60 +22,81 @@ try
     rocblas_int device_id;
 
     // take arguments and set default values
-    // (TODO) IMPROVE WORDING/INFORMATION. CHANGE ARGUMENT NAMES FOR
-    // MORE RELATED NAMES (THESE ARE BLAS-BASED NAMES)
-
     // clang-format off
     options_description desc("rocsolver client command line options");
-    desc.add_options()("help,h", "produces this help message")
+    desc.add_options()("help,h", "produces this help message.")
 
         // test options
         ("function,f",
          value<std::string>(&function)->default_value("potf2"),
-         "The LAPACK function to test.")
+            "The LAPACK function to test.\n"
+            "                           Options are: getf2, getrf, gesvd_batched, etc.\n"
+            "                           ")
 
         ("precision,r",
          value<char>(&precision)->default_value('s'),
-         "Precision of the LAPACK function to test. Options: h, s, d, c, z.")
+            "Precision to be used in the tests.\n" 
+            "                           Options are: s, d, c, z.\n"
+            "                           ")
 
         ("batch_count",
          value<rocblas_int>(&argus.batch_count)->default_value(1),
-         "Number of matrices. Only applicable to batched routines.")
+            "Number of matrices or problem instances in the batch.\n" 
+            "                           Only applicable to batch routines.\n"
+            "                           ")
 
         ("verify,v",
          value<rocblas_int>(&argus.norm_check)->default_value(0),
-         "Validate GPU results with CPU? 0 = No, 1 = Yes (default: No).")
+            "Validate GPU results with CPU? 0 = No, 1 = Yes.\n"
+            "                           This will additionaly print the relative error of the computations.\n"
+            "                           ")
 
         ("iters,i",
          value<rocblas_int>(&argus.iters)->default_value(10),
-         "Iterations to run inside timing loop (default: 10).")
+            "Iterations to run inside the GPU timing loop. Reported time will be the average.\n"
+            "                           ")
 
         ("perf",
          value<rocblas_int>(&argus.perf)->default_value(0),
-         "Ignore CPU timing results? 0 = No, 1 = Yes (default: No).")
+            "Ignore CPU timing results? 0 = No, 1 = Yes.\n"
+            "                           This forces the client to print only the GPU time and the error if requested.\n"
+            "                           ")
 
         ("singular",
          value<rocblas_int>(&argus.singular)->default_value(0),
-         "Test with degenerate matrices? 0 = No, 1 = Yes (default: No).")
+            "Test with degenerate matrices? 0 = No, 1 = Yes\n"
+            "                           This will produce matrices that are singular, non positive-definite, etc.\n"
+            "                           ")
 
         ("device",
          value<rocblas_int>(&device_id)->default_value(0),
-         "Set default device to be used for subsequent program runs.")
+            "Set the default device to be used for subsequent program runs.\n"
+            "                           ")
 
         // size options
         ("m",
          value<rocblas_int>()->default_value(128),
-         "Matrix size parameter. Typically, the number of rows of a matrix.")
+            "Matrix size parameter.\n" 
+            "                           Typically, the number of rows of a matrix.\n"
+            "                           ")
 
         ("n",
          value<rocblas_int>()->default_value(128),
-         "Matrix/vector size parameter. Typically, the number of columns of a matrix,"
-         "or the order of a system or transformation.")
+            "Matrix/vector size parameter.\n" 
+            "                           Typically, the number of columns of a matrix,\n" 
+            "                           or the order of a system or transformation.\n"
+            "                           ")
 
-        ("sizek,k",
-         value<rocblas_int>(&argus.K)->default_value(1024),
-         "Specific...  the number of columns in "
-         "A & C  and rows in B.")
+        ("k",
+         value<rocblas_int>(),
+            "Typically, a sub-dimension of a problem.\n"
+            "                           The number of Householder reflexions in a transformation, for example.\n")
+
+//
+// KEEP USING SAME FORMAT FOR ALL NAMES/ARGUMENTS ONCE DEFINED
+//
+//
+
 
         ("size4,S4",
          value<rocblas_int>(&argus.S4)->default_value(1024),

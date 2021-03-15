@@ -194,7 +194,7 @@ class options_description
         }
 
         // Set a value
-        void set_val(int& argc, char**& argv) const
+        void set_val(int& argc, char**& argv, std::string inopt) const
         {
             // We test all supported types with dynamic_cast and parse accordingly
             bool match = false;
@@ -260,7 +260,7 @@ class options_description
             }
 
             if(!match)
-                throw std::invalid_argument(argc ? *argv : "Missing required argument");
+                throw std::invalid_argument(argc ? "Invalid value for " + inopt : "Missing required value for " + inopt);
 
             // Skip past the argument's value
             ++argv;
@@ -320,7 +320,7 @@ class options_description
 
                     // If option has a value, set it
                     if(opt.get_val().get())
-                        opt.set_val(argc, argv);
+                        opt.set_val(argc, argv, prefix + tok->str());
 
                     // Add seen options to map
                     vm[canonical_name] = variable_value(opt.get_val());
@@ -337,7 +337,7 @@ class options_description
             --argc;
         }
         else
-            throw std::invalid_argument(*argv);
+            throw std::invalid_argument("Option " + std::string(argv[0]) + " is not defined.");
     }
 
 public:
@@ -377,10 +377,21 @@ public:
     // Formatted output of command-line arguments description
     friend std::ostream& operator<<(std::ostream& os, const options_description& d)
     {
+        os << "\nrocSOLVER benchmark client help.\n\n" << "Usage: ./rocsolver-bench <options>\n\n" 
+            << "In addition to some common general options, the following list of options corresponds to all the parameters\n"
+            << "that might be needed to test a given rocSOLVER function. The parameters are named as in the API user guide.\n"
+            << "The arrays are initialized internally by the program with random values.\n\n" 
+            << "Note: When a required parameter/option is not provided, it will take the default value as listed below.\n"
+            << "If no default value is defined, the program will try to calculate a suitable value depending on the context\n"
+            << "of the problem and the tested function; if this is not possible, the program will abort with error.\n\n"   
+            << "Example: ./rocsolver-bench -f getf2_batched -m 30 --lda 75 --batch_count 350\n"
+            << "This will test getf2_batched with a set of 350 random 30x128 matrices. strideP will be set to be equal to 30.\n\n"
+            << "Options:\n";
+
         // Iterate across all options
         for(const auto& opt : d.m_optlist)
         {
-            bool first = true;
+            bool first = true, printvalue = true;
             const char* delim = "";
             std::ostringstream left;
 
@@ -391,19 +402,26 @@ public:
             {
                 // If the length of the option is 1, it is single-dash; otherwise double-dash
                 const char* prefix = tok->length() == 1 ? "-" : "--";
-                left << delim << (first ? "" : "[ ") << prefix << tok->str() << (first ? "" : " ]");
+                left << delim << (first ? "" : "|") << prefix << tok->str();
+
+                if(tok->str() == "help" || tok->str() == "h")
+                    printvalue = false;
             }
+
+            if(printvalue)
+                left << " <value>";
+            os << std::setw(26) << std::left << left.str() << " " << opt.get_desc() << " ";
+            left.str(std::string());
 
             // Print the default value of the variable type if it exists
             // We do not print the default value for bool
             const value_base* val = opt.get_val().get();
             if(val && !dynamic_cast<const value<bool>*>(val))
             {
-                left << " arg";
                 if(val->has_default())
                 {
                     // We test all supported types with dynamic_cast and print accordingly
-                    left << " (=";
+                    left << " (Default value is: ";
                     if(dynamic_cast<const value<int32_t>*>(val))
                         left << dynamic_cast<const value<int32_t>*>(val)->get_value();
                     else if(dynamic_cast<const value<uint32_t>*>(val))
@@ -425,7 +443,7 @@ public:
                     left << ")";
                 }
             }
-            os << std::setw(36) << std::left << left.str() << " " << opt.get_desc() << "\n\n";
+            os << left.str() << "\n\n";
         }
         return os << std::flush;
     }
