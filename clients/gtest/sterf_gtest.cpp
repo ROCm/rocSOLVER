@@ -36,7 +36,7 @@ Arguments sterf_setup_arguments(sterf_tuple tup)
 {
     Arguments arg;
 
-    arg.N = tup[0];
+    arg.set<rocblas_int>("n", tup[0]);
 
     arg.timing = 0;
 
@@ -55,7 +55,7 @@ protected:
     {
         Arguments arg = sterf_setup_arguments(GetParam());
 
-        if(arg.N == 0)
+        if(arg.peek<rocblas_int>("n") == 0)
             testing_sterf_bad_arg<T>();
 
         testing_sterf<T>(arg);

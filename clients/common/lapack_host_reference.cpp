@@ -1439,9 +1439,9 @@ void zgesvd_(char* jobu,
 void ssterf_(int* n, float* D, float* E, int* info);
 void dsterf_(int* n, double* D, double* E, int* info);
 
-void ssteqr_(char* compc, int* n, float* D, float* E, float* C, int* ldc, float* work, int* info);
-void dsteqr_(char* compc, int* n, double* D, double* E, double* C, int* ldc, double* work, int* info);
-void csteqr_(char* compc,
+void ssteqr_(char* evect, int* n, float* D, float* E, float* C, int* ldc, float* work, int* info);
+void dsteqr_(char* evect, int* n, double* D, double* E, double* C, int* ldc, double* work, int* info);
+void csteqr_(char* evect,
              int* n,
              float* D,
              float* E,
@@ -1449,7 +1449,7 @@ void csteqr_(char* compc,
              int* ldc,
              float* work,
              int* info);
-void zsteqr_(char* compc,
+void zsteqr_(char* evect,
              int* n,
              double* D,
              double* E,
@@ -5136,7 +5136,7 @@ void cblas_sterf<double>(rocblas_int n, double* D, double* E)
 
 // steqr
 template <>
-void cblas_steqr<float, float>(rocblas_evect compc,
+void cblas_steqr<float, float>(rocblas_evect evect,
                                rocblas_int n,
                                float* D,
                                float* E,
@@ -5145,12 +5145,12 @@ void cblas_steqr<float, float>(rocblas_evect compc,
                                float* work)
 {
     rocblas_int info;
-    char compcC = rocblas2char_evect(compc);
-    ssteqr_(&compcC, &n, D, E, C, &ldc, work, &info);
+    char evectC = rocblas2char_evect(evect);
+    ssteqr_(&evectC, &n, D, E, C, &ldc, work, &info);
 }
 
 template <>
-void cblas_steqr<double, double>(rocblas_evect compc,
+void cblas_steqr<double, double>(rocblas_evect evect,
                                  rocblas_int n,
                                  double* D,
                                  double* E,
@@ -5159,11 +5159,11 @@ void cblas_steqr<double, double>(rocblas_evect compc,
                                  double* work)
 {
     rocblas_int info;
-    char compcC = rocblas2char_evect(compc);
-    dsteqr_(&compcC, &n, D, E, C, &ldc, work, &info);
+    char evectC = rocblas2char_evect(evect);
+    dsteqr_(&evectC, &n, D, E, C, &ldc, work, &info);
 }
 template <>
-void cblas_steqr<float, rocblas_float_complex>(rocblas_evect compc,
+void cblas_steqr<float, rocblas_float_complex>(rocblas_evect evect,
                                                rocblas_int n,
                                                float* D,
                                                float* E,
@@ -5172,12 +5172,12 @@ void cblas_steqr<float, rocblas_float_complex>(rocblas_evect compc,
                                                float* work)
 {
     rocblas_int info;
-    char compcC = rocblas2char_evect(compc);
-    csteqr_(&compcC, &n, D, E, C, &ldc, work, &info);
+    char evectC = rocblas2char_evect(evect);
+    csteqr_(&evectC, &n, D, E, C, &ldc, work, &info);
 }
 
 template <>
-void cblas_steqr<double, rocblas_double_complex>(rocblas_evect compc,
+void cblas_steqr<double, rocblas_double_complex>(rocblas_evect evect,
                                                  rocblas_int n,
                                                  double* D,
                                                  double* E,
@@ -5186,8 +5186,8 @@ void cblas_steqr<double, rocblas_double_complex>(rocblas_evect compc,
                                                  double* work)
 {
     rocblas_int info;
-    char compcC = rocblas2char_evect(compc);
-    zsteqr_(&compcC, &n, D, E, C, &ldc, work, &info);
+    char evectC = rocblas2char_evect(evect);
+    zsteqr_(&evectC, &n, D, E, C, &ldc, work, &info);
 }
 
 // sygs2 & hegs2

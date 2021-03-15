@@ -82,9 +82,17 @@ try
          "Specific...  the number of columns in "
          "A & C  and rows in B.")
 
-        ("size4,S4",
-         value<rocblas_int>(&argus.S4)->default_value(1024),
-         "Extra size value.")
+        ("nc",
+         value<rocblas_int>()->default_value(128),
+         "Matrix/vector size parameter. The number of columns of matrix C, used with bdsqr.")
+
+        ("nu",
+         value<rocblas_int>()->default_value(128),
+         "Matrix/vector size parameter. The number of columns of matrix U, used with bdsqr.")
+
+        ("nv",
+         value<rocblas_int>()->default_value(128),
+         "Matrix/vector size parameter. The number of columns of matrix V, used with bdsqr.")
 
         ("k1",
          value<rocblas_int>(&argus.k1)->default_value(1),
@@ -104,9 +112,8 @@ try
          "Leading dimension of matrices B")
 
         ("ldc",
-         value<rocblas_int>(&argus.ldc)->default_value(1024),
-         "Specific leading dimension of matrix C, is only applicable to BLAS-2 & "
-         "BLAS-3: the number of rows.")
+         value<rocblas_int>(),
+         "Leading dimension of matrices C")
 
         ("ldt",
          value<rocblas_int>(&argus.ldt)->default_value(1024),
