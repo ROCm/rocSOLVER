@@ -77,30 +77,21 @@ try
          "Matrix/vector size parameter. Typically, the number of columns of a matrix"
          "on the right-hand side.")
 
-        ("sizek,k",
-         value<rocblas_int>(&argus.K)->default_value(1024),
-         "Specific...  the number of columns in "
-         "A & C  and rows in B.")
+        ("k",
+         value<rocblas_int>()->default_value(128),
+         "Matrix/vector size parameter. Typically, the number of rows and columns to be reduced.")
 
         ("nc",
          value<rocblas_int>()->default_value(128),
-         "Matrix/vector size parameter. The number of columns of matrix C, used with bdsqr.")
+         "Matrix/vector size parameter. The number of columns of matrix C. Only applicable to bdsqr.")
 
         ("nu",
          value<rocblas_int>()->default_value(128),
-         "Matrix/vector size parameter. The number of columns of matrix U, used with bdsqr.")
+         "Matrix/vector size parameter. The number of columns of matrix U. Only applicable to bdsqr.")
 
         ("nv",
          value<rocblas_int>()->default_value(128),
-         "Matrix/vector size parameter. The number of columns of matrix V, used with bdsqr.")
-
-        ("k1",
-         value<rocblas_int>(&argus.k1)->default_value(1),
-         "First index for row interchange, used with laswp. ")
-
-        ("k2",
-         value<rocblas_int>(&argus.k2)->default_value(2),
-         "Last index for row interchange, used with laswp. ")
+         "Matrix/vector size parameter. The number of columns of matrix V. Only applicable to bdsqr.")
 
         // leading dimension options
         ("lda",
@@ -126,6 +117,18 @@ try
         ("ldv",
          value<rocblas_int>(),
          "Leading dimension of matrices V.")
+
+        ("ldw",
+         value<rocblas_int>(),
+         "Leading dimension of matrices W.")
+
+        ("ldx",
+         value<rocblas_int>(),
+         "Leading dimension of matrices X.")
+
+        ("ldy",
+         value<rocblas_int>(),
+         "Leading dimension of matrices Y.")
 
         // stride options
         ("strideA",
@@ -171,8 +174,8 @@ try
 
         // increment options
         ("incx",
-         value<rocblas_int>(&argus.incx)->default_value(1),
-         "increment between values in x vector")
+         value<rocblas_int>()->default_value(1),
+         "Increment between values in vector x.")
 
         ("incy",
          value<rocblas_int>(&argus.incy)->default_value(1),
@@ -199,6 +202,14 @@ try
          "N = no transpose, T = transpose, C = conjugate transpose.")
 
         // other options
+        ("k1",
+         value<rocblas_int>()->default_value(1),
+         "First index for row interchange. Only applicable to laswp.")
+
+        ("k2",
+         value<rocblas_int>()->default_value(2),
+         "Last index for row interchange. Only applicable to laswp.")
+
         ("side",
          value<char>(&argus.side_option)->default_value('L'),
          "L = left, R = right. Only applicable to certain routines")
@@ -217,15 +228,15 @@ try
 
         ("fast_alg",
          value<char>()->default_value('O'),
-         "Enables out-of-place computations. Only applicable to certain routines.")
+         "Enables out-of-place computations. Only applicable to gesvd.")
 
         ("left_svect",
          value<char>()->default_value('N'),
-         "Computation type for left singular vectors. Only applicable to certain routines.")
+         "Computation type for left singular vectors. Only applicable to gesvd.")
 
         ("right_svect",
          value<char>()->default_value('N'),
-         "Computation type for right singular vectors. Only applicable to certain routines.")
+         "Computation type for right singular vectors. Only applicable to gesvd.")
 
         ("evect",
          value<char>()->default_value('N'),

@@ -61,11 +61,12 @@ Arguments latrd_setup_arguments(latrd_tuple tup)
 
     Arguments arg;
 
-    arg.N = matrix_size[0];
-    arg.lda = matrix_size[1];
-    arg.ldb = matrix_size[2]; //ldw
-    arg.K = op_size[0];
-    arg.uplo_option = op_size[1] ? 'U' : 'L';
+    arg.set<rocblas_int>("n", matrix_size[0]);
+    arg.set<rocblas_int>("lda", matrix_size[1]);
+    arg.set<rocblas_int>("ldw", matrix_size[2]);
+
+    arg.set<rocblas_int>("k", op_size[0]);
+    arg.set<char>("uplo", op_size[1] ? 'U' : 'L');
 
     arg.timing = 0;
 
@@ -84,7 +85,7 @@ protected:
     {
         Arguments arg = latrd_setup_arguments(GetParam());
 
-        if(arg.K == 0 && arg.N == 0)
+        if(arg.peek<rocblas_int>("k") == 0 && arg.peek<rocblas_int>("n") == 0)
             testing_latrd_bad_arg<T>();
 
         testing_latrd<T>(arg);

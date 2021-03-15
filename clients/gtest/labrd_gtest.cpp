@@ -68,12 +68,13 @@ Arguments labrd_setup_arguments(labrd_tuple tup)
 
     Arguments arg;
 
-    arg.M = matrix_size[0];
-    arg.N = n_size[0];
-    arg.K = n_size[2];
-    arg.lda = matrix_size[1];
-    arg.ldb = matrix_size[2];
-    arg.ldc = n_size[1];
+    arg.set<rocblas_int>("m", matrix_size[0]);
+    arg.set<rocblas_int>("lda", matrix_size[1]);
+    arg.set<rocblas_int>("ldx", matrix_size[2]);
+
+    arg.set<rocblas_int>("n", n_size[0]);
+    arg.set<rocblas_int>("ldy", n_size[1]);
+    arg.set<rocblas_int>("k", n_size[2]);
 
     arg.timing = 0;
 
@@ -92,7 +93,7 @@ protected:
     {
         Arguments arg = labrd_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.N == 0)
+        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0)
             testing_labrd_bad_arg<T>();
 
         testing_labrd<T>(arg);
