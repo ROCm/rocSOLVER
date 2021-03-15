@@ -83,19 +83,18 @@ Arguments ormtr_setup_arguments(ormtr_tuple tup)
 
     Arguments arg;
 
-    arg.transA_option = (store[3] == 0 ? 'N' : (store[3] == 1 ? 'T' : 'C'));
-    arg.uplo_option = store[4] == 0 ? 'U' : 'L';
-    arg.side_option = store[2] == 0 ? 'L' : 'R';
+    rocblas_int m = size[0];
+    rocblas_int n = size[1];
+    arg.set<rocblas_int>("m", m);
+    arg.set<rocblas_int>("n", n);
 
-    arg.N = size[1];
-    arg.M = size[0];
+    int nq = store[2] == 0 ? m : n;
 
-    arg.ldc = arg.M + store[1] * 10;
-
-    int nq = arg.side_option == 'L' ? arg.M : arg.N;
-    arg.lda = nq;
-
-    arg.lda += store[0] * 10;
+    arg.set<rocblas_int>("lda", nq + store[0] * 10);
+    arg.set<rocblas_int>("ldc", m + store[1] * 10);
+    arg.set<char>("side", store[2] == 0 ? 'L' : 'R');
+    arg.set<char>("trans", (store[3] == 0 ? 'N' : (store[3] == 1 ? 'T' : 'C')));
+    arg.set<char>("uplo", store[4] == 0 ? 'U' : 'L');
 
     arg.timing = 0;
 
@@ -114,8 +113,9 @@ protected:
     {
         Arguments arg = ormtr_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.N == 1 && arg.side_option == 'L' && arg.transA_option == 'T'
-           && arg.uplo_option == 'U')
+        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 1
+           && arg.peek<char>("side") == 'L' && arg.peek<char>("trans") == 'T'
+           && arg.peek<char>("uplo") == 'U')
             testing_ormtr_unmtr_bad_arg<T>();
 
         testing_ormtr_unmtr<T>(arg);

@@ -263,17 +263,19 @@ void testing_ormtr_unmtr(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int m = argus.M;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_int ldc = argus.ldc;
-    rocblas_int hot_calls = argus.iters;
-    char sideC = argus.side_option;
-    char uploC = argus.uplo_option;
-    char transC = argus.transA_option;
+    char sideC = argus.get<char>("side");
+    char uploC = argus.get<char>("uplo");
+    char transC = argus.get<char>("trans");
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int nq = (sideC == 'L' ? m : n);
+    rocblas_int lda = argus.get<rocblas_int>("lda", nq);
+    rocblas_int ldc = argus.get<rocblas_int>("ldc", m);
+
     rocblas_side side = char2rocblas_side(sideC);
     rocblas_fill uplo = char2rocblas_fill(uploC);
     rocblas_operation trans = char2rocblas_operation(transC);
+    rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
     bool invalid_value
@@ -293,7 +295,6 @@ void testing_ormtr_unmtr(Arguments& argus)
 
     // determine sizes
     bool left = (side == rocblas_side_left);
-    rocblas_int nq = left ? m : n;
     size_t size_P = size_t(nq);
     size_t size_C = size_t(ldc) * n;
 
