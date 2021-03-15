@@ -14,6 +14,7 @@ class Arguments : private std::map<std::string, variable_value>
 {
     using base = std::map<std::string, variable_value>;
 
+    // names of arguments that have not yet been used by tests
     std::set<std::string> to_consume;
 
 public:
@@ -53,7 +54,7 @@ public:
     }
 
     template <typename T>
-    const T& get(const std::string& name, const T& default_value)
+    const T get(const std::string& name, const T& default_value)
     {
         to_consume.erase(name);
         auto val = find(name);

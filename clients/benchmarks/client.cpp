@@ -170,7 +170,7 @@ try
         ("beta",
          value<double>(&argus.beta)->default_value(0.0), "specifies the scalar beta")
 
-        // transpose paramaters
+        // transpose options
         ("transposeA",
          value<char>(&argus.transA_option)->default_value('N'),
          "N = no transpose, T = transpose, C = conjugate transpose.")
