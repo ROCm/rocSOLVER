@@ -10,9 +10,9 @@
 #include <set>
 #include <sstream>
 
-class Arguments : private std::map<std::string, variable_value>
+class Arguments : private std::map<std::string, boost::variable_value>
 {
-    using base = std::map<std::string, variable_value>;
+    using base = std::map<std::string, boost::variable_value>;
 
     // names of arguments that have not yet been used by tests
     std::set<std::string> to_consume;
@@ -68,10 +68,10 @@ public:
     void set(const std::string& name, const T& val)
     {
         to_consume.insert(name);
-        base::operator[](name) = variable_value(val, false);
+        base::operator[](name) = boost::variable_value(val, false);
     }
 
-    void populate(const variables_map& vm)
+    void populate(const boost::variables_map& vm)
     {
         for(auto& pair : vm)
         {
@@ -93,7 +93,20 @@ public:
         to_consume.erase("device");
     }
 
+    void clear()
+    {
+        to_consume.clear();
+        base::clear();
+    }
+
     // validate function arguments
+    void validate_precision(const std::string name)
+    {
+        char precision = at(name).as<char>();
+        if(precision != 's' && precision != 'd' && precision != 'c' && precision != 'z')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
     void validate_fill(const std::string name)
     {
         char uplo = at(name).as<char>();

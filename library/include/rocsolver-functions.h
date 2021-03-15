@@ -11615,7 +11615,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_strided_batched(rocblas_handle h
     itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblem.
     @param[in]
-    jobz      #rocblas_evect.\n
+    evect     #rocblas_evect.\n
               Specifies whether the eigenvectors are to be computed.
               If evect is rocblas_evect_original, then the eigenvectors are computed.
               rocblas_evect_tridiagonal is not supported.
@@ -11629,11 +11629,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_strided_batched(rocblas_handle h
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the symmetric matrix A. On exit, if jobz is original,
+              On entry, the symmetric matrix A. On exit, if evect is original,
               the matrix Z of eigenvectors, normalized as follows:
               1. If itype is ax or abx, as Z' * B * Z = I;
               2. If itype is bax, as Z' * inv(B) * Z = I.
-              Otherwise, if jobz is none, then the upper or lower triangular
+              Otherwise, if evect is none, then the upper or lower triangular
               part of the matrix A (including the diagonal) is destroyed,
               depending on the value of uplo.
     @param[in]
@@ -11669,7 +11669,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_strided_batched(rocblas_handle h
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygv(rocblas_handle handle,
                                                 const rocblas_eform itype,
-                                                const rocblas_evect jobz,
+                                                const rocblas_evect evect,
                                                 const rocblas_fill uplo,
                                                 const rocblas_int n,
                                                 float* A,
@@ -11682,7 +11682,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssygv(rocblas_handle handle,
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv(rocblas_handle handle,
                                                 const rocblas_eform itype,
-                                                const rocblas_evect jobz,
+                                                const rocblas_evect evect,
                                                 const rocblas_fill uplo,
                                                 const rocblas_int n,
                                                 double* A,
@@ -11713,7 +11713,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv(rocblas_handle handle,
     itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblem.
     @param[in]
-    jobz      #rocblas_evect.\n
+    evect     #rocblas_evect.\n
               Specifies whether the eigenvectors are to be computed.
               If evect is rocblas_evect_original, then the eigenvectors are computed.
               rocblas_evect_tridiagonal is not supported.
@@ -11727,11 +11727,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv(rocblas_handle handle,
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the hermitian matrix A. On exit, if jobz is original,
+              On entry, the hermitian matrix A. On exit, if evect is original,
               the matrix Z of eigenvectors, normalized as follows:
               1. If itype is ax or abx, as Z' * B * Z = I;
               2. If itype is bax, as Z' * inv(B) * Z = I.
-              Otherwise, if jobz is none, then the upper or lower triangular
+              Otherwise, if evect is none, then the upper or lower triangular
               part of the matrix A (including the diagonal) is destroyed,
               depending on the value of uplo.
     @param[in]
@@ -11767,7 +11767,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv(rocblas_handle handle,
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegv(rocblas_handle handle,
                                                 const rocblas_eform itype,
-                                                const rocblas_evect jobz,
+                                                const rocblas_evect evect,
                                                 const rocblas_fill uplo,
                                                 const rocblas_int n,
                                                 rocblas_float_complex* A,
@@ -11780,7 +11780,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_chegv(rocblas_handle handle,
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv(rocblas_handle handle,
                                                 const rocblas_eform itype,
-                                                const rocblas_evect jobz,
+                                                const rocblas_evect evect,
                                                 const rocblas_fill uplo,
                                                 const rocblas_int n,
                                                 rocblas_double_complex* A,
@@ -11811,7 +11811,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv(rocblas_handle handle,
     itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblems.
     @param[in]
-    jobz      #rocblas_evect.\n
+    evect     #rocblas_evect.\n
               Specifies whether the eigenvectors are to be computed.
               If evect is rocblas_evect_original, then the eigenvectors are computed.
               rocblas_evect_tridiagonal is not supported.
@@ -11825,11 +11825,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv(rocblas_handle handle,
               The matrix dimensions.
     @param[inout]
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the symmetric matrices A_i. On exit, if jobz is original,
+              On entry, the symmetric matrices A_i. On exit, if evect is original,
               the matrix Z_i of eigenvectors, normalized as follows:
               1. If itype is ax or abx, as Z_i' * B_i * Z_i = I;
               2. If itype is bax, as Z_i' * inv(B_i) * Z_i = I.
-              Otherwise, if jobz is none, then the upper or lower triangular
+              Otherwise, if evect is none, then the upper or lower triangular
               part of the matrices A_i (including the diagonal) are destroyed,
               depending on the value of uplo.
     @param[in]
@@ -11876,7 +11876,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv(rocblas_handle handle,
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygv_batched(rocblas_handle handle,
                                                         const rocblas_eform itype,
-                                                        const rocblas_evect jobz,
+                                                        const rocblas_evect evect,
                                                         const rocblas_fill uplo,
                                                         const rocblas_int n,
                                                         float* const A[],
@@ -11892,7 +11892,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssygv_batched(rocblas_handle handle,
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
                                                         const rocblas_eform itype,
-                                                        const rocblas_evect jobz,
+                                                        const rocblas_evect evect,
                                                         const rocblas_fill uplo,
                                                         const rocblas_int n,
                                                         double* const A[],
@@ -11926,7 +11926,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
     itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblems.
     @param[in]
-    jobz      #rocblas_evect.\n
+    evect     #rocblas_evect.\n
               Specifies whether the eigenvectors are to be computed.
               If evect is rocblas_evect_original, then the eigenvectors are computed.
               rocblas_evect_tridiagonal is not supported.
@@ -11940,11 +11940,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
               The matrix dimensions.
     @param[inout]
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the hermitian matrices A_i. On exit, if jobz is original,
+              On entry, the hermitian matrices A_i. On exit, if evect is original,
               the matrix Z_i of eigenvectors, normalized as follows:
               1. If itype is ax or abx, as Z_i' * B_i * Z_i = I;
               2. If itype is bax, as Z_i' * inv(B_i) * Z_i = I.
-              Otherwise, if jobz is none, then the upper or lower triangular
+              Otherwise, if evect is none, then the upper or lower triangular
               part of the matrices A_i (including the diagonal) are destroyed,
               depending on the value of uplo.
     @param[in]
@@ -11991,7 +11991,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegv_batched(rocblas_handle handle,
                                                         const rocblas_eform itype,
-                                                        const rocblas_evect jobz,
+                                                        const rocblas_evect evect,
                                                         const rocblas_fill uplo,
                                                         const rocblas_int n,
                                                         rocblas_float_complex* const A[],
@@ -12007,7 +12007,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_chegv_batched(rocblas_handle handle,
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
                                                         const rocblas_eform itype,
-                                                        const rocblas_evect jobz,
+                                                        const rocblas_evect evect,
                                                         const rocblas_fill uplo,
                                                         const rocblas_int n,
                                                         rocblas_double_complex* const A[],
@@ -12041,7 +12041,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
     itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblems.
     @param[in]
-    jobz      #rocblas_evect.\n
+    evect     #rocblas_evect.\n
               Specifies whether the eigenvectors are to be computed.
               If evect is rocblas_evect_original, then the eigenvectors are computed.
               rocblas_evect_tridiagonal is not supported.
@@ -12055,11 +12055,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the symmetric matrices A_i. On exit, if jobz is original,
+              On entry, the symmetric matrices A_i. On exit, if evect is original,
               the matrix Z_i of eigenvectors, normalized as follows:
               1. If itype is ax or abx, as Z_i' * B_i * Z_i = I;
               2. If itype is bax, as Z_i' * inv(B_i) * Z_i = I.
-              Otherwise, if jobz is none, then the upper or lower triangular
+              Otherwise, if evect is none, then the upper or lower triangular
               part of the matrices A_i (including the diagonal) are destroyed,
               depending on the value of uplo.
     @param[in]
@@ -12114,7 +12114,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygv_strided_batched(rocblas_handle handle,
                                                                 const rocblas_eform itype,
-                                                                const rocblas_evect jobz,
+                                                                const rocblas_evect evect,
                                                                 const rocblas_fill uplo,
                                                                 const rocblas_int n,
                                                                 float* A,
@@ -12132,7 +12132,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssygv_strided_batched(rocblas_handle h
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_strided_batched(rocblas_handle handle,
                                                                 const rocblas_eform itype,
-                                                                const rocblas_evect jobz,
+                                                                const rocblas_evect evect,
                                                                 const rocblas_fill uplo,
                                                                 const rocblas_int n,
                                                                 double* A,
@@ -12168,7 +12168,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_strided_batched(rocblas_handle h
     itype     #rocblas_eform.\n
               Specifies the form of the generalized eigenproblems.
     @param[in]
-    jobz      #rocblas_evect.\n
+    evect     #rocblas_evect.\n
               Specifies whether the eigenvectors are to be computed.
               If evect is rocblas_evect_original, then the eigenvectors are computed.
               rocblas_evect_tridiagonal is not supported.
@@ -12182,11 +12182,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_strided_batched(rocblas_handle h
               The matrix dimensions.
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the hermitian matrices A_i. On exit, if jobz is original,
+              On entry, the hermitian matrices A_i. On exit, if evect is original,
               the matrix Z_i of eigenvectors, normalized as follows:
               1. If itype is ax or abx, as Z_i' * B_i * Z_i = I;
               2. If itype is bax, as Z_i' * inv(B_i) * Z_i = I.
-              Otherwise, if jobz is none, then the upper or lower triangular
+              Otherwise, if evect is none, then the upper or lower triangular
               part of the matrices A_i (including the diagonal) are destroyed,
               depending on the value of uplo.
     @param[in]
@@ -12241,7 +12241,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_strided_batched(rocblas_handle h
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegv_strided_batched(rocblas_handle handle,
                                                                 const rocblas_eform itype,
-                                                                const rocblas_evect jobz,
+                                                                const rocblas_evect evect,
                                                                 const rocblas_fill uplo,
                                                                 const rocblas_int n,
                                                                 rocblas_float_complex* A,
@@ -12259,7 +12259,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_chegv_strided_batched(rocblas_handle h
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_strided_batched(rocblas_handle handle,
                                                                 const rocblas_eform itype,
-                                                                const rocblas_evect jobz,
+                                                                const rocblas_evect evect,
                                                                 const rocblas_fill uplo,
                                                                 const rocblas_int n,
                                                                 rocblas_double_complex* A,

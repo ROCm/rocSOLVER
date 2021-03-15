@@ -7,7 +7,7 @@
 template <typename S, typename T, typename U>
 rocblas_status rocsolver_sygv_hegv_batched_impl(rocblas_handle handle,
                                                 const rocblas_eform itype,
-                                                const rocblas_evect jobz,
+                                                const rocblas_evect evect,
                                                 const rocblas_fill uplo,
                                                 const rocblas_int n,
                                                 U A,
@@ -22,7 +22,7 @@ rocblas_status rocsolver_sygv_hegv_batched_impl(rocblas_handle handle,
                                                 const rocblas_int batch_count)
 {
     const char* name = (!is_complex<T> ? "sygv_batched" : "hegv_batched");
-    ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--jobz", jobz, "--uplo", uplo, "-n", n, "--lda",
+    ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--evect", evect, "--uplo", uplo, "-n", n, "--lda",
                         lda, "--ldb", ldb, "--strideD", strideD, "--strideE", strideE,
                         "--batch_count", batch_count);
 
@@ -30,7 +30,7 @@ rocblas_status rocsolver_sygv_hegv_batched_impl(rocblas_handle handle,
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_sygv_hegv_argCheck(handle, itype, jobz, uplo, n, lda, ldb, A, B,
+    rocblas_status st = rocsolver_sygv_hegv_argCheck(handle, itype, evect, uplo, n, lda, ldb, A, B,
                                                      D, E, info, batch_count);
     if(st != rocblas_status_continue)
         return st;
@@ -52,7 +52,7 @@ rocblas_status rocsolver_sygv_hegv_batched_impl(rocblas_handle handle,
     size_t size_pivots_workArr;
     // size of temporary info array
     size_t size_iinfo;
-    rocsolver_sygv_hegv_getMemorySize<true, T, S>(itype, jobz, uplo, n, batch_count, &size_scalars,
+    rocsolver_sygv_hegv_getMemorySize<true, T, S>(itype, evect, uplo, n, batch_count, &size_scalars,
                                                   &size_work1, &size_work2, &size_work3,
                                                   &size_work4, &size_pivots_workArr, &size_iinfo);
 
@@ -84,7 +84,7 @@ rocblas_status rocsolver_sygv_hegv_batched_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_sygv_hegv_template<true, false, T>(
-        handle, itype, jobz, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, D, strideD,
+        handle, itype, evect, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, D, strideD,
         E, strideE, info, batch_count, (T*)scalars, work1, work2, work3, work4, pivots_workArr,
         (rocblas_int*)iinfo, optim_mem);
 }
@@ -99,7 +99,7 @@ extern "C" {
 
 rocblas_status rocsolver_ssygv_batched(rocblas_handle handle,
                                        const rocblas_eform itype,
-                                       const rocblas_evect jobz,
+                                       const rocblas_evect evect,
                                        const rocblas_fill uplo,
                                        const rocblas_int n,
                                        float* const A[],
@@ -114,12 +114,12 @@ rocblas_status rocsolver_ssygv_batched(rocblas_handle handle,
                                        const rocblas_int batch_count)
 {
     return rocsolver_sygv_hegv_batched_impl<float, float>(
-        handle, itype, jobz, uplo, n, A, lda, B, ldb, D, strideD, E, strideE, info, batch_count);
+        handle, itype, evect, uplo, n, A, lda, B, ldb, D, strideD, E, strideE, info, batch_count);
 }
 
 rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
                                        const rocblas_eform itype,
-                                       const rocblas_evect jobz,
+                                       const rocblas_evect evect,
                                        const rocblas_fill uplo,
                                        const rocblas_int n,
                                        double* const A[],
@@ -134,12 +134,12 @@ rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
                                        const rocblas_int batch_count)
 {
     return rocsolver_sygv_hegv_batched_impl<double, double>(
-        handle, itype, jobz, uplo, n, A, lda, B, ldb, D, strideD, E, strideE, info, batch_count);
+        handle, itype, evect, uplo, n, A, lda, B, ldb, D, strideD, E, strideE, info, batch_count);
 }
 
 rocblas_status rocsolver_chegv_batched(rocblas_handle handle,
                                        const rocblas_eform itype,
-                                       const rocblas_evect jobz,
+                                       const rocblas_evect evect,
                                        const rocblas_fill uplo,
                                        const rocblas_int n,
                                        rocblas_float_complex* const A[],
@@ -154,12 +154,12 @@ rocblas_status rocsolver_chegv_batched(rocblas_handle handle,
                                        const rocblas_int batch_count)
 {
     return rocsolver_sygv_hegv_batched_impl<float, rocblas_float_complex>(
-        handle, itype, jobz, uplo, n, A, lda, B, ldb, D, strideD, E, strideE, info, batch_count);
+        handle, itype, evect, uplo, n, A, lda, B, ldb, D, strideD, E, strideE, info, batch_count);
 }
 
 rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
                                        const rocblas_eform itype,
-                                       const rocblas_evect jobz,
+                                       const rocblas_evect evect,
                                        const rocblas_fill uplo,
                                        const rocblas_int n,
                                        rocblas_double_complex* const A[],
@@ -174,7 +174,7 @@ rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
                                        const rocblas_int batch_count)
 {
     return rocsolver_sygv_hegv_batched_impl<double, rocblas_double_complex>(
-        handle, itype, jobz, uplo, n, A, lda, B, ldb, D, strideD, E, strideE, info, batch_count);
+        handle, itype, evect, uplo, n, A, lda, B, ldb, D, strideD, E, strideE, info, batch_count);
 }
 
 } // extern C

@@ -5,6 +5,8 @@
 #include "rocblascommon/program_options.hpp"
 #include "rocsolver_dispatcher.hpp"
 
+using namespace boost;
+
 int main(int argc, char* argv[])
 try
 {
@@ -35,13 +37,13 @@ try
 
         ("precision,r",
          value<char>(&precision)->default_value('s'),
-            "Precision to be used in the tests.\n" 
+            "Precision to be used in the tests.\n"
             "                           Options are: s, d, c, z.\n"
             "                           ")
 
         ("batch_count",
          value<rocblas_int>(&argus.batch_count)->default_value(1),
-            "Number of matrices or problem instances in the batch.\n" 
+            "Number of matrices or problem instances in the batch.\n"
             "                           Only applicable to batch routines.\n"
             "                           ")
 
@@ -76,14 +78,14 @@ try
         // size options
         ("m",
          value<rocblas_int>()->default_value(128),
-            "Matrix size parameter.\n" 
+            "Matrix size parameter.\n"
             "                           Typically, the number of rows of a matrix.\n"
             "                           ")
 
         ("n",
          value<rocblas_int>()->default_value(128),
-            "Matrix/vector size parameter.\n" 
-            "                           Typically, the number of columns of a matrix,\n" 
+            "Matrix/vector size parameter.\n"
+            "                           Typically, the number of columns of a matrix,\n"
             "                           or the order of a system or transformation.\n"
             "                           ")
 
@@ -234,10 +236,6 @@ try
          "Computation type for right singular vectors. Only applicable to certain routines.")
 
         ("evect",
-         value<char>(&argus.evect)->default_value('N'),
-         "Only applicable to certain routines")
-
-        ("jobz",
          value<char>()->default_value('N'),
          "Computation type for eigenvectors. Only applicable to certain routines.")
 
@@ -259,13 +257,7 @@ try
 
     argus.populate(vm);
 
-    // catch invalid arguments for:
-
-    // precision
-    if(precision != 's' && precision != 'd' && precision != 'c' && precision != 'z')
-        throw std::invalid_argument("Invalid value for --precision ");
-
-    // deviceID
+    // set device ID
     if(!argus.perf)
     {
         rocblas_int device_count = query_device_property();
@@ -274,42 +266,48 @@ try
     }
     set_device(device_id);
 
-    // operation transA
-    if(argus.transA_option != 'N' && argus.transA_option != 'T' && argus.transA_option != 'C')
-        throw std::invalid_argument("Invalid value for --transposeA");
+    // catch invalid arguments
+    try
+    {
+        argus.validate_precision("precision");
 
-    // operation transB
-    if(argus.transB_option != 'N' && argus.transB_option != 'T' && argus.transB_option != 'C')
-        throw std::invalid_argument("Invalid value for --transposeB");
+        // operation transA
+        if(argus.transA_option != 'N' && argus.transA_option != 'T' && argus.transA_option != 'C')
+            throw std::invalid_argument("Invalid value for --transposeA");
 
-    // operation transH
-    if(argus.transH_option != 'N' && argus.transH_option != 'T' && argus.transH_option != 'C')
-        throw std::invalid_argument("Invalid value for --transposeH");
+        // operation transB
+        if(argus.transB_option != 'N' && argus.transB_option != 'T' && argus.transB_option != 'C')
+            throw std::invalid_argument("Invalid value for --transposeB");
 
-    // side
-    if(argus.side_option != 'L' && argus.side_option != 'R' && argus.side_option != 'B')
-        throw std::invalid_argument("Invalid value for --side");
+        // operation transH
+        if(argus.transH_option != 'N' && argus.transH_option != 'T' && argus.transH_option != 'C')
+            throw std::invalid_argument("Invalid value for --transposeH");
 
-    argus.validate_fill("uplo");
+        // side
+        if(argus.side_option != 'L' && argus.side_option != 'R' && argus.side_option != 'B')
+            throw std::invalid_argument("Invalid value for --side");
 
-    // direct
-    if(argus.direct_option != 'F' && argus.direct_option != 'B')
-        throw std::invalid_argument("Invalid value for --direct");
+        argus.validate_fill("uplo");
 
-    // storev
-    if(argus.storev != 'R' && argus.storev != 'C')
-        throw std::invalid_argument("Invalid value for --storev");
+        // direct
+        if(argus.direct_option != 'F' && argus.direct_option != 'B')
+            throw std::invalid_argument("Invalid value for --direct");
 
-    argus.validate_svect("left_svect");
-    argus.validate_svect("right_svect");
+        // storev
+        if(argus.storev != 'R' && argus.storev != 'C')
+            throw std::invalid_argument("Invalid value for --storev");
 
-    // evect
-    if(argus.evect != 'V' && argus.evect != 'I' && argus.evect != 'N')
-        throw std::invalid_argument("Invalid value for --evect");
-
-    argus.validate_workmode("fast_alg");
-    argus.validate_evect("jobz");
-    argus.validate_itype("itype");
+        argus.validate_svect("left_svect");
+        argus.validate_svect("right_svect");
+        argus.validate_workmode("fast_alg");
+        argus.validate_evect("evect");
+        argus.validate_itype("itype");
+    }
+    catch(const std::invalid_argument& e)
+    {
+        argus.clear();
+        throw e;
+    }
 
     // select and dispatch function test/benchmark
     rocsolver_dispatcher::invoke(function, precision, argus);

@@ -14,7 +14,7 @@
 template <bool STRIDED, typename T, typename U>
 void sygv_hegv_checkBadArgs(const rocblas_handle handle,
                             const rocblas_eform itype,
-                            const rocblas_evect jobz,
+                            const rocblas_evect evect,
                             const rocblas_fill uplo,
                             const rocblas_int n,
                             T dA,
@@ -31,12 +31,12 @@ void sygv_hegv_checkBadArgs(const rocblas_handle handle,
                             const rocblas_int bc)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, nullptr, itype, jobz, uplo, n, dA, lda, stA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, nullptr, itype, evect, uplo, n, dA, lda, stA,
                                               dB, ldb, stB, dD, stD, dE, stE, dInfo, bc),
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, rocblas_eform(-1), jobz, uplo, n, dA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, rocblas_eform(-1), evect, uplo, n, dA,
                                               lda, stA, dB, ldb, stB, dD, stD, dE, stE, dInfo, bc),
                           rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, rocblas_evect(-1), uplo, n, dA,
@@ -46,42 +46,42 @@ void sygv_hegv_checkBadArgs(const rocblas_handle handle,
                                               uplo, n, dA, lda, stA, dB, ldb, stB, dD, stD, dE, stE,
                                               dInfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, rocblas_fill(-1), n, dA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, rocblas_fill(-1), n, dA,
                                               lda, stA, dB, ldb, stB, dD, stD, dE, stE, dInfo, bc),
                           rocblas_status_invalid_value);
 
     // sizes (only check batch_count if applicable)
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA, lda,
+        EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n, dA, lda,
                                                   stA, dB, ldb, stB, dD, stD, dE, stE, dInfo, -1),
                               rocblas_status_invalid_size);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, (T) nullptr,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n, (T) nullptr,
                                               lda, stA, dB, ldb, stB, dD, stD, dE, stE, dInfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA, lda, stA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n, dA, lda, stA,
                                               (T) nullptr, ldb, stB, dD, stD, dE, stE, dInfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA, lda, stA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n, dA, lda, stA,
                                               dB, ldb, stB, (U) nullptr, stD, dE, stE, dInfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA, lda, stA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n, dA, lda, stA,
                                               dB, ldb, stB, dD, stD, (U) nullptr, stE, dInfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA, lda, stA, dB,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n, dA, lda, stA, dB,
                                               ldb, stB, dD, stD, dE, stE, (rocblas_int*)nullptr, bc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, 0, (T) nullptr,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, 0, (T) nullptr,
                                               lda, stA, (T) nullptr, ldb, stB, (U) nullptr, stD,
                                               (U) nullptr, stE, dInfo, bc),
                           rocblas_status_success);
 
     // quick return with zero batch_count if applicable
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA, lda,
+        EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n, dA, lda,
                                                   stA, dB, ldb, stB, dD, stD, dE, stE,
                                                   (rocblas_int*)nullptr, 0),
                               rocblas_status_success);
@@ -103,7 +103,7 @@ void testing_sygv_hegv_bad_arg()
     rocblas_stride stE = 1;
     rocblas_int bc = 1;
     rocblas_eform itype = rocblas_eform_ax;
-    rocblas_evect jobz = rocblas_evect_none;
+    rocblas_evect evect = rocblas_evect_none;
     rocblas_fill uplo = rocblas_fill_upper;
 
     if(BATCHED)
@@ -121,7 +121,7 @@ void testing_sygv_hegv_bad_arg()
         CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check bad arguments
-        sygv_hegv_checkBadArgs<STRIDED>(handle, itype, jobz, uplo, n, dA.data(), lda, stA, dB.data(),
+        sygv_hegv_checkBadArgs<STRIDED>(handle, itype, evect, uplo, n, dA.data(), lda, stA, dB.data(),
                                         ldb, stB, dD.data(), stD, dE.data(), stE, dInfo.data(), bc);
     }
     else
@@ -139,7 +139,7 @@ void testing_sygv_hegv_bad_arg()
         CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check bad arguments
-        sygv_hegv_checkBadArgs<STRIDED>(handle, itype, jobz, uplo, n, dA.data(), lda, stA, dB.data(),
+        sygv_hegv_checkBadArgs<STRIDED>(handle, itype, evect, uplo, n, dA.data(), lda, stA, dB.data(),
                                         ldb, stB, dD.data(), stD, dE.data(), stE, dInfo.data(), bc);
     }
 }
@@ -147,7 +147,7 @@ void testing_sygv_hegv_bad_arg()
 template <bool CPU, bool GPU, typename T, typename Td, typename Th>
 void sygv_hegv_initData(const rocblas_handle handle,
                         const rocblas_eform itype,
-                        const rocblas_evect jobz,
+                        const rocblas_evect evect,
                         const rocblas_int n,
                         Td& dA,
                         const rocblas_int lda,
@@ -205,7 +205,7 @@ void sygv_hegv_initData(const rocblas_handle handle,
             }
 
             // store A and B for testing purposes
-            if(test && jobz != rocblas_evect_none)
+            if(test && evect != rocblas_evect_none)
             {
                 for(rocblas_int i = 0; i < n; i++)
                 {
@@ -238,7 +238,7 @@ void sygv_hegv_initData(const rocblas_handle handle,
 template <bool STRIDED, typename T, typename Td, typename Ud, typename Vd, typename Th, typename Uh, typename Vh>
 void sygv_hegv_getError(const rocblas_handle handle,
                         const rocblas_eform itype,
-                        const rocblas_evect jobz,
+                        const rocblas_evect evect,
                         const rocblas_fill uplo,
                         const rocblas_int n,
                         Td& dA,
@@ -273,24 +273,24 @@ void sygv_hegv_getError(const rocblas_handle handle,
     std::vector<S> rwork(lrwork);
 
     // input data initialization
-    sygv_hegv_initData<true, true, T>(handle, itype, jobz, n, dA, lda, stA, dB, ldb, stB, bc, hA,
+    sygv_hegv_initData<true, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB, bc, hA,
                                       hB, A, B, true, singular);
 
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA.data(), lda,
+    CHECK_ROCBLAS_ERROR(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n, dA.data(), lda,
                                             stA, dB.data(), ldb, stB, dD.data(), stD, dE.data(),
                                             stE, dInfo.data(), bc));
 
     CHECK_HIP_ERROR(hDRes.transfer_from(dD));
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
-    if(jobz != rocblas_evect_none)
+    if(evect != rocblas_evect_none)
         CHECK_HIP_ERROR(hARes.transfer_from(dA));
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cblas_sygv_hegv(itype, jobz, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(), lwork,
+        cblas_sygv_hegv(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(), lwork,
                         rwork.data(), hInfo[b]);
     }
 
@@ -307,7 +307,7 @@ void sygv_hegv_getError(const rocblas_handle handle,
 
     double err;
 
-    if(jobz == rocblas_evect_none)
+    if(evect == rocblas_evect_none)
     {
         // only eigenvalues needed; can compare with LAPACK
 
@@ -381,7 +381,7 @@ void sygv_hegv_getError(const rocblas_handle handle,
 template <bool STRIDED, typename T, typename Td, typename Ud, typename Vd, typename Th, typename Uh, typename Vh>
 void sygv_hegv_getPerfData(const rocblas_handle handle,
                            const rocblas_eform itype,
-                           const rocblas_evect jobz,
+                           const rocblas_evect evect,
                            const rocblas_fill uplo,
                            const rocblas_int n,
                            Td& dA,
@@ -417,29 +417,29 @@ void sygv_hegv_getPerfData(const rocblas_handle handle,
 
     if(!perf)
     {
-        sygv_hegv_initData<true, false, T>(handle, itype, jobz, n, dA, lda, stA, dB, ldb, stB, bc,
+        sygv_hegv_initData<true, false, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB, bc,
                                            hA, hB, A, B, false, singular);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cblas_sygv_hegv<S, T>(itype, jobz, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(),
+            cblas_sygv_hegv<S, T>(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(),
                                   lwork, rwork.data(), hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    sygv_hegv_initData<true, false, T>(handle, itype, jobz, n, dA, lda, stA, dB, ldb, stB, bc, hA,
+    sygv_hegv_initData<true, false, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB, bc, hA,
                                        hB, A, B, false, singular);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        sygv_hegv_initData<false, true, T>(handle, itype, jobz, n, dA, lda, stA, dB, ldb, stB, bc,
+        sygv_hegv_initData<false, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB, bc,
                                            hA, hB, A, B, false, singular);
 
-        CHECK_ROCBLAS_ERROR(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA.data(),
+        CHECK_ROCBLAS_ERROR(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n, dA.data(),
                                                 lda, stA, dB.data(), ldb, stB, dD.data(), stD,
                                                 dE.data(), stE, dInfo.data(), bc));
     }
@@ -451,11 +451,11 @@ void sygv_hegv_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        sygv_hegv_initData<false, true, T>(handle, itype, jobz, n, dA, lda, stA, dB, ldb, stB, bc,
+        sygv_hegv_initData<false, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB, bc,
                                            hA, hB, A, B, false, singular);
 
         start = get_time_us_sync(stream);
-        rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA.data(), lda, stA, dB.data(),
+        rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n, dA.data(), lda, stA, dB.data(),
                             ldb, stB, dD.data(), stD, dE.data(), stE, dInfo.data(), bc);
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
@@ -470,7 +470,7 @@ void testing_sygv_hegv(Arguments& argus)
     // get arguments
     rocblas_local_handle handle;
     char itypeC = argus.get<char>("itype");
-    char jobzC = argus.get<char>("jobz");
+    char evectC = argus.get<char>("evect");
     char uploC = argus.get<char>("uplo");
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
@@ -482,7 +482,7 @@ void testing_sygv_hegv(Arguments& argus)
     rocblas_int bc = argus.batch_count;
 
     rocblas_eform itype = char2rocblas_eform(itypeC);
-    rocblas_evect jobz = char2rocblas_evect(jobzC);
+    rocblas_evect evect = char2rocblas_evect(evectC);
     rocblas_fill uplo = char2rocblas_fill(uploC);
     rocblas_int hot_calls = argus.iters;
 
@@ -490,16 +490,16 @@ void testing_sygv_hegv(Arguments& argus)
     rocblas_stride stDRes = (argus.unit_check || argus.norm_check) ? stD : 0;
 
     // check non-supported values
-    if(uplo == rocblas_fill_full || jobz == rocblas_evect_tridiagonal)
+    if(uplo == rocblas_fill_full || evect == rocblas_evect_tridiagonal)
     {
         if(BATCHED)
-            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n,
+            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n,
                                                       (T* const*)nullptr, lda, stA,
                                                       (T* const*)nullptr, ldb, stB, (S*)nullptr, stD,
                                                       (S*)nullptr, stE, (rocblas_int*)nullptr, bc),
                                   rocblas_status_invalid_size);
         else
-            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n,
+            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n,
                                                       (T*)nullptr, lda, stA, (T*)nullptr, ldb, stB,
                                                       (S*)nullptr, stD, (S*)nullptr, stE,
                                                       (rocblas_int*)nullptr, bc),
@@ -526,13 +526,13 @@ void testing_sygv_hegv(Arguments& argus)
     if(invalid_size)
     {
         if(BATCHED)
-            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n,
+            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n,
                                                       (T* const*)nullptr, lda, stA,
                                                       (T* const*)nullptr, ldb, stB, (S*)nullptr, stD,
                                                       (S*)nullptr, stE, (rocblas_int*)nullptr, bc),
                                   rocblas_status_invalid_size);
         else
-            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n,
+            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n,
                                                       (T*)nullptr, lda, stA, (T*)nullptr, ldb, stB,
                                                       (S*)nullptr, stD, (S*)nullptr, stE,
                                                       (rocblas_int*)nullptr, bc),
@@ -549,12 +549,12 @@ void testing_sygv_hegv(Arguments& argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)
-            CHECK_ALLOC_QUERY(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n,
+            CHECK_ALLOC_QUERY(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n,
                                                   (T* const*)nullptr, lda, stA, (T* const*)nullptr,
                                                   ldb, stB, (S*)nullptr, stD, (S*)nullptr, stE,
                                                   (rocblas_int*)nullptr, bc));
         else
-            CHECK_ALLOC_QUERY(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, (T*)nullptr,
+            CHECK_ALLOC_QUERY(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n, (T*)nullptr,
                                                   lda, stA, (T*)nullptr, ldb, stB, (S*)nullptr, stD,
                                                   (S*)nullptr, stE, (rocblas_int*)nullptr, bc));
 
@@ -591,9 +591,10 @@ void testing_sygv_hegv(Arguments& argus)
         // check quick return
         if(n == 0 || bc == 0)
         {
-            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA.data(),
-                                                      lda, stA, dB.data(), ldb, stB, dD.data(), stD,
-                                                      dE.data(), stE, dInfo.data(), bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n,
+                                                      dA.data(), lda, stA, dB.data(), ldb, stB,
+                                                      dD.data(), stD, dE.data(), stE, dInfo.data(),
+                                                      bc),
                                   rocblas_status_success);
             if(argus.timing)
                 ROCSOLVER_BENCH_INFORM(0);
@@ -603,13 +604,13 @@ void testing_sygv_hegv(Arguments& argus)
 
         // check computations
         if(argus.unit_check || argus.norm_check)
-            sygv_hegv_getError<STRIDED, T>(handle, itype, jobz, uplo, n, dA, lda, stA, dB, ldb, stB,
-                                           dD, stD, dE, stE, dInfo, bc, hA, hARes, hB, hD, hDRes,
-                                           hInfo, hInfoRes, &max_error, argus.singular);
+            sygv_hegv_getError<STRIDED, T>(handle, itype, evect, uplo, n, dA, lda, stA, dB, ldb,
+                                           stB, dD, stD, dE, stE, dInfo, bc, hA, hARes, hB, hD,
+                                           hDRes, hInfo, hInfoRes, &max_error, argus.singular);
 
         // collect performance data
         if(argus.timing)
-            sygv_hegv_getPerfData<STRIDED, T>(handle, itype, jobz, uplo, n, dA, lda, stA, dB, ldb,
+            sygv_hegv_getPerfData<STRIDED, T>(handle, itype, evect, uplo, n, dA, lda, stA, dB, ldb,
                                               stB, dD, stD, dE, stE, dInfo, bc, hA, hB, hD, hInfo,
                                               &gpu_time_used, &cpu_time_used, hot_calls, argus.perf,
                                               argus.singular);
@@ -643,9 +644,10 @@ void testing_sygv_hegv(Arguments& argus)
         // check quick return
         if(n == 0 || bc == 0)
         {
-            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, jobz, uplo, n, dA.data(),
-                                                      lda, stA, dB.data(), ldb, stB, dD.data(), stD,
-                                                      dE.data(), stE, dInfo.data(), bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n,
+                                                      dA.data(), lda, stA, dB.data(), ldb, stB,
+                                                      dD.data(), stD, dE.data(), stE, dInfo.data(),
+                                                      bc),
                                   rocblas_status_success);
             if(argus.timing)
                 ROCSOLVER_BENCH_INFORM(0);
@@ -655,13 +657,13 @@ void testing_sygv_hegv(Arguments& argus)
 
         // check computations
         if(argus.unit_check || argus.norm_check)
-            sygv_hegv_getError<STRIDED, T>(handle, itype, jobz, uplo, n, dA, lda, stA, dB, ldb, stB,
-                                           dD, stD, dE, stE, dInfo, bc, hA, hARes, hB, hD, hDRes,
-                                           hInfo, hInfoRes, &max_error, argus.singular);
+            sygv_hegv_getError<STRIDED, T>(handle, itype, evect, uplo, n, dA, lda, stA, dB, ldb,
+                                           stB, dD, stD, dE, stE, dInfo, bc, hA, hARes, hB, hD,
+                                           hDRes, hInfo, hInfoRes, &max_error, argus.singular);
 
         // collect performance data
         if(argus.timing)
-            sygv_hegv_getPerfData<STRIDED, T>(handle, itype, jobz, uplo, n, dA, lda, stA, dB, ldb,
+            sygv_hegv_getPerfData<STRIDED, T>(handle, itype, evect, uplo, n, dA, lda, stA, dB, ldb,
                                               stB, dD, stD, dE, stE, dInfo, bc, hA, hB, hD, hInfo,
                                               &gpu_time_used, &cpu_time_used, hot_calls, argus.perf,
                                               argus.singular);
@@ -682,20 +684,20 @@ void testing_sygv_hegv(Arguments& argus)
             rocsolver_cout << "============================================\n";
             if(BATCHED)
             {
-                rocsolver_bench_output("itype", "jobz", "uplo", "n", "lda", "ldb", "strideD",
+                rocsolver_bench_output("itype", "evect", "uplo", "n", "lda", "ldb", "strideD",
                                        "strideE", "batch_c");
-                rocsolver_bench_output(itypeC, jobzC, uploC, n, lda, ldb, stD, stE, bc);
+                rocsolver_bench_output(itypeC, evectC, uploC, n, lda, ldb, stD, stE, bc);
             }
             else if(STRIDED)
             {
-                rocsolver_bench_output("itype", "jobz", "uplo", "n", "lda", "ldb", "strideA",
+                rocsolver_bench_output("itype", "evect", "uplo", "n", "lda", "ldb", "strideA",
                                        "strideB", "strideD", "strideE", "batch_c");
-                rocsolver_bench_output(itypeC, jobzC, uploC, n, lda, ldb, stA, stB, stD, stE, bc);
+                rocsolver_bench_output(itypeC, evectC, uploC, n, lda, ldb, stA, stB, stD, stE, bc);
             }
             else
             {
-                rocsolver_bench_output("itype", "jobz", "uplo", "n", "lda", "ldb");
-                rocsolver_bench_output(itypeC, jobzC, uploC, n, lda, ldb);
+                rocsolver_bench_output("itype", "evect", "uplo", "n", "lda", "ldb");
+                rocsolver_bench_output(itypeC, evectC, uploC, n, lda, ldb);
             }
             rocsolver_cout << "\n============================================\n";
             rocsolver_cout << "Results:\n";
