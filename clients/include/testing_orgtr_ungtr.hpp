@@ -194,11 +194,12 @@ void testing_orgtr_ungtr(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_int hot_calls = argus.iters;
-    char uploC = argus.uplo_option;
+    char uploC = argus.get<char>("uplo");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int lda = argus.get<rocblas_int>("lda", n);
+
     rocblas_fill uplo = char2rocblas_fill(uploC);
+    rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
     // N/A

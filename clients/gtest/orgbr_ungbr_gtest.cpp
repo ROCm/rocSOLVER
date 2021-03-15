@@ -72,13 +72,12 @@ Arguments orgbr_setup_arguments(orgbr_tuple tup)
 
     Arguments arg;
 
-    arg.storev = store[1] == 1 ? 'R' : 'C';
-    arg.K = size[2];
-    arg.M = size[0];
-    arg.lda = size[0];
-    arg.N = size[1];
+    arg.set<rocblas_int>("m", size[0]);
+    arg.set<rocblas_int>("n", size[1]);
+    arg.set<rocblas_int>("k", size[2]);
 
-    arg.lda += store[0] * 10;
+    arg.set<rocblas_int>("lda", size[0] + store[0] * 10);
+    arg.set<char>("storev", store[1] == 1 ? 'R' : 'C');
 
     arg.timing = 0;
 
@@ -97,7 +96,8 @@ protected:
     {
         Arguments arg = orgbr_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.N == 0 && arg.storev == 'C')
+        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0
+           && arg.get<char>("storev") == 'C')
             testing_orgbr_ungbr_bad_arg<T>();
 
         testing_orgbr_ungbr<T>(arg);

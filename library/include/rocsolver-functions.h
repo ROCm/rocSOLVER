@@ -1731,7 +1731,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(rocblas_handle handle,
                 column (if uplo indicates lower) has the Householder vector v(i) as returned
                 by SYTRD. On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension n-1.\n
