@@ -142,6 +142,10 @@ try
          value<rocblas_stride>(),
          "Stride for matrices/vectors E.")
 
+        ("strideQ",
+         value<rocblas_stride>(),
+         "Stride for vectors tau and ipiv.")
+
         ("strideP",
          value<rocblas_stride>(),
          "Stride for vectors tau and ipiv.")
