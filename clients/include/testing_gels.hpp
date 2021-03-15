@@ -342,15 +342,16 @@ void testing_gels(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int m = argus.M;
-    rocblas_int n = argus.N;
-    rocblas_int nrhs = argus.K;
-    rocblas_int lda = argus.lda;
-    rocblas_int ldb = argus.ldb;
-    rocblas_stride stA = argus.bsa;
-    rocblas_stride stB = argus.bsb;
+    char transC = argus.get<char>("trans");
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int nrhs = argus.get<rocblas_int>("nrhs");
+    rocblas_int lda = argus.get<rocblas_int>("lda", m);
+    rocblas_int ldb = argus.get<rocblas_int>("ldb", max(m, n));
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nrhs);
     rocblas_int bc = argus.batch_count;
-    char transC = argus.transA_option;
+
     rocblas_operation trans = char2rocblas_operation(transC);
     rocblas_int hot_calls = argus.iters;
 
