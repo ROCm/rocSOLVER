@@ -22,7 +22,7 @@ rocblas_status rocsolver_gesvd_impl(rocblas_handle handle,
                                     rocblas_int* info)
 {
     ROCSOLVER_ENTER_TOP("gesvd", "--left_svect", left_svect, "--right_svect", right_svect, "-m", m,
-                        "-n", n, "--lda", lda, "--ldb", ldu, "--ldv", ldv, "--fast_alg", fast_alg);
+                        "-n", n, "--lda", lda, "--ldu", ldu, "--ldv", ldv, "--fast_alg", fast_alg);
 
     if(!handle)
         return rocblas_status_invalid_handle;

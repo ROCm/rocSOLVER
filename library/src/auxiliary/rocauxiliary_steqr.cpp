@@ -14,7 +14,7 @@ rocblas_status rocsolver_steqr_impl(rocblas_handle handle,
                                     const rocblas_int ldc,
                                     rocblas_int* info)
 {
-    ROCSOLVER_ENTER_TOP("sterf", "--evect", evect, "-n", n, "--ldc", ldc);
+    ROCSOLVER_ENTER_TOP("steqr", "--evect", evect, "-n", n, "--ldc", ldc);
 
     if(!handle)
         return rocblas_status_invalid_handle;

@@ -17,7 +17,7 @@ rocblas_status rocsolver_getrs_batched_impl(rocblas_handle handle,
                                             const rocblas_int ldb,
                                             const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER_TOP("getrs_batched", "--trans", trans, "-n", n, "-nrhs", nrhs, "--lda", lda,
+    ROCSOLVER_ENTER_TOP("getrs_batched", "--trans", trans, "-n", n, "--nrhs", nrhs, "--lda", lda,
                         "--strideP", strideP, "--ldb", ldb, "--batch_count", batch_count);
 
     if(!handle)

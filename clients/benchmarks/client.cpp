@@ -343,20 +343,20 @@ try
         return 0;
     }
 
-    argus.populate(vm);
-
-    // set device ID
-    if(!argus.perf)
-    {
-        rocblas_int device_count = query_device_property();
-        if(device_count <= device_id)
-            throw std::invalid_argument("Invalid Device ID");
-    }
-    set_device(device_id);
-
-    // catch invalid arguments
     try
     {
+        argus.populate(vm);
+
+        // set device ID
+        if(!argus.perf)
+        {
+            rocblas_int device_count = query_device_property();
+            if(device_count <= device_id)
+                throw std::invalid_argument("Invalid Device ID");
+        }
+        set_device(device_id);
+
+        // catch invalid arguments
         argus.validate_precision("precision");
         argus.validate_operation("trans");
         argus.validate_side("side");
@@ -368,15 +368,15 @@ try
         argus.validate_workmode("fast_alg");
         argus.validate_evect("evect");
         argus.validate_itype("itype");
+
+        // select and dispatch function test/benchmark
+        rocsolver_dispatcher::invoke(function, precision, argus);
     }
     catch(const std::invalid_argument& e)
     {
         argus.clear();
         throw e;
     }
-
-    // select and dispatch function test/benchmark
-    rocsolver_dispatcher::invoke(function, precision, argus);
 
     return 0;
 }

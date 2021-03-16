@@ -52,13 +52,13 @@ class value : public value_base
 public:
     // Constructor
     explicit value()
-        : m_var_ptr(&m_var)
+        : m_var_ptr(nullptr)
     {
     }
 
     explicit value(T var, bool defaulted)
         : m_var(var)
-        , m_var_ptr(&m_var)
+        , m_var_ptr(nullptr)
     {
         m_has_actual = !defaulted;
         m_has_default = defaulted;
@@ -78,13 +78,19 @@ public:
     // Get the value
     const T& get_value() const
     {
-        return *m_var_ptr;
+        if(m_var_ptr)
+            return *m_var_ptr;
+        else
+            return m_var;
     }
 
     // Set actual value
     value& actual_value(T val)
     {
-        *m_var_ptr = std::move(val);
+        if(m_var_ptr)
+            *m_var_ptr = std::move(val);
+        else
+            m_var = std::move(val);
         m_has_actual = true;
         return *this;
     }
@@ -94,7 +100,10 @@ public:
     {
         if(!m_has_actual)
         {
-            *m_var_ptr = std::move(val);
+            if(m_var_ptr)
+                *m_var_ptr = std::move(val);
+            else
+                m_var = std::move(val);
             m_has_default = true;
         }
         return *this;
