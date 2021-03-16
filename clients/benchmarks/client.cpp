@@ -29,28 +29,21 @@ try
     desc.add_options()("help,h", "Produces this help message.")
 
         // test options
-        ("function,f",
-         value<std::string>(&function)->default_value("potf2"),
-            "The LAPACK function to test.\n"
-            "                           Options are: getf2, getrf, gesvd_batched, etc.\n"
-            "                           ")
-
-        ("precision,r",
-         value<char>(&precision)->default_value('s'),
-            "Precision to be used in the tests.\n"
-            "                           Options are: s, d, c, z.\n"
-            "                           ")
-
         ("batch_count",
          value<rocblas_int>(&argus.batch_count)->default_value(1),
             "Number of matrices or problem instances in the batch.\n"
             "                           Only applicable to batch routines.\n"
             "                           ")
 
-        ("verify,v",
-         value<rocblas_int>(&argus.norm_check)->default_value(0),
-            "Validate GPU results with CPU? 0 = No, 1 = Yes.\n"
-            "                           This will additionally print the relative error of the computations.\n"
+        ("device",
+         value<rocblas_int>(&device_id)->default_value(0),
+            "Set the default device to be used for subsequent program runs.\n"
+            "                           ")
+
+        ("function,f",
+         value<std::string>(&function)->default_value("potf2"),
+            "The LAPACK function to test.\n"
+            "                           Options are: getf2, getrf, gesvd_batched, etc.\n"
             "                           ")
 
         ("iters,i",
@@ -65,18 +58,31 @@ try
             "                           This forces the client to print only the GPU time and the error if requested.\n"
             "                           ")
 
+        ("precision,r",
+         value<char>(&precision)->default_value('s'),
+            "Precision to be used in the tests.\n"
+            "                           Options are: s, d, c, z.\n"
+            "                           ")
+
         ("singular",
          value<rocblas_int>(&argus.singular)->default_value(0),
             "Test with degenerate matrices? 0 = No, 1 = Yes\n"
             "                           This will produce matrices that are singular, non positive-definite, etc.\n"
             "                           ")
 
-        ("device",
-         value<rocblas_int>(&device_id)->default_value(0),
-            "Set the default device to be used for subsequent program runs.\n"
+        ("verify,v",
+         value<rocblas_int>(&argus.norm_check)->default_value(0),
+            "Validate GPU results with CPU? 0 = No, 1 = Yes.\n"
+            "                           This will additionally print the relative error of the computations.\n"
             "                           ")
 
         // size options
+        ("k",
+         value<rocblas_int>()->default_value(128),
+            "Matrix/vector size parameter.\n"
+            "                           Typically, the number of Householder reflections in a transformation.\n"
+            "                           ")
+
         ("m",
          value<rocblas_int>()->default_value(128),
             "Matrix/vector size parameter.\n"
@@ -88,12 +94,6 @@ try
             "Matrix/vector size parameter.\n"
             "                           Typically, the number of columns of a matrix,\n"
             "                           or the order of a system or transformation.\n"
-            "                           ")
-
-        ("k",
-         value<rocblas_int>()->default_value(128),
-            "Matrix/vector size parameter.\n"
-            "                           Typically, the number of Householder reflections in a transformation.\n"
             "                           ")
 
         ("nrhs",
@@ -264,39 +264,9 @@ try
             "                           ")
 
         // other options
-        ("incx",
-         value<rocblas_int>()->default_value(1),
-            "Increment between values in vector x.\n"
-            "                           Only applicable to certain routines.\n"
-            "                           ")
-
-        ("trans",
-         value<char>()->default_value('N'),
-            "N = no transpose, T = transpose, C = conjugate transpose.\n"
-            "                           Only applicable to certain routines.\n"
-            "                           ")
-
-        ("side",
-         value<char>()->default_value('L'),
-            "L = left, R = right.\n"
-            "                           Only applicable to certain routines.\n"
-            "                           ")
-
-        ("uplo",
-         value<char>()->default_value('U'),
-            "U = upper, L = lower.\n"
-            "                           Only applicable to certain routines.\n"
-            "                           ")
-
         ("direct",
          value<char>()->default_value('F'),
             "F = forward, B = backward.\n"
-            "                           Only applicable to certain routines.\n"
-            "                           ")
-
-        ("storev",
-         value<char>()->default_value('C'),
-            "C = column_wise, R = row_wise.\n"
             "                           Only applicable to certain routines.\n"
             "                           ")
 
@@ -306,9 +276,39 @@ try
             "                           Only applicable to certain routines.\n"
             "                           ")
 
+        ("incx",
+         value<rocblas_int>()->default_value(1),
+            "Increment between values in vector x.\n"
+            "                           Only applicable to certain routines.\n"
+            "                           ")
+
         ("itype",
          value<char>()->default_value('1'),
             "Problem type for generalized eigenproblems.\n"
+            "                           Only applicable to certain routines.\n"
+            "                           ")
+
+        ("side",
+         value<char>()->default_value('L'),
+            "L = left, R = right.\n"
+            "                           Only applicable to certain routines.\n"
+            "                           ")
+
+        ("storev",
+         value<char>()->default_value('C'),
+            "C = column_wise, R = row_wise.\n"
+            "                           Only applicable to certain routines.\n"
+            "                           ")
+
+        ("trans",
+         value<char>()->default_value('N'),
+            "N = no transpose, T = transpose, C = conjugate transpose.\n"
+            "                           Only applicable to certain routines.\n"
+            "                           ")
+
+        ("uplo",
+         value<char>()->default_value('U'),
+            "U = upper, L = lower.\n"
             "                           Only applicable to certain routines.\n"
             "                           ");
     // clang-format on
