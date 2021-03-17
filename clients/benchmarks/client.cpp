@@ -5,7 +5,7 @@
 #include "rocblascommon/program_options.hpp"
 #include "rocsolver_dispatcher.hpp"
 
-using namespace roc::boost;
+using namespace roc;
 
 // clang-format off
 const char* help_str = R"HELP_STR(
