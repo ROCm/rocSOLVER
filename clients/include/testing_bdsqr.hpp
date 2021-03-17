@@ -615,7 +615,7 @@ void testing_bdsqr(Arguments& argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
-    
+
     // ensure all arguments were consumed
     argus.validate_consumed();
 }

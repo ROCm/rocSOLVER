@@ -416,7 +416,7 @@ void testing_gebd2_gebrd(Arguments& argus)
     rocblas_stride stE = argus.get<rocblas_stride>("strideE", min(m, n) - 1);
     rocblas_stride stQ = argus.get<rocblas_stride>("strideQ", min(m, n));
     rocblas_stride stP = argus.get<rocblas_stride>("strideP", min(m, n));
-    
+
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
@@ -628,7 +628,7 @@ void testing_gebd2_gebrd(Arguments& argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
-    
+
     // ensure all arguments were consumed
     argus.validate_consumed();
 }

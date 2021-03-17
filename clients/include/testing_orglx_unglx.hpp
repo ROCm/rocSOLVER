@@ -201,7 +201,7 @@ void testing_orglx_unglx(Arguments& argus)
     rocblas_int m = argus.get<rocblas_int>("m");
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
-    
+
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
@@ -311,7 +311,7 @@ void testing_orglx_unglx(Arguments& argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
-    
+
     // ensure all arguments were consumed
     argus.validate_consumed();
 }

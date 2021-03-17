@@ -10,20 +10,20 @@ using namespace roc::boost;
 // clang-format off
 const char* help_str = R"HELP_STR(
 rocSOLVER benchmark client help.
-        
+
 Usage: ./rocsolver-bench <options>
-        
+
 In addition to some common general options, the following list of options corresponds to all the parameters
 that might be needed to test a given rocSOLVER function. The parameters are named as in the API user guide.
 The arrays are initialized internally by the program with random values.
-        
+
 Note: When a required parameter/option is not provided, it will take the default value as listed below.
 If no default value is defined, the program will try to calculate a suitable value depending on the context
 of the problem and the tested function; if this is not possible, the program will abort with error.
-        
+
 Example: ./rocsolver-bench -f getf2_batched -m 30 --lda 75 --batch_count 350
 This will test getf2_batched with a set of 350 random 30x128 matrices. strideP will be set to be equal to 30.
-        
+
 Options:
 )HELP_STR";
 // clang-format on

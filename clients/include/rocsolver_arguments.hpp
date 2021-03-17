@@ -160,7 +160,7 @@ public:
         if(itype != '1' && itype != '2' && itype != '3')
             throw std::invalid_argument("Invalid value for " + name);
     }
-    
+
     void validate_consumed() const
     {
         if(to_consume.size() > 0)
