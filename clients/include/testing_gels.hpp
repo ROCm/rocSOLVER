@@ -350,9 +350,9 @@ void testing_gels(Arguments& argus)
     rocblas_int ldb = argus.get<rocblas_int>("ldb", max(m, n));
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
     rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nrhs);
-    rocblas_int bc = argus.batch_count;
 
     rocblas_operation trans = char2rocblas_operation(transC);
+    rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
     rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
@@ -550,4 +550,7 @@ void testing_gels(Arguments& argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+    
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

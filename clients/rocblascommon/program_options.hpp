@@ -16,6 +16,8 @@
 #include <utility>
 #include <vector>
 
+namespace roc
+{
 namespace boost
 {
 // Regular expression for token delimiters (whitespace and commas)
@@ -479,4 +481,5 @@ public:
 // We can define the notify() function as a no-op for our purposes
 inline void notify(const variables_map&) {}
 
+}
 }

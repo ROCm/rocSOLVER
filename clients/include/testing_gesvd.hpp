@@ -475,11 +475,11 @@ void testing_gesvd(Arguments& argus)
     rocblas_stride stV = argus.get<rocblas_stride>("strideV", ldv * n);
     rocblas_stride stE = argus.get<rocblas_stride>("strideE", min(m, n) - 1);
     char faC = argus.get<char>("fast_alg");
-    rocblas_int bc = argus.batch_count;
 
     rocblas_svect leftv = char2rocblas_svect(leftvC);
     rocblas_svect rightv = char2rocblas_svect(rightvC);
     rocblas_workmode fa = char2rocblas_workmode(faC);
+    rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
@@ -840,4 +840,7 @@ void testing_gesvd(Arguments& argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+    
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

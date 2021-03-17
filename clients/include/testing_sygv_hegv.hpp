@@ -479,11 +479,11 @@ void testing_sygv_hegv(Arguments& argus)
     rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * n);
     rocblas_stride stD = argus.get<rocblas_stride>("strideD", n);
     rocblas_stride stE = argus.get<rocblas_stride>("strideE", n);
-    rocblas_int bc = argus.batch_count;
 
     rocblas_eform itype = char2rocblas_eform(itypeC);
     rocblas_evect evect = char2rocblas_evect(evectC);
     rocblas_fill uplo = char2rocblas_fill(uploC);
+    rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
     rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
@@ -722,4 +722,7 @@ void testing_sygv_hegv(Arguments& argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+    
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

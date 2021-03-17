@@ -5,7 +5,28 @@
 #include "rocblascommon/program_options.hpp"
 #include "rocsolver_dispatcher.hpp"
 
-using namespace boost;
+using namespace roc::boost;
+
+// clang-format off
+const char* help_str = R"HELP_STR(
+rocSOLVER benchmark client help.
+        
+Usage: ./rocsolver-bench <options>
+        
+In addition to some common general options, the following list of options corresponds to all the parameters
+that might be needed to test a given rocSOLVER function. The parameters are named as in the API user guide.
+The arrays are initialized internally by the program with random values.
+        
+Note: When a required parameter/option is not provided, it will take the default value as listed below.
+If no default value is defined, the program will try to calculate a suitable value depending on the context
+of the problem and the tested function; if this is not possible, the program will abort with error.
+        
+Example: ./rocsolver-bench -f getf2_batched -m 30 --lda 75 --batch_count 350
+This will test getf2_batched with a set of 350 random 30x128 matrices. strideP will be set to be equal to 30.
+        
+Options:
+)HELP_STR";
+// clang-format on
 
 int main(int argc, char* argv[])
 try
@@ -320,63 +341,36 @@ try
     // print help message
     if(vm.count("help"))
     {
-        rocsolver_cout
-            << "\nrocSOLVER benchmark client help.\n\n"
-            << "Usage: ./rocsolver-bench <options>\n\n"
-            << "In addition to some common general options, the following list of options "
-               "corresponds to all the parameters\n"
-            << "that might be needed to test a given rocSOLVER function. The parameters are named "
-               "as in the API user guide.\n"
-            << "The arrays are initialized internally by the program with random values.\n\n"
-            << "Note: When a required parameter/option is not provided, it will take the default "
-               "value as listed below.\n"
-            << "If no default value is defined, the program will try to calculate a suitable value "
-               "depending on the context\n"
-            << "of the problem and the tested function; if this is not possible, the program will "
-               "abort with error.\n\n"
-            << "Example: ./rocsolver-bench -f getf2_batched -m 30 --lda 75 --batch_count 350\n"
-            << "This will test getf2_batched with a set of 350 random 30x128 matrices. strideP "
-               "will "
-               "be set to be equal to 30.\n\n"
-            << "Options:\n"
-            << desc << std::endl;
+        rocsolver_cout << help_str << desc << std::endl;
         return 0;
     }
 
-    try
+    argus.populate(vm);
+
+    // set device ID
+    if(!argus.perf)
     {
-        argus.populate(vm);
-
-        // set device ID
-        if(!argus.perf)
-        {
-            rocblas_int device_count = query_device_property();
-            if(device_count <= device_id)
-                throw std::invalid_argument("Invalid Device ID");
-        }
-        set_device(device_id);
-
-        // catch invalid arguments
-        argus.validate_precision("precision");
-        argus.validate_operation("trans");
-        argus.validate_side("side");
-        argus.validate_fill("uplo");
-        argus.validate_direct("direct");
-        argus.validate_storev("storev");
-        argus.validate_svect("left_svect");
-        argus.validate_svect("right_svect");
-        argus.validate_workmode("fast_alg");
-        argus.validate_evect("evect");
-        argus.validate_itype("itype");
-
-        // select and dispatch function test/benchmark
-        rocsolver_dispatcher::invoke(function, precision, argus);
+        rocblas_int device_count = query_device_property();
+        if(device_count <= device_id)
+            throw std::invalid_argument("Invalid Device ID");
     }
-    catch(const std::invalid_argument& e)
-    {
-        argus.clear();
-        throw e;
-    }
+    set_device(device_id);
+
+    // catch invalid arguments
+    argus.validate_precision("precision");
+    argus.validate_operation("trans");
+    argus.validate_side("side");
+    argus.validate_fill("uplo");
+    argus.validate_direct("direct");
+    argus.validate_storev("storev");
+    argus.validate_svect("left_svect");
+    argus.validate_svect("right_svect");
+    argus.validate_workmode("fast_alg");
+    argus.validate_evect("evect");
+    argus.validate_itype("itype");
+
+    // select and dispatch function test/benchmark
+    rocsolver_dispatcher::invoke(function, precision, argus);
 
     return 0;
 }

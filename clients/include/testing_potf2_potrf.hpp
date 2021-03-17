@@ -282,9 +282,9 @@ void testing_potf2_potrf(Arguments& argus)
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
-    rocblas_int bc = argus.batch_count;
 
     rocblas_fill uplo = char2rocblas_fill(uploC);
+    rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
     // hARes should always be allocated (used in initData)
@@ -480,4 +480,7 @@ void testing_potf2_potrf(Arguments& argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+    
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

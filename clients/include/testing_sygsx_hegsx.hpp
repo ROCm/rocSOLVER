@@ -287,10 +287,10 @@ void testing_sygsx_hegsx(Arguments& argus)
     rocblas_int ldb = argus.get<rocblas_int>("ldb", n);
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
     rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * n);
-    rocblas_int bc = argus.batch_count;
 
     rocblas_eform itype = char2rocblas_eform(itypeC);
     rocblas_fill uplo = char2rocblas_fill(uploC);
+    rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
     // hARes and hBRes should always be allocated (used in initData)
@@ -492,4 +492,7 @@ void testing_sygsx_hegsx(Arguments& argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+    
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

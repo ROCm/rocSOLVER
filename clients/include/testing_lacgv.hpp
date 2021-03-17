@@ -147,6 +147,7 @@ void testing_lacgv(Arguments& argus)
     rocblas_local_handle handle;
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int inc = argus.get<rocblas_int>("incx");
+    
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
@@ -248,4 +249,7 @@ void testing_lacgv(Arguments& argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+    
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

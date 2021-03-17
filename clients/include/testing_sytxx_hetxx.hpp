@@ -394,9 +394,9 @@ void testing_sytxx_hetxx(Arguments& argus)
     rocblas_stride stD = argus.get<rocblas_stride>("strideD", n);
     rocblas_stride stE = argus.get<rocblas_stride>("strideE", n - 1);
     rocblas_stride stP = argus.get<rocblas_stride>("strideP", n - 1);
-    rocblas_int bc = argus.batch_count;
 
     rocblas_fill uplo = char2rocblas_fill(uploC);
+    rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
     rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
@@ -608,4 +608,7 @@ void testing_sytxx_hetxx(Arguments& argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+    
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }
