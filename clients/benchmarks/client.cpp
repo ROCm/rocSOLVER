@@ -101,7 +101,8 @@ try
         ("k",
          value<rocblas_int>()->default_value(128),
             "Matrix/vector size parameter.\n"
-            "                           Typically, the number of Householder reflections in a transformation.\n"
+            "                           Represents a sub-dimension of a problem.\n"
+            "                           For example, the number of Householder reflections in a transformation.\n"
             "                           ")
 
         ("m",
@@ -120,7 +121,7 @@ try
         ("nrhs",
          value<rocblas_int>()->default_value(128),
             "Matrix/vector size parameter.\n"
-            "                           Typically, the number of columns of a matrix on the right-hand side.\n"
+            "                           Typically, the number of columns of a matrix on the right-hand side of a problem.\n"
             "                           ")
 
         // leading dimension options
@@ -206,13 +207,13 @@ try
         ("strideQ",
          value<rocblas_stride>(),
             "Matrix/vector stride parameter.\n"
-            "                           Stride for vectors tau and ipiv.\n"
+            "                           Stride for vectors tauq.\n"
             "                           ")
 
         ("strideP",
          value<rocblas_stride>(),
             "Matrix/vector stride parameter.\n"
-            "                           Stride for vectors tau and ipiv.\n"
+            "                           Stride for vectors tau, taup, and ipiv.\n"
             "                           ")
 
         ("strideS",
@@ -235,19 +236,19 @@ try
 
         // bdsqr options
         ("nc",
-         value<rocblas_int>()->default_value(128),
+         value<rocblas_int>()->default_value(0),
             "The number of columns of matrix C.\n"
             "                           Only applicable to bdsqr.\n"
             "                           ")
 
         ("nu",
-         value<rocblas_int>()->default_value(128),
+         value<rocblas_int>()->default_value(0),
             "The number of columns of matrix U.\n"
             "                           Only applicable to bdsqr.\n"
             "                           ")
 
         ("nv",
-         value<rocblas_int>()->default_value(128),
+         value<rocblas_int>()->default_value(0),
             "The number of columns of matrix V.\n"
             "                           Only applicable to bdsqr.\n"
             "                           ")
@@ -266,71 +267,75 @@ try
             "                           ")
 
         // gesvd options
-        ("fast_alg",
-         value<char>()->default_value('O'),
-            "Enables out-of-place computations.\n"
-            "                           Only applicable to gesvd.\n"
-            "                           ")
-
         ("left_svect",
          value<char>()->default_value('N'),
-            "Computation type for left singular vectors.\n"
-            "                           Only applicable to gesvd.\n"
+            "N = none, A = the entire orthogonal matrix is computed,\n"
+            "                           S = the singular vectors are computed,\n"
+            "                           O = the singular vectors overwrite the original matrix.\n"
+            "                           Indicates how the left singular vectors are to be calculated and stored.\n"
             "                           ")
 
         ("right_svect",
          value<char>()->default_value('N'),
-            "Computation type for right singular vectors.\n"
-            "                           Only applicable to gesvd.\n"
+            "N = none, A = the entire orthogonal matrix is computed,\n"
+            "                           S = the singular vectors are computed,\n"
+            "                           O = the singular vectors overwrite the original matrix.\n"
+            "                           Indicates how the right singular vectors are to be calculated and stored.\n"
             "                           ")
 
         // other options
         ("direct",
          value<char>()->default_value('F'),
             "F = forward, B = backward.\n"
-            "                           Only applicable to certain routines.\n"
+            "                           The order in which a series of transformations are applied.\n"
             "                           ")
 
         ("evect",
          value<char>()->default_value('N'),
-            "Computation type for eigenvectors.\n"
-            "                           Only applicable to certain routines.\n"
+            "N = none, V = compute eigenvectors of the matrix,\n"
+            "                           I = compute eigenvectors of the tridiagonal matrix.\n"
+            "                           Indicates how the eigenvectors are to be calculated and stored.\n"
+            "                           ")
+
+        ("fast_alg",
+         value<char>()->default_value('O'),
+            "O = out-of-place, I = in-place.\n"
+            "                           Enables out-of-place computations.\n"
             "                           ")
 
         ("incx",
          value<rocblas_int>()->default_value(1),
             "Increment between values in vector x.\n"
-            "                           Only applicable to certain routines.\n"
             "                           ")
 
         ("itype",
          value<char>()->default_value('1'),
-            "Problem type for generalized eigenproblems.\n"
-            "                           Only applicable to certain routines.\n"
+            "1 = Ax, 2 = ABx, 3 = BAx.\n"
+            "                           Problem type for generalized eigenproblems.\n"
             "                           ")
 
         ("side",
          value<char>()->default_value('L'),
             "L = left, R = right.\n"
-            "                           Only applicable to certain routines.\n"
+            "                           The side from which a matrix should be multiplied.\n"
             "                           ")
 
         ("storev",
          value<char>()->default_value('C'),
-            "C = column_wise, R = row_wise.\n"
-            "                           Only applicable to certain routines.\n"
+            "C = column-wise, R = row-wise.\n"
+            "                           Indicates whether data is stored column-wise or row-wise.\n"
             "                           ")
 
         ("trans",
          value<char>()->default_value('N'),
             "N = no transpose, T = transpose, C = conjugate transpose.\n"
-            "                           Only applicable to certain routines.\n"
+            "                           Indicates if a matrix should be transposed.\n"
             "                           ")
 
         ("uplo",
          value<char>()->default_value('U'),
             "U = upper, L = lower.\n"
-            "                           Only applicable to certain routines.\n"
+            "                           Indicates where the data for a triangular or symmetric/hermitian matrix is stored.\n"
             "                           ");
     // clang-format on
 
