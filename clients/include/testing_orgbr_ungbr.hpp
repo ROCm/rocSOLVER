@@ -234,8 +234,17 @@ void testing_orgbr_ungbr(Arguments& argus)
     // get arguments
     rocblas_local_handle handle;
     char storevC = argus.get<char>("storev");
-    rocblas_int m = argus.get<rocblas_int>("m");
-    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int m, n;
+    if(storevC == 'R')
+    {
+        m = argus.get<rocblas_int>("m");
+        n = argus.get<rocblas_int>("n", m);
+    }
+    else
+    {
+        n = argus.get<rocblas_int>("n");
+        m = argus.get<rocblas_int>("m", n);
+    }
     rocblas_int k = argus.get<rocblas_int>("k", min(m, n));
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
 

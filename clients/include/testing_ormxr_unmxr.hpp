@@ -263,9 +263,19 @@ void testing_ormxr_unmxr(Arguments& argus)
     rocblas_local_handle handle;
     char sideC = argus.get<char>("side");
     char transC = argus.get<char>("trans");
-    rocblas_int m = argus.get<rocblas_int>("m");
-    rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int k = argus.get<rocblas_int>("k", min(m, n));
+    rocblas_int m, n, k;
+    if(sideC == 'L')
+    {
+        m = argus.get<rocblas_int>("m");
+        n = argus.get<rocblas_int>("n", m);
+        k = argus.get<rocblas_int>("k", m);
+    }
+    else
+    {
+        n = argus.get<rocblas_int>("n");
+        m = argus.get<rocblas_int>("m", n);
+        k = argus.get<rocblas_int>("k", n);
+    }
     rocblas_int lda = argus.get<rocblas_int>("lda", sideC == 'L' ? m : n);
     rocblas_int ldc = argus.get<rocblas_int>("ldc", m);
 

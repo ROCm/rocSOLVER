@@ -266,8 +266,17 @@ void testing_ormtr_unmtr(Arguments& argus)
     char sideC = argus.get<char>("side");
     char uploC = argus.get<char>("uplo");
     char transC = argus.get<char>("trans");
-    rocblas_int m = argus.get<rocblas_int>("m");
-    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int m, n;
+    if(sideC == 'L')
+    {
+        m = argus.get<rocblas_int>("m");
+        n = argus.get<rocblas_int>("n", m);
+    }
+    else
+    {
+        n = argus.get<rocblas_int>("n");
+        m = argus.get<rocblas_int>("m", n);
+    }
     rocblas_int nq = (sideC == 'L' ? m : n);
     rocblas_int lda = argus.get<rocblas_int>("lda", nq);
     rocblas_int ldc = argus.get<rocblas_int>("ldc", m);

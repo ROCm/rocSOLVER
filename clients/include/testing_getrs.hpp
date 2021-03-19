@@ -291,7 +291,7 @@ void testing_getrs(Arguments& argus)
     rocblas_local_handle handle;
     char transC = argus.get<char>("trans");
     rocblas_int m = argus.get<rocblas_int>("n");
-    rocblas_int nrhs = argus.get<rocblas_int>("nrhs");
+    rocblas_int nrhs = argus.get<rocblas_int>("nrhs", m);
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_int ldb = argus.get<rocblas_int>("ldb", m);
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * m);

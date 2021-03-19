@@ -172,8 +172,8 @@ void testing_managed_malloc(Arguments& argus)
 
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int m = argus.get<rocblas_int>("m");
     rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int m = argus.get<rocblas_int>("m", n);
     rocblas_int nb = argus.get<rocblas_int>("k", min(m, n));
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_int ldx = argus.get<rocblas_int>("ldx", m);

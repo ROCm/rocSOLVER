@@ -343,9 +343,9 @@ void testing_gels(Arguments& argus)
     // get arguments
     rocblas_local_handle handle;
     char transC = argus.get<char>("trans");
-    rocblas_int m = argus.get<rocblas_int>("m");
     rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int nrhs = argus.get<rocblas_int>("nrhs");
+    rocblas_int m = argus.get<rocblas_int>("m", n);
+    rocblas_int nrhs = argus.get<rocblas_int>("nrhs", n);
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_int ldb = argus.get<rocblas_int>("ldb", max(m, n));
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
