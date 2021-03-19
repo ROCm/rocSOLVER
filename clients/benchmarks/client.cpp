@@ -19,9 +19,9 @@ The arrays are initialized internally by the program with random values.
 
 Note: When a required parameter/option is not provided, it will take the default value as listed below.
 If no default value is defined, the program will try to calculate a suitable value depending on the context
-of the problem and the tested function; if this is not possible, the program will abort with error.
+of the problem and the tested function; if this is not possible, the program will abort with an error.
 
-Example: ./rocsolver-bench -f getf2_batched -m 30 --lda 75 --batch_count 350
+Example: ./rocsolver-bench -f getf2_batched -m 30 -n 128 --lda 75 --batch_count 350
 This will test getf2_batched with a set of 350 random 30x128 matrices. strideP will be set to be equal to 30.
 
 Options:
@@ -99,27 +99,27 @@ try
 
         // size options
         ("k",
-         value<rocblas_int>()->default_value(128),
+         value<rocblas_int>(),
             "Matrix/vector size parameter.\n"
             "                           Represents a sub-dimension of a problem.\n"
             "                           For example, the number of Householder reflections in a transformation.\n"
             "                           ")
 
         ("m",
-         value<rocblas_int>()->default_value(128),
+         value<rocblas_int>(),
             "Matrix/vector size parameter.\n"
             "                           Typically, the number of rows of a matrix.\n"
             "                           ")
 
         ("n",
-         value<rocblas_int>()->default_value(128),
+         value<rocblas_int>(),
             "Matrix/vector size parameter.\n"
             "                           Typically, the number of columns of a matrix,\n"
             "                           or the order of a system or transformation.\n"
             "                           ")
 
         ("nrhs",
-         value<rocblas_int>()->default_value(128),
+         value<rocblas_int>(),
             "Matrix/vector size parameter.\n"
             "                           Typically, the number of columns of a matrix on the right-hand side of a problem.\n"
             "                           ")
@@ -242,7 +242,7 @@ try
             "                           ")
 
         ("nu",
-         value<rocblas_int>()->default_value(0),
+         value<rocblas_int>(),
             "The number of columns of matrix U.\n"
             "                           Only applicable to bdsqr.\n"
             "                           ")
@@ -255,13 +255,13 @@ try
 
         // laswp options
         ("k1",
-         value<rocblas_int>()->default_value(1),
+         value<rocblas_int>(),
             "First index for row interchange.\n"
             "                           Only applicable to laswp.\n"
             "                           ")
 
         ("k2",
-         value<rocblas_int>()->default_value(2),
+         value<rocblas_int>(),
             "Last index for row interchange.\n"
             "                           Only applicable to laswp.\n"
             "                           ")
@@ -315,13 +315,13 @@ try
             "                           ")
 
         ("side",
-         value<char>()->default_value('L'),
+         value<char>(),
             "L = left, R = right.\n"
             "                           The side from which a matrix should be multiplied.\n"
             "                           ")
 
         ("storev",
-         value<char>()->default_value('C'),
+         value<char>(),
             "C = column-wise, R = row-wise.\n"
             "                           Indicates whether data is stored column-wise or row-wise.\n"
             "                           ")

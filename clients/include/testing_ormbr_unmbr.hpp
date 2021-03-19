@@ -293,9 +293,9 @@ void testing_ormbr_unmbr(Arguments& argus)
     char storevC = argus.get<char>("storev");
     char sideC = argus.get<char>("side");
     char transC = argus.get<char>("trans");
-    rocblas_int k = argus.get<rocblas_int>("k");
     rocblas_int m = argus.get<rocblas_int>("m");
     rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int k = argus.get<rocblas_int>("k", min(m, n));
     rocblas_int nq = (sideC == 'L' ? m : n);
     rocblas_int lda = argus.get<rocblas_int>("lda", storevC == 'C' ? nq : min(nq, k));
     rocblas_int ldc = argus.get<rocblas_int>("ldc", m);

@@ -234,9 +234,9 @@ void testing_orgbr_ungbr(Arguments& argus)
     // get arguments
     rocblas_local_handle handle;
     char storevC = argus.get<char>("storev");
-    rocblas_int k = argus.get<rocblas_int>("k");
     rocblas_int m = argus.get<rocblas_int>("m");
     rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int k = argus.get<rocblas_int>("k", min(m, n));
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
 
     rocblas_storev storev = char2rocblas_storev(storevC);

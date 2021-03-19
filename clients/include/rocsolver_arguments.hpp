@@ -41,7 +41,11 @@ public:
     const T& get(const std::string& name)
     {
         to_consume.erase(name);
-        return at(name).as<T>();
+        auto val = find(name);
+        if(val != end() && !val->second.empty())
+            return val->second.as<T>();
+        else
+            throw std::invalid_argument("No value provided for " + name);
     }
 
     template <typename T>
@@ -93,70 +97,110 @@ public:
     // validate function arguments
     void validate_precision(const std::string name) const
     {
-        char precision = at(name).as<char>();
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char precision = val->second.as<char>();
         if(precision != 's' && precision != 'd' && precision != 'c' && precision != 'z')
             throw std::invalid_argument("Invalid value for " + name);
     }
 
     void validate_operation(const std::string name) const
     {
-        char trans = at(name).as<char>();
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char trans = val->second.as<char>();
         if(trans != 'N' && trans != 'T' && trans != 'C')
             throw std::invalid_argument("Invalid value for " + name);
     }
 
     void validate_side(const std::string name) const
     {
-        char side = at(name).as<char>();
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char side = val->second.as<char>();
         if(side != 'L' && side != 'R' && side != 'B')
             throw std::invalid_argument("Invalid value for " + name);
     }
 
     void validate_fill(const std::string name) const
     {
-        char uplo = at(name).as<char>();
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char uplo = val->second.as<char>();
         if(uplo != 'U' && uplo != 'L' && uplo != 'F')
             throw std::invalid_argument("Invalid value for " + name);
     }
 
     void validate_direct(const std::string name) const
     {
-        char direct = at(name).as<char>();
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char direct = val->second.as<char>();
         if(direct != 'F' && direct != 'B')
             throw std::invalid_argument("Invalid value for " + name);
     }
 
     void validate_storev(const std::string name) const
     {
-        char storev = at(name).as<char>();
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char storev = val->second.as<char>();
         if(storev != 'R' && storev != 'C')
             throw std::invalid_argument("Invalid value for " + name);
     }
 
     void validate_svect(const std::string name) const
     {
-        char svect = at(name).as<char>();
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char svect = val->second.as<char>();
         if(svect != 'A' && svect != 'S' && svect != 'O' && svect != 'N')
             throw std::invalid_argument("Invalid value for " + name);
     }
 
     void validate_workmode(const std::string name) const
     {
-        char workmode = at(name).as<char>();
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char workmode = val->second.as<char>();
         if(workmode != 'O' && workmode != 'I')
             throw std::invalid_argument("Invalid value for " + name);
     }
 
     void validate_evect(const std::string name) const
     {
-        char evect = at(name).as<char>();
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char evect = val->second.as<char>();
         if(evect != 'V' && evect != 'I' && evect != 'N')
             throw std::invalid_argument("Invalid value for " + name);
     }
 
     void validate_itype(const std::string name) const
     {
-        char itype = at(name).as<char>();
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char itype = val->second.as<char>();
         if(itype != '1' && itype != '2' && itype != '3')
             throw std::invalid_argument("Invalid value for " + name);
     }
