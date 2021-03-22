@@ -216,8 +216,8 @@ void testing_larf(Arguments& argus)
     // get arguments
     rocblas_local_handle handle;
     char sideC = argus.get<char>("side");
-    rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int m = argus.get<rocblas_int>("m", n);
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n", m);
     rocblas_int inc = argus.get<rocblas_int>("incx");
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
 

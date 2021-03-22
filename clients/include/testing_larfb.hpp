@@ -350,8 +350,8 @@ void testing_larfb(Arguments& argus)
     char directC = argus.get<char>("direct");
     char storevC = argus.get<char>("storev");
     rocblas_int k = argus.get<rocblas_int>("k");
-    rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int m = argus.get<rocblas_int>("m", n);
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n", m);
     rocblas_int ldv = argus.get<rocblas_int>("ldv", storevC == 'R' ? k : (sideC == 'L' ? m : n));
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_int ldt = argus.get<rocblas_int>("ldt", k);

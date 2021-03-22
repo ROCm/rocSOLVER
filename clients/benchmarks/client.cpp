@@ -21,9 +21,9 @@ Note: When a required parameter/option is not provided, it will take the default
 If no default value is defined, the program will try to calculate a suitable value depending on the context
 of the problem and the tested function; if this is not possible, the program will abort with an error.
 Functions that accept multiple size parameters can generally be provided a single size parameter (typically,
-n) and a square-size matrix will be assumed.
+m) and a square-size matrix will be assumed.
 
-Example: ./rocsolver-bench -f getf2_batched -n 30 --lda 75 --batch_count 350
+Example: ./rocsolver-bench -f getf2_batched -m 30 --lda 75 --batch_count 350
 This will test getf2_batched with a set of 350 random 30x30 matrices. strideP will be set to be equal to 30.
 
 Options:

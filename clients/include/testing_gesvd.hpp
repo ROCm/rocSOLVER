@@ -464,8 +464,8 @@ void testing_gesvd(Arguments& argus)
     rocblas_local_handle handle;
     char leftvC = argus.get<char>("left_svect");
     char rightvC = argus.get<char>("right_svect");
-    rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int m = argus.get<rocblas_int>("m", n);
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n", m);
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_int ldu = argus.get<rocblas_int>("ldu", m);
     rocblas_int ldv = argus.get<rocblas_int>("ldv", (rightvC == 'A' ? n : min(m, n)));
