@@ -291,7 +291,7 @@ __global__ void steqr_kernel(const rocblas_int n,
 }
 
 template <typename S, typename T>
-void rocsolver_steqr_getMemorySize(const rocblas_evect compc,
+void rocsolver_steqr_getMemorySize(const rocblas_evect evect,
                                    const rocblas_int n,
                                    const rocblas_int batch_count,
                                    size_t* size_work_stack)
@@ -304,7 +304,7 @@ void rocsolver_steqr_getMemorySize(const rocblas_evect compc,
     }
 
     // size of stack (for lasrt)
-    if(compc == rocblas_evect_none)
+    if(evect == rocblas_evect_none)
         *size_work_stack = sizeof(rocblas_int) * (2 * 32) * batch_count;
     else
         *size_work_stack = sizeof(S) * (2 * n - 2) * batch_count;
@@ -312,7 +312,7 @@ void rocsolver_steqr_getMemorySize(const rocblas_evect compc,
 
 template <typename S, typename T>
 rocblas_status rocsolver_steqr_argCheck(rocblas_handle handle,
-                                        const rocblas_evect compc,
+                                        const rocblas_evect evect,
                                         const rocblas_int n,
                                         S D,
                                         S E,
@@ -323,14 +323,14 @@ rocblas_status rocsolver_steqr_argCheck(rocblas_handle handle,
     // order is important for unit tests:
 
     // 1. invalid/non-supported values
-    if(compc != rocblas_evect_none && compc != rocblas_evect_tridiagonal
-       && compc != rocblas_evect_original)
+    if(evect != rocblas_evect_none && evect != rocblas_evect_tridiagonal
+       && evect != rocblas_evect_original)
         return rocblas_status_invalid_value;
 
     // 2. invalid size
     if(n < 0)
         return rocblas_status_invalid_size;
-    if(compc != rocblas_evect_none && ldc < n)
+    if(evect != rocblas_evect_none && ldc < n)
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
@@ -338,7 +338,7 @@ rocblas_status rocsolver_steqr_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !D) || (n && !E) || (compc != rocblas_evect_none && n && !C) || !info)
+    if((n && !D) || (n && !E) || (evect != rocblas_evect_none && n && !C) || !info)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -346,7 +346,7 @@ rocblas_status rocsolver_steqr_argCheck(rocblas_handle handle,
 
 template <typename S, typename T, typename U>
 rocblas_status rocsolver_steqr_template(rocblas_handle handle,
-                                        const rocblas_evect compc,
+                                        const rocblas_evect evect,
                                         const rocblas_int n,
                                         S* D,
                                         const rocblas_int shiftD,
@@ -362,7 +362,7 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
                                         const rocblas_int batch_count,
                                         void* work_stack)
 {
-    ROCSOLVER_ENTER("steqr", "evect:", compc, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
+    ROCSOLVER_ENTER("steqr", "evect:", evect, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
                     "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
 
     // quick return
@@ -380,14 +380,14 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
     hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
-    if(n == 1 && compc != rocblas_evect_none)
+    if(n == 1 && evect != rocblas_evect_none)
         hipLaunchKernelGGL(reset_batch_info<T>, dim3(1, batch_count), dim3(1, 1), 0, stream, C,
                            strideC, n, 1);
     if(n <= 1)
         return rocblas_status_success;
 
     // Initialize identity matrix
-    if(compc == rocblas_evect_tridiagonal)
+    if(evect == rocblas_evect_tridiagonal)
     {
         rocblas_int blocks = (n - 1) / 32 + 1;
         hipLaunchKernelGGL(init_ident<T>, dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
@@ -400,7 +400,7 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
     ssfmin = sqrt(ssfmin) / (eps * eps);
     ssfmax = sqrt(ssfmax) / S(3.0);
 
-    if(compc == rocblas_evect_none)
+    if(evect == rocblas_evect_none)
         hipLaunchKernelGGL(sterf_kernel<S>, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
                            strideD, E + shiftE, strideE, info, (rocblas_int*)work_stack, 30 * n,
                            eps, ssfmin, ssfmax);

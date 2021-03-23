@@ -48,10 +48,10 @@ Arguments steqr_setup_arguments(steqr_tuple tup)
 
     Arguments arg;
 
-    arg.N = size[0];
-    arg.ldc = size[1];
+    arg.set<rocblas_int>("n", size[0]);
+    arg.set<rocblas_int>("ldc", size[1]);
 
-    arg.evect = (op[0] == 0 ? 'N' : (op[0] == 1 ? 'I' : 'V'));
+    arg.set<char>("evect", (op[0] == 0 ? 'N' : (op[0] == 1 ? 'I' : 'V')));
 
     arg.timing = 0;
 
@@ -70,7 +70,7 @@ protected:
     {
         Arguments arg = steqr_setup_arguments(GetParam());
 
-        if(arg.N == 0 && arg.evect == 'N')
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("evect") == 'N')
             testing_steqr_bad_arg<T>();
 
         testing_steqr<T>(arg);

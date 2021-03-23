@@ -46,17 +46,13 @@ Arguments syev_heev_setup_arguments(syev_heev_tuple tup)
 
     Arguments arg;
 
-    arg.N = size[0];
-    arg.lda = size[1];
+    arg.set<rocblas_int>("n", size[0]);
+    arg.set<rocblas_int>("lda", size[1]);
 
-    arg.evect = op[0];
-    arg.uplo_option = op[1];
+    arg.set<char>("evect", op[0]);
+    arg.set<char>("uplo", op[1]);
 
-    // only testing standard use case for strides
-    // strides are ignored in normal and batched tests
-    arg.bsa = arg.lda * arg.N; // strideA
-    arg.bsb = arg.N; // strideD
-    arg.bsc = arg.N; // strideE
+    // only testing standard use case/defaults for strides
 
     arg.timing = 0;
 
@@ -75,7 +71,8 @@ protected:
     {
         Arguments arg = syev_heev_setup_arguments(GetParam());
 
-        if(arg.N == 0 && arg.evect == 'N' && arg.uplo_option == 'L')
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("evect") == 'N'
+           && arg.peek<char>("uplo") == 'L')
             testing_syev_heev_bad_arg<BATCHED, STRIDED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);

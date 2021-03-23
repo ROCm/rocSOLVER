@@ -16,9 +16,9 @@ typedef std::tuple<vector<int>, vector<rocsolver_op_char>> sygv_tuple;
 // each matrix_size_range is a {n, lda, ldb, singular}
 // if singular = 1, then the used matrix for the tests is not positive definite
 
-// each type_range is a {itype, jobz, uplo}
+// each type_range is a {itype, evect, uplo}
 
-// case when n = 0, itype = 1, jobz = 'N', and uplo = U will also execute the bad arguments test
+// case when n = 0, itype = 1, evect = 'N', and uplo = U will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
 const vector<vector<rocsolver_op_char>> type_range
@@ -51,22 +51,18 @@ Arguments sygv_setup_arguments(sygv_tuple tup)
 
     Arguments arg;
 
-    arg.N = matrix_size[0];
-    arg.lda = matrix_size[1];
-    arg.ldb = matrix_size[2];
-    arg.singular = matrix_size[3];
+    arg.set<rocblas_int>("n", matrix_size[0]);
+    arg.set<rocblas_int>("lda", matrix_size[1]);
+    arg.set<rocblas_int>("ldb", matrix_size[2]);
 
-    arg.itype = type[0];
-    arg.evect = type[1];
-    arg.uplo_option = type[2];
+    arg.set<char>("itype", type[0]);
+    arg.set<char>("evect", type[1]);
+    arg.set<char>("uplo", type[2]);
+
+    // only testing standard use case/defaults for strides
 
     arg.timing = 0;
-
-    // only testing standard use case for strides
-    // strides are ignored in normal and batched tests
-    arg.bsa = arg.lda * arg.N;
-    arg.bsb = arg.ldb * arg.N;
-    arg.bsp = arg.N;
+    arg.singular = matrix_size[3];
 
     return arg;
 }
@@ -83,7 +79,8 @@ protected:
     {
         Arguments arg = sygv_setup_arguments(GetParam());
 
-        if(arg.itype == '1' && arg.evect == 'N' && arg.uplo_option == 'U' && arg.N == 0)
+        if(arg.peek<char>("itype") == '1' && arg.peek<char>("evect") == 'N'
+           && arg.peek<char>("uplo") == 'U' && arg.peek<rocblas_int>("n") == 0)
             testing_sygv_hegv_bad_arg<BATCHED, STRIDED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);

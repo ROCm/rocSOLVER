@@ -5,6 +5,31 @@
 #include "rocblascommon/program_options.hpp"
 #include "rocsolver_dispatcher.hpp"
 
+using namespace roc;
+
+// clang-format off
+const char* help_str = R"HELP_STR(
+rocSOLVER benchmark client help.
+
+Usage: ./rocsolver-bench <options>
+
+In addition to some common general options, the following list of options corresponds to all the parameters
+that might be needed to test a given rocSOLVER function. The parameters are named as in the API user guide.
+The arrays are initialized internally by the program with random values.
+
+Note: When a required parameter/option is not provided, it will take the default value as listed below.
+If no default value is defined, the program will try to calculate a suitable value depending on the context
+of the problem and the tested function; if this is not possible, the program will abort with an error.
+Functions that accept multiple size parameters can generally be provided a single size parameter (typically,
+m) and a square-size matrix will be assumed.
+
+Example: ./rocsolver-bench -f getf2_batched -m 30 --lda 75 --batch_count 350
+This will test getf2_batched with a set of 350 random 30x30 matrices. strideP will be set to be equal to 30.
+
+Options:
+)HELP_STR";
+// clang-format on
+
 int main(int argc, char* argv[])
 try
 {
@@ -22,178 +47,298 @@ try
     rocblas_int device_id;
 
     // take arguments and set default values
-    // (TODO) IMPROVE WORDING/INFORMATION. CHANGE ARGUMENT NAMES FOR
-    // MORE RELATED NAMES (THESE ARE BLAS-BASED NAMES)
-
     // clang-format off
     options_description desc("rocsolver client command line options");
-    desc.add_options()("help,h", "produces this help message")
+    desc.add_options()("help,h", "Produces this help message.")
 
-        ("sizem,m",
-         value<rocblas_int>(&argus.M)->default_value(1024),
-         "Specific matrix size testing: the number of rows of a matrix.")
-
-        ("sizen,n",
-         value<rocblas_int>(&argus.N)->default_value(1024),
-         "Specific matrix/vector/order size testing: the number of columns of a matrix,"
-         "or the order of a system or transformation.")
-
-        ("sizek,k",
-         value<rocblas_int>(&argus.K)->default_value(1024),
-         "Specific...  the number of columns in "
-         "A & C  and rows in B.")
-
-        ("size4,S4",
-         value<rocblas_int>(&argus.S4)->default_value(1024),
-         "Extra size value.")
-
-        ("k1",
-         value<rocblas_int>(&argus.k1)->default_value(1),
-         "First index for row interchange, used with laswp. ")
-
-        ("k2",
-         value<rocblas_int>(&argus.k2)->default_value(2),
-         "Last index for row interchange, used with laswp. ")
-
-        ("lda",
-         value<rocblas_int>(&argus.lda)->default_value(1024),
-         "Specific leading dimension of matrix A, is only applicable to "
-         "BLAS-2 & BLAS-3: the number of rows.")
-
-        ("ldb",
-         value<rocblas_int>(&argus.ldb)->default_value(1024),
-         "Specific leading dimension of matrix B, is only applicable to BLAS-2 & BLAS-3: the number "
-         "of rows.")
-
-        ("ldc",
-         value<rocblas_int>(&argus.ldc)->default_value(1024),
-         "Specific leading dimension of matrix C, is only applicable to BLAS-2 & "
-         "BLAS-3: the number of rows.")
-
-        ("ldv",
-         value<rocblas_int>(&argus.ldv)->default_value(1024),
-         "Specific leading dimension.")
-
-        ("ldt",
-         value<rocblas_int>(&argus.ldt)->default_value(1024),
-         "Specific leading dimension.")
-
-        ("bsa",
-         value<rocblas_int>(&argus.bsa)->default_value(1024*1024),
-         "Specific stride of strided_batched matrix A, is only applicable to strided batched"
-         "BLAS-2 and BLAS-3: second dimension * leading dimension.")
-
-        ("bsb",
-         value<rocblas_int>(&argus.bsb)->default_value(1024*1024),
-         "Specific stride of strided_batched matrix B, is only applicable to strided batched"
-         "BLAS-2 and BLAS-3: second dimension * leading dimension.")
-
-        ("bsc",
-         value<rocblas_int>(&argus.bsc)->default_value(1024*1024),
-         "Specific stride of strided_batched matrix B, is only applicable to strided batched"
-         "BLAS-2 and BLAS-3: second dimension * leading dimension.")
-
-        ("bsp",
-         value<rocblas_int>(&argus.bsp)->default_value(1024),
-         "Specific stride of batched pivots vector Ipiv, is only applicable to batched and strided_batched"
-         "factorizations: min(first dimension, second dimension).")
-
-        ("bs5",
-         value<rocblas_int>(&argus.bs5)->default_value(1024),
-         "Specific stride of batched pivots vector Ipiv, is only applicable to batched and strided_batched")
-
-        ("incx",
-         value<rocblas_int>(&argus.incx)->default_value(1),
-         "increment between values in x vector")
-
-        ("incy",
-         value<rocblas_int>(&argus.incy)->default_value(1),
-         "increment between values in y vector")
-
-        ("alpha",
-         value<double>(&argus.alpha)->default_value(1.0), "specifies the scalar alpha")
-
-        ("beta",
-         value<double>(&argus.beta)->default_value(0.0), "specifies the scalar beta")
-
-        ("function,f",
-         value<std::string>(&function)->default_value("potf2"),
-         "LAPACK function to test. Options: potf2, getf2, getrf, getrs")
-
-        ("precision,r",
-         value<char>(&precision)->default_value('s'), "Options: h,s,d,c,z")
-
-        ("transposeA",
-         value<char>(&argus.transA_option)->default_value('N'),
-         "N = no transpose, T = transpose, C = conjugate transpose")
-
-        ("transposeB",
-         value<char>(&argus.transB_option)->default_value('N'),
-         "N = no transpose, T = transpose, C = conjugate transpose")
-
-        ("transposeH",
-         value<char>(&argus.transH_option)->default_value('N'),
-         "N = no transpose, T = transpose, C = conjugate transpose")
-
-        ("side",
-         value<char>(&argus.side_option)->default_value('L'),
-         "L = left, R = right. Only applicable to certain routines")
-
-        ("uplo",
-         value<char>(&argus.uplo_option)->default_value('U'),
-         "U = upper, L = lower. Only applicable to certain routines")
-
-        ("direct",
-         value<char>(&argus.direct_option)->default_value('F'),
-         "F = forward, B = backward. Only applicable to certain routines")
-
-        ("storev",
-         value<char>(&argus.storev)->default_value('C'),
-         "C = column_wise, R = row_wise. Only applicable to certain routines")
-
-        ("batch",
+        // test options
+        ("batch_count",
          value<rocblas_int>(&argus.batch_count)->default_value(1),
-         "Number of matrices. Only applicable to batched routines")
-
-        ("verify,v",
-         value<rocblas_int>(&argus.norm_check)->default_value(0),
-         "Validate GPU results with CPU? 0 = No, 1 = Yes (default: No)")
-
-        ("iters,i",
-         value<rocblas_int>(&argus.iters)->default_value(10),
-         "Iterations to run inside timing loop")
-
-        ("perf",
-         value<rocblas_int>(&argus.perf)->default_value(0),
-         "If equal 1, only GPU timing results are collected and printed (default is 0)")
-
-        ("singular",
-         value<rocblas_int>(&argus.singular)->default_value(0),
-         "If equal 1, test with singular matrices (default is 0)")
+            "Number of matrices or problem instances in the batch.\n"
+            "                           Only applicable to batch routines.\n"
+            "                           ")
 
         ("device",
          value<rocblas_int>(&device_id)->default_value(0),
-         "Set default device to be used for subsequent program runs")
+            "Set the default device to be used for subsequent program runs.\n"
+            "                           ")
 
-        ("workmode",
-         value<char>(&argus.workmode)->default_value('O'),
-         "Enables out-of-place computations in some routines")
+        ("function,f",
+         value<std::string>(&function)->default_value("potf2"),
+            "The LAPACK function to test.\n"
+            "                           Options are: getf2, getrf, gesvd_batched, etc.\n"
+            "                           ")
 
-        ("leftsv",
-         value<char>(&argus.left_svect)->default_value('N'),
-         "Only applicable to certain routines")
+        ("iters,i",
+         value<rocblas_int>(&argus.iters)->default_value(10),
+            "Iterations to run inside the GPU timing loop.\n"
+            "                           Reported time will be the average.\n"
+            "                           ")
 
-        ("rightsv",
-         value<char>(&argus.right_svect)->default_value('N'),
-         "Only applicable to certain routines")
+        ("perf",
+         value<rocblas_int>(&argus.perf)->default_value(0),
+            "Ignore CPU timing results? 0 = No, 1 = Yes.\n"
+            "                           This forces the client to print only the GPU time and the error if requested.\n"
+            "                           ")
+
+        ("precision,r",
+         value<char>(&precision)->default_value('s'),
+            "Precision to be used in the tests.\n"
+            "                           Options are: s, d, c, z.\n"
+            "                           ")
+
+        ("singular",
+         value<rocblas_int>(&argus.singular)->default_value(0),
+            "Test with degenerate matrices? 0 = No, 1 = Yes\n"
+            "                           This will produce matrices that are singular, non positive-definite, etc.\n"
+            "                           ")
+
+        ("verify,v",
+         value<rocblas_int>(&argus.norm_check)->default_value(0),
+            "Validate GPU results with CPU? 0 = No, 1 = Yes.\n"
+            "                           This will additionally print the relative error of the computations.\n"
+            "                           ")
+
+        // size options
+        ("k",
+         value<rocblas_int>(),
+            "Matrix/vector size parameter.\n"
+            "                           Represents a sub-dimension of a problem.\n"
+            "                           For example, the number of Householder reflections in a transformation.\n"
+            "                           ")
+
+        ("m",
+         value<rocblas_int>(),
+            "Matrix/vector size parameter.\n"
+            "                           Typically, the number of rows of a matrix.\n"
+            "                           ")
+
+        ("n",
+         value<rocblas_int>(),
+            "Matrix/vector size parameter.\n"
+            "                           Typically, the number of columns of a matrix,\n"
+            "                           or the order of a system or transformation.\n"
+            "                           ")
+
+        ("nrhs",
+         value<rocblas_int>(),
+            "Matrix/vector size parameter.\n"
+            "                           Typically, the number of columns of a matrix on the right-hand side of a problem.\n"
+            "                           ")
+
+        // leading dimension options
+        ("lda",
+         value<rocblas_int>(),
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices A.\n"
+            "                           ")
+
+        ("ldb",
+         value<rocblas_int>(),
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices B.\n"
+            "                           ")
+
+        ("ldc",
+         value<rocblas_int>(),
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices C.\n"
+            "                           ")
+
+        ("ldt",
+         value<rocblas_int>(),
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices T.\n"
+            "                           ")
+
+        ("ldu",
+         value<rocblas_int>(),
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices U.\n"
+            "                           ")
+
+        ("ldv",
+         value<rocblas_int>(),
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices V.\n"
+            "                           ")
+
+        ("ldw",
+         value<rocblas_int>(),
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices W.\n"
+            "                           ")
+
+        ("ldx",
+         value<rocblas_int>(),
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices X.\n"
+            "                           ")
+
+        ("ldy",
+         value<rocblas_int>(),
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices Y.\n"
+            "                           ")
+
+        // stride options
+        ("strideA",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors A.\n"
+            "                           ")
+
+        ("strideB",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors B.\n"
+            "                           ")
+
+        ("strideD",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors D.\n"
+            "                           ")
+
+        ("strideE",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors E.\n"
+            "                           ")
+
+        ("strideQ",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for vectors tauq.\n"
+            "                           ")
+
+        ("strideP",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for vectors tau, taup, and ipiv.\n"
+            "                           ")
+
+        ("strideS",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors S.\n"
+            "                           ")
+
+        ("strideU",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors U.\n"
+            "                           ")
+
+        ("strideV",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors V.\n"
+            "                           ")
+
+        // bdsqr options
+        ("nc",
+         value<rocblas_int>()->default_value(0),
+            "The number of columns of matrix C.\n"
+            "                           Only applicable to bdsqr.\n"
+            "                           ")
+
+        ("nu",
+         value<rocblas_int>(),
+            "The number of columns of matrix U.\n"
+            "                           Only applicable to bdsqr.\n"
+            "                           ")
+
+        ("nv",
+         value<rocblas_int>()->default_value(0),
+            "The number of columns of matrix V.\n"
+            "                           Only applicable to bdsqr.\n"
+            "                           ")
+
+        // laswp options
+        ("k1",
+         value<rocblas_int>(),
+            "First index for row interchange.\n"
+            "                           Only applicable to laswp.\n"
+            "                           ")
+
+        ("k2",
+         value<rocblas_int>(),
+            "Last index for row interchange.\n"
+            "                           Only applicable to laswp.\n"
+            "                           ")
+
+        // gesvd options
+        ("left_svect",
+         value<char>()->default_value('N'),
+            "N = none, A = the entire orthogonal matrix is computed,\n"
+            "                           S = the singular vectors are computed,\n"
+            "                           O = the singular vectors overwrite the original matrix.\n"
+            "                           Indicates how the left singular vectors are to be calculated and stored.\n"
+            "                           ")
+
+        ("right_svect",
+         value<char>()->default_value('N'),
+            "N = none, A = the entire orthogonal matrix is computed,\n"
+            "                           S = the singular vectors are computed,\n"
+            "                           O = the singular vectors overwrite the original matrix.\n"
+            "                           Indicates how the right singular vectors are to be calculated and stored.\n"
+            "                           ")
+
+        // other options
+        ("direct",
+         value<char>()->default_value('F'),
+            "F = forward, B = backward.\n"
+            "                           The order in which a series of transformations are applied.\n"
+            "                           ")
 
         ("evect",
-         value<char>(&argus.evect)->default_value('N'),
-         "Only applicable to certain routines")
+         value<char>()->default_value('N'),
+            "N = none, V = compute eigenvectors of the matrix,\n"
+            "                           I = compute eigenvectors of the tridiagonal matrix.\n"
+            "                           Indicates how the eigenvectors are to be calculated and stored.\n"
+            "                           ")
+
+        ("fast_alg",
+         value<char>()->default_value('O'),
+            "O = out-of-place, I = in-place.\n"
+            "                           Enables out-of-place computations.\n"
+            "                           ")
+
+        ("incx",
+         value<rocblas_int>()->default_value(1),
+            "Increment between values in vector x.\n"
+            "                           ")
 
         ("itype",
-         value<char>(&argus.itype)->default_value('1'),
-         "Only applicable to certain routines");
+         value<char>()->default_value('1'),
+            "1 = Ax, 2 = ABx, 3 = BAx.\n"
+            "                           Problem type for generalized eigenproblems.\n"
+            "                           ")
+
+        ("side",
+         value<char>(),
+            "L = left, R = right.\n"
+            "                           The side from which a matrix should be multiplied.\n"
+            "                           ")
+
+        ("storev",
+         value<char>(),
+            "C = column-wise, R = row-wise.\n"
+            "                           Indicates whether data is stored column-wise or row-wise.\n"
+            "                           ")
+
+        ("trans",
+         value<char>()->default_value('N'),
+            "N = no transpose, T = transpose, C = conjugate transpose.\n"
+            "                           Indicates if a matrix should be transposed.\n"
+            "                           ")
+
+        ("uplo",
+         value<char>()->default_value('U'),
+            "U = upper, L = lower.\n"
+            "                           Indicates where the data for a triangular or symmetric/hermitian matrix is stored.\n"
+            "                           ");
     // clang-format on
 
     variables_map vm;
@@ -203,17 +348,13 @@ try
     // print help message
     if(vm.count("help"))
     {
-        rocsolver_cout << desc << std::endl;
+        rocsolver_cout << help_str << desc << std::endl;
         return 0;
     }
 
-    // catch invalid arguments for:
+    argus.populate(vm);
 
-    // precision
-    if(precision != 's' && precision != 'd' && precision != 'c' && precision != 'z')
-        throw std::invalid_argument("Invalid value for --precision ");
-
-    // deviceID
+    // set device ID
     if(!argus.perf)
     {
         rocblas_int device_count = query_device_property();
@@ -222,55 +363,18 @@ try
     }
     set_device(device_id);
 
-    // operation transA
-    if(argus.transA_option != 'N' && argus.transA_option != 'T' && argus.transA_option != 'C')
-        throw std::invalid_argument("Invalid value for --transposeA");
-
-    // operation transB
-    if(argus.transB_option != 'N' && argus.transB_option != 'T' && argus.transB_option != 'C')
-        throw std::invalid_argument("Invalid value for --transposeB");
-
-    // operation transH
-    if(argus.transH_option != 'N' && argus.transH_option != 'T' && argus.transH_option != 'C')
-        throw std::invalid_argument("Invalid value for --transposeH");
-
-    // side
-    if(argus.side_option != 'L' && argus.side_option != 'R' && argus.side_option != 'B')
-        throw std::invalid_argument("Invalid value for --side");
-
-    // uplo
-    if(argus.uplo_option != 'U' && argus.uplo_option != 'L' && argus.uplo_option != 'F')
-        throw std::invalid_argument("Invalid value for --uplo");
-
-    // direct
-    if(argus.direct_option != 'F' && argus.direct_option != 'B')
-        throw std::invalid_argument("Invalid value for --direct");
-
-    // storev
-    if(argus.storev != 'R' && argus.storev != 'C')
-        throw std::invalid_argument("Invalid value for --storev");
-
-    // leftsv
-    if(argus.left_svect != 'A' && argus.left_svect != 'S' && argus.left_svect != 'O'
-       && argus.left_svect != 'N')
-        throw std::invalid_argument("Invalid value for --leftsv");
-
-    // rightsv
-    if(argus.right_svect != 'A' && argus.right_svect != 'S' && argus.right_svect != 'O'
-       && argus.right_svect != 'N')
-        throw std::invalid_argument("Invalid value for --rightsv");
-
-    // evect
-    if(argus.evect != 'V' && argus.evect != 'I' && argus.evect != 'N')
-        throw std::invalid_argument("Invalid value for --evect");
-
-    // workmode
-    if(argus.workmode != 'O' && argus.workmode != 'I')
-        throw std::invalid_argument("Invalid value for --workmode");
-
-    // itype
-    if(argus.itype != '1' && argus.itype != '2' && argus.itype != '3')
-        throw std::invalid_argument("Invalid value for --itype");
+    // catch invalid arguments
+    argus.validate_precision("precision");
+    argus.validate_operation("trans");
+    argus.validate_side("side");
+    argus.validate_fill("uplo");
+    argus.validate_direct("direct");
+    argus.validate_storev("storev");
+    argus.validate_svect("left_svect");
+    argus.validate_svect("right_svect");
+    argus.validate_workmode("fast_alg");
+    argus.validate_evect("evect");
+    argus.validate_itype("itype");
 
     // select and dispatch function test/benchmark
     rocsolver_dispatcher::invoke(function, precision, argus);

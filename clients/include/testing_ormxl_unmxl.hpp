@@ -257,20 +257,31 @@ void ormxl_unmxl_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T, bool MQL, bool COMPLEX = is_complex<T>>
-void testing_ormxl_unmxl(Arguments argus)
+void testing_ormxl_unmxl(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int k = argus.K;
-    rocblas_int m = argus.M;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_int ldc = argus.ldc;
-    rocblas_int hot_calls = argus.iters;
-    char sideC = argus.side_option;
-    char transC = argus.transA_option;
+    char sideC = argus.get<char>("side");
+    char transC = argus.get<char>("trans");
+    rocblas_int m, n, k;
+    if(sideC == 'L')
+    {
+        m = argus.get<rocblas_int>("m");
+        n = argus.get<rocblas_int>("n", m);
+        k = argus.get<rocblas_int>("k", m);
+    }
+    else
+    {
+        n = argus.get<rocblas_int>("n");
+        m = argus.get<rocblas_int>("m", n);
+        k = argus.get<rocblas_int>("k", n);
+    }
+    rocblas_int lda = argus.get<rocblas_int>("lda", sideC == 'L' ? m : n);
+    rocblas_int ldc = argus.get<rocblas_int>("ldc", m);
+
     rocblas_side side = char2rocblas_side(sideC);
     rocblas_operation trans = char2rocblas_operation(transC);
+    rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
     bool invalid_value
@@ -403,4 +414,7 @@ void testing_ormxl_unmxl(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

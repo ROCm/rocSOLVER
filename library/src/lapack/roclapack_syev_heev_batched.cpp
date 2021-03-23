@@ -19,8 +19,8 @@ rocblas_status rocsolver_syev_heev_batched_impl(rocblas_handle handle,
                                                 const rocblas_int batch_count)
 {
     const char* name = (!is_complex<T> ? "syev_batched" : "heev_batched");
-    ROCSOLVER_ENTER_TOP(name, "--evect", evect, "--uplo", uplo, "-n", n, "--lda", lda, "--bsb",
-                        strideD, "--bsc", strideE);
+    ROCSOLVER_ENTER_TOP(name, "--evect", evect, "--uplo", uplo, "-n", n, "--lda", lda, "--strideD",
+                        strideD, "--strideE", strideE, "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;

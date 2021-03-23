@@ -60,13 +60,13 @@ Arguments larft_setup_arguments(larft_tuple tup)
 
     Arguments arg;
 
-    arg.N = order_size[0];
-    arg.ldv = order_size[1];
-    arg.K = reflector_size[0];
-    arg.ldt = reflector_size[1];
+    arg.set<rocblas_int>("n", order_size[0]);
+    arg.set<rocblas_int>("ldv", order_size[1]);
+    arg.set<char>("storev", order_size[2] == 1 ? 'R' : 'C');
 
-    arg.direct_option = reflector_size[2] == 1 ? 'B' : 'F';
-    arg.storev = order_size[2] == 1 ? 'R' : 'C';
+    arg.set<rocblas_int>("k", reflector_size[0]);
+    arg.set<rocblas_int>("ldt", reflector_size[1]);
+    arg.set<char>("direct", reflector_size[2] == 1 ? 'B' : 'F');
 
     arg.timing = 0;
 
@@ -85,7 +85,7 @@ protected:
     {
         Arguments arg = larft_setup_arguments(GetParam());
 
-        if(arg.N == 0 && arg.K == 0)
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("k") == 0)
             testing_larft_bad_arg<T>();
 
         testing_larft<T>(arg);

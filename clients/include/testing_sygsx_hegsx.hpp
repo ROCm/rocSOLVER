@@ -276,21 +276,22 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, bool SYGST, typename T>
-void testing_sygsx_hegsx(Arguments argus)
+void testing_sygsx_hegsx(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_int ldb = argus.ldb;
-    rocblas_stride stA = argus.bsa;
-    rocblas_stride stB = argus.bsb;
-    rocblas_int bc = argus.batch_count;
-    rocblas_int hot_calls = argus.iters;
-    char itypeC = argus.itype;
-    char uploC = argus.uplo_option;
+    char itypeC = argus.get<char>("itype");
+    char uploC = argus.get<char>("uplo");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int lda = argus.get<rocblas_int>("lda", n);
+    rocblas_int ldb = argus.get<rocblas_int>("ldb", n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * n);
+
     rocblas_eform itype = char2rocblas_eform(itypeC);
     rocblas_fill uplo = char2rocblas_fill(uploC);
+    rocblas_int bc = argus.batch_count;
+    rocblas_int hot_calls = argus.iters;
 
     // hARes and hBRes should always be allocated (used in initData)
     size_t stARes = stA;
@@ -491,4 +492,7 @@ void testing_sygsx_hegsx(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

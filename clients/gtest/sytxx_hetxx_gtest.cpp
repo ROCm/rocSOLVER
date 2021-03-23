@@ -47,17 +47,14 @@ Arguments sytrd_setup_arguments(sytrd_tuple tup)
 
     Arguments arg;
 
-    arg.N = matrix_size[0];
-    arg.lda = matrix_size[1];
+    arg.set<rocblas_int>("n", matrix_size[0]);
+    arg.set<rocblas_int>("lda", matrix_size[1]);
 
-    arg.uplo_option = uplo;
+    arg.set<char>("uplo", uplo);
+
+    // only testing standard use case/defaults for strides
 
     arg.timing = 0;
-
-    // only testing standard use case for strides
-    // strides are ignored in normal and batched tests
-    arg.bsp = arg.N;
-    arg.bsa = arg.lda * arg.N;
 
     return arg;
 }
@@ -75,7 +72,7 @@ protected:
     {
         Arguments arg = sytrd_setup_arguments(GetParam());
 
-        if(arg.uplo_option == 'U' && arg.N == 0)
+        if(arg.peek<char>("uplo") == 'U' && arg.peek<rocblas_int>("n") == 0)
             testing_sytxx_hetxx_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);

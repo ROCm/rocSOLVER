@@ -31,7 +31,8 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
                                                 U tau,
                                                 const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER_TOP("geqrf_ptr_batched", "-m", m, "-n", n, "--lda", lda, "--batch", batch_count);
+    ROCSOLVER_ENTER_TOP("geqrf_ptr_batched", "-m", m, "-n", n, "--lda", lda, "--batch_count",
+                        batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;

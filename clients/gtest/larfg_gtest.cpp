@@ -55,8 +55,8 @@ Arguments larfg_setup_arguments(larfg_tuple tup)
 
     Arguments arg;
 
-    arg.N = n_size;
-    arg.incx = inc;
+    arg.set<rocblas_int>("n", n_size);
+    arg.set<rocblas_int>("incx", inc);
 
     arg.timing = 0;
 
@@ -75,7 +75,7 @@ protected:
     {
         Arguments arg = larfg_setup_arguments(GetParam());
 
-        if(arg.N == 0 && arg.incx == 0)
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("incx") == 0)
             testing_larfg_bad_arg<T>();
 
         testing_larfg<T>(arg);

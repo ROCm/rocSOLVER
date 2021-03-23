@@ -17,8 +17,8 @@ rocblas_status rocsolver_gels_batched_impl(rocblas_handle handle,
                                            rocblas_int* info,
                                            const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER_TOP("gels_batched", "--transposeA", trans, "-m", m, "-n", n, "-k", nrhs,
-                        "--lda", lda, "--ldb:", ldb, "--batch", batch_count);
+    ROCSOLVER_ENTER_TOP("gels_batched", "--trans", trans, "-m", m, "-n", n, "--nrhs", nrhs, "--lda",
+                        lda, "--ldb", ldb, "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;

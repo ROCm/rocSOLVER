@@ -61,10 +61,11 @@ Arguments orgql_setup_arguments(orgql_tuple tup)
 
     Arguments arg;
 
-    arg.M = m_size[0];
-    arg.N = n_size[0];
-    arg.K = n_size[1];
-    arg.lda = m_size[1];
+    arg.set<rocblas_int>("m", m_size[0]);
+    arg.set<rocblas_int>("lda", m_size[1]);
+
+    arg.set<rocblas_int>("n", n_size[0]);
+    arg.set<rocblas_int>("k", n_size[1]);
 
     arg.timing = 0;
 
@@ -84,7 +85,7 @@ protected:
     {
         Arguments arg = orgql_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.N == 0)
+        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0)
             testing_orgxl_ungxl_bad_arg<T, BLOCKED>();
 
         testing_orgxl_ungxl<T, BLOCKED>(arg);

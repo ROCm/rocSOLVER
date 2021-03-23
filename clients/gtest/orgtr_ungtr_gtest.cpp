@@ -43,9 +43,10 @@ Arguments orgtr_setup_arguments(orgtr_tuple tup)
 
     Arguments arg;
 
-    arg.uplo_option = uplo == 1 ? 'U' : 'L';
-    arg.N = size[0];
-    arg.lda = size[1];
+    arg.set<rocblas_int>("n", size[0]);
+    arg.set<rocblas_int>("lda", size[1]);
+
+    arg.set<char>("uplo", uplo == 1 ? 'U' : 'L');
 
     arg.timing = 0;
 
@@ -64,7 +65,7 @@ protected:
     {
         Arguments arg = orgtr_setup_arguments(GetParam());
 
-        if(arg.N == 0 && arg.uplo_option == 'U')
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("uplo") == 'U')
             testing_orgtr_ungtr_bad_arg<T>();
 
         testing_orgtr_ungtr<T>(arg);

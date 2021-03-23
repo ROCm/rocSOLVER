@@ -243,19 +243,20 @@ void latrd_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_latrd(Arguments argus)
+void testing_latrd(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.N;
-    rocblas_int k = argus.K;
-    rocblas_int lda = argus.lda;
-    rocblas_int ldw = argus.ldb;
-    rocblas_int hot_calls = argus.iters;
-    char uploC = argus.uplo_option;
+    char uploC = argus.get<char>("uplo");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int k = argus.get<rocblas_int>("k", n);
+    rocblas_int lda = argus.get<rocblas_int>("lda", n);
+    rocblas_int ldw = argus.get<rocblas_int>("ldw", n);
+
     rocblas_fill uplo = char2rocblas_fill(uploC);
+    rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
@@ -386,4 +387,7 @@ void testing_latrd(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

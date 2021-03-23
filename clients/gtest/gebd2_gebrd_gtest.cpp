@@ -54,16 +54,13 @@ Arguments gebrd_setup_arguments(gebrd_tuple tup)
 
     Arguments arg;
 
-    arg.M = matrix_size[0];
-    arg.N = n_size;
-    arg.lda = matrix_size[1];
+    arg.set<rocblas_int>("m", matrix_size[0]);
+    arg.set<rocblas_int>("n", n_size);
+    arg.set<rocblas_int>("lda", matrix_size[1]);
+
+    // only testing standard use case/defaults for strides
 
     arg.timing = 0;
-
-    // only testing standard use case for strides
-    // strides are ignored in normal and batched tests
-    arg.bsp = min(arg.M, arg.N);
-    arg.bsa = arg.lda * arg.N;
 
     return arg;
 }
@@ -81,7 +78,7 @@ protected:
     {
         Arguments arg = gebrd_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.N == 0)
+        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0)
             testing_gebd2_gebrd_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);

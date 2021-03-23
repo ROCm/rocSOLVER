@@ -193,14 +193,15 @@ void orgxl_ungxl_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T, bool GQL>
-void testing_orgxl_ungxl(Arguments argus)
+void testing_orgxl_ungxl(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int k = argus.K;
-    rocblas_int m = argus.M;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int m = argus.get<rocblas_int>("m", n);
+    rocblas_int k = argus.get<rocblas_int>("k", n);
+    rocblas_int lda = argus.get<rocblas_int>("lda", m);
+
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
@@ -310,4 +311,7 @@ void testing_orgxl_ungxl(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

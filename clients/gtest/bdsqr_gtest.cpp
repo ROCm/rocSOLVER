@@ -66,19 +66,20 @@ Arguments bdsqr_setup_arguments(bdsqr_tuple tup)
 
     Arguments arg;
 
-    arg.M = size[0]; // n
-    arg.N = size[1]; // nv
-    arg.K = size[2]; // nu
-    arg.S4 = size[3]; // nc
+    rocblas_int n = size[0];
+    rocblas_int nv = size[1];
+    rocblas_int nu = size[2];
+    rocblas_int nc = size[3];
+    arg.set<rocblas_int>("n", n);
+    arg.set<rocblas_int>("nv", nv);
+    arg.set<rocblas_int>("nu", nu);
+    arg.set<rocblas_int>("nc", nc);
 
-    arg.uplo_option = opt[0] ? 'L' : 'U';
+    arg.set<char>("uplo", opt[0] ? 'L' : 'U');
 
-    arg.lda = (arg.N > 0) ? arg.M : 1; // ldv
-    arg.lda += opt[1] * 10;
-    arg.ldb = (arg.K > 0) ? arg.K : 1; // ldu
-    arg.ldb += opt[2] * 10;
-    arg.ldc = (arg.S4 > 0) ? arg.M : 1; // ldc
-    arg.ldc += opt[3] * 10;
+    arg.set<rocblas_int>("ldv", (nv > 0 ? n : 1) + opt[1] * 10);
+    arg.set<rocblas_int>("ldu", (nu > 0 ? nu : 1) + opt[2] * 10);
+    arg.set<rocblas_int>("ldc", (nc > 0 ? n : 1) + opt[3] * 10);
 
     arg.timing = 0;
 
@@ -97,7 +98,7 @@ protected:
     {
         Arguments arg = bdsqr_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.uplo_option == 'L')
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("uplo") == 'L')
             testing_bdsqr_bad_arg<T>();
 
         testing_bdsqr<T>(arg);

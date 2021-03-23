@@ -42,16 +42,13 @@ Arguments getri_setup_arguments(getri_tuple tup)
 
     Arguments arg;
 
-    arg.N = tup[0];
-    arg.lda = tup[1];
+    arg.set<rocblas_int>("n", tup[0]);
+    arg.set<rocblas_int>("lda", tup[1]);
+
+    // only testing standard use case/defaults for strides
 
     arg.timing = 0;
     arg.singular = tup[2];
-
-    // only testing standard use case for strides
-    // strides are ignored in normal and batched tests
-    arg.bsp = arg.N;
-    arg.bsa = arg.lda * arg.N;
 
     return arg;
 }
@@ -68,7 +65,7 @@ protected:
     {
         Arguments arg = getri_setup_arguments(GetParam());
 
-        if(arg.N == 0)
+        if(arg.peek<rocblas_int>("n") == 0)
             testing_getri_bad_arg<BATCHED, STRIDED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);

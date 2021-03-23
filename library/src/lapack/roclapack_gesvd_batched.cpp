@@ -26,10 +26,10 @@ rocblas_status rocsolver_gesvd_batched_impl(rocblas_handle handle,
                                             rocblas_int* info,
                                             const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER_TOP("gesvd_batched", "--leftsv", left_svect, "--rightsv", right_svect, "-m", m,
-                        "-n", n, "--lda", lda, "--bsb", strideS, "--ldb", ldu, "--bsc", strideU,
-                        "--ldv", ldv, "--bsp", strideV, "--bs5", strideE, "--workmode", fast_alg,
-                        "--batch", batch_count);
+    ROCSOLVER_ENTER_TOP("gesvd_batched", "--left_svect", left_svect, "--right_svect", right_svect,
+                        "-m", m, "-n", n, "--lda", lda, "--strideS", strideS, "--ldu", ldu,
+                        "--strideU", strideU, "--ldv", ldv, "--strideV", strideV, "--strideE",
+                        strideE, "--fast_alg", fast_alg, "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;

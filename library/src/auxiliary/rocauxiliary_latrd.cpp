@@ -16,7 +16,7 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
                                     T* W,
                                     const rocblas_int ldw)
 {
-    ROCSOLVER_ENTER_TOP("latrd", "--uplo", uplo, "-n", n, "-k", k, "--lda", lda, "--ldb", ldw);
+    ROCSOLVER_ENTER_TOP("latrd", "--uplo", uplo, "-n", n, "-k", k, "--lda", lda, "--ldw", ldw);
 
     if(!handle)
         return rocblas_status_invalid_handle;

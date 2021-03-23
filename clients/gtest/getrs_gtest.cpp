@@ -61,25 +61,21 @@ Arguments getrs_setup_arguments(getrs_tuple tup)
 
     Arguments arg;
 
-    arg.M = matrix_sizeA[0];
-    arg.N = matrix_sizeB[0];
-    arg.lda = matrix_sizeA[1];
-    arg.ldb = matrix_sizeA[2];
+    arg.set<rocblas_int>("n", matrix_sizeA[0]);
+    arg.set<rocblas_int>("nrhs", matrix_sizeB[0]);
+    arg.set<rocblas_int>("lda", matrix_sizeA[1]);
+    arg.set<rocblas_int>("ldb", matrix_sizeA[2]);
 
     if(matrix_sizeB[1] == 0)
-        arg.transA_option = 'N';
+        arg.set<char>("trans", 'N');
     else if(matrix_sizeB[1] == 1)
-        arg.transA_option = 'T';
+        arg.set<char>("trans", 'T');
     else
-        arg.transA_option = 'C';
+        arg.set<char>("trans", 'C');
+
+    // only testing standard use case/defaults for strides
 
     arg.timing = 0;
-
-    // only testing standard use case for strides
-    // strides are ignored in normal and batched tests
-    arg.bsp = arg.M;
-    arg.bsa = arg.lda * arg.M;
-    arg.bsb = arg.ldb * arg.N;
 
     return arg;
 }
@@ -96,7 +92,7 @@ protected:
     {
         Arguments arg = getrs_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.N == 0)
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nrhs") == 0)
             testing_getrs_bad_arg<BATCHED, STRIDED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);

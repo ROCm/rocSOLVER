@@ -16,7 +16,7 @@ rocblas_status rocsolver_getrf_batched_impl(rocblas_handle handle,
                                             rocblas_int batch_count)
 {
     const char* name = (PIVOT ? "getrf_batched" : "getrf_npvt_batched");
-    ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "--lda", lda, "--bsp", strideP, "--batch",
+    ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "--lda", lda, "--strideP", strideP, "--batch_count",
                         batch_count);
 
     using S = decltype(std::real(T{}));

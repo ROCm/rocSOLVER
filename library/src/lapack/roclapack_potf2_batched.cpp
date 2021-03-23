@@ -13,7 +13,7 @@ rocblas_status rocsolver_potf2_batched_impl(rocblas_handle handle,
                                             rocblas_int* info,
                                             const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER_TOP("potf2_batched", "--uplo", uplo, "-n", n, "--lda", lda, "--batch",
+    ROCSOLVER_ENTER_TOP("potf2_batched", "--uplo", uplo, "-n", n, "--lda", lda, "--batch_count",
                         batch_count);
 
     if(!handle)

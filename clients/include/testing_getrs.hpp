@@ -285,20 +285,21 @@ void getrs_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_getrs(Arguments argus)
+void testing_getrs(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int m = argus.M;
-    rocblas_int nrhs = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_int ldb = argus.ldb;
-    rocblas_stride stA = argus.bsa;
-    rocblas_stride stP = argus.bsp;
-    rocblas_stride stB = argus.bsb;
-    rocblas_int bc = argus.batch_count;
-    char transC = argus.transA_option;
+    char transC = argus.get<char>("trans");
+    rocblas_int m = argus.get<rocblas_int>("n");
+    rocblas_int nrhs = argus.get<rocblas_int>("nrhs", m);
+    rocblas_int lda = argus.get<rocblas_int>("lda", m);
+    rocblas_int ldb = argus.get<rocblas_int>("ldb", m);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * m);
+    rocblas_stride stP = argus.get<rocblas_stride>("strideP", m);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nrhs);
+
     rocblas_operation trans = char2rocblas_operation(transC);
+    rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
     rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
@@ -449,18 +450,18 @@ void testing_getrs(Arguments argus)
             rocsolver_cout << "============================================\n";
             if(BATCHED)
             {
-                rocsolver_bench_output("trans", "m", "nrhs", "lda", "ldb", "strideP", "batch_c");
+                rocsolver_bench_output("trans", "n", "nrhs", "lda", "ldb", "strideP", "batch_c");
                 rocsolver_bench_output(transC, m, nrhs, lda, ldb, stP, bc);
             }
             else if(STRIDED)
             {
-                rocsolver_bench_output("trans", "m", "nrhs", "lda", "ldb", "strideA", "strideP",
+                rocsolver_bench_output("trans", "n", "nrhs", "lda", "ldb", "strideA", "strideP",
                                        "strideB", "batch_c");
                 rocsolver_bench_output(transC, m, nrhs, lda, ldb, stA, stP, stB, bc);
             }
             else
             {
-                rocsolver_bench_output("trans", "m", "nrhs", "lda", "ldb");
+                rocsolver_bench_output("trans", "n", "nrhs", "lda", "ldb");
                 rocsolver_bench_output(transC, m, nrhs, lda, ldb);
             }
             rocsolver_cout << "\n============================================\n";
@@ -486,4 +487,7 @@ void testing_getrs(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

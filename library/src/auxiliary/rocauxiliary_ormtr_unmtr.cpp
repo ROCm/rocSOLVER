@@ -18,8 +18,8 @@ rocblas_status rocsolver_ormtr_unmtr_impl(rocblas_handle handle,
                                           const rocblas_int ldc)
 {
     const char* name = (!is_complex<T> ? "ormtr" : "unmtr");
-    ROCSOLVER_ENTER_TOP(name, "--side", side, "--uplo", uplo, "--transposeA", trans, "-m", m, "-n",
-                        n, "--lda", lda, "--ldc", ldc);
+    ROCSOLVER_ENTER_TOP(name, "--side", side, "--uplo", uplo, "--trans", trans, "-m", m, "-n", n,
+                        "--lda", lda, "--ldc", ldc);
 
     if(!handle)
         return rocblas_status_invalid_handle;

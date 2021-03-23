@@ -8,12 +8,15 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Optimizations
 
 ### Changed
+- Argument names for the benchmark client now match argument names from the public API
 
 ### Removed
 
 ### Fixed
 - Fixed known issues with Thin-SVD. The problem was identified in the test specification, not in the thin-SVD
   implementation or the rocBLAS gemm\_batched routines.
+- Benchmark client will no longer crash as a result of leading dimension or stride arguments not being provided
+  on the command line.
 
 ### Known Issues
 

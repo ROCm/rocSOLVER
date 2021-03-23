@@ -74,14 +74,20 @@ Arguments ormql_setup_arguments(ormql_tuple tup)
 
     Arguments arg;
 
-    arg.M = size[0];
-    arg.N = size[1];
-    arg.K = size[2];
-    arg.ldc = arg.M + op[1] * 10;
-    arg.lda = (op[2] == 0 ? arg.M : arg.N) + op[0] * 10;
+    rocblas_int m = size[0];
+    rocblas_int n = size[1];
+    rocblas_int k = size[2];
+    arg.set<rocblas_int>("m", m);
+    arg.set<rocblas_int>("n", n);
+    arg.set<rocblas_int>("k", k);
 
-    arg.transA_option = (op[3] == 0 ? 'N' : (op[3] == 1 ? 'T' : 'C'));
-    arg.side_option = op[2] == 0 ? 'L' : 'R';
+    if(op[2] == 0)
+        arg.set<rocblas_int>("lda", m + op[0] * 10);
+    else
+        arg.set<rocblas_int>("lda", n + op[0] * 10);
+    arg.set<rocblas_int>("ldc", m + op[1] * 10);
+    arg.set<char>("side", op[2] == 0 ? 'L' : 'R');
+    arg.set<char>("trans", (op[3] == 0 ? 'N' : (op[3] == 1 ? 'T' : 'C')));
 
     arg.timing = 0;
 
@@ -101,7 +107,8 @@ protected:
     {
         Arguments arg = ormql_setup_arguments(GetParam());
 
-        if(arg.M == 0 && arg.side_option == 'L' && arg.transA_option == 'T')
+        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<char>("side") == 'L'
+           && arg.peek<char>("trans") == 'T')
             testing_ormxl_unmxl_bad_arg<T, BLOCKED>();
 
         testing_ormxl_unmxl<T, BLOCKED>(arg);

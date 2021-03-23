@@ -42,12 +42,13 @@ Arguments managed_malloc_setup_arguments(managed_malloc_tuple tup)
 
     Arguments arg;
 
-    arg.M = matrix_size[0];
-    arg.N = n_size[0];
-    arg.K = n_size[2];
-    arg.lda = matrix_size[1];
-    arg.ldb = matrix_size[2];
-    arg.ldc = n_size[1];
+    arg.set<rocblas_int>("m", matrix_size[0]);
+    arg.set<rocblas_int>("lda", matrix_size[1]);
+    arg.set<rocblas_int>("ldx", matrix_size[2]);
+
+    arg.set<rocblas_int>("n", n_size[0]);
+    arg.set<rocblas_int>("ldy", n_size[1]);
+    arg.set<rocblas_int>("k", n_size[2]);
 
     arg.timing = 0;
 

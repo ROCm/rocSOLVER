@@ -276,15 +276,16 @@ void getf2_getrf_npvt_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, bool GETRF, typename T>
-void testing_getf2_getrf_npvt(Arguments argus)
+void testing_getf2_getrf_npvt(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int m = argus.M;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_stride stA = argus.bsa;
-    rocblas_stride stP = argus.bsp;
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n", m);
+    rocblas_int lda = argus.get<rocblas_int>("lda", m);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stP = argus.get<rocblas_stride>("strideP", min(m, n));
+
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
@@ -466,4 +467,7 @@ void testing_getf2_getrf_npvt(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

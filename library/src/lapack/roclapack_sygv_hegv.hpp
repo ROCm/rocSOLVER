@@ -31,7 +31,7 @@ __global__ void sygv_update_info(T* info, T* iinfo, const rocblas_int n, const r
 
 template <bool BATCHED, typename T, typename S>
 void rocsolver_sygv_hegv_getMemorySize(const rocblas_eform itype,
-                                       const rocblas_evect jobz,
+                                       const rocblas_evect evect,
                                        const rocblas_fill uplo,
                                        const rocblas_int n,
                                        const rocblas_int batch_count,
@@ -73,7 +73,7 @@ void rocsolver_sygv_hegv_getMemorySize(const rocblas_eform itype,
     *size_work4 = max(*size_work4, temp4);
 
     // requirements for calling SYEV/HEEV
-    rocsolver_syev_heev_getMemorySize<BATCHED, T, S>(jobz, uplo, n, batch_count, &unused, &temp1,
+    rocsolver_syev_heev_getMemorySize<BATCHED, T, S>(evect, uplo, n, batch_count, &unused, &temp1,
                                                      &temp2, &temp3, &temp4, &temp5);
     *size_work1 = max(*size_work1, temp1);
     *size_work2 = max(*size_work2, temp2);
@@ -81,7 +81,7 @@ void rocsolver_sygv_hegv_getMemorySize(const rocblas_eform itype,
     *size_work4 = max(*size_work4, temp4);
     *size_pivots_workArr = max(*size_pivots_workArr, temp5);
 
-    if(jobz == rocblas_evect_original)
+    if(evect == rocblas_evect_original)
     {
         if(itype == rocblas_eform_ax || itype == rocblas_eform_abx)
         {
@@ -99,7 +99,7 @@ void rocsolver_sygv_hegv_getMemorySize(const rocblas_eform itype,
 template <typename S, typename T>
 rocblas_status rocsolver_sygv_hegv_argCheck(rocblas_handle handle,
                                             const rocblas_eform itype,
-                                            const rocblas_evect jobz,
+                                            const rocblas_evect evect,
                                             const rocblas_fill uplo,
                                             const rocblas_int n,
                                             const rocblas_int lda,
@@ -116,7 +116,7 @@ rocblas_status rocsolver_sygv_hegv_argCheck(rocblas_handle handle,
     // 1. invalid/non-supported values
     if(itype != rocblas_eform_ax && itype != rocblas_eform_abx && itype != rocblas_eform_bax)
         return rocblas_status_invalid_value;
-    if(jobz != rocblas_evect_none && jobz != rocblas_evect_original)
+    if(evect != rocblas_evect_none && evect != rocblas_evect_original)
         return rocblas_status_invalid_value;
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
         return rocblas_status_invalid_value;
@@ -139,7 +139,7 @@ rocblas_status rocsolver_sygv_hegv_argCheck(rocblas_handle handle,
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
                                             const rocblas_eform itype,
-                                            const rocblas_evect jobz,
+                                            const rocblas_evect evect,
                                             const rocblas_fill uplo,
                                             const rocblas_int n,
                                             U A,
@@ -165,7 +165,7 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
                                             rocblas_int* iinfo,
                                             bool optim_mem)
 {
-    ROCSOLVER_ENTER("sygv_hegv", "itype:", itype, "jobz:", jobz, "uplo:", uplo, "n:", n,
+    ROCSOLVER_ENTER("sygv_hegv", "itype:", itype, "evect:", evect, "uplo:", uplo, "n:", n,
                     "shiftA:", shiftA, "lda:", lda, "shiftB:", shiftB, "ldb:", ldb,
                     "bc:", batch_count);
 
@@ -211,7 +211,7 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
         scalars, work1, work2, work3, work4, optim_mem);
 
     rocsolver_syev_heev_template<BATCHED, STRIDED, T>(
-        handle, jobz, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE, iinfo, batch_count,
+        handle, evect, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE, iinfo, batch_count,
         scalars, work1, (T*)work2, (T*)work3, (T*)work4, (T**)pivots_workArr);
 
     // combine info from POTRF with info from SYEV/HEEV
@@ -224,7 +224,7 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
     rocblas_int neig = n; //number of converged eigenvalues
 
     // backtransform eigenvectors
-    if(jobz == rocblas_evect_original)
+    if(evect == rocblas_evect_original)
     {
         if(itype == rocblas_eform_ax || itype == rocblas_eform_abx)
         {

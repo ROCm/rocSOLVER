@@ -338,20 +338,21 @@ void gels_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_gels(Arguments argus)
+void testing_gels(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int m = argus.M;
-    rocblas_int n = argus.N;
-    rocblas_int nrhs = argus.K;
-    rocblas_int lda = argus.lda;
-    rocblas_int ldb = argus.ldb;
-    rocblas_stride stA = argus.bsa;
-    rocblas_stride stB = argus.bsb;
-    rocblas_int bc = argus.batch_count;
-    char transC = argus.transA_option;
+    char transC = argus.get<char>("trans");
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n", m);
+    rocblas_int nrhs = argus.get<rocblas_int>("nrhs", n);
+    rocblas_int lda = argus.get<rocblas_int>("lda", m);
+    rocblas_int ldb = argus.get<rocblas_int>("ldb", max(m, n));
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nrhs);
+
     rocblas_operation trans = char2rocblas_operation(transC);
+    rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
     rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
@@ -549,4 +550,7 @@ void testing_gels(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }
