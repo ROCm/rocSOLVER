@@ -251,7 +251,7 @@ void testing_latrd(Arguments& argus)
     rocblas_local_handle handle;
     char uploC = argus.get<char>("uplo");
     rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int k = argus.get<rocblas_int>("k");
+    rocblas_int k = argus.get<rocblas_int>("k", n);
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
     rocblas_int ldw = argus.get<rocblas_int>("ldw", n);
 

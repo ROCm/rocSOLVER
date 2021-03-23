@@ -188,9 +188,9 @@ void testing_laswp(Arguments& argus)
     // get arguments
     rocblas_local_handle handle;
     rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int lda = argus.get<rocblas_int>("lda", 1);
     rocblas_int k1 = argus.get<rocblas_int>("k1");
-    rocblas_int k2 = argus.get<rocblas_int>("k2", k1 + 1);
+    rocblas_int k2 = argus.get<rocblas_int>("k2");
+    rocblas_int lda = argus.get<rocblas_int>("lda", k2);
     rocblas_int inc = argus.get<rocblas_int>("incx");
 
     rocblas_int hot_calls = argus.iters;
@@ -277,7 +277,7 @@ void testing_laswp(Arguments& argus)
             rocsolver_cout << "Arguments:\n";
             rocsolver_cout << "============================================\n";
             rocsolver_bench_output("n", "lda", "k1", "k2", "inc");
-            rocsolver_bench_output(n, lda, k2, k2, inc);
+            rocsolver_bench_output(n, lda, k1, k2, inc);
 
             rocsolver_cout << "\n============================================\n";
             rocsolver_cout << "Results:\n";
