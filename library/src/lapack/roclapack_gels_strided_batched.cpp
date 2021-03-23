@@ -19,9 +19,9 @@ rocblas_status rocsolver_gels_strided_batched_impl(rocblas_handle handle,
                                                    rocblas_int* info,
                                                    const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER_TOP("gels_strided_batched", "--transposeA", trans, "-m", m, "-n", n, "-k", nrhs,
-                        "--lda", lda, "--bsa", strideA, "--ldb:", ldb, "--bsb", strideB, "--batch",
-                        batch_count);
+    ROCSOLVER_ENTER_TOP("gels_strided_batched", "--trans", trans, "-m", m, "-n", n, "--nrhs", nrhs,
+                        "--lda", lda, "--strideA", strideA, "--ldb", ldb, "--strideB", strideB,
+                        "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;

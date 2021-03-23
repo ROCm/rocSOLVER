@@ -229,17 +229,27 @@ void orgbr_ungbr_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_orgbr_ungbr(Arguments argus)
+void testing_orgbr_ungbr(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int k = argus.K;
-    rocblas_int m = argus.M;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_int hot_calls = argus.iters;
-    char storevC = argus.storev;
+    char storevC = argus.get<char>("storev");
+    rocblas_int m, n;
+    if(storevC == 'R')
+    {
+        m = argus.get<rocblas_int>("m");
+        n = argus.get<rocblas_int>("n", m);
+    }
+    else
+    {
+        n = argus.get<rocblas_int>("n");
+        m = argus.get<rocblas_int>("m", n);
+    }
+    rocblas_int k = argus.get<rocblas_int>("k", min(m, n));
+    rocblas_int lda = argus.get<rocblas_int>("lda", m);
+
     rocblas_storev storev = char2rocblas_storev(storevC);
+    rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
     // N/A
@@ -356,4 +366,7 @@ void testing_orgbr_ungbr(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

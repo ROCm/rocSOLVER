@@ -18,8 +18,8 @@ rocblas_status rocsolver_sygst_hegst_strided_batched_impl(rocblas_handle handle,
                                                           const rocblas_int batch_count)
 {
     const char* name = (!is_complex<T> ? "sygst_strided_batched" : "hegst_strided_batched");
-    ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--uplo", uplo, "-n", n, "--lda", lda, "--bsa",
-                        strideA, "--ldb", ldb, "--bsb", strideB, "--batch", batch_count);
+    ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--uplo", uplo, "-n", n, "--lda", lda, "--strideA",
+                        strideA, "--ldb", ldb, "--strideB", strideB, "--batch_count", batch_count);
 
     using S = decltype(std::real(T{}));
 

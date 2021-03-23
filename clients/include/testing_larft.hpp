@@ -247,19 +247,20 @@ void larft_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_larft(Arguments argus)
+void testing_larft(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int k = argus.K;
-    rocblas_int n = argus.N;
-    rocblas_int ldv = argus.ldv;
-    rocblas_int ldt = argus.ldt;
-    rocblas_int hot_calls = argus.iters;
-    char directC = argus.direct_option;
-    char storevC = argus.storev;
+    char directC = argus.get<char>("direct");
+    char storevC = argus.get<char>("storev");
+    rocblas_int k = argus.get<rocblas_int>("k");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int ldv = argus.get<rocblas_int>("ldv", storevC == 'C' ? n : k);
+    rocblas_int ldt = argus.get<rocblas_int>("ldt", k);
+
     rocblas_direct direct = char2rocblas_direct(directC);
     rocblas_storev storev = char2rocblas_storev(storevC);
+    rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
     // N/A
@@ -376,4 +377,7 @@ void testing_larft(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

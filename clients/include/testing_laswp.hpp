@@ -183,15 +183,16 @@ void laswp_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_laswp(Arguments argus)
+void testing_laswp(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_int k1 = argus.k1;
-    rocblas_int k2 = argus.k2;
-    rocblas_int inc = argus.incx;
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int k1 = argus.get<rocblas_int>("k1");
+    rocblas_int k2 = argus.get<rocblas_int>("k2");
+    rocblas_int lda = argus.get<rocblas_int>("lda", k2);
+    rocblas_int inc = argus.get<rocblas_int>("incx");
+
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
@@ -276,7 +277,7 @@ void testing_laswp(Arguments argus)
             rocsolver_cout << "Arguments:\n";
             rocsolver_cout << "============================================\n";
             rocsolver_bench_output("n", "lda", "k1", "k2", "inc");
-            rocsolver_bench_output(n, lda, k2, k2, inc);
+            rocsolver_bench_output(n, lda, k1, k2, inc);
 
             rocsolver_cout << "\n============================================\n";
             rocsolver_cout << "Results:\n";
@@ -301,4 +302,7 @@ void testing_laswp(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

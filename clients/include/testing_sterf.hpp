@@ -169,11 +169,12 @@ void sterf_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_sterf(Arguments argus)
+void testing_sterf(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.N;
+    rocblas_int n = argus.get<rocblas_int>("n");
+
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
@@ -286,4 +287,7 @@ void testing_sterf(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

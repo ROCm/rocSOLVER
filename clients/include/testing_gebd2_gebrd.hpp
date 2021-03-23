@@ -402,20 +402,21 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, bool GEBRD, typename T>
-void testing_gebd2_gebrd(Arguments argus)
+void testing_gebd2_gebrd(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int m = argus.M;
-    rocblas_int n = argus.N;
-    rocblas_int lda = argus.lda;
-    rocblas_stride stA = argus.bsa;
-    rocblas_stride stD = argus.bsp;
-    rocblas_stride stE = argus.bsp;
-    rocblas_stride stQ = argus.bsp;
-    rocblas_stride stP = argus.bsp;
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n", m);
+    rocblas_int lda = argus.get<rocblas_int>("lda", m);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stD = argus.get<rocblas_stride>("strideD", min(m, n));
+    rocblas_stride stE = argus.get<rocblas_stride>("strideE", min(m, n) - 1);
+    rocblas_stride stQ = argus.get<rocblas_stride>("strideQ", min(m, n));
+    rocblas_stride stP = argus.get<rocblas_stride>("strideP", min(m, n));
+
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
@@ -427,7 +428,7 @@ void testing_gebd2_gebrd(Arguments argus)
     // determine sizes
     size_t size_A = lda * n;
     size_t size_D = min(m, n);
-    size_t size_E = min(m, n);
+    size_t size_E = min(m, n) - 1;
     size_t size_Q = min(m, n);
     size_t size_P = min(m, n);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
@@ -627,4 +628,7 @@ void testing_gebd2_gebrd(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

@@ -166,18 +166,19 @@ void managed_malloc_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_managed_malloc(Arguments argus)
+void testing_managed_malloc(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int m = argus.M;
-    rocblas_int n = argus.N;
-    rocblas_int nb = argus.K;
-    rocblas_int lda = argus.lda;
-    rocblas_int ldx = argus.ldb;
-    rocblas_int ldy = argus.ldc;
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n", m);
+    rocblas_int nb = argus.get<rocblas_int>("k", min(m, n));
+    rocblas_int lda = argus.get<rocblas_int>("lda", m);
+    rocblas_int ldx = argus.get<rocblas_int>("ldx", m);
+    rocblas_int ldy = argus.get<rocblas_int>("ldy", n);
+
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
@@ -308,4 +309,7 @@ void testing_managed_malloc(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }

@@ -400,20 +400,21 @@ void bdsqr_getPerfData(const rocblas_handle handle,
 }
 
 template <typename T>
-void testing_bdsqr(Arguments argus)
+void testing_bdsqr(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.M;
-    rocblas_int nv = argus.N;
-    rocblas_int nu = argus.K;
-    rocblas_int nc = argus.S4;
-    rocblas_int ldv = argus.lda;
-    rocblas_int ldu = argus.ldb;
-    rocblas_int ldc = argus.ldc;
-    char uploC = argus.uplo_option;
+    char uploC = argus.get<char>("uplo");
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int nv = argus.get<rocblas_int>("nv");
+    rocblas_int nu = argus.get<rocblas_int>("nu");
+    rocblas_int nc = argus.get<rocblas_int>("nc");
+    rocblas_int ldv = argus.get<rocblas_int>("ldv", nv > 0 ? n : 1);
+    rocblas_int ldu = argus.get<rocblas_int>("ldu", nu);
+    rocblas_int ldc = argus.get<rocblas_int>("ldc", nc > 0 ? n : 1);
+
     rocblas_fill uplo = char2rocblas_fill(uploC);
     rocblas_int hot_calls = argus.iters;
 
@@ -614,4 +615,7 @@ void testing_bdsqr(Arguments argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+
+    // ensure all arguments were consumed
+    argus.validate_consumed();
 }
