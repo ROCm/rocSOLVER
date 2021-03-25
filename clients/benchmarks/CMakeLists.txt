@@ -21,20 +21,11 @@ target_link_libraries( rocsolver-bench PRIVATE
   cblas
   lapack
   Threads::Threads
+  hip::device
+  rocsolver-common
+  clients-common
   roc::rocsolver
 )
-
-if( CUDA_FOUND )
-  target_include_directories( rocsolver-bench
-    PRIVATE
-      $<BUILD_INTERFACE:${CUDA_INCLUDE_DIRS}>
-      $<BUILD_INTERFACE:${hip_INCLUDE_DIRS}>
-    )
-  target_compile_definitions( rocsolver-bench PRIVATE __HIP_PLATFORM_NVCC__ )
-  target_link_libraries( rocsolver-bench PRIVATE ${CUDA_LIBRARIES} )
-else( )
-  target_link_libraries( rocsolver-bench PRIVATE hip::device )
-endif( )
 
 # Turn on f16c intrinsics
 target_compile_options( rocsolver-bench PRIVATE -mf16c )
@@ -46,5 +37,3 @@ set_target_properties( rocsolver-bench PROPERTIES
   CXX_EXTENSIONS OFF
   RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging"
 )
-
-target_link_libraries( rocsolver-bench PRIVATE rocsolver-common clients-common )
