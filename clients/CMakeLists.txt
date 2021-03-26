@@ -8,7 +8,7 @@ project( rocsolver-clients LANGUAGES C CXX Fortran )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
 
 # The rocsolver target will exist if the library is being built along with the clients,
-# but if this is a clients-only build, we'll have ot search for it.
+# but if this is a clients-only build, we'll have to search for it.
 if( NOT TARGET rocsolver )
   find_package( rocsolver REQUIRED CONFIG PATHS ${ROCM_PATH}/rocsolver /opt/rocm/rocsolver )
   get_imported_target_location( location roc::rocsolver )
