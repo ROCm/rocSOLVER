@@ -30,10 +30,3 @@ target_link_libraries( rocsolver-bench PRIVATE
 # Turn on f16c intrinsics
 target_compile_options( rocsolver-bench PRIVATE -mf16c )
 target_compile_definitions( rocsolver-bench PRIVATE ROCM_USE_FLOAT16 )
-
-set_target_properties( rocsolver-bench PROPERTIES
-  CXX_STANDARD 14
-  CXX_STANDARD_REQUIRED ON
-  CXX_EXTENSIONS OFF
-  RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging"
-)

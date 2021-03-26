@@ -5,10 +5,6 @@
 # This is incremented when the ABI to the library changes
 set( rocsolver_SOVERSION 0.1 )
 
-# This option only works for make, nmake and ninja, but no reason it shouldn't be on all the time
-# It creates a compile_commands.json file for use with clang tooling or vim
-set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
-
 # Print out compiler flags for viewing/debug
 if( BUILD_VERBOSE )
   message( STATUS "\t==>CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}" )
