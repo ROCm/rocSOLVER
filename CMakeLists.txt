@@ -84,7 +84,8 @@ option( BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON )
 # include helper functions and wrapper functions
 include( util )
 
-# by default, clients are not built
+option( BUILD_LIBRARY "Build rocSOLVER library" ON )
+option_opposite( BUILD_LIBRARY SKIP_LIBRARY )
 option( BUILD_CLIENTS_TESTS "Build rocSOLVER unit tests" OFF )
 option( BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmarks" OFF )
 option( BUILD_CLIENTS_SAMPLES "Build rocSOLVER samples" OFF )
@@ -108,7 +109,10 @@ get_imported_target_location( location roc::rocblas )
 message(STATUS "Found rocBLAS: ${location}")
 
 add_subdirectory( common )
-add_subdirectory( library )
+
+if( BUILD_LIBRARY )
+  add_subdirectory( library )
+endif( )
 
 # Build clients of the library
 if( BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES )

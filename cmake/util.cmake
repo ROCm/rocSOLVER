@@ -34,3 +34,19 @@ function( get_imported_target_location result_variable imported_target )
   endforeach( )
   set( "${result_variable}" "${result_variable}-NOTFOUND" PARENT_SCOPE )
 endfunction( )
+
+include(CMakeDependentOption)
+
+# ########################################################################
+# Define an opposite way of specifying an existing option.
+# This may be useful for compatibility.
+# ########################################################################
+macro( option_opposite option opposite )
+  if( DEFINED "${opposite}" )
+    if( ${opposite} )
+      set( "${option}" OFF )
+    else( )
+      set( "${option}" ON )
+    endif( )
+  endif( )
+endmacro( )

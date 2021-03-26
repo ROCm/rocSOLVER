@@ -49,6 +49,8 @@ Options:
   -c | --clients              Pass this flag to also build the library clients benchmark and gtest.
                               (Generated binaries will be located at builddir/clients/staging)
 
+  --clients-only              Pass this flag to skip building the library and only build the clients.
+
   -h | --hip-clang            Pass this flag to build using the hip-clang compiler.
                               hip-clang is currently the only supported compiler, so this flag has no effect.
 
@@ -282,6 +284,7 @@ install_package=false
 build_package=false
 install_dependencies=false
 static_lib=false
+build_library=true
 build_clients=false
 lib_dir=rocsolver-install
 install_dir=${rocm_path}
@@ -302,7 +305,7 @@ architecture=
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,cleanup,debug,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrna: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrna: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -332,6 +335,10 @@ while true; do
         install_dependencies=true
         shift ;;
     -c|--clients)
+        build_clients=true
+        shift ;;
+    --clients-only)
+        build_library=false
         build_clients=true
         shift ;;
     -g|--debug)
@@ -482,6 +489,10 @@ if [[ "${build_clients}" == true ]]; then
   cmake_client_options="${cmake_client_options} -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON -DBUILD_CLIENTS_SAMPLES=ON"
 fi
 
+if [[ "${build_library}" == false ]]; then
+  cmake_client_options="${cmake_client_options} -DBUILD_LIBRARY=OFF"
+fi
+
 rocm_rpath=""
 if [[ "${build_relocatable}" == true ]]; then
     rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath,/opt/rocm/lib:/opt/rocm/lib64"
@@ -502,7 +513,11 @@ esac
 CXX=${cxx} CC=${cc} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
 check_exit_code "$?"
 
-make -j$(nproc) install
+if [[ "${build_library}" == true ]]; then
+  make -j$(nproc) install
+else
+  make -j$(nproc)
+fi
 check_exit_code "$?"
 
 # #################################################
