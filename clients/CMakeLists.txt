@@ -37,10 +37,6 @@ if(NOT hip_FOUND)
   find_package( hip REQUIRED CONFIG PATHS ${ROCM_PATH} )
 endif()
 
-# Quietly look for CUDA, but if not found it's not an error
-# The presense of hip is not sufficient to determine if we want a rocm or cuda backend
-find_package( CUDA QUIET )
-
 if( BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS )
   add_library( clients-common INTERFACE )
   target_include_directories( clients-common INTERFACE

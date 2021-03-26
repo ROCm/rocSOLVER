@@ -21,25 +21,15 @@ target_link_libraries( rocsolver-bench PRIVATE
   cblas
   lapack
   Threads::Threads
+  hip::device
+  rocsolver-common
+  clients-common
   roc::rocsolver
 )
 
-if( CUDA_FOUND )
-  target_include_directories( rocsolver-bench
-    PRIVATE
-      $<BUILD_INTERFACE:${CUDA_INCLUDE_DIRS}>
-      $<BUILD_INTERFACE:${hip_INCLUDE_DIRS}>
-    )
-  target_compile_definitions( rocsolver-bench PRIVATE __HIP_PLATFORM_NVCC__ )
-  target_link_libraries( rocsolver-bench PRIVATE ${CUDA_LIBRARIES} )
-else( )
-  target_link_libraries( rocsolver-bench PRIVATE hip::device )
-endif( )
-
-if( CMAKE_COMPILER_IS_GNUCXX OR CXX_VERSION_STRING MATCHES "clang")
-  # GCC or hip-clang needs specific flags to turn on f16c intrinsics
-  target_compile_options( rocsolver-bench PRIVATE -mf16c )
-endif( )
+# Turn on f16c intrinsics
+target_compile_options( rocsolver-bench PRIVATE -mf16c )
+target_compile_definitions( rocsolver-bench PRIVATE ROCM_USE_FLOAT16 )
 
 set_target_properties( rocsolver-bench PROPERTIES
   CXX_STANDARD 14
@@ -47,6 +37,3 @@ set_target_properties( rocsolver-bench PROPERTIES
   CXX_EXTENSIONS OFF
   RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging"
 )
-target_compile_definitions( rocsolver-bench PRIVATE ROCM_USE_FLOAT16 )
-
-target_link_libraries( rocsolver-bench PRIVATE rocsolver-common clients-common )
