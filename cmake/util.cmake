@@ -35,8 +35,6 @@ function( get_imported_target_location result_variable imported_target )
   set( "${result_variable}" "${result_variable}-NOTFOUND" PARENT_SCOPE )
 endfunction( )
 
-include(CMakeDependentOption)
-
 # ########################################################################
 # Define an opposite way of specifying an existing option.
 # This may be useful for compatibility.
