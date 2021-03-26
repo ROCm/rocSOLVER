@@ -33,69 +33,8 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 # ########################################################################
-# NOTE:  CUDA compiling path
-# ########################################################################
-# I have tried compiling rocBLAS library source with multiple methods,
-# and ended up using the approach where we set the CXX compiler to hipcc.
-# I didn't like using the HIP_ADD_LIBRARY or CUDA_ADD_LIBRARY approaches,
-# for the reasons I list here.
-# 1.  Adding header include directories is through HIP_INCLUDE_DIRECTORIES(), which
-# is global to a directory and affects all targets
-# 2.  You must add HIP_SOURCE_PROPERTY_FORMAT OBJ properties to .cpp files
-# to get HIP_ADD_LIBRARY to recognize the file
-# 3.  HIP_ADD_LIBRARY invokes a call to add_custom_command() to compile files,
-# and rocBLAS does the same.  The order in which custom commands execute is
-# undefined, and sometimes a file is attempted to be compiled before it has
-# been generated.  The fix for this is to create 'PHONY' targets, which I
-# don't desire.
-
-# Using hipcc allows us to avoid the above problems, with two primary costs:
-# 1.  The cmake logic to detect compiler features fails with nvcc backend
-# 2.  Upfront cost to figure out all the strange compiler/linker flags I define
-# below.
-
-# Hopefully, cost #2 is already paid.  All in all, I want to get rid of the
-# need for hipcc, and hope that at some point of time in the future we
-# can use the export config files from hip for both ROCm & nvcc backends.
-# ########################################################################
-
-# ########################################################################
 # Main
 # ########################################################################
-
-if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
-  # Determine if CXX Compiler is hip-clang or nvcc
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} "--version" OUTPUT_VARIABLE CXX_OUTPUT
-                  OUTPUT_STRIP_TRAILING_WHITESPACE
-                  ERROR_STRIP_TRAILING_WHITESPACE)
-  string(REGEX MATCH "[A-Za-z]* ?clang version" TMP_CXX_VERSION ${CXX_OUTPUT})
-  string(REGEX MATCH "[A-Za-z]+" CXX_VERSION_STRING ${TMP_CXX_VERSION})
-endif()
-
-if( CXX_VERSION_STRING MATCHES "clang" )
-  message( STATUS "Use hip-clang to build for amdgpu backend" )
-# set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xclang -fallow-half-arguments-and-returns" )
-  set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__HIP_HCC_COMPAT_MODE__=1" )
-elseif( CXX_VERSION_STRING MATCHES "nvcc" )
-  message( STATUS "HIPCC nvcc compiler detected; CUDA backend selected" )
-
-  set( CMAKE_C_COMPILE_OPTIONS_PIC "-Xcompiler ${CMAKE_C_COMPILE_OPTIONS_PIC}" )
-  set( CMAKE_CXX_COMPILE_OPTIONS_PIC "-Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_PIC}" )
-  set( CMAKE_SHARED_LIBRARY_C_FLAGS "-Xlinker ${CMAKE_SHARED_LIBRARY_C_FLAGS}" )
-  set( CMAKE_SHARED_LIBRARY_CXX_FLAGS "-Xlinker ${CMAKE_SHARED_LIBRARY_CXX_FLAGS}" )
-  set( CMAKE_SHARED_LIBRARY_SONAME_C_FLAG "-Xlinker -soname," )
-  set( CMAKE_SHARED_LIBRARY_SONAME_CXX_FLAG "-Xlinker -soname," )
-  set( CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Xlinker -rpath," )
-  set( CMAKE_SHARED_LIBRARY_RUNTIME_CXX_FLAG "-Xlinker -rpath," )
-  set( CMAKE_EXECUTABLE_RUNTIME_C_FLAG "-Xlinker -rpath," )
-  set( CMAKE_EXECUTABLE_RUNTIME_CXX_FLAG "-Xlinker -rpath," )
-  set( CMAKE_C_COMPILE_OPTIONS_VISIBILITY "-Xcompiler ${CMAKE_C_COMPILE_OPTIONS_VISIBILITY}" )
-  set( CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY "-Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}" )
-  set( CMAKE_C_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN "-Xcompiler ${CMAKE_C_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN}" )
-  set( CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN "-Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN}" )
-elseif( CMAKE_CXX_COMPILER MATCHES ".*/hcc$" )
-  message( SEND_ERROR "HCC compiler is no longer supported!" )
-endif( )
 
 # get rocm-cmake
 include( get-rocm-cmake )
@@ -149,9 +88,7 @@ set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for librar
 set( AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-" CACHE STRING "List of specific machine types for library to target" )
 
 # Find HIP dependencies
-if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
-  find_package( hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm )
-endif( )
+find_package( hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm )
 
 find_package( rocblas REQUIRED CONFIG PATHS ${ROCM_PATH} )
 get_imported_target_location( location roc::rocblas )

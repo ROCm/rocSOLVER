@@ -78,18 +78,11 @@ set( CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
   "\${CPACK_PACKAGING_INSTALL_PREFIX}/lib"
 )
 
-# Give rocsolver compiled for CUDA backend a different name
-if( CXX_VERSION_STRING MATCHES "clang" )
-    set( package_name rocsolver )
-else( )
-    set( package_name rocsolver-alt )
-endif( )
-
 set( ROCSOLVER_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
   CACHE PATH "Path placed into ldconfig file" )
 
 rocm_create_package(
-    NAME ${package_name}
+    NAME rocsolver
     DESCRIPTION "AMD ROCm SOLVER library"
     MAINTAINER "RocSOLVER maintainer <rocsolver-maintainer@amd.com>"
     LDCONFIG
