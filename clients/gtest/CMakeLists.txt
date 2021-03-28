@@ -82,8 +82,7 @@ target_compile_definitions( rocsolver-test PRIVATE GOOGLE_TEST )
 # External header includes included as system files
 target_include_directories( rocsolver-test
   SYSTEM PRIVATE
-    $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
+    ${CBLAS_INCLUDE_DIRS}
     )
 
 target_link_libraries( rocsolver-test PRIVATE
