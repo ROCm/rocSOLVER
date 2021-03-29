@@ -216,6 +216,7 @@ void getri_getError(const rocblas_handle handle,
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_getri(STRIDED, handle, n, dA1.data(), dA.data(), lda, stA,
                                         dIpiv.data(), stP, dInfo.data(), bc));
+
     CHECK_HIP_ERROR(hARes.transfer_from(dA));
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
@@ -225,24 +226,28 @@ void getri_getError(const rocblas_handle handle,
         cblas_getri<T>(n, hA[b], lda, hIpiv[b], hW.data(), sizeW, hInfo[b]);
     }
 
+    // check info for singularities
+    double err = 0;
+    *max_err = 0;
+    for(rocblas_int b = 0; b < bc; ++b)
+    {
+        if(hInfo[b][0] != hInfoRes[b][0])
+            err++;
+    }
+    *max_err += err;
+
     // error is ||hA - hARes|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
-    double err;
-    *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        err = norm_error('F', n, n, lda, hA[b], hARes[b]);
-        *max_err = err > *max_err ? err : *max_err;
+        if(hInfoRes[b][0] == 0)
+        {
+            err = norm_error('F', n, n, lda, hA[b], hARes[b]);
+            *max_err = err > *max_err ? err : *max_err;
+        }
     }
-
-    // also check info for singularities
-    err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
-        if(hInfo[b][0] != hInfoRes[b][0])
-            err++;
-    *max_err += err;
 }
 
 template <bool STRIDED, typename T, typename Td, typename Ud, typename Th, typename Uh>

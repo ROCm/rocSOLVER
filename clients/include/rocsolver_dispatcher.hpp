@@ -19,6 +19,7 @@
 #include "testing_getf2_getrf.hpp"
 #include "testing_getf2_getrf_npvt.hpp"
 #include "testing_getri.hpp"
+#include "testing_getri_outofplace.hpp"
 #include "testing_getrs.hpp"
 #include "testing_labrd.hpp"
 #include "testing_lacgv.hpp"
@@ -129,7 +130,10 @@ class rocsolver_dispatcher
             {"getri", testing_getri<false, false, T>},
             {"getri_batched", testing_getri<true, true, T>},
             {"getri_strided_batched", testing_getri<false, true, T>},
-            {"getri_outofplace_batched", testing_getri<true, false, T>},
+            // getri_outofplace
+            {"getri_outofplace", testing_getri_outofplace<false, false, T>},
+            {"getri_outofplace_batched", testing_getri_outofplace<true, true, T>},
+            {"getri_outofplace_strided_batched", testing_getri_outofplace<false, true, T>},
             // gels
             {"gels", testing_gels<false, false, T>},
             {"gels_batched", testing_gels<true, true, T>},
@@ -157,7 +161,7 @@ class rocsolver_dispatcher
     template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
     static rocblas_status run_function_limited_precision(const char* name, Arguments& argus)
     {
-        // Map for functions that support single and double precisions
+        // Map for functions that support only single and double precisions
         static const func_map map_real = {
             {"sterf", testing_sterf<T>},
             // orgxx
@@ -216,7 +220,7 @@ class rocsolver_dispatcher
     template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
     static rocblas_status run_function_limited_precision(const char* name, Arguments& argus)
     {
-        // Map for functions that support single complex and double complex precisions
+        // Map for functions that support only single-complex and double-complex precisions
         static const func_map map_complex = {
             {"lacgv", testing_lacgv<T>},
             // ungxx
