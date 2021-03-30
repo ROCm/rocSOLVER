@@ -246,7 +246,7 @@ void getri_outofplace_getError(const rocblas_handle handle,
     {
         if(hInfoRes[b][0] == 0)
         {
-            err = norm_error('F', n, n, lda, hA[b], hARes[b]);
+            err = norm_error('F', n, n, lda, hA[b], hARes[b], ldc);
             *max_err = err > *max_err ? err : *max_err;
         }
     }
