@@ -405,9 +405,6 @@ esac
 export CXX="hipcc"
 export CC="clang"
 export FC="gfortran"
-
-# We append customary rocm path; if user provides custom rocm path in ${path}, our
-# hard-coded path has lesser priority
 export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}"
 
 # #################################################
