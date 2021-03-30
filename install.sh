@@ -403,7 +403,7 @@ case "${ID}" in
 esac
 
 cxx="hipcc"
-cc="hipcc"
+cc="clang"
 fc="gfortran"
 
 # We append customary rocm path; if user provides custom rocm path in ${path}, our
