@@ -71,8 +71,8 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle,
 
     // in-place execution
     return rocsolver_getri_template<false, true, T>(
-        handle, n, (U) nullptr, 0, 0, 0, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
-        batch_count, (T*)scalars, work1, work2, work3, work4, (T*)tmpcopy, (T**)workArr, optim_mem);
+        handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count, (T*)scalars,
+        work1, work2, work3, work4, (T*)tmpcopy, (T**)workArr, optim_mem);
 }
 
 /*

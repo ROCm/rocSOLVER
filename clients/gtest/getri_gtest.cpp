@@ -37,15 +37,15 @@ const vector<vector<int>> matrix_size_range = {
 const vector<vector<int>> large_matrix_size_range
     = {{192, 192, 1}, {500, 600, 1}, {640, 640, 0}, {1000, 1024, 0}, {1200, 1230, 0}};
 
-Arguments getri_setup_arguments(getri_tuple tup)
+Arguments getri_setup_arguments(getri_tuple tup, bool outofplace)
 {
-    // vector<int> matrix_size = std::get<0>(tup);
-
     Arguments arg;
 
     arg.set<rocblas_int>("n", tup[0]);
     arg.set<rocblas_int>("lda", tup[1]);
-    arg.set<rocblas_int>("ldc", tup[1]);
+
+    if(outofplace)
+        arg.set<rocblas_int>("ldc", tup[1]);
 
     // only testing standard use case/defaults for strides
 
@@ -65,7 +65,7 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = getri_setup_arguments(GetParam());
+        Arguments arg = getri_setup_arguments(GetParam(), false);
 
         if(arg.peek<rocblas_int>("n") == 0)
             testing_getri_bad_arg<BATCHED, STRIDED, T>();
@@ -89,7 +89,7 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = getri_setup_arguments(GetParam());
+        Arguments arg = getri_setup_arguments(GetParam(), true);
 
         if(arg.peek<rocblas_int>("n") == 0)
             testing_getri_outofplace_bad_arg<BATCHED, STRIDED, T>();
