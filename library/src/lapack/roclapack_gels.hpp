@@ -9,8 +9,10 @@
 
 #pragma once
 
+#include "auxiliary/rocauxiliary_ormlq_unmlq.hpp"
 #include "auxiliary/rocauxiliary_ormqr_unmqr.hpp"
 #include "rocblas.hpp"
+#include "roclapack_gelqf.hpp"
 #include "roclapack_geqrf.hpp"
 #include "rocsolver.h"
 
@@ -50,6 +52,28 @@ __global__ void masked_copymat(copymat_direction direction,
     }
 }
 
+template <typename T, typename U>
+__global__ void gels_set_zero(const rocblas_int k1,
+                              const rocblas_int k2,
+                              const rocblas_int nrhs,
+                              U B,
+                              const rocblas_int shiftB,
+                              const rocblas_int ldb,
+                              const rocblas_stride strideB,
+                              const rocblas_int* info)
+{
+    const auto b = hipBlockIdx_z;
+    const auto i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const auto j = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if(i < k2 - k1 && j < nrhs && !info[b])
+    {
+        T* Bp = load_ptr_batch<T>(B, b, shiftB, strideB);
+
+        Bp[(i + k1) + j * ldb] = 0;
+    }
+}
+
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_gels_getMemorySize(const rocblas_int m,
                                   const rocblas_int n,
@@ -74,32 +98,47 @@ void rocsolver_gels_getMemorySize(const rocblas_int m,
         return;
     }
 
-    size_t geqrf_scalars, geqrf_work, geqrf_workArr, geqrf_diag, geqrf_trfact;
-    rocsolver_geqrf_getMemorySize<T, BATCHED>(m, n, batch_count, &geqrf_scalars, &geqrf_work,
-                                              &geqrf_workArr, &geqrf_diag, &geqrf_trfact);
-
-    size_t ormqr_scalars, ormqr_work, ormqr_workArr, ormqr_trfact, ormqr_workTrmm;
-    rocsolver_ormqr_unmqr_getMemorySize<T, BATCHED>(rocblas_side_left, m, nrhs, n, batch_count,
-                                                    &ormqr_scalars, &ormqr_work, &ormqr_workArr,
-                                                    &ormqr_trfact, &ormqr_workTrmm);
-
+    size_t gexxf_scalars, gexxf_work, gexxf_workArr, gexxf_diag, gexxf_trfact;
+    size_t ormxx_scalars, ormxx_work, ormxx_workArr, ormxx_trfact, ormxx_workTrmm;
     size_t trsm_x_temp, trsm_x_temp_arr, trsm_invA, trsm_invA_arr;
-    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, n, nrhs, batch_count, &trsm_x_temp,
-                                     &trsm_x_temp_arr, &trsm_invA, &trsm_invA_arr);
 
-    ROCSOLVER_ASSUME_X(geqrf_scalars == ormqr_scalars, "GEQRF and ORMQR use the same scalars");
+    if(m >= n)
+    {
+        rocsolver_geqrf_getMemorySize<T, BATCHED>(m, n, batch_count, &gexxf_scalars, &gexxf_work,
+                                                  &gexxf_workArr, &gexxf_diag, &gexxf_trfact);
+
+        rocsolver_ormqr_unmqr_getMemorySize<T, BATCHED>(rocblas_side_left, m, nrhs, n, batch_count,
+                                                        &ormxx_scalars, &ormxx_work, &ormxx_workArr,
+                                                        &ormxx_trfact, &ormxx_workTrmm);
+
+        ROCSOLVER_ASSUME_X(gexxf_scalars == ormxx_scalars, "GEQRF and ORMQR use the same scalars");
+    }
+    else
+    {
+        rocsolver_gelqf_getMemorySize<T, BATCHED>(m, n, batch_count, &gexxf_scalars, &gexxf_work,
+                                                  &gexxf_workArr, &gexxf_diag, &gexxf_trfact);
+
+        rocsolver_ormlq_unmlq_getMemorySize<T, BATCHED>(rocblas_side_left, n, nrhs, m, batch_count,
+                                                        &ormxx_scalars, &ormxx_work, &ormxx_workArr,
+                                                        &ormxx_trfact, &ormxx_workTrmm);
+
+        ROCSOLVER_ASSUME_X(gexxf_scalars == ormxx_scalars, "GELQF and ORMLQ use the same scalars");
+    }
+
+    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, std::min(m, n), nrhs, batch_count,
+                                     &trsm_x_temp, &trsm_x_temp_arr, &trsm_invA, &trsm_invA_arr);
 
     // TODO: rearrange to minimize total size
-    *size_scalars = geqrf_scalars;
-    *size_work_x_temp = std::max({geqrf_work, ormqr_work, trsm_x_temp});
-    *size_workArr_temp_arr = std::max({geqrf_workArr, ormqr_workArr, trsm_x_temp_arr});
-    *size_diag_trfac_invA = std::max({geqrf_diag, ormqr_trfact, trsm_invA});
-    *size_trfact_workTrmm_invA_arr = std::max({geqrf_trfact, ormqr_workTrmm, trsm_invA_arr});
+    *size_scalars = gexxf_scalars;
+    *size_work_x_temp = std::max({gexxf_work, ormxx_work, trsm_x_temp});
+    *size_workArr_temp_arr = std::max({gexxf_workArr, ormxx_workArr, trsm_x_temp_arr});
+    *size_diag_trfac_invA = std::max({gexxf_diag, ormxx_trfact, trsm_invA});
+    *size_trfact_workTrmm_invA_arr = std::max({gexxf_trfact, ormxx_workTrmm, trsm_invA_arr});
     // size_ipiv = sizeof(T) * std::min(m, n) * batch_count, which is always less than size_savedB
-    *size_ipiv_savedB = sizeof(T) * n * nrhs * batch_count;
+    *size_ipiv_savedB = sizeof(T) * std::min(m, n) * nrhs * batch_count;
 }
 
-template <typename T>
+template <bool COMPLEX, typename T>
 rocblas_status rocsolver_gels_argCheck(rocblas_handle handle,
                                        rocblas_operation trans,
                                        const rocblas_int m,
@@ -113,15 +152,16 @@ rocblas_status rocsolver_gels_argCheck(rocblas_handle handle,
                                        const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
-    // 1. non-supported values
-    if(m < n || trans == rocblas_operation_transpose || trans == rocblas_operation_conjugate_transpose)
-        return rocblas_status_not_implemented;
 
-    // 2. invalid values
-    if(trans != rocblas_operation_none)
+    // 1. invalid/non-supported values
+    if(trans != rocblas_operation_none && trans != rocblas_operation_transpose
+       && trans != rocblas_operation_conjugate_transpose)
+        return rocblas_status_invalid_value;
+    if((COMPLEX && trans == rocblas_operation_transpose)
+       || (!COMPLEX && trans == rocblas_operation_conjugate_transpose))
         return rocblas_status_invalid_value;
 
-    // 3. invalid size
+    // 2. invalid size
     if(m < 0 || n < 0 || nrhs < 0 || lda < m || ldb < m || ldb < n || batch_count < 0)
         return rocblas_status_invalid_size;
 
@@ -129,7 +169,7 @@ rocblas_status rocsolver_gels_argCheck(rocblas_handle handle,
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_status_continue;
 
-    // 4. invalid pointers
+    // 3. invalid pointers
     if((m * n && !A) || ((m * nrhs || n * nrhs) && !B) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
 
@@ -198,44 +238,159 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
+    // constants in host memory
+    const rocblas_stride strideP = std::min(m, n);
+    const rocblas_int check_threads = std::min(((std::min(m, n) - 1) / 64 + 1) * 64, BLOCKSIZE);
+    const rocblas_int copyblocksx = (nrhs - 1) / 32 + 1;
+    const rocblas_int copyblocksy = (std::min(m, n) - 1) / 32 + 1;
+    const T one = 1;
+
     // TODO: apply scaling to improve accuracy over a larger range of values
 
-    ROCSOLVER_ASSUME_X(m >= n, "argCheck rejects all other cases as not implemented");
+    if(m >= n)
+    {
+        // compute QR factorization of A
+        rocsolver_geqrf_template<BATCHED, STRIDED>(
+            handle, m, n, A, shiftA, lda, strideA, ipiv_savedB, strideP, batch_count, scalars,
+            work_x_temp, workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
 
-    // compute QR factorization of A
-    const rocblas_stride strideP = std::min(m, n);
-    rocsolver_geqrf_template<BATCHED, STRIDED>(
-        handle, m, n, A, shiftA, lda, strideA, ipiv_savedB, strideP, batch_count, scalars,
-        work_x_temp, workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
-    rocsolver_ormqr_unmqr_template<BATCHED, STRIDED>(
-        handle, rocblas_side_left, rocblas_operation_conjugate_transpose, m, nrhs, n, A, shiftA,
-        lda, strideA, ipiv_savedB, strideP, B, shiftB, ldb, strideB, batch_count, scalars,
-        (T*)work_x_temp, (T*)workArr_temp_arr, (T*)diag_trfac_invA, (T**)trfact_workTrmm_invA_arr);
+        if(trans == rocblas_operation_none)
+        {
+            rocsolver_ormqr_unmqr_template<BATCHED, STRIDED>(
+                handle, rocblas_side_left, rocblas_operation_conjugate_transpose, m, nrhs, n, A,
+                shiftA, lda, strideA, ipiv_savedB, strideP, B, shiftB, ldb, strideB, batch_count,
+                scalars, (T*)work_x_temp, (T*)workArr_temp_arr, (T*)diag_trfac_invA,
+                (T**)trfact_workTrmm_invA_arr);
 
-    // do the equivalent of trtrs
-    const rocblas_int check_threads = min(((n - 1) / 64 + 1) * 64, BLOCKSIZE);
-    hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1), dim3(1, check_threads, 1), 0,
-                       stream, n, A, shiftA, lda, strideA, info);
+            // do the equivalent of trtrs
+            hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1),
+                               dim3(1, check_threads, 1), 0, stream, n, A, shiftA, lda, strideA,
+                               info);
 
-    // save elements of B that will be overwritten by TRSM for cases where info is nonzero
-    const rocblas_int copyblocksx = (nrhs - 1) / 32 + 1;
-    const rocblas_int copyblocksy = (n - 1) / 32 + 1;
-    hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                       dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb, strideB,
-                       ipiv_savedB, info);
+            // save elements of B that will be overwritten by TRSM for cases where info is nonzero
+            hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                               dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb,
+                               strideB, ipiv_savedB, info);
 
-    const T one = 1; // constant 1 in host memory
-    // solve RX = Q'B, overwriting B with X
-    rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_upper,
-                                 rocblas_operation_none, rocblas_diagonal_non_unit, n, nrhs, &one,
-                                 A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
-                                 optim_mem, work_x_temp, workArr_temp_arr, diag_trfac_invA,
-                                 trfact_workTrmm_invA_arr);
+            // solve RX = Q'B, overwriting B with X
+            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_upper,
+                                         rocblas_operation_none, rocblas_diagonal_non_unit, n, nrhs,
+                                         &one, A, shiftA, lda, strideA, B, shiftB, ldb, strideB,
+                                         batch_count, optim_mem, work_x_temp, workArr_temp_arr,
+                                         diag_trfac_invA, trfact_workTrmm_invA_arr);
 
-    // restore elements of B that were overwritten by TRSM in cases where info is nonzero
-    hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                       dim3(32, 32), 0, stream, copymat_from_buffer, n, nrhs, B, shiftB, ldb,
-                       strideB, ipiv_savedB, info);
+            // restore elements of B that were overwritten by TRSM in cases where info is nonzero
+            hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                               dim3(32, 32), 0, stream, copymat_from_buffer, n, nrhs, B, shiftB,
+                               ldb, strideB, ipiv_savedB, info);
+        }
+        else
+        {
+            // do the equivalent of trtrs
+            hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1),
+                               dim3(1, check_threads, 1), 0, stream, n, A, shiftA, lda, strideA,
+                               info);
+
+            // save elements of B that will be overwritten by TRSM for cases where info is nonzero
+            hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                               dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb,
+                               strideB, ipiv_savedB, info);
+
+            rocblasCall_trsm<BATCHED, T>(
+                handle, rocblas_side_left, rocblas_fill_upper,
+                rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n, nrhs, &one, A,
+                shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count, optim_mem, work_x_temp,
+                workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
+
+            // zero row n to m-1 of B in cases where info is zero
+            const rocblas_int zeroblocksy = (m - n - 1) / 32 + 1;
+            hipLaunchKernelGGL((gels_set_zero<T, U>), dim3(copyblocksx, zeroblocksy, batch_count),
+                               dim3(32, 32), 0, stream, n, m, nrhs, B, shiftB, ldb, strideB, info);
+
+            rocsolver_ormqr_unmqr_template<BATCHED, STRIDED>(
+                handle, rocblas_side_left, rocblas_operation_none, m, nrhs, n, A, shiftA, lda,
+                strideA, ipiv_savedB, strideP, B, shiftB, ldb, strideB, batch_count, scalars,
+                (T*)work_x_temp, (T*)workArr_temp_arr, (T*)diag_trfac_invA,
+                (T**)trfact_workTrmm_invA_arr);
+
+            // restore elements of B that were overwritten by TRSM and ORMQR/UNMQR in cases where info is nonzero
+            hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                               dim3(32, 32), 0, stream, copymat_from_buffer, n, nrhs, B, shiftB,
+                               ldb, strideB, ipiv_savedB, info);
+        }
+    }
+    else
+    {
+        // compute LQ factorization of A
+        rocsolver_gelqf_template<BATCHED, STRIDED>(
+            handle, m, n, A, shiftA, lda, strideA, ipiv_savedB, strideP, batch_count, scalars,
+            work_x_temp, workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
+
+        if(trans == rocblas_operation_none)
+        {
+            // do the equivalent of trtrs
+            hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1),
+                               dim3(1, check_threads, 1), 0, stream, m, A, shiftA, lda, strideA,
+                               info);
+
+            // save elements of B that will be overwritten by TRSM for cases where info is nonzero
+            hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                               dim3(32, 32), 0, stream, copymat_to_buffer, m, nrhs, B, shiftB, ldb,
+                               strideB, ipiv_savedB, info);
+
+            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
+                                         rocblas_operation_none, rocblas_diagonal_non_unit, m, nrhs,
+                                         &one, A, shiftA, lda, strideA, B, shiftB, ldb, strideB,
+                                         batch_count, optim_mem, work_x_temp, workArr_temp_arr,
+                                         diag_trfac_invA, trfact_workTrmm_invA_arr);
+
+            // zero row m to n-1 of B in cases where info is zero
+            const rocblas_int zeroblocksy = (n - m - 1) / 32 + 1;
+            hipLaunchKernelGGL((gels_set_zero<T, U>), dim3(copyblocksx, zeroblocksy, batch_count),
+                               dim3(32, 32), 0, stream, m, n, nrhs, B, shiftB, ldb, strideB, info);
+
+            rocsolver_ormlq_unmlq_template<BATCHED, STRIDED>(
+                handle, rocblas_side_left, rocblas_operation_conjugate_transpose, n, nrhs, m, A,
+                shiftA, lda, strideA, ipiv_savedB, strideP, B, shiftB, ldb, strideB, batch_count,
+                scalars, (T*)work_x_temp, (T*)workArr_temp_arr, (T*)diag_trfac_invA,
+                (T**)trfact_workTrmm_invA_arr);
+
+            // restore elements of B that were overwritten by TRSM and ORMLQ/UNMLQ in cases where info is nonzero
+            hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                               dim3(32, 32), 0, stream, copymat_from_buffer, m, nrhs, B, shiftB,
+                               ldb, strideB, ipiv_savedB, info);
+        }
+        else
+        {
+            rocsolver_ormlq_unmlq_template<BATCHED, STRIDED>(
+                handle, rocblas_side_left, rocblas_operation_none, n, nrhs, m, A, shiftA, lda,
+                strideA, ipiv_savedB, strideP, B, shiftB, ldb, strideB, batch_count, scalars,
+                (T*)work_x_temp, (T*)workArr_temp_arr, (T*)diag_trfac_invA,
+                (T**)trfact_workTrmm_invA_arr);
+
+            // do the equivalent of trtrs
+            hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1),
+                               dim3(1, check_threads, 1), 0, stream, m, A, shiftA, lda, strideA,
+                               info);
+
+            // save elements of B that will be overwritten by TRSM for cases where info is nonzero
+            hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                               dim3(32, 32), 0, stream, copymat_to_buffer, m, nrhs, B, shiftB, ldb,
+                               strideB, ipiv_savedB, info);
+
+            // solve RX = Q'B, overwriting B with X
+            rocblasCall_trsm<BATCHED, T>(
+                handle, rocblas_side_left, rocblas_fill_lower,
+                rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, m, nrhs, &one, A,
+                shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count, optim_mem, work_x_temp,
+                workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
+
+            // restore elements of B that were overwritten by TRSM in cases where info is nonzero
+            hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                               dim3(32, 32), 0, stream, copymat_from_buffer, m, nrhs, B, shiftB,
+                               ldb, strideB, ipiv_savedB, info);
+        }
+    }
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
