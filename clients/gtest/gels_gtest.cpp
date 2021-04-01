@@ -33,38 +33,36 @@ const vector<gels_params_A> matrix_sizeA_range = {
     {1, -1, 1, 1, 0},
     {10, 10, 10, 1, 0},
     {10, 10, 1, 10, 0},
-    // not yet implemented
-    {10, 1, 10, 10, 0},
     // normal (valid) samples
     {20, 20, 20, 20, 1},
     {30, 20, 40, 30, 0},
+    {20, 30, 30, 40, 0},
     {40, 20, 40, 40, 1},
+    {20, 40, 40, 40, 1},
 };
 const vector<gels_params_B> matrix_sizeB_range = {
     // quick return
     {0, 'N'},
     // invalid
     {-1, 'N'},
-    // not yet implemented
-    {1, 'T'},
-    {1, 'C'},
     // normal (valid) samples
     {10, 'N'},
+    {10, 'T'},
     {20, 'N'},
+    {20, 'C'},
     {30, 'N'},
+    {30, 'T'},
 };
 
 // for daily_lapack tests
 const vector<gels_params_A> large_matrix_sizeA_range = {
-    {75, 25, 75, 75, 0},
-    {150, 150, 150, 150, 1},
-    {500, 50, 600, 600, 0},
-    {1000, 500, 1000, 1000, 1},
+    {75, 25, 75, 75, 1},    {25, 75, 75, 75, 1},    {150, 150, 150, 150, 1},
+    {500, 50, 600, 600, 0}, {50, 500, 600, 600, 0},
 };
 const vector<gels_params_B> large_matrix_sizeB_range = {
     {100, 'N'},
-    {200, 'N'},
-    {500, 'N'},
+    {200, 'T'},
+    {500, 'C'},
     {1000, 'N'},
 };
 
