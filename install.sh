@@ -402,12 +402,9 @@ case "${ID}" in
   ;;
 esac
 
-cxx="hipcc"
-cc="hipcc"
-fc="gfortran"
-
-# We append customary rocm path; if user provides custom rocm path in ${path}, our
-# hard-coded path has lesser priority
+export CXX="hipcc"
+export CC="clang"
+export FC="gfortran"
 export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}"
 
 # #################################################
@@ -421,7 +418,7 @@ if [[ "${install_dependencies}" == true ]]; then
     pushd .
     printf "\033[32mBuilding \033[33mgoogletest & lapack\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
     mkdir -p "${build_dir}/deps" && cd "${build_dir}/deps"
-    CXX=${cxx} CC=${cc} FC=${fc} ${cmake_executable} -lpthread -DBUILD_BOOST=OFF "${main}/deps"
+    ${cmake_executable} -lpthread -DBUILD_BOOST=OFF "${main}/deps"
     make -j$(nproc)
     elevate_if_not_root make install
     popd
@@ -499,7 +496,7 @@ case "${ID}" in
     ;;
 esac
 
-CXX=${cxx} CC=${cc} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
+${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
 check_exit_code "$?"
 
 make -j$(nproc) install
