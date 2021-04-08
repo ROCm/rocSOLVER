@@ -47,11 +47,13 @@ const vector<gels_params_B> matrix_sizeB_range = {
     {-1, 'N'},
     // normal (valid) samples
     {10, 'N'},
-    {10, 'T'},
     {20, 'N'},
-    {20, 'C'},
     {30, 'N'},
+    // invalid for complex precision
+    {10, 'T'},
     {30, 'T'},
+    // invalid for real precision
+    {20, 'C'},
 };
 
 // for daily_lapack tests

@@ -296,6 +296,7 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb,
                                strideB, ipiv_savedB, info);
 
+            // solve R'Y = B overwriting B with Y (here Y = Q'X)
             rocblasCall_trsm<BATCHED, T>(
                 handle, rocblas_side_left, rocblas_fill_upper,
                 rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n, nrhs, &one, A,
@@ -338,6 +339,7 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                dim3(32, 32), 0, stream, copymat_to_buffer, m, nrhs, B, shiftB, ldb,
                                strideB, ipiv_savedB, info);
 
+            // solve LY = B overwriting B with Y (here Y = QX)
             rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
                                          rocblas_operation_none, rocblas_diagonal_non_unit, m, nrhs,
                                          &one, A, shiftA, lda, strideA, B, shiftB, ldb, strideB,
@@ -378,7 +380,7 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                dim3(32, 32), 0, stream, copymat_to_buffer, m, nrhs, B, shiftB, ldb,
                                strideB, ipiv_savedB, info);
 
-            // solve RX = Q'B, overwriting B with X
+            // solve L'X = QB, overwriting B with X
             rocblasCall_trsm<BATCHED, T>(
                 handle, rocblas_side_left, rocblas_fill_lower,
                 rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, m, nrhs, &one, A,
