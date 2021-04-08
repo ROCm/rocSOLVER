@@ -82,8 +82,7 @@ target_compile_definitions( rocsolver-test PRIVATE GOOGLE_TEST )
 # External header includes included as system files
 target_include_directories( rocsolver-test
   SYSTEM PRIVATE
-    $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${CBLAS_INCLUDE_DIRS}>
+    ${CBLAS_INCLUDE_DIRS}
     )
 
 target_link_libraries( rocsolver-test PRIVATE
@@ -100,10 +99,3 @@ target_link_libraries( rocsolver-test PRIVATE
 # Turn on f16c intrinsics
 target_compile_options( rocsolver-test PRIVATE -mf16c )
 target_compile_definitions( rocsolver-test PRIVATE ROCM_USE_FLOAT16 )
-
-set_target_properties( rocsolver-test PROPERTIES
-  CXX_STANDARD 14
-  CXX_STANDARD_REQUIRED ON
-  CXX_EXTENSIONS OFF
-  RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging"
-)

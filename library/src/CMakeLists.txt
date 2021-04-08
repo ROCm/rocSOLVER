@@ -5,9 +5,6 @@
 # package_targets is used as a list of install target
 set( package_targets rocsolver )
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-
 set( rocsolver_lapack_source
   # linear systems solvers
   lapack/roclapack_getrs.cpp

@@ -41,10 +41,6 @@ set( fortran_samples
 # set flags for building the sample programs
 foreach( exe ${c_samples} ${cpp_samples} ${fortran_samples} )
   target_link_libraries( ${exe} PRIVATE roc::rocsolver )
-
-  set_target_properties( ${exe} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging"
-  )
 endforeach( )
 
 foreach( exe ${cpp_samples} )
