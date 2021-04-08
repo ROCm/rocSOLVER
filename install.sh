@@ -29,9 +29,11 @@ Options:
                               (when generated) will be installed. Use only absolute paths.
                               (Default is /opt/rocm)
 
-  --rocblas_dir <blasdir>     Specify path to the companion rocBLAS-library root directory.
-                              Use only absolute paths.
-                              (Default is /opt/rocm/rocblas)
+  --rocblas_dir <blasdir>     Specify path to an existing rocBLAS install directory.
+                              (e.g. /src/rocBLAS/build/release/rocblas-install)
+
+  --rocsolver_dir <solverdir> Specify path to an existing rocSOLVER install directory.
+                              (e.g. /src/rocSOLVER/build/release/rocsolver-install)
 
   --cleanup                   Pass this flag to remove intermediary build files after build and reduce disk usage
 
@@ -48,6 +50,8 @@ Options:
 
   -c | --clients              Pass this flag to also build the library clients benchmark and gtest.
                               (Generated binaries will be located at builddir/clients/staging)
+
+  --clients-only              Pass this flag to skip building the library and only build the clients.
 
   -h | --hip-clang            Pass this flag to build using the hip-clang compiler.
                               hip-clang is currently the only supported compiler, so this flag has no effect.
@@ -282,10 +286,10 @@ install_package=false
 build_package=false
 install_dependencies=false
 static_lib=false
+build_library=true
 build_clients=false
 lib_dir=rocsolver-install
 install_dir=${rocm_path}
-rocblas_dir=${rocm_path}/rocblas
 build_dir=./build
 build_type=Release
 build_relocatable=false
@@ -302,7 +306,7 @@ architecture=
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,dependencies,cleanup,debug,hip-clang,build_dir:,rocblas_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrna: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrna: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -334,6 +338,10 @@ while true; do
     -c|--clients)
         build_clients=true
         shift ;;
+    --clients-only)
+        build_library=false
+        build_clients=true
+        shift ;;
     -g|--debug)
         build_type=Debug
         shift ;;
@@ -360,6 +368,9 @@ while true; do
         shift 2 ;;
     --rocblas_dir)
         rocblas_dir=${2}
+        shift 2 ;;
+    --rocsolver_dir)
+        rocsolver_dir=${2}
         shift 2 ;;
     -a|--architecture)
         architecture=${2}
@@ -391,6 +402,14 @@ elif [[ "${build_type}" == Release ]]; then
   rm -rf -- "${build_dir}/release"
 else
   rm -rf -- "${build_dir}/debug"
+fi
+
+# resolve relative paths
+if [[ -n "${rocblas_dir+x}" ]]; then
+  rocblas_dir="$(make_absolute_path "${rocblas_dir}")"
+fi
+if [[ -n "${rocsolver_dir+x}" ]]; then
+  rocsolver_dir="$(make_absolute_path "${rocsolver_dir}")"
 fi
 
 # Default cmake executable is called cmake
@@ -461,7 +480,15 @@ else
   mkdir -p release && cd release
 fi
 
-cmake_common_options="${cmake_common_options} -DROCM_PATH=${rocm_path} -Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${lib_dir} -DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir} -DCMAKE_BUILD_TYPE=${build_type}"
+cmake_common_options="${cmake_common_options} -DROCM_PATH=${rocm_path} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${lib_dir} -DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir} -DCMAKE_BUILD_TYPE=${build_type}"
+
+if [[ -n "${rocblas_dir+x}" ]]; then
+  cmake_common_options="${cmake_common_options} -Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas"
+fi
+
+if [[ -n "${rocsolver_dir+x}" ]]; then
+  cmake_common_options="${cmake_common_options} -Drocsolver_DIR=${rocsolver_dir}/lib/cmake/rocsolver"
+fi
 
 if [[ "${static_lib}" == true ]]; then
   cmake_common_options="${cmake_common_options} -DBUILD_SHARED_LIBS=OFF"
@@ -477,6 +504,10 @@ fi
 
 if [[ "${build_clients}" == true ]]; then
   cmake_client_options="${cmake_client_options} -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON -DBUILD_CLIENTS_SAMPLES=ON"
+fi
+
+if [[ "${build_library}" == false ]]; then
+  cmake_client_options="${cmake_client_options} -DBUILD_LIBRARY=OFF"
 fi
 
 rocm_rpath=""
@@ -499,7 +530,11 @@ esac
 ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
 check_exit_code "$?"
 
-make -j$(nproc) install
+if [[ "${build_library}" == true ]]; then
+  make -j$(nproc) install
+else
+  make -j$(nproc)
+fi
 check_exit_code "$?"
 
 # #################################################

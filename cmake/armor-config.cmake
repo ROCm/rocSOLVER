@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # Enables increasingly expensive runtime correctness checks
@@ -15,11 +15,6 @@ macro( add_armor_flags target level )
       # requires building C++ dependencies with the same defines.
       target_compile_definitions( ${target} PRIVATE
         _GLIBCXX_DEBUG
-        _LIBCPP_DEBUG=1
-      )
-    else( )
-      target_compile_definitions( ${target} PRIVATE
-        _LIBCPP_DEBUG=0
       )
     endif( )
     target_compile_definitions( ${target} PRIVATE

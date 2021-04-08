@@ -27,7 +27,6 @@ project( rocsolver LANGUAGES CXX )
 
 # Add our CMake helper files to the lookup path
 list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" )
-list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/clients/cmake" )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -55,7 +54,14 @@ set ( VERSION_STRING "3.13.0" )
 rocm_setup_version( VERSION ${VERSION_STRING} )
 
 # NOTE:  workaround until llvm & hip cmake modules fixes symlink logic in their config files; remove when fixed
-list( APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/llvm ${ROCM_PATH}/hip /opt/rocm/llvm /opt/rocm/hip )
+list( APPEND CMAKE_PREFIX_PATH
+  ${ROCM_PATH}
+  ${ROCM_PATH}/llvm
+  ${ROCM_PATH}/hip
+  /opt/rocm
+  /opt/rocm/llvm
+  /opt/rocm/hip
+)
 
 option( BUILD_VERBOSE "Output additional build information" OFF )
 
@@ -67,6 +73,10 @@ endif( )
 set( ARMOR_LEVEL "${DEFAULT_ARMOR_LEVEL}" CACHE STRING "Enables increasingly expensive runtime correctness checks" )
 include( armor-config )
 
+# This option only works for make, nmake and ninja, but no reason it shouldn't be on all the time
+# It creates a compile_commands.json file for use with clang tooling or vim
+set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
+
 # BUILD_SHARED_LIBS is a cmake built-in
 # make it an explicit option such that it shows in cmake-gui
 option( BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON )
@@ -74,8 +84,12 @@ option( BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON )
 # include helper functions and wrapper functions
 include( util )
 
-# by default, clients are not built
-include( build-options )
+option( BUILD_LIBRARY "Build rocSOLVER library" ON )
+option_opposite( BUILD_LIBRARY SKIP_LIBRARY )
+option( BUILD_CLIENTS_TESTS "Build rocSOLVER unit tests" OFF )
+option( BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmarks" OFF )
+option( BUILD_CLIENTS_SAMPLES "Build rocSOLVER samples" OFF )
+
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
 message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
@@ -95,7 +109,10 @@ get_imported_target_location( location roc::rocblas )
 message(STATUS "Found rocBLAS: ${location}")
 
 add_subdirectory( common )
-add_subdirectory( library )
+
+if( BUILD_LIBRARY )
+  add_subdirectory( library )
+endif( )
 
 # Build clients of the library
 if( BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES )
