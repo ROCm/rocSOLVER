@@ -7531,11 +7531,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
     If n < m (or m >= n in the case of transpose/conjugate transpose), the system is underdetermined
     and a unique solution for X is chosen minimizing || X ||
 
-    \note
-    The current implementation only supports the overdetermined, no transpose case.
-    \p rocblas_status_not_implemented will be returned if m < n, or if trans is
-    \p rocblas_operation_transpose or \p rocblas_operation_conjugate_transpose.
-
     @param[in]
     handle    rocblas_handle.
     @param[in]
@@ -7640,11 +7635,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
 
     If n < m (or m >= n in the case of transpose/conjugate transpose), the system is
     underdetermined and a unique solution for X_i is chosen minimizing || X_i ||
-
-    \note
-    The current implementation only supports the overdetermined, no transpose case.
-    \p rocblas_status_not_implemented will be returned if m < n, or if trans is
-    \p rocblas_operation_transpose or \p rocblas_operation_conjugate_transpose.
 
     @param[in]
     handle    rocblas_handle.
@@ -7757,11 +7747,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_batched(rocblas_handle handle,
 
     If n < m (or m >= n in the case of transpose/conjugate transpose), the system is
     underdetermined and a unique solution for X_i is chosen minimizing || X_i ||
-
-    \note
-    The current implementation only supports the overdetermined, no transpose case.
-    \p rocblas_status_not_implemented will be returned if m < n, or if trans is
-    \p rocblas_operation_transpose or \p rocblas_operation_conjugate_transpose.
 
     @param[in]
     handle    rocblas_handle.
