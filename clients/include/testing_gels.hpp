@@ -61,7 +61,7 @@ void gels_checkBadArgs(const rocblas_handle handle,
     // quick return with invalid pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, 0, n, nrhs, (U) nullptr, lda, stA,
                                          dB, ldb, stB, info, bc),
-                          rocblas_status_not_implemented) // TODO: replace with success
+                          rocblas_status_success)
         << "Matrix A may be null when m is 0 (empty matrix)";
     EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, 0, nrhs, (U) nullptr, lda, stA,
                                          dB, ldb, stB, info, bc),
@@ -337,7 +337,7 @@ void gels_getPerfData(const rocblas_handle handle,
     *gpu_time_used /= hot_calls;
 }
 
-template <bool BATCHED, bool STRIDED, typename T>
+template <bool BATCHED, bool STRIDED, typename T, bool COMPLEX = is_complex<T>>
 void testing_gels(Arguments& argus)
 {
     // get arguments
@@ -358,12 +358,20 @@ void testing_gels(Arguments& argus)
     rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
 
     // check non-supported values
-    if(m < n || trans == rocblas_operation_transpose || trans == rocblas_operation_conjugate_transpose)
+    bool invalid_value = ((COMPLEX && trans == rocblas_operation_transpose)
+                          || (!COMPLEX && trans == rocblas_operation_conjugate_transpose));
+    if(invalid_value)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, (T* const*)nullptr,
-                                             lda, stA, (T* const*)nullptr, ldb, stB,
-                                             (rocblas_int*)nullptr, bc),
-                              rocblas_status_not_implemented);
+        if(BATCHED)
+            EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs,
+                                                 (T* const*)nullptr, lda, stA, (T* const*)nullptr,
+                                                 ldb, stB, (rocblas_int*)nullptr, bc),
+                                  rocblas_status_invalid_value);
+        else
+            EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, trans, m, n, nrhs, (T*)nullptr,
+                                                 lda, stA, (T*)nullptr, ldb, stB,
+                                                 (rocblas_int*)nullptr, bc),
+                                  rocblas_status_invalid_value);
 
         if(argus.timing)
             ROCSOLVER_BENCH_INFORM(2);

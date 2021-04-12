@@ -4,7 +4,7 @@
 
 #include "roclapack_gels.hpp"
 
-template <typename T, typename U>
+template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_gels_impl(rocblas_handle handle,
                                    rocblas_operation trans,
                                    const rocblas_int m,
@@ -23,7 +23,8 @@ rocblas_status rocsolver_gels_impl(rocblas_handle handle,
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_gels_argCheck(handle, trans, m, n, nrhs, A, lda, B, ldb, info);
+    rocblas_status st
+        = rocsolver_gels_argCheck<COMPLEX>(handle, trans, m, n, nrhs, A, lda, B, ldb, info);
     if(st != rocblas_status_continue)
         return st;
 
