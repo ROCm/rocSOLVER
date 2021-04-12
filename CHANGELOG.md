@@ -50,6 +50,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Error when calling STEQR with n=1 from batched routines
 - Added `roc::rocblas` to the `roc::rocsolver` CMake usage requirements
 - Added rocblas to the dependency list of the rocsolver deb and rpm packages
+- Fixed rocblas symbol loading with dlopen and the `RTLD_NOW | RTLD_LOCAL` options
 
 ### Known Issues
 - Thin-SVD implementation is failing in some cases (in particular m=300, n=120) due to a possible
