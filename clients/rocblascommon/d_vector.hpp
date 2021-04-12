@@ -4,11 +4,12 @@
 
 #pragma once
 
-#include "rocblas.h"
-#include "rocblas_init.hpp"
-#include "rocblas_test.hpp"
 #include <cinttypes>
 #include <cstdio>
+#include <rocblas.h>
+
+#include "rocblas_init.hpp"
+#include "rocblas_test.hpp"
 
 /* ============================================================================================
  */

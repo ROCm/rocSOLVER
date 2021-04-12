@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "rocblas.h"
 #include <cmath>
-#include <hip/hip_runtime.h>
 #include <immintrin.h>
 #include <type_traits>
+#include <hip/hip_runtime.h>
+#include <rocblas.h>
 
 /* ============================================================================================
  */
