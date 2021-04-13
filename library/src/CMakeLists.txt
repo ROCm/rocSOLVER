@@ -177,11 +177,7 @@ if(OPTIMAL)
   target_compile_definitions(rocsolver PRIVATE OPTIMAL)
 endif( )
 
-target_compile_definitions( rocsolver
-  PRIVATE
-    ROCM_USE_FLOAT16
-    ROCSOLVER_COMMON_NAMESPACE=rocsolver_lib
-)
+target_compile_definitions( rocsolver PRIVATE ROCM_USE_FLOAT16 )
 
 add_armor_flags( rocsolver "${ARMOR_LEVEL}" )
 

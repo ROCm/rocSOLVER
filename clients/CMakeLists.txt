@@ -27,10 +27,6 @@ if( BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS )
   )
   prepend_path( "${CMAKE_CURRENT_SOURCE_DIR}/" common_source_files common_source_paths )
   target_sources( clients-common INTERFACE ${common_source_paths} )
-  target_compile_definitions( clients-common
-    INTERFACE
-      ROCSOLVER_COMMON_NAMESPACE=rocsolver_clients
-  )
 
   if( BUILD_CLIENTS_BENCHMARKS )
     add_subdirectory( benchmarks )
