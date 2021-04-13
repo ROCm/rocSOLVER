@@ -6,8 +6,6 @@
 
 #include "rocsolver_ostream.hpp"
 
-namespace ROCSOLVER_COMMON_NAMESPACE
-{
 /*
  * ===========================================================================
  *    common location for functions that are used by both the rocSOLVER
@@ -220,7 +218,3 @@ void print_host_matrix(rocsolver_ostream& os,
     }
     os << std::endl;
 }
-
-}
-
-using namespace ROCSOLVER_COMMON_NAMESPACE;
