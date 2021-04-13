@@ -123,9 +123,9 @@ void getri_initData(const rocblas_handle handle,
                 for(rocblas_int j = 0; j < n; j++)
                 {
                     if(i == j)
-                        hA[b][i + j * lda] += 400;
+                        hA[b][i + j * lda] += 2; // 400;
                     else
-                        hA[b][i + j * lda] -= 4;
+                        hA[b][i + j * lda] -= 0; // 4;
                 }
             }
 

@@ -1,18 +1,18 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_getri_outofplace.hpp"
 
 template <typename T, typename U>
 rocblas_status rocsolver_getri_outofplace_impl(rocblas_handle handle,
-                                                       const rocblas_int n,
-                                                       U A,
-                                                       const rocblas_int lda,
-                                                       rocblas_int* ipiv,
-                                                       U C,
-                                                       const rocblas_int ldc,
-                                                       rocblas_int* info)
+                                               const rocblas_int n,
+                                               U A,
+                                               const rocblas_int lda,
+                                               rocblas_int* ipiv,
+                                               U C,
+                                               const rocblas_int ldc,
+                                               rocblas_int* info)
 {
     ROCSOLVER_ENTER_TOP("getri_outofplace", "-n", n, "--lda", lda, "--ldc", ldc);
 
@@ -38,13 +38,13 @@ rocblas_status rocsolver_getri_outofplace_impl(rocblas_handle handle,
     // memory workspace sizes:
     // size of reusable workspace (for calling TRSM)
     size_t size_work1, size_work2, size_work3, size_work4;
-    
-    rocsolver_getri_outofplace_getMemorySize<false, T>(n, batch_count, &size_work1,
-                                                  &size_work2, &size_work3, &size_work4);
+
+    rocsolver_getri_outofplace_getMemorySize<false, T>(n, batch_count, &size_work1, &size_work2,
+                                                       &size_work3, &size_work4);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2,
-                                                      size_work3, size_work4);
+        return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2, size_work3,
+                                                      size_work4);
 
     // always allocate all required memory for TRSM optimal performance
     bool optim_mem = true;
@@ -75,53 +75,53 @@ rocblas_status rocsolver_getri_outofplace_impl(rocblas_handle handle,
 extern "C" {
 
 rocblas_status rocsolver_sgetri_outofplace(rocblas_handle handle,
-                                                                    const rocblas_int n,
-                                                                    float* A,
-                                                                    const rocblas_int lda,
-                                                                    rocblas_int* ipiv,
-                                                                    float* C,
-                                                                    const rocblas_int ldc,
-                                                                    rocblas_int* info)
+                                           const rocblas_int n,
+                                           float* A,
+                                           const rocblas_int lda,
+                                           rocblas_int* ipiv,
+                                           float* C,
+                                           const rocblas_int ldc,
+                                           rocblas_int* info)
 {
     return rocsolver_getri_outofplace_impl<float>(handle, n, A, lda, ipiv, C, ldc, info);
 }
 
 rocblas_status rocsolver_dgetri_outofplace(rocblas_handle handle,
-                                                                    const rocblas_int n,
-                                                                    double* A,
-                                                                    const rocblas_int lda,
-                                                                    rocblas_int* ipiv,
-                                                                    double* C,
-                                                                    const rocblas_int ldc,
-                                                                    rocblas_int* info)
+                                           const rocblas_int n,
+                                           double* A,
+                                           const rocblas_int lda,
+                                           rocblas_int* ipiv,
+                                           double* C,
+                                           const rocblas_int ldc,
+                                           rocblas_int* info)
 {
     return rocsolver_getri_outofplace_impl<double>(handle, n, A, lda, ipiv, C, ldc, info);
 }
 
 rocblas_status rocsolver_cgetri_outofplace(rocblas_handle handle,
-                                                                    const rocblas_int n,
-                                                                    rocblas_float_complex* A,
-                                                                    const rocblas_int lda,
-                                                                    rocblas_int* ipiv,
-                                                                    rocblas_float_complex* C,
-                                                                    const rocblas_int ldc,
-                                                                    rocblas_int* info)
+                                           const rocblas_int n,
+                                           rocblas_float_complex* A,
+                                           const rocblas_int lda,
+                                           rocblas_int* ipiv,
+                                           rocblas_float_complex* C,
+                                           const rocblas_int ldc,
+                                           rocblas_int* info)
 {
-    return rocsolver_getri_outofplace_impl<rocblas_float_complex>(
-        handle, n, A, lda, ipiv, C, ldc, info);
+    return rocsolver_getri_outofplace_impl<rocblas_float_complex>(handle, n, A, lda, ipiv, C, ldc,
+                                                                  info);
 }
 
 rocblas_status rocsolver_zgetri_outofplace(rocblas_handle handle,
-                                                                    const rocblas_int n,
-                                                                    rocblas_double_complex* A,
-                                                                    const rocblas_int lda,
-                                                                    rocblas_int* ipiv,
-                                                                    rocblas_double_complex* C,
-                                                                    const rocblas_int ldc,
-                                                                    rocblas_int* info)
+                                           const rocblas_int n,
+                                           rocblas_double_complex* A,
+                                           const rocblas_int lda,
+                                           rocblas_int* ipiv,
+                                           rocblas_double_complex* C,
+                                           const rocblas_int ldc,
+                                           rocblas_int* info)
 {
-    return rocsolver_getri_outofplace_impl<rocblas_double_complex>(
-        handle, n, A, lda, ipiv, C, ldc, info);
+    return rocsolver_getri_outofplace_impl<rocblas_double_complex>(handle, n, A, lda, ipiv, C, ldc,
+                                                                   info);
 }
 
 } // extern C
