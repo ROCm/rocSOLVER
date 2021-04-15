@@ -216,4 +216,15 @@ public:
             throw std::invalid_argument(ss.str());
         }
     }
+
+    void validate_diag(const std::string name) const
+    {
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char diag = val->second.as<char>();
+        if(diag != 'N' && diag != 'U')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
 };

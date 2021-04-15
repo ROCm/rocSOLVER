@@ -102,7 +102,9 @@ __global__ void masked_copymat(copymat_direction direction,
                                const rocblas_stride strideA,
                                T* buffer,
                                const rocblas_int* mask,
-                               const bool flag = false)
+                               const rocblas_fill uplo = rocblas_fill_full,
+                               const rocblas_diagonal diag = rocblas_diagonal_non_unit,
+                               const bool negate = false)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -111,9 +113,14 @@ __global__ void masked_copymat(copymat_direction direction,
     const rocblas_int ldw = m;
     const rocblas_stride strideW = rocblas_stride(ldw) * n;
 
-    const bool copy = flag ? !mask[b] : mask[b];
+    const bool copy = negate ? !mask[b] : mask[b];
 
-    if(i < m && j < n && copy)
+    const bool full = (uplo == rocblas_fill_full);
+    const bool upper = (uplo == rocblas_fill_upper);
+    const bool lower = (uplo == rocblas_fill_lower);
+    const bool cdiag = (diag == rocblas_diagonal_non_unit);
+
+    if(i < m && j < n && copy && (full || (upper && j > i) || (lower && i > j) || (cdiag && i == j)))
     {
         T* Wp = &buffer[b * strideW];
         T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);

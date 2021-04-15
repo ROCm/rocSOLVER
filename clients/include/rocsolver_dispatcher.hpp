@@ -46,6 +46,7 @@
 #include "testing_sygsx_hegsx.hpp"
 #include "testing_sygv_hegv.hpp"
 #include "testing_sytxx_hetxx.hpp"
+#include "testing_trtri.hpp"
 
 struct str_less
 {
@@ -130,6 +131,10 @@ class rocsolver_dispatcher
             {"getri", testing_getri<false, false, T>},
             {"getri_batched", testing_getri<true, true, T>},
             {"getri_strided_batched", testing_getri<false, true, T>},
+            // trtri
+            {"trtri", testing_trtri<false, false, T>},
+            {"trtri_batched", testing_trtri<true, true, T>},
+            {"trtri_strided_batched", testing_trtri<false, true, T>},
             // getri_outofplace
             {"getri_outofplace", testing_getri_outofplace<false, false, T>},
             {"getri_outofplace_batched", testing_getri_outofplace<true, true, T>},

@@ -15,6 +15,7 @@ set(roclapack_test_source
     # linear systems solvers
     getrs_gtest.cpp
     getri_gtest.cpp
+    trtri_gtest.cpp
     # least squares solvers
     gels_gtest.cpp
     # triangular factorizations

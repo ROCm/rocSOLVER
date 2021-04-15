@@ -456,10 +456,9 @@ rocblas_int getri_get_blksize(const rocblas_int dim)
     return blk;
 }
 
-template <bool BATCHED, bool INPLACE, typename T>
+template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_getri_getMemorySize(const rocblas_int n,
                                    const rocblas_int batch_count,
-                                   size_t* size_scalars,
                                    size_t* size_work1,
                                    size_t* size_work2,
                                    size_t* size_work3,
@@ -470,7 +469,6 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     // if quick return, no need of workspace
     if(n == 0 || batch_count == 0)
     {
-        *size_scalars = 0;
         *size_work1 = 0;
         *size_work2 = 0;
         *size_work3 = 0;
@@ -484,7 +482,6 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     // if very small size, no workspace needed
     if(n <= WAVESIZE)
     {
-        *size_scalars = 0;
         *size_work1 = 0;
         *size_work2 = 0;
         *size_work3 = 0;
@@ -495,8 +492,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     }
 #endif
 */
-    // size of scalars for calling rocblas
-    *size_scalars = sizeof(T) * 3;
+    size_t unused, w1a = 0, w1b = 0, w2a = 0, w2b = 0, w3a = 0, w3b = 0, w4a = 0, w4b = 0, t1, t2;
 
     // size of array of pointers (batched cases)
     if(BATCHED)
@@ -504,34 +500,28 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     else
         *size_workArr = 0;
 
-    size_t w1a, w1b, w2a, w2b, t1, t2;
+    rocblas_int blk = 64; //getri_get_blksize<ISBATCHED>(n);
+    bool local = (blk <= 0);
+    blk = local ? -blk : blk;
+    blk = (blk == 1) ? n : blk;
 
-    // requirements for calling TRSM
-    //    if(n <= GETRI_SWITCHSIZE_LARGE)
-    //    {
-    //        w1a = 0;
-    //        w2a = 0;
-    //        *size_work3 = 0;
-    //        *size_work4 = 0;
-    //    }
-    //    else
-    //        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, n, GETRI_BLOCKSIZE, batch_count, &w1a,
-    //                                         &w2a, size_work3, size_work4);
-    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, n, n, batch_count, &w1a, &w2a, size_work3,
-                                     size_work4);
+    // size of temporary array required for copies
+    t1 = n * blk * sizeof(T) * batch_count;
 
     // requirements for calling TRTRI
-    rocblasCall_trtri_mem<BATCHED, T>(n, batch_count, &w1b, &w2b);
+    rocsolver_trtri_getMemorySize<BATCHED, STRIDED, T>(rocblas_diagonal_non_unit, n, batch_count,
+                                                       &w1b, &w2b, &w3b, &w4b, &t2, &unused);
+
+    // requirements for calling TRSM
+    if(!local)
+        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, n, blk, batch_count, &w1a, &w2a, &w3a,
+                                         &w4a);
 
     *size_work1 = max(w1a, w1b);
     *size_work2 = max(w2a, w2b);
-
-    // size of temporary array required for copies
-    //    t1 = (INPLACE ? n * n : 0) * sizeof(T) * batch_count;
-    //    t2 = (n <= GETRI_SWITCHSIZE_MID ? n : n * GETRI_BLOCKSIZE) * sizeof(T) * batch_count;
-    //    t2 = (n <= GETRI_SWITCHSIZE_MID ? n : n * n) * sizeof(T) * batch_count;
-    //    *size_tmpcopy = max(t1, t2);
-    *size_tmpcopy = n * n * sizeof(T) * batch_count;
+    *size_work3 = max(w3a, w3b);
+    *size_work4 = max(w4a, w4b);
+    *size_tmpcopy = max(t1, t2);
 }
 
 template <typename T>
@@ -575,7 +565,6 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
                                         const rocblas_stride strideP,
                                         rocblas_int* info,
                                         const rocblas_int batch_count,
-                                        T* scalars,
                                         void* work1,
                                         void* work2,
                                         void* work3,
@@ -612,7 +601,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     // compute inverse of U (also check singularity and update info)
     rocsolver_trtri_template<BATCHED, STRIDED, T>(
         handle, rocblas_fill_upper, rocblas_diagonal_non_unit, n, A, shiftA, lda, strideA, info,
-        batch_count, scalars, work1, work2, work3, work4, tmpcopy, workArr, optim_mem);
+        batch_count, work1, work2, work3, work4, tmpcopy, workArr, optim_mem);
 
     // Next, compute inv(A) solving inv(A) * L = inv(U)
 
@@ -626,7 +615,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
 #endif
 
     // get block size
-    rocblas_int blk = getri_get_blksize<ISBATCHED>(n);
+    rocblas_int blk = 64; //getri_get_blksize<ISBATCHED>(n);
 
     if(blk < 0)
     {

@@ -286,6 +286,12 @@ try
             "                           ")
 
         // other options
+        ("diag",
+         value<char>()->default_value('U'),
+            "N = non-unit triangular, U = unit triangular.\n"
+            "                           Indicates whether the diagonal elements of a triangular matrix are assumed to be one.\n"
+            "                           ")
+
         ("direct",
          value<char>()->default_value('F'),
             "F = forward, B = backward.\n"
@@ -368,6 +374,7 @@ try
     argus.validate_operation("trans");
     argus.validate_side("side");
     argus.validate_fill("uplo");
+    argus.validate_diag("diag");
     argus.validate_direct("direct");
     argus.validate_storev("storev");
     argus.validate_svect("left_svect");
