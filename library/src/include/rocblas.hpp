@@ -35,7 +35,7 @@ rocblas_status rocblasCall_axpy(rocblas_handle handle,
     // TODO: How to get alpha for trace logging
     //ROCBLAS_ENTER("axpy", "n:", n, "shiftX:", shiftx, "incx:", incx, "shiftY:", shifty, "incy:", incy, "bc:", batch_count);
 
-    return rocblas_axpy_template<ROCBLAS_AXPY_NB, T>(
+    return rocblas_internal_axpy_template<ROCBLAS_AXPY_NB, T>(
         handle, n, cast2constType<T>(alpha), stride_alpha, cast2constType<T>(x), shiftx, incx,
         stridex, y, shifty, incy, stridey, batch_count);
 }
@@ -54,7 +54,7 @@ rocblas_status rocblasCall_iamax(rocblas_handle handle,
 {
     ROCBLAS_ENTER("iamax", "n:", n, "shiftX:", shiftx, "incx:", incx, "bc:", batch_count);
 
-    return rocblas_iamax_template<ROCBLAS_IAMAX_NB, ISBATCHED>(
+    return rocblas_internal_iamax_template<ROCBLAS_IAMAX_NB, ISBATCHED>(
         handle, n, cast2constType<T>(x), shiftx, incx, stridex, batch_count, result, workspace);
 }
 
@@ -73,7 +73,7 @@ rocblas_status rocblasCall_scal(rocblas_handle handle,
     // TODO: How to get alpha for trace logging
     ROCBLAS_ENTER("scal", "n:", n, "shiftX:", offsetx, "incx:", incx, "bc:", batch_count);
 
-    return rocblas_scal_template<ROCBLAS_SCAL_NB, T>(handle, n, alpha, stridea, x, offsetx, incx,
+    return rocblas_internal_scal_template<ROCBLAS_SCAL_NB, T>(handle, n, alpha, stridea, x, offsetx, incx,
                                                      stridex, batch_count);
 }
 
@@ -97,7 +97,7 @@ rocblas_status rocblasCall_dot(rocblas_handle handle,
     ROCBLAS_ENTER("dot", "n:", n, "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety,
                   "incy:", incy, "bc:", batch_count);
 
-    return rocblas_dot_template<ROCBLAS_DOT_NB, CONJ, T>(
+    return rocblas_internal_dot_template<ROCBLAS_DOT_NB, CONJ, T>(
         handle, n, cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(y), offsety,
         incy, stridey, batch_count, results, workspace);
 }
@@ -128,7 +128,7 @@ rocblas_status rocblasCall_dot(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex, batch_count);
 
-    return rocblas_dot_template<ROCBLAS_DOT_NB, CONJ, T>(
+    return rocblas_internal_dot_template<ROCBLAS_DOT_NB, CONJ, T>(
         handle, n, cast2constType<T>(work), offsetx, incx, stridex, cast2constType<T>(y), offsety,
         incy, stridey, batch_count, results, workspace);
 }
@@ -159,7 +159,7 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     ROCBLAS_ENTER("ger", "m:", m, "n:", n, "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety,
                   "incy:", incy, "shiftA:", offsetA, "lda:", lda, "bc:", batch_count);
 
-    return rocblas_ger_template<CONJ, T>(handle, m, n, alpha, stridea, cast2constType<T>(x),
+    return rocblas_internal_ger_template<CONJ, T>(handle, m, n, alpha, stridea, cast2constType<T>(x),
                                          offsetx, incx, stridex, cast2constType<T>(y), offsety,
                                          incy, stridey, A, offsetA, lda, strideA, batch_count);
 }
@@ -196,7 +196,7 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
 
-    return rocblas_ger_template<CONJ, T>(handle, m, n, alpha, stridea, cast2constType<T>(x),
+    return rocblas_internal_ger_template<CONJ, T>(handle, m, n, alpha, stridea, cast2constType<T>(x),
                                          offsetx, incx, stridex, cast2constType<T>(work), offsety,
                                          incy, stridey, A, offsetA, lda, strideA, batch_count);
 }
@@ -233,7 +233,7 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex, batch_count);
 
-    return rocblas_ger_template<CONJ, T>(handle, m, n, alpha, stridea, cast2constType<T>(work),
+    return rocblas_internal_ger_template<CONJ, T>(handle, m, n, alpha, stridea, cast2constType<T>(work),
                                          offsetx, incx, stridex, cast2constType<T>(y), offsety,
                                          incy, stridey, A, offsetA, lda, strideA, batch_count);
 }
@@ -268,7 +268,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
                   "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety, "incy:", incy,
                   "bc:", batch_count);
 
-    return rocblas_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A),
+    return rocblas_internal_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A),
                                     offseta, lda, strideA, cast2constType<T>(x), offsetx, incx,
                                     stridex, beta, stride_beta, y, offsety, incy, stridey,
                                     batch_count);
@@ -310,7 +310,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, strideA, batch_count);
 
-    return rocblas_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha,
+    return rocblas_internal_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha,
                                     cast2constType<T>(work), offseta, lda, strideA,
                                     cast2constType<T>(x), offsetx, incx, stridex, beta, stride_beta,
                                     y, offsety, incy, stridey, batch_count);
@@ -352,7 +352,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex, batch_count);
 
-    return rocblas_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A),
+    return rocblas_internal_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A),
                                     offseta, lda, strideA, cast2constType<T>(work), offsetx, incx,
                                     stridex, beta, stride_beta, y, offsety, incy, stridey,
                                     batch_count);
@@ -394,7 +394,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
 
-    return rocblas_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A),
+    return rocblas_internal_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A),
                                     offseta, lda, strideA, cast2constType<T>(x), offsetx, incx,
                                     stridex, beta, stride_beta, cast2constPointer<T>(work), offsety,
                                     incy, stridey, batch_count);
@@ -438,7 +438,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, (work + batch_count), y,
                        stridey, batch_count);
 
-    return rocblas_gemv_template<T>(
+    return rocblas_internal_gemv_template<T>(
         handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A), offseta, lda, strideA,
         cast2constType<T>(work), offsetx, incx, stridex, beta, stride_beta,
         cast2constPointer<T>(work + batch_count), offsety, incy, stridey, batch_count);
@@ -482,7 +482,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, (work + batch_count), y,
                        stridey, batch_count);
 
-    return rocblas_gemv_template<T>(
+    return rocblas_internal_gemv_template<T>(
         handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(work), offseta, lda, strideA,
         cast2constType<T>(x), offsetx, incx, stridex, beta, stride_beta,
         cast2constPointer<T>(work + batch_count), offsety, incy, stridey, batch_count);
@@ -510,7 +510,7 @@ rocblas_status rocblasCall_trmv(rocblas_handle handle,
     ROCBLAS_ENTER("trmv", "trans:", transa, "diag:", diag, "m:", m, "shiftA:", offseta, "lda:", lda,
                   "shiftX:", offsetx, "incx:", incx, "bc:", batch_count);
 
-    return rocblas_trmv_template<ROCBLAS_TRMV_NB>(handle, uplo, transa, diag, m,
+    return rocblas_internal_trmv_template<ROCBLAS_TRMV_NB>(handle, uplo, transa, diag, m,
                                                   cast2constType<T>(a), offseta, lda, stridea, x,
                                                   offsetx, incx, stridex, w, stridew, batch_count);
 }
@@ -545,7 +545,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
                   "shiftA:", offset_a, "lda:", ld_a, "shiftB:", offset_b, "ldb:", ld_b,
                   "shiftC:", offset_c, "ldc:", ld_c, "bc:", batch_count);
 
-    return rocblas_gemm_template<BATCHED, T>(handle, trans_a, trans_b, m, n, k, alpha,
+    return rocblas_internal_gemm_template<BATCHED, T>(handle, trans_a, trans_b, m, n, k, alpha,
                                              cast2constType<T>(A), offset_a, ld_a, stride_a,
                                              cast2constType<T>(B), offset_b, ld_b, stride_b, beta,
                                              C, offset_c, ld_c, stride_c, batch_count);
@@ -587,7 +587,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, stride_a, batch_count);
 
-    return rocblas_gemm_template<BATCHED, T>(handle, trans_a, trans_b, m, n, k, alpha,
+    return rocblas_internal_gemm_template<BATCHED, T>(handle, trans_a, trans_b, m, n, k, alpha,
                                              cast2constType<T>(work), offset_a, ld_a, stride_a,
                                              cast2constType<T>(B), offset_b, ld_b, stride_b, beta,
                                              C, offset_c, ld_c, stride_c, batch_count);
@@ -629,7 +629,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, stride_b, batch_count);
 
-    return rocblas_gemm_template<BATCHED, T>(handle, trans_a, trans_b, m, n, k, alpha,
+    return rocblas_internal_gemm_template<BATCHED, T>(handle, trans_a, trans_b, m, n, k, alpha,
                                              cast2constType<T>(A), offset_a, ld_a, stride_a,
                                              cast2constType<T>(work), offset_b, ld_b, stride_b,
                                              beta, C, offset_c, ld_c, stride_c, batch_count);
@@ -671,7 +671,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, C, stride_c, batch_count);
 
-    return rocblas_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_template<BATCHED, T>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
         cast2constType<T>(B), offset_b, ld_b, stride_b, beta, cast2constPointer(work), offset_c,
         ld_c, stride_c, batch_count);
@@ -715,7 +715,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, C,
                        stride_c, batch_count);
 
-    return rocblas_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_template<BATCHED, T>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
         cast2constType<T>(work), offset_b, ld_b, stride_b, beta,
         cast2constPointer(work + batch_count), offset_c, ld_c, stride_c, batch_count);
@@ -759,7 +759,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, C,
                        stride_c, batch_count);
 
-    return rocblas_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_template<BATCHED, T>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(work), offset_a, ld_a, stride_a,
         cast2constType<T>(B), offset_b, ld_b, stride_b, beta, cast2constPointer(work + batch_count),
         offset_c, ld_c, stride_c, batch_count);
@@ -803,7 +803,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, B,
                        stride_b, batch_count);
 
-    return rocblas_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_template<BATCHED, T>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(work), offset_a, ld_a, stride_a,
         cast2constType<T>(work + batch_count), offset_b, ld_b, stride_b, beta, C, offset_c, ld_c,
         stride_c, batch_count);
@@ -838,7 +838,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
 
     constexpr rocblas_int nb = (!is_complex<T> ? ROCBLAS_TRMM_REAL_NB : ROCBLAS_TRMM_COMPLEX_NB);
 
-    return rocblas_trmm_recursive_template<nb, BATCHED, T>(
+    return rocblas_internal_trmm_recursive_template<nb, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), stride_alpha,
         cast2constType<T>(A), offsetA, lda, strideA, B, offsetB, ldb, strideB, batch_count);
 }
@@ -879,7 +879,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, B, strideB,
                        batch_count);
 
-    return rocblas_trmm_recursive_template<nb, BATCHED, T>(
+    return rocblas_internal_trmm_recursive_template<nb, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), stride_alpha,
         cast2constType<T>(A), offsetA, lda, strideA, cast2constPointer<T>(workArr), offsetB, ldb,
         strideB, batch_count);
@@ -911,7 +911,7 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                   "shiftY:", offsety, "incy:", incy, "shiftA:", offsetA, "lda:", lda,
                   "bc:", batch_count);
 
-    return rocblas_syr2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x),
+    return rocblas_internal_syr2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x),
                                  offsetx, incx, stridex, cast2constType<T>(y), offsety, incy,
                                  stridey, A, lda, offsetA, strideA, batch_count);
 }
@@ -948,7 +948,7 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
 
-    return rocblas_syr2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x),
+    return rocblas_internal_syr2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x),
                                  offsetx, incx, stridex, cast2constType<T>(work), offsety, incy,
                                  stridey, A, lda, offsetA, strideA, batch_count);
 }
@@ -979,7 +979,7 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                   "shiftY:", offsety, "incy:", incy, "shiftA:", offsetA, "lda:", lda,
                   "bc:", batch_count);
 
-    return rocblas_her2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x),
+    return rocblas_internal_her2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x),
                                  offsetx, incx, stridex, cast2constType<T>(y), offsety, incy,
                                  stridey, A, lda, offsetA, strideA, batch_count);
 }
@@ -1016,7 +1016,7 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
 
-    return rocblas_her2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x),
+    return rocblas_internal_her2_template(handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x),
                                  offsetx, incx, stridex, cast2constType<T>(work), offsety, incy,
                                  stridey, A, lda, offsetA, strideA, batch_count);
 }
@@ -1044,7 +1044,7 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
     ROCBLAS_ENTER("syrk", "uplo:", uplo, "trans:", transA, "n:", n, "k:", k, "shiftA:", offsetA,
                   "lda:", lda, "shiftC:", offsetC, "ldc:", ldc, "bc:", batch_count);
 
-    return rocblas_syrk_template(handle, uplo, transA, n, k, cast2constType<S>(alpha),
+    return rocblas_internal_syrk_template(handle, uplo, transA, n, k, cast2constType<S>(alpha),
                                  cast2constType<T>(A), offsetA, lda, strideA,
                                  cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
 }
@@ -1072,7 +1072,7 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
     ROCBLAS_ENTER("herk", "uplo:", uplo, "trans:", transA, "n:", n, "k:", k, "shiftA:", offsetA,
                   "lda:", lda, "shiftC:", offsetC, "ldc:", ldc, "bc:", batch_count);
 
-    return rocblas_herk_template(handle, uplo, transA, n, k, cast2constType<S>(alpha),
+    return rocblas_internal_herk_template(handle, uplo, transA, n, k, cast2constType<S>(alpha),
                                  cast2constType<T>(A), offsetA, lda, strideA,
                                  cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
 }
@@ -1106,7 +1106,7 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
                   "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
                   "bc:", batch_count);
 
-    return rocblas_syr2k_template<true>(
+    return rocblas_internal_syr2k_template<true>(
         handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
         ldc, strideC, batch_count);
@@ -1147,7 +1147,7 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, strideB, batch_count);
 
-    return rocblas_syr2k_template<true>(
+    return rocblas_internal_syr2k_template<true>(
         handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(work), offsetB, ldb, strideB, cast2constType<T>(beta), C,
         offsetC, ldc, strideC, batch_count);
@@ -1184,7 +1184,7 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
 
     using S = decltype(std::real(T{}));
 
-    return rocblas_her2k_template<true>(
+    return rocblas_internal_her2k_template<true>(
         handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<S>(beta), C, offsetC,
         ldc, strideC, batch_count);
@@ -1227,7 +1227,7 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, strideB, batch_count);
 
-    return rocblas_her2k_template<true>(
+    return rocblas_internal_her2k_template<true>(
         handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(work), offsetB, ldb, strideB, cast2constType<S>(beta), C,
         offsetC, ldc, strideC, batch_count);
@@ -1261,7 +1261,7 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
     ROCBLAS_ENTER("symv", "uplo:", uplo, "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftX:", offsetx,
                   "incx:", incx, "shiftY:", offsety, "incy:", incy, "bc:", batch_count);
 
-    return rocblas_symv_template<T>(handle, uplo, n, cast2constType<T>(alpha), stridea,
+    return rocblas_internal_symv_template<T>(handle, uplo, n, cast2constType<T>(alpha), stridea,
                                     cast2constType<T>(A), offsetA, lda, strideA, cast2constType<T>(x),
                                     offsetx, incx, stridex, cast2constType<T>(beta), strideb, y,
                                     offsety, incy, stridey, batch_count);
@@ -1301,7 +1301,7 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
 
-    return rocblas_symv_template<T>(
+    return rocblas_internal_symv_template<T>(
         handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb,
         cast2constPointer<T>(work), offsety, incy, stridey, batch_count);
@@ -1335,7 +1335,7 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
     ROCBLAS_ENTER("hemv", "uplo:", uplo, "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftX:", offsetx,
                   "incx:", incx, "shiftY:", offsety, "incy:", incy, "bc:", batch_count);
 
-    return rocblas_hemv_template<T>(handle, uplo, n, cast2constType<T>(alpha), stridea,
+    return rocblas_internal_hemv_template<T>(handle, uplo, n, cast2constType<T>(alpha), stridea,
                                     cast2constType<T>(A), offsetA, lda, strideA, cast2constType<T>(x),
                                     offsetx, incx, stridex, cast2constType<T>(beta), strideb, y,
                                     offsety, incy, stridey, batch_count);
@@ -1375,7 +1375,7 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
 
-    return rocblas_hemv_template<T>(
+    return rocblas_internal_hemv_template<T>(
         handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb,
         cast2constPointer<T>(work), offsety, incy, stridey, batch_count);
@@ -1409,7 +1409,7 @@ rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                   "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
                   "bc:", batch_count);
 
-    return rocblas_symm_template<false>(
+    return rocblas_internal_symm_template<false>(
         handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
         ldc, strideC, batch_count);
@@ -1443,7 +1443,7 @@ rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                   "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
                   "bc:", batch_count);
 
-    return rocblas_symm_template<true>(
+    return rocblas_internal_symm_template<true>(
         handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
         ldc, strideC, batch_count);
@@ -1517,7 +1517,7 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
                   "bc:", batch_count);
 
     U supplied_invA = nullptr;
-    return rocblas_trsv_template<ROCBLAS_TRSV_BLOCK, BATCHED, T>(
+    return rocblas_internal_trsv_template<ROCBLAS_TRSV_BLOCK, BATCHED, T>(
         handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B, offset_B, ldb,
         stride_B, batch_count, x_temp, x_temp_arr, invA, invA_arr, cast2constType(supplied_invA), 0,
         0, 0);
@@ -1621,7 +1621,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                   "bc:", batch_count);
 
     U supplied_invA = nullptr;
-    return rocblas_trsm_template<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
+    return rocblas_internal_trsm_template<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, alpha, cast2constType(A), offset_A, lda, stride_A,
         B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA, invA_arr,
         cast2constType(supplied_invA), 0);
@@ -1668,7 +1668,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                        batch_count);
 
     U supplied_invA = nullptr;
-    return rocblas_trsm_template<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
+    return rocblas_internal_trsm_template<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, alpha, cast2constType((U)workArr), offset_A, lda,
         stride_A, B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA,
         invA_arr, cast2constType(supplied_invA), 0);
@@ -1678,7 +1678,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
 template <bool BATCHED, typename T>
 void rocblasCall_trtri_mem(rocblas_int n, rocblas_int batch_count, size_t* c_temp, size_t* c_temp_arr)
 {
-    size_t c_temp_els = rocblas_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, batch_count);
+    size_t c_temp_els = rocblas_internal_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, batch_count);
     *c_temp = c_temp_els * sizeof(T);
 
     *c_temp_arr = BATCHED ? sizeof(T*) * batch_count : 0;
@@ -1706,7 +1706,7 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
     ROCBLAS_ENTER("trtri", "uplo:", uplo, "diag:", diag, "n:", n, "shiftA:", offset_A, "lda:", lda,
                   "shiftC:", offset_invA, "ldc:", ldinvA, "bc:", batch_count);
 
-    return rocblas_trtri_template<ROCBLAS_TRTRI_NB, BATCHED, STRIDED, T>(
+    return rocblas_internal_trtri_template<ROCBLAS_TRTRI_NB, BATCHED, STRIDED, T>(
         handle, uplo, diag, n, cast2constType(A), offset_A, lda, stride_A, 0, invA, offset_invA,
         ldinvA, stride_invA, 0, batch_count, 1, c_temp);
 }
@@ -1733,7 +1733,7 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
     ROCBLAS_ENTER("trtri", "uplo:", uplo, "diag:", diag, "n:", n, "shiftA:", offset_A, "lda:", lda,
                   "shiftC:", offset_invA, "ldc:", ldinvA, "bc:", batch_count);
 
-    size_t c_temp_els = rocblas_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, 1);
+    size_t c_temp_els = rocblas_internal_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, 1);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -1742,7 +1742,7 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, c_temp_arr, c_temp,
                        c_temp_els, batch_count);
 
-    return rocblas_trtri_template<ROCBLAS_TRTRI_NB, BATCHED, STRIDED, T>(
+    return rocblas_internal_trtri_template<ROCBLAS_TRTRI_NB, BATCHED, STRIDED, T>(
         handle, uplo, diag, n, cast2constType(A), offset_A, lda, stride_A, 0, invA, offset_invA,
         ldinvA, stride_invA, 0, batch_count, 1, cast2constPointer(c_temp_arr));
 }
@@ -1769,7 +1769,7 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
     ROCBLAS_ENTER("trtri", "uplo:", uplo, "diag:", diag, "n:", n, "shiftA:", offset_A, "lda:", lda,
                   "shiftC:", offset_invA, "ldc:", ldinvA, "bc:", batch_count);
 
-    size_t c_temp_els = rocblas_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, 1);
+    size_t c_temp_els = rocblas_internal_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, 1);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -1780,7 +1780,7 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, c_temp_arr, c_temp,
                        c_temp_els, batch_count);
 
-    return rocblas_trtri_template<ROCBLAS_TRTRI_NB, BATCHED, STRIDED, T>(
+    return rocblas_internal_trtri_template<ROCBLAS_TRTRI_NB, BATCHED, STRIDED, T>(
         handle, uplo, diag, n, cast2constType(A), offset_A, lda, stride_A, 0,
         cast2constPointer(workArr), offset_invA, ldinvA, stride_invA, 0, batch_count, 1,
         cast2constPointer(c_temp_arr));
