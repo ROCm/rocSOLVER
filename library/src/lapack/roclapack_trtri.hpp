@@ -272,7 +272,12 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
     }
 
     // get block size
-    rocblas_int blk = 4; //trtri_get_blksize<ISBATCHED>(n);
+    //double cpu_time_used = get_time_us_no_sync();
+    rocblas_int blk = trtri_get_blksize<ISBATCHED>(n);
+    //cpu_time_used = get_time_us_no_sync() - cpu_time_used;
+    //printf("en compute: %0.15f\n", cpu_time_used);
+    //    char* blkC = std::getenv("BLK_TRTRI");
+    //    rocblas_int blk = atoi(blkC);
 
     // size of temporary array required for copies
     if(diag == rocblas_diagonal_unit && blk > 0)
@@ -489,7 +494,12 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
     }
 
     // get block size
-    rocblas_int blk = 4; //trtri_get_blksize<ISBATCHED>(n);
+    //    char* blkC = std::getenv("BLK_TRTRI");
+    //    rocblas_int blk = atoi(blkC);
+    //double cpu_time_used = get_time_us_no_sync();
+    rocblas_int blk = trtri_get_blksize<ISBATCHED>(n);
+    //cpu_time_used = get_time_us_no_sync() - cpu_time_used;
+    //printf("en compute: %0.15f, %d\n", cpu_time_used, blk);
     rocblas_int jb;
 
     if(diag == rocblas_diagonal_non_unit && blk > 0)

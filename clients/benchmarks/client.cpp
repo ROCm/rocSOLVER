@@ -287,7 +287,7 @@ try
 
         // other options
         ("diag",
-         value<char>()->default_value('U'),
+         value<char>()->default_value('N'),
             "N = non-unit triangular, U = unit triangular.\n"
             "                           Indicates whether the diagonal elements of a triangular matrix are assumed to be one.\n"
             "                           ")
