@@ -16,6 +16,8 @@ def runCI =
 
     def prj = new rocProject('rocSOLVER', 'Debug')
 
+    prj.timeout.compile = 600
+
     // customize for project
     prj.paths.build_command = './install.sh -c'
 
