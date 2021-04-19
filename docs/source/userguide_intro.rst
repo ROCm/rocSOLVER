@@ -107,6 +107,9 @@ rocsolver_gelqf_strided_batched x      x          x             x
 **rocsolver_getrs**             x      x          x             x
 rocsolver_getrs_batched         x      x          x             x
 rocsolver_getrs_strided_batched x      x          x             x
+**rocsolver_trtri**             x      x          x             x
+rocsolver_trtri_batched         x      x          x             x
+rocsolver_trtri_strided_batched x      x          x             x
 **rocsolver_getri**             x      x          x             x
 rocsolver_getri_batched         x      x          x             x
 rocsolver_getri_strided_batched x      x          x             x
@@ -160,15 +163,18 @@ rocsolver_hegv_batched                            x             x
 rocsolver_hegv_strided_batched                    x             x
 =============================== ====== ====== ============== ==============
 
-==================================== ====== ====== ============== ==============
-Lapack-like Function                 single double single complex double complex
-==================================== ====== ====== ============== ==============
-**rocsolver_getf2_npvt**             x      x          x             x
-rocsolver_getf2_npvt_batched         x      x          x             x
-rocsolver_getf2_npvt_strided_batched x      x          x             x
-**rocsolver_getrf_npvt**             x      x          x             x
-rocsolver_getrf_npvt_batched         x      x          x             x
-rocsolver_getrf_npvt_strided_batched x      x          x             x
-==================================== ====== ====== ============== ==============
+=========================================== ====== ====== ============== ==============
+Lapack-like Function                        single double single complex double complex
+=========================================== ====== ====== ============== ==============
+**rocsolver_getf2_npvt**                        x      x          x             x
+rocsolver_getf2_npvt_batched                    x      x          x             x
+rocsolver_getf2_npvt_strided_batched            x      x          x             x
+**rocsolver_getrf_npvt**                        x      x          x             x
+rocsolver_getrf_npvt_batched                    x      x          x             x
+rocsolver_getrf_npvt_strided_batched            x      x          x             x
+**rocsolver_getri_outofplace**                  x      x          x             x
+rocsolver_getri_outofplace_batched              x      x          x             x
+rocsolver_getri_outofplace_strided_batched      x      x          x             x
+=========================================== ====== ====== ============== ==============
 
 
