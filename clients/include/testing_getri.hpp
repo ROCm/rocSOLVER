@@ -123,9 +123,9 @@ void getri_initData(const rocblas_handle handle,
                 for(rocblas_int j = 0; j < n; j++)
                 {
                     if(i == j)
-                        hA[b][i + j * lda] += 400;
+                        hA[b][i + j * lda] = hA[b][i + j * lda] / 10.0 + 10; //+= 400;
                     else
-                        hA[b][i + j * lda] -= 4;
+                        hA[b][i + j * lda] = (hA[b][i + j * lda] - 4) / 10.0; // -= 4;
                 }
             }
 
@@ -218,6 +218,9 @@ void getri_getError(const rocblas_handle handle,
             err++;
     }
     *max_err += err;
+
+    print_host_matrix("GPU", n, n, hARes[0], lda);
+    print_host_matrix("CPU", n, n, hA[0], lda);
 
     // error is ||hA - hARes|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.

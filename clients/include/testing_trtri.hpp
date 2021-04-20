@@ -184,9 +184,6 @@ void trtri_getError(const rocblas_handle handle,
         cblas_trtri<T>(uplo, diag, n, hA[b], lda, hInfo[b]);
     }
 
-    //print_host_matrix(rocsolver_cout,"salida CPU",n,n,hA[0],lda);
-    //print_host_matrix(rocsolver_cout,"salida GPU",n,n,hARes[0],lda);
-
     // check info for singularities
     double err = 0;
     *max_err = 0;
