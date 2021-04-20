@@ -139,7 +139,7 @@ target_link_libraries( rocsolver
   PUBLIC
     roc::rocblas
   PRIVATE
-    rocsolver-common
+    $<BUILD_INTERFACE:rocsolver-common> # https://gitlab.kitware.com/cmake/cmake/-/issues/15415
     hip::device
     --rtlib=compiler-rt
     --unwindlib=libgcc
