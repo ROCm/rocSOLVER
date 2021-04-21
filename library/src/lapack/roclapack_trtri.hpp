@@ -450,8 +450,8 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
                                         T** workArr,
                                         const bool optim_mem)
 {
-    ROCSOLVER_ENTER("trtri", "--uplo:", uplo, "--diag:", diag, "n:", n, "shiftA:", shiftA,
-                    "lda:", lda, "bc:", batch_count);
+    ROCSOLVER_ENTER("trtri", "uplo:", uplo, "diag:", diag, "n:", n, "shiftA:", shiftA, "lda:", lda,
+                    "bc:", batch_count);
 
     // quick return if zero instances in batch
     if(batch_count == 0)

@@ -285,13 +285,15 @@ try
             "                           Indicates how the right singular vectors are to be calculated and stored.\n"
             "                           ")
 
-        // other options
+        // trtri options
         ("diag",
          value<char>()->default_value('N'),
             "N = non-unit triangular, U = unit triangular.\n"
             "                           Indicates whether the diagonal elements of a triangular matrix are assumed to be one.\n"
+            "                           Only applicable to trtri.\n"
             "                           ")
 
+        // other options
         ("direct",
          value<char>()->default_value('F'),
             "F = forward, B = backward.\n"

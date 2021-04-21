@@ -508,8 +508,8 @@ void testing_getri_outofplace(Arguments& argus)
             }
             else
             {
-                rocsolver_bench_output("n", "lda");
-                rocsolver_bench_output(n, lda);
+                rocsolver_bench_output("n", "lda", "ldc");
+                rocsolver_bench_output(n, lda, ldc);
             }
             rocsolver_cout << "\n============================================\n";
             rocsolver_cout << "Results:\n";

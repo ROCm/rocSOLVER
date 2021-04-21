@@ -169,7 +169,6 @@ void trtri_getError(const rocblas_handle handle,
     // input data initialization
     trtri_initData<true, true, T>(handle, n, dA, lda, bc, hA, singular);
 
-    //print_host_matrix(rocsolver_cout,"Original",n,n,hA[0],lda);
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(

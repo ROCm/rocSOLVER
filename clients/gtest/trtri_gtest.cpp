@@ -18,7 +18,7 @@ typedef std::tuple<vector<int>, rocsolver_op_char> trtri_tuple;
 // if singular = 1, then the used matrix for the tests is triangular non-unit and singular
 // otherwise, the used matrix is triangular non-unit and not singular
 
-// each uplo_rang is {uplo}
+// each uplo_range is {uplo}
 
 // case when n = 0 and uplo = L will also execute the bad arguments test
 // (null handle, null pointers and invalid values)

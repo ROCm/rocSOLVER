@@ -86,7 +86,7 @@ rocblas_status rocsolver_getri_outofplace_template(rocblas_handle handle,
                                                    bool optim_mem)
 {
     ROCSOLVER_ENTER("getri_outofplace", "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
-                    "shiftC:", shiftC, "ldc", ldc, "bc:", batch_count);
+                    "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
 
     // quick return if zero instances in batch
     if(batch_count == 0)
