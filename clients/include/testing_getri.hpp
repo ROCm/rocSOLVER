@@ -219,9 +219,6 @@ void getri_getError(const rocblas_handle handle,
     }
     *max_err += err;
 
-    print_host_matrix("GPU", n, n, hARes[0], lda);
-    print_host_matrix("CPU", n, n, hA[0], lda);
-
     // error is ||hA - hARes|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
