@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -62,11 +62,20 @@ inline void xaxpy(int* n,
 /* Norm of error functions */
 
 template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
-double norm_error(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda, T* gold, T* comp)
+double norm_error(char norm_type,
+                  rocblas_int M,
+                  rocblas_int N,
+                  rocblas_int lda_gold,
+                  T* gold,
+                  T* comp,
+                  rocblas_int lda_comp = 0)
 {
     // norm type can be 'O', 'I', 'F', 'o', 'i', 'f' for one, infinity or
     // Frobenius norm one norm is max column sum infinity norm is max row sum
     // Frobenius is l2 norm of matrix entries
+
+    rocblas_int lda = M;
+    lda_comp = lda_comp > 0 ? lda_comp : lda_gold;
 
     host_vector<double> gold_double(N * lda);
     host_vector<double> comp_double(N * lda);
@@ -75,8 +84,8 @@ double norm_error(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda,
     {
         for(rocblas_int j = 0; j < N; j++)
         {
-            gold_double[i + j * lda] = double(gold[i + j * lda]);
-            comp_double[i + j * lda] = double(comp[i + j * lda]);
+            gold_double[i + j * lda] = double(gold[i + j * lda_gold]);
+            comp_double[i + j * lda] = double(comp[i + j * lda_comp]);
         }
     }
 
@@ -95,11 +104,20 @@ double norm_error(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda,
 }
 
 template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
-double norm_error(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda, T* gold, T* comp)
+double norm_error(char norm_type,
+                  rocblas_int M,
+                  rocblas_int N,
+                  rocblas_int lda_gold,
+                  T* gold,
+                  T* comp,
+                  rocblas_int lda_comp = 0)
 {
     // norm type can be 'O', 'I', 'F', 'o', 'i', 'f' for one, infinity or
     // Frobenius norm one norm is max column sum infinity norm is max row sum
     // Frobenius is l2 norm of matrix entries
+
+    rocblas_int lda = M;
+    lda_comp = lda_comp > 0 ? lda_comp : lda_gold;
 
     host_vector<rocblas_double_complex> gold_double(N * lda);
     host_vector<rocblas_double_complex> comp_double(N * lda);
@@ -108,8 +126,8 @@ double norm_error(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda,
     {
         for(rocblas_int j = 0; j < N; j++)
         {
-            gold_double[i + j * lda] = rocblas_double_complex(gold[i + j * lda]);
-            comp_double[i + j * lda] = rocblas_double_complex(comp[i + j * lda]);
+            gold_double[i + j * lda] = rocblas_double_complex(gold[i + j * lda_gold]);
+            comp_double[i + j * lda] = rocblas_double_complex(comp[i + j * lda_comp]);
         }
     }
 

@@ -2,15 +2,7 @@
  * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "roclapack_getri.hpp"
-
-/*
- * ===========================================================================
- *    getri_outofplace_batched is not intended for inclusion in the public API.
- *    It exists to provide a getri_batched method with a signature identical to
- *    the cuBLAS implementation, for use exclusively in hipBLAS.
- * ===========================================================================
- */
+#include "roclapack_getri_outofplace.hpp"
 
 template <typename T, typename U>
 rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle,
@@ -25,13 +17,13 @@ rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle,
                                                        const rocblas_int batch_count)
 {
     ROCSOLVER_ENTER_TOP("getri_outofplace_batched", "-n", n, "--lda", lda, "--strideP", strideP,
-                        "--batch_count", batch_count);
+                        "--ldc", ldc, "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_getri_argCheck(handle, n, lda, ldc, A, C, ipiv, info, batch_count);
+    rocblas_status st = rocsolver_getri_outofplace_argCheck(handle, n, lda, ldc, A, C, ipiv, info, batch_count);
     if(st != rocblas_status_continue)
         return st;
 
@@ -45,48 +37,34 @@ rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle,
     rocblas_stride strideC = 0;
 
     // memory workspace sizes:
-    // size for constants in rocblas calls
-    size_t size_scalars;
-    // size of reusable workspace (for calling TRSM and TRTRI)
+    // size of reusable workspace (for calling TRSM)
     size_t size_work1, size_work2, size_work3, size_work4;
-    // size of temporary array required for copies
-    size_t size_tmpcopy;
-    // size of arrays of pointers (for batched cases)
-    size_t size_workArr;
-    rocsolver_getri_getMemorySize<true, false, T>(n, batch_count, &size_scalars, &size_work1,
-                                                  &size_work2, &size_work3, &size_work4,
-                                                  &size_tmpcopy, &size_workArr);
+    
+    rocsolver_getri_outofplace_getMemorySize<true, T>(n, batch_count, &size_work1,
+                                                  &size_work2, &size_work3, &size_work4);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
-                                                      size_work3, size_work4, size_tmpcopy,
-                                                      size_workArr);
+        return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2,
+                                                      size_work3, size_work4);
 
     // always allocate all required memory for TRSM optimal performance
     bool optim_mem = true;
 
     // memory workspace allocation
-    void *scalars, *work1, *work2, *work3, *work4, *tmpcopy, *workArr;
-    rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
-                              size_tmpcopy, size_workArr);
+    void *work1, *work2, *work3, *work4;
+    rocblas_device_malloc mem(handle, size_work1, size_work2, size_work3, size_work4);
 
     if(!mem)
         return rocblas_status_memory_error;
+    work1 = mem[0];
+    work2 = mem[1];
+    work3 = mem[2];
+    work4 = mem[3];
 
-    scalars = mem[0];
-    work1 = mem[1];
-    work2 = mem[2];
-    work3 = mem[3];
-    work4 = mem[4];
-    tmpcopy = mem[5];
-    workArr = mem[6];
-    if(size_scalars > 0)
-        init_scalars(handle, (T*)scalars);
-
-    // out-of-place execution
-    return rocsolver_getri_template<true, false, T>(
-        handle, n, A, shiftA, lda, strideA, C, shiftC, ldc, strideC, ipiv, shiftP, strideP, info,
-        batch_count, (T*)scalars, work1, work2, work3, work4, (T*)tmpcopy, (T**)workArr, optim_mem);
+    // Execution
+    return rocsolver_getri_outofplace_template<true, T>(
+        handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, C, shiftC, ldc, strideC, info,
+        batch_count, work1, work2, work3, work4, optim_mem);
 }
 
 /*
@@ -97,7 +75,7 @@ rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle,
 
 extern "C" {
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_outofplace_batched(rocblas_handle handle,
+rocblas_status rocsolver_sgetri_outofplace_batched(rocblas_handle handle,
                                                                     const rocblas_int n,
                                                                     float* const A[],
                                                                     const rocblas_int lda,
@@ -112,7 +90,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_outofplace_batched(rocblas_hand
                                                           info, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri_outofplace_batched(rocblas_handle handle,
+rocblas_status rocsolver_dgetri_outofplace_batched(rocblas_handle handle,
                                                                     const rocblas_int n,
                                                                     double* const A[],
                                                                     const rocblas_int lda,
@@ -127,7 +105,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgetri_outofplace_batched(rocblas_hand
                                                            info, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri_outofplace_batched(rocblas_handle handle,
+rocblas_status rocsolver_cgetri_outofplace_batched(rocblas_handle handle,
                                                                     const rocblas_int n,
                                                                     rocblas_float_complex* const A[],
                                                                     const rocblas_int lda,
@@ -142,7 +120,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgetri_outofplace_batched(rocblas_hand
         handle, n, A, lda, ipiv, strideP, C, ldc, info, batch_count);
 }
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_outofplace_batched(rocblas_handle handle,
+rocblas_status rocsolver_zgetri_outofplace_batched(rocblas_handle handle,
                                                                     const rocblas_int n,
                                                                     rocblas_double_complex* const A[],
                                                                     const rocblas_int lda,

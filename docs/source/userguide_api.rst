@@ -929,6 +929,36 @@ rocsolver_<type>hegst_strided_batched()
 Linear-systems solvers
 --------------------------
 
+rocsolver_<type>trtri()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_ztrtri
+   :outline:
+.. doxygenfunction:: rocsolver_ctrtri
+   :outline:
+.. doxygenfunction:: rocsolver_dtrtri
+   :outline:
+.. doxygenfunction:: rocsolver_strtri
+
+rocsolver_<type>trtri_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_ztrtri_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ctrtri_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dtrtri_batched
+   :outline:
+.. doxygenfunction:: rocsolver_strtri_batched
+
+rocsolver_<type>trtri_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_ztrtri_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ctrtri_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dtrtri_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_strtri_strided_batched
+
 rocsolver_<type>getri()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. doxygenfunction:: rocsolver_zgetri
@@ -958,6 +988,7 @@ rocsolver_<type>getri_strided_batched()
 .. doxygenfunction:: rocsolver_dgetri_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgetri_strided_batched
+
 
 rocsolver_<type>getrs()
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1139,6 +1170,39 @@ Lapack-like Functions
 ========================
 
 Other Lapack-like routines provided by rocSOLVER.
+
+Linear-systems solvers
+--------------------------
+
+rocsolver_<type>getri_outofplace()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetri_outofplace
+   :outline:
+.. doxygenfunction:: rocsolver_cgetri_outofplace
+   :outline:
+.. doxygenfunction:: rocsolver_dgetri_outofplace
+   :outline:
+.. doxygenfunction:: rocsolver_sgetri_outofplace
+
+rocsolver_<type>getri_outofplace_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetri_outofplace_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgetri_outofplace_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgetri_outofplace_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgetri_outofplace_batched
+
+rocsolver_<type>getri_outofplace_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zgetri_outofplace_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgetri_outofplace_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgetri_outofplace_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgetri_outofplace_strided_batched
 
 Triangular Factorizations
 ---------------------------------

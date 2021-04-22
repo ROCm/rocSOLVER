@@ -16,42 +16,6 @@
 #include "roclapack_geqrf.hpp"
 #include "rocsolver.h"
 
-enum copymat_direction
-{
-    copymat_to_buffer,
-    copymat_from_buffer
-};
-
-template <typename T, typename U>
-__global__ void masked_copymat(copymat_direction direction,
-                               const rocblas_int m,
-                               const rocblas_int n,
-                               U A,
-                               const rocblas_int shiftA,
-                               const rocblas_int lda,
-                               const rocblas_stride strideA,
-                               T* buffer,
-                               const rocblas_int* mask)
-{
-    const auto b = hipBlockIdx_z;
-    const auto i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
-    const auto j = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-
-    const rocblas_int ldw = m;
-    const rocblas_stride strideW = rocblas_stride(ldw) * n;
-
-    if(i < m && j < n && mask[b])
-    {
-        T* Wp = &buffer[b * strideW];
-        T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
-
-        if(direction == copymat_to_buffer)
-            Wp[i + j * ldw] = Ap[i + j * lda];
-        else // direction == copymat_from_buffer
-            Ap[i + j * lda] = Wp[i + j * ldw];
-    }
-}
-
 template <typename T, typename U>
 __global__ void gels_set_zero(const rocblas_int k1,
                               const rocblas_int k2,

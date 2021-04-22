@@ -14,21 +14,9 @@
 #include "roclapack_getf2.hpp"
 #include "rocsolver.h"
 
-inline rocblas_int get_index(rocblas_int* intervals, rocblas_int max, rocblas_int dim)
-{
-    rocblas_int i;
-
-    for(i = 0; i < max; ++i)
-    {
-        if(dim < intervals[i])
-            break;
-    }
-
-    return i;
-}
 
 template <bool ISBATCHED, bool PIVOT>
-rocblas_int get_blksize(rocblas_int dim)
+rocblas_int getrf_get_blksize(rocblas_int dim)
 {
     rocblas_int blk;
 
@@ -127,7 +115,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
     }
 
     rocblas_int dim = min(m, n);
-    rocblas_int blk = get_blksize<ISBATCHED, PIVOT>(dim);
+    rocblas_int blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
 
     if(blk == 1)
     {
@@ -216,7 +204,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_int dim = min(m, n); // total number of pivots
     rocblas_int jb, sizePivot;
 
-    rocblas_int blk = get_blksize<ISBATCHED, PIVOT>(dim);
+    rocblas_int blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
 
     if(blk == 1)
         return rocsolver_getf2_template<ISBATCHED, PIVOT, T>(handle, m, n, A, shiftA, lda, strideA,
