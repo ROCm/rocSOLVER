@@ -6,8 +6,13 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 - Linear solvers for general non-square systems:
     - GELS now supports underdetermined and transposed cases
+- Inverse of triangular matrices
+    - TRTRI (with batched and strided\_batched versions)
+- Out-of-place general matrix inversion
+    - GETRI\_OUTOFPLACE (with batched and strided\_batched versions)
 
 ### Optimizations
+- Improved general performance of matrix inversion (GETRI)
 
 ### Changed
 - Argument names for the benchmark client now match argument names from the public API

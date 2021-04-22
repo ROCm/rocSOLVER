@@ -216,6 +216,11 @@ void zgetri_(int* n,
              int* lwork,
              int* info);
 
+void strtri_(char* uplo, char* diag, int* n, float* A, int* lda, int* info);
+void dtrtri_(char* uplo, char* diag, int* n, double* A, int* lda, int* info);
+void ctrtri_(char* uplo, char* diag, int* n, rocblas_float_complex* A, int* lda, int* info);
+void ztrtri_(char* uplo, char* diag, int* n, rocblas_double_complex* A, int* lda, int* info);
+
 void slarfg_(int* n, float* alpha, float* x, int* incx, float* tau);
 void dlarfg_(int* n, double* alpha, double* x, int* incx, double* tau);
 void clarfg_(int* n,
@@ -4440,6 +4445,59 @@ void cblas_gels<rocblas_double_complex>(rocblas_operation transR,
 {
     char trans = rocblas2char_operation(transR);
     zgels_(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, work, &lwork, info);
+}
+
+// trtri
+template <>
+void cblas_trtri<float>(rocblas_fill uplo,
+                        rocblas_diagonal diag,
+                        rocblas_int n,
+                        float* A,
+                        rocblas_int lda,
+                        rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    char diagC = rocblas2char_diagonal(diag);
+    strtri_(&uploC, &diagC, &n, A, &lda, info);
+}
+
+template <>
+void cblas_trtri<double>(rocblas_fill uplo,
+                         rocblas_diagonal diag,
+                         rocblas_int n,
+                         double* A,
+                         rocblas_int lda,
+                         rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    char diagC = rocblas2char_diagonal(diag);
+    dtrtri_(&uploC, &diagC, &n, A, &lda, info);
+}
+
+template <>
+void cblas_trtri<rocblas_float_complex>(rocblas_fill uplo,
+                                        rocblas_diagonal diag,
+                                        rocblas_int n,
+                                        rocblas_float_complex* A,
+                                        rocblas_int lda,
+                                        rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    char diagC = rocblas2char_diagonal(diag);
+    ctrtri_(&uploC, &diagC, &n, A, &lda, info);
+}
+
+template <>
+void cblas_trtri<rocblas_double_complex>(rocblas_fill uplo,
+                                         rocblas_diagonal diag,
+                                         rocblas_int n,
+                                         rocblas_double_complex* A,
+                                         rocblas_int lda,
+                                         rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    char diagC = rocblas2char_diagonal(diag);
+    ztrtri_(&uploC, &diagC, &n, A, &lda, info);
 }
 
 // getri

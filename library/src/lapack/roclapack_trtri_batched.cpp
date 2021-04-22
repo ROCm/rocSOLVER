@@ -1,45 +1,44 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "roclapack_getri.hpp"
+#include "roclapack_trtri.hpp"
 
 template <typename T, typename U>
-rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle,
+rocblas_status rocsolver_trtri_batched_impl(rocblas_handle handle,
+                                            const rocblas_fill uplo,
+                                            const rocblas_diagonal diag,
                                             const rocblas_int n,
                                             U A,
                                             const rocblas_int lda,
-                                            rocblas_int* ipiv,
-                                            const rocblas_stride strideP,
                                             rocblas_int* info,
                                             const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER_TOP("getri_batched", "-n", n, "--lda", lda, "--strideP", strideP,
+    ROCSOLVER_ENTER_TOP("trtri_batched", "--uplo", uplo, "--diag", diag, "-n", n, "--lda", lda,
                         "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_getri_argCheck(handle, n, lda, A, ipiv, info, batch_count);
+    rocblas_status st = rocsolver_trtri_argCheck(handle, uplo, diag, n, lda, A, info, batch_count);
     if(st != rocblas_status_continue)
         return st;
 
     // working with unshifted arrays
     rocblas_int shiftA = 0;
-    rocblas_int shiftP = 0;
 
     // batched execution
     rocblas_stride strideA = 0;
 
     // memory workspace sizes:
-    // size of reusable workspace (for calling TRSM and TRTRI)
+    // size of reusable workspace (for calling TRSM)
     size_t size_work1, size_work2, size_work3, size_work4;
     // size of temporary array required for copies
     size_t size_tmpcopy;
     // size of arrays of pointers (for batched cases)
     size_t size_workArr;
-    rocsolver_getri_getMemorySize<true, false, T>(n, batch_count, &size_work1, &size_work2,
+    rocsolver_trtri_getMemorySize<true, false, T>(diag, n, batch_count, &size_work1, &size_work2,
                                                   &size_work3, &size_work4, &size_tmpcopy,
                                                   &size_workArr);
 
@@ -66,9 +65,9 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle,
     workArr = mem[5];
 
     // execution
-    return rocsolver_getri_template<true, false, T>(handle, n, A, shiftA, lda, strideA, ipiv, shiftP,
-                                                    strideP, info, batch_count, work1, work2, work3,
-                                                    work4, (T*)tmpcopy, (T**)workArr, optim_mem);
+    return rocsolver_trtri_template<true, false, T>(handle, uplo, diag, n, A, shiftA, lda, strideA,
+                                                    info, batch_count, work1, work2, work3, work4,
+                                                    (T*)tmpcopy, (T**)workArr, optim_mem);
 }
 
 /*
@@ -79,54 +78,54 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle,
 
 extern "C" {
 
-rocblas_status rocsolver_sgetri_batched(rocblas_handle handle,
+rocblas_status rocsolver_strtri_batched(rocblas_handle handle,
+                                        const rocblas_fill uplo,
+                                        const rocblas_diagonal diag,
                                         const rocblas_int n,
                                         float* const A[],
                                         const rocblas_int lda,
-                                        rocblas_int* ipiv,
-                                        const rocblas_stride strideP,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_getri_batched_impl<float>(handle, n, A, lda, ipiv, strideP, info, batch_count);
+    return rocsolver_trtri_batched_impl<float>(handle, uplo, diag, n, A, lda, info, batch_count);
 }
 
-rocblas_status rocsolver_dgetri_batched(rocblas_handle handle,
+rocblas_status rocsolver_dtrtri_batched(rocblas_handle handle,
+                                        const rocblas_fill uplo,
+                                        const rocblas_diagonal diag,
                                         const rocblas_int n,
                                         double* const A[],
                                         const rocblas_int lda,
-                                        rocblas_int* ipiv,
-                                        const rocblas_stride strideP,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_getri_batched_impl<double>(handle, n, A, lda, ipiv, strideP, info, batch_count);
+    return rocsolver_trtri_batched_impl<double>(handle, uplo, diag, n, A, lda, info, batch_count);
 }
 
-rocblas_status rocsolver_cgetri_batched(rocblas_handle handle,
+rocblas_status rocsolver_ctrtri_batched(rocblas_handle handle,
+                                        const rocblas_fill uplo,
+                                        const rocblas_diagonal diag,
                                         const rocblas_int n,
                                         rocblas_float_complex* const A[],
                                         const rocblas_int lda,
-                                        rocblas_int* ipiv,
-                                        const rocblas_stride strideP,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_getri_batched_impl<rocblas_float_complex>(handle, n, A, lda, ipiv, strideP,
-                                                               info, batch_count);
+    return rocsolver_trtri_batched_impl<rocblas_float_complex>(handle, uplo, diag, n, A, lda, info,
+                                                               batch_count);
 }
 
-rocblas_status rocsolver_zgetri_batched(rocblas_handle handle,
+rocblas_status rocsolver_ztrtri_batched(rocblas_handle handle,
+                                        const rocblas_fill uplo,
+                                        const rocblas_diagonal diag,
                                         const rocblas_int n,
                                         rocblas_double_complex* const A[],
                                         const rocblas_int lda,
-                                        rocblas_int* ipiv,
-                                        const rocblas_stride strideP,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_getri_batched_impl<rocblas_double_complex>(handle, n, A, lda, ipiv, strideP,
-                                                                info, batch_count);
+    return rocsolver_trtri_batched_impl<rocblas_double_complex>(handle, uplo, diag, n, A, lda, info,
+                                                                batch_count);
 }
 
 } // extern C
