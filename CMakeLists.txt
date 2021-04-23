@@ -51,7 +51,7 @@ get_os_id(OS_ID)
 message (STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-set ( VERSION_STRING "3.13.0" )
+set ( VERSION_STRING "3.14.0" )
 rocm_setup_version( VERSION ${VERSION_STRING} )
 
 # NOTE:  workaround until llvm & hip cmake modules fixes symlink logic in their config files; remove when fixed
