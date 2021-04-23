@@ -8,6 +8,8 @@
  * timing functions                                                    *
  ***********************************************************************/
 
+namespace ROCSOLVER_COMMON_NAMESPACE
+{
 /*! \brief  CPU Timer(in microsecond): synchronize with the default device and
  * return wall time */
 double get_time_us()
@@ -34,4 +36,6 @@ double get_time_us_no_sync()
     struct timespec tv;
     clock_gettime(CLOCK_MONOTONIC, &tv);
     return tv.tv_sec * 1'000'000llu + (tv.tv_nsec + 500llu) / 1000;
+}
+
 }
