@@ -2,7 +2,7 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## [(Unreleased) rocSOLVER for ROCm 4.3.0]
+## [rocSOLVER 3.13.0 for ROCm 4.3.0]
 ### Added
 - Linear solvers for general non-square systems:
     - GELS now supports underdetermined and transposed cases
