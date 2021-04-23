@@ -2,6 +2,14 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
+## [(unreleased) rocSOLVER for ROCm 4.4.0]
+### Added
+### Optimizations
+### Changed
+### Removed
+### Fixed
+### Known Issues
+
 ## [rocSOLVER 3.13.0 for ROCm 4.3.0]
 ### Added
 - Linear solvers for general non-square systems:
