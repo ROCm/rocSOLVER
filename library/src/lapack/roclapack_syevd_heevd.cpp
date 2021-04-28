@@ -38,45 +38,47 @@ rocblas_status rocsolver_syevd_heevd_impl(rocblas_handle handle,
     // memory workspace sizes:
     // size for constants in rocblas calls
     size_t size_scalars;
-    // size of reusable workspace and stack
-    size_t size_work_stack;
-    // extra requirements to call SYTRD/HETRD and ORGTR/UNGTR
-    size_t size_Abyx_norms_tmptr, size_tmptau_trfact;
+    // size of reusable workspaces
+    size_t size_work1;
+    size_t size_work2;
+    size_t size_work3;
+    size_t size_tmptau_W;
     // size of array of pointers (only for batched case)
     size_t size_workArr;
     // size for temporary householder scalars
     size_t size_tau;
 
     rocsolver_syevd_heevd_getMemorySize<false, T, S>(evect, uplo, n, batch_count, &size_scalars,
-                                                     &size_work_stack, &size_Abyx_norms_tmptr,
-                                                     &size_tmptau_trfact, &size_tau, &size_workArr);
+                                                     &size_work1, &size_work2, &size_work3,
+                                                     &size_tmptau_W, &size_tau, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_stack,
-                                                      size_Abyx_norms_tmptr, size_tmptau_trfact,
-                                                      size_tau, size_workArr);
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
+                                                      size_work3, size_tmptau_W, size_tau,
+                                                      size_workArr);
 
     // memory workspace allocation
-    void *scalars, *work_stack, *Abyx_norms_tmptr, *tmptau_trfact, *tau, *workArr;
-    rocblas_device_malloc mem(handle, size_scalars, size_work_stack, size_Abyx_norms_tmptr,
-                              size_tmptau_trfact, size_tau, size_workArr);
+    void *scalars, *work1, *work2, *work3, *tmptau_W, *tau, *workArr;
+    rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2, size_work3,
+                              size_tmptau_W, size_tau, size_workArr);
 
     if(!mem)
         return rocblas_status_memory_error;
 
     scalars = mem[0];
-    work_stack = mem[1];
-    Abyx_norms_tmptr = mem[2];
-    tmptau_trfact = mem[3];
-    tau = mem[4];
-    workArr = mem[5];
+    work1 = mem[1];
+    work2 = mem[2];
+    work3 = mem[3];
+    tmptau_W = mem[4];
+    tau = mem[5];
+    workArr = mem[6];
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_syevd_heevd_template<false, false, T>(
         handle, evect, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE, info, batch_count,
-        (T*)scalars, work_stack, (T*)Abyx_norms_tmptr, (T*)tmptau_trfact, (T*)tau, (T**)workArr);
+        (T*)scalars, work1, work2, work3, (T*)tmptau_W, (T*)tau, (T**)workArr);
 }
 
 /*
