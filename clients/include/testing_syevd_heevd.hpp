@@ -12,67 +12,67 @@
 #include "rocsolver_test.hpp"
 
 template <bool STRIDED, typename T, typename S, typename U>
-void syev_heev_checkBadArgs(const rocblas_handle handle,
-                            const rocblas_evect evect,
-                            const rocblas_fill uplo,
-                            const rocblas_int n,
-                            T dA,
-                            const rocblas_int lda,
-                            const rocblas_stride stA,
-                            S dD,
-                            const rocblas_stride stD,
-                            S dE,
-                            const rocblas_stride stE,
-                            U dinfo,
-                            const rocblas_int bc)
+void syevd_heevd_checkBadArgs(const rocblas_handle handle,
+                              const rocblas_evect evect,
+                              const rocblas_fill uplo,
+                              const rocblas_int n,
+                              T dA,
+                              const rocblas_int lda,
+                              const rocblas_stride stA,
+                              S dD,
+                              const rocblas_stride stD,
+                              S dE,
+                              const rocblas_stride stE,
+                              U dinfo,
+                              const rocblas_int bc)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, nullptr, evect, uplo, n, dA, lda, stA, dD,
-                                              stD, dE, stE, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, nullptr, evect, uplo, n, dA, lda, stA, dD,
+                                                stD, dE, stE, dinfo, bc),
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, rocblas_evect(-1), uplo, n, dA, lda,
-                                              stA, dD, stD, dE, stE, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, rocblas_evect(-1), uplo, n, dA,
+                                                lda, stA, dD, stD, dE, stE, dinfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, rocblas_fill_full, n, dA, lda,
-                                              stA, dD, stD, dE, stE, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, evect, rocblas_fill_full, n, dA,
+                                                lda, stA, dD, stD, dE, stE, dinfo, bc),
                           rocblas_status_invalid_value);
 
     // sizes (only check batch_count if applicable)
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, dA, lda, stA, dD,
-                                                  stD, dE, stE, dinfo, -1),
+        EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, dA, lda, stA,
+                                                    dD, stD, dE, stE, dinfo, -1),
                               rocblas_status_invalid_size);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, (T) nullptr, lda,
-                                              stA, dD, stD, dE, stE, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, (T) nullptr, lda,
+                                                stA, dD, stD, dE, stE, dinfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, dA, lda, stA,
-                                              (S) nullptr, stD, dE, stE, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, dA, lda, stA,
+                                                (S) nullptr, stD, dE, stE, dinfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, dA, lda, stA, dD,
-                                              stD, (S) nullptr, stE, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, dA, lda, stA, dD,
+                                                stD, (S) nullptr, stE, dinfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, dA, lda, stA, dD,
-                                              stD, dE, stE, (U) nullptr, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, dA, lda, stA, dD,
+                                                stD, dE, stE, (U) nullptr, bc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, 0, (T) nullptr, lda,
-                                              stA, (S) nullptr, stD, (S) nullptr, stE, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, 0, (T) nullptr, lda,
+                                                stA, (S) nullptr, stD, (S) nullptr, stE, dinfo, bc),
                           rocblas_status_success);
 
     // quick return with zero batch_count if applicable
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, dA, lda, stA, dD,
-                                                  stD, dE, stE, (U) nullptr, 0),
+        EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, dA, lda, stA,
+                                                    dD, stD, dE, stE, (U) nullptr, 0),
                               rocblas_status_success);
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_syev_heev_bad_arg()
+void testing_syevd_heevd_bad_arg()
 {
     using S = decltype(std::real(T{}));
 
@@ -100,8 +100,8 @@ void testing_syev_heev_bad_arg()
         CHECK_HIP_ERROR(dinfo.memcheck());
 
         // check bad arguments
-        syev_heev_checkBadArgs<STRIDED>(handle, evect, uplo, n, dA.data(), lda, stA, dD.data(), stD,
-                                        dE.data(), stE, dinfo.data(), bc);
+        syevd_heevd_checkBadArgs<STRIDED>(handle, evect, uplo, n, dA.data(), lda, stA, dD.data(),
+                                          stD, dE.data(), stE, dinfo.data(), bc);
     }
     else
     {
@@ -116,21 +116,21 @@ void testing_syev_heev_bad_arg()
         CHECK_HIP_ERROR(dinfo.memcheck());
 
         // check bad arguments
-        syev_heev_checkBadArgs<STRIDED>(handle, evect, uplo, n, dA.data(), lda, stA, dD.data(), stD,
-                                        dE.data(), stE, dinfo.data(), bc);
+        syevd_heevd_checkBadArgs<STRIDED>(handle, evect, uplo, n, dA.data(), lda, stA, dD.data(),
+                                          stD, dE.data(), stE, dinfo.data(), bc);
     }
 }
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Th>
-void syev_heev_initData(const rocblas_handle handle,
-                        const rocblas_evect evect,
-                        const rocblas_int n,
-                        Td& dA,
-                        const rocblas_int lda,
-                        const rocblas_int bc,
-                        Th& hA,
-                        std::vector<T>& A,
-                        bool test = true)
+void syevd_heevd_initData(const rocblas_handle handle,
+                          const rocblas_evect evect,
+                          const rocblas_int n,
+                          Td& dA,
+                          const rocblas_int lda,
+                          const rocblas_int bc,
+                          Th& hA,
+                          std::vector<T>& A,
+                          bool test = true)
 {
     if(CPU)
     {
@@ -170,43 +170,55 @@ void syev_heev_initData(const rocblas_handle handle,
 }
 
 template <bool STRIDED, typename T, typename Sd, typename Td, typename Id, typename Sh, typename Th, typename Ih>
-void syev_heev_getError(const rocblas_handle handle,
-                        const rocblas_evect evect,
-                        const rocblas_fill uplo,
-                        const rocblas_int n,
-                        Td& dA,
-                        const rocblas_int lda,
-                        const rocblas_stride stA,
-                        Sd& dD,
-                        const rocblas_stride stD,
-                        Sd& dE,
-                        const rocblas_stride stE,
-                        Id& dinfo,
-                        const rocblas_int bc,
-                        Th& hA,
-                        Th& hAres,
-                        Sh& hD,
-                        Sh& hDres,
-                        Ih& hinfo,
-                        Ih& hinfoRes,
-                        double* max_err)
+void syevd_heevd_getError(const rocblas_handle handle,
+                          const rocblas_evect evect,
+                          const rocblas_fill uplo,
+                          const rocblas_int n,
+                          Td& dA,
+                          const rocblas_int lda,
+                          const rocblas_stride stA,
+                          Sd& dD,
+                          const rocblas_stride stD,
+                          Sd& dE,
+                          const rocblas_stride stE,
+                          Id& dinfo,
+                          const rocblas_int bc,
+                          Th& hA,
+                          Th& hAres,
+                          Sh& hD,
+                          Sh& hDres,
+                          Ih& hinfo,
+                          Ih& hinfoRes,
+                          double* max_err)
 {
     constexpr bool COMPLEX = is_complex<T>;
     using S = decltype(std::real(T{}));
 
-    int sizeE = 3 * n - 1;
-    int lwork = (COMPLEX ? 2 * n - 1 : 0);
+    int sizeE, lwork;
+    if(!COMPLEX)
+    {
+        sizeE = (evect == rocblas_evect_none ? 2 * n + 1 : 1 + 6 * n + 2 * n * n);
+        lwork = 0;
+    }
+    else
+    {
+        sizeE = (evect == rocblas_evect_none ? n : 1 + 5 * n + 2 * n * n);
+        lwork = (evect == rocblas_evect_none ? n + 1 : 2 * n + n * n);
+    }
+    int liwork = (evect == rocblas_evect_none ? 1 : 3 + 5 * n);
+
     std::vector<T> work(lwork);
     std::vector<S> hE(sizeE);
+    std::vector<int> iwork(liwork);
     std::vector<T> A(lda * n * bc);
 
     // input data initialization
-    syev_heev_initData<true, true, T>(handle, evect, n, dA, lda, bc, hA, A);
+    syevd_heevd_initData<true, true, T>(handle, evect, n, dA, lda, bc, hA, A);
 
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, dA.data(), lda, stA,
-                                            dD.data(), stD, dE.data(), stE, dinfo.data(), bc));
+    CHECK_ROCBLAS_ERROR(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, dA.data(), lda, stA,
+                                              dD.data(), stD, dE.data(), stE, dinfo.data(), bc));
 
     CHECK_HIP_ERROR(hDres.transfer_from(dD));
     CHECK_HIP_ERROR(hinfoRes.transfer_from(dinfo));
@@ -215,8 +227,8 @@ void syev_heev_getError(const rocblas_handle handle,
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
-        cblas_syev_heev<T>(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, hE.data(), sizeE,
-                           hinfo[b]);
+        cblas_syevd_heevd<T>(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, hE.data(),
+                             sizeE, iwork.data(), liwork, hinfo[b]);
 
     // Check info for non-convergence
     *max_err = 0;
@@ -269,57 +281,69 @@ void syev_heev_getError(const rocblas_handle handle,
 }
 
 template <bool STRIDED, typename T, typename Sd, typename Td, typename Id, typename Sh, typename Th, typename Ih>
-void syev_heev_getPerfData(const rocblas_handle handle,
-                           const rocblas_evect evect,
-                           const rocblas_fill uplo,
-                           const rocblas_int n,
-                           Td& dA,
-                           const rocblas_int lda,
-                           const rocblas_stride stA,
-                           Sd& dD,
-                           const rocblas_stride stD,
-                           Sd& dE,
-                           const rocblas_stride stE,
-                           Id& dinfo,
-                           const rocblas_int bc,
-                           Th& hA,
-                           Sh& hD,
-                           Ih& hinfo,
-                           double* gpu_time_used,
-                           double* cpu_time_used,
-                           const rocblas_int hot_calls,
-                           const bool perf)
+void syevd_heevd_getPerfData(const rocblas_handle handle,
+                             const rocblas_evect evect,
+                             const rocblas_fill uplo,
+                             const rocblas_int n,
+                             Td& dA,
+                             const rocblas_int lda,
+                             const rocblas_stride stA,
+                             Sd& dD,
+                             const rocblas_stride stD,
+                             Sd& dE,
+                             const rocblas_stride stE,
+                             Id& dinfo,
+                             const rocblas_int bc,
+                             Th& hA,
+                             Sh& hD,
+                             Ih& hinfo,
+                             double* gpu_time_used,
+                             double* cpu_time_used,
+                             const rocblas_int hot_calls,
+                             const bool perf)
 {
     constexpr bool COMPLEX = is_complex<T>;
     using S = decltype(std::real(T{}));
 
-    int sizeE = 3 * n - 1;
-    int lwork = (COMPLEX ? 2 * n - 1 : 0);
+    int sizeE, lwork;
+    if(!COMPLEX)
+    {
+        sizeE = (evect == rocblas_evect_none ? 2 * n + 1 : 1 + 6 * n + 2 * n * n);
+        lwork = 0;
+    }
+    else
+    {
+        sizeE = (evect == rocblas_evect_none ? n : 1 + 5 * n + 2 * n * n);
+        lwork = (evect == rocblas_evect_none ? n + 1 : 2 * n + n * n);
+    }
+    int liwork = (evect == rocblas_evect_none ? 1 : 3 + 5 * n);
+
     std::vector<T> work(lwork);
     std::vector<S> hE(sizeE);
+    std::vector<int> iwork(liwork);
     std::vector<T> A;
 
     if(!perf)
     {
-        syev_heev_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
+        syevd_heevd_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
-            cblas_syev_heev<T>(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, hE.data(),
-                               sizeE, hinfo[b]);
+            cblas_syevd_heevd<T>(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, hE.data(),
+                                 sizeE, iwork.data(), liwork, hinfo[b]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    syev_heev_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
+    syevd_heevd_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        syev_heev_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
+        syevd_heevd_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
-        CHECK_ROCBLAS_ERROR(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, dA.data(), lda, stA,
-                                                dD.data(), stD, dE.data(), stE, dinfo.data(), bc));
+        CHECK_ROCBLAS_ERROR(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, dA.data(), lda, stA,
+                                                  dD.data(), stD, dE.data(), stE, dinfo.data(), bc));
     }
 
     // gpu-lapack performance
@@ -329,18 +353,18 @@ void syev_heev_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        syev_heev_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
+        syevd_heevd_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
         start = get_time_us_sync(stream);
-        rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, dA.data(), lda, stA, dD.data(), stD,
-                            dE.data(), stE, dinfo.data(), bc);
+        rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, dA.data(), lda, stA, dD.data(), stD,
+                              dE.data(), stE, dinfo.data(), bc);
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_syev_heev(Arguments& argus)
+void testing_syevd_heevd(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 
@@ -363,14 +387,14 @@ void testing_syev_heev(Arguments& argus)
     if(uplo == rocblas_fill_full || evect == rocblas_evect_tridiagonal)
     {
         if(BATCHED)
-            EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n,
-                                                      (T* const*)nullptr, lda, stA, (S*)nullptr, stD,
-                                                      (S*)nullptr, stE, (rocblas_int*)nullptr, bc),
-                                  rocblas_status_invalid_value);
+            EXPECT_ROCBLAS_STATUS(
+                rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, (T* const*)nullptr, lda, stA,
+                                      (S*)nullptr, stD, (S*)nullptr, stE, (rocblas_int*)nullptr, bc),
+                rocblas_status_invalid_value);
         else
-            EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, (T*)nullptr,
-                                                      lda, stA, (S*)nullptr, stD, (S*)nullptr, stE,
-                                                      (rocblas_int*)nullptr, bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n,
+                                                        (T*)nullptr, lda, stA, (S*)nullptr, stD,
+                                                        (S*)nullptr, stE, (rocblas_int*)nullptr, bc),
                                   rocblas_status_invalid_value);
 
         if(argus.timing)
@@ -393,14 +417,14 @@ void testing_syev_heev(Arguments& argus)
     if(invalid_size)
     {
         if(BATCHED)
-            EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n,
-                                                      (T* const*)nullptr, lda, stA, (S*)nullptr, stD,
-                                                      (S*)nullptr, stE, (rocblas_int*)nullptr, bc),
-                                  rocblas_status_invalid_size);
+            EXPECT_ROCBLAS_STATUS(
+                rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, (T* const*)nullptr, lda, stA,
+                                      (S*)nullptr, stD, (S*)nullptr, stE, (rocblas_int*)nullptr, bc),
+                rocblas_status_invalid_size);
         else
-            EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, (T*)nullptr,
-                                                      lda, stA, (S*)nullptr, stD, (S*)nullptr, stE,
-                                                      (rocblas_int*)nullptr, bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n,
+                                                        (T*)nullptr, lda, stA, (S*)nullptr, stD,
+                                                        (S*)nullptr, stE, (rocblas_int*)nullptr, bc),
                                   rocblas_status_invalid_size);
 
         if(argus.timing)
@@ -414,13 +438,13 @@ void testing_syev_heev(Arguments& argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)
-            CHECK_ALLOC_QUERY(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n,
-                                                  (T* const*)nullptr, lda, stA, (S*)nullptr, stD,
-                                                  (S*)nullptr, stE, (rocblas_int*)nullptr, bc));
+            CHECK_ALLOC_QUERY(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n,
+                                                    (T* const*)nullptr, lda, stA, (S*)nullptr, stD,
+                                                    (S*)nullptr, stE, (rocblas_int*)nullptr, bc));
         else
-            CHECK_ALLOC_QUERY(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, (T*)nullptr, lda,
-                                                  stA, (S*)nullptr, stD, (S*)nullptr, stE,
-                                                  (rocblas_int*)nullptr, bc));
+            CHECK_ALLOC_QUERY(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, (T*)nullptr,
+                                                    lda, stA, (S*)nullptr, stD, (S*)nullptr, stE,
+                                                    (rocblas_int*)nullptr, bc));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
@@ -455,9 +479,9 @@ void testing_syev_heev(Arguments& argus)
         // check quick return
         if(n == 0 || bc == 0)
         {
-            EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, dA.data(),
-                                                      lda, stA, dD.data(), stD, dE.data(), stE,
-                                                      dinfo.data(), bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, dA.data(),
+                                                        lda, stA, dD.data(), stD, dE.data(), stE,
+                                                        dinfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 ROCSOLVER_BENCH_INFORM(0);
@@ -468,17 +492,17 @@ void testing_syev_heev(Arguments& argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
         {
-            syev_heev_getError<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE, stE,
-                                           dinfo, bc, hA, hAres, hD, hDres, hinfo, hinfoRes,
-                                           &max_error);
+            syevd_heevd_getError<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE, stE,
+                                             dinfo, bc, hA, hAres, hD, hDres, hinfo, hinfoRes,
+                                             &max_error);
         }
 
         // collect performance data
         if(argus.timing)
         {
-            syev_heev_getPerfData<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE,
-                                              stE, dinfo, bc, hA, hD, hinfo, &gpu_time_used,
-                                              &cpu_time_used, hot_calls, argus.perf);
+            syevd_heevd_getPerfData<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE,
+                                                stE, dinfo, bc, hA, hD, hinfo, &gpu_time_used,
+                                                &cpu_time_used, hot_calls, argus.perf);
         }
     }
 
@@ -494,9 +518,9 @@ void testing_syev_heev(Arguments& argus)
         // check quick return
         if(n == 0 || bc == 0)
         {
-            EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, uplo, n, dA.data(),
-                                                      lda, stA, dD.data(), stD, dE.data(), stE,
-                                                      dinfo.data(), bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, evect, uplo, n, dA.data(),
+                                                        lda, stA, dD.data(), stD, dE.data(), stE,
+                                                        dinfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 ROCSOLVER_BENCH_INFORM(0);
@@ -507,17 +531,17 @@ void testing_syev_heev(Arguments& argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
         {
-            syev_heev_getError<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE, stE,
-                                           dinfo, bc, hA, hAres, hD, hDres, hinfo, hinfoRes,
-                                           &max_error);
+            syevd_heevd_getError<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE, stE,
+                                             dinfo, bc, hA, hAres, hD, hDres, hinfo, hinfoRes,
+                                             &max_error);
         }
 
         // collect performance data
         if(argus.timing)
         {
-            syev_heev_getPerfData<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE,
-                                              stE, dinfo, bc, hA, hD, hinfo, &gpu_time_used,
-                                              &cpu_time_used, hot_calls, argus.perf);
+            syevd_heevd_getPerfData<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE,
+                                                stE, dinfo, bc, hA, hD, hinfo, &gpu_time_used,
+                                                &cpu_time_used, hot_calls, argus.perf);
         }
     }
 
