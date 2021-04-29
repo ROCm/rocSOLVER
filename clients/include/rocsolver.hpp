@@ -4253,9 +4253,10 @@ inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
                                             rocblas_int bc)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_ssygvd_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb, stB, D, stD, E, stE, info, bc);
+        return rocsolver_ssygvd_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb,
+                                                stB, D, stD, E, stE, info, bc);
     else
-        return rocblas_status_not_implemented; // rocsolver_ssygvd(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E, info);
+        return rocsolver_ssygvd(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E, info);
 }
 
 inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
@@ -4278,9 +4279,10 @@ inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
                                             rocblas_int bc)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_dsygvd_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb, stB, D, stD, E, stE, info, bc);
+        return rocsolver_dsygvd_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb,
+                                                stB, D, stD, E, stE, info, bc);
     else
-        return rocblas_status_not_implemented; // rocsolver_dsygvd(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E, info);
+        return rocsolver_dsygvd(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E, info);
 }
 
 inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
@@ -4303,9 +4305,10 @@ inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
                                             rocblas_int bc)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_chegvd_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb, stB, D, stD, E, stE, info, bc);
+        return rocsolver_chegvd_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb,
+                                                stB, D, stD, E, stE, info, bc);
     else
-        return rocblas_status_not_implemented; // rocsolver_chegvd(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E, info);
+        return rocsolver_chegvd(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E, info);
 }
 
 inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
@@ -4328,9 +4331,10 @@ inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
                                             rocblas_int bc)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_zhegvd_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb, stB, D, stD, E, stE, info, bc);
+        return rocsolver_zhegvd_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb,
+                                                stB, D, stD, E, stE, info, bc);
     else
-        return rocblas_status_not_implemented; // rocsolver_zhegvd(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E, info);
+        return rocsolver_zhegvd(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E, info);
 }
 
 // batched
@@ -4353,7 +4357,8 @@ inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
                                             rocblas_int* info,
                                             rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_ssygvd_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, D, stD, E, stE, info, bc);
+    return rocsolver_ssygvd_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, D, stD, E, stE,
+                                    info, bc);
 }
 
 inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
@@ -4375,7 +4380,8 @@ inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
                                             rocblas_int* info,
                                             rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_dsygvd_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, D, stD, E, stE, info, bc);
+    return rocsolver_dsygvd_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, D, stD, E, stE,
+                                    info, bc);
 }
 
 inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
@@ -4397,7 +4403,8 @@ inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
                                             rocblas_int* info,
                                             rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_chegvd_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, D, stD, E, stE, info, bc);
+    return rocsolver_chegvd_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, D, stD, E, stE,
+                                    info, bc);
 }
 
 inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
@@ -4419,6 +4426,7 @@ inline rocblas_status rocsolver_sygvd_hegvd(bool STRIDED,
                                             rocblas_int* info,
                                             rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_zhegvd_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, D, stD, E, stE, info, bc);
+    return rocsolver_zhegvd_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, D, stD, E, stE,
+                                    info, bc);
 }
 /********************************************************/
