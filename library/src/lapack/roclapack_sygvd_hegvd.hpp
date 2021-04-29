@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "roclapack_syevd_heevd.hpp"
 #include "roclapack_sygv_hegv.hpp"
 
 template <bool BATCHED, typename T, typename S>
@@ -22,6 +23,7 @@ void rocsolver_sygvd_hegvd_getMemorySize(const rocblas_eform itype,
                                          size_t* size_work2,
                                          size_t* size_work3,
                                          size_t* size_work4,
+                                         size_t* size_tau,
                                          size_t* size_pivots_workArr,
                                          size_t* size_iinfo)
 {
@@ -33,6 +35,7 @@ void rocsolver_sygvd_hegvd_getMemorySize(const rocblas_eform itype,
         *size_work2 = 0;
         *size_work3 = 0;
         *size_work4 = 0;
+        *size_tau = 0;
         *size_pivots_workArr = 0;
         *size_iinfo = 0;
         return;
@@ -55,8 +58,8 @@ void rocsolver_sygvd_hegvd_getMemorySize(const rocblas_eform itype,
     *size_work4 = max(*size_work4, temp4);
 
     // requirements for calling SYEV/HEEV
-    rocsolver_syev_heev_getMemorySize<BATCHED, T, S>(evect, uplo, n, batch_count, &unused, &temp1,
-                                                     &temp2, &temp3, &temp4, &temp5);
+    rocsolver_syevd_heevd_getMemorySize<BATCHED, T, S>(evect, uplo, n, batch_count, &unused, &temp1,
+                                                       &temp2, &temp3, &temp4, size_tau, &temp5);
     *size_work1 = max(*size_work1, temp1);
     *size_work2 = max(*size_work2, temp2);
     *size_work3 = max(*size_work3, temp3);
@@ -103,6 +106,7 @@ rocblas_status rocsolver_sygvd_hegvd_template(rocblas_handle handle,
                                               void* work2,
                                               void* work3,
                                               void* work4,
+                                              T* tau,
                                               void* pivots_workArr,
                                               rocblas_int* iinfo,
                                               bool optim_mem)
@@ -152,18 +156,12 @@ rocblas_status rocsolver_sygvd_hegvd_template(rocblas_handle handle,
         handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
         scalars, work1, work2, work3, work4, optim_mem);
 
-    rocsolver_syev_heev_template<BATCHED, STRIDED, T>(
+    rocsolver_syevd_heevd_template<BATCHED, STRIDED, T>(
         handle, evect, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE, iinfo, batch_count,
-        scalars, work1, (T*)work2, (T*)work3, (T*)work4, (T**)pivots_workArr);
+        scalars, work1, work2, work3, (T*)work4, tau, (T**)pivots_workArr);
 
     // combine info from POTRF with info from SYEV/HEEV
     hipLaunchKernelGGL(sygv_update_info, gridReset, threads, 0, stream, info, iinfo, n, batch_count);
-
-    /** (TODO: Similarly, if only neig < n eigenvalues converged, TRSMM or TRMM below should not
-        work with the entire matrix. Need to find a way to do this efficiently; for now we ignore
-        iinfo and set neig = n) **/
-
-    rocblas_int neig = n; //number of converged eigenvalues
 
     // backtransform eigenvectors
     if(evect == rocblas_evect_original)
@@ -174,7 +172,7 @@ rocblas_status rocsolver_sygvd_hegvd_template(rocblas_handle handle,
                 = (uplo == rocblas_fill_upper ? rocblas_operation_none
                                               : rocblas_operation_conjugate_transpose);
             rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, uplo, trans,
-                                         rocblas_diagonal_non_unit, n, neig, &one, B, shiftB, ldb,
+                                         rocblas_diagonal_non_unit, n, n, &one, B, shiftB, ldb,
                                          strideB, A, shiftA, lda, strideA, batch_count, optim_mem,
                                          work1, work2, work3, work4);
         }
@@ -184,8 +182,8 @@ rocblas_status rocsolver_sygvd_hegvd_template(rocblas_handle handle,
                 = (uplo == rocblas_fill_upper ? rocblas_operation_conjugate_transpose
                                               : rocblas_operation_none);
             rocblasCall_trmm<BATCHED, STRIDED, T>(
-                handle, rocblas_side_left, uplo, trans, rocblas_diagonal_non_unit, n, neig, &one, 0,
-                B, shiftB, ldb, strideB, A, shiftA, lda, strideA, batch_count, (T**)pivots_workArr);
+                handle, rocblas_side_left, uplo, trans, rocblas_diagonal_non_unit, n, n, &one, 0, B,
+                shiftB, ldb, strideB, A, shiftA, lda, strideA, batch_count, (T**)pivots_workArr);
         }
     }
 
