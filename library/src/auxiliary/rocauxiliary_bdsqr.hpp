@@ -544,7 +544,8 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                                         const rocblas_stride strideC,
                                         rocblas_int* info,
                                         const rocblas_int batch_count,
-                                        S* work)
+                                        S* work,
+                                        T** workArr = nullptr)
 {
     ROCSOLVER_ENTER("bdsqr", "uplo:", uplo, "n:", n, "nv:", nv, "nu:", nu, "nc:", nc,
                     "shiftV:", shiftV, "ldv:", ldv, "shiftU:", shiftU, "ldu:", ldu,
@@ -591,4 +592,86 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                        shiftC, ldc, strideC, info, maxiter, eps, sfm, tol, minshift, work, strideW);
 
     return rocblas_status_success;
+}
+
+/** Adapts U and V to be of the same type **/
+template <typename T, typename S>
+void rocsolver_bdsqr_template(rocblas_handle handle,
+                              const rocblas_fill uplo,
+                              const rocblas_int n,
+                              const rocblas_int nv,
+                              const rocblas_int nu,
+                              const rocblas_int nc,
+                              S* D,
+                              const rocblas_stride strideD,
+                              S* E,
+                              const rocblas_stride strideE,
+                              T* const V[],
+                              const rocblas_int shiftV,
+                              const rocblas_int ldv,
+                              const rocblas_stride strideV,
+                              T* U,
+                              const rocblas_int shiftU,
+                              const rocblas_int ldu,
+                              const rocblas_stride strideU,
+                              T* const C[],
+                              const rocblas_int shiftC,
+                              const rocblas_int ldc,
+                              const rocblas_stride strideC,
+                              rocblas_int* info,
+                              const rocblas_int batch_count,
+                              S* work,
+                              T** workArr)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, U, strideU,
+                       batch_count);
+
+    rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, 0, D, strideD, E, strideE, V, shiftV, ldv,
+                                strideV, (T* const*)workArr, shiftU, ldu, strideU, C, shiftC, ldc,
+                                strideC, info, batch_count, work);
+}
+
+/** Adapts U and V to be of the same type **/
+template <typename T, typename S>
+void rocsolver_bdsqr_template(rocblas_handle handle,
+                              const rocblas_fill uplo,
+                              const rocblas_int n,
+                              const rocblas_int nv,
+                              const rocblas_int nu,
+                              const rocblas_int nc,
+                              S* D,
+                              const rocblas_stride strideD,
+                              S* E,
+                              const rocblas_stride strideE,
+                              T* V,
+                              const rocblas_int shiftV,
+                              const rocblas_int ldv,
+                              const rocblas_stride strideV,
+                              T* const U[],
+                              const rocblas_int shiftU,
+                              const rocblas_int ldu,
+                              const rocblas_stride strideU,
+                              T* const C[],
+                              const rocblas_int shiftC,
+                              const rocblas_int ldc,
+                              const rocblas_stride strideC,
+                              rocblas_int* info,
+                              const rocblas_int batch_count,
+                              S* work,
+                              T** workArr)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, V, strideV,
+                       batch_count);
+
+    rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, nc, D, strideD, E, strideE,
+                                (T* const*)workArr, shiftV, ldv, strideV, U, shiftU, ldu, strideU,
+                                C, shiftC, ldc, strideC, info, batch_count, work);
 }

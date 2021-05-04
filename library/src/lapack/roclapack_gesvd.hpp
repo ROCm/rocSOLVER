@@ -78,220 +78,6 @@ void local_geqrlq_template(rocblas_handle handle,
                                                    Abyx_norms_trfact, diag_tmptr, workArr);
 }
 
-/** wrapper to BDSQR_TEMPLATE **/
-template <typename T, typename TT>
-void local_bdsqr_template(rocblas_handle handle,
-                          const rocblas_fill uplo,
-                          const rocblas_int n,
-                          const rocblas_int nv,
-                          const rocblas_int nu,
-                          TT* D,
-                          const rocblas_stride strideD,
-                          TT* E,
-                          const rocblas_stride strideE,
-                          T* V,
-                          const rocblas_int shiftV,
-                          const rocblas_int ldv,
-                          const rocblas_stride strideV,
-                          T* U,
-                          const rocblas_int shiftU,
-                          const rocblas_int ldu,
-                          const rocblas_stride strideU,
-                          rocblas_int* info,
-                          const rocblas_int batch_count,
-                          TT* work,
-                          T** workArr)
-{
-    rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, 0, D, strideD, E, strideE, V, shiftV, ldv,
-                                strideV, U, shiftU, ldu, strideU, (T*)nullptr, 0, 1, 1, info,
-                                batch_count, work);
-}
-
-/** wrapper to BDSQR_TEMPLATE
-    adapts U and V to be of the same type **/
-template <typename T, typename TT>
-void local_bdsqr_template(rocblas_handle handle,
-                          const rocblas_fill uplo,
-                          const rocblas_int n,
-                          const rocblas_int nv,
-                          const rocblas_int nu,
-                          TT* D,
-                          const rocblas_stride strideD,
-                          TT* E,
-                          const rocblas_stride strideE,
-                          T* const V[],
-                          const rocblas_int shiftV,
-                          const rocblas_int ldv,
-                          const rocblas_stride strideV,
-                          T* U,
-                          const rocblas_int shiftU,
-                          const rocblas_int ldu,
-                          const rocblas_stride strideU,
-                          rocblas_int* info,
-                          const rocblas_int batch_count,
-                          TT* work,
-                          T** workArr)
-{
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
-
-    rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, U, strideU,
-                       batch_count);
-
-    rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, 0, D, strideD, E, strideE, V, shiftV, ldv,
-                                strideV, (T* const*)workArr, shiftU, ldu, strideU,
-                                (T* const*)nullptr, 0, 1, 1, info, batch_count, work);
-}
-
-/** wrapper to BDSQR_TEMPLATE
-    adapts U and V to be of the same type **/
-template <typename T, typename TT>
-void local_bdsqr_template(rocblas_handle handle,
-                          const rocblas_fill uplo,
-                          const rocblas_int n,
-                          const rocblas_int nv,
-                          const rocblas_int nu,
-                          TT* D,
-                          const rocblas_stride strideD,
-                          TT* E,
-                          const rocblas_stride strideE,
-                          T* V,
-                          const rocblas_int shiftV,
-                          const rocblas_int ldv,
-                          const rocblas_stride strideV,
-                          T* const U[],
-                          const rocblas_int shiftU,
-                          const rocblas_int ldu,
-                          const rocblas_stride strideU,
-                          rocblas_int* info,
-                          const rocblas_int batch_count,
-                          TT* work,
-                          T** workArr)
-{
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
-
-    rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, V, strideV,
-                       batch_count);
-
-    rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, 0, D, strideD, E, strideE,
-                                (T* const*)workArr, shiftV, ldv, strideV, U, shiftU, ldu, strideU,
-                                (T* const*)nullptr, 0, 1, 1, info, batch_count, work);
-}
-
-/** wrapper to ORMBR_UNMBR_TEMPLATE **/
-template <bool BATCHED, bool STRIDED, typename T>
-void local_ormbr_unmbr_template(rocblas_handle handle,
-                                const rocblas_storev storev,
-                                const rocblas_side side,
-                                const rocblas_operation trans,
-                                const rocblas_int m,
-                                const rocblas_int n,
-                                const rocblas_int k,
-                                T* A,
-                                const rocblas_int shiftA,
-                                const rocblas_int lda,
-                                const rocblas_stride strideA,
-                                T* ipiv,
-                                const rocblas_stride strideP,
-                                T* C,
-                                const rocblas_int shiftC,
-                                const rocblas_int ldc,
-                                const rocblas_stride strideC,
-                                const rocblas_int batch_count,
-                                T* scalars,
-                                T* AbyxORwork,
-                                T* diagORtmptr,
-                                T* trfact,
-                                T** workArr)
-{
-    rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
-        handle, storev, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C, shiftC,
-        ldc, strideC, batch_count, scalars, AbyxORwork, diagORtmptr, trfact, workArr);
-}
-
-/** wrapper to ORMBR_UNMBR_TEMPLATE
-    Adapts A and C to be of the same type **/
-template <bool BATCHED, bool STRIDED, typename T>
-void local_ormbr_unmbr_template(rocblas_handle handle,
-                                const rocblas_storev storev,
-                                const rocblas_side side,
-                                const rocblas_operation trans,
-                                const rocblas_int m,
-                                const rocblas_int n,
-                                const rocblas_int k,
-                                T* const A[],
-                                const rocblas_int shiftA,
-                                const rocblas_int lda,
-                                const rocblas_stride strideA,
-                                T* ipiv,
-                                const rocblas_stride strideP,
-                                T* C,
-                                const rocblas_int shiftC,
-                                const rocblas_int ldc,
-                                const rocblas_stride strideC,
-                                const rocblas_int batch_count,
-                                T* scalars,
-                                T* AbyxORwork,
-                                T* diagORtmptr,
-                                T* trfact,
-                                T** workArr)
-{
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
-
-    rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, C, strideC,
-                       batch_count);
-
-    rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
-        handle, storev, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP,
-        (T* const*)workArr, shiftC, ldc, strideC, batch_count, scalars, AbyxORwork, diagORtmptr,
-        trfact, (workArr + batch_count));
-}
-
-/** wrapper to ORMBR_UNMBR_TEMPLATE
-    Adapts A and C to be of the same type **/
-template <bool BATCHED, bool STRIDED, typename T>
-void local_ormbr_unmbr_template(rocblas_handle handle,
-                                const rocblas_storev storev,
-                                const rocblas_side side,
-                                const rocblas_operation trans,
-                                const rocblas_int m,
-                                const rocblas_int n,
-                                const rocblas_int k,
-                                T* A,
-                                const rocblas_int shiftA,
-                                const rocblas_int lda,
-                                const rocblas_stride strideA,
-                                T* ipiv,
-                                const rocblas_stride strideP,
-                                T* const C[],
-                                const rocblas_int shiftC,
-                                const rocblas_int ldc,
-                                const rocblas_stride strideC,
-                                const rocblas_int batch_count,
-                                T* scalars,
-                                T* AbyxORwork,
-                                T* diagORtmptr,
-                                T* trfact,
-                                T** workArr)
-{
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
-
-    rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, A, strideA,
-                       batch_count);
-
-    rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
-        handle, storev, side, trans, m, n, k, (T* const*)workArr, shiftA, lda, strideA, ipiv,
-        strideP, C, shiftC, ldc, strideC, batch_count, scalars, AbyxORwork, diagORtmptr, trfact,
-        (workArr + batch_count));
-}
-
 /** Argument checking **/
 template <typename T, typename TT, typename W>
 rocblas_status rocsolver_gesvd_argCheck(rocblas_handle handle,
@@ -728,13 +514,15 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
             //*** STAGE 5: Compute singular values and vectors from the bidiagonal form ***//
             if(row)
-                local_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, S, strideS, E,
-                                        strideE, A, shiftA, lda, strideA, U, shiftU, ldu, strideU,
-                                        info, batch_count, (TT*)work_workArr, workArr);
+                rocsolver_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, 0, S, strideS, E,
+                                            strideE, A, shiftA, lda, strideA, U, shiftU, ldu,
+                                            strideU, (W) nullptr, 0, 1, 1, info, batch_count,
+                                            (TT*)work_workArr, workArr);
             else
-                local_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, S, strideS, E,
-                                        strideE, V, shiftV, ldv, strideV, A, shiftA, lda, strideA,
-                                        info, batch_count, (TT*)work_workArr, workArr);
+                rocsolver_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, 0, S, strideS, E,
+                                            strideE, V, shiftV, ldv, strideV, A, shiftA, lda,
+                                            strideA, (W) nullptr, 0, 1, 1, info, batch_count,
+                                            (TT*)work_workArr, workArr);
 
             //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
             if(othervS || othervA)
@@ -812,13 +600,15 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
             //*** STAGE 5: Compute singular values and vectors from the bidiagonal form ***//
             if(row)
-                local_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, S, strideS, E,
-                                        strideE, bufferC, shiftC, ldc, strideC, bufferT, shiftT,
-                                        ldt, strideT, info, batch_count, (TT*)work_workArr, workArr);
+                rocsolver_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, 0, S, strideS, E,
+                                            strideE, bufferC, shiftC, ldc, strideC, bufferT, shiftT,
+                                            ldt, strideT, (T*)nullptr, 0, 1, 1, info, batch_count,
+                                            (TT*)work_workArr, workArr);
             else
-                local_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, S, strideS, E,
-                                        strideE, bufferT, shiftT, ldt, strideT, bufferC, shiftC,
-                                        ldc, strideC, info, batch_count, (TT*)work_workArr, workArr);
+                rocsolver_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, 0, S, strideS, E,
+                                            strideE, bufferT, shiftT, ldt, strideT, bufferC, shiftC,
+                                            ldc, strideC, (T*)nullptr, 0, 1, 1, info, batch_count,
+                                            (TT*)work_workArr, workArr);
 
             //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
             if(leadvO)
@@ -967,18 +757,18 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             if(othervS || othervA || (leadvO && othervN))
             {
                 if(leadvO)
-                    local_ormbr_unmbr_template<BATCHED, STRIDED>(
+                    rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
                         handle, storev_lead, side, trans, m, n, k, bufferT, shiftT, ldt, strideT,
                         (tau + offset_lead), k, A, shiftA, lda, strideA, batch_count, scalars,
                         Abyx_norms_tmptr, diag_tmptr_Y, Abyx_norms_trfact_X, workArr);
                 else
-                    local_ormbr_unmbr_template<false, STRIDED>(
+                    rocsolver_ormbr_unmbr_template<false, STRIDED>(
                         handle, storev_lead, side, trans, m, n, k, bufferT, shiftT, ldt, strideT,
                         (tau + offset_lead), k, UV, shiftUV, lduv, strideUV, batch_count, scalars,
                         Abyx_norms_tmptr, diag_tmptr_Y, Abyx_norms_trfact_X, workArr);
             }
             else
-                local_ormbr_unmbr_template<BATCHED, STRIDED>(
+                rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
                     handle, storev_lead, side, trans, m, n, k, A, shiftA, lda, strideA,
                     (tau + offset_lead), k, UV, shiftUV, lduv, strideUV, batch_count, scalars,
                     Abyx_norms_tmptr, diag_tmptr_Y, Abyx_norms_trfact_X, workArr);
@@ -999,21 +789,24 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             uplo = rocblas_fill_upper;
             if(!leftvO && !rightvO)
             {
-                local_bdsqr_template<T>(handle, uplo, k, nv, nu, S, strideS, E, strideE, V, shiftV,
-                                        ldv, strideV, U, shiftU, ldu, strideU, info, batch_count,
-                                        (TT*)work_workArr, workArr);
+                rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, V,
+                                            shiftV, ldv, strideV, U, shiftU, ldu, strideU,
+                                            (T*)nullptr, 0, 1, 1, info, batch_count,
+                                            (TT*)work_workArr, workArr);
             }
             else if(leftvO && !rightvO)
             {
-                local_bdsqr_template<T>(handle, uplo, k, nv, nu, S, strideS, E, strideE, V, shiftV,
-                                        ldv, strideV, A, shiftA, lda, strideA, info, batch_count,
-                                        (TT*)work_workArr, workArr);
+                rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, V,
+                                            shiftV, ldv, strideV, A, shiftA, lda, strideA,
+                                            (W) nullptr, 0, 1, 1, info, batch_count,
+                                            (TT*)work_workArr, workArr);
             }
             else
             {
-                local_bdsqr_template<T>(handle, uplo, k, nv, nu, S, strideS, E, strideE, A, shiftA,
-                                        lda, strideA, U, shiftU, ldu, strideU, info, batch_count,
-                                        (TT*)work_workArr, workArr);
+                rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, A,
+                                            shiftA, lda, strideA, U, shiftU, ldu, strideU,
+                                            (W) nullptr, 0, 1, 1, info, batch_count,
+                                            (TT*)work_workArr, workArr);
             }
 
             //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
@@ -1084,23 +877,23 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
         //*** STAGE 5: Compute singular values and vectors from the bidiagonal form ***//
         if(!leftvO && !rightvO)
         {
-            local_bdsqr_template<T>(handle, uplo, k, nv, nu, S, strideS, E, strideE, V, shiftV, ldv,
-                                    strideV, U, shiftU, ldu, strideU, info, batch_count,
-                                    (TT*)work_workArr, workArr);
+            rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, V,
+                                        shiftV, ldv, strideV, U, shiftU, ldu, strideU, (T*)nullptr,
+                                        0, 1, 1, info, batch_count, (TT*)work_workArr, workArr);
         }
 
         else if(leftvO && !rightvO)
         {
-            local_bdsqr_template<T>(handle, uplo, k, nv, nu, S, strideS, E, strideE, V, shiftV, ldv,
-                                    strideV, A, shiftA, lda, strideA, info, batch_count,
-                                    (TT*)work_workArr, workArr);
+            rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, V,
+                                        shiftV, ldv, strideV, A, shiftA, lda, strideA, (W) nullptr,
+                                        0, 1, 1, info, batch_count, (TT*)work_workArr, workArr);
         }
 
         else
         {
-            local_bdsqr_template<T>(handle, uplo, k, nv, nu, S, strideS, E, strideE, A, shiftA, lda,
-                                    strideA, U, shiftU, ldu, strideU, info, batch_count,
-                                    (TT*)work_workArr, workArr);
+            rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, A,
+                                        shiftA, lda, strideA, U, shiftU, ldu, strideU, (W) nullptr,
+                                        0, 1, 1, info, batch_count, (TT*)work_workArr, workArr);
         }
 
         //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
