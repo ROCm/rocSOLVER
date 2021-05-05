@@ -3520,6 +3520,93 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsteqr(rocblas_handle handle,
                                                  rocblas_int* info);
 //! @}
 
+/*! @{
+    \brief STEDC computes the eigenvalues and (optionally) eigenvectors of
+    a symmetric tridiagonal matrix.
+
+    \details
+    This function uses the divide and conquer method to compute the eigenvectors.
+    The eigenvalues are returned in increasing order.
+
+    The matrix is not represented explicitly, but rather as the array of
+    diagonal elements D and the array of symmetric off-diagonal elements E
+    as returned by, e.g., SYTRD or HETRD. If the tridiagonal matrix is the
+    reduced form of a full symmetric/Hermitian matrix as returned by, e.g.,
+    SYTRD or HETRD, then the eigenvectors of the original matrix can also
+    be computed, depending on the value of evect.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    evect     #rocblas_evect.\n
+              Specifies how the eigenvectors are computed.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of the tridiagonal matrix.
+    @param[inout]
+    D         pointer to real type. Array on the GPU of dimension n.\n
+              On entry, the diagonal elements of the matrix.
+              On exit, if info = 0, the eigenvalues in increasing order.
+    @param[inout]
+    E         pointer to real type. Array on the GPU of dimension n-1.\n
+              On entry, the off-diagonal elements of the matrix.
+              On exit, if info = 0, the values on this array are destroyed.
+    @param[inout]
+    C         pointer to type. Array on the GPU of dimension ldc*n.\n
+              On entry, if evect is original, the orthogonal/unitary matrix
+              used for the reduction to tridiagonal form as returned by, e.g.,
+              ORGTR or UNGTR.
+              On exit, f info = 0, it is overwritten with the eigenvectors of the original
+              symmetric/Hermitian matrix (if evect is original), or the
+              eigenvectors of the tridiagonal matrix (if evect is tridiagonal).
+              Not referenced if evect is none.
+    @param[in]
+    ldc       rocblas_int. ldc >= n if evect is original or tridiagonal.\n
+              Specifies the leading dimension of C. Not referenced if evect is none.
+    @param[out]
+    info      pointer to a rocblas_int on the GPU.\n
+              If info = 0, successful exit.
+              If info = i > 0, STEDC failed to compute an eigenvalue on the sub-matrix formed by  
+              the rows and columns info/(n+1) through mod(info,n+1). 
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sstedc(rocblas_handle handle,
+                                                 const rocblas_evect evect,
+                                                 const rocblas_int n,
+                                                 float* D,
+                                                 float* E,
+                                                 float* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dstedc(rocblas_handle handle,
+                                                 const rocblas_evect evect,
+                                                 const rocblas_int n,
+                                                 double* D,
+                                                 double* E,
+                                                 double* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cstedc(rocblas_handle handle,
+                                                 const rocblas_evect evect,
+                                                 const rocblas_int n,
+                                                 float* D,
+                                                 float* E,
+                                                 rocblas_float_complex* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
+                                                 const rocblas_evect evect,
+                                                 const rocblas_int n,
+                                                 double* D,
+                                                 double* E,
+                                                 rocblas_double_complex* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int* info);
+//! @}
+
 /*
  * ===========================================================================
  *      LAPACK functions
