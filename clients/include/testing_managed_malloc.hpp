@@ -181,6 +181,16 @@ void testing_managed_malloc(Arguments& argus)
 
     rocblas_int hot_calls = argus.iters;
 
+    // check managed memory enablement
+    int deviceID, hmm_enabled;
+    hipGetDevice(&deviceID);
+    hipDeviceGetAttribute(&hmm_enabled, hipDeviceAttributeManagedMemory, deviceID);
+    if(!hmm_enabled)
+    {
+        rocsolver_cout << "Managed memory not enabled on device. Skipping test..." << std::endl;
+        return;
+    }
+
     // check non-supported values
     // N/A
 

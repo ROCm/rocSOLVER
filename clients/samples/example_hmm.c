@@ -56,6 +56,19 @@ int main() {
   rocblas_handle handle;
   rocblas_create_handle(&handle);
 
+  // check for enablement of managed memory
+  int deviceID, hmm_enabled;
+  hipGetDevice(&deviceID);
+  hipDeviceGetAttribute(&hmm_enabled,
+                        hipDeviceAttributeManagedMemory,
+                        deviceID);
+  if (!hmm_enabled)
+  {
+    printf("Managed memory not enabled on device %i\n", deviceID);
+    rocblas_destroy_handle(handle);
+    return 0;
+  }
+
   // calculate the sizes of our arrays
   size_t size_piv = (M < N) ? M : N; // count of Householder scalars
 
