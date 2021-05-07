@@ -91,6 +91,13 @@ option( BUILD_CLIENTS_TESTS "Build rocSOLVER unit tests" OFF )
 option( BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmarks" OFF )
 option( BUILD_CLIENTS_SAMPLES "Build rocSOLVER samples" OFF )
 
+# FOR OPTIONAL CODE COVERAGE
+option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
+if(BUILD_CODE_COVERAGE)
+  add_compile_options(-g -fprofile-arcs -ftest-coverage)
+  add_link_options(-g --coverage)
+endif()
+
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
 message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
@@ -129,3 +136,57 @@ endif( )
 if( BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES )
   add_subdirectory( clients )
 endif( )
+
+
+#
+# ADDITIONAL TARGETS FOR CODE COVERAGE
+#
+# > make coverage_cleanup (clean coverage related files.)
+# > make coverage GTEST_FILTER=<>
+# will run:
+#  > make coverage_analysis GTEST_FILTER=<> (analyze tests)
+#  > make coverage_output (generate html documentation)
+#
+#
+
+
+#
+# Run coverage analysis
+#
+add_custom_target(coverage_analysis
+   COMMAND echo Coverage GTEST_FILTER=\${GTEST_FILTER}
+   COMMAND ./clients/staging/rocsolver-test --gtest_filter=\"\${GTEST_FILTER}\"
+   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+ )
+
+add_dependencies(coverage_analysis rocsolver)
+
+#
+# Prepare coverage output
+#
+add_custom_target(coverage_output
+    COMMAND mkdir -p lcoverage
+    COMMAND echo "\\#!/bin/bash" > llvm-gcov.sh
+    COMMAND echo "\\# THIS FILE HAS BEEN GENERATED" >> llvm-gcov.sh
+    COMMAND printf "exec /opt/rocm/llvm/bin/llvm-cov gcov $$\\@" >> llvm-gcov.sh
+    COMMAND chmod +x llvm-gcov.sh
+    )
+
+#
+# Generate coverage output.
+#
+add_custom_command(TARGET coverage_output
+  COMMAND lcov --directory . --base-directory . --gcov-tool ${CMAKE_BINARY_DIR}/llvm-gcov.sh --capture -o lcoverage/raw_main_coverage.info
+  COMMAND lcov --remove lcoverage/raw_main_coverage.info "'/opt/*'" "'/usr/*'" -o lcoverage/main_coverage.info
+  COMMAND genhtml --ignore-errors source lcoverage/main_coverage.info --output-directory lcoverage
+    )
+
+add_custom_target(coverage DEPENDS coverage_analysis coverage_output)
+
+#
+# Coverage cleanup
+#
+add_custom_target(coverage_cleanup
+    COMMAND rm -f `find ${CMAKE_BINARY_DIR} -name *.gcda`
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
