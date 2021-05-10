@@ -80,7 +80,6 @@ T* const* cast2constPointer(T** array)
     return array;
 }
 
-
 inline rocblas_int get_index(rocblas_int* intervals, rocblas_int max, rocblas_int dim)
 {
     rocblas_int i;
@@ -93,7 +92,6 @@ inline rocblas_int get_index(rocblas_int* intervals, rocblas_int max, rocblas_in
 
     return i;
 }
-
 
 #ifdef ROCSOLVER_VERIFY_ASSUMPTIONS
 // Ensure __assert_fail is declared.
