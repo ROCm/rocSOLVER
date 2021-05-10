@@ -54,7 +54,7 @@ Minimum required size
 In order to choose an appropriate amount of memory to allocate, rocSOLVER can be queried to determine
 the minimum amount of memory required for functions to complete. The query can be started by calling
 ``rocblas_start_device_memory_size_query``, followed by calls to the desired functions with appropriate
-problem sizes (``nullptr`` can be passed to the device pointer arguments). A final call to
+problem sizes (a null pointer can be passed to the device pointer arguments). A final call to
 ``rocblas_stop_device_memory_size_query`` will return the minimum required size.
 
 For example, the following code snippet will return the memory size required to solve a 1024*1024 linear
