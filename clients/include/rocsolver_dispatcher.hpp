@@ -40,7 +40,7 @@
 #include "testing_ormxl_unmxl.hpp"
 #include "testing_ormxr_unmxr.hpp"
 #include "testing_potf2_potrf.hpp"
-#include "testing_steqr.hpp"
+#include "testing_steqr_stedc.hpp"
 #include "testing_sterf.hpp"
 #include "testing_syev_heev.hpp"
 #include "testing_sygsx_hegsx.hpp"
@@ -75,7 +75,8 @@ class rocsolver_dispatcher
             {"latrd", testing_latrd<T>},
             {"labrd", testing_labrd<T>},
             {"bdsqr", testing_bdsqr<T>},
-            {"steqr", testing_steqr<T>},
+            {"steqr", testing_steqr_stedc<T, false>},
+            {"stedc", testing_steqr_stedc<T, true>},
             // potrf
             {"potf2", testing_potf2_potrf<false, false, 0, T>},
             {"potf2_batched", testing_potf2_potrf<true, true, 0, T>},

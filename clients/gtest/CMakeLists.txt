@@ -61,7 +61,7 @@ set(rocauxiliary_test_source
     bdsqr_gtest.cpp
     # tridiagonal matrices
     sterf_gtest.cpp
-    steqr_gtest.cpp
+    steqr_stedc_gtest.cpp
     latrd_gtest.cpp
     )
 

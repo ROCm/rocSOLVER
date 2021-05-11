@@ -3556,7 +3556,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsteqr(rocblas_handle handle,
               On entry, if evect is original, the orthogonal/unitary matrix
               used for the reduction to tridiagonal form as returned by, e.g.,
               ORGTR or UNGTR.
-              On exit, f info = 0, it is overwritten with the eigenvectors of the original
+              On exit, if info = 0, it is overwritten with the eigenvectors of the original
               symmetric/Hermitian matrix (if evect is original), or the
               eigenvectors of the tridiagonal matrix (if evect is tridiagonal).
               Not referenced if evect is none.
@@ -3566,8 +3566,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsteqr(rocblas_handle handle,
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
               If info = 0, successful exit.
-              If info = i > 0, STEDC failed to compute an eigenvalue on the sub-matrix formed by  
-              the rows and columns info/(n+1) through mod(info,n+1). 
+              If info = i > 0, STEDC failed to compute an eigenvalue on the sub-matrix formed by
+              the rows and columns info/(n+1) through mod(info,n+1).
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sstedc(rocblas_handle handle,
