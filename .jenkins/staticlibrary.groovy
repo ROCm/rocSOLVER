@@ -18,7 +18,7 @@ def runCI =
 
     prj.timeout.compile = 600
     prj.defaults.ccache = true
-    
+
     // customize for project
     prj.paths.build_command = './install.sh -c --static'
 
