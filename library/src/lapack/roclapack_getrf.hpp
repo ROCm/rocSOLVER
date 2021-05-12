@@ -14,7 +14,6 @@
 #include "roclapack_getf2.hpp"
 #include "rocsolver.h"
 
-
 template <bool ISBATCHED, bool PIVOT>
 rocblas_int getrf_get_blksize(rocblas_int dim)
 {
