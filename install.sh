@@ -72,7 +72,9 @@ Options:
                               Building locally with this flag will require docker on your machine. If you are
                               familiar with doxygen, sphinx and documentation tools, you can alternatively
                               use the scripts provided in the docs directory.
-  --codecoverage                   Build with code coverage profiling enabled
+
+  --codecoverage              Build with code coverage profiling enabled.
+
   -k | --relwithdebinfo       Pass this flag to build in release debug mode (equivalent to set CMAKE_BUILD_TYPE=RelWithDebInfo).
                               (Default build type is Release)
 EOF
