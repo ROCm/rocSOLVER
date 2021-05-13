@@ -73,7 +73,7 @@ Options:
                               familiar with doxygen, sphinx and documentation tools, you can alternatively
                               use the scripts provided in the docs directory.
 
-  --codecoverage              Build with code coverage profiling enabled.
+  --codecoverage              Build with code coverage profiling enabled, excluding release mode.
 
   -k | --relwithdebinfo       Pass this flag to build in release debug mode (equivalent to set CMAKE_BUILD_TYPE=RelWithDebInfo).
                               (Default build type is Release)
@@ -544,6 +544,10 @@ case "${ID}" in
 esac
 
 if [[ "${build_coverage}" == true ]]; then
+    if [[ "${build_type}" == Release ]]; then
+        echo "Code coverage is not supported in Release mode, to enable code coverage select either Debug mode (-g | --debug) or RelWithDebInfo mode (-k | --relwithdebinfo); aborting";
+        exit 1
+    fi
     cmake_common_options="${cmake_common_options} -DBUILD_CODE_COVERAGE=ON"
 fi
 
