@@ -20,34 +20,22 @@
   BATCH).)
 ***************************************************************************/
 
-/** STEQR_KERNEL implements the main loop of the sterf algorithm
+/** STEQR_KERNEL/RUN_STEQR implements the main loop of the sterf algorithm
     to compute the eigenvalues of a symmetric tridiagonal matrix given by D
     and E **/
-template <typename S, typename T, typename U>
-__global__ void steqr_kernel(const rocblas_int n,
-                             S* DD,
-                             const rocblas_stride strideD,
-                             S* EE,
-                             const rocblas_stride strideE,
-                             U CC,
-                             const rocblas_int shiftC,
-                             const rocblas_int ldc,
-                             const rocblas_stride strideC,
-                             rocblas_int* info,
-                             S* WW,
-                             const rocblas_int max_iters,
-                             const S eps,
-                             const S ssfmin,
-                             const S ssfmax)
+template <typename T, typename S>
+__device__ void run_steqr(const rocblas_int n,
+                          S* D,
+                          S* E,
+                          T* C,
+                          const rocblas_int ldc,
+                          rocblas_int* info,
+                          S* work,
+                          const rocblas_int max_iters,
+                          const S eps,
+                          const S ssfmin,
+                          const S ssfmax)
 {
-    rocblas_int bid = hipBlockIdx_x;
-    rocblas_stride strideW = 2 * n - 2;
-
-    S* D = DD + (bid * strideD);
-    S* E = EE + (bid * strideE);
-    T* C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
-    S* work = WW + (bid * strideW);
-
     rocblas_int m, l, lsv, lend, lendsv;
     rocblas_int l1 = 0;
     rocblas_int iters = 0;
@@ -265,7 +253,7 @@ __global__ void steqr_kernel(const rocblas_int n,
     // Check for convergence
     for(int i = 0; i < n - 1; i++)
         if(E[i] != 0)
-            info[bid]++;
+            info[0]++;
 
     // Sort eigenvalues and eigenvectors by selection sort
     for(int ii = 1; ii < n; ii++)
@@ -290,7 +278,38 @@ __global__ void steqr_kernel(const rocblas_int n,
     }
 }
 
-template <typename S, typename T>
+template <typename T, typename S, typename U>
+__global__ void steqr_kernel(const rocblas_int n,
+                             S* DD,
+                             const rocblas_stride strideD,
+                             S* EE,
+                             const rocblas_stride strideE,
+                             U CC,
+                             const rocblas_int shiftC,
+                             const rocblas_int ldc,
+                             const rocblas_stride strideC,
+                             rocblas_int* iinfo,
+                             S* WW,
+                             const rocblas_int max_iters,
+                             const S eps,
+                             const S ssfmin,
+                             const S ssfmax)
+{
+    // select bacth instance
+    rocblas_int bid = hipBlockIdx_x;
+    rocblas_stride strideW = 2 * n - 2;
+
+    S* D = DD + (bid * strideD);
+    S* E = EE + (bid * strideE);
+    T* C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+    S* work = WW + (bid * strideW);
+    rocblas_int* info = iinfo + bid;
+
+    // execute
+    run_steqr(n, D, E, C, ldc, info, work, max_iters, eps, ssfmin, ssfmax);
+}
+
+template <typename T, typename S>
 void rocsolver_steqr_getMemorySize(const rocblas_evect evect,
                                    const rocblas_int n,
                                    const rocblas_int batch_count,
@@ -310,7 +329,7 @@ void rocsolver_steqr_getMemorySize(const rocblas_evect evect,
         *size_work_stack = sizeof(S) * (2 * n - 2) * batch_count;
 }
 
-template <typename S, typename T>
+template <typename T, typename S>
 rocblas_status rocsolver_steqr_argCheck(rocblas_handle handle,
                                         const rocblas_evect evect,
                                         const rocblas_int n,
@@ -344,7 +363,7 @@ rocblas_status rocsolver_steqr_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_steqr_template(rocblas_handle handle,
                                         const rocblas_evect evect,
                                         const rocblas_int n,
@@ -405,8 +424,8 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
                            strideD, E + shiftE, strideE, info, (rocblas_int*)work_stack, 30 * n,
                            eps, ssfmin, ssfmax);
     else
-        hipLaunchKernelGGL((steqr_kernel<S, T>), dim3(batch_count), dim3(1), 0, stream, n,
-                           D + shiftD, strideD, E + shiftE, strideE, C, shiftC, ldc, strideC, info,
+        hipLaunchKernelGGL((steqr_kernel<T>), dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
+                           strideD, E + shiftE, strideE, C, shiftC, ldc, strideC, info,
                            (S*)work_stack, 30 * n, eps, ssfmin, ssfmax);
 
     return rocblas_status_success;

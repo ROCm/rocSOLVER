@@ -38,7 +38,7 @@ rocblas_status rocsolver_stedc_impl(rocblas_handle handle,
     // memory workspace sizes:
     // size for lasrt stack/stedc workspace
     size_t size_work_stack;
-    rocsolver_stedc_getMemorySize<T>(evect, n, batch_count, &size_work_stack);
+    rocsolver_stedc_getMemorySize<T, S>(evect, n, batch_count, &size_work_stack);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work_stack);
@@ -52,8 +52,8 @@ rocblas_status rocsolver_stedc_impl(rocblas_handle handle,
     work_stack = mem[0];
 
     // execution
-    return rocsolver_stedc_template<T>(handle, evect, n, D, shiftD, strideD, E, shiftE, strideE,
-                                       C, shiftC, ldc, strideC, info, batch_count, work_stack);
+    return rocsolver_stedc_template<T>(handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C,
+                                       shiftC, ldc, strideC, info, batch_count, work_stack);
 }
 
 /*

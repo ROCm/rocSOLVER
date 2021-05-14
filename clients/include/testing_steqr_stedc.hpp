@@ -233,7 +233,7 @@ void steqr_stedc_getPerfData(const rocblas_handle handle,
 {
     using S = decltype(std::real(T{}));
 
-    int lgn = int(log(n - 1)) / int(log(2)) + 1;
+    int lgn = floor(log(n - 1) / log(2)) + 1;
     size_t lrwork = (evect == rocblas_evect_none ? 1 : 1 + 3 * n + 4 * n * n + 2 * n * lgn);
     std::vector<S> rwork(lrwork);
     size_t liwork = (evect == rocblas_evect_none ? 1 : 6 + 6 * n + 5 * n * lgn);
