@@ -34,7 +34,8 @@ __device__ void run_steqr(const rocblas_int n,
                           const rocblas_int max_iters,
                           const S eps,
                           const S ssfmin,
-                          const S ssfmax)
+                          const S ssfmax,
+                          const bool ordered = true)
 {
     rocblas_int m, l, lsv, lend, lendsv;
     rocblas_int l1 = 0;
@@ -256,24 +257,27 @@ __device__ void run_steqr(const rocblas_int n,
             info[0]++;
 
     // Sort eigenvalues and eigenvectors by selection sort
-    for(int ii = 1; ii < n; ii++)
+    if(ordered)
     {
-        l = ii - 1;
-        m = l;
-        p = D[l];
-        for(int j = ii; j < n; j++)
+        for(int ii = 1; ii < n; ii++)
         {
-            if(D[j] < p)
+            l = ii - 1;
+            m = l;
+            p = D[l];
+            for(int j = ii; j < n; j++)
             {
-                m = j;
-                p = D[j];
+                if(D[j] < p)
+                {
+                    m = j;
+                    p = D[j];
+                }
             }
-        }
-        if(m != l)
-        {
-            D[m] = D[l];
-            D[l] = p;
-            swapvect(n, C + 0 + l * ldc, 1, C + 0 + m * ldc, 1);
+            if(m != l)
+            {
+                D[m] = D[l];
+                D[l] = p;
+                swapvect(n, C + 0 + l * ldc, 1, C + 0 + m * ldc, 1);
+            }
         }
     }
 }

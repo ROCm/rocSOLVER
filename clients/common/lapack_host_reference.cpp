@@ -5257,11 +5257,11 @@ void cblas_steqr<float, float>(rocblas_evect evect,
                                float* E,
                                float* C,
                                rocblas_int ldc,
-                               float* work)
+                               float* work,
+                               rocblas_int* info)
 {
-    rocblas_int info;
     char evectC = rocblas2char_evect(evect);
-    ssteqr_(&evectC, &n, D, E, C, &ldc, work, &info);
+    ssteqr_(&evectC, &n, D, E, C, &ldc, work, info);
 }
 
 template <>
@@ -5271,11 +5271,11 @@ void cblas_steqr<double, double>(rocblas_evect evect,
                                  double* E,
                                  double* C,
                                  rocblas_int ldc,
-                                 double* work)
+                                 double* work,
+                                 rocblas_int* info)
 {
-    rocblas_int info;
     char evectC = rocblas2char_evect(evect);
-    dsteqr_(&evectC, &n, D, E, C, &ldc, work, &info);
+    dsteqr_(&evectC, &n, D, E, C, &ldc, work, info);
 }
 template <>
 void cblas_steqr<float, rocblas_float_complex>(rocblas_evect evect,
@@ -5284,11 +5284,11 @@ void cblas_steqr<float, rocblas_float_complex>(rocblas_evect evect,
                                                float* E,
                                                rocblas_float_complex* C,
                                                rocblas_int ldc,
-                                               float* work)
+                                               float* work,
+                                               rocblas_int* info)
 {
-    rocblas_int info;
     char evectC = rocblas2char_evect(evect);
-    csteqr_(&evectC, &n, D, E, C, &ldc, work, &info);
+    csteqr_(&evectC, &n, D, E, C, &ldc, work, info);
 }
 
 template <>
@@ -5298,11 +5298,11 @@ void cblas_steqr<double, rocblas_double_complex>(rocblas_evect evect,
                                                  double* E,
                                                  rocblas_double_complex* C,
                                                  rocblas_int ldc,
-                                                 double* work)
+                                                 double* work,
+                                                 rocblas_int* info)
 {
-    rocblas_int info;
     char evectC = rocblas2char_evect(evect);
-    zsteqr_(&evectC, &n, D, E, C, &ldc, work, &info);
+    zsteqr_(&evectC, &n, D, E, C, &ldc, work, info);
 }
 
 // stedc
@@ -5316,11 +5316,11 @@ void cblas_stedc<float, float>(rocblas_evect evect,
                                float* rwork,
                                rocblas_int lrwork,
                                rocblas_int* iwork,
-                               rocblas_int liwork)
+                               rocblas_int liwork,
+                               rocblas_int* info)
 {
-    rocblas_int info;
     char evectC = rocblas2char_evect(evect);
-    sstedc_(&evectC, &n, D, E, C, &ldc, rwork, &lrwork, iwork, &liwork, &info);
+    sstedc_(&evectC, &n, D, E, C, &ldc, rwork, &lrwork, iwork, &liwork, info);
 }
 
 template <>
@@ -5333,11 +5333,11 @@ void cblas_stedc<double, double>(rocblas_evect evect,
                                  double* rwork,
                                  rocblas_int lrwork,
                                  rocblas_int* iwork,
-                                 rocblas_int liwork)
+                                 rocblas_int liwork,
+                                 rocblas_int* info)
 {
-    rocblas_int info;
     char evectC = rocblas2char_evect(evect);
-    dstedc_(&evectC, &n, D, E, C, &ldc, rwork, &lrwork, iwork, &liwork, &info);
+    dstedc_(&evectC, &n, D, E, C, &ldc, rwork, &lrwork, iwork, &liwork, info);
 }
 template <>
 void cblas_stedc<float, rocblas_float_complex>(rocblas_evect evect,
@@ -5349,13 +5349,13 @@ void cblas_stedc<float, rocblas_float_complex>(rocblas_evect evect,
                                                float* rwork,
                                                rocblas_int lrwork,
                                                rocblas_int* iwork,
-                                               rocblas_int liwork)
+                                               rocblas_int liwork,
+                                               rocblas_int* info)
 {
-    rocblas_int info;
     char evectC = rocblas2char_evect(evect);
     rocblas_int lwork = n * n;
     std::vector<rocblas_float_complex> work(lwork);
-    cstedc_(&evectC, &n, D, E, C, &ldc, work.data(), &lwork, rwork, &lrwork, iwork, &liwork, &info);
+    cstedc_(&evectC, &n, D, E, C, &ldc, work.data(), &lwork, rwork, &lrwork, iwork, &liwork, info);
 }
 
 template <>
@@ -5368,13 +5368,13 @@ void cblas_stedc<double, rocblas_double_complex>(rocblas_evect evect,
                                                  double* rwork,
                                                  rocblas_int lrwork,
                                                  rocblas_int* iwork,
-                                                 rocblas_int liwork)
+                                                 rocblas_int liwork,
+                                                 rocblas_int* info)
 {
-    rocblas_int info;
     char evectC = rocblas2char_evect(evect);
     rocblas_int lwork = n * n;
     std::vector<rocblas_double_complex> work(lwork);
-    zstedc_(&evectC, &n, D, E, C, &ldc, work.data(), &lwork, rwork, &lrwork, iwork, &liwork, &info);
+    zstedc_(&evectC, &n, D, E, C, &ldc, work.data(), &lwork, rwork, &lrwork, iwork, &liwork, info);
 }
 
 // sygs2 & hegs2

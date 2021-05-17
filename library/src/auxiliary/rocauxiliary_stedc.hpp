@@ -77,7 +77,8 @@ __global__ void stedc_kernel(const rocblas_int n,
         if(true) //(TODO: should be if(bs <= STEDC_MIN_DC_SIZE) once DC is implemented)
         {
             S* W = WW + bid * (2 * bs - 2);
-            run_steqr(bs, D + k, E + k, C + k + k * ldc, ldc, info, W, 30 * bs, eps, ssfmin, ssfmax);
+            run_steqr(bs, D + k, E + k, C + k + k * ldc, ldc, info, W, 30 * bs, eps, ssfmin, ssfmax,
+                      false);
         }
 
         else
@@ -86,6 +87,31 @@ __global__ void stedc_kernel(const rocblas_int n,
         }
 
         k += bs;
+    }
+
+    rocblas_int l, m;
+    S p;
+
+    // Sort eigenvalues and eigenvectors by selection sort
+    for(int ii = 1; ii < n; ii++)
+    {
+        l = ii - 1;
+        m = l;
+        p = D[l];
+        for(int j = ii; j < n; j++)
+        {
+            if(D[j] < p)
+            {
+                m = j;
+                p = D[j];
+            }
+        }
+        if(m != l)
+        {
+            D[m] = D[l];
+            D[l] = p;
+            swapvect(n, C + 0 + l * ldc, 1, C + 0 + m * ldc, 1);
+        }
     }
 }
 

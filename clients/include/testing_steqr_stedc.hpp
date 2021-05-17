@@ -146,9 +146,15 @@ void steqr_stedc_getError(const rocblas_handle handle,
                           Th& hC,
                           Th& hCRes,
                           Uh& hInfo,
+                          Uh& hInfoRes,
                           double* max_err)
 {
     using S = decltype(std::real(T{}));
+    int lgn = floor(log(n - 1) / log(2)) + 1;
+    size_t lrwork = (evect == rocblas_evect_none ? 1 : 1 + 3 * n + 4 * n * n + 2 * n * lgn);
+    std::vector<S> rwork(lrwork);
+    size_t liwork = (evect == rocblas_evect_none ? 1 : 6 + 6 * n + 5 * n * lgn);
+    std::vector<rocblas_int> iwork(liwork);
 
     // input data initialization
     steqr_stedc_initData<true, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
@@ -160,29 +166,16 @@ void steqr_stedc_getError(const rocblas_handle handle,
                                               ldc, dInfo.data()));
     CHECK_HIP_ERROR(hDRes.transfer_from(dD));
     CHECK_HIP_ERROR(hERes.transfer_from(dE));
+    CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
     if(evect != rocblas_evect_none)
         CHECK_HIP_ERROR(hCRes.transfer_from(dC));
 
-    if(evect == rocblas_evect_none)
+    // if eigenvectors were required, prepare matrix A (upper triangular) for implicit tests
+    rocblas_int lda = n;
+    size_t size_A = lda * n;
+    host_strided_batch_vector<T> hA(size_A, 1, size_A, 1);
+    if(evect != rocblas_evect_none)
     {
-        // only eigenvalues needed; can compare with LAPACK
-
-        // CPU lapack
-        cblas_sterf<S>(n, hD[0], hE[0]);
-
-        // error is ||hD - hDRes|| / ||hD||
-        // using frobenius norm
-        *max_err = norm_error('F', 1, n, 1, hD[0], hDRes[0]);
-    }
-    else
-    {
-        // both eigenvalues and eigenvectors needed; need to implicitly test
-        // eigenvectors due to non-uniqueness of eigenvectors under scaling
-
-        // prepare matrix A (upper triangular)
-        rocblas_int lda = n;
-        size_t size_A = lda * n;
-        host_strided_batch_vector<T> hA(size_A, 1, size_A, 1);
         for(rocblas_int i = 0; i < n; i++)
         {
             for(rocblas_int j = i; j < n; j++)
@@ -195,21 +188,51 @@ void steqr_stedc_getError(const rocblas_handle handle,
                     hA[0][i + j * lda] = 0;
             }
         }
+    }
 
-        // multiply A with each of the n eigenvectors and divide by corresponding
-        // eigenvalues
-        T alpha;
-        T beta = 0;
-        for(int j = 0; j < n; j++)
-        {
-            alpha = T(1) / hDRes[0][j];
-            cblas_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hCRes[0] + j * ldc, 1, beta,
-                            hC[0] + j * ldc, 1);
-        }
+    // CPU lapack
+    DC ? cblas_stedc<S, T>(evect, n, hD[0], hE[0], hC[0], ldc, rwork.data(), lrwork, iwork.data(),
+                           liwork, hInfo[0])
+       : cblas_steqr<S, T>(evect, n, hD[0], hE[0], hC[0], ldc, rwork.data(), hInfo[0]);
 
-        // error is ||hC - hCRes|| / ||hC||
+    // check info
+    if(hInfo[0][0] != hInfoRes[0][0])
+        *max_err = 1;
+    else
+        *max_err = 0;
+
+    double err;
+
+    if(hInfo[0][0] == 0)
+    {
+        // check that eigenvalues are correct and in order
+        // error is ||hD - hDRes|| / ||hD||
         // using frobenius norm
-        *max_err = norm_error('F', n, n, ldc, hC[0], hCRes[0]);
+        err = norm_error('F', 1, n, 1, hD[0], hDRes[0]);
+        *max_err = err > *max_err ? err : *max_err;
+
+        // check eigenvectors if required
+        if(evect != rocblas_evect_none)
+        {
+            // both eigenvalues and eigenvectors needed; need to implicitly test
+            // eigenvectors due to non-uniqueness of eigenvectors under scaling
+
+            // multiply A with each of the n eigenvectors and divide by corresponding
+            // eigenvalues
+            T alpha;
+            T beta = 0;
+            for(int j = 0; j < n; j++)
+            {
+                alpha = T(1) / hDRes[0][j];
+                cblas_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hCRes[0] + j * ldc, 1,
+                                beta, hC[0] + j * ldc, 1);
+            }
+
+            // error is ||hC - hCRes|| / ||hC||
+            // using frobenius norm
+            err = norm_error('F', n, n, ldc, hC[0], hCRes[0]);
+            *max_err = err > *max_err ? err : *max_err;
+        }
     }
 }
 
@@ -232,7 +255,6 @@ void steqr_stedc_getPerfData(const rocblas_handle handle,
                              const bool perf)
 {
     using S = decltype(std::real(T{}));
-
     int lgn = floor(log(n - 1) / log(2)) + 1;
     size_t lrwork = (evect == rocblas_evect_none ? 1 : 1 + 3 * n + 4 * n * n + 2 * n * lgn);
     std::vector<S> rwork(lrwork);
@@ -247,8 +269,8 @@ void steqr_stedc_getPerfData(const rocblas_handle handle,
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
         DC ? cblas_stedc<S, T>(evect, n, hD[0], hE[0], hC[0], ldc, rwork.data(), lrwork,
-                               iwork.data(), liwork)
-           : cblas_steqr<S, T>(evect, n, hD[0], hE[0], hC[0], ldc, rwork.data());
+                               iwork.data(), liwork, hInfo[0])
+           : cblas_steqr<S, T>(evect, n, hD[0], hE[0], hC[0], ldc, rwork.data(), hInfo[0]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
@@ -344,6 +366,7 @@ void testing_steqr_stedc(Arguments& argus)
     host_strided_batch_vector<T> hC(size_C, 1, size_C, 1);
     host_strided_batch_vector<T> hCRes(size_CRes, 1, size_CRes, 1);
     host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, 1);
+    host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, 1);
     device_strided_batch_vector<S> dD(size_D, 1, size_D, 1);
     device_strided_batch_vector<S> dE(size_E, 1, size_E, 1);
     device_strided_batch_vector<T> dC(size_C, 1, size_C, 1);
@@ -371,7 +394,7 @@ void testing_steqr_stedc(Arguments& argus)
     // check computations
     if(argus.unit_check || argus.norm_check)
         steqr_stedc_getError<DC, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hDRes, hE, hERes,
-                                    hC, hCRes, hInfo, &max_error);
+                                    hC, hCRes, hInfo, hInfoRes, &max_error);
 
     // collect performance data
     if(argus.timing)
