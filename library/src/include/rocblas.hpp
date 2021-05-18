@@ -1449,49 +1449,11 @@ rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
         ldc, strideC, batch_count);
 }
 
-// trsv memory sizes
-template <bool BATCHED, typename T>
-void rocblasCall_trsv_mem(rocblas_int m,
-                          rocblas_int batch_count,
-                          size_t* x_temp,
-                          size_t* x_temp_arr,
-                          size_t* invA,
-                          size_t* invA_arr)
-{
-    const rocblas_int BLOCK = ROCBLAS_TRSV_BLOCK;
-    const bool exact_blocks = (m % BLOCK) == 0;
-    size_t invA_bytes = sizeof(T) * BLOCK * m * batch_count;
-    size_t c_temp_bytes = (m / BLOCK) * (sizeof(T) * (BLOCK / 2) * (BLOCK / 2)) * batch_count;
-
-    // For the TRTRI last diagonal block we need remainder space if m % BLOCK != 0
-    if(!exact_blocks)
-    {
-        // TODO: Make this more accurate -- right now it's much larger than necessary
-        size_t remainder_bytes = sizeof(T) * ROCBLAS_TRTRI_NB * BLOCK * 2 * batch_count;
-
-        // C is the maximum of the temporary space needed for TRTRI
-        c_temp_bytes = std::max(c_temp_bytes, remainder_bytes);
-    }
-
-    // Temporary solution vector
-    // If the special solver can be used, then only BLOCK words are needed instead of m words
-    size_t x_temp_bytes
-        = exact_blocks ? sizeof(T) * BLOCK * batch_count : sizeof(T) * m * batch_count;
-
-    // X and C temporaries can share space, so the maximum size is allocated
-    size_t x_c_temp_bytes = std::max(x_temp_bytes, c_temp_bytes);
-    size_t arrBytes = BATCHED ? sizeof(T*) * batch_count : 0;
-    size_t xarrBytes = BATCHED ? sizeof(T*) * batch_count : 0;
-
-    // return required memory sizes
-    *x_temp = x_c_temp_bytes;
-    *x_temp_arr = xarrBytes;
-    *invA = invA_bytes;
-    *invA_arr = arrBytes;
-}
-
 // trsv
-template <bool BATCHED, typename T, typename U>
+template <bool BATCHED,
+          typename T,
+          typename U,
+          std::enable_if_t<!std::is_same<T, rocblas_double_complex>::value, int> = 0>
 rocblas_status rocblasCall_trsv(rocblas_handle handle,
                                 rocblas_fill uplo,
                                 rocblas_operation transA,
@@ -1506,21 +1468,48 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
                                 rocblas_int ldb,
                                 rocblas_stride stride_B,
                                 rocblas_int batch_count,
-                                void* x_temp,
-                                void* x_temp_arr,
-                                void* invA,
-                                void* invA_arr,
+                                rocblas_int* g_unique_row,
+                                rocblas_int* g_completed_sec,
                                 T** workArr = nullptr)
 {
     ROCBLAS_ENTER("trsv", "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
                   "shiftA:", offset_A, "lda:", lda, "shiftB:", offset_B, "ldb:", ldb,
                   "bc:", batch_count);
 
-    U supplied_invA = nullptr;
-    return rocblas_internal_trsv_template<ROCBLAS_TRSV_BLOCK, BATCHED, T>(
+    return rocblas_internal_trsv_substitution_template<ROCBLAS_TRSV_BLOCK, T>(
         handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B, offset_B, ldb,
-        stride_B, batch_count, x_temp, x_temp_arr, invA, invA_arr, cast2constType(supplied_invA), 0,
-        0, 0);
+        stride_B, batch_count, g_unique_row, g_completed_sec);
+}
+
+template <bool BATCHED,
+          typename T,
+          typename U,
+          std::enable_if_t<std::is_same<T, rocblas_double_complex>::value, int> = 0>
+rocblas_status rocblasCall_trsv(rocblas_handle handle,
+                                rocblas_fill uplo,
+                                rocblas_operation transA,
+                                rocblas_diagonal diag,
+                                rocblas_int m,
+                                U A,
+                                rocblas_int offset_A,
+                                rocblas_int lda,
+                                rocblas_stride stride_A,
+                                U B,
+                                rocblas_int offset_B,
+                                rocblas_int ldb,
+                                rocblas_stride stride_B,
+                                rocblas_int batch_count,
+                                rocblas_int* g_unique_row,
+                                rocblas_int* g_completed_sec,
+                                T** workArr = nullptr)
+{
+    ROCBLAS_ENTER("trsv", "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
+                  "shiftA:", offset_A, "lda:", lda, "shiftB:", offset_B, "ldb:", ldb,
+                  "bc:", batch_count);
+
+    return rocblas_internal_trsv_substitution_template<ROCBLAS_TRSV_Z_BLOCK, T>(
+        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B, offset_B, ldb,
+        stride_B, batch_count, g_unique_row, g_completed_sec);
 }
 
 // trsm memory sizes
