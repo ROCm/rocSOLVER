@@ -38,26 +38,26 @@ rocblas_status rocsolver_sygs2_hegs2_impl(rocblas_handle handle,
     // size for constants in rocblas calls
     size_t size_scalars;
     // size of reusable workspace (and for calling TRSV or TRMV)
-    size_t size_work_gur, size_store_gcs;
+    size_t size_work_sur, size_store_scs;
     // size of array of pointers (only for batched case)
     size_t size_workArr;
     rocsolver_sygs2_hegs2_getMemorySize<T, false>(itype, n, batch_count, &size_scalars,
-                                                  &size_work_gur, &size_store_gcs, &size_workArr);
+                                                  &size_work_sur, &size_store_scs, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_gur,
-                                                      size_store_gcs, size_workArr);
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_sur,
+                                                      size_store_scs, size_workArr);
 
     // memory workspace allocation
-    void *scalars, *work_gur, *store_gcs, *workArr;
-    rocblas_device_malloc mem(handle, size_scalars, size_work_gur, size_store_gcs, size_workArr);
+    void *scalars, *work_sur, *store_scs, *workArr;
+    rocblas_device_malloc mem(handle, size_scalars, size_work_sur, size_store_scs, size_workArr);
 
     if(!mem)
         return rocblas_status_memory_error;
 
     scalars = mem[0];
-    work_gur = mem[1];
-    store_gcs = mem[2];
+    work_sur = mem[1];
+    store_scs = mem[2];
     workArr = mem[3];
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
@@ -65,7 +65,7 @@ rocblas_status rocsolver_sygs2_hegs2_impl(rocblas_handle handle,
     // execution
     return rocsolver_sygs2_hegs2_template<false, T>(handle, itype, uplo, n, A, shiftA, lda, strideA,
                                                     B, shiftB, ldb, strideB, batch_count,
-                                                    (T*)scalars, work_gur, store_gcs, (T**)workArr);
+                                                    (T*)scalars, work_sur, store_scs, (T**)workArr);
 }
 
 /*

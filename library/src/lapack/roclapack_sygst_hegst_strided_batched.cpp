@@ -40,31 +40,31 @@ rocblas_status rocsolver_sygst_hegst_strided_batched_impl(rocblas_handle handle,
     // size for constants in rocblas calls
     size_t size_scalars;
     // size of reusable workspace (and for calling TRSV or TRMV)
-    size_t size_work_gur_x_temp, size_workArr_temp_arr, size_store_gcs_invA, size_invA_arr;
+    size_t size_work_sur_x_temp, size_workArr_temp_arr, size_store_scs_invA, size_invA_arr;
     rocsolver_sygst_hegst_getMemorySize<T, false>(itype, n, batch_count, &size_scalars,
-                                                  &size_work_gur_x_temp, &size_workArr_temp_arr,
-                                                  &size_store_gcs_invA, &size_invA_arr);
+                                                  &size_work_sur_x_temp, &size_workArr_temp_arr,
+                                                  &size_store_scs_invA, &size_invA_arr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_gur_x_temp,
-                                                      size_workArr_temp_arr, size_store_gcs_invA,
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_sur_x_temp,
+                                                      size_workArr_temp_arr, size_store_scs_invA,
                                                       size_invA_arr);
 
     // always allocate all required memory for TRSM optimal performance
     bool optim_mem = true;
 
     // memory workspace allocation
-    void *scalars, *work_x_temp, *workArr_temp_arr, *store_gcs_invA, *invA_arr;
-    rocblas_device_malloc mem(handle, size_scalars, size_work_gur_x_temp, size_workArr_temp_arr,
-                              size_store_gcs_invA, size_invA_arr);
+    void *scalars, *work_sur_x_temp, *workArr_temp_arr, *store_scs_invA, *invA_arr;
+    rocblas_device_malloc mem(handle, size_scalars, size_work_sur_x_temp, size_workArr_temp_arr,
+                              size_store_scs_invA, size_invA_arr);
 
     if(!mem)
         return rocblas_status_memory_error;
 
     scalars = mem[0];
-    work_x_temp = mem[1];
+    work_sur_x_temp = mem[1];
     workArr_temp_arr = mem[2];
-    store_gcs_invA = mem[3];
+    store_scs_invA = mem[3];
     invA_arr = mem[4];
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
@@ -72,7 +72,7 @@ rocblas_status rocsolver_sygst_hegst_strided_batched_impl(rocblas_handle handle,
     // execution
     return rocsolver_sygst_hegst_template<false, true, S, T>(
         handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
-        (T*)scalars, work_x_temp, workArr_temp_arr, store_gcs_invA, invA_arr, optim_mem);
+        (T*)scalars, work_sur_x_temp, workArr_temp_arr, store_scs_invA, invA_arr, optim_mem);
 }
 
 /*

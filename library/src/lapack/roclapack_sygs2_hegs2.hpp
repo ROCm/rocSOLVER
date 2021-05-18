@@ -104,16 +104,16 @@ void rocsolver_sygs2_hegs2_getMemorySize(const rocblas_eform itype,
                                          const rocblas_int n,
                                          const rocblas_int batch_count,
                                          size_t* size_scalars,
-                                         size_t* size_work_gur,
-                                         size_t* size_store_gcs,
+                                         size_t* size_work_sur,
+                                         size_t* size_store_scs,
                                          size_t* size_workArr)
 {
     // if quick return no need of workspace
     if(n == 0 || batch_count == 0)
     {
         *size_scalars = 0;
-        *size_work_gur = 0;
-        *size_store_gcs = 0;
+        *size_work_sur = 0;
+        *size_store_scs = 0;
         *size_workArr = 0;
         return;
     }
@@ -124,7 +124,7 @@ void rocsolver_sygs2_hegs2_getMemorySize(const rocblas_eform itype,
     *size_scalars = sizeof(T) * 3;
 
     // size of stored value array
-    *size_store_gcs = sizeof(T) * 3 * batch_count;
+    *size_store_scs = sizeof(T) * 3 * batch_count;
 
     // size of array of pointers to workspace
     if(BATCHED)
@@ -135,13 +135,13 @@ void rocsolver_sygs2_hegs2_getMemorySize(const rocblas_eform itype,
     if(itype == rocblas_eform_ax)
     {
         // extra workspace (for calling TRSV)
-        *size_work_gur = sizeof(rocblas_int) * batch_count;
-        *size_store_gcs = max(*size_store_gcs, sizeof(rocblas_int) * batch_count);
+        *size_work_sur = sizeof(rocblas_int) * batch_count;
+        *size_store_scs = max(*size_store_scs, sizeof(rocblas_int) * batch_count);
     }
     else
     {
         // extra workspace (for calling TRMV)
-        *size_work_gur = sizeof(T) * n * batch_count;
+        *size_work_sur = sizeof(T) * n * batch_count;
     }
 }
 
@@ -194,8 +194,8 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                               const rocblas_stride strideB,
                                               const rocblas_int batch_count,
                                               T* scalars,
-                                              void* work_gur,
-                                              void* store_gcs,
+                                              void* work_sur,
+                                              void* store_scs,
                                               T** workArr)
 {
     ROCSOLVER_ENTER("sygs2_hegs2", "itype:", itype, "uplo:", uplo, "n:", n, "shiftA:", shiftA,
@@ -224,14 +224,14 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
             // Compute inv(U')*A*inv(U)
             for(rocblas_int k = 0; k < n; k++)
             {
-                // Set A[k, k] and store coefficients in store_gcs
+                // Set A[k, k] and store coefficients in store_scs
                 hipLaunchKernelGGL(sygs2_set_diag1, dim3(blocks_batch, 1, 1), dim3(32, 1, 1), 0,
                                    stream, k, A, shiftA, lda, strideA, B, shiftB, ldb, strideB,
-                                   (T*)store_gcs, batch_count);
+                                   (T*)store_scs, batch_count);
 
                 if(k < n - 1)
                 {
-                    rocblasCall_scal<T>(handle, n - k - 1, (T*)store_gcs, strideS, A,
+                    rocblasCall_scal<T>(handle, n - k - 1, (T*)store_scs, strideS, A,
                                         shiftA + idx2D(k, k + 1, lda), lda, strideA, batch_count);
 
                     if(COMPLEX)
@@ -244,7 +244,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                                     batch_count);
                     }
 
-                    rocblasCall_axpy<T>(handle, n - k - 1, ((T*)store_gcs) + 1, strideS, B,
+                    rocblasCall_axpy<T>(handle, n - k - 1, ((T*)store_scs) + 1, strideS, B,
                                         shiftB + idx2D(k, k + 1, ldb), ldb, strideB, A,
                                         shiftA + idx2D(k, k + 1, lda), lda, strideA, batch_count);
 
@@ -253,7 +253,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                         strideA, B, shiftB + idx2D(k, k + 1, ldb), ldb, strideB, A,
                         shiftA + idx2D(k + 1, k + 1, lda), lda, strideA, batch_count, workArr);
 
-                    rocblasCall_axpy<T>(handle, n - k - 1, ((T*)store_gcs) + 1, strideS, B,
+                    rocblasCall_axpy<T>(handle, n - k - 1, ((T*)store_scs) + 1, strideS, B,
                                         shiftB + idx2D(k, k + 1, ldb), ldb, strideB, A,
                                         shiftA + idx2D(k, k + 1, lda), lda, strideA, batch_count);
 
@@ -266,7 +266,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                         handle, uplo, rocblas_operation_conjugate_transpose,
                         rocblas_diagonal_non_unit, n - k - 1, B, shiftB + idx2D(k + 1, k + 1, ldb),
                         ldb, strideB, A, shiftA + idx2D(k, k + 1, lda), lda, strideA, batch_count,
-                        (rocblas_int*)work_gur, (rocblas_int*)store_gcs, workArr);
+                        (rocblas_int*)work_sur, (rocblas_int*)store_scs, workArr);
 
                     if(COMPLEX)
                         rocsolver_lacgv_template<T>(handle, n - k - 1, A,
@@ -280,17 +280,17 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
             // Compute inv(L)*A*inv(L')
             for(rocblas_int k = 0; k < n; k++)
             {
-                // Set A[k, k] and store coefficients in store_gcs
+                // Set A[k, k] and store coefficients in store_scs
                 hipLaunchKernelGGL(sygs2_set_diag1, dim3(blocks_batch, 1, 1), dim3(32, 1, 1), 0,
                                    stream, k, A, shiftA, lda, strideA, B, shiftB, ldb, strideB,
-                                   (T*)store_gcs, batch_count);
+                                   (T*)store_scs, batch_count);
 
                 if(k < n - 1)
                 {
-                    rocblasCall_scal<T>(handle, n - k - 1, (T*)store_gcs, strideS, A,
+                    rocblasCall_scal<T>(handle, n - k - 1, (T*)store_scs, strideS, A,
                                         shiftA + idx2D(k + 1, k, lda), 1, strideA, batch_count);
 
-                    rocblasCall_axpy<T>(handle, n - k - 1, ((T*)store_gcs) + 1, strideS, B,
+                    rocblasCall_axpy<T>(handle, n - k - 1, ((T*)store_scs) + 1, strideS, B,
                                         shiftB + idx2D(k + 1, k, ldb), 1, strideB, A,
                                         shiftA + idx2D(k + 1, k, lda), 1, strideA, batch_count);
 
@@ -299,7 +299,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                         strideA, B, shiftB + idx2D(k + 1, k, ldb), 1, strideB, A,
                         shiftA + idx2D(k + 1, k + 1, lda), lda, strideA, batch_count, workArr);
 
-                    rocblasCall_axpy<T>(handle, n - k - 1, ((T*)store_gcs) + 1, strideS, B,
+                    rocblasCall_axpy<T>(handle, n - k - 1, ((T*)store_scs) + 1, strideS, B,
                                         shiftB + idx2D(k + 1, k, ldb), 1, strideB, A,
                                         shiftA + idx2D(k + 1, k, lda), 1, strideA, batch_count);
 
@@ -307,7 +307,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                         handle, uplo, rocblas_operation_none, rocblas_diagonal_non_unit, n - k - 1,
                         B, shiftB + idx2D(k + 1, k + 1, ldb), ldb, strideB, A,
                         shiftA + idx2D(k + 1, k, lda), 1, strideA, batch_count,
-                        (rocblas_int*)work_gur, (rocblas_int*)store_gcs, workArr);
+                        (rocblas_int*)work_sur, (rocblas_int*)store_scs, workArr);
                 }
             }
         }
@@ -322,16 +322,16 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
             // Compute U*A*U'
             for(rocblas_int k = 0; k < n; k++)
             {
-                // Store coefficients in store_gcs
+                // Store coefficients in store_scs
                 hipLaunchKernelGGL(sygs2_set_diag2, dim3(blocks_batch, 1, 1), dim3(32, 1, 1), 0,
                                    stream, k, A, shiftA, lda, strideA, B, shiftB, ldb, strideB,
-                                   (T*)store_gcs, batch_count);
+                                   (T*)store_scs, batch_count);
 
                 rocblasCall_trmv<T>(handle, uplo, rocblas_operation_none, rocblas_diagonal_non_unit,
                                     k, B, shiftB, ldb, strideB, A, shiftA + idx2D(0, k, lda), 1,
-                                    strideA, (T*)work_gur, strideW, batch_count);
+                                    strideA, (T*)work_sur, strideW, batch_count);
 
-                rocblasCall_axpy<T>(handle, k, ((T*)store_gcs) + 1, strideS, B,
+                rocblasCall_axpy<T>(handle, k, ((T*)store_scs) + 1, strideS, B,
                                     shiftB + idx2D(0, k, ldb), 1, strideB, A,
                                     shiftA + idx2D(0, k, lda), 1, strideA, batch_count);
 
@@ -339,16 +339,16 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                          1, strideA, B, shiftB + idx2D(0, k, ldb), 1, strideB, A,
                                          shiftA, lda, strideA, batch_count, workArr);
 
-                rocblasCall_axpy<T>(handle, k, ((T*)store_gcs) + 1, strideS, B,
+                rocblasCall_axpy<T>(handle, k, ((T*)store_scs) + 1, strideS, B,
                                     shiftB + idx2D(0, k, ldb), 1, strideB, A,
                                     shiftA + idx2D(0, k, lda), 1, strideA, batch_count);
 
-                rocblasCall_scal<T>(handle, k, (T*)store_gcs, strideS, A, shiftA + idx2D(0, k, lda),
+                rocblasCall_scal<T>(handle, k, (T*)store_scs, strideS, A, shiftA + idx2D(0, k, lda),
                                     1, strideA, batch_count);
 
                 // Set A[k, k]
                 hipLaunchKernelGGL(sygs2_set_diag3, dim3(blocks_batch, 1, 1), dim3(32, 1, 1), 0,
-                                   stream, k, A, shiftA, lda, strideA, (T*)store_gcs, batch_count);
+                                   stream, k, A, shiftA, lda, strideA, (T*)store_scs, batch_count);
             }
         }
         else
@@ -356,10 +356,10 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
             // Compute L'*A*L
             for(rocblas_int k = 0; k < n; k++)
             {
-                // Store coefficients in store_gcs
+                // Store coefficients in store_scs
                 hipLaunchKernelGGL(sygs2_set_diag2, dim3(blocks_batch, 1, 1), dim3(32, 1, 1), 0,
                                    stream, k, A, shiftA, lda, strideA, B, shiftB, ldb, strideB,
-                                   (T*)store_gcs, batch_count);
+                                   (T*)store_scs, batch_count);
 
                 if(COMPLEX)
                     rocsolver_lacgv_template<T>(handle, k, A, shiftA + idx2D(k, 0, lda), lda,
@@ -367,14 +367,14 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
 
                 rocblasCall_trmv<T>(handle, uplo, rocblas_operation_conjugate_transpose,
                                     rocblas_diagonal_non_unit, k, B, shiftB, ldb, strideB, A,
-                                    shiftA + idx2D(k, 0, lda), lda, strideA, (T*)work_gur, strideW,
+                                    shiftA + idx2D(k, 0, lda), lda, strideA, (T*)work_sur, strideW,
                                     batch_count);
 
                 if(COMPLEX)
                     rocsolver_lacgv_template<T>(handle, k, B, shiftB + idx2D(k, 0, ldb), ldb,
                                                 strideB, batch_count);
 
-                rocblasCall_axpy<T>(handle, k, ((T*)store_gcs) + 1, strideS, B,
+                rocblasCall_axpy<T>(handle, k, ((T*)store_scs) + 1, strideS, B,
                                     shiftB + idx2D(k, 0, ldb), ldb, strideB, A,
                                     shiftA + idx2D(k, 0, lda), lda, strideA, batch_count);
 
@@ -382,7 +382,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                          lda, strideA, B, shiftB + idx2D(k, 0, ldb), ldb, strideB,
                                          A, shiftA, lda, strideA, batch_count, workArr);
 
-                rocblasCall_axpy<T>(handle, k, ((T*)store_gcs) + 1, strideS, B,
+                rocblasCall_axpy<T>(handle, k, ((T*)store_scs) + 1, strideS, B,
                                     shiftB + idx2D(k, 0, ldb), ldb, strideB, A,
                                     shiftA + idx2D(k, 0, lda), lda, strideA, batch_count);
 
@@ -390,7 +390,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                     rocsolver_lacgv_template<T>(handle, k, B, shiftB + idx2D(k, 0, ldb), ldb,
                                                 strideB, batch_count);
 
-                rocblasCall_scal<T>(handle, k, (T*)store_gcs, strideS, A, shiftA + idx2D(k, 0, lda),
+                rocblasCall_scal<T>(handle, k, (T*)store_scs, strideS, A, shiftA + idx2D(k, 0, lda),
                                     lda, strideA, batch_count);
 
                 if(COMPLEX)
@@ -399,7 +399,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
 
                 // Set A[k, k]
                 hipLaunchKernelGGL(sygs2_set_diag3, dim3(blocks_batch, 1, 1), dim3(32, 1, 1), 0,
-                                   stream, k, A, shiftA, lda, strideA, (T*)store_gcs, batch_count);
+                                   stream, k, A, shiftA, lda, strideA, (T*)store_scs, batch_count);
             }
         }
     }

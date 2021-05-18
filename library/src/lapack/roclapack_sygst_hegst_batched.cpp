@@ -42,14 +42,14 @@ rocblas_status rocsolver_sygst_hegst_batched_impl(rocblas_handle handle,
     // size for constants in rocblas calls
     size_t size_scalars;
     // size of reusable workspace (and for calling TRSV or TRMV)
-    size_t size_work_gur_x_temp, size_workArr_temp_arr, size_store_gcs_invA, size_invA_arr;
+    size_t size_work_sur_x_temp, size_workArr_temp_arr, size_store_scs_invA, size_invA_arr;
     rocsolver_sygst_hegst_getMemorySize<T, true>(itype, n, batch_count, &size_scalars,
-                                                 &size_work_gur_x_temp, &size_workArr_temp_arr,
-                                                 &size_store_gcs_invA, &size_invA_arr);
+                                                 &size_work_sur_x_temp, &size_workArr_temp_arr,
+                                                 &size_store_scs_invA, &size_invA_arr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_gur_x_temp,
-                                                      size_workArr_temp_arr, size_store_gcs_invA,
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_sur_x_temp,
+                                                      size_workArr_temp_arr, size_store_scs_invA,
                                                       size_invA_arr);
 
     // always allocate all required memory for TRSM optimal performance
@@ -57,8 +57,8 @@ rocblas_status rocsolver_sygst_hegst_batched_impl(rocblas_handle handle,
 
     // memory workspace allocation
     void *scalars, *work_x_temp, *workArr_temp_arr, *store_invA, *invA_arr;
-    rocblas_device_malloc mem(handle, size_scalars, size_work_gur_x_temp, size_workArr_temp_arr,
-                              size_store_gcs_invA, size_invA_arr);
+    rocblas_device_malloc mem(handle, size_scalars, size_work_sur_x_temp, size_workArr_temp_arr,
+                              size_store_scs_invA, size_invA_arr);
 
     if(!mem)
         return rocblas_status_memory_error;
