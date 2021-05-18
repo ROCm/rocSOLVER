@@ -171,6 +171,7 @@ add_dependencies(coverage_analysis rocsolver)
 # This little script is generated because the option '--gcov-tool <program name>' of lcov cannot take arguments.
 #
 add_custom_target(coverage_output
+    DEPENDS coverage_analysis
     COMMAND mkdir -p lcoverage
     COMMAND echo "\\#!/bin/bash" > llvm-gcov.sh
     COMMAND echo "\\# THIS FILE HAS BEEN GENERATED" >> llvm-gcov.sh
@@ -187,7 +188,7 @@ add_custom_command(TARGET coverage_output
   COMMAND genhtml --ignore-errors source lcoverage/main_coverage.info --output-directory lcoverage
     )
 
-add_custom_target(coverage DEPENDS coverage_analysis coverage_output)
+add_custom_target(coverage DEPENDS coverage_output)
 
 #
 # Coverage cleanup
