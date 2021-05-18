@@ -141,8 +141,10 @@ if( BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES )
 endif( )
 
 
-#
+
 # ADDITIONAL TARGETS FOR CODE COVERAGE
+if(BUILD_CODE_COVERAGE)
+
 #
 # > make coverage_cleanup (clean coverage related files.)
 # > make coverage GTEST_FILTER=<>
@@ -166,6 +168,7 @@ add_dependencies(coverage_analysis rocsolver)
 
 #
 # Prepare coverage output
+# This little script is generated because the option '--gcov-tool <program name>' of lcov cannot take arguments.
 #
 add_custom_target(coverage_output
     COMMAND mkdir -p lcoverage
@@ -193,3 +196,5 @@ add_custom_target(coverage_cleanup
     COMMAND rm -f `find ${CMAKE_BINARY_DIR} -name *.gcda`
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
+  
+endif()
