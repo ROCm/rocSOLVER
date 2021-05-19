@@ -3,7 +3,7 @@
  *
  * ************************************************************************ */
 
-#include "testing_steqr_stedc.hpp"
+#include "testing_steqr.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -11,7 +11,7 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<vector<int>, vector<int>> steqr_stedc_tuple;
+typedef std::tuple<vector<int>, vector<int>> steqr_tuple;
 
 // each size_range vector is a {N, ldc}
 
@@ -41,7 +41,7 @@ const vector<vector<int>> matrix_size_range = {
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {{192, 192}, {256, 270}, {300, 300}};
 
-Arguments steqr_stedc_setup_arguments(steqr_stedc_tuple tup)
+Arguments steqr_setup_arguments(steqr_tuple tup)
 {
     vector<int> size = std::get<0>(tup);
     vector<int> op = std::get<1>(tup);
@@ -58,32 +58,23 @@ Arguments steqr_stedc_setup_arguments(steqr_stedc_tuple tup)
     return arg;
 }
 
-template <bool DC>
-class STEQR_STEDC : public ::TestWithParam<steqr_stedc_tuple>
+class STEQR : public ::TestWithParam<steqr_tuple>
 {
 protected:
-    STEQR_STEDC() {}
+    STEQR() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 
     template <typename T>
     void run_tests()
     {
-        Arguments arg = steqr_stedc_setup_arguments(GetParam());
+        Arguments arg = steqr_setup_arguments(GetParam());
 
         if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("evect") == 'N')
-            testing_steqr_stedc_bad_arg<T, DC>();
+            testing_steqr_bad_arg<T>();
 
-        testing_steqr_stedc<T, DC>(arg);
+        testing_steqr<T>(arg);
     }
-};
-
-class STEQR : public STEQR_STEDC<false>
-{
-};
-
-class STEDC : public STEQR_STEDC<true>
-{
 };
 
 // non-batch tests
@@ -108,38 +99,10 @@ TEST_P(STEQR, __double_complex)
     run_tests<rocblas_double_complex>();
 }
 
-TEST_P(STEDC, __float)
-{
-    run_tests<float>();
-}
-
-TEST_P(STEDC, __double)
-{
-    run_tests<double>();
-}
-
-TEST_P(STEDC, __float_complex)
-{
-    run_tests<rocblas_float_complex>();
-}
-
-TEST_P(STEDC, __double_complex)
-{
-    run_tests<rocblas_double_complex>();
-}
-
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          STEQR,
                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(op_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          STEQR,
-                         Combine(ValuesIn(matrix_size_range), ValuesIn(op_range)));
-
-INSTANTIATE_TEST_SUITE_P(daily_lapack,
-                         STEDC,
-                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(op_range)));
-
-INSTANTIATE_TEST_SUITE_P(checkin_lapack,
-                         STEDC,
                          Combine(ValuesIn(matrix_size_range), ValuesIn(op_range)));

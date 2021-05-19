@@ -5313,6 +5313,8 @@ void cblas_stedc<float, float>(rocblas_evect evect,
                                float* E,
                                float* C,
                                rocblas_int ldc,
+                               float* work,
+                               rocblas_int lwork,
                                float* rwork,
                                rocblas_int lrwork,
                                rocblas_int* iwork,
@@ -5330,6 +5332,8 @@ void cblas_stedc<double, double>(rocblas_evect evect,
                                  double* E,
                                  double* C,
                                  rocblas_int ldc,
+                                 double* work,
+                                 rocblas_int lwork,
                                  double* rwork,
                                  rocblas_int lrwork,
                                  rocblas_int* iwork,
@@ -5346,6 +5350,8 @@ void cblas_stedc<float, rocblas_float_complex>(rocblas_evect evect,
                                                float* E,
                                                rocblas_float_complex* C,
                                                rocblas_int ldc,
+                                               rocblas_float_complex* work,
+                                               rocblas_int lwork,
                                                float* rwork,
                                                rocblas_int lrwork,
                                                rocblas_int* iwork,
@@ -5353,9 +5359,7 @@ void cblas_stedc<float, rocblas_float_complex>(rocblas_evect evect,
                                                rocblas_int* info)
 {
     char evectC = rocblas2char_evect(evect);
-    rocblas_int lwork = n * n;
-    std::vector<rocblas_float_complex> work(lwork);
-    cstedc_(&evectC, &n, D, E, C, &ldc, work.data(), &lwork, rwork, &lrwork, iwork, &liwork, info);
+    cstedc_(&evectC, &n, D, E, C, &ldc, work, &lwork, rwork, &lrwork, iwork, &liwork, info);
 }
 
 template <>
@@ -5365,6 +5369,8 @@ void cblas_stedc<double, rocblas_double_complex>(rocblas_evect evect,
                                                  double* E,
                                                  rocblas_double_complex* C,
                                                  rocblas_int ldc,
+                                                 rocblas_double_complex* work,
+                                                 rocblas_int lwork,
                                                  double* rwork,
                                                  rocblas_int lrwork,
                                                  rocblas_int* iwork,
@@ -5372,9 +5378,7 @@ void cblas_stedc<double, rocblas_double_complex>(rocblas_evect evect,
                                                  rocblas_int* info)
 {
     char evectC = rocblas2char_evect(evect);
-    rocblas_int lwork = n * n;
-    std::vector<rocblas_double_complex> work(lwork);
-    zstedc_(&evectC, &n, D, E, C, &ldc, work.data(), &lwork, rwork, &lrwork, iwork, &liwork, info);
+    zstedc_(&evectC, &n, D, E, C, &ldc, work, &lwork, rwork, &lrwork, iwork, &liwork, info);
 }
 
 // sygs2 & hegs2

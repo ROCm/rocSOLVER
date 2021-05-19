@@ -1166,61 +1166,103 @@ inline rocblas_status
 }
 /********************************************************/
 
-/******************** STEQR_STEDC ********************/
-inline rocblas_status rocsolver_steqr_stedc(bool DC,
-                                            rocblas_handle handle,
-                                            rocblas_evect evect,
-                                            rocblas_int n,
-                                            float* D,
-                                            float* E,
-                                            float* C,
-                                            rocblas_int ldc,
-                                            rocblas_int* info)
+/******************** STEQR ********************/
+inline rocblas_status rocsolver_steqr(rocblas_handle handle,
+                                      rocblas_evect evect,
+                                      rocblas_int n,
+                                      float* D,
+                                      float* E,
+                                      float* C,
+                                      rocblas_int ldc,
+                                      rocblas_int* info)
 {
-    return DC ? rocsolver_sstedc(handle, evect, n, D, E, C, ldc, info)
-              : rocsolver_ssteqr(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver_ssteqr(handle, evect, n, D, E, C, ldc, info);
 }
 
-inline rocblas_status rocsolver_steqr_stedc(bool DC,
-                                            rocblas_handle handle,
-                                            rocblas_evect evect,
-                                            rocblas_int n,
-                                            double* D,
-                                            double* E,
-                                            double* C,
-                                            rocblas_int ldc,
-                                            rocblas_int* info)
+inline rocblas_status rocsolver_steqr(rocblas_handle handle,
+                                      rocblas_evect evect,
+                                      rocblas_int n,
+                                      double* D,
+                                      double* E,
+                                      double* C,
+                                      rocblas_int ldc,
+                                      rocblas_int* info)
 {
-    return DC ? rocsolver_dstedc(handle, evect, n, D, E, C, ldc, info)
-              : rocsolver_dsteqr(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver_dsteqr(handle, evect, n, D, E, C, ldc, info);
 }
 
-inline rocblas_status rocsolver_steqr_stedc(bool DC,
-                                            rocblas_handle handle,
-                                            rocblas_evect evect,
-                                            rocblas_int n,
-                                            float* D,
-                                            float* E,
-                                            rocblas_float_complex* C,
-                                            rocblas_int ldc,
-                                            rocblas_int* info)
+inline rocblas_status rocsolver_steqr(rocblas_handle handle,
+                                      rocblas_evect evect,
+                                      rocblas_int n,
+                                      float* D,
+                                      float* E,
+                                      rocblas_float_complex* C,
+                                      rocblas_int ldc,
+                                      rocblas_int* info)
 {
-    return DC ? rocsolver_cstedc(handle, evect, n, D, E, C, ldc, info)
-              : rocsolver_csteqr(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver_csteqr(handle, evect, n, D, E, C, ldc, info);
 }
 
-inline rocblas_status rocsolver_steqr_stedc(bool DC,
-                                            rocblas_handle handle,
-                                            rocblas_evect evect,
-                                            rocblas_int n,
-                                            double* D,
-                                            double* E,
-                                            rocblas_double_complex* C,
-                                            rocblas_int ldc,
-                                            rocblas_int* info)
+inline rocblas_status rocsolver_steqr(rocblas_handle handle,
+                                      rocblas_evect evect,
+                                      rocblas_int n,
+                                      double* D,
+                                      double* E,
+                                      rocblas_double_complex* C,
+                                      rocblas_int ldc,
+                                      rocblas_int* info)
 {
-    return DC ? rocsolver_zstedc(handle, evect, n, D, E, C, ldc, info)
-              : rocsolver_zsteqr(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver_zsteqr(handle, evect, n, D, E, C, ldc, info);
+}
+/********************************************************/
+
+/******************** STEDC ********************/
+inline rocblas_status rocsolver_stedc(rocblas_handle handle,
+                                      rocblas_evect evect,
+                                      rocblas_int n,
+                                      float* D,
+                                      float* E,
+                                      float* C,
+                                      rocblas_int ldc,
+                                      rocblas_int* info)
+{
+    return rocsolver_sstedc(handle, evect, n, D, E, C, ldc, info);
+}
+
+inline rocblas_status rocsolver_stedc(rocblas_handle handle,
+                                      rocblas_evect evect,
+                                      rocblas_int n,
+                                      double* D,
+                                      double* E,
+                                      double* C,
+                                      rocblas_int ldc,
+                                      rocblas_int* info)
+{
+    return rocsolver_dstedc(handle, evect, n, D, E, C, ldc, info);
+}
+
+inline rocblas_status rocsolver_stedc(rocblas_handle handle,
+                                      rocblas_evect evect,
+                                      rocblas_int n,
+                                      float* D,
+                                      float* E,
+                                      rocblas_float_complex* C,
+                                      rocblas_int ldc,
+                                      rocblas_int* info)
+{
+    return rocsolver_cstedc(handle, evect, n, D, E, C, ldc, info);
+}
+
+inline rocblas_status rocsolver_stedc(rocblas_handle handle,
+                                      rocblas_evect evect,
+                                      rocblas_int n,
+                                      double* D,
+                                      double* E,
+                                      rocblas_double_complex* C,
+                                      rocblas_int ldc,
+                                      rocblas_int* info)
+{
+    return rocsolver_zstedc(handle, evect, n, D, E, C, ldc, info);
 }
 /********************************************************/
 
