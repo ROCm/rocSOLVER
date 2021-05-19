@@ -18,18 +18,18 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
                                          const rocblas_int n,
                                          const rocblas_int batch_count,
                                          size_t* size_scalars,
-                                         size_t* size_work_sur_x_temp,
+                                         size_t* size_work_wur_x_temp,
                                          size_t* size_workArr_temp_arr,
-                                         size_t* size_store_scs_invA,
+                                         size_t* size_store_wcs_invA,
                                          size_t* size_invA_arr)
 {
     // if quick return no need of workspace
     if(n == 0 || batch_count == 0)
     {
         *size_scalars = 0;
-        *size_work_sur_x_temp = 0;
+        *size_work_wur_x_temp = 0;
         *size_workArr_temp_arr = 0;
-        *size_store_scs_invA = 0;
+        *size_store_wcs_invA = 0;
         *size_invA_arr = 0;
         return;
     }
@@ -38,7 +38,7 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
     {
         // requirements for calling a single SYGS2/HEGS2
         rocsolver_sygs2_hegs2_getMemorySize<T, BATCHED>(itype, n, batch_count, size_scalars,
-                                                        size_work_sur_x_temp, size_store_scs_invA,
+                                                        size_work_wur_x_temp, size_store_wcs_invA,
                                                         size_workArr_temp_arr);
         *size_invA_arr = 0;
     }
@@ -49,7 +49,7 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
 
         // requirements for calling SYGS2/HEGS2 for the subblocks
         rocsolver_sygs2_hegs2_getMemorySize<T, BATCHED>(itype, kb, batch_count, size_scalars,
-                                                        size_work_sur_x_temp, size_store_scs_invA,
+                                                        size_work_wur_x_temp, size_store_wcs_invA,
                                                         size_workArr_temp_arr);
         *size_invA_arr = 0;
 
@@ -61,9 +61,9 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
             rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, n - kb, kb, batch_count, &temp5,
                                              &temp6, &temp7, &temp8);
 
-            *size_work_sur_x_temp = max(*size_work_sur_x_temp, max(temp1, temp5));
+            *size_work_wur_x_temp = max(*size_work_wur_x_temp, max(temp1, temp5));
             *size_workArr_temp_arr = max(*size_workArr_temp_arr, max(temp2, temp6));
-            *size_store_scs_invA = max(*size_store_scs_invA, max(temp3, temp7));
+            *size_store_wcs_invA = max(*size_store_wcs_invA, max(temp3, temp7));
             *size_invA_arr = max(*size_invA_arr, max(temp4, temp8));
         }
     }
@@ -84,9 +84,9 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
                                               const rocblas_stride strideB,
                                               const rocblas_int batch_count,
                                               T* scalars,
-                                              void* work_sur_x_temp,
+                                              void* work_wur_x_temp,
                                               void* workArr_temp_arr,
-                                              void* store_scs_invA,
+                                              void* store_wcs_invA,
                                               void* invA_arr,
                                               bool optim_mem)
 {
@@ -106,7 +106,7 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
     if(n <= nb)
         return rocsolver_sygs2_hegs2_template<BATCHED, T>(
             handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
-            scalars, work_sur_x_temp, store_scs_invA, (T**)workArr_temp_arr);
+            scalars, work_wur_x_temp, store_wcs_invA, (T**)workArr_temp_arr);
 
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
@@ -130,8 +130,8 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
 
                 rocsolver_sygs2_hegs2_template<BATCHED, T>(
                     handle, itype, uplo, kb, A, shiftA + idx2D(k, k, lda), lda, strideA, B,
-                    shiftB + idx2D(k, k, ldb), ldb, strideB, batch_count, scalars, work_sur_x_temp,
-                    store_scs_invA, (T**)workArr_temp_arr);
+                    shiftB + idx2D(k, k, ldb), ldb, strideB, batch_count, scalars, work_wur_x_temp,
+                    store_wcs_invA, (T**)workArr_temp_arr);
 
                 if(k + kb < n)
                 {
@@ -139,8 +139,8 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
                         handle, rocblas_side_left, uplo, rocblas_operation_conjugate_transpose,
                         rocblas_diagonal_non_unit, kb, n - k - kb, &t_one, B,
                         shiftB + idx2D(k, k, ldb), ldb, strideB, A, shiftA + idx2D(k, k + kb, lda),
-                        lda, strideA, batch_count, optim_mem, work_sur_x_temp, workArr_temp_arr,
-                        store_scs_invA, invA_arr);
+                        lda, strideA, batch_count, optim_mem, work_wur_x_temp, workArr_temp_arr,
+                        store_wcs_invA, invA_arr);
 
                     rocblasCall_symm_hemm<T>(handle, rocblas_side_left, uplo, kb, n - k - kb,
                                              &t_minhalf, A, shiftA + idx2D(k, k, lda), lda, strideA,
@@ -165,7 +165,7 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
                         rocblas_diagonal_non_unit, kb, n - k - kb, &t_one, B,
                         shiftB + idx2D(k + kb, k + kb, ldb), ldb, strideB, A,
                         shiftA + idx2D(k, k + kb, lda), lda, strideA, batch_count, optim_mem,
-                        work_sur_x_temp, workArr_temp_arr, store_scs_invA, invA_arr);
+                        work_wur_x_temp, workArr_temp_arr, store_wcs_invA, invA_arr);
                 }
             }
         }
@@ -178,8 +178,8 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
 
                 rocsolver_sygs2_hegs2_template<BATCHED, T>(
                     handle, itype, uplo, kb, A, shiftA + idx2D(k, k, lda), lda, strideA, B,
-                    shiftB + idx2D(k, k, ldb), ldb, strideB, batch_count, scalars, work_sur_x_temp,
-                    store_scs_invA, (T**)workArr_temp_arr);
+                    shiftB + idx2D(k, k, ldb), ldb, strideB, batch_count, scalars, work_wur_x_temp,
+                    store_wcs_invA, (T**)workArr_temp_arr);
 
                 if(k + kb < n)
                 {
@@ -187,8 +187,8 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
                         handle, rocblas_side_right, uplo, rocblas_operation_conjugate_transpose,
                         rocblas_diagonal_non_unit, n - k - kb, kb, &t_one, B,
                         shiftB + idx2D(k, k, ldb), ldb, strideB, A, shiftA + idx2D(k + kb, k, lda),
-                        lda, strideA, batch_count, optim_mem, work_sur_x_temp, workArr_temp_arr,
-                        store_scs_invA, invA_arr);
+                        lda, strideA, batch_count, optim_mem, work_wur_x_temp, workArr_temp_arr,
+                        store_wcs_invA, invA_arr);
 
                     rocblasCall_symm_hemm<T>(handle, rocblas_side_right, uplo, n - k - kb, kb,
                                              &t_minhalf, A, shiftA + idx2D(k, k, lda), lda, strideA,
@@ -213,7 +213,7 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
                         rocblas_diagonal_non_unit, n - k - kb, kb, &t_one, B,
                         shiftB + idx2D(k + kb, k + kb, ldb), ldb, strideB, A,
                         shiftA + idx2D(k + kb, k, lda), lda, strideA, batch_count, optim_mem,
-                        work_sur_x_temp, workArr_temp_arr, store_scs_invA, invA_arr);
+                        work_wur_x_temp, workArr_temp_arr, store_wcs_invA, invA_arr);
                 }
             }
         }
@@ -255,8 +255,8 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
 
                 rocsolver_sygs2_hegs2_template<BATCHED, T>(
                     handle, itype, uplo, kb, A, shiftA + idx2D(k, k, lda), lda, strideA, B,
-                    shiftB + idx2D(k, k, ldb), ldb, strideB, batch_count, scalars, work_sur_x_temp,
-                    store_scs_invA, (T**)workArr_temp_arr);
+                    shiftB + idx2D(k, k, ldb), ldb, strideB, batch_count, scalars, work_wur_x_temp,
+                    store_wcs_invA, (T**)workArr_temp_arr);
             }
         }
         else
@@ -294,8 +294,8 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
 
                 rocsolver_sygs2_hegs2_template<BATCHED, T>(
                     handle, itype, uplo, kb, A, shiftA + idx2D(k, k, lda), lda, strideA, B,
-                    shiftB + idx2D(k, k, ldb), ldb, strideB, batch_count, scalars, work_sur_x_temp,
-                    store_scs_invA, (T**)workArr_temp_arr);
+                    shiftB + idx2D(k, k, ldb), ldb, strideB, batch_count, scalars, work_wur_x_temp,
+                    store_wcs_invA, (T**)workArr_temp_arr);
             }
         }
     }
