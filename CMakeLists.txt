@@ -191,7 +191,7 @@ add_custom_target(coverage DEPENDS coverage_output)
 # Coverage cleanup
 #
 add_custom_target(coverage_cleanup
-    COMMAND rm -f `find ${CMAKE_BINARY_DIR} -name *.gcda`
+    COMMAND find ${CMAKE_BINARY_DIR} -name *.gcda -delete
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
   
