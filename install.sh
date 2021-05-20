@@ -72,6 +72,11 @@ Options:
                               Building locally with this flag will require docker on your machine. If you are
                               familiar with doxygen, sphinx and documentation tools, you can alternatively
                               use the scripts provided in the docs directory.
+
+  --codecoverage              Build with code coverage profiling enabled, excluding release mode.
+
+  -k | --relwithdebinfo       Pass this flag to build in release debug mode (equivalent to set CMAKE_BUILD_TYPE=RelWithDebInfo).
+                              (Default build type is Release)
 EOF
 }
 
@@ -297,6 +302,7 @@ build_docs=false
 optimal=true
 cleanup=false
 architecture=
+build_coverage=false
 
 
 # #################################################
@@ -306,7 +312,7 @@ architecture=
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrna: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrnka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -381,6 +387,12 @@ while true; do
     -r|--relocatable)
         build_relocatable=true
         shift ;;
+    --codecoverage)
+        build_coverage=true
+        shift ;;
+    -k|--relwithdebinfo)
+        build_type=RelWithDebInfo
+        shift ;;
     --) shift ; break ;;
     *)
         echo "Unexpected command line parameter received; aborting";
@@ -400,6 +412,8 @@ if [[ "${build_docs}" == true ]]; then
   rm -rf -- "${build_dir}/docs"
 elif [[ "${build_type}" == Release ]]; then
   rm -rf -- "${build_dir}/release"
+elif [[ "${build_type}" == RelWithDebInfo ]]; then
+  rm -rf -- "${build_dir}/release-debug"
 else
   rm -rf -- "${build_dir}/debug"
 fi
@@ -476,6 +490,8 @@ cd "$build_dir"
 
 if [[ "${build_type}" == Debug ]]; then
   mkdir -p debug && cd debug
+elif [[ "${build_type}" == RelWithDebInfo ]]; then
+  mkdir -p release-debug && cd release-debug
 else
   mkdir -p release && cd release
 fi
@@ -526,6 +542,15 @@ case "${ID}" in
     fi
     ;;
 esac
+
+if [[ "${build_coverage}" == true ]]; then
+    if [[ "${build_type}" == Release ]]; then
+        echo "Code coverage is not supported in Release mode, to enable code coverage select either Debug mode (-g | --debug) or RelWithDebInfo mode (-k | --relwithdebinfo); aborting";
+        exit 1
+    fi
+    cmake_common_options="${cmake_common_options} -DBUILD_CODE_COVERAGE=ON"
+fi
+
 
 ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
 check_exit_code "$?"
