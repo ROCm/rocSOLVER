@@ -87,7 +87,12 @@ else:
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    'navigation_depth': 4,
+    'prev_next_buttons_location': 'both',
+    'display_version': True,
+    'collapse_navigation': False,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -159,6 +164,6 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'rocSOLVER', u'rocSOLVER Documentation',
-     author, 'rocSOLVER', 'One line description of project.',
+     author, 'rocSOLVER development team', 'Implementation of LAPACK routines on AMD GPUs',
      'Miscellaneous'),
 ]

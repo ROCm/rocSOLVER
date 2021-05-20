@@ -1,41 +1,8 @@
-.. _logging-label:
-
-*************************
-Multi-level Logging
-*************************
-
-.. toctree::
-   :maxdepth: 4
-   :caption: Contents:
-
-Similar to rocBLAS, rocSOLVER provides logging facilities that can be used to output information
-on rocSOLVER function calls. Three types of logging are supported: trace logging, bench logging,
-and profile logging.
-
-Note that performance will degrade when logging is enabled.
-
-Logging types
-================================================
-
-Trace logging outputs a line each time an internal rocSOLVER or rocBLAS routine is called,
-outputting the function name and the values of its arguments (excluding stride arguments). The
-maximum depth of nested function calls that can appear in the log is specified by the user.
-
-Bench logging outputs a line each time a public rocSOLVER routine is called (excluding
-auxiliary library functions), outputting a line that can be used with the executable
-``rocsolver-bench`` to call the function with the same size arguments.
-
-Profile logging, upon calling ``rocsolver_log_write_profile`` or ``rocsolver_log_flush_profile``,
-or terminating the logging session using ``rocsolver_log_end``, will output statistics on each
-called internal rocSOLVER and rocBLAS routine. These include the number of times each function
-was called, the total program runtime occupied by the function, and the total program runtime
-occupied by its nested function calls. As with trace logging, the maximum depth of nested output
-is specified by the user. Note that, when profile logging is enabled, the stream will be synchronized
-after every internal function call.
-
 
 Initialization and set-up
 ================================================
+
+.. toctree::
 
 In order to use rocSOLVER's logging facilities, the user must first call ``rocsolver_log_begin``
 in order to allocate the internal data structures used for logging and begin the logging session.
@@ -79,17 +46,3 @@ or ``rocsolver_log_flush_profile``. Once logging facilities are no longer requir
 program termination), the user must call ``rocsolver_log_end`` to free the data structures used
 for logging. If the profile log has not been flushed beforehand, then ``rocsolver_log_end``
 will also output the results of profile logging.
-
-
-Multiple host threads
-================================================
-
-The logging facilities for rocSOLVER assume that each ``rocblas_handle`` is associated with at
-most one host thread. When using rocSOLVER's multi-level logging setup, it is recommended to
-create a separate ``rocblas_handle`` for each host thread.
-
-The rocsolver_log_* functions are not thread-safe. Calling a log function while any rocSOLVER
-routine is executing on another host thread will result in undefined behaviour. Once enabled,
-logging data collection is thread-safe. However, note that trace logging will likely result in
-garbled trace trees if rocSOLVER routines are called from multiple host threads.
-

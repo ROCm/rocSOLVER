@@ -4,9 +4,9 @@
 Tuning rocSOLVER Performance
 *******************************
 
-.. toctree::
-   :maxdepth: 4
-   :caption: Contents:
-
 More to come later...
+
+.. toctree::
+   :maxdepth: 1
+
 

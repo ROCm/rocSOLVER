@@ -4,7 +4,6 @@ Introduction
 *****************
 
 .. toctree::
-   :maxdepth: 4
-   :caption: Contents:
+   :maxdepth: 1
 
 More to come later...

@@ -1,22 +1,8 @@
 
-*************
-Introduction
-*************
+Currently implemented functionality
+====================================
 
 .. toctree::
-   :maxdepth: 4
-   :caption: Contents:
-
-Overview
-==================
-
-rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_
-on top of `AMD ROCm <https://rocm.github.io>`_. rocSOLVER is implemented in the
-`HIP programming language <https://github.com/ROCm-Developer-Tools/HIP>`_ and optimized for AMD's
-latest discrete GPUs.
-
-Brief description and functionality
-====================================
 
 The rocSOLVER library is in the early stages of active development. New features are being
 continuously added, with new functionality documented at each release of the ROCm platform.
@@ -177,5 +163,4 @@ rocsolver_getrf_npvt_strided_batched            x      x          x             
 rocsolver_getri_outofplace_batched              x      x          x             x
 rocsolver_getri_outofplace_strided_batched      x      x          x             x
 =========================================== ====== ====== ============== ==============
-
 

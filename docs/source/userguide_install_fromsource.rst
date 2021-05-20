@@ -1,41 +1,7 @@
-
-*****************************
-Building and installation
-*****************************
-
-.. toctree::
-   :maxdepth: 4
-   :caption: Contents:
-
-Prerequisites
-=================
-
-rocSOLVER requires a ROCm-enabled platform. For more information, see the
-`ROCm install guide <https://rocmdocs.amd.com/en/latest/Installation_Guide/Installation-Guide.html>`_.
-
-rocSOLVER also requires a compatible version of rocBLAS installed on the system.
-For more information, see the `rocBLAS install guide <https://rocblas.readthedocs.io/en/master/install.html>`_.
-
-rocBLAS and rocSOLVER are both still under active development, and it is hard to define minimal
-compatibility versions. For now, a good rule of thumb is to always use rocSOLVER together with the
-matching rocBLAS version. For example, if you want to install rocSOLVER from ROCm 3.3 release, then
-be sure that ROCm 3.3 rocBLAS is also installed; if you are building the rocSOLVER branch tip, then
-you will need to build and install rocBLAS branch tip as well.
-
-
-Installing from pre-built packages
-====================================
-
-If you have added the ROCm repositories to your Linux distribution, the latest release version of
-rocSOLVER can be installed using a package manager. On Ubuntu, for example, use the commands:
-
-.. code-block:: bash
-
-    sudo apt-get update
-    sudo apt-get install rocsolver
-
 Building & installing from source
 =====================================
+
+.. toctree::
 
 The `rocSOLVER source code <https://github.com/ROCmSoftwarePlatform/rocSOLVER.git>`_ is hosted
 on GitHub. Download the code and checkout the desired branch using:
@@ -286,4 +252,3 @@ This is equivalent to ``./install.sh -p``.
     sudo dpkg -i rocsolver[-\_]*.deb
 
 On an Ubuntu system, for example, this would be equivalent to ``./install.sh -i --install_dir /package/install/path``.
-

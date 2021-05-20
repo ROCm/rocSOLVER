@@ -1,0 +1,31 @@
+
+Additional Types
+================
+
+.. toctree::
+
+The following are additional types, only used in rocSOLVER, that extend the rocBLAS API.
+
+rocblas_direct
+---------------
+.. doxygenenum:: rocblas_direct
+
+rocblas_storev
+---------------
+.. doxygenenum:: rocblas_storev
+
+rocblas_svect
+---------------
+.. doxygenenum:: rocblas_svect
+
+rocblas_evect
+---------------
+.. doxygenenum:: rocblas_evect
+
+rocblas_workmode
+------------------
+.. doxygenenum:: rocblas_workmode
+
+rocblas_eform
+---------------
+.. doxygenenum:: rocblas_eform
