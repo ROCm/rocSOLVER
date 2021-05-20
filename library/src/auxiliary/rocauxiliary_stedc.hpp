@@ -23,7 +23,7 @@
   1. the split diagonal blocks can be worked in parallel as they are
   independent
   2. for each block, multiple threads can accelerate some of the reductions
-  and vector operations of the DC algorithm (defaltion, solve and merge processes).
+  and vector operations of the DC algorithm (deflation, solve and merge processes).
 ***************************************************************************/
 
 /** STEDC_KERNEL implements the main loop of the DC algorithm
