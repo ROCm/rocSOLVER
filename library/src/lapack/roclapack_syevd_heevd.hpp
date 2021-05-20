@@ -42,7 +42,7 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
 
     size_t unused;
     size_t w11 = 0, w12 = 0, w13 = 0;
-    size_t w21 = 0, w22 = 0;
+    size_t w21 = 0, w22 = 0, w23 = 0;
     size_t w31 = 0, w32 = 0;
     size_t t1 = 0, t2 = 0;
 
@@ -53,12 +53,12 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
     if(evect == rocblas_evect_original)
     {
         // extra requirements for computing eigenvalues and vectors (stedc)
-        rocsolver_stedc_getMemorySize<BATCHED, T, S>(evect, n, batch_count, &w12, &w21, &w31,
+        rocsolver_stedc_getMemorySize<BATCHED, T, S>(evect, n, batch_count, &w12, &w22, &w31,
                                                      &unused);
 
         // extra requirements for ormtr/unmtr
         rocsolver_ormtr_unmtr_getMemorySize<T, BATCHED>(rocblas_side_left, uplo, n, n, batch_count,
-                                                        &unused, &w13, &w22, &w32, &unused);
+                                                        &unused, &w13, &w23, &w32, &unused);
 
         *size_work3 = std::max(w31, w32);
     }
@@ -75,7 +75,7 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
 
     // get max values
     *size_work1 = std::max({w11, w12, w13});
-    *size_work2 = std::max(w21, w22);
+    *size_work2 = std::max({w21, w22, w23});
     *size_tmptau_W = std::max(t1, t2);
 
     // size of array for temporary householder scalars

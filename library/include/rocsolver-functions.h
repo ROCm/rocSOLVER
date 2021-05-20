@@ -11202,7 +11202,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_strided_batched(rocblas_handle 
                 If uplo indicates lower (or upper), then the upper (or lower) part of A
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0\n
+    n           rocblas_int. n >= 0.\n
                 Number of rows and columns of matrix A.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
@@ -11269,7 +11269,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev(rocblas_handle handle,
                 If uplo indicates lower (or upper), then the upper (or lower) part of A
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0\n
+    n           rocblas_int. n >= 0.\n
                 Number of rows and columns of matrix A.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
@@ -11337,7 +11337,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev(rocblas_handle handle,
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_j
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0\n
+    n           rocblas_int. n >= 0.\n
                 Number of rows and columns of matrices A_j.
     @param[inout]
     A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
@@ -11422,7 +11422,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_batched(rocblas_handle handle,
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_j
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0\n
+    n           rocblas_int. n >= 0.\n
                 Number of rows and columns of matrices A_j.
     @param[inout]
     A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
@@ -11507,7 +11507,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_batched(rocblas_handle handle,
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_j
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0\n
+    n           rocblas_int. n >= 0.\n
                 Number of rows and columns of matrices A_j.
     @param[inout]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
@@ -11598,7 +11598,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_strided_batched(rocblas_handle h
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_j
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0\n
+    n           rocblas_int. n >= 0.\n
                 Number of rows and columns of matrices A_j.
     @param[inout]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
@@ -11690,7 +11690,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_strided_batched(rocblas_handle h
                 If uplo indicates lower (or upper), then the upper (or lower) part of A
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0\n
+    n           rocblas_int. n >= 0.\n
                 Number of rows and columns of matrix A.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
@@ -11761,7 +11761,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevd(rocblas_handle handle,
                 If uplo indicates lower (or upper), then the upper (or lower) part of A
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0\n
+    n           rocblas_int. n >= 0.\n
                 Number of rows and columns of matrix A.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
@@ -11833,7 +11833,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd(rocblas_handle handle,
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_j
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0\n
+    n           rocblas_int. n >= 0.\n
                 Number of rows and columns of matrices A_j.
     @param[inout]
     A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
@@ -11922,7 +11922,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevd_batched(rocblas_handle handle,
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_j
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0\n
+    n           rocblas_int. n >= 0.\n
                 Number of rows and columns of matrices A_j.
     @param[inout]
     A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
@@ -12011,7 +12011,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_batched(rocblas_handle handle,
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_j
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0\n
+    n           rocblas_int. n >= 0.\n
                 Number of rows and columns of matrices A_j.
     @param[inout]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
@@ -12106,7 +12106,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevd_strided_batched(rocblas_handle 
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_j
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0\n
+    n           rocblas_int. n >= 0.\n
                 Number of rows and columns of matrices A_j.
     @param[inout]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
