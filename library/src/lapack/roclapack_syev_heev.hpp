@@ -135,7 +135,7 @@ void rocsolver_syev_heev_getMemorySize(const rocblas_evect evect,
                                                         &t2, &unused);
 
         // extra requirements for computing eigenvalues and vectors (steqr)
-        rocsolver_steqr_getMemorySize<S, T>(evect, n, batch_count, &w3);
+        rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, &w3);
     }
     else
     {
@@ -222,8 +222,8 @@ rocblas_status rocsolver_syev_heev_template(rocblas_handle handle,
             Abyx_norms_tmptr, tmptau_trfact, workArr);
 
         // compute eigenvalues and eigenvectors
-        rocsolver_steqr_template<S, T>(handle, evect, n, D, 0, strideD, E, 0, strideE, A, shiftA,
-                                       lda, strideA, info, batch_count, work_stack);
+        rocsolver_steqr_template<T>(handle, evect, n, D, 0, strideD, E, 0, strideE, A, shiftA, lda,
+                                    strideA, info, batch_count, work_stack);
     }
 
     return rocblas_status_success;

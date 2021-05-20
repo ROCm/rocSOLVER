@@ -4,6 +4,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## [(unreleased) rocSOLVER for ROCm 4.4.0]
 ### Added
+- Eigensolver routines for symmetric/hermitian matrices using Divide and Conquer algorithm:
+    - STEDC
+
 ### Optimizations
 ### Changed
 ### Removed
