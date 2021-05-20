@@ -528,7 +528,29 @@ template <typename T>
 void cblas_sterf(rocblas_int n, T* D, T* E);
 
 template <typename S, typename T>
-void cblas_steqr(rocblas_evect evect, rocblas_int n, S* D, S* E, T* C, rocblas_int ldc, S* work);
+void cblas_steqr(rocblas_evect evect,
+                 rocblas_int n,
+                 S* D,
+                 S* E,
+                 T* C,
+                 rocblas_int ldc,
+                 S* work,
+                 rocblas_int* info);
+
+template <typename S, typename T>
+void cblas_stedc(rocblas_evect evect,
+                 rocblas_int n,
+                 S* D,
+                 S* E,
+                 T* C,
+                 rocblas_int ldc,
+                 T* work,
+                 rocblas_int lwork,
+                 S* rwork,
+                 rocblas_int lrwork,
+                 rocblas_int* iwork,
+                 rocblas_int liwork,
+                 rocblas_int* info);
 
 template <typename T>
 void cblas_sygs2_hegs2(rocblas_eform itype,

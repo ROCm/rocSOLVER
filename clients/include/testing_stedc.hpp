@@ -12,7 +12,7 @@
 #include "rocsolver_test.hpp"
 
 template <typename S, typename T, typename U>
-void steqr_checkBadArgs(const rocblas_handle handle,
+void stedc_checkBadArgs(const rocblas_handle handle,
                         const rocblas_evect evect,
                         const rocblas_int n,
                         S dD,
@@ -22,31 +22,31 @@ void steqr_checkBadArgs(const rocblas_handle handle,
                         U dInfo)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(nullptr, evect, n, dD, dE, dC, ldc, dInfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedc(nullptr, evect, n, dD, dE, dC, ldc, dInfo),
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, rocblas_evect(-1), n, dD, dE, dC, ldc, dInfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedc(handle, rocblas_evect(-1), n, dD, dE, dC, ldc, dInfo),
                           rocblas_status_invalid_value);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, evect, n, (S) nullptr, dE, dC, ldc, dInfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedc(handle, evect, n, (S) nullptr, dE, dC, ldc, dInfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, evect, n, dD, (S) nullptr, dC, ldc, dInfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedc(handle, evect, n, dD, (S) nullptr, dC, ldc, dInfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, evect, n, dD, dE, (T) nullptr, ldc, dInfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedc(handle, evect, n, dD, dE, (T) nullptr, ldc, dInfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, evect, n, dD, dE, dC, ldc, (U) nullptr),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedc(handle, evect, n, dD, dE, dC, ldc, (U) nullptr),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_steqr(handle, evect, 0, (S) nullptr, (S) nullptr, (T) nullptr, ldc, dInfo),
+        rocsolver_stedc(handle, evect, 0, (S) nullptr, (S) nullptr, (T) nullptr, ldc, dInfo),
         rocblas_status_success);
 }
 
 template <typename T>
-void testing_steqr_bad_arg()
+void testing_stedc_bad_arg()
 {
     using S = decltype(std::real(T{}));
 
@@ -67,11 +67,11 @@ void testing_steqr_bad_arg()
     CHECK_HIP_ERROR(dInfo.memcheck());
 
     // check bad arguments
-    steqr_checkBadArgs(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data());
+    stedc_checkBadArgs(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data());
 }
 
 template <bool CPU, bool GPU, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
-void steqr_initData(const rocblas_handle handle,
+void stedc_initData(const rocblas_handle handle,
                     const rocblas_evect evect,
                     const rocblas_int n,
                     Sd& dD,
@@ -129,7 +129,7 @@ void steqr_initData(const rocblas_handle handle,
 }
 
 template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
-void steqr_getError(const rocblas_handle handle,
+void stedc_getError(const rocblas_handle handle,
                     const rocblas_evect evect,
                     const rocblas_int n,
                     Sd& dD,
@@ -147,18 +147,24 @@ void steqr_getError(const rocblas_handle handle,
                     Uh& hInfoRes,
                     double* max_err)
 {
+    constexpr bool COMPLEX = is_complex<T>;
     using S = decltype(std::real(T{}));
 
-    size_t lwork = (evect == rocblas_evect_none ? 0 : 2 * n - 2);
-    std::vector<S> work(lwork);
+    int lgn = floor(log(n - 1) / log(2)) + 1;
+    size_t lwork = (COMPLEX ? n * n : 0);
+    size_t lrwork = (evect == rocblas_evect_none ? 1 : 1 + 3 * n + 4 * n * n + 2 * n * lgn);
+    size_t liwork = (evect == rocblas_evect_none ? 1 : 6 + 6 * n + 5 * n * lgn);
+    std::vector<T> work(lwork);
+    std::vector<S> rwork(lrwork);
+    std::vector<rocblas_int> iwork(liwork);
 
     // input data initialization
-    steqr_initData<true, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
+    stedc_initData<true, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(
-        rocsolver_steqr(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()));
+        rocsolver_stedc(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()));
     CHECK_HIP_ERROR(hDRes.transfer_from(dD));
     CHECK_HIP_ERROR(hERes.transfer_from(dE));
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
@@ -186,7 +192,8 @@ void steqr_getError(const rocblas_handle handle,
     }
 
     // CPU lapack
-    cblas_steqr<S, T>(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), hInfo[0]);
+    cblas_stedc<S, T>(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), lwork, rwork.data(), lrwork,
+                      iwork.data(), liwork, hInfo[0]);
 
     // check info
     if(hInfo[0][0] != hInfoRes[0][0])
@@ -230,7 +237,7 @@ void steqr_getError(const rocblas_handle handle,
 }
 
 template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
-void steqr_getPerfData(const rocblas_handle handle,
+void stedc_getPerfData(const rocblas_handle handle,
                        const rocblas_evect evect,
                        const rocblas_int n,
                        Sd& dD,
@@ -247,32 +254,39 @@ void steqr_getPerfData(const rocblas_handle handle,
                        const rocblas_int hot_calls,
                        const bool perf)
 {
+    constexpr bool COMPLEX = is_complex<T>;
     using S = decltype(std::real(T{}));
 
-    size_t lwork = (evect == rocblas_evect_none ? 0 : 2 * n - 2);
-    std::vector<S> work(lwork);
+    int lgn = floor(log(n - 1) / log(2)) + 1;
+    size_t lwork = (COMPLEX ? n * n : 0);
+    size_t lrwork = (evect == rocblas_evect_none ? 1 : 1 + 3 * n + 4 * n * n + 2 * n * lgn);
+    size_t liwork = (evect == rocblas_evect_none ? 1 : 6 + 6 * n + 5 * n * lgn);
+    std::vector<T> work(lwork);
+    std::vector<S> rwork(lrwork);
+    std::vector<rocblas_int> iwork(liwork);
 
     if(!perf)
     {
-        steqr_initData<true, false, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
+        stedc_initData<true, false, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
                                           hInfo);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_steqr<S, T>(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), hInfo[0]);
+        cblas_stedc<S, T>(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), lwork, rwork.data(),
+                          lrwork, iwork.data(), liwork, hInfo[0]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    steqr_initData<true, false, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
+    stedc_initData<true, false, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        steqr_initData<false, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
+        stedc_initData<false, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
                                           hInfo);
 
         CHECK_ROCBLAS_ERROR(
-            rocsolver_steqr(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()));
+            rocsolver_stedc(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()));
     }
 
     // gpu-lapack performance
@@ -282,18 +296,18 @@ void steqr_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        steqr_initData<false, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
+        stedc_initData<false, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
                                           hInfo);
 
         start = get_time_us_sync(stream);
-        rocsolver_steqr(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data());
+        rocsolver_stedc(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data());
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
 
 template <typename T>
-void testing_steqr(Arguments& argus)
+void testing_stedc(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 
@@ -323,7 +337,7 @@ void testing_steqr(Arguments& argus)
     bool invalid_size = (n < 0 || (evect != rocblas_evect_none && ldc < n));
     if(invalid_size)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, evect, n, (S*)nullptr, (S*)nullptr,
+        EXPECT_ROCBLAS_STATUS(rocsolver_stedc(handle, evect, n, (S*)nullptr, (S*)nullptr,
                                               (T*)nullptr, ldc, (rocblas_int*)nullptr),
                               rocblas_status_invalid_size);
 
@@ -337,7 +351,7 @@ void testing_steqr(Arguments& argus)
     if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_steqr(handle, evect, n, (S*)nullptr, (S*)nullptr, (T*)nullptr,
+        CHECK_ALLOC_QUERY(rocsolver_stedc(handle, evect, n, (S*)nullptr, (S*)nullptr, (T*)nullptr,
                                           ldc, (rocblas_int*)nullptr));
 
         size_t size;
@@ -370,7 +384,7 @@ void testing_steqr(Arguments& argus)
     if(n == 0)
     {
         EXPECT_ROCBLAS_STATUS(
-            rocsolver_steqr(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()),
+            rocsolver_stedc(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()),
             rocblas_status_success);
         if(argus.timing)
             ROCSOLVER_BENCH_INFORM(0);
@@ -380,12 +394,12 @@ void testing_steqr(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        steqr_getError<T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hDRes, hE, hERes, hC, hCRes,
+        stedc_getError<T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hDRes, hE, hERes, hC, hCRes,
                           hInfo, hInfoRes, &max_error);
 
     // collect performance data
     if(argus.timing)
-        steqr_getPerfData<T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo,
+        stedc_getPerfData<T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo,
                              &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
 
     // validate results for rocsolver-test

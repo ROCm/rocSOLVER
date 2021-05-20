@@ -62,6 +62,7 @@ set(rocauxiliary_test_source
     # tridiagonal matrices
     sterf_gtest.cpp
     steqr_gtest.cpp
+    stedc_gtest.cpp
     latrd_gtest.cpp
     )
 

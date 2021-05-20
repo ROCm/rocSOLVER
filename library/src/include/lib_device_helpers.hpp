@@ -324,7 +324,7 @@ __global__ void set_zero(const rocblas_int m,
     }
 }
 
-/** COPY_MAT copies m-by-n array A into B.
+/** COPY_MAT copies m-by-n array A into B if copymat_to_buffer, or B into A if copymat_from_buffer
     If uplo = rocblas_fill_upper, only the upper triangular part is copied
     If uplo = rocblas_fill_lower, only the lower triangular part is copied **/
 template <typename T, typename U1, typename U2>
@@ -338,7 +338,8 @@ __global__ void copy_mat(const rocblas_int m,
                          const rocblas_int shiftB,
                          const rocblas_int ldb,
                          const rocblas_stride strideB,
-                         const rocblas_fill uplo = rocblas_fill_full)
+                         const rocblas_fill uplo = rocblas_fill_full,
+                         const copymat_direction direction = copymat_to_buffer)
 {
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -353,7 +354,52 @@ __global__ void copy_mat(const rocblas_int m,
         {
             T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
             T* Bp = load_ptr_batch<T>(B, b, shiftB, strideB);
-            Bp[i + j * ldb] = Ap[i + j * lda];
+            if(direction == copymat_to_buffer)
+                Bp[i + j * ldb] = Ap[i + j * lda];
+            else
+                Ap[i + j * lda] = Bp[i + j * ldb];
+        }
+    }
+}
+
+/** COPY_MAT copies m-by-n array A into B if copymat_to_buffer, or B into A if copymat_from_buffer
+    If uplo = rocblas_fill_upper, only the upper triangular part is copied
+    If uplo = rocblas_fill_lower, only the lower triangular part is copied
+    Only valid when A is complex and B real. If REAL, only works with real part of A;
+    if !REAL only works with imaginary part of A**/
+template <typename T, typename S, bool REAL, typename U1, typename U2, std::enable_if_t<is_complex<T>, int> = 0>
+__global__ void copy_mat(const rocblas_int m,
+                         const rocblas_int n,
+                         U1 A,
+                         const rocblas_int shiftA,
+                         const rocblas_int lda,
+                         const rocblas_stride strideA,
+                         U2 B,
+                         const rocblas_int shiftB,
+                         const rocblas_int ldb,
+                         const rocblas_stride strideB,
+                         const rocblas_fill uplo = rocblas_fill_full,
+                         const copymat_direction direction = copymat_to_buffer)
+{
+    const auto b = hipBlockIdx_z;
+    const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    const bool lower = (uplo == rocblas_fill_lower);
+    const bool full = (uplo == rocblas_fill_full);
+    const bool upper = (uplo == rocblas_fill_upper);
+
+    if(i < m && j < n)
+    {
+        if(full || (lower && i >= j) || (upper && j >= i))
+        {
+            T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+            S* Bp = load_ptr_batch<S>(B, b, shiftB, strideB);
+            if(direction == copymat_to_buffer)
+                Bp[i + j * ldb] = REAL ? Ap[i + j * lda].real() : Ap[i + j * lda].imag();
+            else if(REAL)
+                Ap[i + j * lda] = rocblas_complex_num<S>(Bp[i + j * ldb], A[i + j * lda].imag());
+            else
+                Ap[i + j * lda] = rocblas_complex_num<S>(A[i + j * lda].real(), Bp[i + j * ldb]);
         }
     }
 }
