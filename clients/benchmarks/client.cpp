@@ -94,6 +94,13 @@ try
             "                           Options are: s, d, c, z.\n"
             "                           ")
 
+        ("profile",
+         value<rocblas_int>(),
+            "Print profile logging results for the tested function.\n"
+            "                           The argument specifies the max depth of the nested output.\n"
+            "                           If the argument is unset or <= 0, profile logging is disabled.\n"
+            "                           ")
+
         ("singular",
          value<rocblas_int>(&argus.singular)->default_value(0),
             "Test with degenerate matrices? 0 = No, 1 = Yes\n"
@@ -392,8 +399,24 @@ try
     argus.validate_evect("evect");
     argus.validate_itype("itype");
 
+    // enable profile logging, if applicable
+    rocblas_int profile = argus.get<rocblas_int>("profile", 0);
+    if(profile > 0)
+    {
+        rocsolver_log_begin();
+        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        rocsolver_log_set_max_levels(profile);
+    }
+
     // select and dispatch function test/benchmark
     rocsolver_dispatcher::invoke(function, precision, argus);
+
+    // terminate logging and print
+    if(profile > 0)
+    {
+        rocsolver_log_flush_profile();
+        rocsolver_log_end();
+    }
 
     return 0;
 }
