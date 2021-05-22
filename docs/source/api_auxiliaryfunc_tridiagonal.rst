@@ -36,3 +36,14 @@ rocsolver_<type>steqr()
    :outline:
 .. doxygenfunction:: rocsolver_ssteqr
 
+.. _stedc:
+
+rocsolver_<type>stedc()
+---------------------------------------
+.. doxygenfunction:: rocsolver_zstedc
+   :outline:
+.. doxygenfunction:: rocsolver_cstedc
+   :outline:
+.. doxygenfunction:: rocsolver_dstedc
+   :outline:
+.. doxygenfunction:: rocsolver_sstedc
