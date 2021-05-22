@@ -5,7 +5,7 @@ QR factorization of a single matrix
 .. toctree::
 
 The following code snippet uses rocSOLVER to compute the QR factorization of a general m-by-n real matrix in double precision.
-For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`qr_label`.
+For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`rocsolver_dgeqrf() <geqrf>`.
 
 .. code-block:: cpp
 

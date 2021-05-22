@@ -1,8 +1,10 @@
 
-Householder reflexions
+Householder reflections
 ==================================
 
 .. toctree::
+
+.. _larfg:
 
 rocsolver_<type>larfg()
 ---------------------------------------
@@ -14,6 +16,8 @@ rocsolver_<type>larfg()
    :outline:
 .. doxygenfunction:: rocsolver_slarfg
 
+.. _larft:
+
 rocsolver_<type>larft()
 ---------------------------------------
 .. doxygenfunction:: rocsolver_zlarft
@@ -24,6 +28,8 @@ rocsolver_<type>larft()
    :outline:
 .. doxygenfunction:: rocsolver_slarft
 
+.. _larf:
+
 rocsolver_<type>larf()
 ---------------------------------------
 .. doxygenfunction:: rocsolver_zlarf
@@ -33,6 +39,8 @@ rocsolver_<type>larf()
 .. doxygenfunction:: rocsolver_dlarf
    :outline:
 .. doxygenfunction:: rocsolver_slarf
+
+.. _larfb:
 
 rocsolver_<type>larfb()
 ---------------------------------------

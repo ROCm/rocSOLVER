@@ -4,11 +4,15 @@ Vector and Matrix manipulations
 
 .. toctree::
 
+.. _lacgv:
+
 rocsolver_<type>lacgv()
 ---------------------------------------
 .. doxygenfunction:: rocsolver_zlacgv
    :outline:
 .. doxygenfunction:: rocsolver_clacgv
+
+.. _laswp:
 
 rocsolver_<type>laswp()
 ---------------------------------------

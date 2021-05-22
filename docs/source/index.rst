@@ -12,7 +12,7 @@ The information contained herein is for informational purposes only, and is subj
 Contents
 +++++++++++
 
-rocSOLVER's documentation consists on 3 main sections. The User's Guide is the starting point for
+rocSOLVER's documentation consists on 3 main documents. The User's Guide is the starting point for
 new users of the library, and basic reference for current users and/or LAPACK users. Advanced users and developers who want to understand further or extend the
 rocSOLVER library may want to see the Library Design Guide. For a list of currently implemented routines, and the description of its functionality and input and output parameters,
 see the rocSOLVER API.

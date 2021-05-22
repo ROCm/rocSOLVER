@@ -4,6 +4,8 @@ Bidiagonal forms
 
 .. toctree::
 
+.. _labrd:
+
 rocsolver_<type>labrd()
 ---------------------------------------
 .. doxygenfunction:: rocsolver_zlabrd
@@ -13,6 +15,8 @@ rocsolver_<type>labrd()
 .. doxygenfunction:: rocsolver_dlabrd
    :outline:
 .. doxygenfunction:: rocsolver_slabrd
+
+.. _bdsqr:
 
 rocsolver_<type>bdsqr()
 ---------------------------------------

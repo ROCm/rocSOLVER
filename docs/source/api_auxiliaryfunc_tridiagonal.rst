@@ -4,6 +4,8 @@ Tridiagonal forms
 
 .. toctree::
 
+.. _latrd:
+
 rocsolver_<type>latrd()
 ---------------------------------------
 .. doxygenfunction:: rocsolver_zlatrd
@@ -14,11 +16,15 @@ rocsolver_<type>latrd()
    :outline:
 .. doxygenfunction:: rocsolver_slatrd
 
+.. _sterf:
+
 rocsolver_<type>sterf()
 ---------------------------------------
 .. doxygenfunction:: rocsolver_dsterf
    :outline:
 .. doxygenfunction:: rocsolver_ssterf
+
+.. _steqr:
 
 rocsolver_<type>steqr()
 ---------------------------------------

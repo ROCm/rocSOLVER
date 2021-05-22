@@ -34,7 +34,7 @@ rocsolver_<type>geqr2_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgeqr2_strided_batched
 
-.. _qr_label:
+.. _geqrf:
 
 rocsolver_<type>geqrf()
 ---------------------------------------------------
@@ -46,7 +46,7 @@ rocsolver_<type>geqrf()
    :outline:
 .. doxygenfunction:: rocsolver_sgeqrf
 
-.. _qr_batched_label:
+.. _geqrf_batched:
 
 rocsolver_<type>geqrf_batched()
 ---------------------------------------------------
@@ -58,7 +58,7 @@ rocsolver_<type>geqrf_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgeqrf_batched
 
-.. _qr_strided_label:
+.. _geqrf_strided_batched:
 
 rocsolver_<type>geqrf_strided_batched()
 ---------------------------------------------------
