@@ -6,12 +6,15 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 - Eigensolver routines for symmetric/hermitian matrices using Divide and Conquer algorithm:
     - STEDC
+    - SYEVD (with batched and strided\_batched versions)
+    - HEEVD (with batched and strided\_batched versions)
 
 ### Optimizations
 ### Changed
 ### Removed
 ### Fixed
 ### Known Issues
+
 
 ## [rocSOLVER 3.13.0 for ROCm 4.3.0]
 ### Added

@@ -1550,15 +1550,23 @@ void zhegst_(int* itype,
              int* ldb,
              int* info);
 
-void ssyev_(char* evect, char* uplo, int* n, float* A, int* lda, float* D, float* E, int* sizeW, int* info);
+void ssyev_(char* evect,
+            char* uplo,
+            int* n,
+            float* A,
+            int* lda,
+            float* D,
+            float* work,
+            int* lwork,
+            int* info);
 void dsyev_(char* evect,
             char* uplo,
             int* n,
             double* A,
             int* lda,
             double* D,
-            double* E,
-            int* sizeW,
+            double* work,
+            int* lwork,
             int* info);
 void cheev_(char* evect,
             char* uplo,
@@ -1567,8 +1575,8 @@ void cheev_(char* evect,
             int* lda,
             float* D,
             rocblas_float_complex* work,
-            int* sizeW,
-            float* E,
+            int* lwork,
+            float* rwork,
             int* info);
 void zheev_(char* evect,
             char* uplo,
@@ -1577,9 +1585,58 @@ void zheev_(char* evect,
             int* lda,
             double* D,
             rocblas_double_complex* work,
-            int* sizeW,
-            double* E,
+            int* lwork,
+            double* rwork,
             int* info);
+
+void ssyevd_(char* evect,
+             char* uplo,
+             int* n,
+             float* A,
+             int* lda,
+             float* D,
+             float* work,
+             int* lwork,
+             int* iwork,
+             int* liwork,
+             int* info);
+void dsyevd_(char* evect,
+             char* uplo,
+             int* n,
+             double* A,
+             int* lda,
+             double* D,
+             double* work,
+             int* lwork,
+             int* iwork,
+             int* liwork,
+             int* info);
+void cheevd_(char* evect,
+             char* uplo,
+             int* n,
+             rocblas_float_complex* A,
+             int* lda,
+             float* D,
+             rocblas_float_complex* work,
+             int* lwork,
+             float* rwork,
+             int* lrwork,
+             int* iwork,
+             int* liwork,
+             int* info);
+void zheevd_(char* evect,
+             char* uplo,
+             int* n,
+             rocblas_double_complex* A,
+             int* lda,
+             double* D,
+             rocblas_double_complex* work,
+             int* lwork,
+             double* rwork,
+             int* lrwork,
+             int* iwork,
+             int* liwork,
+             int* info);
 
 void ssygv_(int* itype,
             char* evect,
@@ -5503,8 +5560,7 @@ void cblas_sygst_hegst<rocblas_double_complex>(rocblas_eform itype,
     zhegst_(&itypeI, &uploC, &n, A, &lda, B, &ldb, &info);
 }
 
-// sygst & hegst
-
+// syev & heev
 template <>
 void cblas_syev_heev<float, float>(rocblas_evect evect,
                                    rocblas_fill uplo,
@@ -5512,13 +5568,15 @@ void cblas_syev_heev<float, float>(rocblas_evect evect,
                                    float* A,
                                    rocblas_int lda,
                                    float* D,
-                                   float* E,
-                                   rocblas_int sizeW,
+                                   float* work,
+                                   rocblas_int lwork,
+                                   float* rwork,
+                                   rocblas_int lrwork,
                                    rocblas_int* info)
 {
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    ssyev_(&evectC, &uploC, &n, A, &lda, D, E, &sizeW, info);
+    ssyev_(&evectC, &uploC, &n, A, &lda, D, rwork, &lrwork, info);
 }
 
 template <>
@@ -5528,13 +5586,15 @@ void cblas_syev_heev<double, double>(rocblas_evect evect,
                                      double* A,
                                      rocblas_int lda,
                                      double* D,
-                                     double* E,
-                                     rocblas_int sizeW,
+                                     double* work,
+                                     rocblas_int lwork,
+                                     double* rwork,
+                                     rocblas_int lrwork,
                                      rocblas_int* info)
 {
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    dsyev_(&evectC, &uploC, &n, A, &lda, D, E, &sizeW, info);
+    dsyev_(&evectC, &uploC, &n, A, &lda, D, rwork, &lrwork, info);
 }
 
 template <>
@@ -5544,14 +5604,15 @@ void cblas_syev_heev<rocblas_float_complex, float>(rocblas_evect evect,
                                                    rocblas_float_complex* A,
                                                    rocblas_int lda,
                                                    float* D,
-                                                   float* E,
-                                                   rocblas_int sizeW,
+                                                   rocblas_float_complex* work,
+                                                   rocblas_int lwork,
+                                                   float* rwork,
+                                                   rocblas_int lrwork,
                                                    rocblas_int* info)
 {
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    rocblas_float_complex work[sizeW];
-    cheev_(&evectC, &uploC, &n, A, &lda, D, work, &sizeW, E, info);
+    cheev_(&evectC, &uploC, &n, A, &lda, D, work, &lwork, rwork, info);
 }
 
 template <>
@@ -5561,14 +5622,96 @@ void cblas_syev_heev<rocblas_double_complex, double>(rocblas_evect evect,
                                                      rocblas_double_complex* A,
                                                      rocblas_int lda,
                                                      double* D,
-                                                     double* E,
-                                                     rocblas_int sizeW,
+                                                     rocblas_double_complex* work,
+                                                     rocblas_int lwork,
+                                                     double* rwork,
+                                                     rocblas_int lrwork,
                                                      rocblas_int* info)
 {
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    rocblas_double_complex work[sizeW];
-    zheev_(&evectC, &uploC, &n, A, &lda, D, work, &sizeW, E, info);
+    zheev_(&evectC, &uploC, &n, A, &lda, D, work, &lwork, rwork, info);
+}
+
+// syevd & heevd
+template <>
+void cblas_syevd_heevd<float, float>(rocblas_evect evect,
+                                     rocblas_fill uplo,
+                                     rocblas_int n,
+                                     float* A,
+                                     rocblas_int lda,
+                                     float* D,
+                                     float* work,
+                                     rocblas_int lwork,
+                                     float* rwork,
+                                     rocblas_int lrwork,
+                                     rocblas_int* iwork,
+                                     rocblas_int liwork,
+                                     rocblas_int* info)
+{
+    char evectC = rocblas2char_evect(evect);
+    char uploC = rocblas2char_fill(uplo);
+    ssyevd_(&evectC, &uploC, &n, A, &lda, D, rwork, &lrwork, iwork, &liwork, info);
+}
+
+template <>
+void cblas_syevd_heevd<double, double>(rocblas_evect evect,
+                                       rocblas_fill uplo,
+                                       rocblas_int n,
+                                       double* A,
+                                       rocblas_int lda,
+                                       double* D,
+                                       double* work,
+                                       rocblas_int lwork,
+                                       double* rwork,
+                                       rocblas_int lrwork,
+                                       rocblas_int* iwork,
+                                       rocblas_int liwork,
+                                       rocblas_int* info)
+{
+    char evectC = rocblas2char_evect(evect);
+    char uploC = rocblas2char_fill(uplo);
+    dsyevd_(&evectC, &uploC, &n, A, &lda, D, rwork, &lrwork, iwork, &liwork, info);
+}
+
+template <>
+void cblas_syevd_heevd<rocblas_float_complex, float>(rocblas_evect evect,
+                                                     rocblas_fill uplo,
+                                                     rocblas_int n,
+                                                     rocblas_float_complex* A,
+                                                     rocblas_int lda,
+                                                     float* D,
+                                                     rocblas_float_complex* work,
+                                                     rocblas_int lwork,
+                                                     float* rwork,
+                                                     rocblas_int lrwork,
+                                                     rocblas_int* iwork,
+                                                     rocblas_int liwork,
+                                                     rocblas_int* info)
+{
+    char evectC = rocblas2char_evect(evect);
+    char uploC = rocblas2char_fill(uplo);
+    cheevd_(&evectC, &uploC, &n, A, &lda, D, work, &lwork, rwork, &lrwork, iwork, &liwork, info);
+}
+
+template <>
+void cblas_syevd_heevd<rocblas_double_complex, double>(rocblas_evect evect,
+                                                       rocblas_fill uplo,
+                                                       rocblas_int n,
+                                                       rocblas_double_complex* A,
+                                                       rocblas_int lda,
+                                                       double* D,
+                                                       rocblas_double_complex* work,
+                                                       rocblas_int lwork,
+                                                       double* rwork,
+                                                       rocblas_int lrwork,
+                                                       rocblas_int* iwork,
+                                                       rocblas_int liwork,
+                                                       rocblas_int* info)
+{
+    char evectC = rocblas2char_evect(evect);
+    char uploC = rocblas2char_fill(uplo);
+    zheevd_(&evectC, &uploC, &n, A, &lda, D, work, &lwork, rwork, &lrwork, iwork, &liwork, info);
 }
 
 // sygv & hegv

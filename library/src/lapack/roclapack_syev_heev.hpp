@@ -108,7 +108,7 @@ void rocsolver_syev_heev_getMemorySize(const rocblas_evect evect,
                                        size_t* size_workArr)
 {
     // if quick return, set workspace to zero
-    if(n == 0 || batch_count == 0)
+    if(n <= 1 || batch_count == 0)
     {
         *size_scalars = 0;
         *size_work_stack = 0;

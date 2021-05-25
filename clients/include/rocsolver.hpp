@@ -3875,6 +3875,162 @@ inline rocblas_status rocsolver_syev_heev(bool STRIDED,
 }
 /********************************************************/
 
+/******************** SYEVD/HEEVD ********************/
+// normal and strided_batched
+inline rocblas_status rocsolver_syevd_heevd(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            float* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float* D,
+                                            rocblas_stride stD,
+                                            float* E,
+                                            rocblas_stride stE,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return STRIDED ? rocsolver_ssyevd_strided_batched(handle, evect, uplo, n, A, lda, stA, D, stD,
+                                                      E, stE, info, bc)
+                   : rocsolver_ssyevd(handle, evect, uplo, n, A, lda, D, E, info);
+}
+
+inline rocblas_status rocsolver_syevd_heevd(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            double* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double* D,
+                                            rocblas_stride stD,
+                                            double* E,
+                                            rocblas_stride stE,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return STRIDED ? rocsolver_dsyevd_strided_batched(handle, evect, uplo, n, A, lda, stA, D, stD,
+                                                      E, stE, info, bc)
+                   : rocsolver_dsyevd(handle, evect, uplo, n, A, lda, D, E, info);
+}
+
+inline rocblas_status rocsolver_syevd_heevd(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_float_complex* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float* D,
+                                            rocblas_stride stD,
+                                            float* E,
+                                            rocblas_stride stE,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return STRIDED ? rocsolver_cheevd_strided_batched(handle, evect, uplo, n, A, lda, stA, D, stD,
+                                                      E, stE, info, bc)
+                   : rocsolver_cheevd(handle, evect, uplo, n, A, lda, D, E, info);
+}
+
+inline rocblas_status rocsolver_syevd_heevd(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_double_complex* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double* D,
+                                            rocblas_stride stD,
+                                            double* E,
+                                            rocblas_stride stE,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return STRIDED ? rocsolver_zheevd_strided_batched(handle, evect, uplo, n, A, lda, stA, D, stD,
+                                                      E, stE, info, bc)
+                   : rocsolver_zheevd(handle, evect, uplo, n, A, lda, D, E, info);
+}
+
+// batched
+inline rocblas_status rocsolver_syevd_heevd(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            float* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float* D,
+                                            rocblas_stride stD,
+                                            float* E,
+                                            rocblas_stride stE,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return rocsolver_ssyevd_batched(handle, evect, uplo, n, A, lda, D, stD, E, stE, info, bc);
+}
+
+inline rocblas_status rocsolver_syevd_heevd(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            double* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double* D,
+                                            rocblas_stride stD,
+                                            double* E,
+                                            rocblas_stride stE,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return rocsolver_dsyevd_batched(handle, evect, uplo, n, A, lda, D, stD, E, stE, info, bc);
+}
+
+inline rocblas_status rocsolver_syevd_heevd(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_float_complex* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float* D,
+                                            rocblas_stride stD,
+                                            float* E,
+                                            rocblas_stride stE,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return rocsolver_cheevd_batched(handle, evect, uplo, n, A, lda, D, stD, E, stE, info, bc);
+}
+
+inline rocblas_status rocsolver_syevd_heevd(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_double_complex* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double* D,
+                                            rocblas_stride stD,
+                                            double* E,
+                                            rocblas_stride stE,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return rocsolver_zheevd_batched(handle, evect, uplo, n, A, lda, D, stD, E, stE, info, bc);
+}
+/********************************************************/
+
 /******************** SYGV_HEGV ********************/
 // normal and strided_batched
 inline rocblas_status rocsolver_sygv_hegv(bool STRIDED,
