@@ -156,6 +156,12 @@ rocsolver_syev_strided_batched  x      x
 **rocsolver_heev**                                x             x
 rocsolver_heev_batched                            x             x
 rocsolver_heev_strided_batched                    x             x
+**rocsolver_syevd**             x      x
+rocsolver_syevd_batched         x      x
+rocsolver_syevd_strided_batched x      x
+**rocsolver_heevd**                               x             x
+rocsolver_heevd_batched                           x             x
+rocsolver_heevd_strided_batched                   x             x
 **rocsolver_sygv**              x      x
 rocsolver_sygv_batched          x      x
 rocsolver_sygv_strided_batched  x      x
