@@ -1176,6 +1176,42 @@ rocsolver_<type>hegv_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_chegv_strided_batched
 
+rocsolver_<type>sygvd()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsygvd
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvd
+
+rocsolver_<type>sygvd_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsygvd_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvd_batched
+
+rocsolver_<type>sygvd_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_dsygvd_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvd_strided_batched
+
+rocsolver_<type>hegvd()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhegvd
+   :outline:
+.. doxygenfunction:: rocsolver_chegvd
+
+rocsolver_<type>hegvd_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhegvd_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegvd_batched
+
+rocsolver_<type>hegvd_strided_batched()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. doxygenfunction:: rocsolver_zhegvd_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegvd_strided_batched
+
 
 Singular Value Decomposition
 --------------------------------

@@ -8,6 +8,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - STEDC
     - SYEVD (with batched and strided\_batched versions)
     - HEEVD (with batched and strided\_batched versions)
+- Generalized symmetric- and hermitian-definite eigensolvers using Divide and Conquer algorithm:
+    - SYGVD (with batched and strided\_batched versions)
+    - HEGVD (with batched and strided\_batched versions)
 
 ### Optimizations
 ### Changed

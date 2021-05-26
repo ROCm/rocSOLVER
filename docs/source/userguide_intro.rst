@@ -168,6 +168,12 @@ rocsolver_sygv_strided_batched  x      x
 **rocsolver_hegv**                                x             x
 rocsolver_hegv_batched                            x             x
 rocsolver_hegv_strided_batched                    x             x
+**rocsolver_sygvd**             x      x
+rocsolver_sygvd_batched         x      x
+rocsolver_sygvd_strided_batched x      x
+**rocsolver_hegvd**                               x             x
+rocsolver_hegvd_batched                           x             x
+rocsolver_hegvd_strided_batched                   x             x
 =============================== ====== ====== ============== ==============
 
 =========================================== ====== ====== ============== ==============

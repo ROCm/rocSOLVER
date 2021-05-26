@@ -89,6 +89,9 @@ set( rocsolver_lapack_source
   lapack/roclapack_sygv_hegv.cpp
   lapack/roclapack_sygv_hegv_batched.cpp
   lapack/roclapack_sygv_hegv_strided_batched.cpp
+  lapack/roclapack_sygvd_hegvd.cpp
+  lapack/roclapack_sygvd_hegvd_batched.cpp
+  lapack/roclapack_sygvd_hegvd_strided_batched.cpp
 )
 
 set( rocsolver_auxiliary_source

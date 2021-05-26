@@ -5821,7 +5821,7 @@ void cblas_sygvd_hegvd<float, float>(rocblas_eform itype,
     int itypeI = rocblas2char_eform(itype) - '0';
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    ssygvd_(&itypeI, &evectC, &uploC, &n, A, &lda, B, &ldb, W, work, &lwork, iwork, &liwork, info);
+    ssygvd_(&itypeI, &evectC, &uploC, &n, A, &lda, B, &ldb, W, rwork, &lrwork, iwork, &liwork, info);
 }
 
 template <>
@@ -5845,7 +5845,7 @@ void cblas_sygvd_hegvd<double, double>(rocblas_eform itype,
     int itypeI = rocblas2char_eform(itype) - '0';
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    dsygvd_(&itypeI, &evectC, &uploC, &n, A, &lda, B, &ldb, W, work, &lwork, iwork, &liwork, info);
+    dsygvd_(&itypeI, &evectC, &uploC, &n, A, &lda, B, &ldb, W, rwork, &lrwork, iwork, &liwork, info);
 }
 
 template <>
