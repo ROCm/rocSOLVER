@@ -37,8 +37,8 @@ LAPACK auxiliary functions
 .. csv-table:: Tridiagonal forms
     :header: "Function", "single", "double", "single complex", "double complex"
 
-    :ref:`rocsolver_latrd <latrd>`, x, x, x, x
     :ref:`rocsolver_sterf <sterf>`, x, x, , 
+    :ref:`rocsolver_latrd <latrd>`, x, x, x, x
     :ref:`rocsolver_steqr <steqr>`, x, x, x, x
     :ref:`rocsolver_stedc <stedc>`, x, x, x, x
 
@@ -106,16 +106,16 @@ LAPACK main functions
 .. csv-table:: Problem and matrix reductions
     :header: "Function", "single", "double", "single complex", "double complex"
 
-    :ref:`rocsolver_gebd2 <gebd2>`, x, x, x, x
-    :ref:`rocsolver_gebrd <gebrd>`, x, x, x, x
     :ref:`rocsolver_sytd2 <sytd2>`, x, x, , 
     :ref:`rocsolver_sytrd <sytrd>`, x, x, , 
-    :ref:`rocsolver_hetd2 <hetd2>`, , , x, x
-    :ref:`rocsolver_hetrd <hetrd>`, , , x, x
     :ref:`rocsolver_sygs2 <sygs2>`, x, x, , 
     :ref:`rocsolver_sygst <sygst>`, x, x, , 
+    :ref:`rocsolver_hetd2 <hetd2>`, , , x, x
+    :ref:`rocsolver_hetrd <hetrd>`, , , x, x
     :ref:`rocsolver_hegs2 <hegs2>`, , , x, x
     :ref:`rocsolver_hegst <hegst>`, , , x, x
+    :ref:`rocsolver_gebd2 <gebd2>`, x, x, x, x
+    :ref:`rocsolver_gebrd <gebrd>`, x, x, x, x
 
 .. csv-table:: Linear-systems solvers
     :header: "Function", "single", "double", "single complex", "double complex"
@@ -133,8 +133,10 @@ LAPACK main functions
     :header: "Function", "single", "double", "single complex", "double complex"
 
     :ref:`rocsolver_syev <syev>`, x, x, , 
-    :ref:`rocsolver_heev <heev>`, , , x, x
+    :ref:`rocsolver_syevd <syevd>`, x, x, , 
     :ref:`rocsolver_sygv <sygv>`, x, x, , 
+    :ref:`rocsolver_heev <heev>`, , , x, x
+    :ref:`rocsolver_heevd <heevd>`, , , x, x
     :ref:`rocsolver_hegv <hegv>`, , , x, x
 
 .. csv-table:: Singular Value Decomposition
