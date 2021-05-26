@@ -9,8 +9,12 @@
 
 #pragma once
 
+#include "rocblas.hpp"
+#include "roclapack_potrf.hpp"
 #include "roclapack_syevd_heevd.hpp"
+#include "roclapack_sygst_hegst.hpp"
 #include "roclapack_sygv_hegv.hpp"
+#include "rocsolver.h"
 
 template <bool BATCHED, typename T, typename S>
 void rocsolver_sygvd_hegvd_getMemorySize(const rocblas_eform itype,
