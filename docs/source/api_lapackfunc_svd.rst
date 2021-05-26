@@ -4,6 +4,8 @@ Singular Value Decomposition
 
 .. toctree::
 
+.. _gesvd:
+
 rocsolver_<type>gesvd()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_zgesvd

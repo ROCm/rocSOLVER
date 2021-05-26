@@ -4,6 +4,8 @@ Orthogonal Factorizations
 
 .. toctree::
 
+.. _geqr2:
+
 rocsolver_<type>geqr2()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_zgeqr2
@@ -70,6 +72,8 @@ rocsolver_<type>geqrf_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgeqrf_strided_batched
 
+.. _geql2:
+
 rocsolver_<type>geql2()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_zgeql2
@@ -99,6 +103,8 @@ rocsolver_<type>geql2_strided_batched()
 .. doxygenfunction:: rocsolver_dgeql2_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgeql2_strided_batched
+
+.. _geqlf:
 
 rocsolver_<type>geqlf()
 ---------------------------------------------------
@@ -130,6 +136,8 @@ rocsolver_<type>geqlf_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgeqlf_strided_batched
 
+.. _gelq2:
+
 rocsolver_<type>gelq2()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_zgelq2
@@ -159,6 +167,8 @@ rocsolver_<type>gelq2_strided_batched()
 .. doxygenfunction:: rocsolver_dgelq2_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgelq2_strided_batched
+
+.. _gelqf:
 
 rocsolver_<type>gelqf()
 ---------------------------------------------------

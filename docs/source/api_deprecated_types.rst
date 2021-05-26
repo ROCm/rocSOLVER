@@ -4,6 +4,9 @@ Types
 
 .. toctree::
 
+See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_
+documentation for information on the suggested replacements for deprecated types.
+
 rocsolver_int
 ---------------------
 .. doxygentypedef:: rocsolver_int

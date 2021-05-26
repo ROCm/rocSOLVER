@@ -4,6 +4,8 @@ Linear-systems solvers
 
 .. toctree::
 
+.. _trtri:
+
 rocsolver_<type>trtri()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_ztrtri
@@ -33,6 +35,8 @@ rocsolver_<type>trtri_strided_batched()
 .. doxygenfunction:: rocsolver_dtrtri_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_strtri_strided_batched
+
+.. _getri:
 
 rocsolver_<type>getri()
 ---------------------------------------------------
@@ -64,6 +68,7 @@ rocsolver_<type>getri_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgetri_strided_batched
 
+.. _getrs:
 
 rocsolver_<type>getrs()
 ---------------------------------------------------

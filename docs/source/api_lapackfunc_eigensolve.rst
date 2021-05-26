@@ -4,6 +4,8 @@ Symmetric Eigensolvers
 
 .. toctree::
 
+.. _syev:
+
 rocsolver_<type>syev()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_dsyev
@@ -21,6 +23,8 @@ rocsolver_<type>syev_strided_batched()
 .. doxygenfunction:: rocsolver_dsyev_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_ssyev_strided_batched
+
+.. _heev:
 
 rocsolver_<type>heev()
 ---------------------------------------------------
@@ -40,6 +44,8 @@ rocsolver_<type>heev_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_cheev_strided_batched
 
+.. _sygv:
+
 rocsolver_<type>sygv()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_dsygv
@@ -57,6 +63,8 @@ rocsolver_<type>sygv_strided_batched()
 .. doxygenfunction:: rocsolver_dsygv_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_ssygv_strided_batched
+
+.. _hegv:
 
 rocsolver_<type>hegv()
 ---------------------------------------------------

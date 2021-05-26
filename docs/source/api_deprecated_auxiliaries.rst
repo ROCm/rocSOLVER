@@ -4,6 +4,9 @@ Auxiliary Functions
 
 .. toctree::
 
+See the `rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/functions.html#auxiliary>`_
+documentation for information on the suggested replacements for deprecated auxiliaries.
+
 rocsolver_create_handle()
 --------------------------
 .. doxygenfunction:: rocsolver_create_handle

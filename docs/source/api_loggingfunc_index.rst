@@ -1,3 +1,4 @@
+.. _api_logging:
 
 ******************
 Logging Functions

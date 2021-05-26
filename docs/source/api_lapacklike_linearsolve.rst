@@ -4,6 +4,8 @@ Linear-systems solvers
 
 .. toctree::
 
+.. _getri_outofplace:
+
 rocsolver_<type>getri_outofplace()
 -----------------------------------------------------
 .. doxygenfunction:: rocsolver_zgetri_outofplace

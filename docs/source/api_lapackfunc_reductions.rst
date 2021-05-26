@@ -4,6 +4,8 @@ Problem and matrix reductions
 
 .. toctree::
 
+.. _gebd2:
+
 rocsolver_<type>gebd2()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_zgebd2
@@ -33,6 +35,8 @@ rocsolver_<type>gebd2_strided_batched()
 .. doxygenfunction:: rocsolver_dgebd2_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgebd2_strided_batched
+
+.. _gebrd:
 
 rocsolver_<type>gebrd()
 ---------------------------------------------------
@@ -64,6 +68,8 @@ rocsolver_<type>gebrd_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgebrd_strided_batched
 
+.. _sytd2:
+
 rocsolver_<type>sytd2()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_dsytd2
@@ -81,6 +87,8 @@ rocsolver_<type>sytd2_strided_batched()
 .. doxygenfunction:: rocsolver_dsytd2_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_ssytd2_strided_batched
+
+.. _hetd2:
 
 rocsolver_<type>hetd2()
 ---------------------------------------------------
@@ -100,6 +108,8 @@ rocsolver_<type>hetd2_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_chetd2_strided_batched
 
+.. _sytrd:
+
 rocsolver_<type>sytrd()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_dsytrd
@@ -117,6 +127,8 @@ rocsolver_<type>sytrd_strided_batched()
 .. doxygenfunction:: rocsolver_dsytrd_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_ssytrd_strided_batched
+
+.. _hetrd:
 
 rocsolver_<type>hetrd()
 ---------------------------------------------------
@@ -136,6 +148,8 @@ rocsolver_<type>hetrd_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_chetrd_strided_batched
 
+.. _sygs2:
+
 rocsolver_<type>sygs2()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_dsygs2
@@ -153,6 +167,8 @@ rocsolver_<type>sygs2_strided_batched()
 .. doxygenfunction:: rocsolver_dsygs2_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_ssygs2_strided_batched
+
+.. _hegs2:
 
 rocsolver_<type>hegs2()
 ---------------------------------------------------
@@ -172,6 +188,8 @@ rocsolver_<type>hegs2_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_chegs2_strided_batched
 
+.. _sygst:
+
 rocsolver_<type>sygst()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_dsygst
@@ -189,6 +207,8 @@ rocsolver_<type>sygst_strided_batched()
 .. doxygenfunction:: rocsolver_dsygst_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_ssygst_strided_batched
+
+.. _hegst:
 
 rocsolver_<type>hegst()
 ---------------------------------------------------

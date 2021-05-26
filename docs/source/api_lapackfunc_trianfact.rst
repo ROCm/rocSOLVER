@@ -4,6 +4,8 @@ Triangular Factorizations
 
 .. toctree::
 
+.. _potf2:
+
 rocsolver_<type>potf2()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_zpotf2
@@ -33,6 +35,8 @@ rocsolver_<type>potf2_strided_batched()
 .. doxygenfunction:: rocsolver_dpotf2_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_spotf2_strided_batched
+
+.. _potrf:
 
 rocsolver_<type>potrf()
 ---------------------------------------------------
@@ -64,6 +68,8 @@ rocsolver_<type>potrf_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_spotrf_strided_batched
 
+.. _getf2:
+
 rocsolver_<type>getf2()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_zgetf2
@@ -93,6 +99,8 @@ rocsolver_<type>getf2_strided_batched()
 .. doxygenfunction:: rocsolver_dgetf2_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgetf2_strided_batched
+
+.. _getrf:
 
 rocsolver_<type>getrf()
 ---------------------------------------------------

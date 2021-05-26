@@ -46,3 +46,6 @@ or ``rocsolver_log_flush_profile``. Once logging facilities are no longer requir
 program termination), the user must call ``rocsolver_log_end`` to free the data structures used
 for logging. If the profile log has not been flushed beforehand, then ``rocsolver_log_end``
 will also output the results of profile logging.
+
+For more details on the mentioned logging functions, see the :ref:`Logging functions section <api_logging>`
+on the rocSOLVER API document. 

@@ -4,6 +4,8 @@ Least-squares solvers
 
 .. toctree::
 
+.. _gels:
+
 rocsolver_<type>gels()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_zgels

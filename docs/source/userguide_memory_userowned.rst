@@ -18,3 +18,6 @@ as the workspace for rocSOLVER. For example:
 
     rocblas_set_workspace(handle, nullptr, 0);
     hipFree(device_memory);
+
+For more details on the rocBLAS APIs, see the 
+`rocBLAS documentation <https://rocblas.readthedocs.io/en/latest/functions.html#device-memory-functions>`_.

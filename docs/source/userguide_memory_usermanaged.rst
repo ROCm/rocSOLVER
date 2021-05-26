@@ -28,6 +28,10 @@ system with 1 right-hand side (involving calls to ``getrf`` and ``getrs``):
     rocsolver_dgetrs(handle, rocblas_operation_none, 1024, 1, nullptr, lda, nullptr, nullptr, ldb);
     rocblas_stop_device_memory_size_query(handle, &memory_size);
 
+For more details on the rocBLAS APIs, see the 
+`rocBLAS documentation <https://rocblas.readthedocs.io/en/latest/functions.html#device-memory-functions>`_.
+
+
 Using an environment variable
 ------------------------------
 
@@ -51,3 +55,6 @@ called. For example:
     hipStreamSynchronize(stream);
 
     rocblas_set_device_memory_size(handle, memory_size);
+
+For more details on the rocBLAS APIs, see the 
+`rocBLAS documentation <https://rocblas.readthedocs.io/en/latest/functions.html#device-memory-functions>`_.

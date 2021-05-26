@@ -8,8 +8,8 @@ The rocSOLVER library is in the early stages of active development. New features
 continuously added, with new functionality documented at each `release of the ROCm platform <https://rocmdocs.amd.com/en/latest/Current_Release_Notes/Current-Release-Notes.html>`_.
 
 The following tables summarizes the LAPACK functionality implemented for the different supported precisions in rocSOLVER's latest release.
-All the LAPACK main functions include *_batched* and *_strided_batched* versions. For a complete description of the listed 
-routines, please see the :ref:`rocSOLVER API <library_api>` document.
+All the LAPACK and LAPACK-like main functions include *_batched* and *_strided_batched* versions. For a complete description of the listed 
+routines below, please see the :ref:`rocSOLVER API <library_api>` document.
 
 LAPACK auxiliary functions
 ----------------------------
@@ -82,119 +82,80 @@ LAPACK auxiliary functions
     :ref:`rocsolver_unmbr <unmbr>`, , , x, x
     :ref:`rocsolver_unmtr <unmtr>`, , , x, x
 
-
-
-
-
 LAPACK main functions
 ----------------------------
 
+.. csv-table:: Triangular factorizations
+    :header: "Function", "single", "double", "single complex", "double complex"
 
-================================ ====== ====== ============== ==============
-LAPACK Function                  single double single complex double complex
-================================ ====== ====== ============== ==============
-**rocsolver_potf2**                x      x          x             x
-rocsolver_potf2_batched            x      x          x             x
-rocsolver_potf2_strided_batched    x      x          x             x
-**rocsolver_potrf**                x      x          x             x
-rocsolver_potrf_batched            x      x          x             x
-rocsolver_potrf_strided_batched    x      x          x             x
-**rocsolver_getf2**                x      x          x             x
-rocsolver_getf2_batched            x      x          x             x
-rocsolver_getf2_strided_batched    x      x          x             x
-**rocsolver_getrf**                x      x          x             x
-rocsolver_getrf_batched            x      x          x             x
-rocsolver_getrf_strided_batched    x      x          x             x
-**rocsolver_geqr2**                x      x          x             x
-rocsolver_geqr2_batched            x      x          x             x
-rocsolver_geqr2_strided_batched    x      x          x             x
-:ref:`rocsolver_geqrf <geqrf>`     x      x          x             x
+    :ref:`rocsolver_potf2 <potf2>`, x, x, x, x
+    :ref:`rocsolver_potrf <potrf>`, x, x, x, x
+    :ref:`rocsolver_getf2 <getf2>`, x, x, x, x
+    :ref:`rocsolver_getrf <getrf>`, x, x, x, x
 
- _batched                           
+.. csv-table:: Orthogonal factorizations
+    :header: "Function", "single", "double", "single complex", "double complex"
 
- _strided_batched                   
-**rocsolver_geql2**                x      x          x             x
-rocsolver_geql2_batched            x      x          x             x
-rocsolver_geql2_strided_batched    x      x          x             x
-**rocsolver_geqlf**                x      x          x             x
-rocsolver_geqlf_batched            x      x          x             x
-rocsolver_geqlf_strided_batched    x      x          x             x
-**rocsolver_gelq2**                x      x          x             x
-rocsolver_gelq2_batched            x      x          x             x
-rocsolver_gelq2_strided_batched    x      x          x             x
-**rocsolver_gelqf**                x      x          x             x
-rocsolver_gelqf_batched            x      x          x             x
-rocsolver_gelqf_strided_batched    x      x          x             x
-**rocsolver_getrs**                x      x          x             x
-rocsolver_getrs_batched            x      x          x             x
-rocsolver_getrs_strided_batched    x      x          x             x
-**rocsolver_trtri**                x      x          x             x
-rocsolver_trtri_batched            x      x          x             x
-rocsolver_trtri_strided_batched    x      x          x             x
-**rocsolver_getri**                x      x          x             x
-rocsolver_getri_batched            x      x          x             x
-rocsolver_getri_strided_batched    x      x          x             x
-**rocsolver_gels**                 x      x          x             x
-rocsolver_gels_batched             x      x          x             x
-rocsolver_gels_strided_batched     x      x          x             x
-**rocsolver_gebd2**                x      x          x             x
-rocsolver_gebd2_batched            x      x          x             x
-rocsolver_gebd2_strided_batched    x      x          x             x
-**rocsolver_gebrd**                x      x          x             x
-rocsolver_gebrd_batched            x      x          x             x
-rocsolver_gebrd_strided_batched    x      x          x             x
-**rocsolver_gesvd**                x      x          x             x
-rocsolver_gesvd_batched            x      x          x             x
-rocsolver_gesvd_strided_batched    x      x          x             x
-**rocsolver_sytd2**                x      x
-rocsolver_sytd2_batched            x      x
-rocsolver_sytd2_strided_batched    x      x
-**rocsolver_sytrd**                x      x
-rocsolver_sytrd_batched            x      x
-rocsolver_sytrd_strided_batched    x      x
-**rocsolver_hetd2**                                  x             x
-rocsolver_hetd2_batched                              x             x
-rocsolver_hetd2_strided_batched                      x             x
-**rocsolver_hetrd**                                  x             x
-rocsolver_hetrd_batched                              x             x
-rocsolver_hetrd_strided_batched                      x             x
-**rocsolver_sygs2**                x      x
-rocsolver_sygs2_batched            x      x
-rocsolver_sygs2_strided_batched    x      x
-**rocsolver_sygst**                x      x
-rocsolver_sygst_batched            x      x
-rocsolver_sygst_strided_batched    x      x
-**rocsolver_hegs2**                                  x             x
-rocsolver_hegs2_batched                              x             x
-rocsolver_hegs2_strided_batched                      x             x
-**rocsolver_hegst**                                  x             x
-rocsolver_hegst_batched                              x             x
-rocsolver_hegst_strided_batched                      x             x
-**rocsolver_syev**                 x      x
-rocsolver_syev_batched             x      x
-rocsolver_syev_strided_batched     x      x
-**rocsolver_heev**                                   x             x
-rocsolver_heev_batched                               x             x
-rocsolver_heev_strided_batched                       x             x
-**rocsolver_sygv**                 x      x
-rocsolver_sygv_batched             x      x
-rocsolver_sygv_strided_batched     x      x
-**rocsolver_hegv**                                   x             x
-rocsolver_hegv_batched                               x             x
-rocsolver_hegv_strided_batched                       x             x
-================================ ====== ====== ============== ==============
+    :ref:`rocsolver_geqr2 <geqr2>`, x, x, x, x
+    :ref:`rocsolver_geqrf <geqrf>`, x, x, x, x
+    :ref:`rocsolver_gelq2 <gelq2>`, x, x, x, x
+    :ref:`rocsolver_gelqf <gelqf>`, x, x, x, x
+    :ref:`rocsolver_geql2 <geql2>`, x, x, x, x
+    :ref:`rocsolver_geqlf <geqlf>`, x, x, x, x
 
-=========================================== ====== ====== ============== ==============
-Lapack-like Function                        single double single complex double complex
-=========================================== ====== ====== ============== ==============
-**rocsolver_getf2_npvt**                        x      x          x             x
-rocsolver_getf2_npvt_batched                    x      x          x             x
-rocsolver_getf2_npvt_strided_batched            x      x          x             x
-**rocsolver_getrf_npvt**                        x      x          x             x
-rocsolver_getrf_npvt_batched                    x      x          x             x
-rocsolver_getrf_npvt_strided_batched            x      x          x             x
-**rocsolver_getri_outofplace**                  x      x          x             x
-rocsolver_getri_outofplace_batched              x      x          x             x
-rocsolver_getri_outofplace_strided_batched      x      x          x             x
-=========================================== ====== ====== ============== ==============
+.. csv-table:: Problem and matrix reductions
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_gebd2 <gebd2>`, x, x, x, x
+    :ref:`rocsolver_gebrd <gebrd>`, x, x, x, x
+    :ref:`rocsolver_sytd2 <sytd2>`, x, x, , 
+    :ref:`rocsolver_sytrd <sytrd>`, x, x, , 
+    :ref:`rocsolver_hetd2 <hetd2>`, , , x, x
+    :ref:`rocsolver_hetrd <hetrd>`, , , x, x
+    :ref:`rocsolver_sygs2 <sygs2>`, x, x, , 
+    :ref:`rocsolver_sygst <sygst>`, x, x, , 
+    :ref:`rocsolver_hegs2 <hegs2>`, , , x, x
+    :ref:`rocsolver_hegst <hegst>`, , , x, x
+
+.. csv-table:: Linear-systems solvers
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_trtri <trtri>`, x, x, x, x
+    :ref:`rocsolver_getri <getri>`, x, x, x, x
+    :ref:`rocsolver_getrs <getrs>`, x, x, x, x
+
+.. csv-table:: Least-square solvers
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_gels <gels>`, x, x, x, x
+
+.. csv-table:: Symmetric Eigensolvers
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_syev <syev>`, x, x, , 
+    :ref:`rocsolver_heev <heev>`, , , x, x
+    :ref:`rocsolver_sygv <sygv>`, x, x, , 
+    :ref:`rocsolver_hegv <hegv>`, , , x, x
+
+.. csv-table:: Singular Value Decomposition
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_gesvd <gesvd>`, x, x, x, x
+
+
+LAPACK-like functions
+----------------------------
+
+.. csv-table:: Triangular factorizations
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_getf2_npvt <getf2_npvt>`, x, x, x, x
+    :ref:`rocsolver_getrf_npvt <getrf_npvt>`, x, x, x, x
+
+.. csv-table:: Linear-systems solvers
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_getri_outofplace <getri_outofplace>`, x, x, x, x
+
+
 

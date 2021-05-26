@@ -4,6 +4,8 @@ Triangular Factorizations
 
 .. toctree::
 
+.. _getf2_npvt:
+
 rocsolver_<type>getf2_npvt()
 -----------------------------------------------------
 .. doxygenfunction:: rocsolver_zgetf2_npvt
@@ -33,6 +35,8 @@ rocsolver_<type>getf2_npvt_strided_batched()
 .. doxygenfunction:: rocsolver_dgetf2_npvt_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgetf2_npvt_strided_batched
+
+.. _getrf_npvt:
 
 rocsolver_<type>getrf_npvt()
 -----------------------------------------------------
