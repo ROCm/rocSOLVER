@@ -35,6 +35,7 @@ set(roclapack_test_source
     syev_heev_gtest.cpp
     syevd_heevd_gtest.cpp
     sygv_hegv_gtest.cpp
+    sygvd_hegvd_gtest.cpp
     )
 
 set(rocauxiliary_test_source
