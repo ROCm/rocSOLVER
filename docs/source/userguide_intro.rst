@@ -1,14 +1,33 @@
 
-Currently implemented functionality
-====================================
+*************
+Introduction
+*************
 
 .. toctree::
+   :maxdepth: 4
+
+.. contents:: Table of contents 
+   :local: 
+   :backlinks: top
+
+
+Library Overview
+==========================
+
+rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_
+on top of the `AMD's open source ROCm platform <https://rocmdocs.amd.com/en/latest/index.html>`_. rocSOLVER is implemented in the
+`HIP programming language <https://rocmdocs.amd.com/en/latest/Programming_Guides/Programming-Guides.html>`_ and optimized for `AMD's
+latest discrete GPUs <https://www.amd.com/en/products/server-accelerators/instinct-mi100>`_.
+
+
+Currently implemented functionality
+====================================
 
 The rocSOLVER library is in the early stages of active development. New features are being
 continuously added, with new functionality documented at each `release of the ROCm platform <https://rocmdocs.amd.com/en/latest/Current_Release_Notes/Current-Release-Notes.html>`_.
 
 The following tables summarizes the LAPACK functionality implemented for the different supported precisions in rocSOLVER's latest release.
-All the LAPACK and LAPACK-like main functions include *_batched* and *_strided_batched* versions. For a complete description of the listed 
+All the LAPACK and LAPACK-like main functions include *_batched* and *_strided_batched* versions. For a complete description of the listed
 routines below, please see the :ref:`rocSOLVER API <library_api>` document.
 
 LAPACK auxiliary functions
@@ -37,7 +56,7 @@ LAPACK auxiliary functions
 .. csv-table:: Tridiagonal forms
     :header: "Function", "single", "double", "single complex", "double complex"
 
-    :ref:`rocsolver_sterf <sterf>`, x, x, , 
+    :ref:`rocsolver_sterf <sterf>`, x, x, ,
     :ref:`rocsolver_latrd <latrd>`, x, x, x, x
     :ref:`rocsolver_steqr <steqr>`, x, x, x, x
     :ref:`rocsolver_stedc <stedc>`, x, x, x, x
@@ -45,22 +64,22 @@ LAPACK auxiliary functions
 .. csv-table:: Orthonormal matrices
     :header: "Function", "single", "double", "single complex", "double complex"
 
-    :ref:`rocsolver_org2r <org2r>`, x, x, , 
+    :ref:`rocsolver_org2r <org2r>`, x, x, ,
     :ref:`rocsolver_orgqr <orgqr>`, x, x, ,
-    :ref:`rocsolver_orgl2 <orgl2>`, x, x, , 
-    :ref:`rocsolver_orglq <orglq>`, x, x, , 
-    :ref:`rocsolver_org2l <org2l>`, x, x, , 
-    :ref:`rocsolver_orgql <orgql>`, x, x, , 
-    :ref:`rocsolver_orgbr <orgbr>`, x, x, , 
-    :ref:`rocsolver_orgtr <orgtr>`, x, x, , 
-    :ref:`rocsolver_orm2r <orm2r>`, x, x, , 
-    :ref:`rocsolver_ormqr <ormqr>`, x, x, , 
-    :ref:`rocsolver_orml2 <orml2>`, x, x, , 
-    :ref:`rocsolver_ormlq <ormlq>`, x, x, , 
-    :ref:`rocsolver_orm2l <orm2l>`, x, x, , 
-    :ref:`rocsolver_ormql <ormql>`, x, x, , 
+    :ref:`rocsolver_orgl2 <orgl2>`, x, x, ,
+    :ref:`rocsolver_orglq <orglq>`, x, x, ,
+    :ref:`rocsolver_org2l <org2l>`, x, x, ,
+    :ref:`rocsolver_orgql <orgql>`, x, x, ,
+    :ref:`rocsolver_orgbr <orgbr>`, x, x, ,
+    :ref:`rocsolver_orgtr <orgtr>`, x, x, ,
+    :ref:`rocsolver_orm2r <orm2r>`, x, x, ,
+    :ref:`rocsolver_ormqr <ormqr>`, x, x, ,
+    :ref:`rocsolver_orml2 <orml2>`, x, x, ,
+    :ref:`rocsolver_ormlq <ormlq>`, x, x, ,
+    :ref:`rocsolver_orm2l <orm2l>`, x, x, ,
+    :ref:`rocsolver_ormql <ormql>`, x, x, ,
     :ref:`rocsolver_ormbr <ormbr>`, x, x, ,
-    :ref:`rocsolver_ormtr <ormtr>`, x, x, , 
+    :ref:`rocsolver_ormtr <ormtr>`, x, x, ,
 
 .. csv-table:: Unitary matrices
     :header: "Function", "single", "double", "single complex", "double complex"
@@ -106,10 +125,10 @@ LAPACK main functions
 .. csv-table:: Problem and matrix reductions
     :header: "Function", "single", "double", "single complex", "double complex"
 
-    :ref:`rocsolver_sytd2 <sytd2>`, x, x, , 
-    :ref:`rocsolver_sytrd <sytrd>`, x, x, , 
-    :ref:`rocsolver_sygs2 <sygs2>`, x, x, , 
-    :ref:`rocsolver_sygst <sygst>`, x, x, , 
+    :ref:`rocsolver_sytd2 <sytd2>`, x, x, ,
+    :ref:`rocsolver_sytrd <sytrd>`, x, x, ,
+    :ref:`rocsolver_sygs2 <sygs2>`, x, x, ,
+    :ref:`rocsolver_sygst <sygst>`, x, x, ,
     :ref:`rocsolver_hetd2 <hetd2>`, , , x, x
     :ref:`rocsolver_hetrd <hetrd>`, , , x, x
     :ref:`rocsolver_hegs2 <hegs2>`, , , x, x
@@ -132,9 +151,9 @@ LAPACK main functions
 .. csv-table:: Symmetric Eigensolvers
     :header: "Function", "single", "double", "single complex", "double complex"
 
-    :ref:`rocsolver_syev <syev>`, x, x, , 
-    :ref:`rocsolver_syevd <syevd>`, x, x, , 
-    :ref:`rocsolver_sygv <sygv>`, x, x, , 
+    :ref:`rocsolver_syev <syev>`, x, x, ,
+    :ref:`rocsolver_syevd <syevd>`, x, x, ,
+    :ref:`rocsolver_sygv <sygv>`, x, x, ,
     :ref:`rocsolver_heev <heev>`, , , x, x
     :ref:`rocsolver_heevd <heevd>`, , , x, x
     :ref:`rocsolver_hegv <hegv>`, , , x, x
@@ -143,7 +162,6 @@ LAPACK main functions
     :header: "Function", "single", "double", "single complex", "double complex"
 
     :ref:`rocsolver_gesvd <gesvd>`, x, x, x, x
-
 
 LAPACK-like functions
 ----------------------------
@@ -158,6 +176,7 @@ LAPACK-like functions
     :header: "Function", "single", "double", "single complex", "double complex"
 
     :ref:`rocsolver_getri_outofplace <getri_outofplace>`, x, x, x, x
+
 
 
 

@@ -5,13 +5,12 @@ rocSOLVER API
 ########################################
 
 .. toctree::
-   :maxdepth: 1
-   :numbered: 2
+   :maxdepth: 5
 
-   api_types_index
-   api_loggingfunc_index
-   api_auxiliaryfunc_index
-   api_lapackfunc_index
-   api_lapacklike_index
-   api_deprecated_index
+   api_types
+   api_loggingfunc
+   api_auxiliaryfunc
+   api_lapackfunc
+   api_lapacklike
+   api_deprecated
 

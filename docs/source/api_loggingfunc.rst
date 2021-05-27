@@ -1,0 +1,51 @@
+.. _api_logging:
+
+******************
+Logging Functions
+******************
+
+These are functions that enable and control rocSOLVER's :ref:`logging-label` capabilities.
+
+.. toctree::
+   :maxdepth: 4
+
+.. contents:: Table of contents
+   :local:
+   :backlinks: top
+
+
+Logging set-up and tear-down
+===============================
+
+rocsolver_log_begin()
+---------------------------------
+.. doxygenfunction:: rocsolver_log_begin
+
+rocsolver_log_end()
+---------------------------------
+.. doxygenfunction:: rocsolver_log_end
+
+rocsolver_log_set_layer_mode()
+---------------------------------
+.. doxygenfunction:: rocsolver_log_set_layer_mode
+
+rocsolver_log_set_max_levels()
+---------------------------------
+.. doxygenfunction:: rocsolver_log_set_max_levels
+
+rocsolver_log_restore_defaults()
+---------------------------------
+.. doxygenfunction:: rocsolver_log_restore_defaults
+
+
+Profile logging
+==============================
+
+rocsolver_log_write_profile()
+---------------------------------
+.. doxygenfunction:: rocsolver_log_write_profile
+
+rocsolver_log_flush_profile()
+---------------------------------
+.. doxygenfunction:: rocsolver_log_flush_profile
+

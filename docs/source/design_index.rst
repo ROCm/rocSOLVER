@@ -4,10 +4,9 @@ rocSOLVER Library Design Guide
 ########################################
 
 .. toctree::
-   :maxdepth: 1
-   :numbered: 2
+   :maxdepth: 5
 
-   design_intro_index
-   design_batch_index
-   design_tuning_index
-   design_contribute_index
+   design_intro
+   design_batch
+   design_tuning
+   design_contribute
