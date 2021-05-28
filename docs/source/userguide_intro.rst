@@ -178,5 +178,3 @@ LAPACK-like functions
     :ref:`rocsolver_getri_outofplace <getri_outofplace>`, x, x, x, x
 
 
-
-
