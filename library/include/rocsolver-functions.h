@@ -502,7 +502,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(rocblas_handle handle,
         H = I - V' * T * V
 
     where the i-th row of matrix V contains the Householder vector associated with H(i), if storev is row-wise.
-    T is the associated triangular factor as computed by LARFT.
+    T is the associated triangular factor as computed by \ref rocsolver_slarft "LARFT".
 
     @param[in]
     handle              rocblas_handle.
@@ -887,7 +887,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlatrd(rocblas_handle handle,
         Q = H(1) * H(2) * ... * H(k)
 
     Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
+    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqrf "GEQRF".
 
     @param[in]
     handle      rocblas_handle.
@@ -903,14 +903,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlatrd(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k columns of matrix A of GEQRF.
+                as returned in the first k columns of matrix A of \ref rocsolver_sgeqrf "GEQRF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
 
     ****************************************************************************/
 
@@ -943,7 +943,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2r(rocblas_handle handle,
         Q = H(1) * H(2) * ... * H(k)
 
     Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
+    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqrf "GEQRF".
 
     @param[in]
     handle      rocblas_handle.
@@ -959,14 +959,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2r(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k columns of matrix A of GEQRF.
+                as returned in the first k columns of matrix A of \ref rocsolver_sgeqrf "GEQRF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
 
     ****************************************************************************/
 
@@ -999,7 +999,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zung2r(rocblas_handle handle,
         Q = H(1) * H(2) * ... * H(k)
 
     Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
+    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqrf "GEQRF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1015,14 +1015,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zung2r(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k columns of matrix A of GEQRF.
+                as returned in the first k columns of matrix A of \ref rocsolver_sgeqrf "GEQRF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
 
     ****************************************************************************/
 
@@ -1055,7 +1055,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgqr(rocblas_handle handle,
         Q = H(1) * H(2) * ... * H(k)
 
     Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by GEQRF.
+    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqrf "GEQRF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1071,14 +1071,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgqr(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k columns of matrix A of GEQRF.
+                as returned in the first k columns of matrix A of \ref rocsolver_sgeqrf "GEQRF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
 
     ****************************************************************************/
 
@@ -1111,7 +1111,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungqr(rocblas_handle handle,
         Q = H(k) * H(k-1) * ... * H(1)
 
     Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by GELQF.
+    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgelqf "GELQF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1127,14 +1127,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungqr(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k rows of matrix A of GELQF.
+                as returned in the first k rows of matrix A of \ref rocsolver_sgelqf "GELQF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GELQF.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
 
     ****************************************************************************/
 
@@ -1167,7 +1167,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgl2(rocblas_handle handle,
         Q = H(k)**H * H(k-1)**H * ... * H(1)**H
 
     Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by GELQF.
+    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgelqf "GELQF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1183,14 +1183,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgl2(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k rows of matrix A of GELQF.
+                as returned in the first k rows of matrix A of \ref rocsolver_sgelqf "GELQF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GELQF.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
 
     ****************************************************************************/
 
@@ -1223,7 +1223,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungl2(rocblas_handle handle,
         Q = H(k) * H(k-1) * ... * H(1)
 
     Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by GELQF.
+    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgelqf "GELQF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1239,14 +1239,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungl2(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k rows of matrix A of GELQF.
+                as returned in the first k rows of matrix A of \ref rocsolver_sgelqf "GELQF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GELQF.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
 
     ****************************************************************************/
 
@@ -1279,7 +1279,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorglq(rocblas_handle handle,
         Q = H(k)**H * H(k-1)**H * ... * H(1)**H
 
     Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by GELQF.
+    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgelqf "GELQF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1295,14 +1295,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorglq(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k rows of matrix A of GELQF.
+                as returned in the first k rows of matrix A of \ref rocsolver_sgelqf "GELQF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GELQF.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
 
     ****************************************************************************/
 
@@ -1335,7 +1335,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunglq(rocblas_handle handle,
         Q = H(k) * H(k-1) * ... * H(1)
 
     Householder matrices H(i) are never stored, they are computed from its
-    corresponding Householder vector v(i) and scalar ipiv_i as returned by GEQLF.
+    corresponding Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqlf "GEQLF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1351,14 +1351,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunglq(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the (n-k+i)-th column has Householder vector v(i), for
-                i = 1,2,...,k as returned in the last k columns of matrix A of GEQLF.
+                i = 1,2,...,k as returned in the last k columns of matrix A of \ref rocsolver_sgeqlf "GEQLF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEQLF.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqlf "GEQLF".
 
     ****************************************************************************/
 
@@ -1391,7 +1391,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2l(rocblas_handle handle,
         Q = H(k) * H(k-1) * ... * H(1)
 
     Householder matrices H(i) are never stored, they are computed from its
-    corresponding Householder vector v(i) and scalar ipiv_i as returned by GEQLF.
+    corresponding Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqlf "GEQLF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1407,14 +1407,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2l(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the (n-k+i)-th column has Householder vector v(i), for
-                i = 1,2,...,k as returned in the last k columns of matrix A of GEQLF.
+                i = 1,2,...,k as returned in the last k columns of matrix A of \ref rocsolver_sgeqlf "GEQLF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEQLF.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqlf "GEQLF".
 
     ****************************************************************************/
 
@@ -1447,7 +1447,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zung2l(rocblas_handle handle,
         Q = H(k) * H(k-1) * ... * H(1)
 
     Householder matrices H(i) are never stored, they are computed from its
-    corresponding Householder vector v(i) and scalar ipiv_i as returned by GEQLF.
+    corresponding Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqlf "GEQLF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1463,14 +1463,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zung2l(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the (n-k+i)-th column has Householder vector v(i), for
-                i = 1,2,...,k as returned in the last k columns of matrix A of GEQLF.
+                i = 1,2,...,k as returned in the last k columns of matrix A of \ref rocsolver_sgeqlf "GEQLF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEQLF.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqlf "GEQLF".
 
     ****************************************************************************/
 
@@ -1503,7 +1503,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgql(rocblas_handle handle,
         Q = H(k) * H(k-1) * ... * H(1)
 
     Householder matrices H(i) are never stored, they are computed from its
-    corresponding Householder vector v(i) and scalar ipiv_i as returned by GEQLF.
+    corresponding Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqlf "GEQLF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1519,14 +1519,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgql(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the (n-k+i)-th column has Householder vector v(i), for
-                i = 1,2,...,k as returned in the last k columns of matrix A of GEQLF.
+                i = 1,2,...,k as returned in the last k columns of matrix A of \ref rocsolver_sgeqlf "GEQLF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEQLF.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqlf "GEQLF".
 
     ****************************************************************************/
 
@@ -1570,7 +1570,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungql(rocblas_handle handle,
         Q = H(n-1) * H(n-2) * ... * H(1)
 
     The Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vectors v(i) and scalars ipiv_i as returned by GEBRD in its arguments A and tauq or taup.
+    Householder vectors v(i) and scalars ipiv_i as returned by \ref rocsolver_sgebrd "GEBRD" in its arguments A and tauq or taup.
 
     @param[in]
     handle      rocblas_handle.
@@ -1588,18 +1588,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungql(rocblas_handle handle,
     @param[in]
     k           rocblas_int. k >= 0.\n
                 The number of columns (if storev is colum-wise) or rows (if row-wise) of the
-                original matrix reduced by GEBRD.
+                original matrix reduced by \ref rocsolver_sgebrd "GEBRD".
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the i-th column (or row) has the Householder vector v(i)
-                as returned by GEBRD.
+                as returned by \ref rocsolver_sgebrd "GEBRD".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension min(m,k) if column-wise, or min(n,k) if row-wise.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEBRD.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgebrd "GEBRD".
 
     ****************************************************************************/
 
@@ -1646,7 +1646,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgbr(rocblas_handle handle,
         Q = H(n-1) * H(n-2) * ... * H(1)
 
     The Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vectors v(i) and scalars ipiv_i as returned by GEBRD in its arguments A and tauq or taup.
+    Householder vectors v(i) and scalars ipiv_i as returned by \ref rocsolver_sgebrd "GEBRD" in its arguments A and tauq or taup.
 
     @param[in]
     handle      rocblas_handle.
@@ -1664,18 +1664,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgbr(rocblas_handle handle,
     @param[in]
     k           rocblas_int. k >= 0.\n
                 The number of columns (if storev is colum-wise) or rows (if row-wise) of the
-                original matrix reduced by GEBRD.
+                original matrix reduced by \ref rocsolver_sgebrd "GEBRD".
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the i-th column (or row) has the Householder vector v(i)
-                as returned by GEBRD.
+                as returned by \ref rocsolver_sgebrd "GEBRD".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension min(m,k) if column-wise, or min(n,k) if row-wise.\n
-                The scalar factors of the Householder matrices H(i) as returned by GEBRD.
+                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgebrd "GEBRD".
 
     ****************************************************************************/
 
@@ -1713,13 +1713,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(rocblas_handle handle,
 
     The Householder matrices H(i) are never stored, they are computed from its
     corresponding Householder vectors v(i) and scalars ipiv_i as returned by
-    SYTRD in its arguments A and tau.
+    \ref rocsolver_ssytrd "SYTRD" in its arguments A and tau.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     uplo        rocblas_fill.\n
-                Specifies whether the SYTRD factorization was upper or lower
+                Specifies whether the \ref rocsolver_ssytrd "SYTRD" factorization was upper or lower
                 triangular. If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not used.
     @param[in]
@@ -1729,14 +1729,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(rocblas_handle handle,
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the (i+1)-th column (if uplo indicates upper) or i-th
                 column (if uplo indicates lower) has the Householder vector v(i) as returned
-                by SYTRD. On exit, the computed matrix Q.
+                by \ref rocsolver_ssytrd "SYTRD". On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension n-1.\n
                 The scalar factors of the Householder
-                matrices H(i) as returned by SYTRD.
+                matrices H(i) as returned by \ref rocsolver_ssytrd "SYTRD".
 
     ****************************************************************************/
 
@@ -1770,13 +1770,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgtr(rocblas_handle handle,
 
     The Householder matrices H(i) are never stored, they are computed from its
     corresponding Householder vectors v(i) and scalars ipiv_i as returned by
-    HETRD in its arguments A and tau.
+    \ref rocsolver_chetrd "HETRD" in its arguments A and tau.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     uplo        rocblas_fill.\n
-                Specifies whether the HETRD factorization was upper or lower
+                Specifies whether the \ref rocsolver_chetrd "HETRD" factorization was upper or lower
                 triangular. If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not used.
     @param[in]
@@ -1786,14 +1786,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgtr(rocblas_handle handle,
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the (i+1)-th column (if uplo indicates upper) or i-th
                 column (if uplo indicates lower) has the Householder vector v(i) as returned
-                by HETRD. On exit, the computed matrix Q.
+                by \ref rocsolver_chetrd "HETRD". On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension n-1.\n
                 The scalar factors of the Householder
-                matrices H(i) as returned by HETRD.
+                matrices H(i) as returned by \ref rocsolver_chetrd "HETRD".
 
     ****************************************************************************/
 
@@ -1832,7 +1832,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungtr(rocblas_handle handle,
         Q = H(1) * H(2) * ... * H(k)
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
-    calculated from the Householder vectors and scalars returned by the QR factorization GEQRF.
+    calculated from the Householder vectors and scalars returned by the QR factorization \ref rocsolver_sgeqrf "GEQRF".
 
     @param[in]
     handle              rocblas_handle.
@@ -1853,14 +1853,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungtr(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i) associated with H(i) as returned by GEQRF
+                        The i-th column has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgeqrf "GEQRF"
                         in the first k columns of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -1916,7 +1916,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(rocblas_handle handle,
         Q = H(1) * H(2) * ... * H(k)
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
-    calculated from the Householder vectors and scalars returned by the QR factorization GEQRF.
+    calculated from the Householder vectors and scalars returned by the QR factorization \ref rocsolver_sgeqrf "GEQRF".
 
     @param[in]
     handle              rocblas_handle.
@@ -1937,14 +1937,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i) associated with H(i) as returned by GEQRF
+                        The i-th column has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgeqrf "GEQRF"
                         in the first k columns of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2000,7 +2000,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(rocblas_handle handle,
         Q = H(1) * H(2) * ... * H(k)
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
-    calculated from the Householder vectors and scalars returned by the QR factorization GEQRF.
+    calculated from the Householder vectors and scalars returned by the QR factorization \ref rocsolver_sgeqrf "GEQRF".
 
     @param[in]
     handle              rocblas_handle.
@@ -2021,14 +2021,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i) associated with H(i) as returned by GEQRF
+                        The i-th column has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgeqrf "GEQRF"
                         in the first k columns of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2084,7 +2084,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(rocblas_handle handle,
         Q = H(1) * H(2) * ... * H(k)
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
-    calculated from the Householder vectors and scalars returned by the QR factorization GEQRF.
+    calculated from the Householder vectors and scalars returned by the QR factorization \ref rocsolver_sgeqrf "GEQRF".
 
     @param[in]
     handle              rocblas_handle.
@@ -2105,14 +2105,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i) associated with H(i) as returned by GEQRF
+                        The i-th column has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgeqrf "GEQRF"
                         in the first k columns of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GEQRF.
+                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2168,7 +2168,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(rocblas_handle handle,
         Q = H(k) * H(k-1) * ... * H(1)
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
-    calculated from the Householder vectors and scalars returned by the LQ factorization GELQF.
+    calculated from the Householder vectors and scalars returned by the LQ factorization \ref rocsolver_sgelqf "GELQF".
 
     @param[in]
     handle              rocblas_handle.
@@ -2189,14 +2189,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
-                        The i-th row has the Householder vector v(i) associated with H(i) as returned by GELQF
+                        The i-th row has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgelqf "GELQF"
                         in the first k rows of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= k. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GELQF.
+                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2252,7 +2252,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(rocblas_handle handle,
         Q = H(k)**H * H(k-1)**H * ... * H(1)**H
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
-    calculated from the Householder vectors and scalars returned by the LQ factorization GELQF.
+    calculated from the Householder vectors and scalars returned by the LQ factorization \ref rocsolver_sgelqf "GELQF".
 
     @param[in]
     handle              rocblas_handle.
@@ -2273,14 +2273,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
-                        The i-th row has the Householder vector v(i) associated with H(i) as returned by GELQF
+                        The i-th row has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgelqf "GELQF"
                         in the first k rows of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= k. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GELQF.
+                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2336,7 +2336,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(rocblas_handle handle,
         Q = H(k) * H(k-1) * ... * H(1)
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
-    calculated from the Householder vectors and scalars returned by the LQ factorization GELQF.
+    calculated from the Householder vectors and scalars returned by the LQ factorization \ref rocsolver_sgelqf "GELQF".
 
     @param[in]
     handle              rocblas_handle.
@@ -2357,14 +2357,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
-                        The i-th row has the Householder vector v(i) associated with H(i) as returned by GELQF
+                        The i-th row has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgelqf "GELQF"
                         in the first k rows of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= k. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GELQF.
+                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2420,7 +2420,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(rocblas_handle handle,
         Q = H(k)**H * H(k-1)**H * ... * H(1)**H
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
-    calculated from the Householder vectors and scalars returned by the LQ factorization GELQF.
+    calculated from the Householder vectors and scalars returned by the LQ factorization \ref rocsolver_sgelqf "GELQF".
 
     @param[in]
     handle              rocblas_handle.
@@ -2441,14 +2441,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
-                        The i-th row has the Householder vector v(i) associated with H(i) as returned by GELQF
+                        The i-th row has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgelqf "GELQF"
                         in the first k rows of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= k. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by GELQF.
+                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2506,7 +2506,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(rocblas_handle handle,
 
     of order m if applying from the left, or n if applying from the right. Q is
     never stored, it is calculated from the Householder vectors and scalars
-    returned by the QL factorization GEQLF.
+    returned by the QL factorization \ref rocsolver_sgeqlf "GEQLF".
 
     @param[in]
     handle              rocblas_handle.
@@ -2529,7 +2529,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(rocblas_handle handle,
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
                         The i-th column has the Householder vector v(i)
-                        associated with H(i) as returned by GEQLF in the last k columns of its
+                        associated with H(i) as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
                         argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
@@ -2537,7 +2537,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(rocblas_handle handle,
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
                         The scalar factors of the Householder matrices H(i) as returned by
-                        GEQLF.
+                        \ref rocsolver_sgeqlf "GEQLF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2594,7 +2594,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2l(rocblas_handle handle,
 
     of order m if applying from the left, or n if applying from the right. Q is
     never stored, it is calculated from the Householder vectors and scalars
-    returned by the QL factorization GEQLF.
+    returned by the QL factorization \ref rocsolver_sgeqlf "GEQLF".
 
     @param[in]
     handle              rocblas_handle.
@@ -2617,7 +2617,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2l(rocblas_handle handle,
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
                         The i-th column has the Householder vector v(i)
-                        associated with H(i) as returned by GEQLF in the last k columns of its
+                        associated with H(i) as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
                         argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
@@ -2625,7 +2625,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2l(rocblas_handle handle,
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
                         The scalar factors of the Householder matrices H(i) as returned by
-                        GEQLF.
+                        \ref rocsolver_sgeqlf "GEQLF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2683,7 +2683,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2l(rocblas_handle handle,
 
     of order m if applying from the left, or n if applying from the right. Q is
     never stored, it is calculated from the Householder vectors and scalars
-    returned by the QL factorization GEQLF.
+    returned by the QL factorization \ref rocsolver_sgeqlf "GEQLF".
 
     @param[in]
     handle              rocblas_handle.
@@ -2706,7 +2706,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2l(rocblas_handle handle,
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
                         The i-th column has the Householder vector v(i)
-                        associated with H(i) as returned by GEQLF in the last k columns of its
+                        associated with H(i) as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
                         argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
@@ -2714,7 +2714,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2l(rocblas_handle handle,
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
                         The scalar factors of the Householder matrices H(i) as returned by
-                        GEQLF.
+                        \ref rocsolver_sgeqlf "GEQLF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2771,7 +2771,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormql(rocblas_handle handle,
 
     of order m if applying from the left, or n if applying from the right. Q is
     never stored, it is calculated from the Householder vectors and scalars
-    returned by the QL factorization GEQLF.
+    returned by the QL factorization \ref rocsolver_sgeqlf "GEQLF".
 
     @param[in]
     handle              rocblas_handle.
@@ -2794,7 +2794,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormql(rocblas_handle handle,
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
                         The i-th column has the Householder vector v(i)
-                        associated with H(i) as returned by GEQLF in the last k columns of its
+                        associated with H(i) as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
                         argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
@@ -2802,7 +2802,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormql(rocblas_handle handle,
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
                         The scalar factors of the Householder matrices H(i) as returned by
-                        GEQLF.
+                        \ref rocsolver_sgeqlf "GEQLF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2872,7 +2872,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmql(rocblas_handle handle,
         Q = H(1) * H(2) * ... * H(nq-1)
 
     The Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vectors v(i) and scalars ipiv_i as returned by GEBRD in its arguments A and tauq or taup.
+    Householder vectors v(i) and scalars ipiv_i as returned by \ref rocsolver_sgebrd "GEBRD" in its arguments A and tauq or taup.
 
     @param[in]
     handle              rocblas_handle.
@@ -2894,16 +2894,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmql(rocblas_handle handle,
     @param[in]
     k                   rocblas_int. k >= 0.\n
                         The number of columns (if storev is colum-wise) or rows (if row-wise) of the
-                        original matrix reduced by GEBRD.
+                        original matrix reduced by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*min(nq,k) if column-wise, or lda*nq if row-wise.\n
-                        The i-th column (or row) has the Householder vector v(i) associated with H(i) as returned by GEBRD.
+                        The i-th column (or row) has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
     lda                 rocblas_int. lda >= nq if column-wise, or lda >= min(nq,k) if row-wise. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least min(nq,k).\n
-                        The scalar factors of the Householder matrices H(i) as returned by GEBRD.
+                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2975,7 +2975,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
         Q = H(1) * H(2) * ... * H(nq-1)
 
     The Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vectors v(i) and scalars ipiv_i as returned by GEBRD in its arguments A and tauq or taup.
+    Householder vectors v(i) and scalars ipiv_i as returned by \ref rocsolver_sgebrd "GEBRD" in its arguments A and tauq or taup.
 
     @param[in]
     handle              rocblas_handle.
@@ -2997,16 +2997,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
     @param[in]
     k                   rocblas_int. k >= 0.\n
                         The number of columns (if storev is colum-wise) or rows (if row-wise) of the
-                        original matrix reduced by GEBRD.
+                        original matrix reduced by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*min(nq,k) if column-wise, or lda*nq if row-wise.\n
-                        The i-th column (or row) has the Householder vector v(i) associated with H(i) as returned by GEBRD.
+                        The i-th column (or row) has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
     lda                 rocblas_int. lda >= nq if column-wise, or lda >= min(nq,k) if row-wise. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least min(nq,k).\n
-                        The scalar factors of the Householder matrices H(i) as returned by GEBRD.
+                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -3070,7 +3070,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
 
     The Householder matrices H(i) are never stored, they are computed from its
     corresponding Householder vectors v(i) and scalars ipiv_i as returned by
-    SYTRD in its arguments A and tau.
+    \ref rocsolver_ssytrd "SYTRD" in its arguments A and tau.
 
     @param[in]
     handle              rocblas_handle.
@@ -3079,7 +3079,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
                         Specifies from which side to apply Q.
     @param[in]
     uplo                rocblas_fill.\n
-                        Specifies whether the SYTRD factorization was upper or
+                        Specifies whether the \ref rocsolver_ssytrd "SYTRD" factorization was upper or
                         lower triangular. If uplo indicates lower (or upper), then the upper (or
                         lower) part of A is not used.
     @param[in]
@@ -3096,14 +3096,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
     A                   pointer to type. Array on the GPU of size lda*nq.\n
                         On entry, the (i+1)-th column (if uplo indicates upper)
                         or i-th column (if uplo indicates lower) has the Householder vector v(i) as
-                        returned by SYTRD.
+                        returned by \ref rocsolver_ssytrd "SYTRD".
     @param[in]
     lda                 rocblas_int. lda >= nq.\n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least nq-1.\n
                         The scalar factors of the Householder matrices H(i) as returned by
-                        SYTRD.
+                        \ref rocsolver_ssytrd "SYTRD".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -3165,7 +3165,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormtr(rocblas_handle handle,
 
     The Householder matrices H(i) are never stored, they are computed from its
     corresponding Householder vectors v(i) and scalars ipiv_i as returned by
-    HETRD in its arguments A and tau.
+    \ref rocsolver_chetrd "HETRD" in its arguments A and tau.
 
     @param[in]
     handle              rocblas_handle.
@@ -3174,7 +3174,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormtr(rocblas_handle handle,
                         Specifies from which side to apply Q.
     @param[in]
     uplo                rocblas_fill.\n
-                        Specifies whether the SYTRD factorization was upper or
+                        Specifies whether the \ref rocsolver_chetrd "HETRD" factorization was upper or
                         lower triangular. If uplo indicates lower (or upper), then the upper (or
                         lower) part of A is not used.
     @param[in]
@@ -3191,14 +3191,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormtr(rocblas_handle handle,
     A                   pointer to type. Array on the GPU of size lda*nq.\n
                         On entry, the (i+1)-th column (if uplo indicates upper)
                         or i-th column (if uplo indicates lower) has the Householder vector v(i) as
-                        returned by HETRD.
+                        returned by \ref rocsolver_chetrd "HETRD".
     @param[in]
     lda                 rocblas_int. lda >= nq.\n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least nq-1.\n
                         The scalar factors of the Householder matrices H(i) as returned by
-                        HETRD.
+                        \ref rocsolver_chetrd "HETRD".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -3383,7 +3383,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
 
     The matrix is not represented explicitly, but rather as the array of
     diagonal elements D and the array of symmetric off-diagonal elements E
-    as returned by, e.g., SYTRD or HETRD.
+    as returned by, e.g., \ref rocsolver_ssytrd "SYTRD" or \ref rocsolver_chetrd "HETRD".
 
     @param[in]
     handle    rocblas_handle.
@@ -3435,9 +3435,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsterf(rocblas_handle handle,
 
     The matrix is not represented explicitly, but rather as the array of
     diagonal elements D and the array of symmetric off-diagonal elements E
-    as returned by, e.g., SYTRD or HETRD. If the tridiagonal matrix is the
+    as returned by, e.g., \ref rocsolver_ssytrd "SYTRD" or \ref rocsolver_chetrd "HETRD". If the tridiagonal matrix is the
     reduced form of a full symmetric/Hermitian matrix as returned by, e.g.,
-    SYTRD or HETRD, then the eigenvectors of the original matrix can also
+    \ref rocsolver_ssytrd "SYTRD" or \ref rocsolver_chetrd "HETRD", then the eigenvectors of the original matrix can also
     be computed, depending on the value of evect.
 
     @param[in]
@@ -3466,7 +3466,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsterf(rocblas_handle handle,
     C         pointer to type. Array on the GPU of dimension ldc*n.\n
               On entry, if evect is original, the orthogonal/unitary matrix
               used for the reduction to tridiagonal form as returned by, e.g.,
-              ORGTR or UNGTR.
+              \ref rocsolver_sorgtr "ORGTR" or \ref rocsolver_cungtr "UNGTR".
               On exit, it is overwritten with the eigenvectors of the original
               symmetric/Hermitian matrix (if evect is original), or the
               eigenvectors of the tridiagonal matrix (if evect is tridiagonal).
@@ -3530,9 +3530,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsteqr(rocblas_handle handle,
 
     The matrix is not represented explicitly, but rather as the array of
     diagonal elements D and the array of symmetric off-diagonal elements E
-    as returned by, e.g., SYTRD or HETRD. If the tridiagonal matrix is the
+    as returned by, e.g., \ref rocsolver_ssytrd "SYTRD" or \ref rocsolver_chetrd "HETRD". If the tridiagonal matrix is the
     reduced form of a full symmetric/Hermitian matrix as returned by, e.g.,
-    SYTRD or HETRD, then the eigenvectors of the original matrix can also
+    \ref rocsolver_ssytrd "SYTRD" or \ref rocsolver_chetrd "HETRD", then the eigenvectors of the original matrix can also
     be computed, depending on the value of evect.
 
     @param[in]
@@ -3555,7 +3555,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsteqr(rocblas_handle handle,
     C         pointer to type. Array on the GPU of dimension ldc*n.\n
               On entry, if evect is original, the orthogonal/unitary matrix
               used for the reduction to tridiagonal form as returned by, e.g.,
-              ORGTR or UNGTR.
+              \ref rocsolver_sorgtr "ORGTR" or \ref rocsolver_cungtr "UNGTR".
               On exit, if info = 0, it is overwritten with the eigenvectors of the original
               symmetric/Hermitian matrix (if evect is original), or the
               eigenvectors of the tridiagonal matrix (if evect is tridiagonal).
@@ -3631,7 +3631,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
     triangular (upper trapezoidal if m < n).
 
     Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable.
-    If numerical accuracy is compromised, use the legacy-LAPACK-like API GETF2 routines instead.
+    If numerical accuracy is compromised, use the legacy-LAPACK-like API \ref rocsolver_sgetf2 "GETF2" routines instead.
 
     @param[in]
     handle    rocblas_handle.
@@ -3704,7 +3704,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
     triangular (upper trapezoidal if m < n).
 
     Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable.
-    If numerical accuracy is compromised, use the legacy-LAPACK-like API GETF2 routines instead.
+    If numerical accuracy is compromised, use the legacy-LAPACK-like API \ref rocsolver_sgetf2_batched "GETF2_BATCHED" routines instead.
 
     @param[in]
     handle    rocblas_handle.
@@ -3784,7 +3784,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_batched(rocblas_handle han
     triangular (upper trapezoidal if m < n).
 
     Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable.
-    If numerical accuracy is compromised, use the legacy-LAPACK-like API GETF2 routines instead.
+    If numerical accuracy is compromised, use the legacy-LAPACK-like API \ref rocsolver_sgetf2_strided_batched "GETF2_STRIDED_BATCHED" routines instead.
 
     @param[in]
     handle    rocblas_handle.
@@ -3872,7 +3872,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_strided_batched(rocblas_ha
     triangular (upper trapezoidal if m < n).
 
     Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable.
-    If numerical accuracy is compromised, use the legacy-LAPACK-like API GETRF routines instead.
+    If numerical accuracy is compromised, use the legacy-LAPACK-like API \ref rocsolver_sgetrf "GETRF" routines instead.
 
     @param[in]
     handle    rocblas_handle.
@@ -3945,7 +3945,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
     triangular (upper trapezoidal if m < n).
 
     Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable.
-    If numerical accuracy is compromised, use the legacy-LAPACK-like API GETRF routines instead.
+    If numerical accuracy is compromised, use the legacy-LAPACK-like API \ref rocsolver_sgetrf_batched "GETRF_BATCHED" routines instead.
 
     @param[in]
     handle    rocblas_handle.
@@ -4025,7 +4025,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_batched(rocblas_handle han
     triangular (upper trapezoidal if m < n).
 
     Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable.
-    If numerical accuracy is compromised, use the legacy-LAPACK-like API GETRF routines instead.
+    If numerical accuracy is compromised, use the legacy-LAPACK-like API \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED" routines instead.
 
     @param[in]
     handle    rocblas_handle.
@@ -7068,7 +7068,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(rocblas_handle 
 
 /*! @{
     \brief GETRS solves a system of n linear equations on n variables using the
-    LU factorization computed by GETRF.
+    LU factorization computed by \ref rocsolver_sgetrf "GETRF".
 
     \details
     It solves one of the following systems:
@@ -7093,13 +7093,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(rocblas_handle 
                 of the matrix B.
     @param[in]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                The factors L and U of the factorization A = P*L*U returned by GETRF.
+                The factors L and U of the factorization A = P*L*U returned by \ref rocsolver_sgetrf "GETRF".
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 The leading dimension of A.
     @param[in]
     ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
-                The pivot indices returned by GETRF.
+                The pivot indices returned by \ref rocsolver_sgetrf "GETRF".
     @param[in,out]
     B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
                 On entry, the right hand side matrix B.
@@ -7153,7 +7153,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(rocblas_handle handle,
 
 /*! @{
     \brief GETRS_BATCHED solves a batch of systems of n linear equations on n
-    variables using the LU factorization computed by GETRF_BATCHED.
+    variables using the LU factorization computed by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
 
     \details
     For each instance j in the batch, it solves one of the following systems:
@@ -7178,13 +7178,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(rocblas_handle handle,
                 of all the matrices B_j.
     @param[in]
     A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-                The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by GETRF_BATCHED.
+                The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 The leading dimension of matrices A_j.
     @param[in]
     ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-                Contains the vectors ipiv_j of pivot indices returned by GETRF_BATCHED.
+                Contains the vectors ipiv_j of pivot indices returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
     strideP     rocblas_stride.\n
                 Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
@@ -7253,7 +7253,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
 
 /*! @{
     \brief GETRS_STRIDED_BATCHED solves a batch of systems of n linear equations
-    on n variables using the LU factorization computed by GETRF_STRIDED_BATCHED.
+    on n variables using the LU factorization computed by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
 
     \details
     For each instance j in the batch, it solves one of the following systems:
@@ -7278,7 +7278,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
                 of all the matrices B_j.
     @param[in]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-                The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by GETRF_STRIDED_BATCHED.
+                The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 The leading dimension of matrices A_j.
@@ -7288,7 +7288,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[in]
     ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-                Contains the vectors ipiv_j of pivot indices returned by GETRF_STRIDED_BATCHED.
+                Contains the vectors ipiv_j of pivot indices returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
     strideP     rocblas_stride.\n
                 Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
@@ -7369,7 +7369,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(rocblas_handle 
 
 /*! @{
     \brief GETRI inverts a general n-by-n matrix A using the LU factorization
-    computed by GETRF.
+    computed by \ref rocsolver_sgetrf "GETRF".
 
     \details
     The inverse is computed by solving the linear system
@@ -7386,14 +7386,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(rocblas_handle 
               The number of rows and columns of the matrix A.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the factors L and U of the factorization A = P*L*U returned by GETRF.
+              On entry, the factors L and U of the factorization A = P*L*U returned by \ref rocsolver_sgetrf "GETRF".
               On exit, the inverse of A if info = 0; otherwise undefined.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A.
     @param[in]
     ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
-              The pivot indices returned by GETRF.
+              The pivot indices returned by \ref rocsolver_sgetrf "GETRF".
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
               If info = 0, successful exit.
@@ -7432,7 +7432,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(rocblas_handle handle,
 
 /*! @{
     \brief GETRI_BATCHED inverts a batch of general n-by-n matrices using
-    the LU factorization computed by GETRF_BATCHED.
+    the LU factorization computed by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
 
     \details
     The inverse is computed by solving the linear system
@@ -7450,14 +7450,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(rocblas_handle handle,
     @param[inout]
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
               On entry, the factors L_j and U_j of the factorization A = P_j*L_j*U_j returned by
-              GETRF_BATCHED.
+              \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
               On exit, the inverses of A_j if info_j = 0; otherwise undefined.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of matrices A_j.
     @param[in]
     ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-              The pivot indices returned by GETRF_BATCHED.
+              The pivot indices returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
     strideP   rocblas_stride.\n
               Stride from the start of one vector ipiv_j to the next one ipiv_(i+j).
@@ -7511,7 +7511,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_batched(rocblas_handle handle,
 
 /*! @{
     \brief GETRI_STRIDED_BATCHED inverts a batch of general n-by-n matrices
-    using the LU factorization computed by GETRF_STRIDED_BATCHED.
+    using the LU factorization computed by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
 
     \details
     The inverse is computed by solving the linear system
@@ -7529,7 +7529,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_batched(rocblas_handle handle,
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
               On entry, the factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by
-              GETRF_STRIDED_BATCHED.
+              \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
               On exit, the inverses of A_j if info_j = 0; otherwise undefined.
     @param[in]
     lda       rocblas_int. lda >= n.\n
@@ -7540,7 +7540,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_batched(rocblas_handle handle,
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[in]
     ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-              The pivot indices returned by GETRF_STRIDED_BATCHED.
+              The pivot indices returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
     strideP   rocblas_stride.\n
               Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
@@ -7598,8 +7598,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
 
 /*! @{
     \brief GELS solves an overdetermined (or underdetermined) linear system defined by an m-by-n
-    matrix A, and a corresponding matrix B, using the QR factorization computed by GEQRF (or the LQ
-    factorization computed by GELQF).
+    matrix A, and a corresponding matrix B, using the QR factorization computed by \ref rocsolver_sgeqrf "GEQRF" (or the LQ
+    factorization computed by \ref rocsolver_sgelqf "GELQF").
 
     \details
     The problem solved by this function is either of the form
@@ -7636,7 +7636,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrix A.
-              On exit, the QR (or LQ) factorization of A as returned by GEQRF (or GELQF).
+              On exit, the QR (or LQ) factorization of A as returned by \ref rocsolver_sgeqrf "GEQRF" (or \ref rocsolver_sgelqf "GELQF").
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrix A.
@@ -7704,7 +7704,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
 /*! @{
     \brief GELS_BATCHED solves batches of overdetermined (or underdetermined) linear systems
     defined by the array of m-by-n matrices A, and an array of corresponding matrices B, using the
-    QR factorizations computed by GEQRF (or the LQ factorizations computed by GELQF).
+    QR factorizations computed by \ref rocsolver_sgeqrf_batched "GEQRF_BATCHED" (or the LQ factorizations computed by \ref rocsolver_sgelqf_batched "GELQF_BATCHED").
 
     \details
     The problem solved by this function is either of the form
@@ -7741,7 +7741,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
     @param[inout]
     A         array of pointer to type. Each pointer points to an array on the GPU of dimension lda*n.\n
               On entry, the m-by-n matrices A_i.
-              On exit, the QR (or LQ) factorizations of A_i as returned by GEQRF (or GELQF).
+              On exit, the QR (or LQ) factorizations of A_i as returned by \ref rocsolver_sgeqrf_batched "GEQRF_BATCHED" (or \ref rocsolver_sgelqf_batched "GELQF_BATCHED").
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrices A_i.
@@ -7816,7 +7816,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_batched(rocblas_handle handle,
 /*! @{
     \brief GELS_STRIDED_BATCHED solves batches of overdetermined (or underdetermined) linear
     systems defined by the array of m-by-n matrices A, and an array of corresponding matrices B,
-    using the QR factorizations computed by GEQRF (or the LQ factorizations computed by GELQF).
+    using the QR factorizations computed by \ref rocsolver_sgeqrf_strided_batched "GEQRF_STRIDED_BATCHED" 
+    (or the LQ factorizations computed by \ref rocsolver_sgelqf_strided_batched "GELQF_STRIDED_BATCHED").
 
     \details
     The problem solved by this function is either of the form
@@ -7853,7 +7854,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_batched(rocblas_handle handle,
     @param[inout]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
               On entry, the m-by-n matrices A_i.
-              On exit, the QR (or LQ) factorizations of A_i as returned by GEQRF (or GELQF).
+              On exit, the QR (or LQ) factorizations of A_i as returned by \ref rocsolver_sgeqrf_strided_batched "GEQRF_STRIDED_BATCHED" 
+              (or \ref rocsolver_sgelqf_strided_batched "GELQF_STRIDED_BATCHED").
     @param[in]
     lda       rocblas_int. lda >= m.\n
               Specifies the leading dimension of matrices A_i.
@@ -8470,7 +8472,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle 
     @param[out]
     E           pointer to real type. Array on the GPU of dimension min(m,n)-1.\n
                 This array is used to work internally with the bidiagonal matrix
-                B associated to A (using BDSQR). On exit, if info > 0, it contains the
+                B associated to A (using \ref rocsolver_sbdsqr "BDSQR"). On exit, if info > 0, it contains the
                 unconverged off-diagonal elements of B (or properly speaking, a bidiagonal
                 matrix orthogonally equivalent to B). The diagonal elements of this matrix
                 are in S; those that converged correspond to a subset of the singular values
@@ -8482,7 +8484,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle 
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
-                If info = i > 0, BDSQR did not converge. i elements of E did not converge to zero.
+                If info = i > 0, \ref rocsolver_sbdsqr "BDSQR" did not converge. i elements of E did not converge to zero.
 
     ********************************************************************/
 
@@ -8657,7 +8659,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
                 Normal use case is strideV >= ldv*n.
     @param[out]
     E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-                This array is used to work internally with the bidiagonal matrix B_j associated to A_j (using BDSQR).
+                This array is used to work internally with the bidiagonal matrix B_j associated to A_j (using \ref rocsolver_sbdsqr "BDSQR").
                 On exit, if info > 0, it contains the unconverged off-diagonal elements of B_j (or properly speaking,
                 a bidiagonal matrix orthogonally equivalent to B_j). The diagonal elements of this matrix are in S_j;
                 those that converged correspond to a subset of the singular values of A_j (not necessarily ordered).
@@ -8672,7 +8674,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
-                If info = i > 0, BDSQR did not converge. i elements of E did not converge to zero.
+                If info = i > 0, \ref rocsolver_sbdsqr "BDSQR" did not converge. i elements of E did not converge to zero.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -8873,7 +8875,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
                 Normal use case is strideV >= ldv*n.
     @param[out]
     E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-                This array is used to work internally with the bidiagonal matrix B_j associated to A_j (using BDSQR).
+                This array is used to work internally with the bidiagonal matrix B_j associated to A_j (using \ref rocsolver_sbdsqr "BDSQR").
                 On exit, if info > 0, it contains the unconverged off-diagonal elements of B_j (or properly speaking,
                 a bidiagonal matrix orthogonally equivalent to B_j). The diagonal elements of this matrix are in S_j;
                 those that converged correspond to a subset of the singular values of A_j (not necessarily ordered).
@@ -10155,7 +10157,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle 
         inv(U') * A * inv(U), or
         inv(L)  * A * inv(L'),
 
-    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    where B has been factorized as either U' * U or L * L' as returned by \ref rocsolver_spotrf "POTRF", depending
     on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten as
@@ -10163,7 +10165,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle 
         U  * A * U', or
         L' * A * L,
 
-    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    where B has been factorized as either U' * U or L * L' as returned by \ref rocsolver_spotrf "POTRF", depending
     on the value of uplo.
 
     @param[in]
@@ -10189,7 +10191,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle 
               Specifies the leading dimension of A.
     @param[out]
     B         pointer to type. Array on the GPU of dimension ldb*n.\n
-              The triangular factor of the matrix B, as returned by POTRF.
+              The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
@@ -10234,7 +10236,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2(rocblas_handle handle,
         inv(U') * A * inv(U), or
         inv(L)  * A * inv(L'),
 
-    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    where B has been factorized as either U' * U or L * L' as returned by \ref rocsolver_spotrf "POTRF", depending
     on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten as
@@ -10242,7 +10244,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2(rocblas_handle handle,
         U  * A * U', or
         L' * A * L,
 
-    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    where B has been factorized as either U' * U or L * L' as returned by \ref rocsolver_spotrf "POTRF", depending
     on the value of uplo.
 
     @param[in]
@@ -10268,7 +10270,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2(rocblas_handle handle,
               Specifies the leading dimension of A.
     @param[out]
     B         pointer to type. Array on the GPU of dimension ldb*n.\n
-              The triangular factor of the matrix B, as returned by POTRF.
+              The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
@@ -10314,7 +10316,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2(rocblas_handle handle,
         inv(U_i') * A_i * inv(U_i), or
         inv(L_i)  * A_i * inv(L_i'),
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED",
     depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A_i is overwritten as
@@ -10322,7 +10324,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2(rocblas_handle handle,
         U_i  * A_i * U_i', or
         L_i' * A_i * L_i,
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED",
     depending on the value of uplo.
 
     @param[in]
@@ -10348,7 +10350,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2(rocblas_handle handle,
               Specifies the leading dimension of A_i.
     @param[out]
     B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
-              The triangular factors of the matrices B_i, as returned by POTRF.
+              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -10399,7 +10401,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_batched(rocblas_handle handle,
         inv(U_i') * A_i * inv(U_i), or
         inv(L_i)  * A_i * inv(L_i'),
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED",
     depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A_i is overwritten as
@@ -10407,7 +10409,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_batched(rocblas_handle handle,
         U_i  * A_i * U_i', or
         L_i' * A_i * L_i,
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED",
     depending on the value of uplo.
 
     @param[in]
@@ -10433,7 +10435,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_batched(rocblas_handle handle,
               Specifies the leading dimension of A_i.
     @param[out]
     B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
-              The triangular factors of the matrices B_i, as returned by POTRF.
+              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -10484,7 +10486,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_batched(rocblas_handle handle,
         inv(U_i') * A_i * inv(U_i), or
         inv(L_i)  * A_i * inv(L_i'),
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED",
     depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A_i is overwritten as
@@ -10492,7 +10494,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_batched(rocblas_handle handle,
         U_i  * A_i * U_i', or
         L_i' * A_i * L_i,
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED",
     depending on the value of uplo.
 
     @param[in]
@@ -10522,7 +10524,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_batched(rocblas_handle handle,
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
     B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-              The triangular factors of the matrices B_i, as returned by POTRF.
+              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -10581,7 +10583,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_strided_batched(rocblas_handle 
         inv(U_i') * A_i * inv(U_i), or
         inv(L_i)  * A_i * inv(L_i'),
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED",
     depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A_i is overwritten as
@@ -10589,7 +10591,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_strided_batched(rocblas_handle 
         U_i  * A_i * U_i', or
         L_i' * A_i * L_i,
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED",
     depending on the value of uplo.
 
     @param[in]
@@ -10619,7 +10621,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_strided_batched(rocblas_handle 
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
     B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-              The triangular factors of the matrices B_i, as returned by POTRF.
+              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -10678,7 +10680,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_strided_batched(rocblas_handle 
         inv(U') * A * inv(U), or
         inv(L)  * A * inv(L'),
 
-    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    where B has been factorized as either U' * U or L * L' as returned by \ref rocsolver_spotrf "POTRF", depending
     on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten as
@@ -10686,7 +10688,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_strided_batched(rocblas_handle 
         U  * A * U', or
         L' * A * L,
 
-    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    where B has been factorized as either U' * U or L * L' as returned by \ref rocsolver_spotrf "POTRF", depending
     on the value of uplo.
 
     @param[in]
@@ -10712,7 +10714,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_strided_batched(rocblas_handle 
               Specifies the leading dimension of A.
     @param[out]
     B         pointer to type. Array on the GPU of dimension ldb*n.\n
-              The triangular factor of the matrix B, as returned by POTRF.
+              The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
@@ -10757,7 +10759,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst(rocblas_handle handle,
         inv(U') * A * inv(U), or
         inv(L)  * A * inv(L'),
 
-    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    where B has been factorized as either U' * U or L * L' as returned by \ref rocsolver_spotrf "POTRF", depending
     on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten as
@@ -10765,7 +10767,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst(rocblas_handle handle,
         U  * A * U', or
         L' * A * L,
 
-    where B has been factorized as either U' * U or L * L' as returned by POTRF, depending
+    where B has been factorized as either U' * U or L * L' as returned by \ref rocsolver_spotrf "POTRF", depending
     on the value of uplo.
 
     @param[in]
@@ -10791,7 +10793,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst(rocblas_handle handle,
               Specifies the leading dimension of A.
     @param[out]
     B         pointer to type. Array on the GPU of dimension ldb*n.\n
-              The triangular factor of the matrix B, as returned by POTRF.
+              The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
@@ -10837,7 +10839,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst(rocblas_handle handle,
         inv(U_i') * A_i * inv(U_i), or
         inv(L_i)  * A_i * inv(L_i'),
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED",
     depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A_i is overwritten as
@@ -10845,7 +10847,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst(rocblas_handle handle,
         U_i  * A_i * U_i', or
         L_i' * A_i * L_i,
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED",
     depending on the value of uplo.
 
     @param[in]
@@ -10871,7 +10873,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst(rocblas_handle handle,
               Specifies the leading dimension of A_i.
     @param[out]
     B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
-              The triangular factors of the matrices B_i, as returned by POTRF.
+              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -10922,7 +10924,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_batched(rocblas_handle handle,
         inv(U_i') * A_i * inv(U_i), or
         inv(L_i)  * A_i * inv(L_i'),
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED",
     depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A_i is overwritten as
@@ -10930,7 +10932,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_batched(rocblas_handle handle,
         U_i  * A_i * U_i', or
         L_i' * A_i * L_i,
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED",
     depending on the value of uplo.
 
     @param[in]
@@ -10956,7 +10958,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_batched(rocblas_handle handle,
               Specifies the leading dimension of A_i.
     @param[out]
     B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
-              The triangular factors of the matrices B_i, as returned by POTRF.
+              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -11007,7 +11009,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_batched(rocblas_handle handle,
         inv(U_i') * A_i * inv(U_i), or
         inv(L_i)  * A_i * inv(L_i'),
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED",
     depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A_i is overwritten as
@@ -11015,7 +11017,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_batched(rocblas_handle handle,
         U_i  * A_i * U_i', or
         L_i' * A_i * L_i,
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED",
     depending on the value of uplo.
 
     @param[in]
@@ -11045,7 +11047,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_batched(rocblas_handle handle,
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
     B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-              The triangular factors of the matrices B_i, as returned by POTRF.
+              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -11104,7 +11106,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_strided_batched(rocblas_handle 
         inv(U_i') * A_i * inv(U_i), or
         inv(L_i)  * A_i * inv(L_i'),
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED",
     depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A_i is overwritten as
@@ -11112,7 +11114,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_strided_batched(rocblas_handle 
         U_i  * A_i * U_i', or
         L_i' * A_i * L_i,
 
-    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by POTRF,
+    where B_i has been factorized as either U_i' * U_i or L_i * L_i' as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED",
     depending on the value of uplo.
 
     @param[in]
@@ -11142,7 +11144,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_strided_batched(rocblas_handle 
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
     B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-              The triangular factors of the matrices B_i, as returned by POTRF.
+              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -12226,7 +12228,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     @param[out]
     B         pointer to type. Array on the GPU of dimension ldb*n.\n
               On entry, the symmetric positive definite matrix B. On exit, the
-              triangular factor of B as returned by POTRF.
+              triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
@@ -12325,7 +12327,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv(rocblas_handle handle,
     @param[out]
     B         pointer to type. Array on the GPU of dimension ldb*n.\n
               On entry, the hermitian positive definite matrix B. On exit, the
-              triangular factor of B as returned by POTRF.
+              triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
@@ -12424,7 +12426,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv(rocblas_handle handle,
     @param[out]
     B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
               On entry, the symmetric positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by POTRF.
+              triangular factor of B_i as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -12540,7 +12542,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
     @param[out]
     B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
               On entry, the hermitian positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by POTRF.
+              triangular factor of B_i as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -12660,7 +12662,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
     @param[out]
     B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
               On entry, the symmetric positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by POTRF.
+              triangular factor of B_i as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -12788,7 +12790,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_strided_batched(rocblas_handle h
     @param[out]
     B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
               On entry, the hermitian positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by POTRF.
+              triangular factor of B_i as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -12912,7 +12914,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_strided_batched(rocblas_handle h
     @param[out]
     B         pointer to type. Array on the GPU of dimension ldb*n.\n
               On entry, the symmetric positive definite matrix B. On exit, the
-              triangular factor of B as returned by POTRF.
+              triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
@@ -13013,7 +13015,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd(rocblas_handle handle,
     @param[out]
     B         pointer to type. Array on the GPU of dimension ldb*n.\n
               On entry, the hermitian positive definite matrix B. On exit, the
-              triangular factor of B as returned by POTRF.
+              triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B.
@@ -13114,7 +13116,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd(rocblas_handle handle,
     @param[out]
     B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
               On entry, the symmetric positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by POTRF.
+              triangular factor of B_i as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -13232,7 +13234,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_batched(rocblas_handle handle,
     @param[out]
     B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
               On entry, the hermitian positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by POTRF.
+              triangular factor of B_i as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -13354,7 +13356,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_batched(rocblas_handle handle,
     @param[out]
     B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
               On entry, the symmetric positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by POTRF.
+              triangular factor of B_i as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -13484,7 +13486,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_strided_batched(rocblas_handle 
     @param[out]
     B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
               On entry, the hermitian positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by POTRF.
+              triangular factor of B_i as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
     ldb       rocblas_int. ldb >= n.\n
               Specifies the leading dimension of B_i.
@@ -13571,7 +13573,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_strided_batched(rocblas_handle 
 
         A * C = I
 
-    where I is the identity matrix, and A is factorized as A = P * L * U as given by GETRF.
+    where I is the identity matrix, and A is factorized as A = P * L * U as given by \ref rocsolver_sgetrf "GETRF".
 
     @param[in]
     handle    rocblas_handle.
@@ -13580,13 +13582,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_strided_batched(rocblas_handle 
               The number of rows and columns of the matrix A.
     @param[in]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
-              The factors L and U of the factorization A = P*L*U returned by GETRF.
+              The factors L and U of the factorization A = P*L*U returned by \ref rocsolver_sgetrf "GETRF".
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of A.
     @param[in]
     ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
-              The pivot indices returned by GETRF.
+              The pivot indices returned by \ref rocsolver_sgetrf "GETRF".
     @param[out]
     C         pointer to type. Array on the GPU of dimension ldc*n.\n
               If info = 0, the inverse of A. Otherwise, undefined.
@@ -13645,7 +13647,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_outofplace(rocblas_handle handl
 
         A_j * C_j = I
 
-    where I is the identity matrix, and A_j is factorized as A_j = P_j * L_j * U_j as given by GETRF_BATCHED.
+    where I is the identity matrix, and A_j is factorized as A_j = P_j * L_j * U_j as given by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
 
     @param[in]
     handle    rocblas_handle.
@@ -13654,13 +13656,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_outofplace(rocblas_handle handl
               The number of rows and columns of all matrices A_j in the batch.
     @param[in]
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by GETRF_BATCHED.
+              The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of matrices A_j.
     @param[in]
     ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-              The pivot indices returned by GETRF_BATCHED.
+              The pivot indices returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
     strideP   rocblas_stride.\n
               Stride from the start of one vector ipiv_j to the next one ipiv_(i+j).
@@ -13734,7 +13736,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_outofplace_batched(rocblas_hand
 
         A_j * C_j = I
 
-    where I is the identity matrix, and A_j is factorized as A_j = P_j * L_j * U_j as given by GETRF_STRIDED_BATCHED.
+    where I is the identity matrix, and A_j is factorized as A_j = P_j * L_j * U_j as given by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
 
     @param[in]
     handle    rocblas_handle.
@@ -13744,7 +13746,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_outofplace_batched(rocblas_hand
     @param[in]
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
               The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by
-              GETRF_STRIDED_BATCHED.
+              \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
     lda       rocblas_int. lda >= n.\n
               Specifies the leading dimension of matrices A_j.
@@ -13754,7 +13756,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_outofplace_batched(rocblas_hand
               There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[in]
     ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-              The pivot indices returned by GETRF_STRIDED_BATCHED.
+              The pivot indices returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
     strideP   rocblas_stride.\n
               Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
