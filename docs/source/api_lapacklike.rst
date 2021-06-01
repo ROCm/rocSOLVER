@@ -3,18 +3,21 @@
 Lapack-like Functions
 ***********************
 
-Other Lapack-like routines provided by rocSOLVER.
+Other Lapack-like routines provided by rocSOLVER. These are divided into the following subcategories:
 
-.. toctree::
-   :maxdepth: 4
+* :ref:`liketriangular`. Based on Gaussian elimination.
+* :ref:`likelinears`. Based on triangular factorizations.
 
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
 
+
+.. _liketriangular:
 
 Triangular factorizations
 ===========================
+
+.. contents:: List of Lapack-like triangular factorizations
+   :local:
+   :backlinks: top
 
 .. _getf2_npvt:
 
@@ -81,8 +84,15 @@ rocsolver_<type>getrf_npvt_strided_batched()
 .. doxygenfunction:: rocsolver_sgetrf_npvt_strided_batched
 
 
+
+.. _likelinears:
+
 Linear-systems solvers
 ========================
+
+.. contents:: List of Lapack-like linear solvers
+   :local:
+   :backlinks: top
 
 .. _getri_outofplace:
 

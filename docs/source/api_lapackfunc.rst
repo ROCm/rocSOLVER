@@ -1,21 +1,31 @@
 
+.. _lapackfunc:
+
 ********************
 LAPACK Functions
 ********************
 
-LAPACK routines solve complex Numerical Linear Algebra problems.
+LAPACK routines solve complex Numerical Linear Algebra problems. These functions are organized 
+in the following categories:
 
-.. toctree::
-   :maxdepth: 4
+* :ref:`triangular`. Based on Gaussian elimination.
+* :ref:`orthogonal`. Based on Householder reflections.
+* :ref:`reductions`. Transformation of matrices and problems into equivalent forms.
+* :ref:`linears`. Based on triangular factorizations.
+* :ref:`leastsqr`. Based on orthogonal factorizations.
+* :ref:`eigens`. Eigenproblems for symmetric matrices.
+* :ref:`svds`. Singular values and related problems for general matrices. 
 
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
 
 
+.. _triangular:
 
 Triangular factorizations
 ================================
+
+.. contents:: List of triangular factorizations
+   :local:
+   :backlinks: top
 
 .. _potf2:
 
@@ -146,8 +156,15 @@ rocsolver_<type>getrf_strided_batched()
 .. doxygenfunction:: rocsolver_sgetrf_strided_batched
 
 
+
+.. _orthogonal:
+
 Orthogonal factorizations
 ================================
+
+.. contents:: List of orthogonal factorizations
+   :local:
+   :backlinks: top
 
 .. _geqr2:
 
@@ -346,8 +363,15 @@ rocsolver_<type>gelqf_strided_batched()
 .. doxygenfunction:: rocsolver_sgelqf_strided_batched
 
 
+
+.. _reductions:
+
 Problem and matrix reductions
 ================================
+
+.. contents:: List of reductions
+   :local:
+   :backlinks: top
 
 .. _gebd2:
 
@@ -574,8 +598,15 @@ rocsolver_<type>hegst_strided_batched()
 .. doxygenfunction:: rocsolver_chegst_strided_batched
 
 
+
+.. _linears:
+
 Linear-systems solvers
 ================================
+
+.. contents:: List of linear solvers
+   :local:
+   :backlinks: top
 
 .. _trtri:
 
@@ -674,8 +705,15 @@ rocsolver_<type>getrs_strided_batched()
 .. doxygenfunction:: rocsolver_sgetrs_strided_batched
 
 
+
+.. _leastsqr:
+
 Least-squares solvers
 ================================
+
+.. contents:: List of least-squares solvers
+   :local:
+   :backlinks: top
 
 .. _gels:
 
@@ -710,8 +748,15 @@ rocsolver_<type>gels_strided_batched()
 .. doxygenfunction:: rocsolver_sgels_strided_batched
 
 
+
+.. _eigens:
+
 Symmetric eigensolvers
 ================================
+
+.. contents:: List of symmetric eigensolvers
+   :local:
+   :backlinks: top
 
 .. _syev:
 
@@ -874,8 +919,15 @@ rocsolver_<type>hegvd_strided_batched()
 .. doxygenfunction:: rocsolver_chegvd_strided_batched
 
 
+
+.. _svds:
+
 Singular value decomposition
 ================================
+
+.. contents:: List of SVD related functions
+   :local:
+   :backlinks: top
 
 .. _gesvd:
 

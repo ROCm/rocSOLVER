@@ -4,20 +4,16 @@ Types
 *******
 
 rocSOLVER uses types and enumerations defined by the rocBLAS API. For more information, see the
-`rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_.
-
-.. toctree::
-   :maxdepth: 4
-
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
+`rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_. In this 
+section we present additional types, only used in rocSOLVER, that extend the rocBLAS API.
 
 
 Additional types
 ================
 
-The following are additional types, only used in rocSOLVER, that extend the rocBLAS API.
+.. contents:: List of additional types
+   :local:
+   :backlinks: top
 
 rocblas_direct
 ---------------

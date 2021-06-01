@@ -4,18 +4,21 @@
 Logging Functions
 ******************
 
-These are functions that enable and control rocSOLVER's :ref:`logging-label` capabilities.
+These are functions that enable and control rocSOLVER's :ref:`logging-label` capabilities. Functions 
+are divided in two categories:
 
-.. toctree::
-   :maxdepth: 4
+* :ref:`initialize` functions. Used to initialize and terminate the logging. 
+* :ref:`profile` functions. Provide functionality for the profile logging mode. 
 
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
 
+.. _initialize:
 
 Logging set-up and tear-down
 ===============================
+
+.. contents:: List of logging initialization functions
+   :local:
+   :backlinks: top
 
 rocsolver_log_begin()
 ---------------------------------
@@ -38,8 +41,15 @@ rocsolver_log_restore_defaults()
 .. doxygenfunction:: rocsolver_log_restore_defaults
 
 
+
+.. _profile:
+
 Profile logging
 ==============================
+
+.. contents:: List of profile logging functions
+   :local:
+   :backlinks: top
 
 rocsolver_log_write_profile()
 ---------------------------------

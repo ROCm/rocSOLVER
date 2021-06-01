@@ -3,19 +3,24 @@
 Deprecated
 ************
 
-.. toctree::
-   :maxdepth: 4
+Originally, rocSOLVER maintained its own types and helpers as aliases to those of rocBLAS.
+These aliases are now deprecated. See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_
+and `rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/functions.html#auxiliary>`_
+documentation for information on the suggested replacements.
 
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
+* Deprecated :ref:`deptypes`.
+* Deprecated :ref:`dephelpers`.
 
+
+
+.. _deptypes:
 
 Types
 ==============
 
-See the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_
-documentation for information on the suggested replacements for deprecated types.
+.. contents:: List of deprecated types
+   :local:
+   :backlinks: top
 
 rocsolver_int
 ---------------------
@@ -72,11 +77,15 @@ rocsolver_status
    Use :c:enum:`rocblas_status`.
 
 
+
+.. _dephelpers:
+
 Auxiliary functions
 ======================
 
-See the `rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/functions.html#auxiliary>`_
-documentation for information on the suggested replacements for deprecated auxiliaries.
+.. contents:: List of deprecated helpers
+   :local:
+   :backlinks: top
 
 rocsolver_create_handle()
 --------------------------

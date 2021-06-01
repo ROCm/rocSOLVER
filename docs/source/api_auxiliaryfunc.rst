@@ -3,18 +3,26 @@
 LAPACK Auxiliary Functions
 ***************************
 
-These are functions that support more advanced LAPACK routines.
+These are functions that support more :ref:`advanced LAPACK routines <lapackfunc>`. 
+The auxiliaty functions are divided into the following categories:
 
-.. toctree::
-   :maxdepth: 4
+* :ref:`vecmat`. Some basic operations with vectors and matrices that are not part of the BLAS standard.
+* :ref:`householder`. Generation and application of Householder matrices.
+* :ref:`bidiag`. Computations specialized in bidiagonal matrices. 
+* :ref:`tridiag`. Computations specialized in tridiagonal matrices. 
+* :ref:`orthonormal`. Generation and application of orthonormal matrices.
+* :ref:`unitary`. Generation and application of unitary matrices.
 
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
 
+
+.. _vecmat:
 
 Vector and Matrix manipulations
 ==================================
+
+.. contents:: List of vector and matrix manipulations
+   :local:
+   :backlinks: top
 
 .. _lacgv:
 
@@ -37,8 +45,15 @@ rocsolver_<type>laswp()
 .. doxygenfunction:: rocsolver_slaswp
 
 
+
+.. _householder:
+
 Householder reflections
 ==================================
+
+.. contents:: List of Householder functions
+   :local:
+   :backlinks: top
 
 .. _larfg:
 
@@ -89,8 +104,15 @@ rocsolver_<type>larfb()
 .. doxygenfunction:: rocsolver_slarfb
 
 
+
+.. _bidiag:
+
 Bidiagonal forms
 ==================================
+
+.. contents:: List of functions for bidiagonal forms
+   :local:
+   :backlinks: top
 
 .. _labrd:
 
@@ -117,8 +139,15 @@ rocsolver_<type>bdsqr()
 .. doxygenfunction:: rocsolver_sbdsqr
 
 
+
+.. _tridiag:
+
 Tridiagonal forms
 ==================================
+
+.. contents:: List of functions for tridiagonal forms
+   :local:
+   :backlinks: top
 
 .. _latrd:
 
@@ -165,8 +194,15 @@ rocsolver_<type>stedc()
 .. doxygenfunction:: rocsolver_sstedc
 
 
+
+.. _orthonormal:
+
 Orthonormal matrices
 ==================================
+
+.. contents:: List of functions for orthonormal matrices
+   :local:
+   :backlinks: top
 
 .. _org2r:
 
@@ -297,8 +333,15 @@ rocsolver_<type>ormtr()
 .. doxygenfunction:: rocsolver_sormtr
 
 
+
+.. _unitary:
+
 Unitary matrices
 ==================================
+
+.. contents:: List of functions for unitary matrices
+   :local:
+   :backlinks: top
 
 .. _ung2r:
 
