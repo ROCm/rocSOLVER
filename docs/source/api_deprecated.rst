@@ -72,7 +72,7 @@ rocsolver_status
    Use :c:enum:`rocblas_status`.
 
 
-Auxiliary Functions
+Auxiliary functions
 ======================
 
 See the `rocBLAS auxiliary functions <https://rocblas.readthedocs.io/en/latest/functions.html#auxiliary>`_

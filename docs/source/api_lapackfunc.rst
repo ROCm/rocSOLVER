@@ -14,7 +14,7 @@ LAPACK routines solve complex Numerical Linear Algebra problems.
 
 
 
-Triangular Factorizations
+Triangular factorizations
 ================================
 
 .. _potf2:
@@ -146,7 +146,7 @@ rocsolver_<type>getrf_strided_batched()
 .. doxygenfunction:: rocsolver_sgetrf_strided_batched
 
 
-Orthogonal Factorizations
+Orthogonal factorizations
 ================================
 
 .. _geqr2:
@@ -710,7 +710,7 @@ rocsolver_<type>gels_strided_batched()
 .. doxygenfunction:: rocsolver_sgels_strided_batched
 
 
-Symmetric Eigensolvers
+Symmetric eigensolvers
 ================================
 
 .. _syev:
@@ -874,7 +874,7 @@ rocsolver_<type>hegvd_strided_batched()
 .. doxygenfunction:: rocsolver_chegvd_strided_batched
 
 
-Singular Value Decomposition
+Singular value decomposition
 ================================
 
 .. _gesvd:

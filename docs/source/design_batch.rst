@@ -1,7 +1,7 @@
 .. _batch_label:
 
 *****************
-Batch rocSOLVER
+Batched rocSOLVER
 *****************
 
 .. toctree::

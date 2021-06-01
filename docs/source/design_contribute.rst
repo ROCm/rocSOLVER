@@ -1,6 +1,6 @@
 
 *******************************
-Contributing guidelines
+Contributing Guidelines
 *******************************
 
 .. toctree::

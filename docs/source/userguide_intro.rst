@@ -6,12 +6,12 @@ Introduction
 .. toctree::
    :maxdepth: 4
 
-.. contents:: Table of contents 
-   :local: 
+.. contents:: Table of contents
+   :local:
    :backlinks: top
 
 
-Library Overview
+Library overview
 ==========================
 
 rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_
@@ -26,9 +26,9 @@ Currently implemented functionality
 The rocSOLVER library is in the early stages of active development. New features are being
 continuously added, with new functionality documented at each `release of the ROCm platform <https://rocmdocs.amd.com/en/latest/Current_Release_Notes/Current-Release-Notes.html>`_.
 
-The following tables summarizes the LAPACK functionality implemented for the different supported precisions in rocSOLVER's latest release.
-All the LAPACK and LAPACK-like main functions include *_batched* and *_strided_batched* versions. For a complete description of the listed
-routines below, please see the :ref:`rocSOLVER API <library_api>` document.
+The following tables summarize the LAPACK functionality implemented for the different supported precisions in rocSOLVER's latest release.
+All LAPACK and LAPACK-like main functions include *_batched* and *_strided_batched* versions. For a complete description of the listed
+routines, please see the :ref:`rocSOLVER API <library_api>` document.
 
 LAPACK auxiliary functions
 ----------------------------
@@ -148,7 +148,7 @@ LAPACK main functions
 
     :ref:`rocsolver_gels <gels>`, x, x, x, x
 
-.. csv-table:: Symmetric Eigensolvers
+.. csv-table:: Symmetric eigensolvers
     :header: "Function", "single", "double", "single complex", "double complex"
 
     :ref:`rocsolver_syev <syev>`, x, x, ,
@@ -160,7 +160,7 @@ LAPACK main functions
     :ref:`rocsolver_hegv <hegv>`, , , x, x
     :ref:`rocsolver_hegvd <hegvd>`, , , x, x
 
-.. csv-table:: Singular Value Decomposition
+.. csv-table:: Singular value decomposition
     :header: "Function", "single", "double", "single complex", "double complex"
 
     :ref:`rocsolver_gesvd <gesvd>`, x, x, x, x

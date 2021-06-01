@@ -14,7 +14,7 @@ rocSOLVER uses types and enumerations defined by the rocBLAS API. For more infor
    :backlinks: top
 
 
-Additional Types
+Additional types
 ================
 
 The following are additional types, only used in rocSOLVER, that extend the rocBLAS API.

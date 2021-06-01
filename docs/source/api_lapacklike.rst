@@ -13,7 +13,7 @@ Other Lapack-like routines provided by rocSOLVER.
    :backlinks: top
 
 
-Triangular Factorizations
+Triangular factorizations
 ===========================
 
 .. _getf2_npvt:

@@ -7,7 +7,7 @@ Once installed, rocSOLVER can be used just like any other library with a C API.
 The header file will need to be included in the user code, and both the rocBLAS and rocSOLVER shared libraries
 will become link-time and run-time dependencies for the user application.
 
-Next, some examples are used to illustrate the basic use of rocSOLVER API and rocSOLVER bacthed API.
+Next, some examples are used to illustrate the basic use of rocSOLVER API and rocSOLVER batched API.
 
 .. toctree::
    :maxdepth: 4
@@ -142,7 +142,7 @@ Strided_batched version
 
 The following code snippet uses rocSOLVER to compute the QR factorization of a series of general m-by-n real matrices in double precision.
 The matrices must be stored in contiguous memory locations on the GPU, and are accessed by a pointer to the first matrix and a
-stride value that gives the separation between one matrix and the next one.
+stride value that gives the separation between one matrix and the next.
 For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`rocsolver_dgeqrf_strided_batched() <geqrf_strided_batched>`.
 
 .. code-block:: cpp
