@@ -5,10 +5,17 @@ Clients
 *********
 
 rocSOLVER has an infrastructure for testing and benchmarking similar to that of
-`rocBLAS <https://rocblas.readthedocs.io/en/latest/clients.html>`_.
+`rocBLAS <https://rocblas.readthedocs.io/en/latest/clients.html>`_, as well as sample code illustrating
+basic use of the library.
 
-If the clients are built, the client binaries ``rocsolver-test`` and ``rocsolver-bench``
-will normally be located in the directory ``<rocsolverDIR>/build/clients/staging``.
+Client binaries are not built by default; they require specific flags to be passed to the install script
+or CMake system. If the -c flag is passed to ``install.sh``, the client binaries will be located in the
+directory ``<rocsolverDIR>/build/release/clients/staging``. If both the -c and -g flags are passed to
+``install.sh``, the client binaries will be located in ``<rocsolverDIR>/build/debug/clients/staging``.
+If the -DBUILD_CLIENTS_TESTS=ON flag, the -DBUILD_CLIENTS_BENCHMARKS=ON flag, and/or the -DBUILD_CLIENTS_SAMPLES=ON
+flag are passed to the CMake system, the relevant client binaries will normally be located in the directory
+``<rocsolverDIR>/build/clients/staging``. See the :ref:`Building and installation section <userguide_install>`
+of the User's Guide for more information on building the library and its clients.
 
 .. toctree::
    :maxdepth: 4
@@ -21,9 +28,11 @@ will normally be located in the directory ``<rocsolverDIR>/build/clients/staging
 Testing rocSOLVER
 ==========================
 
-``rocsolver-test`` executes a suite of `Google tests <https://github.com/google/googletest>`_ (*gtest*) that verifies the correct
-functioning of the library. The results computed by rocSOLVER, given random input data, are compared with the results computed by
-`NETLib LAPACK <https://www.netlib.org/lapack/>`_ on the CPU.
+``rocsolver-test`` executes a suite of `Google tests <https://github.com/google/googletest>`_ (*gtest*) that
+verifies the correct functioning of the library. The results computed by rocSOLVER, given random input data,
+are compared with the results computed by `NETLib LAPACK <https://www.netlib.org/lapack/>`_ on the CPU. It
+will be built if the -c flag is passed to ``install.sh`` or if the -DBUILD_CLIENTS_TESTS=ON flag is passed to
+the CMake system.
 
 Calling the rocSOLVER gtest client with the --help flag
 
@@ -33,13 +42,31 @@ Calling the rocSOLVER gtest client with the --help flag
 
 returns information on different flags that control the behavior of the gtests.
 
+One of the most useful flags is the --gtest_filter flag, which allows the user to choose which tests to run
+from the suite. For example, the following command will run the tests for only geqrf:
+
+.. code-block:: bash
+
+    ./rocsolver-test --gtest_filter=*GEQRF*
+
+Note that rocSOLVER's tests are divided into two separate groupings: ``checkin_lapack`` and ``daily_lapack``.
+Tests in the ``checkin_lapack`` group are small and quick to execute, and verify basic correctness and error
+handling. Tests in the ``daily_lapack`` group are large and slower to execute, and verify correctness of
+large problem sizes. Users may run one test group or the other using --gtest_filter, e.g.
+
+.. code-block:: bash
+
+    ./rocsolver-test --gtest_filter=*checkin_lapack*
+    ./rocsolver-test --gtest_filter=*daily_lapack*
+
 
 Benchmarking rocSOLVER
 ==================================
 
-``rocsolver-bench`` runs any rocSOLVER function with random data of the specified dimensions. It provides basic
-performance information (i.e. execution times), and can compare the computed results with
-`NETLib LAPACK <https://www.netlib.org/lapack/>`_ on the CPU.
+``rocsolver-bench`` runs any rocSOLVER function with random data of the specified dimensions. It compares basic
+performance information (i.e. execution times) between `NETLib LAPACK <https://www.netlib.org/lapack/>`_ on the
+CPU and rocSOLVER on the GPU. It will be built if the -c flag is passed to ``install.sh`` or if the
+-DBUILD_CLIENTS_BENCHMARKS=ON flag is passed to the CMake system.
 
 Calling the rocSOLVER bench client with the --help flag
 
@@ -49,4 +76,40 @@ Calling the rocSOLVER bench client with the --help flag
 
 returns information on the different parameters and flags that control the behavior of the benchmark client.
 
+Two of the most important flags for ``rocsolver-bench`` are the -f and -r flags. The -f (or --function) flag
+allows the user to select which function to benchmark. The -r (or --precision) flag allows the user to select
+the data precision for the function, and can be one of s (single precision), d (double precision), c (single
+precision complex), or z (double precision complex).
+
+The non-pointer arguments for a function can be passed to ``rocsolver-bench`` by using the argument name as
+a flag (see the :ref:`rocSOLVER API <library_api>` document for information on the function arguments and
+their names). For example, the function ``rocsolver_dgeqrf_strided_batched`` has the following method signature:
+
+.. code-block:: cpp
+
+    rocblas_status
+    rocsolver_dgeqrf_strided_batched(rocblas_handle handle,
+                                     const rocblas_int m,
+                                     const rocblas_int n,
+                                     double* A,
+                                     const rocblas_int lda,
+                                     const rocblas_stride strideA,
+                                     double* ipiv,
+                                     const rocblas_stride strideP,
+                                     const rocblas_int batch_count);
+
+A call to ``rocsolver-bench`` that runs this function on a batch of one hundred 30x30 matrices could look like this:
+
+.. code-block:: bash
+
+    ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 -n 30 --lda 30 --strideA 900 --strideP 30 --batch_count 100
+
+Generally, ``rocsolver-bench`` will attempt to provide or calculate a suitable default value for these arguments,
+though at least one size argument must always be specified by the user. Functions that take m and n as arguments
+typically require m to be provided, and a square matrix will be assumed. For example, the previous command is
+equivalent to:
+
+.. code-block:: bash
+
+    ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100
 
