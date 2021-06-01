@@ -4,7 +4,7 @@ LAPACK Auxiliary Functions
 ***************************
 
 These are functions that support more :ref:`advanced LAPACK routines <lapackfunc>`. 
-The auxiliaty functions are divided into the following categories:
+The auxiliary functions are divided into the following categories:
 
 * :ref:`vecmat`. Some basic operations with vectors and matrices that are not part of the BLAS standard.
 * :ref:`householder`. Generation and application of Householder matrices.
