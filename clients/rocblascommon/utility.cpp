@@ -8,7 +8,6 @@
 #include <cstdlib>
 #include <cstring>
 //#include <regex>
-#include <sys/time.h>
 
 // Random number generator
 // Note: We do not use random_device to initialize the RNG, because we want
