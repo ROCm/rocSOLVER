@@ -510,9 +510,9 @@ rocblas_status rocblasCall_trmv(rocblas_handle handle,
     ROCBLAS_ENTER("trmv", "trans:", transa, "diag:", diag, "m:", m, "shiftA:", offseta, "lda:", lda,
                   "shiftX:", offsetx, "incx:", incx, "bc:", batch_count);
 
-    return rocblas_internal_trmv_template(
-        handle, uplo, transa, diag, m, cast2constType<T>(a), offseta, lda, stridea, x, offsetx,
-        incx, stridex, w, stridew, batch_count);
+    return rocblas_internal_trmv_template(handle, uplo, transa, diag, m, cast2constType<T>(a),
+                                          offseta, lda, stridea, x, offsetx, incx, stridex, w,
+                                          stridew, batch_count);
 }
 
 // gemm
