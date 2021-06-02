@@ -113,3 +113,29 @@ equivalent to:
 
     ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100
 
+Other useful options include the --perf flag, which will disable the LAPACK computation and only time rocSOLVER;
+the --verify flag, which will calculate and print the error between the results of LAPACK and rocSOLVER; the
+-i (or --iters) flag, which indicates the number of times to run the GPU timing loop; and the --profile flag, which
+enables profile logging and indicates the maximum depth of the nested output.
+
+.. code-block:: bash
+
+    ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100 --perf 1
+    ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100 --verify 1
+    ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100 --iters 20
+    ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100 --profile 5
+
+
+rocSOLVER sample code
+==================================
+
+rocSOLVER's sample programs provide illustrative examples of how to work with the rocSOLVER library. They will be
+built if the -c flag is passed to ``install.sh`` or if the -DBUILD_CLIENTS_SAMPLES=ON flag is passed to the CMake
+system.
+
+Currently, sample code exists to demonstrate the following:
+
+* Basic use of rocSOLVER in C, C++, and Fortran, using the example of geqrf;
+* Use of rocSOLVER with the Heterogeneous Memory Management (HMM) model; and
+* Use of rocSOLVER's multi-level logging functionality.
+
