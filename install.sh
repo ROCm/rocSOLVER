@@ -302,7 +302,7 @@ build_docs=false
 optimal=true
 cleanup=false
 architecture=
-build_coverage=false
+build_codecoverage=false
 
 
 # #################################################
@@ -388,7 +388,7 @@ while true; do
         build_relocatable=true
         shift ;;
     --codecoverage)
-        build_coverage=true
+        build_codecoverage=true
         shift ;;
     -k|--relwithdebinfo)
         build_type=RelWithDebInfo
@@ -543,9 +543,9 @@ case "${ID}" in
     ;;
 esac
 
-if [[ "${build_coverage}" == true ]]; then
+if [[ "${build_codecoverage}" == true ]]; then
     if [[ "${build_type}" == Release ]]; then
-        echo "Code coverage is not supported in Release mode, to enable code coverage select either Debug mode (-g | --debug) or RelWithDebInfo mode (-k | --relwithdebinfo); aborting";
+        echo "Code coverage is chosen to be disabled in Release mode, to enable code coverage select either Debug mode (-g | --debug) or RelWithDebInfo mode (-k | --relwithdebinfo); aborting";
         exit 1
     fi
     cmake_common_options="${cmake_common_options} -DBUILD_CODE_COVERAGE=ON"
