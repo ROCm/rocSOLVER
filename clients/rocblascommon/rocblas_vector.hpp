@@ -1,17 +1,14 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
-
-#include "d_vector.hpp"
 
 #include "device_batch_vector.hpp"
 #include "device_strided_batch_vector.hpp"
 #include "device_vector.hpp"
 
 #include "host_batch_vector.hpp"
-#include "host_pinned_vector.hpp"
 #include "host_strided_batch_vector.hpp"
 #include "host_vector.hpp"
 
