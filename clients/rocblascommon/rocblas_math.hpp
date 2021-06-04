@@ -1,14 +1,14 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
 
 #include <cmath>
-#include <immintrin.h>
-#include <type_traits>
 #include <hip/hip_runtime.h>
+#include <immintrin.h>
 #include <rocblas.h>
+#include <type_traits>
 
 /* ============================================================================================
  */

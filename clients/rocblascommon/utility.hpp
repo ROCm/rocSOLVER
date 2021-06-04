@@ -6,10 +6,10 @@
 
 #include <cstdio>
 #include <iostream>
+#include <rocblas.h>
 #include <string>
 #include <type_traits>
 #include <vector>
-#include <rocblas.h>
 
 #include "rocblas_test.hpp"
 

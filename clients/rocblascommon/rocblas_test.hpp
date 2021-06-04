@@ -9,12 +9,12 @@
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <rocblas.h>
 #include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
-#include <rocblas.h>
 
 #include "rocsolver_ostream.hpp"
 
