@@ -90,6 +90,7 @@ option_opposite( BUILD_LIBRARY SKIP_LIBRARY )
 option( BUILD_CLIENTS_TESTS "Build rocSOLVER unit tests" OFF )
 option( BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmarks" OFF )
 option( BUILD_CLIENTS_SAMPLES "Build rocSOLVER samples" OFF )
+option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
 
 # FOR OPTIONAL CODE COVERAGE
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
@@ -131,6 +132,12 @@ add_subdirectory( common )
 if( BUILD_LIBRARY )
   add_subdirectory( library )
 endif( )
+
+if(BUILD_ADDRESS_SANITIZER)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -shared-libasan")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -shared-libasan")
+  add_link_options(-fuse-ld=lld)
+endif()
 
 # Build clients of the library
 if( BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES )

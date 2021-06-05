@@ -67,6 +67,8 @@ Options:
                               If you don't know the architecture of the GPU in your local machine, it can be
                               queried by running "mygpu".
 
+  --address-sanitizer         Pass this flag to build with address sanitizer enabled
+
   --docs                      (experimental) Pass this flag to build the documentation from source.
                               Official documentation is available online at https://rocsolver.readthedocs.io/
                               Building locally with this flag will require docker on your machine. If you are
@@ -301,6 +303,7 @@ build_relocatable=false
 build_docs=false
 optimal=true
 cleanup=false
+build_sanitizer=false
 architecture=
 build_codecoverage=false
 
@@ -312,7 +315,7 @@ build_codecoverage=false
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrnka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs,address-sanitizer --options hipcdgsrnka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -383,6 +386,9 @@ while true; do
         shift 2 ;;
     --docs)
         build_docs=true
+        shift ;;
+    --address-sanitizer)
+        build_sanitizer=true
         shift ;;
     -r|--relocatable)
         build_relocatable=true
@@ -516,6 +522,10 @@ fi
 
 if [[ -n "${architecture}" ]]; then
   cmake_common_options="${cmake_common_options} -DAMDGPU_TARGETS=${architecture}"
+fi
+
+if [[ "${build_sanitizer}" == true ]]; then
+  cmake_common_options="${cmake_common_options} -DBUILD_ADDRESS_SANITIZER=ON"
 fi
 
 if [[ "${build_clients}" == true ]]; then
