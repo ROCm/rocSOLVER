@@ -3,19 +3,25 @@
 Using rocSOLVER
 *************************
 
-.. toctree::
-   :maxdepth: 4
-   :caption: Contents:
-
 Once installed, rocSOLVER can be used just like any other library with a C API.
 The header file will need to be included in the user code, and both the rocBLAS and rocSOLVER shared libraries
 will become link-time and run-time dependencies for the user application.
+
+Next, some examples are used to illustrate the basic use of rocSOLVER API and rocSOLVER batched API.
+
+.. toctree::
+   :maxdepth: 4
+
+.. contents:: Table of contents
+   :local:
+   :backlinks: top
+
 
 QR factorization of a single matrix
 ================================================
 
 The following code snippet uses rocSOLVER to compute the QR factorization of a general m-by-n real matrix in double precision.
-For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`qr_label`.
+For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`rocsolver_dgeqrf() <geqrf>`.
 
 .. code-block:: cpp
 
@@ -54,8 +60,6 @@ For a full description of the used rocSOLVER routine, see the API documentation 
     }
 
     // We use rocsolver_dgeqrf to factor a real M-by-N matrix, A.
-    // See https://rocsolver.readthedocs.io/en/latest/userguide_api.html#_CPPv416rocsolver_dgeqrf14rocblas_handleK11rocblas_intK11rocblas_intPdK11rocblas_intPd
-    // and https://www.netlib.org/lapack/explore-html/df/dc5/group__variants_g_ecomputational_ga3766ea903391b5cf9008132f7440ec7b.html
     int main() {
       rocblas_int M;          // rows
       rocblas_int N;          // cols
@@ -138,8 +142,8 @@ Strided_batched version
 
 The following code snippet uses rocSOLVER to compute the QR factorization of a series of general m-by-n real matrices in double precision.
 The matrices must be stored in contiguous memory locations on the GPU, and are accessed by a pointer to the first matrix and a
-stride value that gives the separation between one matrix and the next one.
-For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`qr_strided_label`.
+stride value that gives the separation between one matrix and the next.
+For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`rocsolver_dgeqrf_strided_batched() <geqrf_strided_batched>`.
 
 .. code-block:: cpp
 
@@ -206,7 +210,7 @@ Batched version
 
 The following code snippet uses rocSOLVER to compute the QR factorization of a series of general m-by-n real matrices in double precision.
 The matrices do not need to be in contiguous memory locations on the GPU, and will be accessed by an array of pointers.
-For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`qr_batched_label`.
+For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`rocsolver_dgeqrf_batched <geqrf_batched>`.
 
 .. code-block:: cpp
 

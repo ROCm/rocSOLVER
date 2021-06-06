@@ -4,26 +4,40 @@
 Multi-level Logging
 *************************
 
-.. toctree::
-   :maxdepth: 4
-   :caption: Contents:
-
-Similar to rocBLAS, rocSOLVER provides logging facilities that can be used to output information
-on rocSOLVER function calls. Three types of logging are supported: trace logging, bench logging,
+Similar to `rocBLAS logging <https://rocblas.readthedocs.io/en/latest/logging.html>`_,
+rocSOLVER provides logging facilities that can be used to output information
+on rocSOLVER function calls. Three modes of logging are supported: trace logging, bench logging,
 and profile logging.
 
 Note that performance will degrade when logging is enabled.
 
-Logging types
+.. toctree::
+   :maxdepth: 4
+
+.. contents:: Table of contents
+   :local:
+   :backlinks: top
+
+
+Logging modes
 ================================================
+
+Trace logging
+--------------
 
 Trace logging outputs a line each time an internal rocSOLVER or rocBLAS routine is called,
 outputting the function name and the values of its arguments (excluding stride arguments). The
 maximum depth of nested function calls that can appear in the log is specified by the user.
 
+Bench logging
+----------------
+
 Bench logging outputs a line each time a public rocSOLVER routine is called (excluding
 auxiliary library functions), outputting a line that can be used with the executable
 ``rocsolver-bench`` to call the function with the same size arguments.
+
+Profile logging
+-------------------
 
 Profile logging, upon calling ``rocsolver_log_write_profile`` or ``rocsolver_log_flush_profile``,
 or terminating the logging session using ``rocsolver_log_end``, will output statistics on each
@@ -79,6 +93,9 @@ or ``rocsolver_log_flush_profile``. Once logging facilities are no longer requir
 program termination), the user must call ``rocsolver_log_end`` to free the data structures used
 for logging. If the profile log has not been flushed beforehand, then ``rocsolver_log_end``
 will also output the results of profile logging.
+
+For more details on the mentioned logging functions, see the :ref:`Logging functions section <api_logging>`
+on the rocSOLVER API document.
 
 
 Multiple host threads

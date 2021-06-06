@@ -90,9 +90,8 @@ extern "C" {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
-/*! \brief Creates a handle and sets the pointer mode to \c
-   rocblas_pointer_mode_device. \deprecated Use \c rocblas_create_handle.
-*/
+/*! \deprecated Use \c rocblas_create_handle.
+ */
 ROCSOLVER_EXPORT rocsolver_status rocsolver_create_handle(rocsolver_handle* handle)
     __attribute__((deprecated("use rocblas_create_handle")));
 

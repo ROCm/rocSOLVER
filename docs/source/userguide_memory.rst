@@ -4,10 +4,6 @@
 Memory Model
 *******************************
 
-.. toctree::
-   :maxdepth: 4
-   :caption: Contents:
-
 Almost all LAPACK and rocSOLVER routines require workspace memory in order to compute their results.
 In contrast to LAPACK, however, pointers to the workspace are not explicitly passed to rocSOLVER
 functions as arguments; instead, they are managed behind-the-scenes using a configurable device memory
@@ -28,20 +24,30 @@ There are 4 schemes for device memory management:
 * User-owned: The user manually allocates device memory and calls a rocBLAS helper function to use it
   as the workspace.
 
-Automatic workspace allocation
+.. toctree::
+   :maxdepth: 4
+
+.. contents:: Table of contents
+   :local:
+   :backlinks: top
+
+
+Automatic workspace
 ================================================
 
 By default, rocSOLVER will automatically allocate device memory to be used as internal workspace
 using the rocBLAS memory model, and will increase the amount of allocated memory as needed by rocSOLVER
 functions. If this scheme is in use, the function ``rocblas_is_managing_device_memory`` will return
 ``true``. In order to re-enable this scheme if it is not in use, a ``nullptr`` or zero size can be
-passed to the helper functions ``rocblas_set_device_memory_size`` or ``rocblas_set_workspace`` (see
-examples below).
+passed to the helper functions ``rocblas_set_device_memory_size`` or ``rocblas_set_workspace``.
+For more details on these rocBLAS APIs, see the
+`rocBLAS documentation <https://rocblas.readthedocs.io/en/latest/functions.html#device-memory-functions>`_.
 
 This scheme has the disadvantage that automatic reallocation is synchronizing, and the user cannot
 control when this synchronization happens.
 
-User-specified workspace size
+
+User-managed workspace
 ================================================
 
 Alternatively, the user can manually specify an amount of memory to be allocated by rocSOLVER/rocBLAS.
@@ -68,6 +74,10 @@ system with 1 right-hand side (involving calls to ``getrf`` and ``getrs``):
     rocsolver_dgetrs(handle, rocblas_operation_none, 1024, 1, nullptr, lda, nullptr, nullptr, ldb);
     rocblas_stop_device_memory_size_query(handle, &memory_size);
 
+For more details on the rocBLAS APIs, see the
+`rocBLAS documentation <https://rocblas.readthedocs.io/en/latest/functions.html#device-memory-functions>`_.
+
+
 Using an environment variable
 ------------------------------
 
@@ -92,15 +102,11 @@ called. For example:
 
     rocblas_set_device_memory_size(handle, memory_size);
 
-The amount of device memory currently allocated for use by rocSOLVER/rocBLAS can be obtained by
-calling ``rocblas_get_device_memory_size``.
+For more details on the rocBLAS APIs, see the
+`rocBLAS documentation <https://rocblas.readthedocs.io/en/latest/functions.html#device-memory-functions>`_.
 
-.. code-block:: cpp
 
-    size_t memory_allocated;
-    rocblas_get_device_memory_size(handle, &memory_allocated);
-
-Manual workspace allocation
+User-owned workspace
 ================================================
 
 Finally, the user may opt to manage the workspace memory manually using HIP. By calling the function
@@ -117,3 +123,7 @@ as the workspace for rocSOLVER. For example:
 
     rocblas_set_workspace(handle, nullptr, 0);
     hipFree(device_memory);
+
+For more details on the rocBLAS APIs, see the
+`rocBLAS documentation <https://rocblas.readthedocs.io/en/latest/functions.html#device-memory-functions>`_.
+
