@@ -87,7 +87,12 @@ else:
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    'navigation_depth': 4,
+    'prev_next_buttons_location': 'both',
+    'display_version': True,
+    'collapse_navigation': False,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -117,16 +122,13 @@ htmlhelp_basename = 'rocSOLVERdoc'
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
-    #
-    # 'papersize': 'letterpaper',
+    'papersize': 'letterpaper',
 
     # The font size ('10pt', '11pt' or '12pt').
-    #
-    # 'pointsize': '10pt',
+    'pointsize': '10pt',
 
     # Additional stuff for the LaTeX preamble.
-    #
-    # 'preamble': '',
+    'preamble': '\setcounter{tocdepth}{5}',
 
     # Latex figure (float) alignment
     #
@@ -159,6 +161,6 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'rocSOLVER', u'rocSOLVER Documentation',
-     author, 'rocSOLVER', 'One line description of project.',
+     author, 'rocSOLVER development team', 'Implementation of LAPACK routines on AMD GPUs',
      'Miscellaneous'),
 ]

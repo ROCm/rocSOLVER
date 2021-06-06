@@ -1,17 +1,15 @@
 
 #############################
-User guide
+rocSOLVER User guide
 #############################
 
 .. toctree::
-   :maxdepth: 4
-   :caption: Contents:
+   :maxdepth: 5
 
    userguide_intro
    userguide_install
    userguide_examples
-   userguide_tuning
    userguide_memory
    userguide_logging
-   userguide_api
+   userguide_clients
 

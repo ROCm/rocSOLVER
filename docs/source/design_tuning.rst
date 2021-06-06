@@ -1,8 +1,8 @@
-.. _batch_label:
+.. _tuning_label:
 
-*****************
-Batched rocSOLVER
-*****************
+*******************************
+Tuning rocSOLVER Performance
+*******************************
 
 .. toctree::
    :maxdepth: 4
@@ -13,4 +13,6 @@ Batched rocSOLVER
 
 
 More to come later...
+
+
 

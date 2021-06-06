@@ -1,12 +1,17 @@
-.. _tuning_label:
 
 *******************************
-Tuning rocSOLVER Performance
+Contributing Guidelines
 *******************************
 
 .. toctree::
    :maxdepth: 4
-   :caption: Contents:
+
+.. contents:: Table of contents
+   :local:
+   :backlinks: top
+
 
 More to come later...
+
+
 
