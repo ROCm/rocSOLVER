@@ -16,6 +16,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ### Changed
 - The -h option of install.sh now prints a help message, instead of doing nothing.
+- Added --mem_query option to rocsolver-bench, which will print the amount of device memory required
+  by a function.
 
 ### Removed
 
