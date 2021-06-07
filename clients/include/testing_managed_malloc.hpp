@@ -220,7 +220,7 @@ void testing_managed_malloc(Arguments& argus)
     }
 
     // memory size query is necessary
-    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
+    if(argus.mem_query || !USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         CHECK_ALLOC_QUERY(rocsolver_labrd(handle, m, n, nb, (T*)nullptr, lda, (S*)nullptr,
@@ -229,6 +229,12 @@ void testing_managed_malloc(Arguments& argus)
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
+        if(argus.mem_query)
+        {
+            ROCSOLVER_BENCH_INFORM_2(3, size);
+            return;
+        }
+
         CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 

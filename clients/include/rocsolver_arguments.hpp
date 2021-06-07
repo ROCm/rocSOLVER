@@ -28,6 +28,7 @@ public:
     rocblas_int perf = 0;
     rocblas_int singular = 0;
     rocblas_int iters = 5;
+    rocblas_int mem_query = 0;
     rocblas_int batch_count = 1;
 
     // get and set function arguments

@@ -13,18 +13,23 @@
 // reallocate workspace
 #define USE_ROCBLAS_REALLOC_ON_DEMAND true
 
-#define ROCSOLVER_BENCH_INFORM(case)                                         \
-    do                                                                       \
-    {                                                                        \
-        if(case == 2)                                                        \
-            rocsolver_cout << "Invalid value in arguments ..." << std::endl; \
-        else if(case == 1)                                                   \
-            rocsolver_cout << "Invalid size arguments..." << std::endl;      \
-        else                                                                 \
-            rocsolver_cout << "Quick return..." << std::endl;                \
-        rocsolver_cout << "No performance data to collect." << std::endl;    \
-        rocsolver_cout << "No computations to verify." << std::endl;         \
+#define ROCSOLVER_BENCH_INFORM_HELPER(case, arg)                                             \
+    do                                                                                       \
+    {                                                                                        \
+        if(case == 3)                                                                        \
+            rocsolver_cout << arg << " bytes of device memory are required..." << std::endl; \
+        else if(case == 2)                                                                   \
+            rocsolver_cout << "Invalid value in arguments..." << std::endl;                  \
+        else if(case == 1)                                                                   \
+            rocsolver_cout << "Invalid size arguments..." << std::endl;                      \
+        else                                                                                 \
+            rocsolver_cout << "Quick return..." << std::endl;                                \
+        rocsolver_cout << "No performance data to collect." << std::endl;                    \
+        rocsolver_cout << "No computations to verify." << std::endl;                         \
     } while(0)
+
+#define ROCSOLVER_BENCH_INFORM(case) ROCSOLVER_BENCH_INFORM_HELPER(case, 0)
+#define ROCSOLVER_BENCH_INFORM_2(case, arg) ROCSOLVER_BENCH_INFORM_HELPER(case, arg)
 
 template <typename T>
 constexpr double get_epsilon()
