@@ -10,13 +10,13 @@
  ********************************************************************************/
 typedef uint32_t rocblas_layer_mode_flags;
 
-/*! \brief Used to specify the order in which multiple elementary matrices are
+/*! \brief Used to specify the order in which multiple Householder matrices are
  *applied together
  ********************************************************************************/
 typedef enum rocblas_direct_
 {
-    rocblas_forward_direction = 171, /**< Elementary matrices applied from the right. */
-    rocblas_backward_direction = 172, /**< Elementary matrices applied from the left. */
+    rocblas_forward_direction = 171, /**< Householder matrices applied from the right. */
+    rocblas_backward_direction = 172, /**< Householder matrices applied from the left. */
 } rocblas_direct;
 
 /*! \brief Used to specify how householder vectors are stored in a matrix of
@@ -47,8 +47,8 @@ typedef enum rocblas_svect_
 typedef enum rocblas_workmode_
 {
     rocblas_outofplace = 201, /**< Out-of-place computations are allowed; this
-                               requires enough free memory. */
-    rocblas_inplace = 202, /**< When not enough memory, this forces in-place computations  */
+                               requires extra device memory for workspace. */
+    rocblas_inplace = 202, /**< If not enough memory is available, this forces in-place computations.  */
 } rocblas_workmode;
 
 /*! \brief Used to specify how the eigenvectors are to be computed

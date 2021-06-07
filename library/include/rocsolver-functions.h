@@ -16,6 +16,7 @@
 extern "C" {
 #endif
 
+
 /*
  * ===========================================================================
  *      Build information (library version)
@@ -32,6 +33,8 @@ extern "C" {
  ******************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char* buf, size_t len);
+
+
 
 /*
  * ===========================================================================
@@ -50,7 +53,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char* buf, size_t l
     The default is STDERR for all the modes. This default can also be overridden
     using the environment variable ROCSOLVER_LOG_PATH, or specifically
     ROCSOLVER_LOG_TRACE_PATH, ROCSOLVER_LOG_BENCH_PATH, and/or ROCSOLVER_LOG_PROFILE_PATH.
-******************************************************************************/
+ ******************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_log_begin(void);
 
@@ -59,7 +62,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_log_begin(void);
     \details
     If applicable, this function also prints the profile logging results
     before cleaning the logging environment.
-*****************************************************************************/
+ *****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_log_end(void);
 
@@ -107,6 +110,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_log_write_profile(void);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_log_flush_profile(void);
 
+
+
 /*
  * ===========================================================================
  *      Auxiliary functions
@@ -120,17 +125,17 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_log_flush_profile(void);
     It conjugates the n entries of a complex vector x with increment incx.
 
     @param[in]
-    handle          rocblas_handle
+    handle          rocblas_handle.
     @param[in]
     n               rocblas_int. n >= 0.\n
-                    The number of entries of the vector x.
+                    The dimension of vector x.
     @param[inout]
-    x               pointer to type. Array on the GPU of size at least n.\n
-                    On input it is the vector x,
-                    on output it is overwritten with vector conjg(x).
+    x               pointer to type. Array on the GPU of size is at least n (size depends on the value of incx).\n
+                    On input it is the vector x.
+                    On output, each entry is overwritten with its conjugate value. 
     @param[in]
     incx            rocblas_int. incx != 0.\n
-                    The increment between consecutive elements of x.
+                    The distance between two consecutive elements of x.
                     If incx is negative, the elements of x are indexed in
                     reverse order.
     *************************************************************************/
@@ -148,41 +153,41 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlacgv(rocblas_handle handle,
 
 /*! @{
     \brief LASWP performs a series of row interchanges on the matrix A.
-
+    
     \details
-    It interchanges row I with row IPIV[k1 + (I - k1) * abs(inx)], for
-    each of rows K1 through K2 of A. k1 and k2 are 1-based indices.
-
+    Row interchanges are done one by one. If \f$\text{ipiv}[k_1 + (j - k_1) \cdot \text{abs}(\text{incx})] = r\f$, then the j-th row of A
+    will be interchanged with the r-th row of A, for \f$j = k_1,k_1+1,\dots,k_2\f$. Indices \f$k_1\f$ and \f$k_2\f$ are 1-based indices.
+    
     @param[in]
-    handle          rocblas_handle
+    handle          rocblas_handle.
     @param[in]
     n               rocblas_int. n >= 0.\n
                     The number of columns of the matrix A.
     @param[inout]
     A               pointer to type. Array on the GPU of dimension lda*n. \n
-                    On entry, the matrix of column dimension n to which the row
-                    interchanges will be applied. On exit, the permuted matrix.
+                    On entry, the matrix to which the row
+                    interchanges will be applied. On exit, the resulting permuted matrix.
     @param[in]
     lda             rocblas_int. lda > 0.\n
                     The leading dimension of the array A.
-    @param[in]
+    @param[in] 
     k1              rocblas_int. k1 > 0.\n
-                    The first element of IPIV for which a row interchange will
+                    It is the first element of ipiv for which a row interchange will
                     be done. This is a 1-based index.
     @param[in]
     k2              rocblas_int. k2 > k1 > 0.\n
-                    (K2-K1+1) is the number of elements of IPIV for which a row
+                    k2 - k1 + 1 is the number of elements of ipiv for which a row
                     interchange will be done. This is a 1-based index.
     @param[in]
-    ipiv            pointer to rocblas_int. Array on the GPU of dimension at least k1 + (k2 - k1) * abs(incx).\n
-                    The vector of pivot indices.  Only the elements in positions
-                    k1 through (k1 + (k2 - k1) * abs(incx)) of IPIV are accessed.
+    ipiv            pointer to rocblas_int. Array on the GPU of dimension at least k1 + (k2 - k1)*abs(incx).\n
+                    The vector of pivot indices. Only the elements in positions
+                    k1 through k1 + (k2 - k1)*abs(incx) of this vector are accessed.
                     Elements of ipiv are considered 1-based.
     @param[in]
     incx            rocblas_int. incx != 0.\n
-                    The increment between successive values of IPIV.  If IPIV
+                    The distance between successive values of ipiv.  If incx
                     is negative, the pivots are applied in reverse order.
-    *************************************************************************/
+    **************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_slaswp(rocblas_handle handle,
                                                  const rocblas_int n,
@@ -225,21 +230,44 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlaswp(rocblas_handle handle,
     \brief LARFG generates an orthogonal Householder reflector H of order n.
 
     \details
-    Householder reflector H is such that
+    The reflector H is such that
 
-        H * [alpha] = [beta]
-            [  x  ]   [  0 ]
+    \f[
+        H\left[\begin{array}{c}
+        \text{alpha}\\
+        x
+        \end{array}\right]=\left[\begin{array}{c}
+        \text{beta}\\
+        0
+        \end{array}\right]
+    \f]     
 
-    where x is an n-1 vector and alpha and beta are scalars. Matrix H can be
+    where x is an n-1 vector, and alpha and beta are scalars. Matrix H can be
     generated as
 
-        H = I - tau * [1] * [1 v']
-                      [v]
+    \f[
+        H = I - \text{tau}\left[\begin{array}{c}
+        1\\
+        v
+        \end{array}\right]\left[\begin{array}{cc}
+        1 & v'
+        \end{array}\right]
+    \f]
 
-    with v an n-1 vector and tau a scalar.
+    with v a n-1 vector, and tau a scalar. tau is known as the Householder scalar and
+
+    \f[
+        \bar{v}=\left[\begin{array}{c}
+        1\\
+        v
+        \end{array}\right]
+    \f]
+
+    as the Householder vector associated with the reflection.
+
 
     @param[in]
-    handle          rocblas_handle
+    handle          rocblas_handle.
     @param[in]
     n               rocblas_int. n >= 0.\n
                     The order (size) of reflector H.
@@ -248,15 +276,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlaswp(rocblas_handle handle,
                     On input the scalar alpha,
                     on output it is overwritten with beta.
     @param[inout]
-    x               pointer to type. Array on the GPU of size at least n-1.\n
+    x               pointer to type. Array on the GPU of size at least n-1 (size depends on the value of incx).\n
                     On input it is the vector x,
                     on output it is overwritten with vector v.
     @param[in]
     incx            rocblas_int. incx > 0.\n
-                    The increment between consecutive elements of x.
+                    The distance between two consecutive elements of x.
     @param[out]
     tau             pointer to type. A scalar on the GPU.\n
-                    The scalar tau.
+                    The Householder scalar tau.
 
     *************************************************************************/
 
@@ -290,27 +318,33 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief LARFT Generates the triangular factor T of a block reflector H of
+    \brief LARFT generates the triangular factor T of a block reflector H of
     order n.
 
     \details
-    The block reflector H is defined as the product of k Householder matrices as
+    The block reflector H is defined as the product of k Householder matrices
 
-        H = H(1) * H(2) * ... * H(k)  (forward direction), or
-        H = H(k) * ... * H(2) * H(1)  (backward direction)
+    \f[
+        \begin{array}{cl}
+        H = H_1H_2\cdots H_k & \: \text{if direct indicates forward direction, or} \\
+        H = H_k\cdots H_2H_1 & \: \text{if direct indicates backward direction}
+        \end{array}
+    \f]
 
-    depending on the value of direct.
-
-    The triangular matrix T is upper triangular in forward direction and lower triangular in backward direction.
+    The triangular factor T is upper triangular in forward direction and lower triangular in backward direction.
     If storev is column-wise, then
 
-        H = I - V * T * V'
+    \f[
+        H = I - VTV'
+    \f]
 
-    where the i-th column of matrix V contains the Householder vector associated to H(i). If storev is row-wise, then
+    where the i-th column of matrix V contains the Householder vector associated with \f$H_i\f$. If storev is row-wise, then
 
-        H = I - V' * T * V
+    \f[
+        H = I - V'TV
+    \f]
 
-    where the i-th row of matrix V contains the Householder vector associated to H(i).
+    where the i-th row of matrix V contains the Householder vector associated with \f$H_i\f$.
 
     @param[in]
     handle              rocblas_handle.
@@ -325,7 +359,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
                         The order (size) of the block reflector.
     @param[in]
     k                   rocblas_int. k >= 1.\n
-                        The number of Householder matrices.
+                        The number of Householder matrices forming H.
     @param[in]
     V                   pointer to type. Array on the GPU of size ldv*k if column-wise, or ldv*n if row-wise.\n
                         The matrix of Householder vectors.
@@ -334,10 +368,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
                         Leading dimension of V.
     @param[in]
     tau                 pointer to type. Array of k scalars on the GPU.\n
-                        The vector of all the scalars associated to the Householder matrices.
+                        The vector of all the Householder scalars.
     @param[out]
     T                   pointer to type. Array on the GPU of dimension ldt*k.\n
-                        The triangular factor. T is upper triangular is forward operation, otherwise it is lower triangular.
+                        The triangular factor. T is upper triangular if forward direction, otherwise it is lower triangular.
                         The rest of the array is not used.
     @param[in]
     ldt                 rocblas_int. ldt >= k.\n
@@ -394,19 +428,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarft(rocblas_handle handle,
     \brief LARF applies a Householder reflector H to a general matrix A.
 
     \details
-    The Householder reflector H, of order m (or n), is to be applied to a m-by-n matrix A
-    from the left (or the right). H is given by
+    The Householder reflector H, of order m or n, is to be applied to a m-by-n matrix A
+    from the left or the right, depending on the value of side. H is given by
 
-        H = I - alpha * x * x'
+    \f[
+        H = I - \text{alpha}\cdot xx'
+    \f]
 
-    where alpha is a scalar and x a Householder vector. H is never actually computed.
+    where alpha is the Householder scalar and x a Householder vector. H is never actually computed.
 
     @param[in]
     handle          rocblas_handle.
     @param[in]
     side            rocblas_side.\n
-                    If side = rocblas_side_left, then compute H*A
-                    If side = rocblas_side_right, then compute A*H
+                    Determines whether H is applied from the left or the right.
     @param[in]
     m               rocblas_int. m >= 0.\n
                     Number of rows of A.
@@ -415,16 +450,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarft(rocblas_handle handle,
                     Number of columns of A.
     @param[in]
     x               pointer to type. Array on the GPU of
-                    size at least (1 + (m-1)*abs(incx)) if left side, or
-                    at least (1 + (n-1)*abs(incx)) if right side.\n
+                    size at least 1 + (m-1)*abs(incx) if left side, or
+                    at least 1 + (n-1)*abs(incx) if right side.\n
                     The Householder vector x.
     @param[in]
     incx            rocblas_int. incx != 0.\n
-                    Increment between to consecutive elements of x.
-                    If incx < 0, the elements of x are used in reverse order.
+                    Distance between two consecutive elements of x.
+                    If incx < 0, the elements of x are indexed in reverse order.
     @param[in]
     alpha           pointer to type. A scalar on the GPU.\n
-                    If alpha = 0, then H = I (A will remain the same, x is never used)
+                    The Householder scalar. If alpha = 0, then H = I (A will remain the same; x is never used)
     @param[inout]
     A               pointer to type. Array on the GPU of size lda*n.\n
                     On input, the matrix A. On output it is overwritten with
@@ -483,25 +518,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(rocblas_handle handle,
     The block reflector H is applied in one of the following forms, depending on
     the values of side and trans:
 
-        H  * A  (No transpose from the left)
-        H' * A  (Transpose or conjugate transpose from the left)
-        A * H   (No transpose from the right), and
-        A * H'  (Transpose or conjugate transpose from the right)
+    \f[
+        \begin{array}{cl}
+        HA & \: \text{(No transpose from the left),}\\
+        H'A & \:  \text{(Transpose or conjugate transpose from the left),}\\
+        AH & \: \text{(No transpose from the right), or}\\
+        AH' & \: \text{(Transpose or conjugate transpose from the right).}
+        \end{array}
+    \f]
 
     The block reflector H is defined as the product of k Householder matrices as
 
-        H = H(1) * H(2) * ... * H(k)  (forward direction), or
-        H = H(k) * ... * H(2) * H(1)  (backward direction)
+    \f[
+        \begin{array}{cl}
+        H = H_1H_2\cdots H_k & \: \text{if direct indicates forward direction, or} \\
+        H = H_k\cdots H_2H_1 & \: \text{if direct indicates backward direction}
+        \end{array}
+    \f]
 
-    depending on the value of direct. H is never stored. It is calculated as
+    H is never stored. It is calculated as
 
-        H = I - V * T * V'
+    \f[
+        H = I - VTV'
+    \f]
 
-    where the i-th column of matrix V contains the Householder vector associated with H(i), if storev is column-wise; or
+    where the i-th column of matrix V contains the Householder vector associated with \f$H_i\f$, if storev is column-wise; or
 
-        H = I - V' * T * V
+    \f[
+        H = I - V'TV
+    \f]
 
-    where the i-th row of matrix V contains the Householder vector associated with H(i), if storev is row-wise.
+    where the i-th row of matrix V contains the Householder vector associated with \f$H_i\f$, if storev is row-wise.
     T is the associated triangular factor as computed by \ref rocsolver_slarft "LARFT".
 
     @param[in]
@@ -618,31 +665,43 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
     the remaining part of A.
 
     \details
-    The bidiagonal form is given by:
+    The reduced form is given by:
 
-        B = Q' * A * P
+    \f[
+        B = Q'AP
+    \f]
 
-    where B is upper bidiagonal if m >= n and lower bidiagonal if m < n, and Q and
+    where the leading k-by-k block of B is upper bidiagonal if m >= n, or lower bidiagonal if m < n. Q and
     P are orthogonal/unitary matrices represented as the product of Householder matrices
 
-        Q = H(1) * H(2) * ... *  H(k)  and P = G(1) * G(2) * ... * G(k-1), if m >= n, or
-        Q = H(1) * H(2) * ... * H(k-1) and P = G(1) * G(2) * ... *  G(k),  if m < n
+    \f[
+        \begin{array}{cl}
+        Q = H_1H_2\cdots H_k, & \text{and} \\
+        P = G_1G_2\cdots G_k.
+        \end{array}
+    \f]
 
-    Each Householder matrix H(i) and G(i) is given by
+    Each Householder matrix \f$H_i\f$ and \f$G_i\f$ is given by
 
-        H(i) = I - tauq[i-1] * v(i) * v(i)', and
-        G(i) = I - taup[i-1] * u(i) * u(i)'
+    \f[
+        \begin{array}{cl}
+        H_i = I - \text{tauq}[i]\cdot v_iv_i', & \text{and} \\
+        G_i = I - \text{taup}[i]\cdot u_iu_i'.
+        \end{array}
+    \f]
 
-    If m >= n, the first i-1 elements of the Householder vector v(i) are zero, and v(i)[i] = 1;
-    while the first i elements of the Householder vector u(i) are zero, and u(i)[i+1] = 1.
-    If m < n, the first i elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1;
-    while the first i-1 elements of the Householder vector u(i) are zero, and u(i)[i] = 1.
+    If m >= n, the first i-1 elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i]=1\f$;
+    while the first i elements of the Householder vector \f$u_i\f$ are zero, and  \f$u_i[i+1]=1\f$.
+    If m < n, the first i elements of the Householder vector  \f$v_i\f$ are zero, and  \f$v_i[i+1]=1\f$;
+    while the first i-1 elements of the Householder vector \f$u_i\f$ are zero, and \f$u_i[i]=1\f$.
 
-    The unreduced part of the matrix A can be updated using a block update:
+    The unreduced part of the matrix A can be updated using the block update
 
-        A = A - V * Y' - X * U'
+    \f[
+        A = A - VY' - XU'
+    \f]
 
-    where V is an m-by-k matrix and U is an n-by-k formed using the vectors v and u.
+    where V and U are the m-by-k and n-by-k matrices formed with the vectors \f$v_i\f$ and \f$u_i\f$, respectively.
 
     @param[in]
     handle    rocblas_handle.
@@ -654,18 +713,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
               The number of columns of the matrix A.
     @param[in]
     k         rocblas_int. min(m,n) >= k >= 0.\n
-              The number of leading rows and columns of the matrix A to be reduced.
+              The number of leading rows and columns of matrix A that will be reduced.
     @param[inout]
     A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B.
-              If m >= n, the elements below the diagonal are the m - i elements
-              of vector v(i) for i = 1,2,...,n, and the elements above the
-              superdiagonal are the n - i - 1 elements of vector u(i) for i = 1,2,...,n-1.
-              If m < n, the elements below the subdiagonal are the m - i - 1
-              elements of vector v(i) for i = 1,2,...,m-1, and the elements above the
-              diagonal are the n - i elements of vector u(i) for i = 1,2,...,m.
+              On entry, the m-by-n matrix to be reduced.
+              On exit, the first k elements on the diagonal and superdiagonal (if m >= n), or
+              subdiagonal (if m < n), contain the bidiagonal form B.
+              If m >= n, the elements below the diagonal of the first k columns are the possibly non-zero elements
+              of the Householder vectors associated with Q, while the elements above the
+              superdiagonal of the first k rows are the n - i - 1 possibly non-zero elements of the Householder vectors related to P.
+              If m < n, the elements below the subdiagonal of the first k columns are the m - i - 1 possibly non-zero
+              elements of the Householder vectors related to Q, while the elements above the
+              diagonal of the first k rows are the n - i possibly non-zero elements of the vectors associated with P.
     @param[in]
     lda       rocblas_int. lda >= m.\n
               specifies the leading dimension of A.
@@ -677,22 +736,22 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
               The off-diagonal elements of B.
     @param[out]
     tauq      pointer to type. Array on the GPU of dimension k.\n
-              The scalar factors of the Householder matrices H(i).
+              The Householder scalars associated with matrix Q.
     @param[out]
     taup      pointer to type. Array on the GPU of dimension k.\n
-              The scalar factors of the Householder matrices G(i).
+              The Householder scalars associated with matrix P.
     @param[out]
     X         pointer to type. Array on the GPU of dimension ldx*k.\n
-              The m-by-k matrix needed to reduce the unreduced part of A.
+              The m-by-k matrix needed to update the unreduced part of A.
     @param[in]
     ldx       rocblas_int. ldx >= m.\n
-              specifies the leading dimension of X.
+              The leading dimension of X.
     @param[out]
     Y         pointer to type. Array on the GPU of dimension ldy*k.\n
-              The n-by-k matrix needed to reduce the unreduced part of A.
+              The n-by-k matrix needed to update the unreduced part of A.
     @param[in]
     ldy       rocblas_int. ldy >= n.\n
-              specifies the leading dimension of Y.
+              The leading dimension of Y.
 
     ********************************************************************/
 
@@ -765,28 +824,38 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
     \details
     The reduced form is given by:
 
-        T = Q' * A * Q
+    \f[
+        T = Q'AQ
+    \f]
 
-    If uplo is lower, the first k rows and columns of T form a tridiagonal block, if uplo is upper, then the last
+    If uplo is lower, the first k rows and columns of T form the tridiagonal block. If uplo is upper, then the last
     k rows and columns of T form the tridiagonal block. Q is an orthogonal/unitary matrix represented as the
     product of Householder matrices
 
-        Q = H(1) * H(2) * ... *  H(k)  if uplo indicates lower, or
-        Q = H(n-1) * H(n-2) * ... * H(n-k) if uplo is upper.
+    \f[
+        \begin{array}{cl}
+        Q = H_1H_2\cdots H_k & \text{if uplo indicates lower, or}\\
+        Q = H_nH_{n-1}\cdots H_{n-k+1} & \text{if uplo is upper}.
+        \end{array}
+    \f]
 
-    Each Householder matrix H(i) is given by
+    Each Householder matrix \f$H_i\f$ is given by
 
-        H(i) = I - tau[i] * v(i) * v(i)'
+    \f[
+        H_i = I - \text{tau}[i]\cdot v_iv_i'
+    \f]
 
     where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
-    elements of the Householder vector v(i) are zero, and v(i)[i+1] = 1. If uplo is upper,
-    the last n-i elements of the Householder vector v(i) are zero, and v(i)[i] = 1.
+    elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i+1] = 1\f$. If uplo is upper,
+    the last n-i elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
     The unreduced part of the matrix A can be updated using a rank update of the form:
+    
+    \f[
+        A = A - VW' - WV'
+    \f]
 
-        A = A - V * W' - W * V'
-
-    where V is an n-by-k matrix formed by the vectors v(i).
+    where V is the n-by-k matrix formed by the vectors \f$v_i\f$.
 
     @param[in]
     handle    rocblas_handle.
@@ -806,28 +875,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
               On entry, the n-by-n matrix to be reduced.
               On exit, if uplo is lower, the first k columns have been reduced to tridiagonal form
               (given in the diagonal elements of A and the array E), the elements below the diagonal
-              contain the vectors v(i) stored as columns.
+              contain the possibly non-zero entries of the Householder vectors associated with Q, stored as columns.
               If uplo is upper, the last k columns have been reduced to tridiagonal form
               (given in the diagonal elements of A and the array E), the elements above the diagonal
-              contain the vectors v(i) stored as columns.
+              contain the possibly non-zero entries of the Householder vectors associated with Q, stored as columns.
     @param[in]
     lda       rocblas_int. lda >= n.\n
-              specifies the leading dimension of A.
+              The leading dimension of A.
     @param[out]
     E         pointer to real type. Array on the GPU of dimension n-1.\n
               If upper (lower), the last (first) k elements of E are the off-diagonal elements of the
               computed tridiagonal block.
     @param[out]
     tau       pointer to type. Array on the GPU of dimension n-1.\n
-              If upper (lower), the last (first) k elements of tau are the scalar factors of the Householder
-              matrices H(i).
+              If upper (lower), the last (first) k elements of tau are the Householder scalars related to Q.
     @param[out]
     W         pointer to type. Array on the GPU of dimension ldw*k.\n
               The n-by-k matrix needed to update the unreduced part of A.
     @param[in]
     ldw       rocblas_int. ldw >= n.\n
-              specifies the leading dimension of W.
-
+              The leading dimension of W.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_slatrd(rocblas_handle handle,
@@ -3206,7 +3273,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormtr(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cunmtr(rocblas_handle handle,
@@ -3236,21 +3302,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmtr(rocblas_handle handle,
 
 /*! @{
     \brief BDSQR computes the singular value decomposition (SVD) of a
-    n-by-n bidiagonal matrix B.
+    n-by-n bidiagonal matrix B, using the implicit QR algorithm.
 
     \details
     The SVD of B has the form:
 
-        B = Ub * S * Vb'
+    \f[
+        B = QSP'
+    \f]
 
-    where S is the n-by-n diagonal matrix of singular values of B, the columns of Ub are the left
-    singular vectors of B, and the columns of Vb are its right singular vectors.
+    where S is the n-by-n diagonal matrix of singular values of B, the columns of Q are the left
+    singular vectors of B, and the columns of P are its right singular vectors.
 
     The computation of the singular vectors is optional; this function accepts input matrices
-    U (of size nu-by-n) and V (of size n-by-nv) that are overwritten with U*Ub and Vb'*V. If nu = 0
+    U (of size nu-by-n) and V (of size n-by-nv) that are overwritten with \f$UQ\f$ and \f$P'V\f$. If nu = 0
     no left vectors are computed; if nv = 0 no right vectors are computed.
 
-    Optionally, this function can also compute Ub'*C for a given n-by-nc input matrix C.
+    Optionally, this function can also compute \f$Q'C\f$ for a given n-by-nc input matrix C.
 
     @param[in]
     handle      rocblas_handle.
@@ -3282,30 +3350,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmtr(rocblas_handle handle,
                 orthogonally equivalent to B (if info = 0 this matrix converges to zero).
     @param[inout]
     V           pointer to type. Array on the GPU of dimension ldv*nv.\n
-                On entry, the matrix V. On exit, it is overwritten with Vb'*V.
+                On entry, the matrix V. On exit, it is overwritten with P'*V.
                 (Not referenced if nv = 0).
     @param[in]
     ldv         rocblas_int. ldv >= n if nv > 0, or ldv >=1 if nv = 0.\n
-                Specifies the leading dimension of V.
+                The leading dimension of V.
     @param[inout]
     U           pointer to type. Array on the GPU of dimension ldu*n.\n
-                On entry, the matrix U. On exit, it is overwritten with U*Ub.
+                On entry, the matrix U. On exit, it is overwritten with U*Q.
                 (Not referenced if nu = 0).
     @param[in]
     ldu         rocblas_int. ldu >= nu.\n
-                Specifies the leading dimension of U.
+                The leading dimension of U.
     @param[inout]
     C           pointer to type. Array on the GPU of dimension ldc*nc.\n
-                On entry, the matrix C. On exit, it is overwritten with Ub'*C.
+                On entry, the matrix C. On exit, it is overwritten with Q'*C.
                 (Not referenced if nc = 0).
     @param[in]
     ldc         rocblas_int. ldc >= n if nc > 0, or ldc >=1 if nc = 0.\n
-                Specifies the leading dimension of C.
+                The leading dimension of C.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
                 If info = i > 0, i elements of E have not converged to zero.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sbdsqr(rocblas_handle handle,
