@@ -7,7 +7,6 @@
 #include <cerrno>
 #include <climits>
 #include <cstdlib>
-#include <sys/time.h>
 
 #define STRINGIFY(s) STRINGIFY_HELPER(s)
 #define STRINGIFY_HELPER(s) #s

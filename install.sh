@@ -14,7 +14,7 @@ Usage:
   $0 <options> (modify default behavior according to the following flags)
 
 Options:
-  --help                      Print this help message.
+  -h | --help                 Print this help message.
 
   --build_dir <builddir>      Specify path to the configure & build process output directory.
                               Relative paths are relative to the current directory.
@@ -53,7 +53,7 @@ Options:
 
   --clients-only              Pass this flag to skip building the library and only build the clients.
 
-  -h | --hip-clang            Pass this flag to build using the hip-clang compiler.
+  --hip-clang                 Pass this flag to build using the hip-clang compiler.
                               hip-clang is currently the only supported compiler, so this flag has no effect.
 
   -s | --static               Pass this flag to build rocsolver as a static library.
@@ -66,6 +66,8 @@ Options:
   -a | --architecture         Set GPU architecture target, e.g. "gfx803;gfx900;gfx906;gfx908".
                               If you don't know the architecture of the GPU in your local machine, it can be
                               queried by running "mygpu".
+
+  --address-sanitizer         Pass this flag to build with address sanitizer enabled
 
   --docs                      (experimental) Pass this flag to build the documentation from source.
                               Official documentation is available online at https://rocsolver.readthedocs.io/
@@ -301,8 +303,9 @@ build_relocatable=false
 build_docs=false
 optimal=true
 cleanup=false
+build_sanitizer=false
 architecture=
-build_coverage=false
+build_codecoverage=false
 
 
 # #################################################
@@ -312,7 +315,7 @@ build_coverage=false
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs --options hipcdgsrnka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs,address-sanitizer --options hipcdgsrnka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -327,7 +330,7 @@ eval set -- "${GETOPT_PARSE}"
 
 while true; do
   case "${1}" in
-    --help)
+    -h|--help)
         display_help
         exit 0
         ;;
@@ -354,7 +357,7 @@ while true; do
     -s|--static)
         static_lib=true
         shift ;;
-    -h | --hip-clang)
+    --hip-clang)
         # flag has no effect; hip-clang is the default
         shift ;;
     -n | --no-optimizations)
@@ -384,11 +387,14 @@ while true; do
     --docs)
         build_docs=true
         shift ;;
+    --address-sanitizer)
+        build_sanitizer=true
+        shift ;;
     -r|--relocatable)
         build_relocatable=true
         shift ;;
     --codecoverage)
-        build_coverage=true
+        build_codecoverage=true
         shift ;;
     -k|--relwithdebinfo)
         build_type=RelWithDebInfo
@@ -518,6 +524,10 @@ if [[ -n "${architecture}" ]]; then
   cmake_common_options="${cmake_common_options} -DAMDGPU_TARGETS=${architecture}"
 fi
 
+if [[ "${build_sanitizer}" == true ]]; then
+  cmake_common_options="${cmake_common_options} -DBUILD_ADDRESS_SANITIZER=ON"
+fi
+
 if [[ "${build_clients}" == true ]]; then
   cmake_client_options="${cmake_client_options} -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON -DBUILD_CLIENTS_SAMPLES=ON"
 fi
@@ -543,9 +553,9 @@ case "${ID}" in
     ;;
 esac
 
-if [[ "${build_coverage}" == true ]]; then
+if [[ "${build_codecoverage}" == true ]]; then
     if [[ "${build_type}" == Release ]]; then
-        echo "Code coverage is not supported in Release mode, to enable code coverage select either Debug mode (-g | --debug) or RelWithDebInfo mode (-k | --relwithdebinfo); aborting";
+        echo "Code coverage is chosen to be disabled in Release mode, to enable code coverage select either Debug mode (-g | --debug) or RelWithDebInfo mode (-k | --relwithdebinfo); aborting";
         exit 1
     fi
     cmake_common_options="${cmake_common_options} -DBUILD_CODE_COVERAGE=ON"
