@@ -14,7 +14,7 @@ Usage:
   $0 <options> (modify default behavior according to the following flags)
 
 Options:
-  --help                      Print this help message.
+  -h | --help                 Print this help message.
 
   --build_dir <builddir>      Specify path to the configure & build process output directory.
                               Relative paths are relative to the current directory.
@@ -53,7 +53,7 @@ Options:
 
   --clients-only              Pass this flag to skip building the library and only build the clients.
 
-  -h | --hip-clang            Pass this flag to build using the hip-clang compiler.
+  --hip-clang                 Pass this flag to build using the hip-clang compiler.
                               hip-clang is currently the only supported compiler, so this flag has no effect.
 
   -s | --static               Pass this flag to build rocsolver as a static library.
@@ -330,7 +330,7 @@ eval set -- "${GETOPT_PARSE}"
 
 while true; do
   case "${1}" in
-    --help)
+    -h|--help)
         display_help
         exit 0
         ;;
@@ -357,7 +357,7 @@ while true; do
     -s|--static)
         static_lib=true
         shift ;;
-    -h | --hip-clang)
+    --hip-clang)
         # flag has no effect; hip-clang is the default
         shift ;;
     -n | --no-optimizations)

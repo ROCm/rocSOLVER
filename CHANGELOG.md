@@ -13,9 +13,14 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - HEGVD (with batched and strided\_batched versions)
 
 ### Optimizations
+
 ### Changed
+- The -h option of install.sh now prints a help message, instead of doing nothing.
+
 ### Removed
+
 ### Fixed
+
 ### Known Issues
 
 
