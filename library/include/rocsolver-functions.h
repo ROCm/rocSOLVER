@@ -951,10 +951,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlatrd(rocblas_handle handle,
     The matrix Q is defined as the first n columns of the product of k Householder
     reflectors of order m
 
-        Q = H(1) * H(2) * ... * H(k)
+    \f[
+        Q = H_1H_2\cdots H_k.
+    \f]
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqrf "GEQRF".
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its corresponding
+    Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgeqrf "GEQRF".
 
     @param[in]
     handle      rocblas_handle.
@@ -969,16 +971,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlatrd(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k columns of matrix A of \ref rocsolver_sgeqrf "GEQRF".
+                On entry, the Householder vectors as returned in the first k columns of matrix A of \ref rocsolver_sgeqrf "GEQRF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
-
+                The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sorg2r(rocblas_handle handle,
@@ -1007,10 +1007,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2r(rocblas_handle handle,
     The matrix Q is defined as the first n columns of the product of k Householder
     reflectors of order m
 
-        Q = H(1) * H(2) * ... * H(k)
+    \f[
+        Q = H_1H_2\cdots H_k
+    \f]
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqrf "GEQRF".
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its corresponding
+    Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgeqrf "GEQRF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1025,16 +1027,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2r(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k columns of matrix A of \ref rocsolver_sgeqrf "GEQRF".
+                On entry, the Householder vectors as returned in the first k columns of matrix A of \ref rocsolver_sgeqrf "GEQRF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
-
+                The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cung2r(rocblas_handle handle,
@@ -1063,10 +1063,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zung2r(rocblas_handle handle,
     The matrix Q is defined as the first n columns of the product of k Householder
     reflectors of order m
 
-        Q = H(1) * H(2) * ... * H(k)
+    \f[
+        Q = H_1H_2\cdots H_k
+    \f]
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqrf "GEQRF".
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its corresponding
+    Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgeqrf "GEQRF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1081,16 +1083,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zung2r(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k columns of matrix A of \ref rocsolver_sgeqrf "GEQRF".
+                On entry, the Householder vectors as returned in the first k columns of matrix A of \ref rocsolver_sgeqrf "GEQRF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
-
+                The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sorgqr(rocblas_handle handle,
@@ -1119,10 +1119,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgqr(rocblas_handle handle,
     The matrix Q is defined as the first n columns of the product of k Householder
     reflectors of order m
 
-        Q = H(1) * H(2) * ... * H(k)
+    \f[
+        Q = H_1H_2\cdots H_k
+    \f]
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqrf "GEQRF".
+    Householder matrices \f$H_i\f$ are never stored, they are computed from its corresponding
+    Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgeqrf "GEQRF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1137,16 +1139,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgqr(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th column has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k columns of matrix A of \ref rocsolver_sgeqrf "GEQRF".
+                On entry, the Householder vectors as returned in the first k columns of matrix A of \ref rocsolver_sgeqrf "GEQRF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
-
+                The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cungqr(rocblas_handle handle,
@@ -1175,10 +1175,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungqr(rocblas_handle handle,
     The matrix Q is defined as the first m rows of the product of k Householder
     reflectors of order n
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgelqf "GELQF".
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its corresponding
+    Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgelqf "GELQF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1193,16 +1195,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungqr(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k rows of matrix A of \ref rocsolver_sgelqf "GELQF".
+                On entry, the Householder vectors as returned in the first k rows of matrix A of \ref rocsolver_sgelqf "GELQF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
-
+                The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sorgl2(rocblas_handle handle,
@@ -1231,10 +1231,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgl2(rocblas_handle handle,
     The matrix Q is defined as the first m rows of the product of k Householder
     reflectors of order n
 
-        Q = H(k)**H * H(k-1)**H * ... * H(1)**H
+    \f[
+        Q = H_k^HH_{k-1}^H\cdots H_1^H
+    \f]
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgelqf "GELQF".
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its corresponding
+    Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgelqf "GELQF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1249,16 +1251,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgl2(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k rows of matrix A of \ref rocsolver_sgelqf "GELQF".
+                On entry, the Householder vectors as returned in the first k rows of matrix A of \ref rocsolver_sgelqf "GELQF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
-
+                The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cungl2(rocblas_handle handle,
@@ -1287,10 +1287,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungl2(rocblas_handle handle,
     The matrix Q is defined as the first m rows of the product of k Householder
     reflectors of order n
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgelqf "GELQF".
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its corresponding
+    Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgelqf "GELQF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1305,16 +1307,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungl2(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k rows of matrix A of \ref rocsolver_sgelqf "GELQF".
+                On entry, the Householder vectors as returned in the first k rows of matrix A of \ref rocsolver_sgelqf "GELQF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
-
+                The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sorglq(rocblas_handle handle,
@@ -1343,10 +1343,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorglq(rocblas_handle handle,
     The matrix Q is defined as the first m rows of the product of k Householder
     reflectors of order n
 
-        Q = H(k)**H * H(k-1)**H * ... * H(1)**H
+    \f[
+        Q = H_k^HH_{k-1}^H\cdots H_1^H
+    \f]
 
-    Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgelqf "GELQF".
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its corresponding
+    Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgelqf "GELQF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1361,16 +1363,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorglq(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th row has Householder vector v(i), for i = 1,2,...,k
-                as returned in the first k rows of matrix A of \ref rocsolver_sgelqf "GELQF".
+                On entry, the Householder vectors as returned in the first k rows of matrix A of \ref rocsolver_sgelqf "GELQF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
-
+                The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cunglq(rocblas_handle handle,
@@ -1399,10 +1399,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunglq(rocblas_handle handle,
     The matrix Q is defined as the last n columns of the product of k
     Householder reflectors of order m
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
-    Householder matrices H(i) are never stored, they are computed from its
-    corresponding Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqlf "GEQLF".
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its
+    corresponding Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgeqlf "GEQLF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1417,16 +1419,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunglq(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the (n-k+i)-th column has Householder vector v(i), for
-                i = 1,2,...,k as returned in the last k columns of matrix A of \ref rocsolver_sgeqlf "GEQLF".
+                On entry, the Householder vectors as returned in the last k columns of matrix A of \ref rocsolver_sgeqlf "GEQLF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqlf "GEQLF".
-
+                The Householder scalars as returned by \ref rocsolver_sgeqlf "GEQLF".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sorg2l(rocblas_handle handle,
@@ -1455,10 +1455,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2l(rocblas_handle handle,
     The matrix Q is defined as the last n columns of the product of k
     Householder reflectors of order m
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
-    Householder matrices H(i) are never stored, they are computed from its
-    corresponding Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqlf "GEQLF".
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its
+    corresponding Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgeqlf "GEQLF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1473,16 +1475,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2l(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the (n-k+i)-th column has Householder vector v(i), for
-                i = 1,2,...,k as returned in the last k columns of matrix A of \ref rocsolver_sgeqlf "GEQLF".
+                On entry, the Householder vectors as returned in the last k columns of matrix A of \ref rocsolver_sgeqlf "GEQLF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqlf "GEQLF".
-
+                The Householder scalars as returned by \ref rocsolver_sgeqlf "GEQLF".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cung2l(rocblas_handle handle,
@@ -1511,10 +1511,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zung2l(rocblas_handle handle,
     The matrix Q is defined as the last n column of the product of k Householder
     reflectors of order m
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
-    Householder matrices H(i) are never stored, they are computed from its
-    corresponding Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqlf "GEQLF".
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its
+    corresponding Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgeqlf "GEQLF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1529,16 +1531,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zung2l(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the (n-k+i)-th column has Householder vector v(i), for
-                i = 1,2,...,k as returned in the last k columns of matrix A of \ref rocsolver_sgeqlf "GEQLF".
+                On entry, the Householder vectors as returned in the last k columns of matrix A of \ref rocsolver_sgeqlf "GEQLF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqlf "GEQLF".
-
+                The Householder scalars as returned by \ref rocsolver_sgeqlf "GEQLF".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sorgql(rocblas_handle handle,
@@ -1567,10 +1567,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgql(rocblas_handle handle,
     The matrix Q is defined as the last n columns of the product of k
     Householder reflectors of order m
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
-    Householder matrices H(i) are never stored, they are computed from its
-    corresponding Householder vector v(i) and scalar ipiv_i as returned by \ref rocsolver_sgeqlf "GEQLF".
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its
+    corresponding Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgeqlf "GEQLF".
 
     @param[in]
     handle      rocblas_handle.
@@ -1585,16 +1587,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgql(rocblas_handle handle,
                 The number of Householder reflectors.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the (n-k+i)-th column has Householder vector v(i), for
-                i = 1,2,...,k as returned in the last k columns of matrix A of \ref rocsolver_sgeqlf "GEQLF".
+                On entry, the Householder vectors as returned in the last k columns of matrix A of \ref rocsolver_sgeqlf "GEQLF".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqlf "GEQLF".
-
+                The Householder scalars as returned by \ref rocsolver_sgeqlf "GEQLF".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cungql(rocblas_handle handle,
@@ -1621,23 +1621,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungql(rocblas_handle handle,
     If storev is column-wise, then the matrix Q has orthonormal columns. If m >= k, Q is defined as the first
     n columns of the product of k Householder reflectors of order m
 
-        Q = H(1) * H(2) * ... * H(k)
+    \f[
+        Q = H_1H_2\cdots H_k
+    \f]
 
     If m < k, Q is defined as the product of Householder reflectors of order m
 
-        Q = H(1) * H(2) * ... * H(m-1)
+    \f[
+        Q = H_1H_2\cdots H_{m-1}
+    \f]
 
     On the other hand, if storev is row-wise, then the matrix Q has orthonormal rows. If n > k, Q is defined as the
     first m rows of the product of k Householder reflectors of order n
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
     If n <= k, Q is defined as the product of Householder reflectors of order n
 
-        Q = H(n-1) * H(n-2) * ... * H(1)
+    \f[
+        Q = H_{n-1}H_{n-2}\cdots H_1
+    \f]
 
-    The Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vectors v(i) and scalars ipiv_i as returned by \ref rocsolver_sgebrd "GEBRD" in its arguments A and tauq or taup.
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its corresponding
+    Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgebrd "GEBRD" in its arguments A and tauq or taup.
 
     @param[in]
     handle      rocblas_handle.
@@ -1658,16 +1666,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungql(rocblas_handle handle,
                 original matrix reduced by \ref rocsolver_sgebrd "GEBRD".
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th column (or row) has the Householder vector v(i)
-                as returned by \ref rocsolver_sgebrd "GEBRD".
+                On entry, the Householder vectors as returned by \ref rocsolver_sgebrd "GEBRD".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension min(m,k) if column-wise, or min(n,k) if row-wise.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgebrd "GEBRD".
-
+                The Householder scalars as returned by \ref rocsolver_sgebrd "GEBRD".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sorgbr(rocblas_handle handle,
@@ -1697,23 +1703,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgbr(rocblas_handle handle,
     If storev is column-wise, then the matrix Q has orthonormal columns. If m >= k, Q is defined as the first
     n columns of the product of k Householder reflectors of order m
 
-        Q = H(1) * H(2) * ... * H(k)
+    \f[
+        Q = H_1H_2\cdots H_k
+    \f]
 
     If m < k, Q is defined as the product of Householder reflectors of order m
 
-        Q = H(1) * H(2) * ... * H(m-1)
+    \f[
+        Q = H_1H_2\cdots H_{m-1}
+    \f]
 
     On the other hand, if storev is row-wise, then the matrix Q has orthonormal rows. If n > k, Q is defined as the
     first m rows of the product of k Householder reflectors of order n
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
     If n <= k, Q is defined as the product of Householder reflectors of order n
 
-        Q = H(n-1) * H(n-2) * ... * H(1)
+    \f[
+        Q = H_{n-1}H_{n-2}\cdots H_1
+    \f]
 
-    The Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vectors v(i) and scalars ipiv_i as returned by \ref rocsolver_sgebrd "GEBRD" in its arguments A and tauq or taup.
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its corresponding
+    Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by \ref rocsolver_sgebrd "GEBRD" in its arguments A and tauq or taup.
 
     @param[in]
     handle      rocblas_handle.
@@ -1734,16 +1748,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgbr(rocblas_handle handle,
                 original matrix reduced by \ref rocsolver_sgebrd "GEBRD".
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the i-th column (or row) has the Householder vector v(i)
-                as returned by \ref rocsolver_sgebrd "GEBRD".
+                On entry, the Householder vectors as returned by \ref rocsolver_sgebrd "GEBRD".
                 On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension min(m,k) if column-wise, or min(n,k) if row-wise.\n
-                The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgebrd "GEBRD".
-
+                The Householder scalars as returned by \ref rocsolver_sgebrd "GEBRD".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cungbr(rocblas_handle handle,
@@ -1772,14 +1784,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(rocblas_handle handle,
     Q is defined as the product of n-1 Householder reflectors of order n. If
     uplo indicates upper, then Q has the form
 
-        Q = H(n-1) * H(n-2) * ... * H(1)
+    \f[
+        Q = H_{n-1}H_{n-2}\cdots H_1
+    \f]
 
     On the other hand, if uplo indicates lower, then Q has the form
 
-        Q = H(1) * H(2) * ... * H(n-1)
+    \f[
+        Q = H_1H_2\cdots H_{n-1}
+    \f]
 
-    The Householder matrices H(i) are never stored, they are computed from its
-    corresponding Householder vectors v(i) and scalars ipiv_i as returned by
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its
+    corresponding Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by
     \ref rocsolver_ssytrd "SYTRD" in its arguments A and tau.
 
     @param[in]
@@ -1794,17 +1810,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(rocblas_handle handle,
                 The number of rows and columns of the matrix Q.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the (i+1)-th column (if uplo indicates upper) or i-th
-                column (if uplo indicates lower) has the Householder vector v(i) as returned
+                On entry, the Householder vectors as returned
                 by \ref rocsolver_ssytrd "SYTRD". On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension n-1.\n
-                The scalar factors of the Householder
-                matrices H(i) as returned by \ref rocsolver_ssytrd "SYTRD".
-
+                The Householder scalars as returned by \ref rocsolver_ssytrd "SYTRD".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sorgtr(rocblas_handle handle,
@@ -1829,14 +1842,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgtr(rocblas_handle handle,
     Q is defined as the product of n-1 Householder reflectors of order n. If
     uplo indicates upper, then Q has the form
 
-        Q = H(n-1) * H(n-2) * ... * H(1)
+    \f[
+        Q = H_{n-1}H_{n-2}\cdots H_1
+    \f]
 
     On the other hand, if uplo indicates lower, then Q has the form
 
-        Q = H(1) * H(2) * ... * H(n-1)
+    \f[
+        Q = H_1H_2\cdots H_{n-1}
+    \f]
 
-    The Householder matrices H(i) are never stored, they are computed from its
-    corresponding Householder vectors v(i) and scalars ipiv_i as returned by
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its
+    corresponding Householder vectors \f$v_i\f$ and scalars \f$\text{ipiv}[i]\f$, as returned by
     \ref rocsolver_chetrd "HETRD" in its arguments A and tau.
 
     @param[in]
@@ -1851,17 +1868,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgtr(rocblas_handle handle,
                 The number of rows and columns of the matrix Q.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
-                On entry, the (i+1)-th column (if uplo indicates upper) or i-th
-                column (if uplo indicates lower) has the Householder vector v(i) as returned
+                On entry, the Householder vectors as returned
                 by \ref rocsolver_chetrd "HETRD". On exit, the computed matrix Q.
     @param[in]
     lda         rocblas_int. lda >= m.\n
                 Specifies the leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension n-1.\n
-                The scalar factors of the Householder
-                matrices H(i) as returned by \ref rocsolver_chetrd "HETRD".
-
+                The Householder scalars as returned by \ref rocsolver_chetrd "HETRD".
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cungtr(rocblas_handle handle,
@@ -1880,7 +1894,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungtr(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief ORM2R applies a matrix Q with orthonormal columns to a general m-by-n
+    \brief ORM2R multiplies a matrix Q with orthonormal columns by a general m-by-n
     matrix C.
 
     \details
@@ -1889,14 +1903,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungtr(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q'C & \: \text{Transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ' & \: \text{Transpose from the right.}
+        \end{array}
+    \f]
 
-    Q is an orthogonal matrix defined as the product of k Householder reflectors as
+    Q is defined as the product of k Householder reflectors
 
-        Q = H(1) * H(2) * ... * H(k)
+    \f[
+        Q = H_1H_2 \cdots H_k
+    \f]
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
     calculated from the Householder vectors and scalars returned by the QR factorization \ref rocsolver_sgeqrf "GEQRF".
@@ -1920,14 +1940,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungtr(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgeqrf "GEQRF"
+                        The Householder vectors as returned by \ref rocsolver_sgeqrf "GEQRF"
                         in the first k columns of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
+                        The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -1935,7 +1955,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungtr(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sorm2r(rocblas_handle handle,
@@ -1964,7 +1983,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief UNM2R applies a complex matrix Q with orthonormal columns to a
+    \brief UNM2R multiplies a complex matrix Q with orthonormal columns by a
     general m-by-n matrix C.
 
     \details
@@ -1973,14 +1992,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Conjugate transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Conjugate transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q^HC & \: \text{Conjugate transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ^H & \: \text{Conjugate transpose from the right.}
+        \end{array}
+    \f]
 
-    Q is a unitary matrix defined as the product of k Householder reflectors as
+    Q is defined as the product of k Householder reflectors
 
-        Q = H(1) * H(2) * ... * H(k)
+    \f[
+        Q = H_1H_2\cdots H_k
+    \f]
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
     calculated from the Householder vectors and scalars returned by the QR factorization \ref rocsolver_sgeqrf "GEQRF".
@@ -2004,14 +2029,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgeqrf "GEQRF"
+                        The Householder vectors as returned by \ref rocsolver_sgeqrf "GEQRF"
                         in the first k columns of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
+                        The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2048,7 +2073,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief ORMQR applies a matrix Q with orthonormal columns to a general m-by-n
+    \brief ORMQR multiplies a matrix Q with orthonormal columns by a general m-by-n
     matrix C.
 
     \details
@@ -2057,14 +2082,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q'C & \: \text{Transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ' & \: \text{Transpose from the right.}
+        \end{array}
+    \f]
 
-    Q is an orthogonal matrix defined as the product of k Householder reflectors as
+    Q is defined as the product of k Householder reflectors 
 
-        Q = H(1) * H(2) * ... * H(k)
+    \f[
+        Q = H_1H_2\cdots H_k
+    \f]
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
     calculated from the Householder vectors and scalars returned by the QR factorization \ref rocsolver_sgeqrf "GEQRF".
@@ -2088,14 +2119,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgeqrf "GEQRF"
+                        The Householder vectors as returned by \ref rocsolver_sgeqrf "GEQRF"
                         in the first k columns of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
+                        The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2103,7 +2134,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sormqr(rocblas_handle handle,
@@ -2132,7 +2162,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief UNMQR applies a complex matrix Q with orthonormal columns to a
+    \brief UNMQR multiplies a complex matrix Q with orthonormal columns by a
     general m-by-n matrix C.
 
     \details
@@ -2141,14 +2171,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Conjugate transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Conjugate transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q^HC & \: \text{Conjugate transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ^H & \: \text{Conjugate transpose from the right.}
+        \end{array}
+    \f]
 
-    Q is a unitary matrix defined as the product of k Householder reflectors as
+    Q is defined as the product of k Householder reflectors
 
-        Q = H(1) * H(2) * ... * H(k)
+    \f[
+        Q = H_1H_2\cdots H_k
+    \f]
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
     calculated from the Householder vectors and scalars returned by the QR factorization \ref rocsolver_sgeqrf "GEQRF".
@@ -2172,14 +2208,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgeqrf "GEQRF"
+                        The Householder vectors as returned by \ref rocsolver_sgeqrf "GEQRF"
                         in the first k columns of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgeqrf "GEQRF".
+                        The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2187,7 +2223,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cunmqr(rocblas_handle handle,
@@ -2216,7 +2251,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief ORML2 applies a matrix Q with orthonormal rows to a general m-by-n
+    \brief ORML2 multiplices a matrix Q with orthonormal rows to a general m-by-n
     matrix C.
 
     \details
@@ -2225,14 +2260,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q'C & \: \text{Transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ' & \: \text{Transpose from the right.}
+        \end{array}
+    \f]
 
-    Q is an orthogonal matrix defined as the product of k Householder reflectors as
+    Q is defined as the product of k Householder reflectors 
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
     calculated from the Householder vectors and scalars returned by the LQ factorization \ref rocsolver_sgelqf "GELQF".
@@ -2256,14 +2297,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
-                        The i-th row has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgelqf "GELQF"
+                        The Householder vectors as returned by \ref rocsolver_sgelqf "GELQF"
                         in the first k rows of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= k. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
+                        The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2300,7 +2341,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief UNML2 applies a complex matrix Q with orthonormal rows to a general
+    \brief UNML2 multiplies a complex matrix Q with orthonormal rows by a general
     m-by-n matrix C.
 
     \details
@@ -2309,14 +2350,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Conjugate transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Conjugate transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q^HC & \: \text{Conjugate transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ^H & \: \text{Conjugate transpose from the right.}
+        \end{array}
+    \f]
 
-    Q is a unitary matrix defined as the product of k Householder reflectors as
+    Q is defined as the product of k Householder reflectors 
 
-        Q = H(k)**H * H(k-1)**H * ... * H(1)**H
+    \f[
+        Q = H_k^HH_{k-1}^H\cdots H_1^H
+    \f]
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
     calculated from the Householder vectors and scalars returned by the LQ factorization \ref rocsolver_sgelqf "GELQF".
@@ -2340,14 +2387,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
-                        The i-th row has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgelqf "GELQF"
+                        The Householder vectors as returned by \ref rocsolver_sgelqf "GELQF"
                         in the first k rows of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= k. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
+                        The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2355,7 +2402,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cunml2(rocblas_handle handle,
@@ -2384,7 +2430,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief ORMLQ applies a matrix Q with orthonormal rows to a general m-by-n
+    \brief ORMLQ multiplies a matrix Q with orthonormal rows by a general m-by-n
     matrix C.
 
     \details
@@ -2393,14 +2439,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q'C & \: \text{Transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ' & \: \text{Transpose from the right.}
+        \end{array}
+    \f]
 
-    Q is an orthogonal matrix defined as the product of k Householder reflectors as
+    Q is defined as the product of k Householder reflectors
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
     calculated from the Householder vectors and scalars returned by the LQ factorization \ref rocsolver_sgelqf "GELQF".
@@ -2424,14 +2476,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
-                        The i-th row has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgelqf "GELQF"
+                        The Householder vectors as returned by \ref rocsolver_sgelqf "GELQF"
                         in the first k rows of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= k. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
+                        The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2439,7 +2491,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sormlq(rocblas_handle handle,
@@ -2468,7 +2519,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief UNMLQ applies a complex matrix Q with orthonormal rows to a general
+    \brief UNMLQ multiplies a complex matrix Q with orthonormal rows by a general
     m-by-n matrix C.
 
     \details
@@ -2477,14 +2528,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Conjugate transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Conjugate transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q^HC & \: \text{Conjugate transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ^H & \: \text{Conjugate transpose from the right.}
+        \end{array}
+    \f]
 
-    Q is a unitary matrix defined as the product of k Householder reflectors as
+    Q is defined as the product of k Householder reflectors
 
-        Q = H(k)**H * H(k-1)**H * ... * H(1)**H
+    \f[
+        Q = H_k^HH_{k-1}^H\cdots H_1^H
+    \f]
 
     of order m if applying from the left, or n if applying from the right. Q is never stored, it is
     calculated from the Householder vectors and scalars returned by the LQ factorization \ref rocsolver_sgelqf "GELQF".
@@ -2508,14 +2565,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
-                        The i-th row has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgelqf "GELQF"
+                        The Householder vectors as returned by \ref rocsolver_sgelqf "GELQF"
                         in the first k rows of its argument A.
     @param[in]
     lda                 rocblas_int. lda >= k. \n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgelqf "GELQF".
+                        The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2523,7 +2580,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cunmlq(rocblas_handle handle,
@@ -2552,7 +2608,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief ORM2L applies a matrix Q with orthonormal columns to a general m-by-n
+    \brief ORM2L multiplies a matrix Q with orthonormal columns by a general m-by-n
     matrix C.
 
     \details
@@ -2561,15 +2617,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q'C & \: \text{Transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ' & \: \text{Transpose from the right.}
+        \end{array}
+    \f]
 
-    Q is an orthogonal matrix defined as the product of k Householder reflectors
-    as
+    Q is defined as the product of k Householder reflectors
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
     of order m if applying from the left, or n if applying from the right. Q is
     never stored, it is calculated from the Householder vectors and scalars
@@ -2595,15 +2656,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i)
-                        associated with H(i) as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
+                        The Householder vectors as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
                         argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by
+                        The Householder scalars as returned by
                         \ref rocsolver_sgeqlf "GEQLF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
@@ -2612,7 +2672,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sorm2l(rocblas_handle handle,
@@ -2641,7 +2700,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2l(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief UNM2L applies a complex matrix Q with orthonormal columns to a
+    \brief UNM2L multiplies a complex matrix Q with orthonormal columns by a
     general m-by-n matrix C.
 
     \details
@@ -2650,14 +2709,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2l(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Conjugate transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Conjugate transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q^HC & \: \text{Conjugate transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ^H & \: \text{Conjugate transpose from the right.}
+        \end{array}
+    \f]
 
-    Q is a unitary matrix defined as the product of k Householder reflectors as
+    Q is defined as the product of k Householder reflectors
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
     of order m if applying from the left, or n if applying from the right. Q is
     never stored, it is calculated from the Householder vectors and scalars
@@ -2683,15 +2748,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2l(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i)
-                        associated with H(i) as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
+                        The Householder vectors as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
                         argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by
+                        The Householder scalars as returned by
                         \ref rocsolver_sgeqlf "GEQLF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
@@ -2700,7 +2764,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2l(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cunm2l(rocblas_handle handle,
@@ -2729,7 +2792,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2l(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief ORMQL applies a matrix Q with orthonormal columns to a general m-by-n
+    \brief ORMQL multiplies a matrix Q with orthonormal columns by a general m-by-n
     matrix C.
 
     \details
@@ -2738,15 +2801,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2l(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q'C & \: \text{Transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ' & \: \text{Transpose from the right.}
+        \end{array}
+    \f]
 
-    Q is an orthogonal matrix defined as the product of k Householder reflectors
-    as
+    Q is defined as the product of k Householder reflectors
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
     of order m if applying from the left, or n if applying from the right. Q is
     never stored, it is calculated from the Householder vectors and scalars
@@ -2772,15 +2840,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2l(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i)
-                        associated with H(i) as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
+                        The Householder vectors as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
                         argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by
+                        The Householder scalars as returned by
                         \ref rocsolver_sgeqlf "GEQLF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
@@ -2789,7 +2856,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2l(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sormql(rocblas_handle handle,
@@ -2818,7 +2884,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormql(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief UNMQL applies a complex matrix Q with orthonormal columns to a
+    \brief UNMQL multiplies a complex matrix Q with orthonormal columns by a
     general m-by-n matrix C.
 
     \details
@@ -2827,14 +2893,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormql(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Conjugate transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Conjugate transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q^HC & \: \text{Conjugate transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ^H & \: \text{Conjugate transpose from the right.}
+        \end{array}
+    \f]
 
-    Q is a unitary matrix defined as the product of k Householder reflectors as
+    Q is defined as the product of k Householder reflectors
 
-        Q = H(k) * H(k-1) * ... * H(1)
+    \f[
+        Q = H_kH_{k-1}\cdots H_1
+    \f]
 
     of order m if applying from the left, or n if applying from the right. Q is
     never stored, it is calculated from the Householder vectors and scalars
@@ -2860,15 +2932,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormql(rocblas_handle handle,
                         The number of Householder reflectors that form Q.
     @param[in]
     A                   pointer to type. Array on the GPU of size lda*k.\n
-                        The i-th column has the Householder vector v(i)
-                        associated with H(i) as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
+                        The Householder vectors as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
                         argument A.
     @param[in]
     lda                 rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
                         Leading dimension of A.
     @param[in]
     ipiv                pointer to type. Array on the GPU of dimension at least k.\n
-                        The scalar factors of the Householder matrices H(i) as returned by
+                        The Householder scalars as returned by
                         \ref rocsolver_sgeqlf "GEQLF".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
@@ -2877,7 +2948,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormql(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cunmql(rocblas_handle handle,
@@ -2906,7 +2976,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmql(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief ORMBR applies a matrix Q with orthonormal rows or columns to a
+    \brief ORMBR multiplies a matrix Q with orthonormal rows or columns by a
     general m-by-n matrix C.
 
     \details
@@ -2915,31 +2985,43 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmql(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q'C & \: \text{Transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ' & \: \text{Transpose from the right.}
+        \end{array}
+    \f]
 
-    The order nq of orthogonal matrix Q is nq = m if applying from the left, or nq = n if applying from the right.
+    The order q of the orthogonal matrix Q is q = m if applying from the left, or q = n if applying from the right.
 
-    When storev is column-wise, if nq >= k, then Q is defined as the product of k Householder reflectors of order nq
+    When storev is column-wise, if q >= k, then Q is defined as the product of k Householder reflectors 
 
-        Q = H(1) * H(2) * ... * H(k),
+    \f[
+        Q = H_1H_2\cdots H_k,
+    \f]
 
-    and if nq < k, then Q is defined as the product
+    and if q < k, then Q is defined as the product
 
-        Q = H(1) * H(2) * ... * H(nq-1).
+    \f[
+        Q = H_1H_2\cdots H_{q-1}.
+    \f]
 
-    When storev is row-wise, if nq > k, then Q is defined as the product of k Householder reflectors of order nq
+    When storev is row-wise, if q > k, then Q is defined as the product of k Householder reflectors
+    
+    \f[
+        Q = H_1H_2\cdots H_k,
+    \f]
 
-        Q = H(1) * H(2) * ... * H(k),
+    and if q <= k, Q is defined as the product
+    
+    \f[
+        Q = H_1H_2\cdots H_{q-1}.
+    \f]
 
-    and if n <= k, Q is defined as the product
-
-        Q = H(1) * H(2) * ... * H(nq-1)
-
-    The Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vectors v(i) and scalars ipiv_i as returned by \ref rocsolver_sgebrd "GEBRD" in its arguments A and tauq or taup.
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its corresponding
+    Householder vectors and scalars as returned by \ref rocsolver_sgebrd "GEBRD" in its arguments A and tauq or taup.
 
     @param[in]
     handle              rocblas_handle.
@@ -2963,14 +3045,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmql(rocblas_handle handle,
                         The number of columns (if storev is colum-wise) or rows (if row-wise) of the
                         original matrix reduced by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
-    A                   pointer to type. Array on the GPU of size lda*min(nq,k) if column-wise, or lda*nq if row-wise.\n
-                        The i-th column (or row) has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgebrd "GEBRD".
+    A                   pointer to type. Array on the GPU of size lda*min(q,k) if column-wise, or lda*q if row-wise.\n
+                        The Householder vectors as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
-    lda                 rocblas_int. lda >= nq if column-wise, or lda >= min(nq,k) if row-wise. \n
+    lda                 rocblas_int. lda >= q if column-wise, or lda >= min(q,k) if row-wise. \n
                         Leading dimension of A.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least min(nq,k).\n
-                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgebrd "GEBRD".
+    ipiv                pointer to type. Array on the GPU of dimension at least min(q,k).\n
+                        The Householder scalars as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -2978,7 +3060,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmql(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sormbr(rocblas_handle handle,
@@ -3009,7 +3090,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief UNMBR applies a complex matrix Q with orthonormal rows or columns to
+    \brief UNMBR multiplies a complex matrix Q with orthonormal rows or columns by
     a general m-by-n matrix C.
 
     \details
@@ -3018,31 +3099,43 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Conjugate transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Conjugate transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q^HC & \: \text{Conjugate transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ^H & \: \text{Conjugate transpose from the right.}
+        \end{array}
+    \f]
 
-    The order nq of unitary matrix Q is nq = m if applying from the left, or nq = n if applying from the right.
+    The order q of the unitary matrix Q is q = m if applying from the left, or q = n if applying from the right.
 
-    When storev is column-wise, if nq >= k, then Q is defined as the product of k Householder reflectors of order nq
+    When storev is column-wise, if q >= k, then Q is defined as the product of k Householder reflectors 
 
-        Q = H(1) * H(2) * ... * H(k),
+    \f[
+        Q = H_1H_2\cdots H_k,
+    \f]
 
-    and if nq < k, then Q is defined as the product
+    and if q < k, then Q is defined as the product
 
-        Q = H(1) * H(2) * ... * H(nq-1).
+    \f[
+        Q = H_1H_2\cdots H_{q-1}.
+    \f]
 
-    When storev is row-wise, if nq > k, then Q is defined as the product of k Householder reflectors of order nq
+    When storev is row-wise, if q > k, then Q is defined as the product of k Householder reflectors
+    
+    \f[
+        Q = H_1H_2\cdots H_k,
+    \f]
 
-        Q = H(1) * H(2) * ... * H(k),
+    and if q <= k, Q is defined as the product
+    
+    \f[
+        Q = H_1H_2\cdots H_{q-1}.
+    \f]
 
-    and if n <= k, Q is defined as the product
-
-        Q = H(1) * H(2) * ... * H(nq-1)
-
-    The Householder matrices H(i) are never stored, they are computed from its corresponding
-    Householder vectors v(i) and scalars ipiv_i as returned by \ref rocsolver_sgebrd "GEBRD" in its arguments A and tauq or taup.
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its corresponding
+    Householder vectors and scalars as returned by \ref rocsolver_sgebrd "GEBRD" in its arguments A and tauq or taup.
 
     @param[in]
     handle              rocblas_handle.
@@ -3066,14 +3159,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
                         The number of columns (if storev is colum-wise) or rows (if row-wise) of the
                         original matrix reduced by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
-    A                   pointer to type. Array on the GPU of size lda*min(nq,k) if column-wise, or lda*nq if row-wise.\n
-                        The i-th column (or row) has the Householder vector v(i) associated with H(i) as returned by \ref rocsolver_sgebrd "GEBRD".
+    A                   pointer to type. Array on the GPU of size lda*min(q,k) if column-wise, or lda*q if row-wise.\n
+                        The Householder vectors as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
-    lda                 rocblas_int. lda >= nq if column-wise, or lda >= min(nq,k) if row-wise. \n
+    lda                 rocblas_int. lda >= q if column-wise, or lda >= min(q,k) if row-wise. \n
                         Leading dimension of A.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least min(nq,k).\n
-                        The scalar factors of the Householder matrices H(i) as returned by \ref rocsolver_sgebrd "GEBRD".
+    ipiv                pointer to type. Array on the GPU of dimension at least min(q,k).\n
+                        The Householder scalars as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
                         On input, the matrix C. On output it is overwritten with
@@ -3081,7 +3174,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cunmbr(rocblas_handle handle,
@@ -3112,31 +3204,39 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief ORMTR applies an orthogonal matrix Q to a general m-by-n matrix C.
+    \brief ORMTR multiplies an orthogonal matrix Q by a general m-by-n matrix C.
 
     \details
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q'C & \: \text{Transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ' & \: \text{Transpose from the right.}
+        \end{array}
+    \f]
 
-    The order nq of orthogonal matrix Q is nq = m if applying from the left, or
-    nq = n if applying from the right.
+    The order q of the orthogonal matrix Q is q = m if applying from the left, or
+    q = n if applying from the right.
 
-    Q is defined as the product of nq-1 Householder reflectors of order nq. If
+    Q is defined as a product of q-1 Householder reflectors. If
     uplo indicates upper, then Q has the form
 
-        Q = H(nq-1) * H(nq-2) * ... * H(1).
+    \f[
+        Q = H_{q-1}H_{q-2}\cdots H_1.
+    \f]
 
     On the other hand, if uplo indicates lower, then Q has the form
 
-        Q = H(1) * H(2) * ... * H(nq-1)
+    \f[
+        Q = H_1H_2\cdots H_{q-1}
+    \f]
 
-    The Householder matrices H(i) are never stored, they are computed from its
-    corresponding Householder vectors v(i) and scalars ipiv_i as returned by
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its
+    corresponding Householder vectors and scalars as returned by
     \ref rocsolver_ssytrd "SYTRD" in its arguments A and tau.
 
     @param[in]
@@ -3160,16 +3260,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix C.
     @param[in]
-    A                   pointer to type. Array on the GPU of size lda*nq.\n
-                        On entry, the (i+1)-th column (if uplo indicates upper)
-                        or i-th column (if uplo indicates lower) has the Householder vector v(i) as
+    A                   pointer to type. Array on the GPU of size lda*q.\n
+                        On entry, the Householder vectors as
                         returned by \ref rocsolver_ssytrd "SYTRD".
     @param[in]
-    lda                 rocblas_int. lda >= nq.\n
+    lda                 rocblas_int. lda >= q.\n
                         Leading dimension of A.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least nq-1.\n
-                        The scalar factors of the Householder matrices H(i) as returned by
+    ipiv                pointer to type. Array on the GPU of dimension at least q-1.\n
+                        The Householder scalars as returned by
                         \ref rocsolver_ssytrd "SYTRD".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
@@ -3178,7 +3277,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
     @param[in]
     ldc                 rocblas_int. ldc >= m.\n
                         Leading dimension of C.
-
     ****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sormtr(rocblas_handle handle,
@@ -3207,31 +3305,39 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormtr(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief UNMTR applies a unitary matrix Q to a general m-by-n matrix C.
+    \brief UNMTR multiplies a unitary matrix Q by a general m-by-n matrix C.
 
     \details
     The matrix Q is applied in one of the following forms, depending on
     the values of side and trans:
 
-        Q  * C  (No transpose from the left)
-        Q' * C  (Conjugate transpose from the left)
-        C * Q   (No transpose from the right), and
-        C * Q'  (Conjugate transpose from the right)
+    \f[
+        \begin{array}{cl}
+        QC & \: \text{No transpose from the left,}\\
+        Q^HC & \: \text{Conjugate transpose from the left,}\\
+        CQ & \: \text{No transpose from the right, and}\\
+        CQ^H & \: \text{Conjugate transpose from the right.}
+        \end{array}
+    \f]
 
-    The order nq of unitary matrix Q is nq = m if applying from the left, or
-    nq = n if applying from the right.
+    The order q of the unitary matrix Q is q = m if applying from the left, or
+    q = n if applying from the right.
 
-    Q is defined as the product of nq-1 Householder reflectors of order nq. If
+    Q is defined as a product of q-1 Householder reflectors. If
     uplo indicates upper, then Q has the form
 
-        Q = H(nq-1) * H(nq-2) * ... * H(1).
+    \f[
+        Q = H_{q-1}H_{q-2}\cdots H_1.
+    \f]
 
     On the other hand, if uplo indicates lower, then Q has the form
 
-        Q = H(1) * H(2) * ... * H(nq-1)
+    \f[
+        Q = H_1H_2\cdots H_{q-1}
+    \f]
 
-    The Householder matrices H(i) are never stored, they are computed from its
-    corresponding Householder vectors v(i) and scalars ipiv_i as returned by
+    The Householder matrices \f$H_i\f$ are never stored, they are computed from its
+    corresponding Householder vectors and scalars as returned by
     \ref rocsolver_chetrd "HETRD" in its arguments A and tau.
 
     @param[in]
@@ -3255,16 +3361,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormtr(rocblas_handle handle,
     n                   rocblas_int. n >= 0.\n
                         Number of columns of matrix C.
     @param[in]
-    A                   pointer to type. Array on the GPU of size lda*nq.\n
-                        On entry, the (i+1)-th column (if uplo indicates upper)
-                        or i-th column (if uplo indicates lower) has the Householder vector v(i) as
+    A                   pointer to type. Array on the GPU of size lda*q.\n
+                        On entry, the Householder vectors as
                         returned by \ref rocsolver_chetrd "HETRD".
     @param[in]
-    lda                 rocblas_int. lda >= nq.\n
+    lda                 rocblas_int. lda >= q.\n
                         Leading dimension of A.
     @param[in]
-    ipiv                pointer to type. Array on the GPU of dimension at least nq-1.\n
-                        The scalar factors of the Householder matrices H(i) as returned by
+    ipiv                pointer to type. Array on the GPU of dimension at least q-1.\n
+                        The Householder scalars as returned by
                         \ref rocsolver_chetrd "HETRD".
     @param[inout]
     C                   pointer to type. Array on the GPU of size ldc*n.\n
@@ -3449,8 +3554,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
     increasing order.
 
     The matrix is not represented explicitly, but rather as the array of
-    diagonal elements D and the array of symmetric off-diagonal elements E
-    as returned by, e.g., \ref rocsolver_ssytrd "SYTRD" or \ref rocsolver_chetrd "HETRD".
+    diagonal elements D and the array of symmetric off-diagonal elements E.
 
     @param[in]
     handle    rocblas_handle.
@@ -3459,14 +3563,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
               The number of rows and columns of the tridiagonal matrix.
     @param[inout]
     D         pointer to real type. Array on the GPU of dimension n.\n
-              On entry, the diagonal elements of the matrix.
+              On entry, the diagonal elements of the tridiagonal matrix.
               On exit, if info = 0, the eigenvalues in increasing order.
               If info > 0, the diagonal elements of a tridiagonal matrix
               that is similar to the original matrix (i.e. has the same
               eigenvalues).
     @param[inout]
     E         pointer to real type. Array on the GPU of dimension n-1.\n
-              On entry, the off-diagonal elements of the matrix.
+              On entry, the off-diagonal elements of the tridiagonal matrix.
               On exit, if info = 0, this array converges to zero.
               If info > 0, the off-diagonal elements of a tridiagonal matrix
               that is similar to the original matrix (i.e. has the same
@@ -3501,10 +3605,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsterf(rocblas_handle handle,
     implicit QL/QR algorithm, and returned in increasing order.
 
     The matrix is not represented explicitly, but rather as the array of
-    diagonal elements D and the array of symmetric off-diagonal elements E
-    as returned by, e.g., \ref rocsolver_ssytrd "SYTRD" or \ref rocsolver_chetrd "HETRD". If the tridiagonal matrix is the
-    reduced form of a full symmetric/Hermitian matrix as returned by, e.g.,
-    \ref rocsolver_ssytrd "SYTRD" or \ref rocsolver_chetrd "HETRD", then the eigenvectors of the original matrix can also
+    diagonal elements D and the array of symmetric off-diagonal elements E.
+    When D and E correspond to the tridiagonal form of a full symmetric/Hermitian matrix, as returned by, e.g.,
+    \ref rocsolver_ssytrd "SYTRD" or \ref rocsolver_chetrd "HETRD", the eigenvectors of the original matrix can also
     be computed, depending on the value of evect.
 
     @param[in]
@@ -3517,14 +3620,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsterf(rocblas_handle handle,
               The number of rows and columns of the tridiagonal matrix.
     @param[inout]
     D         pointer to real type. Array on the GPU of dimension n.\n
-              On entry, the diagonal elements of the matrix.
+              On entry, the diagonal elements of the tridiagonal matrix.
               On exit, if info = 0, the eigenvalues in increasing order.
               If info > 0, the diagonal elements of a tridiagonal matrix
               that is similar to the original matrix (i.e. has the same
               eigenvalues).
     @param[inout]
     E         pointer to real type. Array on the GPU of dimension n-1.\n
-              On entry, the off-diagonal elements of the matrix.
+              On entry, the off-diagonal elements of the tridiagonal matrix.
               On exit, if info = 0, this array converges to zero.
               If info > 0, the off-diagonal elements of a tridiagonal matrix
               that is similar to the original matrix (i.e. has the same
@@ -3596,10 +3699,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsteqr(rocblas_handle handle,
     The eigenvalues are returned in increasing order.
 
     The matrix is not represented explicitly, but rather as the array of
-    diagonal elements D and the array of symmetric off-diagonal elements E
-    as returned by, e.g., \ref rocsolver_ssytrd "SYTRD" or \ref rocsolver_chetrd "HETRD". If the tridiagonal matrix is the
-    reduced form of a full symmetric/Hermitian matrix as returned by, e.g.,
-    \ref rocsolver_ssytrd "SYTRD" or \ref rocsolver_chetrd "HETRD", then the eigenvectors of the original matrix can also
+    diagonal elements D and the array of symmetric off-diagonal elements E.
+    When D and E correspond to the tridiagonal form of a full symmetric/Hermitian matrix, as returned by, e.g.,
+    \ref rocsolver_ssytrd "SYTRD" or \ref rocsolver_chetrd "HETRD", the eigenvectors of the original matrix can also
     be computed, depending on the value of evect.
 
     @param[in]
@@ -3612,11 +3714,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsteqr(rocblas_handle handle,
               The number of rows and columns of the tridiagonal matrix.
     @param[inout]
     D         pointer to real type. Array on the GPU of dimension n.\n
-              On entry, the diagonal elements of the matrix.
+              On entry, the diagonal elements of the tridiagonal matrix.
               On exit, if info = 0, the eigenvalues in increasing order.
     @param[inout]
     E         pointer to real type. Array on the GPU of dimension n-1.\n
-              On entry, the off-diagonal elements of the matrix.
+              On entry, the off-diagonal elements of the tridiagonal matrix.
               On exit, if info = 0, the values on this array are destroyed.
     @param[inout]
     C         pointer to type. Array on the GPU of dimension ldc*n.\n
