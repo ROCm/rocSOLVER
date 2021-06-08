@@ -328,7 +328,7 @@ void testing_steqr(Arguments& argus)
                               rocblas_status_invalid_size);
 
         if(argus.timing)
-            ROCSOLVER_BENCH_INFORM(1);
+            rocsolver_bench_inform(inform_invalid_size);
 
         return;
     }
@@ -344,7 +344,7 @@ void testing_steqr(Arguments& argus)
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
         if(argus.mem_query)
         {
-            ROCSOLVER_BENCH_INFORM_2(3, size);
+            rocsolver_bench_inform(inform_mem_query, size);
             return;
         }
 
@@ -379,7 +379,7 @@ void testing_steqr(Arguments& argus)
             rocsolver_steqr(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()),
             rocblas_status_success);
         if(argus.timing)
-            ROCSOLVER_BENCH_INFORM(0);
+            rocsolver_bench_inform(inform_quick_return);
 
         return;
     }
