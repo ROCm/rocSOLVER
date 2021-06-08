@@ -75,6 +75,13 @@ try
             "                           Reported time will be the average.\n"
             "                           ")
 
+        ("mem_query",
+         value<rocblas_int>(&argus.mem_query)->default_value(0),
+            "Calculate the required amount of device workspace memory? 0 = No, 1 = Yes.\n"
+            "                           This forces the client to print only the amount of device memory required by\n"
+            "                           the function, in bytes.\n"
+            "                           ")
+
         ("perf",
          value<rocblas_int>(&argus.perf)->default_value(0),
             "Ignore CPU timing results? 0 = No, 1 = Yes.\n"

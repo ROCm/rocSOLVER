@@ -368,13 +368,13 @@ void testing_getri_outofplace(Arguments& argus)
                                   rocblas_status_invalid_size);
 
         if(argus.timing)
-            ROCSOLVER_BENCH_INFORM(1);
+            rocsolver_bench_inform(inform_invalid_size);
 
         return;
     }
 
     // memory size query is necessary
-    if(!USE_ROCBLAS_REALLOC_ON_DEMAND)
+    if(argus.mem_query || !USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)
@@ -388,6 +388,12 @@ void testing_getri_outofplace(Arguments& argus)
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
+        if(argus.mem_query)
+        {
+            rocsolver_bench_inform(inform_mem_query, size);
+            return;
+        }
+
         CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 
@@ -419,7 +425,7 @@ void testing_getri_outofplace(Arguments& argus)
                                                              stC, dInfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
-                ROCSOLVER_BENCH_INFORM(0);
+                rocsolver_bench_inform(inform_quick_return);
 
             return;
         }
@@ -465,7 +471,7 @@ void testing_getri_outofplace(Arguments& argus)
                                                              stC, dInfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
-                ROCSOLVER_BENCH_INFORM(0);
+                rocsolver_bench_inform(inform_quick_return);
 
             return;
         }
