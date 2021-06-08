@@ -13,19 +13,6 @@
 // reallocate workspace
 #define USE_ROCBLAS_REALLOC_ON_DEMAND true
 
-#define ROCSOLVER_BENCH_INFORM(case)                                         \
-    do                                                                       \
-    {                                                                        \
-        if(case == 2)                                                        \
-            rocsolver_cout << "Invalid value in arguments ..." << std::endl; \
-        else if(case == 1)                                                   \
-            rocsolver_cout << "Invalid size arguments..." << std::endl;      \
-        else                                                                 \
-            rocsolver_cout << "Quick return..." << std::endl;                \
-        rocsolver_cout << "No performance data to collect." << std::endl;    \
-        rocsolver_cout << "No computations to verify." << std::endl;         \
-    } while(0)
-
 template <typename T>
 constexpr double get_epsilon()
 {
@@ -38,6 +25,29 @@ constexpr double get_epsilon()
 #else
 #define ROCSOLVER_TEST_CHECK(T, max_error, tol)
 #endif
+
+typedef enum rocsolver_inform_type_
+{
+    inform_quick_return,
+    inform_invalid_size,
+    inform_invalid_args,
+    inform_mem_query,
+} rocsolver_inform_type;
+
+inline void rocsolver_bench_inform(rocsolver_inform_type it, size_t arg = 0)
+{
+    switch(it)
+    {
+    case inform_quick_return: rocsolver_cout << "Quick return..." << std::endl; break;
+    case inform_invalid_size: rocsolver_cout << "Invalid size arguments..." << std::endl; break;
+    case inform_invalid_args: rocsolver_cout << "Invalid value in arguments..." << std::endl; break;
+    case inform_mem_query:
+        rocsolver_cout << arg << " bytes of device memory are required..." << std::endl;
+        break;
+    }
+    rocsolver_cout << "No performance data to collect." << std::endl;
+    rocsolver_cout << "No computations to verify." << std::endl;
+}
 
 inline void rocsolver_bench_output()
 {
