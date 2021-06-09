@@ -4,11 +4,13 @@
 
 #pragma once
 
-#include "rocblas.h"
-#include "rocblascommon/program_options.hpp"
-#include "rocsolver_ostream.hpp"
 #include <set>
-#include <sstream>
+
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+#include <rocblas.h>
+
+#include "rocblascommon/program_options.hpp"
 
 using variables_map = roc::variables_map;
 using variable_value = roc::variable_value;
@@ -208,14 +210,9 @@ public:
 
     void validate_consumed() const
     {
-        if(to_consume.size() > 0)
-        {
-            std::stringstream ss;
-            ss << "Not all arguments were consumed:";
-            for(std::string name : to_consume)
-                ss << ' ' << name;
-            throw std::invalid_argument(ss.str());
-        }
+        if(!to_consume.empty())
+            throw std::invalid_argument(
+                fmt::format("Not all arguments were consumed: {}", fmt::join(to_consume, " ")));
     }
 
     void validate_diag(const std::string name) const

@@ -21,6 +21,7 @@ if( BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS )
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
   )
+  target_link_libraries( clients-common INTERFACE fmt::fmt )
   set( common_source_files
     common/lapack_host_reference.cpp
     rocblascommon/utility.cpp

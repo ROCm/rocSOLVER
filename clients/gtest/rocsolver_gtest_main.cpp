@@ -2,45 +2,39 @@
  * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
+#include <cstdio>
+#include <fmt/core.h>
+#include <gtest/gtest.h>
+
 #include "clientcommon.hpp"
 #include "internal/rocblas-version.h"
 #include "rocsolver-version.h"
-#include <gtest/gtest.h>
-#include <stdexcept>
 
 #define STRINGIFY(s) STRINGIFY_HELPER(s)
 #define STRINGIFY_HELPER(s) #s
 
 static void print_version_info()
 {
-    // clang-format off
-    rocsolver_cout << "rocSOLVER version "
-        STRINGIFY(ROCSOLVER_VERSION_MAJOR) "."
-        STRINGIFY(ROCSOLVER_VERSION_MINOR) "."
-        STRINGIFY(ROCSOLVER_VERSION_PATCH) "."
-        STRINGIFY(ROCSOLVER_VERSION_TWEAK)
-        " (with rocBLAS "
-        STRINGIFY(ROCBLAS_VERSION_MAJOR) "."
-        STRINGIFY(ROCBLAS_VERSION_MINOR) "."
-        STRINGIFY(ROCBLAS_VERSION_PATCH) "."
-        STRINGIFY(ROCBLAS_VERSION_TWEAK) ")"
-        << std::endl;
-    // clang-format on
+    fmt::print("rocSOLVER version {}.{}.{}.{} (with rocBLAS {}.{}.{}.{})\n",
+               STRINGIFY(ROCSOLVER_VERSION_MAJOR), STRINGIFY(ROCSOLVER_VERSION_MINOR),
+               STRINGIFY(ROCSOLVER_VERSION_PATCH), STRINGIFY(ROCSOLVER_VERSION_TWEAK),
+               STRINGIFY(ROCBLAS_VERSION_MAJOR), STRINGIFY(ROCBLAS_VERSION_MINOR),
+               STRINGIFY(ROCBLAS_VERSION_PATCH), STRINGIFY(ROCBLAS_VERSION_TWEAK));
+    std::fflush(stdout);
 }
 
 int main(int argc, char** argv)
 {
     print_version_info();
 
-    // Device Query
-    int device_id = 0;
+    // print device info
     int device_count = query_device_property();
-    if(device_count <= device_id)
+    if(device_count <= 0)
     {
-        rocsolver_cerr << "Error: invalid device ID. There may not be such device ID." << std::endl;
+        fmt::print(stderr, "Error: No devices found\n");
         return -1;
     }
-    set_device(device_id);
+    set_device(0); // use first device
 
     // Initialize gtest and rocBLAS
     ::testing::InitGoogleTest(&argc, argv);

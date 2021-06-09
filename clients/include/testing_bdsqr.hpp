@@ -593,14 +593,10 @@ void testing_bdsqr(Arguments& argus)
         {
             if(nv || nu || nc)
                 max_error = (max_error >= max_errorv) ? max_error : max_errorv;
-            rocsolver_cout << "\n============================================\n";
-            rocsolver_cout << "Arguments:\n";
-            rocsolver_cout << "============================================\n";
+            rocsolver_bench_header("Arguments:");
             rocsolver_bench_output("uplo", "n", "nv", "nu", "nc", "ldv", "ldu", "ldc");
             rocsolver_bench_output(uploC, n, nv, nu, nc, ldv, ldu, ldc);
-            rocsolver_cout << "\n============================================\n";
-            rocsolver_cout << "Results:\n";
-            rocsolver_cout << "============================================\n";
+            rocsolver_bench_header("Results:");
             if(argus.norm_check)
             {
                 rocsolver_bench_output("cpu_time", "gpu_time", "error");
@@ -611,7 +607,7 @@ void testing_bdsqr(Arguments& argus)
                 rocsolver_bench_output("cpu_time", "gpu_time");
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
-            rocsolver_cout << std::endl;
+            rocsolver_bench_endl();
         }
         else
         {

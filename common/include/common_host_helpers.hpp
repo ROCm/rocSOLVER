@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include "rocsolver_ostream.hpp"
+#include <fmt/core.h>
+#include <hip/hip_runtime_api.h>
+#include <string>
 
 /*
  * ===========================================================================
@@ -30,45 +32,30 @@ double get_time_us_no_sync();
 
 /* =============================================================================================== */
 /* Print functions.                                                                                */
-
-template <typename T, typename... Ts>
-void print_list(rocsolver_ostream& os, const char* sep, T arg, Ts... args)
-{
-    os << arg;
-
-    if(sizeof...(Ts) > 0)
-    {
-        os << sep;
-        print_list(os, sep, args...);
-    }
-}
-inline void print_list(rocsolver_ostream& os, const char* sep)
+inline void pairs_to_string(std::string& str, const char* sep)
 {
     // do nothing
 }
-
 template <typename T1, typename T2, typename... Ts>
-void print_pairs(rocsolver_ostream& os, const char* sep, T1 arg1, T2 arg2, Ts... args)
+void pairs_to_string(std::string& str, const char* sep, T1 arg1, T2 arg2, Ts... args)
 {
-    os << arg1 << ' ' << arg2;
+    str += fmt::format("{} {}", arg1, arg2);
 
     if(sizeof...(Ts) > 0)
     {
-        os << sep;
-        print_pairs(os, sep, args...);
+        str += sep;
+        pairs_to_string(str, sep, args...);
     }
-}
-inline void print_pairs(rocsolver_ostream& os, const char* sep)
-{
-    // do nothing
 }
 
 /** Set of helpers to print out data hosted in the CPU and/or the GPU **/
 /***********************************************************************/
 
-/*! \brief Print provided data into specified stream (real case)*/
+// TODO: Fixup these helper functions for the transition from rocsolver_ostream to libfmt
+
+/*! \brief Print provided data into specified stream (real case)*/ /*
 template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
-void print_to_stream(rocsolver_ostream& os,
+void print_to_stream(std::ostream& os,
                      const std::string name,
                      const rocblas_int m,
                      const rocblas_int n,
@@ -91,11 +78,11 @@ void print_to_stream(rocsolver_ostream& os,
         os << '\n';
     }
     os << std::endl;
-}
+}*/
 
-/*! \brief Print provided data into specified stream (complex cases)*/
+/*! \brief Print provided data into specified stream (complex cases)*/ /*
 template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
-void print_to_stream(rocsolver_ostream& os,
+void print_to_stream(std::ostream& os,
                      const std::string name,
                      const rocblas_int m,
                      const rocblas_int n,
@@ -118,11 +105,11 @@ void print_to_stream(rocsolver_ostream& os,
         os << '\n';
     }
     os << std::endl;
-}
+}*/
 
-/*! \brief Print data from a normal or strided_batched array on the GPU to screen*/
+/*! \brief Print data from a normal or strided_batched array on the GPU to screen*/ /*
 template <typename T>
-void print_device_matrix(rocsolver_ostream& os,
+void print_device_matrix(std::ostream& os,
                          const std::string name,
                          const rocblas_int m,
                          const rocblas_int n,
@@ -135,11 +122,11 @@ void print_device_matrix(rocsolver_ostream& os,
     hipMemcpy(hA, A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
     print_to_stream<T>(os, name, m, n, hA, lda);
-}
+}*/
 
-/*! \brief Print data from a batched array on the GPU to screen*/
+/*! \brief Print data from a batched array on the GPU to screen*/ /*
 template <typename T>
-void print_device_matrix(rocsolver_ostream& os,
+void print_device_matrix(std::ostream& os,
                          const std::string name,
                          const rocblas_int m,
                          const rocblas_int n,
@@ -154,9 +141,9 @@ void print_device_matrix(rocsolver_ostream& os,
     hipMemcpy(hA, AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
     print_to_stream<T>(os, name, m, n, hA, lda);
-}
+}*/
 
-/*! \brief Print data from a normal or strided_batched array on the GPU to file*/
+/*! \brief Print data from a normal or strided_batched array on the GPU to file*/ /*
 template <typename T>
 void print_device_matrix(const std::string file,
                          const rocblas_int m,
@@ -166,14 +153,14 @@ void print_device_matrix(const std::string file,
                          const rocblas_stride stride = 1,
                          const rocblas_int idx = 0)
 {
-    rocsolver_ostream os(file);
+    std::ofstream os(file);
     T hA[lda * n];
     hipMemcpy(hA, A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
     print_to_stream<T>(os, "", m, n, hA, lda);
-}
+}*/
 
-/*! \brief Print data from a batched array on the GPU to file*/
+/*! \brief Print data from a batched array on the GPU to file*/ /*
 template <typename T>
 void print_device_matrix(const std::string file,
                          const rocblas_int m,
@@ -183,18 +170,18 @@ void print_device_matrix(const std::string file,
                          const rocblas_stride stride = 1,
                          const rocblas_int idx = 0)
 {
-    rocsolver_ostream os(file);
+    std::ofstream os(file);
     T hA[lda * n];
     T* AA[1];
     hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost);
     hipMemcpy(hA, AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
     print_to_stream<T>(os, "", m, n, hA, lda);
-}
+}*/
 
-/*! \brief Print data from a normal or strided_batched array on the CPU to screen*/
+/*! \brief Print data from a normal or strided_batched array on the CPU to screen*/ /*
 template <typename T>
-void print_host_matrix(rocsolver_ostream& os,
+void print_host_matrix(std::ostream& os,
                        const std::string name,
                        const rocblas_int m,
                        const rocblas_int n,
@@ -204,11 +191,11 @@ void print_host_matrix(rocsolver_ostream& os,
                        const rocblas_int idx = 0)
 {
     print_to_stream<T>(os, name, m, n, A + idx * stride, lda);
-}
+}*/
 
-/*! \brief Print data from a batched array on the CPU to screen*/
+/*! \brief Print data from a batched array on the CPU to screen*/ /*
 template <typename T>
-void print_host_matrix(rocsolver_ostream& os,
+void print_host_matrix(std::ostream& os,
                        const std::string name,
                        const rocblas_int m,
                        const rocblas_int n,
@@ -218,9 +205,9 @@ void print_host_matrix(rocsolver_ostream& os,
                        const rocblas_int idx = 0)
 {
     print_to_stream<T>(os, name, m, n, A[idx], lda);
-}
+}*/
 
-/*! \brief Print data from a normal or strided_batched array on the CPU to file*/
+/*! \brief Print data from a normal or strided_batched array on the CPU to file*/ /*
 template <typename T>
 void print_host_matrix(const std::string file,
                        const rocblas_int m,
@@ -230,11 +217,11 @@ void print_host_matrix(const std::string file,
                        const rocblas_stride stride = 1,
                        const rocblas_int idx = 0)
 {
-    rocsolver_ostream os(file);
+    std::ofstream os(file);
     print_to_stream<T>(os, "", m, n, A + idx * stride, lda);
-}
+}*/
 
-/*! \brief Print data from a batched array on the CPU to file*/
+/*! \brief Print data from a batched array on the CPU to file*/ /*
 template <typename T>
 void print_host_matrix(const std::string file,
                        const rocblas_int m,
@@ -244,15 +231,15 @@ void print_host_matrix(const std::string file,
                        const rocblas_stride stride = 1,
                        const rocblas_int idx = 0)
 {
-    rocsolver_ostream os(file);
+    std::ofstream os(file);
     print_to_stream<T>(os, "", m, n, A[idx], lda);
-}
+}*/
 
 /*! \brief  Debugging purpose, print out CPU and GPU result matrix */
 /*******************************************************************/
-
+/*
 template <typename T>
-void print_host_matrix(rocsolver_ostream& os,
+void print_host_matrix(std::ostream& os,
                        const std::string name,
                        const rocblas_int m,
                        const rocblas_int n,
@@ -272,7 +259,7 @@ void print_host_matrix(rocsolver_ostream& os,
 }
 
 template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
-void print_host_matrix(rocsolver_ostream& os,
+void print_host_matrix(std::ostream& os,
                        const std::string name,
                        const rocblas_int m,
                        const rocblas_int n,
@@ -296,7 +283,7 @@ void print_host_matrix(rocsolver_ostream& os,
 }
 
 template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
-void print_host_matrix(rocsolver_ostream& os,
+void print_host_matrix(std::ostream& os,
                        const std::string name,
                        const rocblas_int m,
                        const rocblas_int n,
@@ -317,4 +304,4 @@ void print_host_matrix(rocsolver_ostream& os,
         }
     }
     os << std::endl;
-}
+}*/

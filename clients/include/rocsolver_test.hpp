@@ -5,26 +5,17 @@
 #pragma once
 
 #include <cstdarg>
-#include <ios>
+#include <cstdio>
 #include <limits>
-#include <sstream>
+#include <ostream>
+
+#include <fmt/core.h>
+#include <fmt/ostream.h>
+#include <fmt/ranges.h>
 
 // If USE_ROCBLAS_REALLOC_ON_DEMAND is false, automatic reallocation is disable and we will manually
 // reallocate workspace
 #define USE_ROCBLAS_REALLOC_ON_DEMAND true
-
-template <typename T>
-constexpr double get_epsilon()
-{
-    using S = decltype(std::real(T{}));
-    return std::numeric_limits<S>::epsilon();
-}
-
-#ifdef GOOGLE_TEST
-#define ROCSOLVER_TEST_CHECK(T, max_error, tol) ASSERT_LE((max_error), (tol)*get_epsilon<T>())
-#else
-#define ROCSOLVER_TEST_CHECK(T, max_error, tol)
-#endif
 
 typedef enum rocsolver_inform_type_
 {
@@ -38,33 +29,47 @@ inline void rocsolver_bench_inform(rocsolver_inform_type it, size_t arg = 0)
 {
     switch(it)
     {
-    case inform_quick_return: rocsolver_cout << "Quick return..." << std::endl; break;
-    case inform_invalid_size: rocsolver_cout << "Invalid size arguments..." << std::endl; break;
-    case inform_invalid_args: rocsolver_cout << "Invalid value in arguments..." << std::endl; break;
-    case inform_mem_query:
-        rocsolver_cout << arg << " bytes of device memory are required..." << std::endl;
-        break;
+    case inform_quick_return: fmt::print("Quick return...\n"); break;
+    case inform_invalid_size: fmt::print("Invalid size arguments...\n"); break;
+    case inform_invalid_args: fmt::print("Invalid value in arguments...\n"); break;
+    case inform_mem_query: fmt::print("{} bytes of device memory are required...\n", arg); break;
     }
-    rocsolver_cout << "No performance data to collect." << std::endl;
-    rocsolver_cout << "No computations to verify." << std::endl;
+    fmt::print("No performance data to collect.\n");
+    fmt::print("No computations to verify.\n");
+    std::fflush(stdout);
 }
 
-inline void rocsolver_bench_output()
-{
-    // empty version
-    rocsolver_cout << std::endl;
-}
+// recursive format function (base case)
+inline void format_bench_table(std::string&) {}
 
+// recursive format function
 template <typename T, typename... Ts>
-inline void rocsolver_bench_output(T arg, Ts... args)
+inline void format_bench_table(std::string& str, T arg, Ts... args)
 {
-    std::stringstream ss;
-    ss << std::left << std::setw(15) << arg;
-
-    rocsolver_cout << ss.str();
+    str += fmt::format("{:<15}", arg);
     if(sizeof...(Ts) > 0)
-        rocsolver_cout << ' ';
-    rocsolver_bench_output(args...);
+        str += ' ';
+    format_bench_table(str, args...);
+}
+
+template <typename... Ts>
+void rocsolver_bench_output(Ts... args)
+{
+    std::string table_row;
+    format_bench_table(table_row, args...);
+    std::puts(table_row.c_str());
+    std::fflush(stdout);
+}
+
+inline void rocsolver_bench_header(const char* title)
+{
+    fmt::print("\n{:=<44}\n{}\n{:=<44}\n", "", title, "");
+}
+
+inline void rocsolver_bench_endl()
+{
+    std::putc('\n', stdout);
+    std::fflush(stdout);
 }
 
 template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>

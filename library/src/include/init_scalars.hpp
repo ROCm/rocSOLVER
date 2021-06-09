@@ -1,8 +1,13 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
 #pragma once
+
+#include <cassert>
+
+#include <hip/hip_runtime.h>
+#include <rocblas.h>
 
 #define IOTA_MAX_THDS 32
 

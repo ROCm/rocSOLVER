@@ -157,6 +157,15 @@ target_link_libraries( rocsolver
     --unwindlib=libgcc
 )
 
+if( ROCSOLVER_EMBED_FMT )
+  target_link_libraries( rocsolver PRIVATE fmt::fmt )
+  if( UNIX )
+    target_link_options( rocsolver PRIVATE "SHELL: -Wl,--exclude-libs,libfmt.a" )
+  endif( )
+else( )
+  target_link_libraries( rocsolver PUBLIC fmt::fmt )
+endif( )
+
 # In ROCm 4.0 and earlier, the default maximum threads per block is 256
 target_compile_options( rocsolver PRIVATE --gpu-max-threads-per-block=1024 )
 

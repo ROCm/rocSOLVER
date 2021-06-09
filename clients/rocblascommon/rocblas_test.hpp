@@ -16,7 +16,8 @@
 #include <unordered_map>
 #include <utility>
 
-#include "rocsolver_ostream.hpp"
+#include <fmt/core.h>
+#include <rocblas.h>
 
 // Suppress warnings about hipMalloc(), hipFree() except in rocblas-test and
 // rocblas-bench
@@ -65,23 +66,23 @@ inline void rocblas_expect_status(rocblas_status status, rocblas_status expect)
 {
     if(status != expect)
     {
-        rocsolver_cerr << "rocBLAS status error: Expected " << rocblas_status_to_string(expect)
-                       << ", received " << rocblas_status_to_string(status) << std::endl;
+        fmt::print(stderr, "rocBLAS status error: Expected {}, received {}\n",
+                   rocblas_status_to_string(expect), rocblas_status_to_string(status));
         if(expect == rocblas_status_success)
             exit(EXIT_FAILURE);
     }
 }
 
-#define CHECK_HIP_ERROR(ERROR)                                                       \
-    do                                                                               \
-    {                                                                                \
-        auto error = ERROR;                                                          \
-        if(error != hipSuccess)                                                      \
-        {                                                                            \
-            rocsolver_cerr << "error: " << hipGetErrorString(error) << " (" << error \
-                           << ") at " __FILE__ ":" << __LINE__ << std::endl;         \
-            rocblas_abort();                                                         \
-        }                                                                            \
+#define CHECK_HIP_ERROR(ERROR)                                                               \
+    do                                                                                       \
+    {                                                                                        \
+        auto error = ERROR;                                                                  \
+        if(error != hipSuccess)                                                              \
+        {                                                                                    \
+            fmt::print(stderr, "error: {} ({}) at {}:{}\n", hipGetErrorString(error), error, \
+                       __FILE__, __LINE__);                                                  \
+            rocblas_abort();                                                                 \
+        }                                                                                    \
     } while(0)
 
 #define CHECK_ALLOC_QUERY(STATUS)                                                                     \
@@ -90,9 +91,10 @@ inline void rocblas_expect_status(rocblas_status status, rocblas_status expect)
         auto status__ = (STATUS);                                                                     \
         if(!(status__ == rocblas_status_size_increased || status__ == rocblas_status_size_unchanged)) \
         {                                                                                             \
-            rocsolver_cerr << "rocBLAS status error: Expected rocblas_status_size_unchanged or "      \
-                              "rocblas_status_size_increase,\nreceived "                              \
-                           << rocblas_status_to_string(status__) << std::endl;                        \
+            fmt::print(stderr,                                                                        \
+                       "rocBLAS status error: Expected rocblas_status_size_unchanged or "             \
+                       "rocblas_status_size_increase,\nreceived {}\n",                                \
+                       rocblas_status_to_string(status__));                                           \
             rocblas_abort();                                                                          \
         }                                                                                             \
     } while(0)
