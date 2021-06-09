@@ -13,6 +13,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - HEGVD (with batched and strided\_batched versions)
 - Added --mem_query option to rocsolver-bench, which will print the amount of device memory required
   by a function.
+- Added --profile option to rocsolver-bench, which will print profile logging results for a function.
 
 ### Optimizations
 
