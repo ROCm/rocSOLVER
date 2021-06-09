@@ -385,112 +385,112 @@ struct formatter<rocsolver_logvalue<bool>> : formatter<char>
     }
 };
 template <>
-struct formatter<rocblas_operation> : formatter<char>
+struct formatter<rocsolver_logvalue<rocblas_operation>> : formatter<char>
 {
     template <typename FormatCtx>
-    auto format(rocblas_operation value, FormatCtx& ctx)
+    auto format(rocsolver_logvalue<rocblas_operation> wrapper, FormatCtx& ctx)
     {
-        return formatter<char>::format(rocblas2char_operation(value), ctx);
+        return formatter<char>::format(rocblas2char_operation(wrapper.value), ctx);
     }
 };
 template <>
-struct formatter<rocblas_fill> : formatter<char>
+struct formatter<rocsolver_logvalue<rocblas_fill>> : formatter<char>
 {
     template <typename FormatCtx>
-    auto format(rocblas_fill value, FormatCtx& ctx)
+    auto format(rocsolver_logvalue<rocblas_fill> wrapper, FormatCtx& ctx)
     {
-        return formatter<char>::format(rocblas2char_fill(value), ctx);
+        return formatter<char>::format(rocblas2char_fill(wrapper.value), ctx);
     }
 };
 template <>
-struct formatter<rocblas_diagonal> : formatter<char>
+struct formatter<rocsolver_logvalue<rocblas_diagonal>> : formatter<char>
 {
     template <typename FormatCtx>
-    auto format(rocblas_diagonal value, FormatCtx& ctx)
+    auto format(rocsolver_logvalue<rocblas_diagonal> wrapper, FormatCtx& ctx)
     {
-        return formatter<char>::format(rocblas2char_diagonal(value), ctx);
+        return formatter<char>::format(rocblas2char_diagonal(wrapper.value), ctx);
     }
 };
 template <>
-struct formatter<rocblas_side> : formatter<char>
+struct formatter<rocsolver_logvalue<rocblas_side>> : formatter<char>
 {
     template <typename FormatCtx>
-    auto format(rocblas_side value, FormatCtx& ctx)
+    auto format(rocsolver_logvalue<rocblas_side> wrapper, FormatCtx& ctx)
     {
-        return formatter<char>::format(rocblas2char_side(value), ctx);
+        return formatter<char>::format(rocblas2char_side(wrapper.value), ctx);
     }
 };
 template <>
-struct formatter<rocblas_direct> : formatter<char>
+struct formatter<rocsolver_logvalue<rocblas_direct>> : formatter<char>
 {
     template <typename FormatCtx>
-    auto format(rocblas_direct value, FormatCtx& ctx)
+    auto format(rocsolver_logvalue<rocblas_direct> wrapper, FormatCtx& ctx)
     {
-        return formatter<char>::format(rocblas2char_direct(value), ctx);
+        return formatter<char>::format(rocblas2char_direct(wrapper.value), ctx);
     }
 };
 
 template <>
-struct formatter<rocblas_storev> : formatter<char>
+struct formatter<rocsolver_logvalue<rocblas_storev>> : formatter<char>
 {
     template <typename FormatCtx>
-    auto format(rocblas_storev value, FormatCtx& ctx)
+    auto format(rocsolver_logvalue<rocblas_storev> wrapper, FormatCtx& ctx)
     {
-        return formatter<char>::format(rocblas2char_storev(value), ctx);
+        return formatter<char>::format(rocblas2char_storev(wrapper.value), ctx);
     }
 };
 template <>
-struct formatter<rocblas_workmode> : formatter<char>
+struct formatter<rocsolver_logvalue<rocblas_workmode>> : formatter<char>
 {
     template <typename FormatCtx>
-    auto format(rocblas_workmode value, FormatCtx& ctx)
+    auto format(rocsolver_logvalue<rocblas_workmode> wrapper, FormatCtx& ctx)
     {
-        return formatter<char>::format(rocblas2char_workmode(value), ctx);
+        return formatter<char>::format(rocblas2char_workmode(wrapper.value), ctx);
     }
 };
 template <>
-struct formatter<rocblas_svect> : formatter<char>
+struct formatter<rocsolver_logvalue<rocblas_svect>> : formatter<char>
 {
     template <typename FormatCtx>
-    auto format(rocblas_svect value, FormatCtx& ctx)
+    auto format(rocsolver_logvalue<rocblas_svect> wrapper, FormatCtx& ctx)
     {
-        return formatter<char>::format(rocblas2char_svect(value), ctx);
+        return formatter<char>::format(rocblas2char_svect(wrapper.value), ctx);
     }
 };
 template <>
-struct formatter<rocblas_evect> : formatter<char>
+struct formatter<rocsolver_logvalue<rocblas_evect>> : formatter<char>
 {
     template <typename FormatCtx>
-    auto format(rocblas_evect value, FormatCtx& ctx)
+    auto format(rocsolver_logvalue<rocblas_evect> wrapper, FormatCtx& ctx)
     {
-        return formatter<char>::format(rocblas2char_evect(value), ctx);
+        return formatter<char>::format(rocblas2char_evect(wrapper.value), ctx);
     }
 };
 template <>
-struct formatter<rocblas_eform> : formatter<char>
+struct formatter<rocsolver_logvalue<rocblas_eform>> : formatter<char>
 {
     template <typename FormatCtx>
-    auto format(rocblas_eform value, FormatCtx& ctx)
+    auto format(rocsolver_logvalue<rocblas_eform> wrapper, FormatCtx& ctx)
     {
-        return formatter<char>::format(rocblas2char_eform(value), ctx);
+        return formatter<char>::format(rocblas2char_eform(wrapper.value), ctx);
     }
 };
 template <>
-struct formatter<rocblas_datatype> : formatter<string_view>
+struct formatter<rocsolver_logvalue<rocblas_datatype>> : formatter<string_view>
 {
     template <typename FormatCtx>
-    auto format(rocblas_datatype value, FormatCtx& ctx)
+    auto format(rocsolver_logvalue<rocblas_datatype> wrapper, FormatCtx& ctx)
     {
-        return formatter<string_view>::format(rocblas2string_datatype(value), ctx);
+        return formatter<string_view>::format(rocblas2string_datatype(wrapper.value), ctx);
     }
 };
 template <>
-struct formatter<rocblas_initialization> : formatter<string_view>
+struct formatter<rocsolver_logvalue<rocblas_initialization>> : formatter<string_view>
 {
     template <typename FormatCtx>
-    auto format(rocblas_initialization value, FormatCtx& ctx)
+    auto format(rocsolver_logvalue<rocblas_initialization> wrapper, FormatCtx& ctx)
     {
-        return formatter<string_view>::format(rocblas2string_initialization(value), ctx);
+        return formatter<string_view>::format(rocblas2string_initialization(wrapper.value), ctx);
     }
 };
 }
