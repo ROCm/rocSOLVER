@@ -17,6 +17,19 @@
 // reallocate workspace
 #define USE_ROCBLAS_REALLOC_ON_DEMAND true
 
+template <typename T>
+constexpr double get_epsilon()
+{
+    using S = decltype(std::real(T{}));
+    return std::numeric_limits<S>::epsilon();
+}
+
+#ifdef GOOGLE_TEST
+#define ROCSOLVER_TEST_CHECK(T, max_error, tol) ASSERT_LE((max_error), (tol)*get_epsilon<T>())
+#else
+#define ROCSOLVER_TEST_CHECK(T, max_error, tol)
+#endif
+
 typedef enum rocsolver_inform_type_
 {
     inform_quick_return,

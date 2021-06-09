@@ -11,6 +11,8 @@
 #include <fmt/ostream.h>
 #include <hip/hip_runtime_api.h>
 
+#include "rocblascommon/utility.hpp"
+
 /*
  * ===========================================================================
  *    common location for functions that are used by both the rocSOLVER
