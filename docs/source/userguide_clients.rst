@@ -9,13 +9,13 @@ rocSOLVER has an infrastructure for testing and benchmarking similar to that of
 basic use of the library.
 
 Client binaries are not built by default; they require specific flags to be passed to the install script
-or CMake system. If the -c flag is passed to ``install.sh``, the client binaries will be located in the
-directory ``<rocsolverDIR>/build/release/clients/staging``. If both the -c and -g flags are passed to
+or CMake system. If the ``-c`` flag is passed to ``install.sh``, the client binaries will be located in the
+directory ``<rocsolverDIR>/build/release/clients/staging``. If both the ``-c`` and ``-g`` flags are passed to
 ``install.sh``, the client binaries will be located in ``<rocsolverDIR>/build/debug/clients/staging``.
-If the -DBUILD_CLIENTS_TESTS=ON flag, the -DBUILD_CLIENTS_BENCHMARKS=ON flag, and/or the -DBUILD_CLIENTS_SAMPLES=ON
-flag are passed to the CMake system, the relevant client binaries will normally be located in the directory
-``<rocsolverDIR>/build/clients/staging``. See the :ref:`Building and installation section <userguide_install>`
-of the User's Guide for more information on building the library and its clients.
+If the ``-DBUILD_CLIENTS_TESTS=ON`` flag, the ``-DBUILD_CLIENTS_BENCHMARKS=ON`` flag, and/or the
+``-DBUILD_CLIENTS_SAMPLES=ON`` flag are passed to the CMake system, the relevant client binaries will normally
+be located in the directory ``<rocsolverDIR>/build/clients/staging``. See the :ref:`Building and installation
+section <userguide_install>` of the User Guide for more information on building the library and its clients.
 
 .. toctree::
    :maxdepth: 4
@@ -31,10 +31,10 @@ Testing rocSOLVER
 ``rocsolver-test`` executes a suite of `Google tests <https://github.com/google/googletest>`_ (*gtest*) that
 verifies the correct functioning of the library. The results computed by rocSOLVER, given random input data,
 are compared with the results computed by `NETLib LAPACK <https://www.netlib.org/lapack/>`_ on the CPU. It
-will be built if the -c flag is passed to ``install.sh`` or if the -DBUILD_CLIENTS_TESTS=ON flag is passed to
-the CMake system.
+will be built if the ``-c`` flag is passed to ``install.sh`` or if the ``-DBUILD_CLIENTS_TESTS=ON`` flag is
+passed to the CMake system.
 
-Calling the rocSOLVER gtest client with the --help flag
+Calling the rocSOLVER gtest client with the ``--help`` flag
 
 .. code-block:: bash
 
@@ -42,7 +42,7 @@ Calling the rocSOLVER gtest client with the --help flag
 
 returns information on different flags that control the behavior of the gtests.
 
-One of the most useful flags is the --gtest_filter flag, which allows the user to choose which tests to run
+One of the most useful flags is the ``--gtest_filter`` flag, which allows the user to choose which tests to run
 from the suite. For example, the following command will run the tests for only geqrf:
 
 .. code-block:: bash
@@ -52,7 +52,7 @@ from the suite. For example, the following command will run the tests for only g
 Note that rocSOLVER's tests are divided into two separate groupings: ``checkin_lapack`` and ``daily_lapack``.
 Tests in the ``checkin_lapack`` group are small and quick to execute, and verify basic correctness and error
 handling. Tests in the ``daily_lapack`` group are large and slower to execute, and verify correctness of
-large problem sizes. Users may run one test group or the other using --gtest_filter, e.g.
+large problem sizes. Users may run one test group or the other using ``--gtest_filter``, e.g.
 
 .. code-block:: bash
 
@@ -65,10 +65,10 @@ Benchmarking rocSOLVER
 
 ``rocsolver-bench`` runs any rocSOLVER function with random data of the specified dimensions. It compares basic
 performance information (i.e. execution times) between `NETLib LAPACK <https://www.netlib.org/lapack/>`_ on the
-CPU and rocSOLVER on the GPU. It will be built if the -c flag is passed to ``install.sh`` or if the
--DBUILD_CLIENTS_BENCHMARKS=ON flag is passed to the CMake system.
+CPU and rocSOLVER on the GPU. It will be built if the ``-c`` flag is passed to ``install.sh`` or if the
+``-DBUILD_CLIENTS_BENCHMARKS=ON`` flag is passed to the CMake system.
 
-Calling the rocSOLVER bench client with the --help flag
+Calling the rocSOLVER bench client with the ``--help`` flag
 
 .. code-block:: bash
 
@@ -76,10 +76,10 @@ Calling the rocSOLVER bench client with the --help flag
 
 returns information on the different parameters and flags that control the behavior of the benchmark client.
 
-Two of the most important flags for ``rocsolver-bench`` are the -f and -r flags. The -f (or --function) flag
-allows the user to select which function to benchmark. The -r (or --precision) flag allows the user to select
-the data precision for the function, and can be one of s (single precision), d (double precision), c (single
-precision complex), or z (double precision complex).
+Two of the most important flags for ``rocsolver-bench`` are the ``-f`` and ``-r`` flags. The ``-f`` (or
+``--function``) flag allows the user to select which function to benchmark. The ``-r`` (or ``--precision``)
+flag allows the user to select the data precision for the function, and can be one of s (single precision),
+d (double precision), c (single precision complex), or z (double precision complex).
 
 The non-pointer arguments for a function can be passed to ``rocsolver-bench`` by using the argument name as
 a flag (see the :ref:`rocSOLVER API <library_api>` document for information on the function arguments and
@@ -113,10 +113,10 @@ equivalent to:
 
     ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100
 
-Other useful options include the --perf flag, which will disable the LAPACK computation and only time rocSOLVER;
-the --verify flag, which will calculate and print the error between the results of LAPACK and rocSOLVER; the
--i (or --iters) flag, which indicates the number of times to run the GPU timing loop; and the --profile flag, which
-enables profile logging and indicates the maximum depth of the nested output.
+Other useful options include the ``--perf`` flag, which will disable the LAPACK computation and only time rocSOLVER;
+the ``--verify`` flag, which will calculate and print the error between the results of LAPACK and rocSOLVER; the
+``-i`` (or ``--iters``) flag, which indicates the number of times to run the GPU timing loop; and the ``--profile``
+flag, which enables profile logging and indicates the maximum depth of the nested output.
 
 .. code-block:: bash
 
@@ -130,8 +130,8 @@ rocSOLVER sample code
 ==================================
 
 rocSOLVER's sample programs provide illustrative examples of how to work with the rocSOLVER library. They will be
-built if the -c flag is passed to ``install.sh`` or if the -DBUILD_CLIENTS_SAMPLES=ON flag is passed to the CMake
-system.
+built if the ``-c`` flag is passed to ``install.sh`` or if the ``-DBUILD_CLIENTS_SAMPLES=ON`` flag is passed to the
+CMake system.
 
 Currently, sample code exists to demonstrate the following:
 

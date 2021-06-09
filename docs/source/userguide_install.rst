@@ -81,7 +81,7 @@ is located at ``/opt/rocm/rocblas``.
 
     ./install.sh -g
 
-Use the -g flag to build in debug mode. In this case the generated library files will be located at
+Use the ``-g`` flag to build in debug mode. In this case the generated library files will be located at
 ``rocSOLVER/build/debug/rocsolver-install``.
 Other output files from the configuration
 and building process can also be found
@@ -102,7 +102,7 @@ The selected output directories must be
 local, otherwise the user may require sudo
 privileges.
 To install rocSOLVER system-wide, we
-recommend the use of the -i flag as shown
+recommend the use of the ``-i`` flag as shown
 below.
 
 .. code-block:: bash
@@ -119,7 +119,7 @@ will look for the rocBLAS library at
 
     ./install.sh -s
 
-With the -s flag, the installer will
+With the ``-s`` flag, the installer will
 generate a static library
 (``librocsolver.a``) instead.
 
@@ -127,7 +127,7 @@ generate a static library
 
     ./install.sh -d
 
-With the -d flag, the installer will first
+With the ``-d`` flag, the installer will first
 install all the external dependencies
 required by the rocSOLVER library in
 ``/usr/local``.
@@ -139,7 +139,7 @@ not necessary to rebuild the dependencies.
 
     ./install.sh -c
 
-With the -c flag, the installer will
+With the ``-c`` flag, the installer will
 additionally build the library clients
 ``rocsolver-bench`` and
 ``rocsolver-test``.
@@ -152,16 +152,16 @@ for the client have been installed.
 
     ./install.sh -dc
 
-By combining the -c and -d flags, the installer
+By combining the ``-c`` and ``-d`` flags, the installer
 will also install all the external
 dependencies required by rocSOLVER clients.
-Again, the -d flag only needs to be used once.
+Again, the ``-d`` flag only needs to be used once.
 
 .. code-block:: bash
 
     ./install.sh -i
 
-With the -i flag, the installer will
+With the ``-i`` flag, the installer will
 additionally
 generate a pre-built rocSOLVER package and
 install it, using a suitable package
@@ -176,7 +176,7 @@ package manager.
 
     ./install.sh -p
 
-With the -p flag, the installer will also
+With the ``-p`` flag, the installer will also
 generate the rocSOLVER package, but it will
 not be installed.
 
