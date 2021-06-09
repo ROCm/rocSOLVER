@@ -407,6 +407,7 @@ void gesvd_getPerfData(const rocblas_handle handle,
                        double* gpu_time_used,
                        double* cpu_time_used,
                        const rocblas_int hot_calls,
+                       const int profile,
                        const bool perf)
 {
     rocblas_int lwork = 5 * max(m, n);
@@ -441,6 +442,12 @@ void gesvd_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
+    if(profile > 0)
+    {
+        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        rocsolver_log_set_max_levels(profile);
+    }
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
@@ -738,7 +745,7 @@ void testing_gesvd(Arguments& argus)
             gesvd_getPerfData<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU,
                                           ldu, stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, hA, hS,
                                           hU, hV, hE, hinfo, &gpu_time_used, &cpu_time_used,
-                                          hot_calls, argus.perf);
+                                          hot_calls, argus.profile, argus.perf);
         }
     }
 
@@ -780,7 +787,7 @@ void testing_gesvd(Arguments& argus)
             gesvd_getPerfData<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU,
                                           ldu, stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, hA, hS,
                                           hU, hV, hE, hinfo, &gpu_time_used, &cpu_time_used,
-                                          hot_calls, argus.perf);
+                                          hot_calls, argus.profile, argus.perf);
         }
     }
 

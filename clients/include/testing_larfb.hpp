@@ -290,6 +290,7 @@ void larfb_getPerfData(const rocblas_handle handle,
                        double* gpu_time_used,
                        double* cpu_time_used,
                        const rocblas_int hot_calls,
+                       const int profile,
                        const bool perf)
 {
     bool left = (side == rocblas_side_left);
@@ -326,6 +327,12 @@ void larfb_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
+    if(profile > 0)
+    {
+        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        rocsolver_log_set_max_levels(profile);
+    }
 
     for(int iter = 0; iter < hot_calls; iter++)
     {
@@ -458,7 +465,8 @@ void testing_larfb(Arguments& argus)
     // collect performance data
     if(argus.timing)
         larfb_getPerfData<T>(handle, side, trans, direct, storev, m, n, k, dV, ldv, dT, ldt, dA,
-                             lda, hV, hT, hA, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
+                             lda, hV, hT, hA, &gpu_time_used, &cpu_time_used, hot_calls,
+                             argus.profile, argus.perf);
 
     // validate results for rocsolver-test
     // using s * machine_precision as tolerance

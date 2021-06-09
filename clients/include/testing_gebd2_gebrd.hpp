@@ -349,6 +349,7 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
                              double* gpu_time_used,
                              double* cpu_time_used,
                              const rocblas_int hot_calls,
+                             const int profile,
                              const bool perf)
 {
     std::vector<T> hW(max(m, n));
@@ -387,6 +388,12 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
+    if(profile > 0)
+    {
+        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        rocsolver_log_set_max_levels(profile);
+    }
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
@@ -528,8 +535,8 @@ void testing_gebd2_gebrd(Arguments& argus)
         // collect performance data
         if(argus.timing)
             gebd2_gebrd_getPerfData<STRIDED, GEBRD, S, T>(
-                handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, hA, hD,
-                hE, hTauq, hTaup, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
+                handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, hA, hD, hE,
+                hTauq, hTaup, &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
     }
 
     else
@@ -579,8 +586,8 @@ void testing_gebd2_gebrd(Arguments& argus)
         // collect performance data
         if(argus.timing)
             gebd2_gebrd_getPerfData<STRIDED, GEBRD, S, T>(
-                handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, hA, hD,
-                hE, hTauq, hTaup, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
+                handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ, dTaup, stP, bc, hA, hD, hE,
+                hTauq, hTaup, &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
     }
 
     // validate results for rocsolver-test
