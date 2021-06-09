@@ -4,9 +4,12 @@
 
 #pragma once
 
-#include <fmt/core.h>
-#include <hip/hip_runtime_api.h>
+#include <fstream>
 #include <string>
+
+#include <fmt/core.h>
+#include <fmt/ostream.h>
+#include <hip/hip_runtime_api.h>
 
 /*
  * ===========================================================================
@@ -51,9 +54,7 @@ void pairs_to_string(std::string& str, const char* sep, T1 arg1, T2 arg2, Ts... 
 /** Set of helpers to print out data hosted in the CPU and/or the GPU **/
 /***********************************************************************/
 
-// TODO: Fixup these helper functions for the transition from rocsolver_ostream to libfmt
-
-/*! \brief Print provided data into specified stream (real case)*/ /*
+/*! \brief Print provided data into specified stream (real case)*/
 template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
 void print_to_stream(std::ostream& os,
                      const std::string name,
@@ -62,25 +63,28 @@ void print_to_stream(std::ostream& os,
                      T* A,
                      const rocblas_int lda)
 {
+    std::string s;
     bool empty = name.empty();
     if(!empty)
-        os << m << "-by-" << n << " matrix: " << name << '\n';
+        s += fmt::format("{}-by-{} matrix: {}\n", m, n, name);
     for(int i = 0; i < m; i++)
     {
         if(!empty)
-            os << "    ";
+            s += "    ";
         for(int j = 0; j < n; j++)
         {
-            os << A[j * lda + i];
+            s += fmt::format("{}", A[j * lda + i]);
             if(j < n - 1)
-                os << ", ";
+                s += ", ";
         }
-        os << '\n';
+        s += '\n';
     }
-    os << std::endl;
-}*/
+    s += '\n';
+    os << s;
+    os.flush();
+}
 
-/*! \brief Print provided data into specified stream (complex cases)*/ /*
+/*! \brief Print provided data into specified stream (complex cases)*/
 template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
 void print_to_stream(std::ostream& os,
                      const std::string name,
@@ -89,25 +93,28 @@ void print_to_stream(std::ostream& os,
                      T* A,
                      const rocblas_int lda)
 {
+    std::string s;
     bool empty = name.empty();
     if(!empty)
-        os << m << "-by-" << n << " matrix: " << name << '\n';
+        s += fmt::format("{}-by-{} matrix: {}\n", m, n, name);
     for(int i = 0; i < m; i++)
     {
         if(!empty)
-            os << "    ";
+            s += "    ";
         for(int j = 0; j < n; j++)
         {
-            os << '[' << A[j * lda + i].real() << "+" << A[j * lda + i].imag() << "i]";
+            s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
             if(j < n - 1)
-                os << ", ";
+                s += ", ";
         }
-        os << '\n';
+        s += '\n';
     }
-    os << std::endl;
-}*/
+    s += '\n';
+    os << s;
+    os.flush();
+}
 
-/*! \brief Print data from a normal or strided_batched array on the GPU to screen*/ /*
+/*! \brief Print data from a normal or strided_batched array on the GPU to screen*/
 template <typename T>
 void print_device_matrix(std::ostream& os,
                          const std::string name,
@@ -122,9 +129,9 @@ void print_device_matrix(std::ostream& os,
     hipMemcpy(hA, A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
     print_to_stream<T>(os, name, m, n, hA, lda);
-}*/
+}
 
-/*! \brief Print data from a batched array on the GPU to screen*/ /*
+/*! \brief Print data from a batched array on the GPU to screen*/
 template <typename T>
 void print_device_matrix(std::ostream& os,
                          const std::string name,
@@ -141,9 +148,9 @@ void print_device_matrix(std::ostream& os,
     hipMemcpy(hA, AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
     print_to_stream<T>(os, name, m, n, hA, lda);
-}*/
+}
 
-/*! \brief Print data from a normal or strided_batched array on the GPU to file*/ /*
+/*! \brief Print data from a normal or strided_batched array on the GPU to file*/
 template <typename T>
 void print_device_matrix(const std::string file,
                          const rocblas_int m,
@@ -158,9 +165,9 @@ void print_device_matrix(const std::string file,
     hipMemcpy(hA, A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
     print_to_stream<T>(os, "", m, n, hA, lda);
-}*/
+}
 
-/*! \brief Print data from a batched array on the GPU to file*/ /*
+/*! \brief Print data from a batched array on the GPU to file*/
 template <typename T>
 void print_device_matrix(const std::string file,
                          const rocblas_int m,
@@ -177,9 +184,9 @@ void print_device_matrix(const std::string file,
     hipMemcpy(hA, AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
     print_to_stream<T>(os, "", m, n, hA, lda);
-}*/
+}
 
-/*! \brief Print data from a normal or strided_batched array on the CPU to screen*/ /*
+/*! \brief Print data from a normal or strided_batched array on the CPU to screen*/
 template <typename T>
 void print_host_matrix(std::ostream& os,
                        const std::string name,
@@ -191,9 +198,9 @@ void print_host_matrix(std::ostream& os,
                        const rocblas_int idx = 0)
 {
     print_to_stream<T>(os, name, m, n, A + idx * stride, lda);
-}*/
+}
 
-/*! \brief Print data from a batched array on the CPU to screen*/ /*
+/*! \brief Print data from a batched array on the CPU to screen*/
 template <typename T>
 void print_host_matrix(std::ostream& os,
                        const std::string name,
@@ -205,9 +212,9 @@ void print_host_matrix(std::ostream& os,
                        const rocblas_int idx = 0)
 {
     print_to_stream<T>(os, name, m, n, A[idx], lda);
-}*/
+}
 
-/*! \brief Print data from a normal or strided_batched array on the CPU to file*/ /*
+/*! \brief Print data from a normal or strided_batched array on the CPU to file*/
 template <typename T>
 void print_host_matrix(const std::string file,
                        const rocblas_int m,
@@ -219,9 +226,9 @@ void print_host_matrix(const std::string file,
 {
     std::ofstream os(file);
     print_to_stream<T>(os, "", m, n, A + idx * stride, lda);
-}*/
+}
 
-/*! \brief Print data from a batched array on the CPU to file*/ /*
+/*! \brief Print data from a batched array on the CPU to file*/
 template <typename T>
 void print_host_matrix(const std::string file,
                        const rocblas_int m,
@@ -233,11 +240,10 @@ void print_host_matrix(const std::string file,
 {
     std::ofstream os(file);
     print_to_stream<T>(os, "", m, n, A[idx], lda);
-}*/
+}
 
 /*! \brief  Debugging purpose, print out CPU and GPU result matrix */
 /*******************************************************************/
-/*
 template <typename T>
 void print_host_matrix(std::ostream& os,
                        const std::string name,
@@ -247,15 +253,18 @@ void print_host_matrix(std::ostream& os,
                        T* GPU_result,
                        const rocblas_int lda)
 {
+    std::string s;
     for(size_t i = 0; i < m; i++)
     {
         for(size_t j = 0; j < n; j++)
         {
-            os << "matrix  col " << i << ", row " << j << ", CPU result=" << CPU_result[j + i * lda]
-               << ", GPU result=" << GPU_result[j + i * lda] << '\n';
+            s += fmt::format("matrix  col {}, row {}, CPU result={}, GPU result={}\n", i, j,
+                             CPU_result[j + i * lda], GPU_result[j + i * lda]);
         }
     }
-    os << std::endl;
+    s += '\n';
+    os << s;
+    os.flush();
 }
 
 template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
@@ -268,18 +277,20 @@ void print_host_matrix(std::ostream& os,
                        const rocblas_int lda,
                        double error_tolerance)
 {
+    std::string s;
     for(size_t i = 0; i < m; i++)
     {
         for(size_t j = 0; j < n; j++)
         {
             T comp = (CPU_result[j + i * lda] - GPU_result[j + i * lda]) / CPU_result[j + i * lda];
             if(abs(comp) > error_tolerance)
-                os << "matrix  col " << i << ", row " << j
-                   << ", CPU result=" << CPU_result[j + i * lda]
-                   << ", GPU result=" << GPU_result[j + i * lda] << '\n';
+                s += fmt::format("matrix  col {}, row {}, CPU result={}, GPU result={}\n", i, j,
+                                 CPU_result[j + i * lda], GPU_result[j + i * lda]);
         }
     }
-    os << std::endl;
+    s += '\n';
+    os << s;
+    os.flush();
 }
 
 template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
@@ -292,16 +303,18 @@ void print_host_matrix(std::ostream& os,
                        const rocblas_int lda,
                        double error_tolerance)
 {
+    std::string s;
     for(size_t i = 0; i < m; i++)
     {
         for(size_t j = 0; j < n; j++)
         {
             T comp = (CPU_result[j + i * lda] - GPU_result[j + i * lda]) / CPU_result[j + i * lda];
             if(sqrt(comp.real() * comp.real() + comp.imag() * comp.imag()) > error_tolerance)
-                os << "matrix  col " << i << ", row " << j
-                   << ", CPU result=" << CPU_result[j + i * lda]
-                   << ", GPU result=" << GPU_result[j + i * lda] << '\n';
+                s += fmt::format("matrix  col {}, row {}, CPU result={}, GPU result={}\n", i, j,
+                                 CPU_result[j + i * lda], GPU_result[j + i * lda]);
         }
     }
-    os << std::endl;
-}*/
+    s += '\n';
+    os << s;
+    os.flush();
+}

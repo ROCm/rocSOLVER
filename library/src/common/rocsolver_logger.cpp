@@ -132,7 +132,7 @@ rocblas_status rocsolver_log_write_profile(void)
 
     auto logger = rocsolver_logger::_instance;
 
-    // print and clear profile logging results
+    // print profile logging results
     if(logger->layer_mode & rocblas_layer_mode_log_profile && !logger->profile.empty())
     {
         std::string profile_str;
