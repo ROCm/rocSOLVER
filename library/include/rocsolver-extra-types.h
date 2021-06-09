@@ -66,9 +66,9 @@ typedef enum rocblas_evect_
  ********************************************************************************/
 typedef enum rocblas_eform_
 {
-    rocblas_eform_ax = 221, /**< The problem is A*x = lambda*B*x. */
-    rocblas_eform_abx = 222, /**< The problem is A*B*x = lambda*x. */
-    rocblas_eform_bax = 223, /**< The problem is B*A*x = lambda*x. */
+    rocblas_eform_ax = 221, /**< The problem is \f$Ax = \lambda Bx\f$. */
+    rocblas_eform_abx = 222, /**< The problem is \f$ABx = \lambda x\f$. */
+    rocblas_eform_bax = 223, /**< The problem is \f$BAx = \lambda x\f$. */
 } rocblas_eform;
 
 #endif /* ROCSOLVER_EXTRAS_H_ */

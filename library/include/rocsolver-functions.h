@@ -14478,7 +14478,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_outofplace_batched(rocblas_hand
 //! @}
 
 /*! @{
-    \brief GETRI_OUTOFPLACE_STRIDED_BATCHED computes the inverse C_j = inv(A_j) of a batch of general n-by-n matrices A_j.
+    \brief GETRI_OUTOFPLACE_STRIDED_BATCHED computes the inverse \f$C_j = A_j^{-1}\f$ of a batch of general n-by-n matrices \f$A_j\f$.
 
     \details
     The inverse is computed by solving the linear system
