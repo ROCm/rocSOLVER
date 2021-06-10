@@ -36,6 +36,8 @@ Bench logging outputs a line each time a public rocSOLVER routine is called (exc
 auxiliary library functions), outputting a line that can be used with the executable
 ``rocsolver-bench`` to call the function with the same size arguments.
 
+.. _log_profile:
+
 Profile logging
 -------------------
 
@@ -96,6 +98,59 @@ will also output the results of profile logging.
 
 For more details on the mentioned logging functions, see the :ref:`Logging functions section <api_logging>`
 on the rocSOLVER API document.
+
+
+Example code
+================================================
+
+Code examples that illustrate the use of rocSOLVER's multi-level logging facilities can be found
+in this section or in the ``example_logging.cpp`` file in the ``clients/samples`` directory.
+
+The following example shows some basic use: enabling trace and profile logging, and setting the
+max depth for their output.
+
+.. code-block:: cpp
+
+   // initialization
+   rocblas_handle handle;
+   rocblas_create_handle(&handle);
+   rocsolver_log_begin();
+
+   // begin trace logging and profile logging (max depth = 5)
+   rocsolver_log_set_layer_mode(rocblas_layer_mode_log_trace | rocblas_layer_mode_log_profile);
+   rocsolver_log_set_max_levels(5);
+
+   // call rocSOLVER functions...
+
+   // terminate logging and print profile results
+   rocsolver_log_flush_profile();
+   rocsolver_log_end();
+   rocblas_destroy_handle(handle);
+
+Alternatively, users may control which logging modes are enabled by using environment variables.
+The benefit of this approach is that the program does not need to be recompiled if a different
+logging environment is desired. This requires that ``rocsolver_log_set_layer_mode`` and
+``rocsolver_log_set_max_levels`` are not called in the code, e.g.
+
+.. code-block:: cpp
+
+   // initialization
+   rocblas_handle handle;
+   rocblas_create_handle(&handle);
+   rocsolver_log_begin();
+
+   // call rocSOLVER functions...
+
+   // termination
+   rocsolver_log_end();
+   rocblas_destroy_handle(handle);
+
+The user may then set the desired logging modes and max depth on the command line as follows:
+
+.. code-block:: bash
+
+   export ROCSOLVER_LAYER=5
+   export ROCSOLVER_LEVELS=5
 
 
 Multiple host threads
