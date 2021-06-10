@@ -28,10 +28,10 @@ section <userguide_install>` of the User Guide for more information on building 
 Testing rocSOLVER
 ==========================
 
-``rocsolver-test`` executes a suite of `Google tests <https://github.com/google/googletest>`_ (*gtest*) that
+The ``rocsolver-test`` client executes a suite of `Google tests <https://github.com/google/googletest>`_ (*gtest*) that
 verifies the correct functioning of the library. The results computed by rocSOLVER, given random input data,
-are compared with the results computed by `NETLib LAPACK <https://www.netlib.org/lapack/>`_ on the CPU. It
-will be built if the ``-c`` flag is passed to ``install.sh`` or if the ``-DBUILD_CLIENTS_TESTS=ON`` flag is
+are normally compared with the results computed by `NETLib LAPACK <https://www.netlib.org/lapack/>`_ on the CPU, or tested implicitly 
+in the context of the solved problem. It will be built if the ``-c`` flag is passed to ``install.sh`` or if the ``-DBUILD_CLIENTS_TESTS=ON`` flag is
 passed to the CMake system.
 
 Calling the rocSOLVER gtest client with the ``--help`` flag
@@ -63,7 +63,7 @@ large problem sizes. Users may run one test group or the other using ``--gtest_f
 Benchmarking rocSOLVER
 ==================================
 
-``rocsolver-bench`` runs any rocSOLVER function with random data of the specified dimensions. It compares basic
+The ``rocsolver-bench`` client runs any rocSOLVER function with random data of the specified dimensions. It compares basic
 performance information (i.e. execution times) between `NETLib LAPACK <https://www.netlib.org/lapack/>`_ on the
 CPU and rocSOLVER on the GPU. It will be built if the ``-c`` flag is passed to ``install.sh`` or if the
 ``-DBUILD_CLIENTS_BENCHMARKS=ON`` flag is passed to the CMake system.
@@ -113,17 +113,26 @@ equivalent to:
 
     ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100
 
-Other useful options include the ``--perf`` flag, which will disable the LAPACK computation and only time rocSOLVER;
-the ``--verify`` flag, which will calculate and print the error between the results of LAPACK and rocSOLVER; the
-``-i`` (or ``--iters``) flag, which indicates the number of times to run the GPU timing loop; and the ``--profile``
-flag, which enables profile logging and indicates the maximum depth of the nested output.
+Other useful benchmarking options include the ``--perf`` flag, which will disable the LAPACK computation and only time \
+and print the rocSOLVER performance result; the ``-i`` (or ``--iters``) flag, which indicates the number of times to run the 
+GPU timing loop (the performance result would be the average of all the runs); and the ``--profile``
+flag, which enables :ref:`profile logging <log_profile>` indicating the maximum depth of the nested output.
 
 .. code-block:: bash
 
     ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100 --perf 1
-    ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100 --verify 1
     ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100 --iters 20
     ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100 --profile 5
+
+In addition to the benchmarking functionality, the rocSOLVER bench client can also provide the norm of the error in the 
+computations when the ``-v`` (or ``--verify``) flag is used; and return the amount of device memory required as workspace for the given function, if the
+``--mem_query`` flag is passed. 
+
+.. code-block:: bash
+
+    ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100 --verify 1
+    ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100 --mem_query 1
+
 
 
 rocSOLVER sample code
@@ -135,7 +144,7 @@ CMake system.
 
 Currently, sample code exists to demonstrate the following:
 
-* Basic use of rocSOLVER in C, C++, and Fortran, using the example of geqrf;
-* Use of rocSOLVER with the Heterogeneous Memory Management (HMM) model; and
-* Use of rocSOLVER's multi-level logging functionality.
+* Basic use of rocSOLVER in C, C++, and Fortran, using the example of :ref:`rocsolver_geqrf <geqrf>`;
+* Use of rocSOLVER with the Heterogeneous Memory Management (HMM) model ; and
+* Use of rocSOLVER's :ref:`multi-level logging <logging-label>` functionality.
 

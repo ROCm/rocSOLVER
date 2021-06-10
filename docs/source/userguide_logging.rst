@@ -36,6 +36,8 @@ Bench logging outputs a line each time a public rocSOLVER routine is called (exc
 auxiliary library functions), outputting a line that can be used with the executable
 ``rocsolver-bench`` to call the function with the same size arguments.
 
+.. _log_profile:
+
 Profile logging
 -------------------
 

@@ -1,3 +1,4 @@
+.. _userguide_install:
 
 *****************************
 Building and Installation
