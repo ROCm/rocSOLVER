@@ -4,8 +4,8 @@ Types
 *******
 
 rocSOLVER uses types and enumerations defined by the rocBLAS API. For more information, see the
-`rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_. In this 
-section we present additional types, only used in rocSOLVER, that extend the rocBLAS API.
+`rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_ documentation. 
+Next we present additional types, only used in rocSOLVER, that extend the rocBLAS API.
 
 
 Additional types
