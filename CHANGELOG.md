@@ -2,7 +2,7 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## [(unreleased) rocSOLVER for ROCm 4.4.0]
+## [rocSOLVER 3.14.0 for ROCm 4.4.0]
 ### Added
 - Eigensolver routines for symmetric/hermitian matrices using Divide and Conquer algorithm:
     - STEDC
@@ -15,18 +15,10 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
   by a function.
 - Added --profile option to rocsolver-bench, which will print profile logging results for a function.
 
-### Optimizations
-
 ### Changed
 - The -h option of install.sh now prints a help message, instead of doing nothing.
 - libfmt 7.1 is now a dependency
 - Raised minimum requirement for building rocSOLVER from source to CMake 3.13
-
-### Removed
-
-### Fixed
-
-### Known Issues
 
 
 ## [rocSOLVER 3.13.0 for ROCm 4.3.0]
@@ -44,15 +36,11 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Changed
 - Argument names for the benchmark client now match argument names from the public API
 
-### Removed
-
 ### Fixed
 - Fixed known issues with Thin-SVD. The problem was identified in the test specification, not in the thin-SVD
   implementation or the rocBLAS gemm\_batched routines.
 - Benchmark client will no longer crash as a result of leading dimension or stride arguments not being provided
   on the command line.
-
-### Known Issues
 
 
 ## [rocSOLVER 3.12.0 for ROCm 4.2.0]
@@ -68,8 +56,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Generalized symmetric- and hermitian-definite eigensolvers:
     - SYGV (with batched and strided\_batched versions)
     - HEGV (with batched and strided\_batched versions)
-
-### Optimizations
 
 ### Changed
 - Sorting method in STERF as original quick-sort was failing for large sizes.
@@ -140,7 +126,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Returned values in parameter info of functions dealing with singularities
 
 
-
 ## [rocSOLVER 3.9.0 for ROCm 3.9.0]
 ### Added
 - Improved debug build mode for developers
@@ -151,7 +136,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ### Optimizations
 - Improved performance of mid-size matrix inversion (64 < n <= 2048)
-
 
 
 ## [rocSOLVER 3.8.0 for ROCm 3.8.0]
@@ -179,7 +163,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Ensure congruency on the input data when executing performance tests (benchmarks)
 
 
-
 ## [rocSOLVER 3.6.0 for ROCm 3.6.0]
 ### Added
 - Complex precision support for all existing rocSOLVER functions
@@ -193,7 +176,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ### Changed
 - Major clients refactoring to achieve better test coverage and benchmarking
-
 
 
 ## [rocSOLVER 3.5.0 for ROCm 3.5.0]
