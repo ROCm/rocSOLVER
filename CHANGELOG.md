@@ -2,6 +2,14 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
+## [(unreleased) rocSOLVER for ROCm 4.5.0]
+### Added
+### Optimizations
+### Changed
+### Removed
+### Fixed
+### Known Issues
+
 ## [rocSOLVER 3.14.0 for ROCm 4.4.0]
 ### Added
 - Eigensolver routines for symmetric/hermitian matrices using Divide and Conquer algorithm:
@@ -11,7 +19,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Generalized symmetric- and hermitian-definite eigensolvers using Divide and Conquer algorithm:
     - SYGVD (with batched and strided\_batched versions)
     - HEGVD (with batched and strided\_batched versions)
-- Added --mem_query option to rocsolver-bench, which will print the amount of device memory required
+- Added --mem\_query option to rocsolver-bench, which will print the amount of device memory required
   by a function.
 - Added --profile option to rocsolver-bench, which will print profile logging results for a function.
 
