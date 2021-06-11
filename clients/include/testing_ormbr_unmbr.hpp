@@ -237,6 +237,7 @@ void ormbr_unmbr_getPerfData(const rocblas_handle handle,
                              double* gpu_time_used,
                              double* cpu_time_used,
                              const rocblas_int hot_calls,
+                             const int profile,
                              const bool perf)
 {
     size_t size_W = max(max(m, n), k);
@@ -271,6 +272,12 @@ void ormbr_unmbr_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
+    if(profile > 0)
+    {
+        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        rocsolver_log_set_max_levels(profile);
+    }
 
     for(int iter = 0; iter < hot_calls; iter++)
     {
@@ -409,8 +416,9 @@ void testing_ormbr_unmbr(Arguments& argus)
 
     // collect performance data
     if(argus.timing)
-        ormbr_unmbr_getPerfData<T>(handle, storev, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc, hA,
-                                   hIpiv, hC, &gpu_time_used, &cpu_time_used, hot_calls, argus.perf);
+        ormbr_unmbr_getPerfData<T>(handle, storev, side, trans, m, n, k, dA, lda, dIpiv, dC, ldc,
+                                   hA, hIpiv, hC, &gpu_time_used, &cpu_time_used, hot_calls,
+                                   argus.profile, argus.perf);
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance

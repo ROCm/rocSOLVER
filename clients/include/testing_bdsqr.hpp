@@ -348,6 +348,7 @@ void bdsqr_getPerfData(const rocblas_handle handle,
                        double* gpu_time_used,
                        double* cpu_time_used,
                        const rocblas_int hot_calls,
+                       const int profile,
                        const bool perf)
 {
     using S = decltype(std::real(T{}));
@@ -385,6 +386,12 @@ void bdsqr_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
+    if(profile > 0)
+    {
+        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        rocsolver_log_set_max_levels(profile);
+    }
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
@@ -574,7 +581,7 @@ void testing_bdsqr(Arguments& argus)
 
         bdsqr_getPerfData<T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc, dInfo,
                              hD, hE, hV, hU, hC, hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
-                             argus.perf);
+                             argus.profile, argus.perf);
     }
 
     // validate results for rocsolver-test
