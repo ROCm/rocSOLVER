@@ -2,11 +2,13 @@
  * Copyright (c) 2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "rocsolver_logger.hpp"
-#include "rocblascommon/utility.hpp"
 #include <cerrno>
 #include <climits>
 #include <cstdlib>
+#include <iostream>
+
+#include "rocblascommon/utility.hpp"
+#include "rocsolver_logger.hpp"
 
 #define STRINGIFY(s) STRINGIFY_HELPER(s)
 #define STRINGIFY_HELPER(s) #s
@@ -19,32 +21,31 @@ std::mutex rocsolver_logger::_mutex;
  * Open logging streams
  ***************************************************************************/
 
-std::unique_ptr<rocsolver_ostream>
-    rocsolver_logger::open_log_stream(const char* environment_variable_name)
+std::ostream* rocsolver_logger::open_log_stream(const char* environment_variable)
 {
     const char* logfile;
-    if((logfile = std::getenv(environment_variable_name)) != nullptr
+    if((logfile = std::getenv(environment_variable)) != nullptr
        || (logfile = std::getenv("ROCSOLVER_LOG_PATH")) != nullptr)
     {
-        auto os = std::make_unique<rocsolver_ostream>(logfile);
+        file_streams.emplace_front(logfile, std::ios::out | std::ios::app | std::ios::trunc);
+        std::ostream& os = file_streams.front();
 
         // print version info only once per file
-        if(os != trace_os && os != bench_os && os != profile_os)
+        if(&os != trace_os && &os != bench_os && &os != profile_os)
         {
-            *os << "ROCSOLVER LOG FILE" << '\n';
-            *os << "rocSOLVER Version: " << STRINGIFY(ROCSOLVER_VERSION_MAJOR) << '.'
-                << STRINGIFY(ROCSOLVER_VERSION_MINOR) << '.' << STRINGIFY(ROCSOLVER_VERSION_PATCH)
-                << '.' << STRINGIFY(ROCSOLVER_VERSION_TWEAK) << '\n';
-            *os << "rocBLAS Version: " << STRINGIFY(ROCBLAS_VERSION_MAJOR) << '.'
-                << STRINGIFY(ROCBLAS_VERSION_MINOR) << '.' << STRINGIFY(ROCBLAS_VERSION_PATCH)
-                << '.' << STRINGIFY(ROCBLAS_VERSION_TWEAK) << '\n';
-            *os << std::endl;
+            fmt::print(os,
+                       "ROCSOLVER LOG FILE\n"
+                       "rocSOLVER Version: {}.{}.{}.{}\nrocBLAS Version: {}.{}.{}.{}\n",
+                       STRINGIFY(ROCSOLVER_VERSION_MAJOR), STRINGIFY(ROCSOLVER_VERSION_MINOR),
+                       STRINGIFY(ROCSOLVER_VERSION_PATCH), STRINGIFY(ROCSOLVER_VERSION_TWEAK),
+                       STRINGIFY(ROCBLAS_VERSION_MAJOR), STRINGIFY(ROCBLAS_VERSION_MINOR),
+                       STRINGIFY(ROCBLAS_VERSION_PATCH), STRINGIFY(ROCBLAS_VERSION_TWEAK));
+            os.flush();
         }
-
-        return os;
+        return &os;
     }
     else
-        return std::make_unique<rocsolver_ostream>(STDERR_FILENO);
+        return &std::cerr;
 }
 
 /***************************************************************************
@@ -90,17 +91,20 @@ rocsolver_log_entry rocsolver_logger::pop_log_entry(rocblas_handle handle)
  * Profile log printing
  ***************************************************************************/
 
-void rocsolver_logger::write_profile(rocsolver_profile_map::iterator start,
-                                     rocsolver_profile_map::iterator end)
+void rocsolver_logger::append_profile(std::string& str,
+                                      rocsolver_profile_map::iterator start,
+                                      rocsolver_profile_map::iterator end)
 {
     for(auto it = start; it != end; ++it)
     {
         rocsolver_profile_entry& entry = it->second;
-        for(int i = 0; i < entry.level - 1; i++)
-            *profile_os << "    ";
 
-        *profile_os << it->first << ": Calls: " << entry.calls
-                    << ", Total Time: " << (entry.time * 0.001) << " ms";
+        constexpr int shift_width = 4;
+        int indent_level = entry.level - 1;
+        int indent = shift_width * indent_level;
+
+        str += fmt::format("{: <{}}{}: Calls: {}, Total Time: {:.3f} ms", "", indent, it->first,
+                           entry.calls, entry.time * 1e-3);
 
         if(entry.internal_calls)
         {
@@ -108,13 +112,13 @@ void rocsolver_logger::write_profile(rocsolver_profile_map::iterator start,
             for(const auto& nested : *entry.internal_calls)
                 internal_time += nested.second.time;
 
-            *profile_os << " (in nested functions: " << (internal_time * 0.001) << " ms)" << '\n';
+            str += fmt::format(" (in nested functions: {:.3f} ms)\n", internal_time * 1e-3);
 
             if(entry.level < max_levels)
-                write_profile(entry.internal_calls->begin(), entry.internal_calls->end());
+                append_profile(str, entry.internal_calls->begin(), entry.internal_calls->end());
         }
         else
-            *profile_os << '\n';
+            str += '\n';
     }
 }
 
@@ -131,11 +135,11 @@ rocblas_status rocsolver_log_write_profile(void)
     // print profile logging results
     if(logger->layer_mode & rocblas_layer_mode_log_profile && !logger->profile.empty())
     {
-        *logger->profile_os << "------- PROFILE -------" << '\n';
-        logger->write_profile(logger->profile.begin(), logger->profile.end());
-        *logger->profile_os << std::endl;
+        std::string profile_str;
+        logger->append_profile(profile_str, logger->profile.begin(), logger->profile.end());
+        fmt::print(*logger->profile_os, "------- PROFILE -------\n{}\n", profile_str);
+        logger->profile_os->flush();
     }
-
     return rocblas_status_success;
 }
 
@@ -152,13 +156,13 @@ rocblas_status rocsolver_log_flush_profile(void)
     // print and clear profile logging results
     if(logger->layer_mode & rocblas_layer_mode_log_profile && !logger->profile.empty())
     {
-        *logger->profile_os << "------- PROFILE -------" << '\n';
-        logger->write_profile(logger->profile.begin(), logger->profile.end());
-        *logger->profile_os << std::endl;
+        std::string profile_str;
+        logger->append_profile(profile_str, logger->profile.begin(), logger->profile.end());
+        fmt::print(*logger->profile_os, "------- PROFILE -------\n{}\n", profile_str);
+        logger->profile_os->flush();
 
         logger->profile.clear();
     }
-
     return rocblas_status_success;
 }
 
@@ -235,9 +239,10 @@ try
     // print profile logging results
     if(logger->layer_mode & rocblas_layer_mode_log_profile && !logger->profile.empty())
     {
-        *logger->profile_os << "------- PROFILE -------" << '\n';
-        logger->write_profile(logger->profile.begin(), logger->profile.end());
-        *logger->profile_os << std::endl;
+        std::string profile_str;
+        logger->append_profile(profile_str, logger->profile.begin(), logger->profile.end());
+        fmt::print(*logger->profile_os, "------- PROFILE -------\n{}\n", profile_str);
+        logger->profile_os->flush();
     }
 
     // delete the logger

@@ -4,13 +4,15 @@
 
 #pragma once
 
-#include "rocblas.h"
-#include "rocblas_math.hpp"
-#include "rocblas_random.hpp"
-#include "rocsolver_ostream.hpp"
 #include <cinttypes>
 #include <iostream>
 #include <vector>
+
+#include <fmt/core.h>
+#include <rocblas.h>
+
+#include "rocblas_math.hpp"
+#include "rocblas_random.hpp"
 
 /* ============================================================================================
  */
@@ -234,7 +236,7 @@ template <typename T>
 void rocblas_packInt8(std::vector<T>& A, size_t M, size_t N, size_t batch_count, size_t lda, size_t stride_a)
 {
     if(N % 4 != 0)
-        rocsolver_cerr << "ERROR: dimension must be a multiple of 4 in order to pack" << std::endl;
+        fmt::print(stderr, "ERROR: dimension must be a multiple of 4 in order to pack\n");
 
     std::vector<T> temp(A);
     for(size_t count = 0; count < batch_count; count++)

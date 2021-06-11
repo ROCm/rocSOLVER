@@ -1,11 +1,13 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
 
-#include "rocblas_init.hpp"
+#include <ostream>
 #include <string.h>
+
+#include "rocblas_init.hpp"
 
 //
 // Local declaration of the device batch vector.
@@ -245,7 +247,7 @@ private:
 //! @param that That host batch vector.
 //!
 template <typename T>
-rocsolver_ostream& operator<<(rocsolver_ostream& os, const host_batch_vector<T>& that)
+std::ostream& operator<<(std::ostream& os, const host_batch_vector<T>& that)
 {
     auto n = that.n();
     auto inc = std::abs(that.inc());
@@ -261,6 +263,5 @@ rocsolver_ostream& operator<<(rocsolver_ostream& os, const host_batch_vector<T>&
         }
         os << " }" << std::endl;
     }
-
     return os;
 }

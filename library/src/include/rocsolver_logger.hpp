@@ -4,12 +4,22 @@
 
 #pragma once
 
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <fmt/ranges.h>
+#include <forward_list>
+#include <fstream>
+#include <memory>
+#include <mutex>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
+
 #include "common_host_helpers.hpp"
 #include "lib_host_helpers.hpp"
 #include "rocsolver.h"
-#include <memory>
-#include <mutex>
-#include <unordered_map>
+#include "rocsolver_datatype2string.hpp"
+#include "rocsolver_logvalue.hpp"
 
 /***************************************************************************
  * rocSOLVER logging macros
@@ -120,12 +130,14 @@ private:
     // layer mode enum describing which logging facilities are enabled
     rocblas_layer_mode_flags layer_mode;
     // streams for different logging types
-    std::unique_ptr<rocsolver_ostream> trace_os;
-    std::unique_ptr<rocsolver_ostream> bench_os;
-    std::unique_ptr<rocsolver_ostream> profile_os;
+    std::ostream* trace_os;
+    std::ostream* bench_os;
+    std::ostream* profile_os;
+    std::forward_list<std::ofstream> file_streams;
+    std::string trace_str;
 
     // returns a unique_ptr to a file stream or a given default stream
-    std::unique_ptr<rocsolver_ostream> open_log_stream(const char* environment_variable_name);
+    std::ostream* open_log_stream(const char* environment_variable);
 
     // returns a log entry on the call stack
     rocsolver_log_entry& push_log_entry(rocblas_handle handle, std::string&& name);
@@ -133,47 +145,43 @@ private:
     rocsolver_log_entry pop_log_entry(rocblas_handle handle);
 
     // prints the results of profile logging
-    void write_profile(rocsolver_profile_map::iterator start, rocsolver_profile_map::iterator end);
+    void append_profile(std::string& str,
+                        rocsolver_profile_map::iterator start,
+                        rocsolver_profile_map::iterator end);
 
     // combines a function prefix and name into an std::string
     template <typename T>
     std::string get_func_name(const char* func_prefix, const char* func_name)
     {
-        std::string result(func_prefix);
-        result += '_';
-        result += rocblas2char_precision<T>;
-        result += func_name;
-        return result;
+        return fmt::format("{}_{}{}", func_prefix, rocblas2char_precision<T>, func_name);
     }
     std::string get_template_name(const char* func_prefix, const char* func_name)
     {
-        std::string result(func_prefix);
-        result += '_';
-        result += func_name;
-        result += "_template";
-        return result;
+        return fmt::format("{}_{}_template", func_prefix, func_name);
     }
 
     // outputs bench logging
     template <typename T, typename... Ts>
     void log_bench(int level, const char* func_prefix, const char* func_name, Ts... args)
     {
-        *bench_os << "./rocsolver-bench -f " << func_name << " -r "
-                  << rocblas2char_precision<T> << ' ';
-        print_pairs(*bench_os, " ", args...);
-        *bench_os << std::endl;
+        fmt::print(*bench_os, "./rocsolver-bench -f {} -r {} {}\n", func_name,
+                   rocblas2char_precision<T>, fmt::join(std::tie(args...), " "));
+        bench_os->flush();
     }
 
     // outputs trace logging
     template <typename T, typename... Ts>
     void log_trace(int level, const char* func_prefix, const char* func_name, Ts... args)
     {
-        for(int i = 0; i < level - 1; i++)
-            *trace_os << "    ";
+        constexpr int shift_width = 4;
+        int indent_level = level - 1;
+        int indent = shift_width * indent_level;
 
-        *trace_os << get_template_name(func_prefix, func_name) << " (";
-        print_pairs(*trace_os, ", ", args...);
-        *trace_os << ')' << '\n';
+        std::string pairs;
+        pairs_to_string(pairs, ", ", args...);
+
+        trace_str += fmt::format("{: <{}}{} ({})\n", "", indent,
+                                 get_template_name(func_prefix, func_name), pairs);
     }
 
     // populates profile logging data with information from call_stack
@@ -238,11 +246,10 @@ public:
         ROCSOLVER_ASSUME(entry.level == 0);
 
         if(bench_enabled)
-            log_bench<T>(entry.level, func_prefix, func_name, args...);
+            log_bench<T>(entry.level, func_prefix, func_name, rocsolver_make_logvalue(args)...);
 
         if(trace_enabled)
-            *trace_os << "------- ENTER " << entry.name << " trace tree"
-                      << " -------\n";
+            trace_str += fmt::format("------- ENTER {} trace tree -------\n", entry.name);
     }
 
     // logging function to be called before exiting a top-level (i.e. impl) function
@@ -256,9 +263,12 @@ public:
         ROCSOLVER_ASSUME(entry.level == 0);
 
         if(trace_enabled)
-            *trace_os << "------- EXIT " << entry.name << " trace tree"
-                      << " -------\n"
-                      << std::endl;
+        {
+            trace_str += fmt::format("------- EXIT {} trace tree -------\n\n", entry.name);
+            *trace_os << trace_str;
+            trace_str.clear();
+            trace_os->flush();
+        }
     }
 
     // logging function to be called upon entering a sub-level (i.e. template) function
@@ -271,7 +281,7 @@ public:
         lock.unlock();
 
         if(trace_enabled)
-            log_trace<T>(entry.level, func_prefix, func_name, args...);
+            log_trace<T>(entry.level, func_prefix, func_name, rocsolver_make_logvalue(args)...);
     }
 
     // logging function to be called before exiting a sub-level (i.e. template) function

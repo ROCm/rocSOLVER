@@ -187,7 +187,8 @@ void testing_managed_malloc(Arguments& argus)
     hipDeviceGetAttribute(&hmm_enabled, hipDeviceAttributeManagedMemory, deviceID);
     if(!hmm_enabled)
     {
-        rocsolver_cout << "Managed memory not enabled on device. Skipping test..." << std::endl;
+        std::puts("Managed memory not enabled on device. Skipping test...");
+        std::fflush(stdout);
         return;
     }
 
@@ -297,14 +298,10 @@ void testing_managed_malloc(Arguments& argus)
     {
         if(!argus.perf)
         {
-            rocsolver_cout << "\n============================================\n";
-            rocsolver_cout << "Arguments:\n";
-            rocsolver_cout << "============================================\n";
+            rocsolver_bench_header("Arguments:");
             rocsolver_bench_output("m", "n", "nb", "lda", "ldx", "ldy");
             rocsolver_bench_output(m, n, nb, lda, ldx, ldy);
-            rocsolver_cout << "\n============================================\n";
-            rocsolver_cout << "Results:\n";
-            rocsolver_cout << "============================================\n";
+            rocsolver_bench_header("Results:");
             if(argus.norm_check)
             {
                 rocsolver_bench_output("cpu_time", "gpu_time", "error");
@@ -315,7 +312,7 @@ void testing_managed_malloc(Arguments& argus)
                 rocsolver_bench_output("cpu_time", "gpu_time");
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
-            rocsolver_cout << std::endl;
+            rocsolver_bench_endl();
         }
         else
         {

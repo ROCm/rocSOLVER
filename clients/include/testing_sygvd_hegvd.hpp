@@ -714,9 +714,7 @@ void testing_sygvd_hegvd(Arguments& argus)
     {
         if(!argus.perf)
         {
-            rocsolver_cout << "\n============================================\n";
-            rocsolver_cout << "Arguments:\n";
-            rocsolver_cout << "============================================\n";
+            rocsolver_bench_header("Arguments:");
             if(BATCHED)
             {
                 rocsolver_bench_output("itype", "evect", "uplo", "n", "lda", "ldb", "strideD",
@@ -734,9 +732,7 @@ void testing_sygvd_hegvd(Arguments& argus)
                 rocsolver_bench_output("itype", "evect", "uplo", "n", "lda", "ldb");
                 rocsolver_bench_output(itypeC, evectC, uploC, n, lda, ldb);
             }
-            rocsolver_cout << "\n============================================\n";
-            rocsolver_cout << "Results:\n";
-            rocsolver_cout << "============================================\n";
+            rocsolver_bench_header("Results:");
             if(argus.norm_check)
             {
                 rocsolver_bench_output("cpu_time", "gpu_time", "error");
@@ -747,7 +743,7 @@ void testing_sygvd_hegvd(Arguments& argus)
                 rocsolver_bench_output("cpu_time", "gpu_time");
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
-            rocsolver_cout << std::endl;
+            rocsolver_bench_endl();
         }
         else
         {

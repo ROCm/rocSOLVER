@@ -174,6 +174,29 @@ install_zypper_packages( )
     done
 }
 
+install_fmt_from_source( )
+{
+  if [[ ! -d "${build_dir}/deps/fmt" ]]; then
+    pushd .
+    mkdir -p "${build_dir}/deps"
+    cd "${build_dir}/deps"
+    git clone -b 7.1.3 https://github.com/fmtlib/fmt.git
+    cd fmt
+    ${cmake_executable} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+      -DCMAKE_CXX_STANDARD=14 \
+      -DCMAKE_CXX_EXTENSIONS=OFF \
+      -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+      -DFMT_DOC=OFF \
+      -DFMT_TEST=OFF \
+      .
+    make -j$(nproc)
+    elevate_if_not_root make install
+    popd
+  fi
+}
+
 # Take an array of packages as input, and delegate the work to the appropriate distro installer
 # prereq: ${ID} must be defined before calling
 # prereq: ${build_clients} must be defined before calling
@@ -451,13 +474,14 @@ export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}
 # #################################################
 if [[ "${install_dependencies}" == true ]]; then
   install_packages
+  install_fmt_from_source
 
   if [[ "${build_clients}" == true ]]; then
     # The following builds googletest & lapack from source, installs into cmake default /usr/local
     pushd .
     printf "\033[32mBuilding \033[33mgoogletest & lapack\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
     mkdir -p "${build_dir}/deps" && cd "${build_dir}/deps"
-    ${cmake_executable} -lpthread -DBUILD_BOOST=OFF "${main}/deps"
+    ${cmake_executable} -DBUILD_BOOST=OFF "${main}/deps"
     make -j$(nproc)
     elevate_if_not_root make install
     popd
@@ -502,7 +526,7 @@ else
   mkdir -p release && cd release
 fi
 
-cmake_common_options="${cmake_common_options} -DROCM_PATH=${rocm_path} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${lib_dir} -DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir} -DCMAKE_BUILD_TYPE=${build_type}"
+cmake_common_options="${cmake_common_options} -DROCM_PATH=${rocm_path} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${lib_dir} -DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir} -DROCSOLVER_EMBED_FMT=ON -DCMAKE_BUILD_TYPE=${build_type}"
 
 if [[ -n "${rocblas_dir+x}" ]]; then
   cmake_common_options="${cmake_common_options} -Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas"

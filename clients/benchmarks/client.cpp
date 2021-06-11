@@ -2,6 +2,9 @@
  * Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
+#include <fmt/core.h>
+#include <fmt/ostream.h>
+
 #include "rocblascommon/program_options.hpp"
 #include "rocsolver_dispatcher.hpp"
 
@@ -363,7 +366,7 @@ try
     // print help message
     if(vm.count("help"))
     {
-        rocsolver_cout << help_str << desc << std::endl;
+        fmt::print("{}{}\n", help_str, desc);
         return 0;
     }
 
@@ -400,6 +403,6 @@ try
 
 catch(const std::invalid_argument& exp)
 {
-    rocsolver_cerr << exp.what() << std::endl;
+    fmt::print(stderr, "{}\n", exp.what());
     return -1;
 }

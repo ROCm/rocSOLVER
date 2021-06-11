@@ -18,6 +18,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ### Changed
 - The -h option of install.sh now prints a help message, instead of doing nothing.
+- libfmt 7.1 is now a dependency
+- Raised minimum requirement for building rocSOLVER from source to CMake 3.13
 
 ### Removed
 

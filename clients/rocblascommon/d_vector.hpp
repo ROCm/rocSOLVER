@@ -11,6 +11,12 @@
 #include "rocblas_init.hpp"
 #include "rocblas_test.hpp"
 
+#include <fmt/core.h>
+#include <rocblas.h>
+
+#include "rocblas_init.hpp"
+#include "rocblas_test.hpp"
+
 /* ============================================================================================
  */
 /*! \brief  base-class to allocate/deallocate device memory */
@@ -51,9 +57,7 @@ public:
         T* d;
         if((hipMalloc)(&d, bytes) != hipSuccess)
         {
-            rocsolver_cerr << "Error allocating " << bytes << " bytes (" << (bytes >> 30) << " GB)"
-                           << std::endl;
-
+            fmt::print(stderr, "Error allocating {} bytes ({} GB)\n", bytes, bytes >> 30);
             d = nullptr;
         }
 #ifdef GOOGLE_TEST

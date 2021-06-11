@@ -6,8 +6,8 @@ target_include_directories( rocsolver-common INTERFACE
 
 set( source_files
   common_host_helpers.cpp
-  rocsolver_ostream.cpp
 )
 prepend_path( "${CMAKE_CURRENT_SOURCE_DIR}/src/" source_files source_paths )
 target_sources( rocsolver-common INTERFACE ${source_paths} )
 target_compile_definitions( rocsolver-common INTERFACE __HIP_HCC_COMPAT_MODE__=1 )
+target_link_libraries( rocsolver-common INTERFACE fmt::fmt )
