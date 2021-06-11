@@ -419,6 +419,7 @@ void sygvd_hegvd_getPerfData(const rocblas_handle handle,
                              double* gpu_time_used,
                              double* cpu_time_used,
                              const rocblas_int hot_calls,
+                             const int profile,
                              const bool perf,
                              const bool singular)
 {
@@ -477,6 +478,12 @@ void sygvd_hegvd_getPerfData(const rocblas_handle handle,
     hipStream_t stream;
     CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
     double start;
+
+    if(profile > 0)
+    {
+        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        rocsolver_log_set_max_levels(profile);
+    }
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
@@ -648,7 +655,7 @@ void testing_sygvd_hegvd(Arguments& argus)
             sygvd_hegvd_getPerfData<STRIDED, T>(handle, itype, evect, uplo, n, dA, lda, stA, dB,
                                                 ldb, stB, dD, stD, dE, stE, dInfo, bc, hA, hB, hD,
                                                 hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
-                                                argus.perf, argus.singular);
+                                                argus.profile, argus.perf, argus.singular);
     }
 
     else
@@ -701,7 +708,7 @@ void testing_sygvd_hegvd(Arguments& argus)
             sygvd_hegvd_getPerfData<STRIDED, T>(handle, itype, evect, uplo, n, dA, lda, stA, dB,
                                                 ldb, stB, dD, stD, dE, stE, dInfo, bc, hA, hB, hD,
                                                 hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
-                                                argus.perf, argus.singular);
+                                                argus.profile, argus.perf, argus.singular);
     }
 
     // validate results for rocsolver-test
