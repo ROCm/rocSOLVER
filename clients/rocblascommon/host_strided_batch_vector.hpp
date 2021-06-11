@@ -1,8 +1,10 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
+
+#include <ostream>
 
 //
 // Local declaration of the device strided batch vector.
@@ -268,7 +270,7 @@ private:
 //! @param that That host strided batch vector.
 //!
 template <typename T>
-rocsolver_ostream& operator<<(rocsolver_ostream& os, const host_strided_batch_vector<T>& that)
+std::ostream& operator<<(std::ostream& os, const host_strided_batch_vector<T>& that)
 {
     auto n = that.n();
     auto inc = std::abs(that.inc());

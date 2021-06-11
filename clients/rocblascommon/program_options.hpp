@@ -182,12 +182,6 @@ class options_description
         {
         }
 
-        // Copy constructor is deleted
-        desc_option(const desc_option&) = delete;
-
-        // Move constructor
-        desc_option(desc_option&& other) = default;
-
         // Accessors
         const std::string& get_opts() const
         {

@@ -2,7 +2,7 @@
 # Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
-cmake_minimum_required( VERSION 3.8 )
+cmake_minimum_required( VERSION 3.13 )
 
 set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_EXTENSIONS OFF )
@@ -25,11 +25,14 @@ unset(ENV{ROCM_BUILD_ID})
 
 project( rocsolver LANGUAGES CXX )
 
+option( ROCSOLVER_EMBED_FMT "Hide libfmt symbols" OFF )
+
 # Add our CMake helper files to the lookup path
 list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+find_package(fmt REQUIRED)
 
 # ########################################################################
 # Main

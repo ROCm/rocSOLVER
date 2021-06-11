@@ -4,8 +4,7 @@
 
 #pragma once
 
-template <typename T>
-struct rocblas_index_value_t;
+#include <rocblas.h>
 
 #include "common_host_helpers.hpp"
 #include "init_scalars.hpp"
@@ -14,7 +13,9 @@ struct rocblas_index_value_t;
 #include "lib_device_helpers.hpp"
 #include "lib_host_helpers.hpp"
 #include "rocsolver_logger.hpp"
-#include <rocblas.h>
+
+template <typename T>
+struct rocblas_index_value_t;
 
 // axpy
 template <typename T, typename U>

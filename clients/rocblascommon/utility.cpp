@@ -2,10 +2,14 @@
  * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "utility.hpp"
-#include "rocblas_random.hpp"
 #include <cstdlib>
 #include <cstring>
+#include <string>
+
+#include <fmt/core.h>
+
+#include "rocblas_random.hpp"
+#include "utility.hpp"
 
 // Random number generator
 // Note: We do not use random_device to initialize the RNG, because we want
@@ -26,63 +30,43 @@ thread_local rocblas_rng_t rocblas_rng = get_seed();
  * compute-capable devices. */
 rocblas_int query_device_property()
 {
-    int device_count;
-    rocblas_status status = (rocblas_status)hipGetDeviceCount(&device_count);
-    if(status != rocblas_status_success)
+    int device_count = 0;
+    hipError_t status = hipGetDeviceCount(&device_count);
+    if(status != hipSuccess)
     {
-        rocsolver_cerr << "Query device error: cannot get device count" << std::endl;
+        fmt::print(stderr, "Query device error: cannot get device count\n");
         return -1;
     }
-    else
-    {
-        rocsolver_cout << "Query device success: there are " << device_count << " devices"
-                       << std::endl;
-    }
+    fmt::print("Query device success: there are {} devices\n", device_count);
 
-    for(rocblas_int i = 0;; i++)
+    for(int i = 0;; i++)
     {
-        rocsolver_cout << "----------------------------------------------------------"
-                          "---------------------"
-                       << std::endl;
-
+        fmt::print("{:-<79}\n", ""); // horizontal rule
         if(i >= device_count)
             break;
 
         hipDeviceProp_t props;
-        rocblas_status status = (rocblas_status)hipGetDeviceProperties(&props, i);
-        if(status != rocblas_status_success)
+        status = hipGetDeviceProperties(&props, i);
+        if(status != hipSuccess)
         {
-            rocsolver_cerr << "Query device error: cannot get device ID " << i << "'s property"
-                           << std::endl;
+            fmt::print(stderr, "Query device error: cannot get device ID {}'s property\n", i);
+            continue;
         }
-        else
-        {
-            char buf[320];
-            snprintf(buf, sizeof(buf),
-                     "Device ID %d : %s\n"
-                     "with %3.1f GB memory, max. SCLK %d MHz, max. MCLK %d MHz, "
-                     "compute capability "
-                     "%d.%d\n"
-                     "maxGridDimX %d, sharedMemPerBlock %3.1f KB, maxThreadsPerBlock "
-                     "%d, warpSize %d\n",
-                     i, props.name, props.totalGlobalMem / 1e9, (int)(props.clockRate / 1000),
-                     (int)(props.memoryClockRate / 1000), props.major, props.minor,
-                     props.maxGridSize[0], props.sharedMemPerBlock / 1e3, props.maxThreadsPerBlock,
-                     props.warpSize);
-            rocsolver_cout << buf;
-        }
-    }
 
+        fmt::print("Device ID {} : {}\nwith {:3.1f} GB memory, max. SCLK {} MHz, "
+                   "max. MCLK {} MHz, compute capability {}.{}\nmaxGridDimX {}, "
+                   "sharedMemPerBlock {:3.1f} KB, maxThreadsPerBlock {}, warpSize {}\n",
+                   i, props.name, props.totalGlobalMem / 1e9, int(props.clockRate / 1000),
+                   int(props.memoryClockRate / 1000), props.major, props.minor, props.maxGridSize[0],
+                   props.sharedMemPerBlock / 1e3, props.maxThreadsPerBlock, props.warpSize);
+    }
     return device_count;
 }
 
 /*  set current device to device_id */
 void set_device(rocblas_int device_id)
 {
-    rocblas_status status = (rocblas_status)hipSetDevice(device_id);
-    if(status != rocblas_status_success)
-    {
-        rocsolver_cerr << "Set device error: cannot set device ID " << device_id
-                       << ", there may not be such device ID" << std::endl;
-    }
+    hipError_t status = hipSetDevice(device_id);
+    if(status != hipSuccess)
+        fmt::print(stderr, "Set device error: cannot set device ID {}\n", device_id);
 }

@@ -451,9 +451,7 @@ void testing_getrs(Arguments& argus)
     {
         if(!argus.perf)
         {
-            rocsolver_cout << "\n============================================\n";
-            rocsolver_cout << "Arguments:\n";
-            rocsolver_cout << "============================================\n";
+            rocsolver_bench_header("Arguments:");
             if(BATCHED)
             {
                 rocsolver_bench_output("trans", "n", "nrhs", "lda", "ldb", "strideP", "batch_c");
@@ -470,9 +468,7 @@ void testing_getrs(Arguments& argus)
                 rocsolver_bench_output("trans", "n", "nrhs", "lda", "ldb");
                 rocsolver_bench_output(transC, m, nrhs, lda, ldb);
             }
-            rocsolver_cout << "\n============================================\n";
-            rocsolver_cout << "Results:\n";
-            rocsolver_cout << "============================================\n";
+            rocsolver_bench_header("Results:");
             if(argus.norm_check)
             {
                 rocsolver_bench_output("cpu_time", "gpu_time", "error");
@@ -483,7 +479,7 @@ void testing_getrs(Arguments& argus)
                 rocsolver_bench_output("cpu_time", "gpu_time");
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
-            rocsolver_cout << std::endl;
+            rocsolver_bench_endl();
         }
         else
         {
