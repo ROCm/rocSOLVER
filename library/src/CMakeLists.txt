@@ -158,10 +158,7 @@ target_link_libraries( rocsolver
 )
 
 if( ROCSOLVER_EMBED_FMT )
-  target_link_libraries( rocsolver PRIVATE fmt::fmt )
-  if( UNIX )
-    target_link_options( rocsolver PRIVATE "SHELL: -Wl,--exclude-libs,libfmt.a" )
-  endif( )
+  target_link_libraries( rocsolver PRIVATE fmt::fmt-header-only )
 else( )
   target_link_libraries( rocsolver PUBLIC fmt::fmt )
 endif( )
