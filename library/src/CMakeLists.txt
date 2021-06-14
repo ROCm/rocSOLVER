@@ -3,9 +3,9 @@
 # ########################################################################
 
 # package_targets is used as a list of install target
-set( package_targets rocsolver )
+set(package_targets rocsolver)
 
-set( rocsolver_lapack_source
+set(rocsolver_lapack_source
   # linear systems solvers
   lapack/roclapack_getrs.cpp
   lapack/roclapack_getrs_batched.cpp
@@ -94,7 +94,7 @@ set( rocsolver_lapack_source
   lapack/roclapack_sygvd_hegvd_strided_batched.cpp
 )
 
-set( rocsolver_auxiliary_source
+set(rocsolver_auxiliary_source
   # vector & matrix manipulations
   auxiliary/rocauxiliary_aliases.cpp
   auxiliary/rocauxiliary_lacgv.cpp
@@ -131,23 +131,23 @@ set( rocsolver_auxiliary_source
   auxiliary/rocauxiliary_latrd.cpp
 )
 
-set( auxiliaries
+set(auxiliaries
   common/buildinfo.cpp
   common/rocsolver_logger.cpp
 )
 
-prepend_path( ".." rocsolver_headers_public relative_rocsolver_headers_public )
+prepend_path(".." rocsolver_headers_public relative_rocsolver_headers_public)
 
-add_library( rocsolver
+add_library(rocsolver
   ${relative_rocsolver_headers_public}
   ${auxiliaries}
   ${rocsolver_auxiliary_source}
   ${rocsolver_lapack_source}
 )
 
-add_library( roc::rocsolver ALIAS rocsolver )
+add_library(roc::rocsolver ALIAS rocsolver)
 
-target_link_libraries( rocsolver
+target_link_libraries(rocsolver
   PUBLIC
     roc::rocblas
   PRIVATE
@@ -157,47 +157,54 @@ target_link_libraries( rocsolver
     --unwindlib=libgcc
 )
 
-if( ROCSOLVER_EMBED_FMT )
-  target_link_libraries( rocsolver PRIVATE fmt::fmt-header-only )
+if(ROCSOLVER_EMBED_FMT)
+  target_link_libraries(rocsolver PRIVATE fmt::fmt-header-only)
 else( )
-  target_link_libraries( rocsolver PUBLIC fmt::fmt )
+  target_link_libraries(rocsolver PUBLIC fmt::fmt)
 endif( )
 
 # In ROCm 4.0 and earlier, the default maximum threads per block is 256
-target_compile_options( rocsolver PRIVATE --gpu-max-threads-per-block=1024 )
+target_compile_options(rocsolver PRIVATE --gpu-max-threads-per-block=1024)
 
 # Ignore loop unrolling failures
-target_compile_options( rocsolver PRIVATE -Wno-pass-failed )
+target_compile_options(rocsolver PRIVATE -Wno-pass-failed)
 
-target_include_directories( rocsolver
-  PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
-          $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-          $<INSTALL_INTERFACE:include>
+target_include_directories(rocsolver
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+    $<INSTALL_INTERFACE:include>
   PRIVATE
-          ${CMAKE_CURRENT_SOURCE_DIR}/include
-          ${CMAKE_CURRENT_SOURCE_DIR}
-          )
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
-set_target_properties( rocsolver PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
+set_target_properties(rocsolver PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 rocm_set_soversion(rocsolver ${rocsolver_SOVERSION})
 
 # set visibility for function names exported from shared library
-include( GenerateExportHeader )
-set_target_properties( rocsolver PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN ON )
-generate_export_header( rocsolver EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsolver-export.h )
+include(GenerateExportHeader)
+set_target_properties(rocsolver PROPERTIES
+  CXX_VISIBILITY_PRESET "hidden"
+  VISIBILITY_INLINES_HIDDEN ON
+)
+generate_export_header(rocsolver EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsolver-export.h)
 
 # Following Boost conventions of prefixing 'lib' on static built libraries, across all platforms
-if( NOT BUILD_SHARED_LIBS )
-  set_target_properties( rocsolver PROPERTIES PREFIX "lib" )
-endif( )
+if(NOT BUILD_SHARED_LIBS)
+  set_target_properties(rocsolver PROPERTIES PREFIX "lib")
+endif()
 
 if(OPTIMAL)
   target_compile_definitions(rocsolver PRIVATE OPTIMAL)
-endif( )
+endif()
 
-target_compile_definitions( rocsolver PRIVATE ROCM_USE_FLOAT16 ROCBLAS_INTERNAL_API )
+target_compile_definitions(rocsolver PRIVATE
+  ROCM_USE_FLOAT16
+  ROCBLAS_INTERNAL_API
+)
 
-add_armor_flags( rocsolver "${ARMOR_LEVEL}" )
+add_armor_flags(rocsolver "${ARMOR_LEVEL}")
 
 ############################################################
 # Installation
@@ -213,9 +220,10 @@ rocm_install_targets(
 rocm_export_targets(
   TARGETS roc::rocsolver
   PREFIX rocsolver
-  DEPENDS PACKAGE hip
-          PACKAGE rocblas
+  DEPENDS
+    PACKAGE hip
+    PACKAGE rocblas
   NAMESPACE roc::
- )
+)
 
-rocm_install_symlink_subdir( rocsolver )
+rocm_install_symlink_subdir(rocsolver)
