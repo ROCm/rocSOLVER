@@ -159,9 +159,9 @@ target_link_libraries(rocsolver
 
 if(ROCSOLVER_EMBED_FMT)
   target_link_libraries(rocsolver PRIVATE fmt::fmt-header-only)
-else( )
+else()
   target_link_libraries(rocsolver PUBLIC fmt::fmt)
-endif( )
+endif()
 
 # In ROCm 4.0 and earlier, the default maximum threads per block is 256
 target_compile_options(rocsolver PRIVATE --gpu-max-threads-per-block=1024)
