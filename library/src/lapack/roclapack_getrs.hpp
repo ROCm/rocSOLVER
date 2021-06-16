@@ -108,7 +108,7 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
-    // constants to use when calling rocablas functions
+    // constants to use when calling rocblas functions
     T one = 1; // constant 1 in host
 
     if(trans == rocblas_operation_none)

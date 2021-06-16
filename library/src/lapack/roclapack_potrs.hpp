@@ -95,5 +95,46 @@ rocblas_status rocsolver_potrs_template(rocblas_handle handle,
     if(n == 0 || nrhs == 0 || batch_count == 0)
         return rocblas_status_success;
 
-    return rocblas_status_not_implemented;
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    // everything must be executed with scalars on the host
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle, &old_mode);
+    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
+
+    // constants to use when calling rocblas functions
+    T one = 1; // constant 1 in host
+
+    if(uplo == rocblas_fill_upper)
+    {
+        // solve U'*X = B, overwriting B with X
+        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, uplo,
+                                     rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit,
+                                     n, nrhs, &one, A, shiftA, lda, strideA, B, shiftB, ldb,
+                                     strideB, batch_count, optim_mem, work1, work2, work3, work4);
+
+        // solve U*X = B, overwriting B with X
+        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, uplo, rocblas_operation_none,
+                                     rocblas_diagonal_non_unit, n, nrhs, &one, A, shiftA, lda,
+                                     strideA, B, shiftB, ldb, strideB, batch_count, optim_mem,
+                                     work1, work2, work3, work4);
+    }
+    else
+    {
+        // solve L*X = B, overwriting B with X
+        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, uplo, rocblas_operation_none,
+                                     rocblas_diagonal_non_unit, n, nrhs, &one, A, shiftA, lda,
+                                     strideA, B, shiftB, ldb, strideB, batch_count, optim_mem,
+                                     work1, work2, work3, work4);
+
+        // solve L'*X = B, overwriting B with X
+        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, uplo,
+                                     rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit,
+                                     n, nrhs, &one, A, shiftA, lda, strideA, B, shiftB, ldb,
+                                     strideB, batch_count, optim_mem, work1, work2, work3, work4);
+    }
+
+    rocblas_set_pointer_mode(handle, old_mode);
+    return rocblas_status_success;
 }
