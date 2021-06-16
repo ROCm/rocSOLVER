@@ -5,7 +5,7 @@
 LAPACK Functions
 ********************
 
-LAPACK routines solve complex Numerical Linear Algebra problems. These functions are organized 
+LAPACK routines solve complex Numerical Linear Algebra problems. These functions are organized
 in the following categories:
 
 * :ref:`triangular`. Based on Gaussian elimination.
@@ -14,7 +14,7 @@ in the following categories:
 * :ref:`linears`. Based on triangular factorizations.
 * :ref:`leastsqr`. Based on orthogonal factorizations.
 * :ref:`eigens`. Eigenproblems for symmetric matrices.
-* :ref:`svds`. Singular values and related problems for general matrices. 
+* :ref:`svds`. Singular values and related problems for general matrices.
 
 .. note::
     Throughout the APIs' descriptions, we use the following notations:
@@ -22,11 +22,11 @@ in the following categories:
     * x[i] stands for the i-th element of vector x, while A[i,j] represents the element
       in the i-th row and j-th column of matrix A. Indices are 1-based, i.e. x[1] is the first
       element of x.
-    * If X is a real vector or matrix, :math:`X^T` indicates its transpose; if X is complex, then 
+    * If X is a real vector or matrix, :math:`X^T` indicates its transpose; if X is complex, then
       :math:`X^H` represents its conjugate transpose. When X could be real or complex, we use X' to
-      indicate X transposed or X conjugate transposed, accordingly. 
+      indicate X transposed or X conjugate transposed, accordingly.
     * x_i :math:`=x_i`; we sometimes use both notations, :math:`x_i` when displaying mathematical
-      equations, and x_i in the text describing the function parameters. 
+      equations, and x_i in the text describing the function parameters.
 
 
 
@@ -715,6 +715,38 @@ rocsolver_<type>getrs_strided_batched()
 .. doxygenfunction:: rocsolver_dgetrs_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgetrs_strided_batched
+
+.. _potrs:
+
+rocsolver_<type>potrs()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zpotrs
+   :outline:
+.. doxygenfunction:: rocsolver_cpotrs
+   :outline:
+.. doxygenfunction:: rocsolver_dpotrs
+   :outline:
+.. doxygenfunction:: rocsolver_spotrs
+
+rocsolver_<type>potrs_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zpotrs_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cpotrs_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dpotrs_batched
+   :outline:
+.. doxygenfunction:: rocsolver_spotrs_batched
+
+rocsolver_<type>potrs_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zpotrs_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cpotrs_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dpotrs_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_spotrs_strided_batched
 
 
 

@@ -10,6 +10,9 @@ set( rocsolver_lapack_source
   lapack/roclapack_getrs.cpp
   lapack/roclapack_getrs_batched.cpp
   lapack/roclapack_getrs_strided_batched.cpp
+  lapack/roclapack_potrs.cpp
+  lapack/roclapack_potrs_batched.cpp
+  lapack/roclapack_potrs_strided_batched.cpp
   lapack/roclapack_getri.cpp
   lapack/roclapack_getri_batched.cpp
   lapack/roclapack_getri_strided_batched.cpp

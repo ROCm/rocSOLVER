@@ -142,6 +142,7 @@ LAPACK main functions
     :ref:`rocsolver_trtri <trtri>`, x, x, x, x
     :ref:`rocsolver_getri <getri>`, x, x, x, x
     :ref:`rocsolver_getrs <getrs>`, x, x, x, x
+    :ref:`rocsolver_potrs <potrs>`, x, x, x, x
 
 .. csv-table:: Least-square solvers
     :header: "Function", "single", "double", "single complex", "double complex"
