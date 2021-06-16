@@ -131,7 +131,7 @@ set(AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx1030;${OPTIONAL
 find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm)
 
 find_package(rocblas REQUIRED CONFIG PATHS ${ROCM_PATH})
-get_imported_target_location( location roc::rocblas)
+get_imported_target_location(location roc::rocblas)
 message(STATUS "Found rocBLAS: ${location}")
 
 add_subdirectory(common)
