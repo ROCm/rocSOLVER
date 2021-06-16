@@ -15,6 +15,7 @@ set(roclapack_test_source
     # linear systems solvers
     getri_gtest.cpp
     getrs_gtest.cpp
+    potrs_gtest.cpp
     trtri_gtest.cpp
     # least squares solvers
     gels_gtest.cpp
