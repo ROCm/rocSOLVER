@@ -13,6 +13,7 @@ set(roclapack_test_source
   getrs_gtest.cpp
   gesv_gtest.cpp
   potrs_gtest.cpp
+  posv_gtest.cpp
   trtri_gtest.cpp
   # least squares solvers
   gels_gtest.cpp

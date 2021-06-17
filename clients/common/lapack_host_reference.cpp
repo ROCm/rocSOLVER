@@ -142,6 +142,25 @@ void zpotrs_(char* uplo,
              int* ldb,
              int* info);
 
+void sposv_(char* uplo, int* n, int* nrhs, float* A, int* lda, float* B, int* ldb, int* info);
+void dposv_(char* uplo, int* n, int* nrhs, double* A, int* lda, double* B, int* ldb, int* info);
+void cposv_(char* uplo,
+            int* n,
+            int* nrhs,
+            rocblas_float_complex* A,
+            int* lda,
+            rocblas_float_complex* B,
+            int* ldb,
+            int* info);
+void zposv_(char* uplo,
+            int* n,
+            int* nrhs,
+            rocblas_double_complex* A,
+            int* lda,
+            rocblas_double_complex* B,
+            int* ldb,
+            int* info);
+
 void spotf2_(char* uplo, int* n, float* A, int* lda, int* info);
 void dpotf2_(char* uplo, int* n, double* A, int* lda, int* info);
 void cpotf2_(char* uplo, int* n, rocblas_float_complex* A, int* lda, int* info);
@@ -4342,6 +4361,63 @@ void cblas_potrs(rocblas_fill uplo,
     int info;
     char uploC = rocblas2char_fill(uplo);
     zpotrs_(&uploC, &n, &nrhs, A, &lda, B, &ldb, &info);
+}
+
+// posv
+template <>
+void cblas_posv(rocblas_fill uplo,
+                rocblas_int n,
+                rocblas_int nrhs,
+                float* A,
+                rocblas_int lda,
+                float* B,
+                rocblas_int ldb,
+                rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    sposv_(&uploC, &n, &nrhs, A, &lda, B, &ldb, info);
+}
+
+template <>
+void cblas_posv(rocblas_fill uplo,
+                rocblas_int n,
+                rocblas_int nrhs,
+                double* A,
+                rocblas_int lda,
+                double* B,
+                rocblas_int ldb,
+                rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    dposv_(&uploC, &n, &nrhs, A, &lda, B, &ldb, info);
+}
+
+template <>
+void cblas_posv(rocblas_fill uplo,
+                rocblas_int n,
+                rocblas_int nrhs,
+                rocblas_float_complex* A,
+                rocblas_int lda,
+                rocblas_float_complex* B,
+                rocblas_int ldb,
+                rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    cposv_(&uploC, &n, &nrhs, A, &lda, B, &ldb, info);
+}
+
+template <>
+void cblas_posv(rocblas_fill uplo,
+                rocblas_int n,
+                rocblas_int nrhs,
+                rocblas_double_complex* A,
+                rocblas_int lda,
+                rocblas_double_complex* B,
+                rocblas_int ldb,
+                rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    zposv_(&uploC, &n, &nrhs, A, &lda, B, &ldb, info);
 }
 
 // getf2
