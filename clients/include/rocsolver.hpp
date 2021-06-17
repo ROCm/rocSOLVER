@@ -1575,9 +1575,10 @@ inline rocblas_status rocsolver_posv(bool STRIDED,
                                      rocblas_int batch_count)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_sposv_strided_batched(handle, uplo, n, nrhs, A, lda, stA, B, ldb, stB, info, batch_count);
+        return rocsolver_sposv_strided_batched(handle, uplo, n, nrhs, A, lda, stA, B, ldb, stB,
+                                               info, batch_count);
     else
-        return rocblas_status_not_implemented; // rocsolver_sposv(handle, uplo, n, nrhs, A, lda, B, ldb, info);
+        return rocsolver_sposv(handle, uplo, n, nrhs, A, lda, B, ldb, info);
 }
 
 inline rocblas_status rocsolver_posv(bool STRIDED,
@@ -1595,9 +1596,10 @@ inline rocblas_status rocsolver_posv(bool STRIDED,
                                      rocblas_int batch_count)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_dposv_strided_batched(handle, uplo, n, nrhs, A, lda, stA, B, ldb, stB, info, batch_count);
+        return rocsolver_dposv_strided_batched(handle, uplo, n, nrhs, A, lda, stA, B, ldb, stB,
+                                               info, batch_count);
     else
-        return rocblas_status_not_implemented; // rocsolver_dposv(handle, uplo, n, nrhs, A, lda, B, ldb, info);
+        return rocsolver_dposv(handle, uplo, n, nrhs, A, lda, B, ldb, info);
 }
 
 inline rocblas_status rocsolver_posv(bool STRIDED,
@@ -1615,9 +1617,10 @@ inline rocblas_status rocsolver_posv(bool STRIDED,
                                      rocblas_int batch_count)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_cposv_strided_batched(handle, uplo, n, nrhs, A, lda, stA, B, ldb, stB, info, batch_count);
+        return rocsolver_cposv_strided_batched(handle, uplo, n, nrhs, A, lda, stA, B, ldb, stB,
+                                               info, batch_count);
     else
-        return rocblas_status_not_implemented; // rocsolver_cposv(handle, uplo, n, nrhs, A, lda, B, ldb, info);
+        return rocsolver_cposv(handle, uplo, n, nrhs, A, lda, B, ldb, info);
 }
 
 inline rocblas_status rocsolver_posv(bool STRIDED,
@@ -1635,9 +1638,10 @@ inline rocblas_status rocsolver_posv(bool STRIDED,
                                      rocblas_int batch_count)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_zposv_strided_batched(handle, uplo, n, nrhs, A, lda, stA, B, ldb, stB, info, batch_count);
+        return rocsolver_zposv_strided_batched(handle, uplo, n, nrhs, A, lda, stA, B, ldb, stB,
+                                               info, batch_count);
     else
-        return rocblas_status_not_implemented; // rocsolver_zposv(handle, uplo, n, nrhs, A, lda, B, ldb, info);
+        return rocsolver_zposv(handle, uplo, n, nrhs, A, lda, B, ldb, info);
 }
 
 // batched
@@ -1655,7 +1659,7 @@ inline rocblas_status rocsolver_posv(bool STRIDED,
                                      rocblas_int* info,
                                      rocblas_int batch_count)
 {
-    return rocblas_status_not_implemented; // rocsolver_sposv_batched(handle, uplo, n, nrhs, A, lda, B, ldb, info, batch_count);
+    return rocsolver_sposv_batched(handle, uplo, n, nrhs, A, lda, B, ldb, info, batch_count);
 }
 
 inline rocblas_status rocsolver_posv(bool STRIDED,
@@ -1672,7 +1676,7 @@ inline rocblas_status rocsolver_posv(bool STRIDED,
                                      rocblas_int* info,
                                      rocblas_int batch_count)
 {
-    return rocblas_status_not_implemented; // rocsolver_dposv_batched(handle, uplo, n, nrhs, A, lda, B, ldb, info, batch_count);
+    return rocsolver_dposv_batched(handle, uplo, n, nrhs, A, lda, B, ldb, info, batch_count);
 }
 
 inline rocblas_status rocsolver_posv(bool STRIDED,
@@ -1689,7 +1693,7 @@ inline rocblas_status rocsolver_posv(bool STRIDED,
                                      rocblas_int* info,
                                      rocblas_int batch_count)
 {
-    return rocblas_status_not_implemented; // rocsolver_cposv_batched(handle, uplo, n, nrhs, A, lda, B, ldb, info, batch_count);
+    return rocsolver_cposv_batched(handle, uplo, n, nrhs, A, lda, B, ldb, info, batch_count);
 }
 
 inline rocblas_status rocsolver_posv(bool STRIDED,
@@ -1706,7 +1710,7 @@ inline rocblas_status rocsolver_posv(bool STRIDED,
                                      rocblas_int* info,
                                      rocblas_int batch_count)
 {
-    return rocblas_status_not_implemented; // rocsolver_zposv_batched(handle, uplo, n, nrhs, A, lda, B, ldb, info, batch_count);
+    return rocsolver_zposv_batched(handle, uplo, n, nrhs, A, lda, B, ldb, info, batch_count);
 }
 /********************************************************/
 
