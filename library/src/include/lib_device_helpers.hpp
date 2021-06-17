@@ -539,7 +539,7 @@ __global__ void copyshift_down(const bool copy,
 /** set_offdiag kernel copies the off-diagonal element of A, which is the non-zero element
     resulting by applying the Householder reflector to the working column, to E. Then set it
     to 1 to prepare for the application of the Householder reflector to the rest of the matrix **/
-template <typename T, typename U, typename S, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename U, typename S>
 __global__ void set_offdiag(const rocblas_int batch_count,
                             U A,
                             const rocblas_int shiftA,
@@ -554,27 +554,10 @@ __global__ void set_offdiag(const rocblas_int batch_count,
         T* a = load_ptr_batch<T>(A, b, shiftA, strideA);
         S* e = E + b * strideE;
 
-        e[0] = a[0];
-        a[0] = T(1);
-    }
-}
-
-template <typename T, typename U, typename S, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void set_offdiag(const rocblas_int batch_count,
-                            U A,
-                            const rocblas_int shiftA,
-                            const rocblas_stride strideA,
-                            S* E,
-                            const rocblas_stride strideE)
-{
-    rocblas_int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-
-    if(b < batch_count)
-    {
-        T* a = load_ptr_batch<T>(A, b, shiftA, strideA);
-        S* e = E + b * strideE;
-
-        e[0] = a[0].real();
+        if constexpr(is_complex<T>)
+          e[0] = a[0].real();
+        else
+          e[0] = a[0];
         a[0] = T(1);
     }
 }
