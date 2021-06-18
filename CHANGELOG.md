@@ -6,6 +6,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 ### Optimizations
 ### Changed
+- Raised reference LAPACK version used for rocSOLVER test and benchmark clients to v3.9.1
+
 ### Removed
 ### Fixed
 ### Known Issues
