@@ -46,7 +46,7 @@ void rocsolver_latrd_getMemorySize(const rocblas_int n,
     rocsolver_larfg_getMemorySize<T>(n, batch_count, size_work, size_norms);
 }
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_latrd_argCheck(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
@@ -80,7 +80,7 @@ rocblas_status rocsolver_latrd_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename S, typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,

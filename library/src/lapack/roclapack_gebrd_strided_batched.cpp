@@ -4,7 +4,7 @@
 
 #include "roclapack_gebrd.hpp"
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_gebrd_strided_batched_impl(rocblas_handle handle,
                                                     const rocblas_int m,
                                                     const rocblas_int n,
@@ -77,7 +77,7 @@ rocblas_status rocsolver_gebrd_strided_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_gebrd_template<false, true, S, T>(
+    return rocsolver_gebrd_template<false, true, T>(
         handle, m, n, A, shiftA, lda, strideA, D, strideD, E, strideE, tauq, strideQ, taup, strideP,
         (T*)X, shiftX, m, strideX, (T*)Y, shiftY, n, strideY, batch_count, (T*)scalars,
         work_workArr, (T*)Abyx_norms);
@@ -107,9 +107,9 @@ rocblas_status rocsolver_sgebrd_strided_batched(rocblas_handle handle,
                                                 const rocblas_stride strideP,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_gebrd_strided_batched_impl<float, float>(handle, m, n, A, lda, strideA, D,
-                                                              strideD, E, strideE, tauq, strideQ,
-                                                              taup, strideP, batch_count);
+    return rocsolver_gebrd_strided_batched_impl<float>(handle, m, n, A, lda, strideA, D, strideD, E,
+                                                       strideE, tauq, strideQ, taup, strideP,
+                                                       batch_count);
 }
 
 rocblas_status rocsolver_dgebrd_strided_batched(rocblas_handle handle,
@@ -128,9 +128,9 @@ rocblas_status rocsolver_dgebrd_strided_batched(rocblas_handle handle,
                                                 const rocblas_stride strideP,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_gebrd_strided_batched_impl<double, double>(handle, m, n, A, lda, strideA, D,
-                                                                strideD, E, strideE, tauq, strideQ,
-                                                                taup, strideP, batch_count);
+    return rocsolver_gebrd_strided_batched_impl<double>(handle, m, n, A, lda, strideA, D, strideD,
+                                                        E, strideE, tauq, strideQ, taup, strideP,
+                                                        batch_count);
 }
 
 rocblas_status rocsolver_cgebrd_strided_batched(rocblas_handle handle,
@@ -149,7 +149,7 @@ rocblas_status rocsolver_cgebrd_strided_batched(rocblas_handle handle,
                                                 const rocblas_stride strideP,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_gebrd_strided_batched_impl<float, rocblas_float_complex>(
+    return rocsolver_gebrd_strided_batched_impl<rocblas_float_complex>(
         handle, m, n, A, lda, strideA, D, strideD, E, strideE, tauq, strideQ, taup, strideP,
         batch_count);
 }
@@ -170,7 +170,7 @@ rocblas_status rocsolver_zgebrd_strided_batched(rocblas_handle handle,
                                                 const rocblas_stride strideP,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_gebrd_strided_batched_impl<double, rocblas_double_complex>(
+    return rocsolver_gebrd_strided_batched_impl<rocblas_double_complex>(
         handle, m, n, A, lda, strideA, D, strideD, E, strideE, tauq, strideQ, taup, strideP,
         batch_count);
 }

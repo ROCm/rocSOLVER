@@ -60,12 +60,12 @@ __global__ void scalar_case(const rocblas_evect evect,
 }
 
 /** Argument checking **/
-template <typename W, typename S>
+template <typename T, typename S>
 rocblas_status rocsolver_syev_heev_argCheck(rocblas_handle handle,
                                             const rocblas_evect evect,
                                             const rocblas_fill uplo,
                                             const rocblas_int n,
-                                            W A,
+                                            T A,
                                             const rocblas_int lda,
                                             S* D,
                                             S* E,

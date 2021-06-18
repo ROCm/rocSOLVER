@@ -1023,7 +1023,7 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
 }
 
 // syrk
-template <typename S, typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_operation transA,
@@ -1045,13 +1045,15 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
     ROCBLAS_ENTER("syrk", "uplo:", uplo, "trans:", transA, "n:", n, "k:", k, "shiftA:", offsetA,
                   "lda:", lda, "shiftC:", offsetC, "ldc:", ldc, "bc:", batch_count);
 
+    using S = decltype(std::real(T{}));
+
     return rocblas_internal_syrk_template(
         handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
 }
 
 // herk
-template <typename S, typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_operation transA,
@@ -1072,6 +1074,8 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
     // TODO: How to get alpha and beta for trace logging
     ROCBLAS_ENTER("herk", "uplo:", uplo, "trans:", transA, "n:", n, "k:", k, "shiftA:", offsetA,
                   "lda:", lda, "shiftC:", offsetC, "ldc:", ldc, "bc:", batch_count);
+
+    using S = decltype(std::real(T{}));
 
     return rocblas_internal_herk_template(
         handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA, lda,

@@ -4,7 +4,7 @@
 
 #include "roclapack_gebd2.hpp"
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_gebd2_impl(rocblas_handle handle,
                                     const rocblas_int m,
                                     const rocblas_int n,
@@ -64,9 +64,9 @@ rocblas_status rocsolver_gebd2_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_gebd2_template<S, T>(handle, m, n, A, shiftA, lda, strideA, D, strideD, E,
-                                          strideE, tauq, strideQ, taup, strideP, batch_count,
-                                          (T*)scalars, work_workArr, (T*)Abyx_norms);
+    return rocsolver_gebd2_template<T>(handle, m, n, A, shiftA, lda, strideA, D, strideD, E,
+                                       strideE, tauq, strideQ, taup, strideP, batch_count,
+                                       (T*)scalars, work_workArr, (T*)Abyx_norms);
 }
 
 /*
@@ -87,7 +87,7 @@ rocblas_status rocsolver_sgebd2(rocblas_handle handle,
                                 float* tauq,
                                 float* taup)
 {
-    return rocsolver_gebd2_impl<float, float>(handle, m, n, A, lda, D, E, tauq, taup);
+    return rocsolver_gebd2_impl<float>(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 rocblas_status rocsolver_dgebd2(rocblas_handle handle,
@@ -100,7 +100,7 @@ rocblas_status rocsolver_dgebd2(rocblas_handle handle,
                                 double* tauq,
                                 double* taup)
 {
-    return rocsolver_gebd2_impl<double, double>(handle, m, n, A, lda, D, E, tauq, taup);
+    return rocsolver_gebd2_impl<double>(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 rocblas_status rocsolver_cgebd2(rocblas_handle handle,
@@ -113,7 +113,7 @@ rocblas_status rocsolver_cgebd2(rocblas_handle handle,
                                 rocblas_float_complex* tauq,
                                 rocblas_float_complex* taup)
 {
-    return rocsolver_gebd2_impl<float, rocblas_float_complex>(handle, m, n, A, lda, D, E, tauq, taup);
+    return rocsolver_gebd2_impl<rocblas_float_complex>(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 rocblas_status rocsolver_zgebd2(rocblas_handle handle,
@@ -126,8 +126,7 @@ rocblas_status rocsolver_zgebd2(rocblas_handle handle,
                                 rocblas_double_complex* tauq,
                                 rocblas_double_complex* taup)
 {
-    return rocsolver_gebd2_impl<double, rocblas_double_complex>(handle, m, n, A, lda, D, E, tauq,
-                                                                taup);
+    return rocsolver_gebd2_impl<rocblas_double_complex>(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 } // extern C

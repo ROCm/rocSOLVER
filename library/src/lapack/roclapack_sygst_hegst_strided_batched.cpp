@@ -70,7 +70,7 @@ rocblas_status rocsolver_sygst_hegst_strided_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_sygst_hegst_template<false, true, S, T>(
+    return rocsolver_sygst_hegst_template<false, true, T, S>(
         handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
         (T*)scalars, work_wur_x_temp, workArr_temp_arr, store_wcs_invA, invA_arr, optim_mem);
 }

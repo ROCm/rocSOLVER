@@ -4,7 +4,7 @@
 
 #include "roclapack_sytrd_hetrd.hpp"
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_sytrd_hetrd_impl(rocblas_handle handle,
                                           const rocblas_fill uplo,
                                           const rocblas_int n,
@@ -66,9 +66,9 @@ rocblas_status rocsolver_sytrd_hetrd_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_sytrd_hetrd_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E,
-                                          strideE, tau, strideP, batch_count, (T*)scalars, (T*)work,
-                                          (T*)norms, (T*)tmptau_W, (T**)workArr);
+    return rocsolver_sytrd_hetrd_template<T>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
+                                             E, strideE, tau, strideP, batch_count, (T*)scalars,
+                                             (T*)work, (T*)norms, (T*)tmptau_W, (T**)workArr);
 }
 
 /*
@@ -88,7 +88,7 @@ rocblas_status rocsolver_ssytrd(rocblas_handle handle,
                                 float* E,
                                 float* tau)
 {
-    return rocsolver_sytrd_hetrd_impl<float, float>(handle, uplo, n, A, lda, D, E, tau);
+    return rocsolver_sytrd_hetrd_impl<float>(handle, uplo, n, A, lda, D, E, tau);
 }
 
 rocblas_status rocsolver_dsytrd(rocblas_handle handle,
@@ -100,7 +100,7 @@ rocblas_status rocsolver_dsytrd(rocblas_handle handle,
                                 double* E,
                                 double* tau)
 {
-    return rocsolver_sytrd_hetrd_impl<double, double>(handle, uplo, n, A, lda, D, E, tau);
+    return rocsolver_sytrd_hetrd_impl<double>(handle, uplo, n, A, lda, D, E, tau);
 }
 
 rocblas_status rocsolver_chetrd(rocblas_handle handle,
@@ -112,8 +112,7 @@ rocblas_status rocsolver_chetrd(rocblas_handle handle,
                                 float* E,
                                 rocblas_float_complex* tau)
 {
-    return rocsolver_sytrd_hetrd_impl<float, rocblas_float_complex>(handle, uplo, n, A, lda, D, E,
-                                                                    tau);
+    return rocsolver_sytrd_hetrd_impl<rocblas_float_complex>(handle, uplo, n, A, lda, D, E, tau);
 }
 
 rocblas_status rocsolver_zhetrd(rocblas_handle handle,
@@ -125,8 +124,7 @@ rocblas_status rocsolver_zhetrd(rocblas_handle handle,
                                 double* E,
                                 rocblas_double_complex* tau)
 {
-    return rocsolver_sytrd_hetrd_impl<double, rocblas_double_complex>(handle, uplo, n, A, lda, D, E,
-                                                                      tau);
+    return rocsolver_sytrd_hetrd_impl<rocblas_double_complex>(handle, uplo, n, A, lda, D, E, tau);
 }
 
 } // extern C

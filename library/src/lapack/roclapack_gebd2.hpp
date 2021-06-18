@@ -42,7 +42,7 @@ void rocsolver_gebd2_getMemorySize(const rocblas_int m,
     *size_Abyx_norms = max(s1, s2);
 }
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_gebd2_gebrd_argCheck(rocblas_handle handle,
                                               const rocblas_int m,
                                               const rocblas_int n,
@@ -74,7 +74,7 @@ rocblas_status rocsolver_gebd2_gebrd_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename S, typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,
