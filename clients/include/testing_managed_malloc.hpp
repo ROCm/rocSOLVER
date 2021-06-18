@@ -58,7 +58,7 @@ void managed_malloc_initData(const rocblas_handle handle,
     }
 }
 
-template <typename S, typename T>
+template <typename T, typename S>
 void managed_malloc_getError(const rocblas_handle handle,
                              const rocblas_int m,
                              const rocblas_int n,
@@ -103,7 +103,7 @@ void managed_malloc_getError(const rocblas_handle handle,
     *max_err = err > *max_err ? err : *max_err;
 }
 
-template <typename S, typename T>
+template <typename T, typename S>
 void managed_malloc_getPerfData(const rocblas_handle handle,
                                 const rocblas_int m,
                                 const rocblas_int n,
@@ -274,14 +274,14 @@ void testing_managed_malloc(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        managed_malloc_getError<S, T>(handle, m, n, nb, dA, dARes, lda, dD, dE, dTauq, dTaup, dX,
-                                      dXRes, ldx, dY, dYRes, ldy, &max_error);
+        managed_malloc_getError<T>(handle, m, n, nb, dA, dARes, lda, dD, dE, dTauq, dTaup, dX,
+                                   dXRes, ldx, dY, dYRes, ldy, &max_error);
 
     // collect performance data
     if(argus.timing)
-        managed_malloc_getPerfData<S, T>(handle, m, n, nb, dA, dARes, lda, dD, dE, dTauq, dTaup, dX,
-                                         dXRes, ldx, dY, dYRes, ldy, &gpu_time_used, &cpu_time_used,
-                                         hot_calls, argus.profile, argus.perf);
+        managed_malloc_getPerfData<T>(handle, m, n, nb, dA, dARes, lda, dD, dE, dTauq, dTaup, dX,
+                                      dXRes, ldx, dY, dYRes, ldy, &gpu_time_used, &cpu_time_used,
+                                      hot_calls, argus.profile, argus.perf);
 
     // free memory
     hipFree(dA);

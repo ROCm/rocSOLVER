@@ -11,7 +11,7 @@
 #include "rocsolver_arguments.hpp"
 #include "rocsolver_test.hpp"
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 void steqr_checkBadArgs(const rocblas_handle handle,
                         const rocblas_evect evect,
                         const rocblas_int n,
@@ -70,7 +70,7 @@ void testing_steqr_bad_arg()
     steqr_checkBadArgs(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data());
 }
 
-template <bool CPU, bool GPU, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
+template <bool CPU, bool GPU, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void steqr_initData(const rocblas_handle handle,
                     const rocblas_evect evect,
                     const rocblas_int n,
@@ -86,6 +86,7 @@ void steqr_initData(const rocblas_handle handle,
 {
     if(CPU)
     {
+        using S = decltype(std::real(T{}));
         rocblas_init<S>(hD, true);
         rocblas_init<S>(hE, true);
 
@@ -153,7 +154,7 @@ void steqr_getError(const rocblas_handle handle,
     std::vector<S> work(lwork);
 
     // input data initialization
-    steqr_initData<true, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
+    steqr_initData<true, true, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
     // execute computations
     // GPU lapack
@@ -255,8 +256,7 @@ void steqr_getPerfData(const rocblas_handle handle,
 
     if(!perf)
     {
-        steqr_initData<true, false, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
-                                          hInfo);
+        steqr_initData<true, false, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
@@ -264,13 +264,12 @@ void steqr_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    steqr_initData<true, false, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
+    steqr_initData<true, false, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        steqr_initData<false, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
-                                          hInfo);
+        steqr_initData<false, true, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
         CHECK_ROCBLAS_ERROR(
             rocsolver_steqr(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()));
@@ -289,8 +288,7 @@ void steqr_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        steqr_initData<false, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
-                                          hInfo);
+        steqr_initData<false, true, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
         start = get_time_us_sync(stream);
         rocsolver_steqr(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data());

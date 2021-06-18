@@ -11,7 +11,7 @@
 #include "rocsolver_arguments.hpp"
 #include "rocsolver_test.hpp"
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 void stedc_checkBadArgs(const rocblas_handle handle,
                         const rocblas_evect evect,
                         const rocblas_int n,
@@ -70,7 +70,7 @@ void testing_stedc_bad_arg()
     stedc_checkBadArgs(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data());
 }
 
-template <bool CPU, bool GPU, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
+template <bool CPU, bool GPU, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void stedc_initData(const rocblas_handle handle,
                     const rocblas_evect evect,
                     const rocblas_int n,
@@ -86,6 +86,7 @@ void stedc_initData(const rocblas_handle handle,
 {
     if(CPU)
     {
+        using S = decltype(std::real(T{}));
         rocblas_init<S>(hD, true);
         rocblas_init<S>(hE, true);
 
@@ -159,7 +160,7 @@ void stedc_getError(const rocblas_handle handle,
     std::vector<rocblas_int> iwork(liwork);
 
     // input data initialization
-    stedc_initData<true, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
+    stedc_initData<true, true, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
     // execute computations
     // GPU lapack
@@ -268,8 +269,7 @@ void stedc_getPerfData(const rocblas_handle handle,
 
     if(!perf)
     {
-        stedc_initData<true, false, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
-                                          hInfo);
+        stedc_initData<true, false, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
@@ -278,13 +278,12 @@ void stedc_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    stedc_initData<true, false, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
+    stedc_initData<true, false, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        stedc_initData<false, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
-                                          hInfo);
+        stedc_initData<false, true, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
         CHECK_ROCBLAS_ERROR(
             rocsolver_stedc(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data()));
@@ -303,8 +302,7 @@ void stedc_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        stedc_initData<false, true, S, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
-                                          hInfo);
+        stedc_initData<false, true, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo);
 
         start = get_time_us_sync(stream);
         rocsolver_stedc(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data());
