@@ -345,9 +345,9 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            SYTRD ? cblas_sytrd_hetrd<S, T>(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b], hW.data(),
-                                            32 * n)
-                  : cblas_sytd2_hetd2<S, T>(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b]);
+            SYTRD
+                ? cblas_sytrd_hetrd<T>(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b], hW.data(), 32 * n)
+                : cblas_sytd2_hetd2<T>(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

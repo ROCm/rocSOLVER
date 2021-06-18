@@ -235,9 +235,9 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
         {
             memcpy(hARes[b], hA[b], lda * n * sizeof(T));
             GEBRD
-            ? cblas_gebrd<S, T>(m, n, hARes[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(),
-                                max(m, n))
-            : cblas_gebd2<S, T>(m, n, hARes[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
+            ? cblas_gebrd<T>(m, n, hARes[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(),
+                             max(m, n))
+            : cblas_gebd2<T>(m, n, hARes[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
         }
     }
 
@@ -363,9 +363,9 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            GEBRD ? cblas_gebrd<S, T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(),
-                                      max(m, n))
-                  : cblas_gebd2<S, T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
+            GEBRD ? cblas_gebrd<T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(),
+                                   max(m, n))
+                  : cblas_gebd2<T>(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

@@ -192,8 +192,8 @@ void stedc_getError(const rocblas_handle handle,
     }
 
     // CPU lapack
-    cblas_stedc<S, T>(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), lwork, rwork.data(), lrwork,
-                      iwork.data(), liwork, hInfo[0]);
+    cblas_stedc<T>(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), lwork, rwork.data(), lrwork,
+                   iwork.data(), liwork, hInfo[0]);
 
     // check info
     if(hInfo[0][0] != hInfoRes[0][0])
@@ -273,8 +273,8 @@ void stedc_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_stedc<S, T>(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), lwork, rwork.data(),
-                          lrwork, iwork.data(), liwork, hInfo[0]);
+        cblas_stedc<T>(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), lwork, rwork.data(), lrwork,
+                       iwork.data(), liwork, hInfo[0]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

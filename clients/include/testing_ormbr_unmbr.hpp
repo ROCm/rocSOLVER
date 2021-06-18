@@ -146,8 +146,8 @@ void ormbr_unmbr_initData(const rocblas_handle handle,
                         hA[0][i + j * lda] -= 4;
                 }
             }
-            cblas_gebrd<S, T>(nq, s, hA[0], lda, D.data(), E.data(), hIpiv[0], P.data(), hW.data(),
-                              size_W);
+            cblas_gebrd<T>(nq, s, hA[0], lda, D.data(), E.data(), hIpiv[0], P.data(), hW.data(),
+                           size_W);
         }
         else
         {
@@ -161,8 +161,8 @@ void ormbr_unmbr_initData(const rocblas_handle handle,
                         hA[0][i + j * lda] -= 4;
                 }
             }
-            cblas_gebrd<S, T>(s, nq, hA[0], lda, D.data(), E.data(), P.data(), hIpiv[0], hW.data(),
-                              size_W);
+            cblas_gebrd<T>(s, nq, hA[0], lda, D.data(), E.data(), P.data(), hIpiv[0], hW.data(),
+                           size_W);
         }
     }
 
