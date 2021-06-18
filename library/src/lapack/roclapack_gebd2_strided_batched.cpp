@@ -44,7 +44,7 @@ rocblas_status rocsolver_gebd2_strided_batched_impl(rocblas_handle handle,
     size_t size_work_workArr;
     // extra requirements for calling larf and larfg
     size_t size_Abyx_norms;
-    rocsolver_gebd2_getMemorySize<T, false>(m, n, batch_count, &size_scalars, &size_work_workArr,
+    rocsolver_gebd2_getMemorySize<false, T>(m, n, batch_count, &size_scalars, &size_work_workArr,
                                             &size_Abyx_norms);
 
     if(rocblas_is_device_memory_size_query(handle))

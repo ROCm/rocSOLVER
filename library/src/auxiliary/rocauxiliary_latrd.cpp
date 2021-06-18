@@ -44,7 +44,7 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
     size_t size_workArr;
     // extra requirements for calling LARFG
     size_t size_work, size_norms;
-    rocsolver_latrd_getMemorySize<T, false>(n, k, batch_count, &size_scalars, &size_work,
+    rocsolver_latrd_getMemorySize<false, T>(n, k, batch_count, &size_scalars, &size_work,
                                             &size_norms, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))

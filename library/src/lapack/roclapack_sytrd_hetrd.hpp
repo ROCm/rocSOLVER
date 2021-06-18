@@ -14,7 +14,7 @@
 #include "roclapack_sytd2_hetd2.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
                                          const rocblas_int batch_count,
                                          size_t* size_scalars,
@@ -44,7 +44,7 @@ void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
     }
 
     // extra requirements to call SYTD2/HETD2
-    rocsolver_sytd2_hetd2_getMemorySize<T, BATCHED>(n, batch_count, size_scalars, size_work,
+    rocsolver_sytd2_hetd2_getMemorySize<BATCHED, T>(n, batch_count, size_scalars, size_work,
                                                     size_norms, &s2, size_workArr);
 
     *size_tmptau_W = max(s1, s2);

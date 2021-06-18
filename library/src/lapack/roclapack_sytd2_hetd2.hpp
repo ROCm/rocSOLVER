@@ -101,7 +101,7 @@ __global__ void set_tridiag(const rocblas_fill uplo,
     }
 }
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_sytd2_hetd2_getMemorySize(const rocblas_int n,
                                          const rocblas_int batch_count,
                                          size_t* size_scalars,

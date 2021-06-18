@@ -46,7 +46,7 @@ rocblas_status rocsolver_sytd2_hetd2_batched_impl(rocblas_handle handle,
     size_t size_tmptau;
     // size of array of pointers to workspace (batched case)
     size_t size_workArr;
-    rocsolver_sytd2_hetd2_getMemorySize<T, true>(n, batch_count, &size_scalars, &size_work,
+    rocsolver_sytd2_hetd2_getMemorySize<true, T>(n, batch_count, &size_scalars, &size_work,
                                                  &size_norms, &size_tmptau, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))

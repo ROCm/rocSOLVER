@@ -14,7 +14,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_labrd_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
                                    const rocblas_int k,

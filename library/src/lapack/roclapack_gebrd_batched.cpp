@@ -53,7 +53,7 @@ rocblas_status rocsolver_gebrd_batched_impl(rocblas_handle handle,
     // size for temporary resulting orthogonal matrices when calling LABRD
     size_t size_X;
     size_t size_Y;
-    rocsolver_gebrd_getMemorySize<T, true>(m, n, batch_count, &size_scalars, &size_work_workArr,
+    rocsolver_gebrd_getMemorySize<true, T>(m, n, batch_count, &size_scalars, &size_work_workArr,
                                            &size_Abyx_norms, &size_X, &size_Y);
 
     if(rocblas_is_device_memory_size_query(handle))
