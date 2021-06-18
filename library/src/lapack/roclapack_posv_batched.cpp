@@ -19,6 +19,8 @@ rocblas_status rocsolver_posv_batched_impl(rocblas_handle handle,
     ROCSOLVER_ENTER_TOP("posv_batched", "--uplo", uplo, "-n", n, "--nrhs", nrhs, "--lda", lda,
                         "--ldb", ldb, "--batch_count", batch_count);
 
+    using S = decltype(std::real(T{}));
+
     if(!handle)
         return rocblas_status_invalid_handle;
 
@@ -41,24 +43,24 @@ rocblas_status rocsolver_posv_batched_impl(rocblas_handle handle,
     size_t size_scalars;
     // size of reusable workspace (and for calling TRSM)
     size_t size_work1, size_work2, size_work3, size_work4;
-    // extra requirements for calling POTRF
-    size_t size_pivots, size_iinfo;
+    // extra requirements for calling POTRF and to copy B
+    size_t size_pivots_savedB, size_iinfo;
     rocsolver_posv_getMemorySize<true, T>(n, nrhs, uplo, batch_count, &size_scalars, &size_work1,
-                                          &size_work2, &size_work3, &size_work4, &size_pivots,
-                                          &size_iinfo);
+                                          &size_work2, &size_work3, &size_work4,
+                                          &size_pivots_savedB, &size_iinfo);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
-                                                      size_work3, size_work4, size_pivots,
+                                                      size_work3, size_work4, size_pivots_savedB,
                                                       size_iinfo);
 
     // always allocate all required memory for TRSM optimal performance
     bool optim_mem = true;
 
     // memory workspace allocation
-    void *scalars, *work1, *work2, *work3, *work4, *pivots, *iinfo;
+    void *scalars, *work1, *work2, *work3, *work4, *pivots_savedB, *iinfo;
     rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
-                              size_pivots, size_iinfo);
+                              size_pivots_savedB, size_iinfo);
 
     if(!mem)
         return rocblas_status_memory_error;
@@ -68,15 +70,15 @@ rocblas_status rocsolver_posv_batched_impl(rocblas_handle handle,
     work2 = mem[2];
     work3 = mem[3];
     work4 = mem[4];
-    pivots = mem[5];
+    pivots_savedB = mem[5];
     iinfo = mem[6];
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_posv_template<true, T>(
+    return rocsolver_posv_template<true, T, S>(
         handle, uplo, n, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, info, batch_count,
-        (T*)scalars, work1, work2, work3, work4, (T*)pivots, (rocblas_int*)iinfo, optim_mem);
+        (T*)scalars, work1, work2, work3, work4, (T*)pivots_savedB, (rocblas_int*)iinfo, optim_mem);
 }
 
 /*
