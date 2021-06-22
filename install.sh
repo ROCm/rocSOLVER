@@ -540,8 +540,8 @@ if [[ "${static_lib}" == true ]]; then
   cmake_common_options="${cmake_common_options} -DBUILD_SHARED_LIBS=OFF"
 fi
 
-if [[ "${optimal}" == true ]]; then
-  cmake_common_options="${cmake_common_options} -DOPTIMAL=ON"
+if [[ "${optimal}" == false ]]; then
+  cmake_common_options="${cmake_common_options} -DOPTIMAL=OFF"
 fi
 
 if [[ -n "${architecture}" ]]; then
