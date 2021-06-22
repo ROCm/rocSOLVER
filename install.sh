@@ -327,8 +327,10 @@ build_docs=false
 optimal=true
 cleanup=false
 build_sanitizer=false
-architecture=
 build_codecoverage=false
+unset architecture
+unset rocblas_dir
+unset rocsolver_dir
 
 
 # #################################################
@@ -544,7 +546,7 @@ if [[ "${optimal}" == false ]]; then
   cmake_common_options="${cmake_common_options} -DOPTIMAL=OFF"
 fi
 
-if [[ -n "${architecture}" ]]; then
+if [[ -n "${architecture+x}" ]]; then
   cmake_common_options="${cmake_common_options} -DAMDGPU_TARGETS=${architecture}"
 fi
 
