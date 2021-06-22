@@ -2094,6 +2094,162 @@ inline rocblas_status rocsolver_getrs(bool STRIDED,
 }
 /********************************************************/
 
+/******************** GESV ********************/
+// normal and strided_batched
+inline rocblas_status rocsolver_gesv(bool STRIDED,
+                                     rocblas_handle handle,
+                                     rocblas_int n,
+                                     rocblas_int nrhs,
+                                     float* A,
+                                     rocblas_int lda,
+                                     rocblas_stride stA,
+                                     rocblas_int* ipiv,
+                                     rocblas_stride stP,
+                                     float* B,
+                                     rocblas_int ldb,
+                                     rocblas_stride stB,
+                                     rocblas_int* info,
+                                     rocblas_int bc)
+{
+    return STRIDED
+        ? rocblas_status_not_implemented // rocsolver_sgesv_strided_batched(handle, n, nrhs, A, lda, stA, ipiv, stP, B, ldb, stB, info, bc)
+        : rocblas_status_not_implemented; // rocsolver_sgesv(handle, n, nrhs, A, lda, ipiv, B, ldb, info);
+}
+
+inline rocblas_status rocsolver_gesv(bool STRIDED,
+                                     rocblas_handle handle,
+                                     rocblas_int n,
+                                     rocblas_int nrhs,
+                                     double* A,
+                                     rocblas_int lda,
+                                     rocblas_stride stA,
+                                     rocblas_int* ipiv,
+                                     rocblas_stride stP,
+                                     double* B,
+                                     rocblas_int ldb,
+                                     rocblas_stride stB,
+                                     rocblas_int* info,
+                                     rocblas_int bc)
+{
+    return STRIDED
+        ? rocblas_status_not_implemented // rocsolver_dgesv_strided_batched(handle, n, nrhs, A, lda, stA, ipiv, stP, B, ldb, stB, info, bc)
+        : rocblas_status_not_implemented; // rocsolver_dgesv(handle, n, nrhs, A, lda, ipiv, B, ldb, info);
+}
+
+inline rocblas_status rocsolver_gesv(bool STRIDED,
+                                     rocblas_handle handle,
+                                     rocblas_int n,
+                                     rocblas_int nrhs,
+                                     rocblas_float_complex* A,
+                                     rocblas_int lda,
+                                     rocblas_stride stA,
+                                     rocblas_int* ipiv,
+                                     rocblas_stride stP,
+                                     rocblas_float_complex* B,
+                                     rocblas_int ldb,
+                                     rocblas_stride stB,
+                                     rocblas_int* info,
+                                     rocblas_int bc)
+{
+    return STRIDED
+        ? rocblas_status_not_implemented // rocsolver_cgesv_strided_batched(handle, n, nrhs, A, lda, stA, ipiv, stP, B, ldb, stB, info, bc)
+        : rocblas_status_not_implemented; // rocsolver_cgesv(handle, n, nrhs, A, lda, ipiv, B, ldb, info);
+}
+
+inline rocblas_status rocsolver_gesv(bool STRIDED,
+                                     rocblas_handle handle,
+                                     rocblas_int n,
+                                     rocblas_int nrhs,
+                                     rocblas_double_complex* A,
+                                     rocblas_int lda,
+                                     rocblas_stride stA,
+                                     rocblas_int* ipiv,
+                                     rocblas_stride stP,
+                                     rocblas_double_complex* B,
+                                     rocblas_int ldb,
+                                     rocblas_stride stB,
+                                     rocblas_int* info,
+                                     rocblas_int bc)
+{
+    return STRIDED
+        ? rocblas_status_not_implemented // rocsolver_zgesv_strided_batched(handle, n, nrhs, A, lda, stA, ipiv, stP, B, ldb, stB, info, bc)
+        : rocblas_status_not_implemented; // rocsolver_zgesv(handle, n, nrhs, A, lda, ipiv, B, ldb, info);
+}
+
+// batched
+inline rocblas_status rocsolver_gesv(bool STRIDED,
+                                     rocblas_handle handle,
+                                     rocblas_int n,
+                                     rocblas_int nrhs,
+                                     float* const A[],
+                                     rocblas_int lda,
+                                     rocblas_stride stA,
+                                     rocblas_int* ipiv,
+                                     rocblas_stride stP,
+                                     float* const B[],
+                                     rocblas_int ldb,
+                                     rocblas_stride stB,
+                                     rocblas_int* info,
+                                     rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_sgesv_batched(handle, n, nrhs, A, lda, ipiv, stP, B, ldb, info, bc);
+}
+
+inline rocblas_status rocsolver_gesv(bool STRIDED,
+                                     rocblas_handle handle,
+                                     rocblas_int n,
+                                     rocblas_int nrhs,
+                                     double* const A[],
+                                     rocblas_int lda,
+                                     rocblas_stride stA,
+                                     rocblas_int* ipiv,
+                                     rocblas_stride stP,
+                                     double* const B[],
+                                     rocblas_int ldb,
+                                     rocblas_stride stB,
+                                     rocblas_int* info,
+                                     rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_dgesv_batched(handle, n, nrhs, A, lda, ipiv, stP, B, ldb, info, bc);
+}
+
+inline rocblas_status rocsolver_gesv(bool STRIDED,
+                                     rocblas_handle handle,
+                                     rocblas_int n,
+                                     rocblas_int nrhs,
+                                     rocblas_float_complex* const A[],
+                                     rocblas_int lda,
+                                     rocblas_stride stA,
+                                     rocblas_int* ipiv,
+                                     rocblas_stride stP,
+                                     rocblas_float_complex* const B[],
+                                     rocblas_int ldb,
+                                     rocblas_stride stB,
+                                     rocblas_int* info,
+                                     rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_cgesv_batched(handle, n, nrhs, A, lda, ipiv, stP, B, ldb, info, bc);
+}
+
+inline rocblas_status rocsolver_gesv(bool STRIDED,
+                                     rocblas_handle handle,
+                                     rocblas_int n,
+                                     rocblas_int nrhs,
+                                     rocblas_double_complex* const A[],
+                                     rocblas_int lda,
+                                     rocblas_stride stA,
+                                     rocblas_int* ipiv,
+                                     rocblas_stride stP,
+                                     rocblas_double_complex* const B[],
+                                     rocblas_int ldb,
+                                     rocblas_stride stB,
+                                     rocblas_int* info,
+                                     rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_zgesv_batched(handle, n, nrhs, A, lda, ipiv, stP, B, ldb, info, bc);
+}
+/********************************************************/
+
 /******************** GETRI_OUTOFPLACE ********************/
 // normal and strided_batched
 inline rocblas_status rocsolver_getri_outofplace(bool STRIDED,
