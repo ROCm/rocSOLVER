@@ -81,8 +81,8 @@ rocblas_status rocsolver_gesv_batched_impl(rocblas_handle handle,
     // execution
     return rocsolver_gesv_template<true, false, T, S>(
         handle, n, nrhs, A, shiftA, lda, strideA, ipiv, strideP, B, shiftB, ldb, strideB, info,
-        batch_count, (T*)scalars, (rocblas_index_value_t<S>*)work, work1, work2, work3, work4,
-        (T*)pivotval, (rocblas_int*)pivotidx, (rocblas_int*)iinfo, optim_mem);
+        batch_count, (T*)scalars, work, work1, work2, work3, work4, (T*)pivotval,
+        (rocblas_int*)pivotidx, (rocblas_int*)iinfo, optim_mem);
 }
 
 /*
