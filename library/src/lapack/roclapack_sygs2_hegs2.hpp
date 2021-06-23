@@ -135,7 +135,6 @@ void rocsolver_sygs2_hegs2_getMemorySize(const rocblas_eform itype,
     if(itype == rocblas_eform_ax)
     {
         // extra workspace (for calling TRSV)
-        *size_work_wur = sizeof(rocblas_int) * batch_count;
         *size_store_wcs = max(*size_store_wcs, sizeof(rocblas_int) * batch_count);
     }
     else
@@ -266,7 +265,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                         handle, uplo, rocblas_operation_conjugate_transpose,
                         rocblas_diagonal_non_unit, n - k - 1, B, shiftB + idx2D(k + 1, k + 1, ldb),
                         ldb, strideB, A, shiftA + idx2D(k, k + 1, lda), lda, strideA, batch_count,
-                        (rocblas_int*)work_wur, (rocblas_int*)store_wcs, workArr);
+                        (rocblas_int*)store_wcs, workArr);
 
                     if(COMPLEX)
                         rocsolver_lacgv_template<T>(handle, n - k - 1, A,
@@ -307,7 +306,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                         handle, uplo, rocblas_operation_none, rocblas_diagonal_non_unit, n - k - 1,
                         B, shiftB + idx2D(k + 1, k + 1, ldb), ldb, strideB, A,
                         shiftA + idx2D(k + 1, k, lda), 1, strideA, batch_count,
-                        (rocblas_int*)work_wur, (rocblas_int*)store_wcs, workArr);
+                        (rocblas_int*)store_wcs, workArr);
                 }
             }
         }

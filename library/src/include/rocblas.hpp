@@ -1469,7 +1469,6 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
                                 rocblas_int ldb,
                                 rocblas_stride stride_B,
                                 rocblas_int batch_count,
-                                rocblas_int* w_unique_row,
                                 rocblas_int* w_completed_sec,
                                 T** workArr = nullptr)
 {
@@ -1479,7 +1478,7 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
 
     return rocblas_internal_trsv_substitution_template<ROCBLAS_TRSV_BLOCK, T>(
         handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B, offset_B, ldb,
-        stride_B, batch_count, w_unique_row, w_completed_sec);
+        stride_B, batch_count, w_completed_sec);
 }
 
 template <bool BATCHED,
@@ -1500,7 +1499,6 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
                                 rocblas_int ldb,
                                 rocblas_stride stride_B,
                                 rocblas_int batch_count,
-                                rocblas_int* w_unique_row,
                                 rocblas_int* w_completed_sec,
                                 T** workArr = nullptr)
 {
@@ -1510,7 +1508,7 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
 
     return rocblas_internal_trsv_substitution_template<ROCBLAS_TRSV_Z_BLOCK, T>(
         handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B, offset_B, ldb,
-        stride_B, batch_count, w_unique_row, w_completed_sec);
+        stride_B, batch_count, w_completed_sec);
 }
 
 // trsm memory sizes
