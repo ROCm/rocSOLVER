@@ -121,6 +121,8 @@ void rocsolver_sytd2_hetd2_getMemorySize(const rocblas_int n,
         return;
     }
 
+    size_t w_temp;
+
     // size of scalars (constants)
     *size_scalars = sizeof(T) * 3;
 
@@ -135,6 +137,10 @@ void rocsolver_sytd2_hetd2_getMemorySize(const rocblas_int n,
 
     // extra requirements to call LARFG
     rocsolver_larfg_getMemorySize<T>(n, batch_count, size_work, size_norms);
+
+    // extra requirements for calling symv/hemv
+    rocblasCall_symv_hemv_mem<BATCHED, T>(n, batch_count, &w_temp);
+    *size_work = std::max(*size_work, w_temp);
 }
 
 template <typename S, typename T, typename U>
@@ -234,7 +240,7 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
             rocblasCall_symv_hemv<T>(handle, uplo, n - 1 - j, tmptau, stridet, A,
                                      shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, A,
                                      shiftA + idx2D(j + 1, j, lda), 1, strideA, scalars + 1, 0, tau,
-                                     j, 1, strideP, batch_count, workArr);
+                                     j, 1, strideP, batch_count, work, workArr);
 
             // b. compute scalar tmptau*v'*A*v=tau'*v -> norms
             rocblasCall_dot<COMPLEX, T>(handle, n - 1 - j, tau, j, 1, strideP, A,
@@ -280,7 +286,7 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
             // a. compute tmptau*A*v -> tau
             rocblasCall_symv_hemv<T>(handle, uplo, j, tmptau, stridet, A, shiftA, lda, strideA, A,
                                      shiftA + idx2D(0, j, lda), 1, strideA, scalars + 1, 0, tau, 0,
-                                     1, strideP, batch_count, workArr);
+                                     1, strideP, batch_count, work, workArr);
 
             // b. compute scalar tmptau*v'*A*v=tau'*v -> norms
             rocblasCall_dot<COMPLEX, T>(handle, j, tau, 0, 1, strideP, A, shiftA + idx2D(0, j, lda),
