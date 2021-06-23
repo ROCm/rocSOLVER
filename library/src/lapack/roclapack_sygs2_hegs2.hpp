@@ -261,11 +261,11 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                                     shiftB + idx2D(k, k + 1, ldb), ldb, strideB,
                                                     batch_count);
 
-                    rocblasCall_trsv<BATCHED, T>(
-                        handle, uplo, rocblas_operation_conjugate_transpose,
-                        rocblas_diagonal_non_unit, n - k - 1, B, shiftB + idx2D(k + 1, k + 1, ldb),
-                        ldb, strideB, A, shiftA + idx2D(k, k + 1, lda), lda, strideA, batch_count,
-                        (rocblas_int*)store_wcs, workArr);
+                    rocblasCall_trsv<BATCHED, T>(handle, uplo, rocblas_operation_conjugate_transpose,
+                                                 rocblas_diagonal_non_unit, n - k - 1, B,
+                                                 shiftB + idx2D(k + 1, k + 1, ldb), ldb, strideB, A,
+                                                 shiftA + idx2D(k, k + 1, lda), lda, strideA,
+                                                 batch_count, (rocblas_int*)store_wcs, workArr);
 
                     if(COMPLEX)
                         rocsolver_lacgv_template<T>(handle, n - k - 1, A,
@@ -302,11 +302,11 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                         shiftB + idx2D(k + 1, k, ldb), 1, strideB, A,
                                         shiftA + idx2D(k + 1, k, lda), 1, strideA, batch_count);
 
-                    rocblasCall_trsv<BATCHED, T>(
-                        handle, uplo, rocblas_operation_none, rocblas_diagonal_non_unit, n - k - 1,
-                        B, shiftB + idx2D(k + 1, k + 1, ldb), ldb, strideB, A,
-                        shiftA + idx2D(k + 1, k, lda), 1, strideA, batch_count,
-                        (rocblas_int*)store_wcs, workArr);
+                    rocblasCall_trsv<BATCHED, T>(handle, uplo, rocblas_operation_none,
+                                                 rocblas_diagonal_non_unit, n - k - 1, B,
+                                                 shiftB + idx2D(k + 1, k + 1, ldb), ldb, strideB, A,
+                                                 shiftA + idx2D(k + 1, k, lda), 1, strideA,
+                                                 batch_count, (rocblas_int*)store_wcs, workArr);
                 }
             }
         }
