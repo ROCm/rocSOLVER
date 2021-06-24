@@ -29,7 +29,7 @@ __global__ void set_tau(const rocblas_int batch_count, T* tmptau, T* tau, const 
 
 /** set_tridiag kernel copies results to set tridiagonal form in A, diagonal elements in D
     and off-diagonal elements in E **/
-template <typename S, typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename S, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 __global__ void set_tridiag(const rocblas_fill uplo,
                             const rocblas_int n,
                             U A,
@@ -65,7 +65,7 @@ __global__ void set_tridiag(const rocblas_fill uplo,
     }
 }
 
-template <typename S, typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename S, typename U, std::enable_if_t<is_complex<T>, int> = 0>
 __global__ void set_tridiag(const rocblas_fill uplo,
                             const rocblas_int n,
                             U A,
@@ -101,7 +101,7 @@ __global__ void set_tridiag(const rocblas_fill uplo,
     }
 }
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_sytd2_hetd2_getMemorySize(const rocblas_int n,
                                          const rocblas_int batch_count,
                                          size_t* size_scalars,
@@ -137,7 +137,7 @@ void rocsolver_sytd2_hetd2_getMemorySize(const rocblas_int n,
     rocsolver_larfg_getMemorySize<T>(n, batch_count, size_work, size_norms);
 }
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_sytd2_hetd2_argCheck(rocblas_handle handle,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,
@@ -169,7 +169,7 @@ rocblas_status rocsolver_sytd2_hetd2_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename S, typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,
@@ -306,8 +306,8 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
     }
 
     // Copy results (set tridiagonal form in A)
-    hipLaunchKernelGGL((set_tridiag<S, T>), grid_n, threads, 0, stream, uplo, n, A, shiftA, lda,
-                       strideA, D, strideD, E, strideE);
+    hipLaunchKernelGGL(set_tridiag<T>, grid_n, threads, 0, stream, uplo, n, A, shiftA, lda, strideA,
+                       D, strideD, E, strideE);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;

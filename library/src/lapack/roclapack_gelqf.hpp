@@ -15,7 +15,7 @@
 #include "roclapack_gelq2.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_gelqf_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
                                    const rocblas_int batch_count,
@@ -39,7 +39,7 @@ void rocsolver_gelqf_getMemorySize(const rocblas_int m,
     if(m <= GExQF_GExQ2_SWITCHSIZE || n <= GExQF_GExQ2_SWITCHSIZE)
     {
         // requirements for a single GELQ2 call
-        rocsolver_gelq2_getMemorySize<T, BATCHED>(m, n, batch_count, size_scalars, size_work_workArr,
+        rocsolver_gelq2_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars, size_work_workArr,
                                                   size_Abyx_norms_trfact, size_diag_tmptr);
         *size_workArr = 0;
     }
@@ -52,14 +52,14 @@ void rocsolver_gelqf_getMemorySize(const rocblas_int m,
         *size_Abyx_norms_trfact = sizeof(T) * jb * jb * batch_count;
 
         // requirements for calling GELQ2 with sub blocks
-        rocsolver_gelq2_getMemorySize<T, BATCHED>(jb, n, batch_count, size_scalars, &w1, &s2, &s1);
+        rocsolver_gelq2_getMemorySize<BATCHED, T>(jb, n, batch_count, size_scalars, &w1, &s2, &s1);
         *size_Abyx_norms_trfact = max(s2, *size_Abyx_norms_trfact);
 
         // requirements for calling LARFT
-        rocsolver_larft_getMemorySize<T, BATCHED>(n, jb, batch_count, &unused, &w2, size_workArr);
+        rocsolver_larft_getMemorySize<BATCHED, T>(n, jb, batch_count, &unused, &w2, size_workArr);
 
         // requirements for calling LARFB
-        rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_right, m - jb, n, jb, batch_count,
+        rocsolver_larfb_getMemorySize<BATCHED, T>(rocblas_side_right, m - jb, n, jb, batch_count,
                                                   &s2, &unused);
 
         *size_work_workArr = max(w1, w2);

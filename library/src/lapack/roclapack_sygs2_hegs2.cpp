@@ -41,7 +41,7 @@ rocblas_status rocsolver_sygs2_hegs2_impl(rocblas_handle handle,
     size_t size_work, size_store_wcs;
     // size of array of pointers (only for batched case)
     size_t size_workArr;
-    rocsolver_sygs2_hegs2_getMemorySize<T, false>(itype, n, batch_count, &size_scalars, &size_work,
+    rocsolver_sygs2_hegs2_getMemorySize<false, T>(itype, n, batch_count, &size_scalars, &size_work,
                                                   &size_store_wcs, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))

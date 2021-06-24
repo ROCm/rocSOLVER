@@ -14,7 +14,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev,
                                          const rocblas_int m,
                                          const rocblas_int n,
@@ -42,7 +42,7 @@ void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev,
         // requirements for calling orgqr/ungqr
         if(m >= k)
         {
-            rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(m, n, k, batch_count, size_scalars,
+            rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(m, n, k, batch_count, size_scalars,
                                                             size_work, size_Abyx_tmptr, size_trfact,
                                                             size_workArr);
         }
@@ -50,7 +50,7 @@ void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev,
         {
             size_t s1 = sizeof(T) * batch_count * (m - 1) * m / 2;
             size_t s2;
-            rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(m - 1, m - 1, m - 1, batch_count,
+            rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(m - 1, m - 1, m - 1, batch_count,
                                                             size_scalars, &s2, size_Abyx_tmptr,
                                                             size_trfact, size_workArr);
             *size_work = max(s1, s2);
@@ -62,7 +62,7 @@ void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev,
         // requirements for calling orglq/unglq
         if(n > k)
         {
-            rocsolver_orglq_unglq_getMemorySize<T, BATCHED>(m, n, k, batch_count, size_scalars,
+            rocsolver_orglq_unglq_getMemorySize<BATCHED, T>(m, n, k, batch_count, size_scalars,
                                                             size_work, size_Abyx_tmptr, size_trfact,
                                                             size_workArr);
         }
@@ -70,7 +70,7 @@ void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev,
         {
             size_t s1 = sizeof(T) * batch_count * (n - 1) * n / 2;
             size_t s2;
-            rocsolver_orglq_unglq_getMemorySize<T, BATCHED>(n - 1, n - 1, n - 1, batch_count,
+            rocsolver_orglq_unglq_getMemorySize<BATCHED, T>(n - 1, n - 1, n - 1, batch_count,
                                                             size_scalars, &s2, size_Abyx_tmptr,
                                                             size_trfact, size_workArr);
             *size_work = max(s1, s2);

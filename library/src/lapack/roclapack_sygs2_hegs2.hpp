@@ -99,7 +99,7 @@ __global__ void sygs2_set_diag3(const rocblas_int k,
     }
 }
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_sygs2_hegs2_getMemorySize(const rocblas_eform itype,
                                          const rocblas_int n,
                                          const rocblas_int batch_count,

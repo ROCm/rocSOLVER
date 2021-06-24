@@ -15,7 +15,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_orglq_unglq_getMemorySize(const rocblas_int m,
                                          const rocblas_int n,
                                          const rocblas_int k,
@@ -38,7 +38,7 @@ void rocsolver_orglq_unglq_getMemorySize(const rocblas_int m,
     }
 
     size_t temp, unused;
-    rocsolver_orgl2_ungl2_getMemorySize<T, BATCHED>(m, n, batch_count, size_scalars,
+    rocsolver_orgl2_ungl2_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars,
                                                     size_Abyx_tmptr, size_workArr);
 
     if(k <= ORGxx_UNGxx_SWITCHSIZE)
@@ -55,8 +55,8 @@ void rocsolver_orglq_unglq_getMemorySize(const rocblas_int m,
 
         // size of workspace is maximum of what is needed by larft and larfb.
         // size of Abyx_tmptr is maximum of what is needed by orgl2/ungl2 and larfb.
-        rocsolver_larft_getMemorySize<T, BATCHED>(n, jb, batch_count, &unused, size_work, &unused);
-        rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_left, m - jb, n, jb, batch_count,
+        rocsolver_larft_getMemorySize<BATCHED, T>(n, jb, batch_count, &unused, size_work, &unused);
+        rocsolver_larfb_getMemorySize<BATCHED, T>(rocblas_side_left, m - jb, n, jb, batch_count,
                                                   &temp, &unused);
 
         *size_Abyx_tmptr = *size_Abyx_tmptr >= temp ? *size_Abyx_tmptr : temp;

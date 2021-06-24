@@ -14,7 +14,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_ormbr_unmbr_getMemorySize(const rocblas_storev storev,
                                          const rocblas_side side,
                                          const rocblas_int m,
@@ -42,12 +42,12 @@ void rocsolver_ormbr_unmbr_getMemorySize(const rocblas_storev storev,
 
     // requirements for calling ORMQR/UNMQR or ORMLQ/UNMLQ
     if(storev == rocblas_column_wise)
-        rocsolver_ormqr_unmqr_getMemorySize<T, BATCHED>(side, m, n, min(nq, k), batch_count,
+        rocsolver_ormqr_unmqr_getMemorySize<BATCHED, T>(side, m, n, min(nq, k), batch_count,
                                                         size_scalars, size_AbyxORwork,
                                                         size_diagORtmptr, size_trfact, size_workArr);
 
     else
-        rocsolver_ormlq_unmlq_getMemorySize<T, BATCHED>(side, m, n, min(nq, k), batch_count,
+        rocsolver_ormlq_unmlq_getMemorySize<BATCHED, T>(side, m, n, min(nq, k), batch_count,
                                                         size_scalars, size_AbyxORwork,
                                                         size_diagORtmptr, size_trfact, size_workArr);
 }

@@ -4,7 +4,7 @@
 
 #include "rocauxiliary_labrd.hpp"
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_labrd_impl(rocblas_handle handle,
                                     const rocblas_int m,
                                     const rocblas_int n,
@@ -53,7 +53,7 @@ rocblas_status rocsolver_labrd_impl(rocblas_handle handle,
     size_t size_work_workArr;
     // extra requirements for calling LARFG
     size_t size_norms;
-    rocsolver_labrd_getMemorySize<T, false>(m, n, k, batch_count, &size_scalars, &size_work_workArr,
+    rocsolver_labrd_getMemorySize<false, T>(m, n, k, batch_count, &size_scalars, &size_work_workArr,
                                             &size_norms);
 
     if(rocblas_is_device_memory_size_query(handle))
@@ -74,10 +74,10 @@ rocblas_status rocsolver_labrd_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_labrd_template<S, T>(handle, m, n, k, A, shiftA, lda, strideA, D, strideD, E,
-                                          strideE, tauq, strideQ, taup, strideP, X, shiftX, ldx,
-                                          strideX, Y, shiftY, ldy, strideY, batch_count,
-                                          (T*)scalars, work_workArr, (T*)norms);
+    return rocsolver_labrd_template<T>(handle, m, n, k, A, shiftA, lda, strideA, D, strideD, E,
+                                       strideE, tauq, strideQ, taup, strideP, X, shiftX, ldx,
+                                       strideX, Y, shiftY, ldy, strideY, batch_count, (T*)scalars,
+                                       work_workArr, (T*)norms);
 }
 
 /*
@@ -103,8 +103,7 @@ rocblas_status rocsolver_slabrd(rocblas_handle handle,
                                 float* Y,
                                 const rocblas_int ldy)
 {
-    return rocsolver_labrd_impl<float, float>(handle, m, n, k, A, lda, D, E, tauq, taup, X, ldx, Y,
-                                              ldy);
+    return rocsolver_labrd_impl<float>(handle, m, n, k, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
 }
 
 rocblas_status rocsolver_dlabrd(rocblas_handle handle,
@@ -122,8 +121,7 @@ rocblas_status rocsolver_dlabrd(rocblas_handle handle,
                                 double* Y,
                                 const rocblas_int ldy)
 {
-    return rocsolver_labrd_impl<double, double>(handle, m, n, k, A, lda, D, E, tauq, taup, X, ldx,
-                                                Y, ldy);
+    return rocsolver_labrd_impl<double>(handle, m, n, k, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
 }
 
 rocblas_status rocsolver_clabrd(rocblas_handle handle,
@@ -141,8 +139,8 @@ rocblas_status rocsolver_clabrd(rocblas_handle handle,
                                 rocblas_float_complex* Y,
                                 const rocblas_int ldy)
 {
-    return rocsolver_labrd_impl<float, rocblas_float_complex>(handle, m, n, k, A, lda, D, E, tauq,
-                                                              taup, X, ldx, Y, ldy);
+    return rocsolver_labrd_impl<rocblas_float_complex>(handle, m, n, k, A, lda, D, E, tauq, taup, X,
+                                                       ldx, Y, ldy);
 }
 
 rocblas_status rocsolver_zlabrd(rocblas_handle handle,
@@ -160,8 +158,8 @@ rocblas_status rocsolver_zlabrd(rocblas_handle handle,
                                 rocblas_double_complex* Y,
                                 const rocblas_int ldy)
 {
-    return rocsolver_labrd_impl<double, rocblas_double_complex>(handle, m, n, k, A, lda, D, E, tauq,
-                                                                taup, X, ldx, Y, ldy);
+    return rocsolver_labrd_impl<rocblas_double_complex>(handle, m, n, k, A, lda, D, E, tauq, taup,
+                                                        X, ldx, Y, ldy);
 }
 
 } // extern C

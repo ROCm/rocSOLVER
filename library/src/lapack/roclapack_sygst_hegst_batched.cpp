@@ -43,7 +43,7 @@ rocblas_status rocsolver_sygst_hegst_batched_impl(rocblas_handle handle,
     size_t size_scalars;
     // size of reusable workspace (and for calling TRSV or TRMV)
     size_t size_work_x_temp, size_workArr_temp_arr, size_store_wcs_invA, size_invA_arr;
-    rocsolver_sygst_hegst_getMemorySize<T, true>(itype, n, batch_count, &size_scalars,
+    rocsolver_sygst_hegst_getMemorySize<true, T>(itype, n, batch_count, &size_scalars,
                                                  &size_work_x_temp, &size_workArr_temp_arr,
                                                  &size_store_wcs_invA, &size_invA_arr);
 
@@ -72,7 +72,7 @@ rocblas_status rocsolver_sygst_hegst_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_sygst_hegst_template<true, false, S, T>(
+    return rocsolver_sygst_hegst_template<true, false, T, S>(
         handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
         (T*)scalars, work_x_temp, workArr_temp_arr, store_invA, invA_arr, optim_mem);
 }

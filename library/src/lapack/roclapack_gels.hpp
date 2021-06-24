@@ -68,10 +68,10 @@ void rocsolver_gels_getMemorySize(const rocblas_int m,
 
     if(m >= n)
     {
-        rocsolver_geqrf_getMemorySize<T, BATCHED>(m, n, batch_count, &gexxf_scalars, &gexxf_work,
+        rocsolver_geqrf_getMemorySize<BATCHED, T>(m, n, batch_count, &gexxf_scalars, &gexxf_work,
                                                   &gexxf_workArr, &gexxf_diag, &gexxf_trfact);
 
-        rocsolver_ormqr_unmqr_getMemorySize<T, BATCHED>(rocblas_side_left, m, nrhs, n, batch_count,
+        rocsolver_ormqr_unmqr_getMemorySize<BATCHED, T>(rocblas_side_left, m, nrhs, n, batch_count,
                                                         &ormxx_scalars, &ormxx_work, &ormxx_workArr,
                                                         &ormxx_trfact, &ormxx_workTrmm);
 
@@ -79,10 +79,10 @@ void rocsolver_gels_getMemorySize(const rocblas_int m,
     }
     else
     {
-        rocsolver_gelqf_getMemorySize<T, BATCHED>(m, n, batch_count, &gexxf_scalars, &gexxf_work,
+        rocsolver_gelqf_getMemorySize<BATCHED, T>(m, n, batch_count, &gexxf_scalars, &gexxf_work,
                                                   &gexxf_workArr, &gexxf_diag, &gexxf_trfact);
 
-        rocsolver_ormlq_unmlq_getMemorySize<T, BATCHED>(rocblas_side_left, n, nrhs, m, batch_count,
+        rocsolver_ormlq_unmlq_getMemorySize<BATCHED, T>(rocblas_side_left, n, nrhs, m, batch_count,
                                                         &ormxx_scalars, &ormxx_work, &ormxx_workArr,
                                                         &ormxx_trfact, &ormxx_workTrmm);
 

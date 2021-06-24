@@ -13,7 +13,7 @@
 #include "roclapack_sygs2_hegs2.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
                                          const rocblas_int n,
                                          const rocblas_int batch_count,
@@ -37,7 +37,7 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
     if(n < xxGST_xxGS2_BLOCKSIZE)
     {
         // requirements for calling a single SYGS2/HEGS2
-        rocsolver_sygs2_hegs2_getMemorySize<T, BATCHED>(itype, n, batch_count, size_scalars,
+        rocsolver_sygs2_hegs2_getMemorySize<BATCHED, T>(itype, n, batch_count, size_scalars,
                                                         size_work_x_temp, size_store_wcs_invA,
                                                         size_workArr_temp_arr);
         *size_invA_arr = 0;
@@ -48,7 +48,7 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
         size_t temp1, temp2, temp3, temp4, temp5, temp6, temp7, temp8;
 
         // requirements for calling SYGS2/HEGS2 for the subblocks
-        rocsolver_sygs2_hegs2_getMemorySize<T, BATCHED>(itype, kb, batch_count, size_scalars,
+        rocsolver_sygs2_hegs2_getMemorySize<BATCHED, T>(itype, kb, batch_count, size_scalars,
                                                         size_work_x_temp, size_store_wcs_invA,
                                                         size_workArr_temp_arr);
         *size_invA_arr = 0;
@@ -69,7 +69,7 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
     }
 }
 
-template <bool BATCHED, bool STRIDED, typename S, typename T, typename U, bool COMPLEX = is_complex<T>>
+template <bool BATCHED, bool STRIDED, typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
                                               const rocblas_eform itype,
                                               const rocblas_fill uplo,

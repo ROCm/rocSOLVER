@@ -306,8 +306,8 @@ void sygvd_hegvd_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cblas_sygvd_hegvd(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(), lwork,
-                          rwork.data(), lrwork, iwork.data(), liwork, hInfo[b]);
+        cblas_sygvd_hegvd<T>(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(),
+                             lwork, rwork.data(), lrwork, iwork.data(), liwork, hInfo[b]);
     }
 
     // (We expect the used input matrices to always converge. Testing
@@ -454,8 +454,8 @@ void sygvd_hegvd_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cblas_sygvd_hegvd<S, T>(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(),
-                                    lwork, rwork.data(), lrwork, iwork.data(), liwork, hInfo[b]);
+            cblas_sygvd_hegvd<T>(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(),
+                                 lwork, rwork.data(), lrwork, iwork.data(), liwork, hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
