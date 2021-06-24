@@ -1727,9 +1727,9 @@ inline rocblas_status rocsolver_potri(bool STRIDED,
                                       rocblas_int batch_count)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_spotri_strided_batched(handle, uplo, n, A, lda, stA, info, batch_count);
+        return rocsolver_spotri_strided_batched(handle, uplo, n, A, lda, stA, info, batch_count);
     else
-        return rocblas_status_not_implemented; // rocsolver_spotri(handle, uplo, n, A, lda, info);
+        return rocsolver_spotri(handle, uplo, n, A, lda, info);
 }
 
 inline rocblas_status rocsolver_potri(bool STRIDED,
@@ -1743,9 +1743,9 @@ inline rocblas_status rocsolver_potri(bool STRIDED,
                                       rocblas_int batch_count)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_dpotri_strided_batched(handle, uplo, n, A, lda, stA, info, batch_count);
+        return rocsolver_dpotri_strided_batched(handle, uplo, n, A, lda, stA, info, batch_count);
     else
-        return rocblas_status_not_implemented; // rocsolver_dpotri(handle, uplo, n, A, lda, info);
+        return rocsolver_dpotri(handle, uplo, n, A, lda, info);
 }
 
 inline rocblas_status rocsolver_potri(bool STRIDED,
@@ -1759,9 +1759,9 @@ inline rocblas_status rocsolver_potri(bool STRIDED,
                                       rocblas_int batch_count)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_cpotri_strided_batched(handle, uplo, n, A, lda, stA, info, batch_count);
+        return rocsolver_cpotri_strided_batched(handle, uplo, n, A, lda, stA, info, batch_count);
     else
-        return rocblas_status_not_implemented; // rocsolver_cpotri(handle, uplo, n, A, lda, info);
+        return rocsolver_cpotri(handle, uplo, n, A, lda, info);
 }
 
 inline rocblas_status rocsolver_potri(bool STRIDED,
@@ -1775,9 +1775,9 @@ inline rocblas_status rocsolver_potri(bool STRIDED,
                                       rocblas_int batch_count)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_zpotri_strided_batched(handle, uplo, n, A, lda, stA, info, batch_count);
+        return rocsolver_zpotri_strided_batched(handle, uplo, n, A, lda, stA, info, batch_count);
     else
-        return rocblas_status_not_implemented; // rocsolver_zpotri(handle, uplo, n, A, lda, info);
+        return rocsolver_zpotri(handle, uplo, n, A, lda, info);
 }
 
 // batched
@@ -1791,7 +1791,7 @@ inline rocblas_status rocsolver_potri(bool STRIDED,
                                       rocblas_int* info,
                                       rocblas_int batch_count)
 {
-    return rocblas_status_not_implemented; // rocsolver_spotri_batched(handle, uplo, n, A, lda, info, batch_count);
+    return rocsolver_spotri_batched(handle, uplo, n, A, lda, info, batch_count);
 }
 
 inline rocblas_status rocsolver_potri(bool STRIDED,
@@ -1804,7 +1804,7 @@ inline rocblas_status rocsolver_potri(bool STRIDED,
                                       rocblas_int* info,
                                       rocblas_int batch_count)
 {
-    return rocblas_status_not_implemented; // rocsolver_dpotri_batched(handle, uplo, n, A, lda, info, batch_count);
+    return rocsolver_dpotri_batched(handle, uplo, n, A, lda, info, batch_count);
 }
 
 inline rocblas_status rocsolver_potri(bool STRIDED,
@@ -1817,7 +1817,7 @@ inline rocblas_status rocsolver_potri(bool STRIDED,
                                       rocblas_int* info,
                                       rocblas_int batch_count)
 {
-    return rocblas_status_not_implemented; // rocsolver_cpotri_batched(handle, uplo, n, A, lda, info, batch_count);
+    return rocsolver_cpotri_batched(handle, uplo, n, A, lda, info, batch_count);
 }
 
 inline rocblas_status rocsolver_potri(bool STRIDED,
@@ -1830,7 +1830,7 @@ inline rocblas_status rocsolver_potri(bool STRIDED,
                                       rocblas_int* info,
                                       rocblas_int batch_count)
 {
-    return rocblas_status_not_implemented; // rocsolver_zpotri_batched(handle, uplo, n, A, lda, info, batch_count);
+    return rocsolver_zpotri_batched(handle, uplo, n, A, lda, info, batch_count);
 }
 /********************************************************/
 

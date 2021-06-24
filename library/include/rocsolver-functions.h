@@ -9703,6 +9703,234 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zposv_strided_batched(rocblas_handle h
 //! @}
 
 /*! @{
+    \brief POTRI computes the inverse \f$C = A^{-1}\f$ of a symmetric/hermitian positive definite matrix A.
+
+    \details
+    The inverse of matrix \f$A\f$ is computed as
+
+    \f[
+        \begin{array}{cl}
+        A^{-1} = U^{-1} U^{-1}' & \: \text{if uplo is upper, or}\\
+        A^{-1} = L^{-1}' L^{-1} & \: \text{if uplo is lower.}
+        \end{array}
+    \f]
+
+    where \f$U\f$ or \f$L\f$ is the triangular factor of the Cholesky factorization of \f$A\f$ returned by
+    \ref rocsolver_spotrf "POTRF".
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of matrix A.
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the factor L or U of the Cholesky factorization of A returned by
+              \ref rocsolver_spotrf "POTRF".
+              On exit, the inverses of A if info = 0; otherwise undefined.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              specifies the leading dimension of A.
+    @param[out]
+    info      pointer to a rocblas_int on the GPU.\n
+              If info = 0, successful exit for inversion of A_i.
+              If info = j > 0, A is singular. L[j,j] or U[j,j] is zero.
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotri(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 float* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotri(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 double* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotri(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_float_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_double_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief POTRI_BATCHED computes the inverse \f$C = A_i^{-1}\f$ of a batch of symmetric/hermitian
+    positive definite matrices \f$A_i\f$.
+
+    \details
+    The inverse of matrix \f$A_i\f$ in the batch is computed as
+
+    \f[
+        \begin{array}{cl}
+        A_i^{-1} = U_i^{-1} U_i^{-1}' & \: \text{if uplo is upper, or}\\
+        A_i^{-1} = L_i^{-1}' L_i^{-1} & \: \text{if uplo is lower.}
+        \end{array}
+    \f]
+
+    where \f$U_i\f$ or \f$L_i\f$ is the triangular factor of the Cholesky factorization of \f$A_i\f$ returned by
+    \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of matrix A_i.
+    @param[inout]
+    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+              On entry, the factor L_i or U_i of the Cholesky factorization of A_i returned by
+              \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+              On exit, the inverses of A_i if info[i] = 0; otherwise undefined.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              specifies the leading dimension of A_i.
+    @param[out]
+    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+              If info[i] = 0, successful exit for inversion of A_i.
+              If info[i] = j > 0, A_i is singular. L_i[j,j] or U_i[j,j] is zero.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotri_batched(rocblas_handle handle,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         float* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotri_batched(rocblas_handle handle,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         double* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotri_batched(rocblas_handle handle,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_float_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_batched(rocblas_handle handle,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_double_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief POTRI_STRIDED_BATCHED computes the inverse \f$C = A_i^{-1}\f$ of a batch of symmetric/hermitian
+    positive definite matrices \f$A_i\f$.
+
+    \details
+    The inverse of matrix \f$A_i\f$ in the batch is computed as
+
+    \f[
+        \begin{array}{cl}
+        A_i^{-1} = U_i^{-1} U_i^{-1}' & \: \text{if uplo is upper, or}\\
+        A_i^{-1} = L_i^{-1}' L_i^{-1} & \: \text{if uplo is lower.}
+        \end{array}
+    \f]
+
+    where \f$U_i\f$ or \f$L_i\f$ is the triangular factor of the Cholesky factorization of \f$A_i\f$ returned by
+    \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the factorization is upper or lower triangular.
+              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of matrix A_i.
+    @param[inout]
+    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+              On entry, the factor L_i or U_i of the Cholesky factorization of A_i returned by
+              \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+              On exit, the inverses of A_i if info[i] = 0; otherwise undefined.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              specifies the leading dimension of A_i.
+    @param[in]
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_i to the next one A_(i+1).
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[out]
+    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+              If info[i] = 0, successful exit for inversion of A_i.
+              If info[i] = j > 0, A_i is singular. L_i[j,j] or U_i[j,j] is zero.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotri_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 float* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotri_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 double* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotri_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_float_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_double_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+//! @}
+
+/*! @{
     \brief GESVD computes the singular values and optionally the singular
     vectors of a general m-by-n matrix A (Singular Value Decomposition).
 
