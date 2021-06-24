@@ -12,7 +12,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_larf_getMemorySize(const rocblas_side side,
                                   const rocblas_int m,
                                   const rocblas_int n,

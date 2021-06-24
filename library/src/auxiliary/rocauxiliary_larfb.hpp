@@ -64,7 +64,7 @@ __global__ void addmatA1(const rocblas_int ldw,
     }
 }
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_larfb_getMemorySize(const rocblas_side side,
                                    const rocblas_int m,
                                    const rocblas_int n,

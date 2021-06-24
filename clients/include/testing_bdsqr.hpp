@@ -11,7 +11,7 @@
 #include "rocsolver_arguments.hpp"
 #include "rocsolver_test.hpp"
 
-template <typename S, typename T>
+template <typename T, typename S>
 void bdsqr_checkBadArgs(const rocblas_handle handle,
                         const rocblas_fill uplo,
                         const rocblas_int n,
@@ -99,7 +99,7 @@ void testing_bdsqr_bad_arg()
                        ldu, dC.data(), ldc, dinfo.data());
 }
 
-template <bool CPU, bool GPU, typename S, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
+template <bool CPU, bool GPU, typename T, typename S, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void bdsqr_initData(const rocblas_handle handle,
                     const rocblas_fill uplo,
                     const rocblas_int n,
@@ -223,8 +223,8 @@ void bdsqr_getError(const rocblas_handle handle,
     std::vector<S> E(nv);
 
     // input data initialization
-    bdsqr_initData<true, true, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc,
-                                     dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
+    bdsqr_initData<true, true, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc,
+                                  dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
 
     // execute computations
     // CPU lapack
@@ -358,8 +358,8 @@ void bdsqr_getPerfData(const rocblas_handle handle,
 
     if(!perf)
     {
-        bdsqr_initData<true, false, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC,
-                                          ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
+        bdsqr_initData<true, false, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC,
+                                       ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
@@ -368,14 +368,14 @@ void bdsqr_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    bdsqr_initData<true, false, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC,
-                                      ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
+    bdsqr_initData<true, false, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc,
+                                   dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        bdsqr_initData<false, true, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC,
-                                          ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
+        bdsqr_initData<false, true, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC,
+                                       ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
 
         CHECK_ROCBLAS_ERROR(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(),
                                             dV.data(), ldv, dU.data(), ldu, dC.data(), ldc,
@@ -395,8 +395,8 @@ void bdsqr_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        bdsqr_initData<false, true, S, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC,
-                                          ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
+        bdsqr_initData<false, true, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC,
+                                       ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
 
         start = get_time_us_sync(stream);
         rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(), dV.data(), ldv,

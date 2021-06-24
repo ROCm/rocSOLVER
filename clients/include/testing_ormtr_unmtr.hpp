@@ -137,8 +137,7 @@ void ormtr_unmtr_initData(const rocblas_handle handle,
         }
 
         // compute sytrd/hetrd
-        cblas_sytrd_hetrd<S, T>(uplo, nq, hA[0], lda, D.data(), E.data(), hIpiv[0], hW.data(),
-                                size_W);
+        cblas_sytrd_hetrd<T>(uplo, nq, hA[0], lda, D.data(), E.data(), hIpiv[0], hW.data(), size_W);
     }
 
     if(GPU)

@@ -14,7 +14,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_orml2_unml2_getMemorySize(const rocblas_side side,
                                          const rocblas_int m,
                                          const rocblas_int n,
@@ -39,7 +39,7 @@ void rocsolver_orml2_unml2_getMemorySize(const rocblas_side side,
     *size_diag = sizeof(T) * batch_count;
 
     // memory requirements to call larf
-    rocsolver_larf_getMemorySize<T, BATCHED>(side, m, n, batch_count, size_scalars, size_Abyx,
+    rocsolver_larf_getMemorySize<BATCHED, T>(side, m, n, batch_count, size_scalars, size_Abyx,
                                              size_workArr);
 }
 

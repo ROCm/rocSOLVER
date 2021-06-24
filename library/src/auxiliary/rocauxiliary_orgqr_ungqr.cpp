@@ -43,7 +43,7 @@ rocblas_status rocsolver_orgqr_ungqr_impl(rocblas_handle handle,
     size_t size_Abyx_tmptr;
     // size of temporary array for triangular factor
     size_t size_trfact;
-    rocsolver_orgqr_ungqr_getMemorySize<T, false>(m, n, k, batch_count, &size_scalars, &size_work,
+    rocsolver_orgqr_ungqr_getMemorySize<false, T>(m, n, k, batch_count, &size_scalars, &size_work,
                                                   &size_Abyx_tmptr, &size_trfact, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))

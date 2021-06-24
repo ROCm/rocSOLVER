@@ -45,7 +45,7 @@ __global__ void orgl2_init_ident(const rocblas_int m,
     }
 }
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_orgl2_ungl2_getMemorySize(const rocblas_int m,
                                          const rocblas_int n,
                                          const rocblas_int batch_count,
@@ -63,7 +63,7 @@ void rocsolver_orgl2_ungl2_getMemorySize(const rocblas_int m,
     }
 
     // memory requirements to call larf
-    rocsolver_larf_getMemorySize<T, BATCHED>(rocblas_side_right, m, n, batch_count, size_scalars,
+    rocsolver_larf_getMemorySize<BATCHED, T>(rocblas_side_right, m, n, batch_count, size_scalars,
                                              size_Abyx, size_workArr);
 }
 

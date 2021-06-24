@@ -219,10 +219,10 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
 
     // workspace required for the bidiagonalization
     if(thinSVD)
-        rocsolver_gebrd_getMemorySize<T, BATCHED>(k, k, batch_count, size_scalars, &w[0], &a[0],
+        rocsolver_gebrd_getMemorySize<BATCHED, T>(k, k, batch_count, size_scalars, &w[0], &a[0],
                                                   &x[0], &y[0]);
     else
-        rocsolver_gebrd_getMemorySize<T, BATCHED>(m, n, batch_count, size_scalars, &w[0], &a[0],
+        rocsolver_gebrd_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars, &w[0], &a[0],
                                                   &x[0], &y[0]);
 
     // workspace required for the SVD of the bidiagonal form
@@ -232,45 +232,45 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
     if(thinSVD)
     {
         if(row)
-            rocsolver_geqrf_getMemorySize<T, BATCHED>(m, n, batch_count, &unused, &w[2], &x[1],
+            rocsolver_geqrf_getMemorySize<BATCHED, T>(m, n, batch_count, &unused, &w[2], &x[1],
                                                       &y[1], &unused);
         else
-            rocsolver_gelqf_getMemorySize<T, BATCHED>(m, n, batch_count, &unused, &w[2], &x[1],
+            rocsolver_gelqf_getMemorySize<BATCHED, T>(m, n, batch_count, &unused, &w[2], &x[1],
                                                       &y[1], &unused);
     }
 
     // extra requirements for orthonormal/unitary matrix generation
     // ormbr
     if(thinSVD && !fast_thinSVD && !leadvN)
-        rocsolver_ormbr_unmbr_getMemorySize<T, BATCHED>(storev_lead, side, m, n, k, batch_count,
+        rocsolver_ormbr_unmbr_getMemorySize<BATCHED, T>(storev_lead, side, m, n, k, batch_count,
                                                         &unused, &a[1], &y[2], &x[2], &unused);
     // orgbr
     if(thinSVD)
     {
         if(!othervN)
-            rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(storev_other, k, k, k, batch_count,
+            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(storev_other, k, k, k, batch_count,
                                                             &unused, &w[3], &a[2], &x[3], &unused);
 
         if(fast_thinSVD && !leadvN)
-            rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(storev_lead, k, k, k, batch_count,
+            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(storev_lead, k, k, k, batch_count,
                                                             &unused, &w[4], &a[3], &x[4], &unused);
     }
     else
     {
         mn = (row && leftvS) ? n : m;
         if(leftvS || leftvA)
-            rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(
+            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(
                 rocblas_column_wise, m, mn, n, batch_count, &unused, &w[3], &a[2], &x[3], &unused);
         else if(leftvO)
-            rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(
+            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(
                 rocblas_column_wise, m, k, n, batch_count, &unused, &w[3], &a[2], &x[3], &unused);
 
         mn = (!row && rightvS) ? m : n;
         if(rightvS || rightvA)
-            rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(rocblas_row_wise, mn, n, m, batch_count,
+            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(rocblas_row_wise, mn, n, m, batch_count,
                                                             &unused, &w[4], &a[3], &x[4], &unused);
         else if(rightvO)
-            rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(rocblas_row_wise, k, n, m, batch_count,
+            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(rocblas_row_wise, k, n, m, batch_count,
                                                             &unused, &w[4], &a[3], &x[4], &unused);
     }
     // orgqr/orglq
@@ -279,19 +279,19 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
         if(leadvA)
         {
             if(row)
-                rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(kk, kk, k, batch_count, &unused,
+                rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(kk, kk, k, batch_count, &unused,
                                                                 &w[5], &a[4], &x[5], &unused);
             else
-                rocsolver_orglq_unglq_getMemorySize<T, BATCHED>(kk, kk, k, batch_count, &unused,
+                rocsolver_orglq_unglq_getMemorySize<BATCHED, T>(kk, kk, k, batch_count, &unused,
                                                                 &w[5], &a[4], &x[5], &unused);
         }
         else
         {
             if(row)
-                rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(m, n, k, batch_count, &unused,
+                rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(m, n, k, batch_count, &unused,
                                                                 &w[5], &a[4], &x[5], &unused);
             else
-                rocsolver_orglq_unglq_getMemorySize<T, BATCHED>(m, n, k, batch_count, &unused,
+                rocsolver_orglq_unglq_getMemorySize<BATCHED, T>(m, n, k, batch_count, &unused,
                                                                 &w[5], &a[4], &x[5], &unused);
         }
     }

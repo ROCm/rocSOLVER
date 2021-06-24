@@ -49,7 +49,7 @@ rocblas_status rocsolver_ormql_unmql_impl(rocblas_handle handle,
     size_t size_trfact;
     // size of arrays of pointers (for batched cases)
     size_t size_workArr;
-    rocsolver_ormql_unmql_getMemorySize<T, false>(side, m, n, k, batch_count, &size_scalars,
+    rocsolver_ormql_unmql_getMemorySize<false, T>(side, m, n, k, batch_count, &size_scalars,
                                                   &size_AbyxORwork, &size_diagORtmptr, &size_trfact,
                                                   &size_workArr);
 

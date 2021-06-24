@@ -39,7 +39,7 @@ rocblas_status rocsolver_org2r_ung2r_impl(rocblas_handle handle,
     size_t size_workArr;
     // extra requirements for calling LARF
     size_t size_Abyx;
-    rocsolver_org2r_ung2r_getMemorySize<T, false>(m, n, batch_count, &size_scalars, &size_Abyx,
+    rocsolver_org2r_ung2r_getMemorySize<false, T>(m, n, batch_count, &size_scalars, &size_Abyx,
                                                   &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))

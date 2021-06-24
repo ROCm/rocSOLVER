@@ -15,7 +15,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_gebd2_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
                                    const rocblas_int batch_count,
@@ -35,14 +35,14 @@ void rocsolver_gebd2_getMemorySize(const rocblas_int m,
     // size of Abyx_norms is maximum of what is needed by larf and larfg
     // size_work_workArr is maximum of re-usable work space and array of pointers to workspace
     size_t s1, s2, w1, w2;
-    rocsolver_larf_getMemorySize<T, BATCHED>(rocblas_side_both, m, n, batch_count, size_scalars,
+    rocsolver_larf_getMemorySize<BATCHED, T>(rocblas_side_both, m, n, batch_count, size_scalars,
                                              &s1, &w1);
     rocsolver_larfg_getMemorySize<T>(max(m, n), batch_count, &w2, &s2);
     *size_work_workArr = max(w1, w2);
     *size_Abyx_norms = max(s1, s2);
 }
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_gebd2_gebrd_argCheck(rocblas_handle handle,
                                               const rocblas_int m,
                                               const rocblas_int n,
@@ -74,7 +74,7 @@ rocblas_status rocsolver_gebd2_gebrd_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename S, typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,

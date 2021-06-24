@@ -40,7 +40,7 @@ rocblas_status rocsolver_orgbr_ungbr_impl(rocblas_handle handle,
     size_t size_work;
     size_t size_Abyx_tmptr;
     size_t size_trfact;
-    rocsolver_orgbr_ungbr_getMemorySize<T, false>(storev, m, n, k, batch_count, &size_scalars,
+    rocsolver_orgbr_ungbr_getMemorySize<false, T>(storev, m, n, k, batch_count, &size_scalars,
                                                   &size_work, &size_Abyx_tmptr, &size_trfact,
                                                   &size_workArr);
 

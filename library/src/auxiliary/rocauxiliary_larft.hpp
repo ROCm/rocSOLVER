@@ -136,7 +136,7 @@ __global__ void set_tau(const rocblas_int k, T* tau, const rocblas_stride stride
     }
 }
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_larft_getMemorySize(const rocblas_int n,
                                    const rocblas_int k,
                                    const rocblas_int batch_count,

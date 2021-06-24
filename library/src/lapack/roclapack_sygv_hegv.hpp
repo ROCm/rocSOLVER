@@ -65,7 +65,7 @@ void rocsolver_sygv_hegv_getMemorySize(const rocblas_eform itype,
     *size_iinfo = max(*size_iinfo, sizeof(rocblas_int) * batch_count);
 
     // requirements for calling SYGST/HEGST
-    rocsolver_sygst_hegst_getMemorySize<T, BATCHED>(itype, n, batch_count, &unused, &temp1, &temp2,
+    rocsolver_sygst_hegst_getMemorySize<BATCHED, T>(itype, n, batch_count, &unused, &temp1, &temp2,
                                                     &temp3, &temp4);
     *size_work1 = max(*size_work1, temp1);
     *size_work2 = max(*size_work2, temp2);
@@ -96,7 +96,7 @@ void rocsolver_sygv_hegv_getMemorySize(const rocblas_eform itype,
     }
 }
 
-template <typename S, typename T>
+template <typename T, typename S>
 rocblas_status rocsolver_sygv_hegv_argCheck(rocblas_handle handle,
                                             const rocblas_eform itype,
                                             const rocblas_evect evect,
@@ -196,7 +196,7 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
     T one = 1;
 
     // perform Cholesky factorization of B
-    rocsolver_potrf_template<BATCHED, S, T>(handle, uplo, n, B, shiftB, ldb, strideB, info,
+    rocsolver_potrf_template<BATCHED, T, S>(handle, uplo, n, B, shiftB, ldb, strideB, info,
                                             batch_count, scalars, work1, work2, work3, work4,
                                             (T*)pivots_workArr, iinfo, optim_mem);
 
@@ -206,7 +206,7 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
         positive-definite case) **/
 
     // reduce to standard eigenvalue problem and solve
-    rocsolver_sygst_hegst_template<BATCHED, STRIDED, S, T>(
+    rocsolver_sygst_hegst_template<BATCHED, STRIDED, T, S>(
         handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
         scalars, work1, work2, work3, work4, optim_mem);
 

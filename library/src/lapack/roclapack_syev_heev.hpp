@@ -60,12 +60,12 @@ __global__ void scalar_case(const rocblas_evect evect,
 }
 
 /** Argument checking **/
-template <typename W, typename S>
+template <typename T, typename S>
 rocblas_status rocsolver_syev_heev_argCheck(rocblas_handle handle,
                                             const rocblas_evect evect,
                                             const rocblas_fill uplo,
                                             const rocblas_int n,
-                                            W A,
+                                            T A,
                                             const rocblas_int lda,
                                             S* D,
                                             S* E,
@@ -125,13 +125,13 @@ void rocsolver_syev_heev_getMemorySize(const rocblas_evect evect,
     size_t t1 = 0, t2 = 0;
 
     // requirements for tridiagonalization (sytrd/hetrd)
-    rocsolver_sytrd_hetrd_getMemorySize<T, BATCHED>(n, batch_count, size_scalars, &w1, &a1, &t1,
+    rocsolver_sytrd_hetrd_getMemorySize<BATCHED, T>(n, batch_count, size_scalars, &w1, &a1, &t1,
                                                     size_workArr);
 
     if(evect == rocblas_evect_original)
     {
         // extra requirements for orgtr/ungtr
-        rocsolver_orgtr_ungtr_getMemorySize<T, BATCHED>(uplo, n, batch_count, &unused, &w2, &a2,
+        rocsolver_orgtr_ungtr_getMemorySize<BATCHED, T>(uplo, n, batch_count, &unused, &w2, &a2,
                                                         &t2, &unused);
 
         // extra requirements for computing eigenvalues and vectors (steqr)

@@ -47,7 +47,7 @@ rocblas_status rocsolver_ormbr_unmbr_impl(rocblas_handle handle,
     size_t size_AbyxORwork, size_diagORtmptr;
     size_t size_trfact;
     size_t size_workArr;
-    rocsolver_ormbr_unmbr_getMemorySize<T, false>(storev, side, m, n, k, batch_count, &size_scalars,
+    rocsolver_ormbr_unmbr_getMemorySize<false, T>(storev, side, m, n, k, batch_count, &size_scalars,
                                                   &size_AbyxORwork, &size_diagORtmptr, &size_trfact,
                                                   &size_workArr);
 

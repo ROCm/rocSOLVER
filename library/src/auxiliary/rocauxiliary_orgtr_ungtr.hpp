@@ -14,7 +14,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_orgtr_ungtr_getMemorySize(const rocblas_fill uplo,
                                          const rocblas_int n,
                                          const rocblas_int batch_count,
@@ -40,7 +40,7 @@ void rocsolver_orgtr_ungtr_getMemorySize(const rocblas_fill uplo,
     if(uplo == rocblas_fill_upper)
     {
         // requirements for calling orgql/ungql
-        rocsolver_orgql_ungql_getMemorySize<T, BATCHED>(n - 1, n - 1, n - 1, batch_count,
+        rocsolver_orgql_ungql_getMemorySize<BATCHED, T>(n - 1, n - 1, n - 1, batch_count,
                                                         size_scalars, &w2, size_Abyx_tmptr,
                                                         size_trfact, size_workArr);
     }
@@ -48,7 +48,7 @@ void rocsolver_orgtr_ungtr_getMemorySize(const rocblas_fill uplo,
     else
     {
         // requirements for calling orgqr/ungqr
-        rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(n - 1, n - 1, n - 1, batch_count,
+        rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(n - 1, n - 1, n - 1, batch_count,
                                                         size_scalars, &w2, size_Abyx_tmptr,
                                                         size_trfact, size_workArr);
     }

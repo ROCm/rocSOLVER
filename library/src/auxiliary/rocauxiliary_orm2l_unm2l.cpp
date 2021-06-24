@@ -49,7 +49,7 @@ rocblas_status rocsolver_orm2l_unm2l_impl(rocblas_handle handle,
     size_t size_diag;
     // size of arrays of pointers (for batched cases)
     size_t size_workArr;
-    rocsolver_orm2l_unm2l_getMemorySize<T, false>(side, m, n, k, batch_count, &size_scalars,
+    rocsolver_orm2l_unm2l_getMemorySize<false, T>(side, m, n, k, batch_count, &size_scalars,
                                                   &size_Abyx, &size_diag, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
