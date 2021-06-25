@@ -39,6 +39,9 @@ void rocsolver_potri_getMemorySize(const rocblas_int n,
     rocsolver_trtri_getMemorySize<BATCHED, STRIDED, T>(rocblas_diagonal_non_unit, n, batch_count,
                                                        size_work1, size_work2, size_work3,
                                                        size_work4, size_tmpcopy, size_workArr);
+
+    // required space to copy A
+    *size_tmpcopy = std::max(*size_tmpcopy, sizeof(T) * n * n * batch_count);
 }
 
 template <typename T>
@@ -71,7 +74,7 @@ rocblas_status rocsolver_potri_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_potri_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
@@ -92,5 +95,51 @@ rocblas_status rocsolver_potri_template(rocblas_handle handle,
     ROCSOLVER_ENTER("potri", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
                     "bc:", batch_count);
 
-    return rocblas_status_not_implemented;
+    // quick return if zero instances in batch
+    if(batch_count == 0)
+        return rocblas_status_success;
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    // quick return if no dimensions
+    if(n == 0)
+    {
+        rocblas_int blocks = (batch_count - 1) / 32 + 1;
+        hipLaunchKernelGGL(reset_info, dim3(blocks, 1, 1), dim3(32, 1, 1), 0, stream, info,
+                           batch_count, 0);
+        return rocblas_status_success;
+    }
+
+    // compute inverse of U (also check singularity and update info)
+    rocsolver_trtri_template<BATCHED, STRIDED, T>(handle, uplo, rocblas_diagonal_non_unit, n, A,
+                                                  shiftA, lda, strideA, info, batch_count, work1,
+                                                  work2, work3, work4, tmpcopy, workArr, optim_mem);
+
+    // everything must be executed with scalars on the host
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle, &old_mode);
+    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
+
+    // constants in host memory
+    const rocblas_int copyblocks = (n - 1) / 32 + 1;
+    T one = 1;
+
+    // copy elements of A to serve as B matrix for TRMM
+    hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocks, copyblocks, batch_count), dim3(32, 32), 0,
+                       stream, n, n, A, shiftA, lda, strideA, tmpcopy, 0, n, n * n, uplo);
+
+    // compute inv(U) * inv(U)' or inv(L)' * inv(L) and store in tmpcopy
+    rocblas_side side = (uplo == rocblas_fill_upper ? rocblas_side_right : rocblas_side_left);
+    rocblasCall_trmm<BATCHED, STRIDED, T>(handle, side, uplo, rocblas_operation_conjugate_transpose,
+                                          rocblas_diagonal_non_unit, n, n, &one, 0, A, shiftA, lda,
+                                          strideA, tmpcopy, 0, n, n * n, batch_count, workArr);
+
+    // copy elements of tmpcopy into A in cases where info is zero
+    hipLaunchKernelGGL(masked_copymat<T>, dim3(copyblocks, copyblocks, batch_count), dim3(32, 32),
+                       0, stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, tmpcopy, info,
+                       uplo, rocblas_diagonal_non_unit, true);
+
+    rocblas_set_pointer_mode(handle, old_mode);
+    return rocblas_status_success;
 }

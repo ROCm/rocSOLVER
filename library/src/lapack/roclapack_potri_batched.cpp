@@ -64,9 +64,9 @@ rocblas_status rocsolver_potri_batched_impl(rocblas_handle handle,
     workArr = mem[5];
 
     // execution
-    return rocsolver_potri_template<true, T>(handle, uplo, n, A, shiftA, lda, strideA, info,
-                                             batch_count, work1, work2, work3, work4, (T*)tmpcopy,
-                                             (T**)workArr, optim_mem);
+    return rocsolver_potri_template<true, false, T>(handle, uplo, n, A, shiftA, lda, strideA, info,
+                                                    batch_count, work1, work2, work3, work4,
+                                                    (T*)tmpcopy, (T**)workArr, optim_mem);
 }
 
 /*
