@@ -25,6 +25,7 @@ unset(ENV{ROCM_BUILD_ID})
 project(rocsolver LANGUAGES CXX)
 
 option(ROCSOLVER_EMBED_FMT "Hide libfmt symbols" OFF)
+option(OPTIMAL "Build specialized kernels for small matrix sizes" ON)
 
 # Add our CMake helper files to the lookup path
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")

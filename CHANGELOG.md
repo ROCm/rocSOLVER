@@ -7,6 +7,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Optimizations
 ### Changed
 - Raised reference LAPACK version used for rocSOLVER test and benchmark clients to v3.9.1
+- Minor CMake improvements for users building from source without install.sh:
+    - Removed fmt::fmt from rocsolver's public usage requirements
+    - Enabled small-size optimizations by default
 
 ### Removed
 ### Fixed
