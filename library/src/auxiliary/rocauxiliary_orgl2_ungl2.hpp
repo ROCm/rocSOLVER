@@ -15,7 +15,7 @@
 #include "rocsolver.h"
 
 template <typename T, typename U>
-__global__ void orgl2_init_ident(const rocblas_int m,
+ROCSOLVER_KERNEL void orgl2_init_ident(const rocblas_int m,
                                  const rocblas_int n,
                                  const rocblas_int k,
                                  U A,

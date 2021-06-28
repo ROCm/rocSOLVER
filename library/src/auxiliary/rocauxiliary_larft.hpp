@@ -14,7 +14,7 @@
 #include "rocsolver.h"
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-__global__ void set_triangular(const rocblas_int n,
+ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                                const rocblas_int k,
                                U V,
                                const rocblas_int shiftV,
@@ -69,7 +69,7 @@ __global__ void set_triangular(const rocblas_int n,
 }
 
 template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void set_triangular(const rocblas_int n,
+ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                                const rocblas_int k,
                                U V,
                                const rocblas_int shiftV,
@@ -124,7 +124,7 @@ __global__ void set_triangular(const rocblas_int n,
 }
 
 template <typename T>
-__global__ void set_tau(const rocblas_int k, T* tau, const rocblas_stride strideT)
+ROCSOLVER_KERNEL void set_tau(const rocblas_int k, T* tau, const rocblas_stride strideT)
 {
     const auto b = hipBlockIdx_y;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;

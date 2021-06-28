@@ -31,7 +31,7 @@ __device__ void sterf_sq_e(const rocblas_int start, const rocblas_int end, T* E)
     to compute the eigenvalues of a symmetric tridiagonal matrix given by D
     and E **/
 template <typename T>
-__global__ void sterf_kernel(const rocblas_int n,
+ROCSOLVER_KERNEL void sterf_kernel(const rocblas_int n,
                              T* DD,
                              const rocblas_stride strideD,
                              T* EE,

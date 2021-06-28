@@ -5,6 +5,7 @@
 #pragma once
 
 #include "lib_device_helpers.hpp"
+#include "lib_macros.hpp"
 #include "rocsolver.h"
 
 /*
@@ -655,7 +656,7 @@ __device__ void lasrt_increasing(const rocblas_int n, T* D, rocblas_int* stack)
 
 /** AXPY computes a constant times a vector plus a vector. **/
 template <typename T, typename U, typename V>
-__global__ void axpy_kernel(const rocblas_int n,
+ROCSOLVER_KERNEL void axpy_kernel(const rocblas_int n,
                             T* alpha,
                             const rocblas_stride stride_alpha,
                             U X,

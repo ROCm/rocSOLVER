@@ -13,7 +13,7 @@
 #include "rocsolver.h"
 
 template <typename T, typename U>
-__global__ void laswp_kernel(const rocblas_int n,
+ROCSOLVER_KERNEL void laswp_kernel(const rocblas_int n,
                              U AA,
                              const rocblas_int shiftA,
                              const rocblas_int lda,

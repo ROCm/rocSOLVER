@@ -16,7 +16,7 @@
 #include "rocsolver.h"
 
 template <typename T>
-__global__ void sygv_update_info(T* info, T* iinfo, const rocblas_int n, const rocblas_int bc)
+ROCSOLVER_KERNEL void sygv_update_info(T* info, T* iinfo, const rocblas_int n, const rocblas_int bc)
 {
     int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 

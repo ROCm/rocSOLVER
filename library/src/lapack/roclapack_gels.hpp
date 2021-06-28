@@ -17,7 +17,7 @@
 #include "rocsolver.h"
 
 template <typename T, typename U>
-__global__ void gels_set_zero(const rocblas_int k1,
+ROCSOLVER_KERNEL void gels_set_zero(const rocblas_int k1,
                               const rocblas_int k2,
                               const rocblas_int nrhs,
                               U B,

@@ -13,7 +13,7 @@
 #include "rocsolver.h"
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-__global__ void set_taubeta(T* tau,
+ROCSOLVER_KERNEL void set_taubeta(T* tau,
                             const rocblas_stride strideP,
                             T* norms,
                             U alpha,
@@ -47,7 +47,7 @@ __global__ void set_taubeta(T* tau,
 }
 
 template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void set_taubeta(T* tau,
+ROCSOLVER_KERNEL void set_taubeta(T* tau,
                             const rocblas_stride strideP,
                             T* norms,
                             U alpha,

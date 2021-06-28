@@ -15,7 +15,7 @@
 
 /** set_tau kernel copies to tau the corresponding Householder scalars **/
 template <typename T>
-__global__ void set_tau(const rocblas_int batch_count, T* tmptau, T* tau, const rocblas_stride strideP)
+ROCSOLVER_KERNEL void set_tau(const rocblas_int batch_count, T* tmptau, T* tau, const rocblas_stride strideP)
 {
     rocblas_int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -30,7 +30,7 @@ __global__ void set_tau(const rocblas_int batch_count, T* tmptau, T* tau, const 
 /** set_tridiag kernel copies results to set tridiagonal form in A, diagonal elements in D
     and off-diagonal elements in E **/
 template <typename T, typename S, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-__global__ void set_tridiag(const rocblas_fill uplo,
+ROCSOLVER_KERNEL void set_tridiag(const rocblas_fill uplo,
                             const rocblas_int n,
                             U A,
                             const rocblas_int shiftA,
@@ -66,7 +66,7 @@ __global__ void set_tridiag(const rocblas_fill uplo,
 }
 
 template <typename T, typename S, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void set_tridiag(const rocblas_fill uplo,
+ROCSOLVER_KERNEL void set_tridiag(const rocblas_fill uplo,
                             const rocblas_int n,
                             U A,
                             const rocblas_int shiftA,

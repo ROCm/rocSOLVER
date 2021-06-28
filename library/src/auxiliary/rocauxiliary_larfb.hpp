@@ -13,7 +13,7 @@
 #include "rocsolver.h"
 
 template <typename T, typename U>
-__global__ void copymatA1(const rocblas_int ldw,
+ROCSOLVER_KERNEL void copymatA1(const rocblas_int ldw,
                           const rocblas_int order,
                           U A,
                           const rocblas_int shiftA,
@@ -39,7 +39,7 @@ __global__ void copymatA1(const rocblas_int ldw,
 }
 
 template <typename T, typename U>
-__global__ void addmatA1(const rocblas_int ldw,
+ROCSOLVER_KERNEL void addmatA1(const rocblas_int ldw,
                          const rocblas_int order,
                          U A,
                          const rocblas_int shiftA,

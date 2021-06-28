@@ -30,7 +30,7 @@
     to compute the eigenvalues/eigenvectors of a symmetric tridiagonal
     matrix given by D and E **/
 template <typename T, typename S, typename U>
-__global__ void stedc_kernel(const rocblas_int n,
+ROCSOLVER_KERNEL void stedc_kernel(const rocblas_int n,
                              S* DD,
                              const rocblas_stride strideD,
                              S* EE,
