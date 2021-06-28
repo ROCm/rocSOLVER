@@ -153,8 +153,8 @@ target_link_libraries(rocsolver
   PRIVATE
     $<BUILD_INTERFACE:rocsolver-common> # https://gitlab.kitware.com/cmake/cmake/-/issues/15415
     hip::device
-    --rtlib=compiler-rt
-    --unwindlib=libgcc
+    $<$<PLATFORM_ID:Linux>:--rtlib=compiler-rt>
+    $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
 
 if(ROCSOLVER_EMBED_FMT)
@@ -205,6 +205,21 @@ target_compile_definitions(rocsolver PRIVATE
 )
 
 add_armor_flags(rocsolver "${ARMOR_LEVEL}")
+
+if(WIN32)
+  if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
+    add_custom_command(TARGET rocsolver
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_BINARY_DIR}/staging/$<TARGET_FILE_NAME:rocsolver>" "${PROJECT_BINARY_DIR}/clients/staging/$<TARGET_FILE_NAME:rocsolver>"
+    )
+    if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+      add_custom_command(TARGET rocsolver
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_BINARY_DIR}/staging/rocsolver.pdb" "${PROJECT_BINARY_DIR}/clients/staging/rocsolver.pdb"
+      )
+    endif()
+  endif()
+endif()
 
 ############################################################
 # Installation

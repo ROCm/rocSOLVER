@@ -3,7 +3,6 @@
 # ########################################################################
 
 # Linking lapack library requires fortran flags
-enable_language(Fortran)
 find_package(cblas REQUIRED CONFIG)
 
 add_executable(rocsolver-bench client.cpp)

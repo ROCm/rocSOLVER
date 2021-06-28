@@ -3,7 +3,6 @@
 # ########################################################################
 
 # Linking lapack library requires fortran flags
-enable_language(Fortran)
 find_package(cblas REQUIRED CONFIG)
 find_package(GTest REQUIRED)
 
@@ -84,6 +83,31 @@ add_armor_flags(rocsolver-test "${ARMOR_LEVEL}")
 
 target_compile_definitions(rocsolver-test PRIVATE GOOGLE_TEST)
 
+if(WIN32)
+  file(GLOB third_party_dlls
+    LIST_DIRECTORIES OFF
+    CONFIGURE_DEPENDS
+    ${cblas_DIR}/bin/*.dll
+    ${GTest_DIR}/bin/*.dll
+    $ENV{rocblas_DIR}/bin/*.dll
+    $ENV{HIP_DIR}/bin/*.dll
+    $ENV{HIP_DIR}/bin/hipinfo.exe
+    ${CMAKE_SOURCE_DIR}/rtest.*
+  )
+  foreach(file_i ${third_party_dlls})
+    add_custom_command(TARGET rocsolver-test
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND}
+      ARGS -E copy ${file_i} ${PROJECT_BINARY_DIR}/staging/
+    )
+  endforeach()
+  add_custom_command(TARGET rocsolver-test
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy_directory $ENV{rocblas_DIR}/bin/library ${PROJECT_BINARY_DIR}/staging/library
+  )
+endif()
+
 target_link_libraries(rocsolver-test PRIVATE
   cblas
   lapack
@@ -92,7 +116,7 @@ target_link_libraries(rocsolver-test PRIVATE
   hip::device
   rocsolver-common
   clients-common
-  m
+  $<$<PLATFORM_ID:Linux>:m>
   roc::rocsolver
 )
 
