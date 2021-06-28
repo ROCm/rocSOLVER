@@ -77,9 +77,9 @@ void print_to_stream(std::ostream& os,
         for(int j = 0; j < n; j++)
         {
             if constexpr(is_complex<T>)
-                s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
+              s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
             else
-                s += fmt::format("{}", A[j * lda + i]);
+              s += fmt::format("{}", A[j * lda + i]);
 
             if(j < n - 1)
                 s += ", ";
@@ -262,10 +262,9 @@ void print_host_matrix(std::ostream& os,
             T comp = (CPU_result[j + i * lda] - GPU_result[j + i * lda]) / CPU_result[j + i * lda];
             bool exceeds_tolerence;
             if constexpr(is_complex<T>)
-                exceeds_tolerence
-                    = sqrt(comp.real() * comp.real() + comp.imag() * comp.imag()) > error_tolerance;
+              exceeds_tolerence = sqrt(comp.real() * comp.real() + comp.imag() * comp.imag()) > error_tolerance;
             else
-                exceeds_tolerence = abs(comp) > error_tolerance;
+              exceeds_tolerence = abs(comp) > error_tolerance;
             if(exceeds_tolerence)
                 s += fmt::format("matrix  col {}, row {}, CPU result={}, GPU result={}\n", i, j,
                                  CPU_result[j + i * lda], GPU_result[j + i * lda]);

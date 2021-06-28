@@ -555,9 +555,9 @@ __global__ void set_offdiag(const rocblas_int batch_count,
         S* e = E + b * strideE;
 
         if constexpr(is_complex<T>)
-            e[0] = a[0].real();
+          e[0] = a[0].real();
         else
-            e[0] = a[0];
+          e[0] = a[0];
         a[0] = T(1);
     }
 }
