@@ -16,7 +16,7 @@
 
 #ifdef OPTIMAL
 template <rocblas_int DIM, typename T, typename U>
-__global__ void __launch_bounds__(WAVESIZE) getri_kernel_small(U AA,
+ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) getri_kernel_small(U AA,
                                                                const rocblas_int shiftA,
                                                                const rocblas_int lda,
                                                                const rocblas_stride strideA,
@@ -299,7 +299,7 @@ __device__ void getri_pivot(const rocblas_int n, T* a, const rocblas_int lda, ro
 }
 
 template <typename T, typename U, typename V>
-__global__ void getri_kernel_large1(const rocblas_int n,
+ROCSOLVER_KERNEL void getri_kernel_large1(const rocblas_int n,
                                     const rocblas_int j,
                                     const rocblas_int jb,
                                     U A,
@@ -324,7 +324,7 @@ __global__ void getri_kernel_large1(const rocblas_int n,
 }
 
 template <typename T, typename U>
-__global__ void getri_kernel_large2(const rocblas_int n,
+ROCSOLVER_KERNEL void getri_kernel_large2(const rocblas_int n,
                                     U A,
                                     const rocblas_int shiftA,
                                     const rocblas_int lda,

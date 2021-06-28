@@ -15,7 +15,7 @@
 
 #ifdef OPTIMAL
 template <rocblas_int DIM, typename T, typename U>
-__global__ void __launch_bounds__(WAVESIZE) trti2_kernel_small(const rocblas_fill uplo,
+ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) trti2_kernel_small(const rocblas_fill uplo,
                                                                const rocblas_diagonal diagtype,
                                                                U AA,
                                                                const rocblas_int shiftA,
@@ -197,7 +197,7 @@ void trti2_run_small(rocblas_handle handle,
 #endif // OPTIMAL
 
 template <typename T, typename U>
-__global__ void invdiag(const rocblas_diagonal diag,
+ROCSOLVER_KERNEL void invdiag(const rocblas_diagonal diag,
                         const rocblas_int n,
                         U A,
                         const rocblas_int shiftA,

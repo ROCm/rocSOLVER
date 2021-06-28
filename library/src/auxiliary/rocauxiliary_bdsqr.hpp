@@ -218,7 +218,7 @@ __device__ void b2tQRstep(const rocblas_int n,
 /** BDSQRKERNEL implements the main loop of the bdsqr algorithm
     to compute the SVD of an upper bidiagonal matrix given by D and E **/
 template <typename T, typename S, typename W>
-__global__ void bdsqrKernel(const rocblas_int n,
+ROCSOLVER_KERNEL void bdsqrKernel(const rocblas_int n,
                             const rocblas_int nv,
                             const rocblas_int nu,
                             const rocblas_int nc,
@@ -395,7 +395,7 @@ __global__ void bdsqrKernel(const rocblas_int n,
 /** LOWER2UPPER kernel transforms a lower bidiagonal matrix given by D and E
     into an upper bidiagonal matrix via givens rotations **/
 template <typename T, typename S, typename W>
-__global__ void lower2upper(const rocblas_int n,
+ROCSOLVER_KERNEL void lower2upper(const rocblas_int n,
                             const rocblas_int nu,
                             const rocblas_int nc,
                             S* DD,

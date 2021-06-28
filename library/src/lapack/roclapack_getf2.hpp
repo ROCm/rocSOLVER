@@ -27,7 +27,7 @@
     GETF2_MAX_THDS <= m <= GETF2_OPTIM_MAX_SIZE and n < WAVESIZE
 *************************************************************************/
 template <rocblas_int DIM, typename T, typename U>
-__global__ void __launch_bounds__(GETF2_MAX_THDS) LUfact_panel_kernel(const rocblas_int m,
+ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS) LUfact_panel_kernel(const rocblas_int m,
                                                                       const rocblas_int n,
                                                                       U AA,
                                                                       const rocblas_int shiftA,
@@ -171,7 +171,7 @@ __global__ void __launch_bounds__(GETF2_MAX_THDS) LUfact_panel_kernel(const rocb
     (to be used by GETRF if block size = WAVESIZE)
 *******************************************************************/
 template <rocblas_int DIM1, rocblas_int DIM2, typename T, typename U>
-__global__ void __launch_bounds__(GETF2_MAX_THDS)
+ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     LUfact_panel_kernel_blk(const rocblas_int m,
                             U AA,
                             const rocblas_int shiftA,
@@ -435,7 +435,7 @@ rocblas_status LUfact_panel(rocblas_handle handle,
     m <= GETF2_MAX_THDS and n <= WAVESIZE
 ************************************************************************/
 template <rocblas_int DIM, typename T, typename U>
-__global__ void __launch_bounds__(GETF2_MAX_THDS) LUfact_small_kernel(const rocblas_int m,
+ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS) LUfact_small_kernel(const rocblas_int m,
                                                                       U AA,
                                                                       const rocblas_int shiftA,
                                                                       const rocblas_int lda,
@@ -664,7 +664,7 @@ rocblas_status LUfact_small(rocblas_handle handle,
 #endif // OPTIMAL
 
 template <typename T, typename U>
-__global__ void getf2_check_singularity(U AA,
+ROCSOLVER_KERNEL void getf2_check_singularity(U AA,
                                         const rocblas_int shiftA,
                                         const rocblas_stride strideA,
                                         rocblas_int* ipivA,

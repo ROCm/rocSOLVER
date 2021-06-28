@@ -14,7 +14,7 @@
 #include "rocsolver.h"
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-__global__ void sqrtDiagOnward(U A,
+ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
                                const rocblas_int shiftA,
                                const rocblas_int strideA,
                                const size_t loc,
@@ -45,7 +45,7 @@ __global__ void sqrtDiagOnward(U A,
 }
 
 template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void sqrtDiagOnward(U A,
+ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
                                const rocblas_int shiftA,
                                const rocblas_int strideA,
                                const size_t loc,

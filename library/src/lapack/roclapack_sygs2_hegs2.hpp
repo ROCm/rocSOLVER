@@ -15,7 +15,7 @@
 #include "rocsolver.h"
 
 template <typename T, typename U>
-__global__ void sygs2_set_diag1(const rocblas_int k,
+ROCSOLVER_KERNEL void sygs2_set_diag1(const rocblas_int k,
                                 U AA,
                                 const rocblas_int shiftA,
                                 const rocblas_int lda,
@@ -47,7 +47,7 @@ __global__ void sygs2_set_diag1(const rocblas_int k,
     }
 }
 template <typename T, typename U>
-__global__ void sygs2_set_diag2(const rocblas_int k,
+ROCSOLVER_KERNEL void sygs2_set_diag2(const rocblas_int k,
                                 U AA,
                                 const rocblas_int shiftA,
                                 const rocblas_int lda,
@@ -78,7 +78,7 @@ __global__ void sygs2_set_diag2(const rocblas_int k,
     }
 }
 template <typename T, typename U>
-__global__ void sygs2_set_diag3(const rocblas_int k,
+ROCSOLVER_KERNEL void sygs2_set_diag3(const rocblas_int k,
                                 U AA,
                                 const rocblas_int shiftA,
                                 const rocblas_int lda,

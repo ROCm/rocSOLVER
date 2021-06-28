@@ -283,7 +283,7 @@ __device__ void run_steqr(const rocblas_int n,
 }
 
 template <typename T, typename S, typename U>
-__global__ void steqr_kernel(const rocblas_int n,
+ROCSOLVER_KERNEL void steqr_kernel(const rocblas_int n,
                              S* DD,
                              const rocblas_stride strideD,
                              S* EE,

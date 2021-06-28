@@ -13,7 +13,7 @@
 #include "rocsolver.h"
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-__global__ void conj_in_place(const rocblas_int m,
+ROCSOLVER_KERNEL void conj_in_place(const rocblas_int m,
                               const rocblas_int n,
                               U A,
                               const rocblas_int shifta,
@@ -24,7 +24,7 @@ __global__ void conj_in_place(const rocblas_int m,
 }
 
 template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void conj_in_place(const rocblas_int m,
+ROCSOLVER_KERNEL void conj_in_place(const rocblas_int m,
                               const rocblas_int n,
                               U A,
                               const rocblas_int shifta,
