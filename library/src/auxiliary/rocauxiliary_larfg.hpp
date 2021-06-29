@@ -14,11 +14,11 @@
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_taubeta(T* tau,
-                            const rocblas_stride strideP,
-                            T* norms,
-                            U alpha,
-                            const rocblas_int shifta,
-                            const rocblas_stride stride)
+                                  const rocblas_stride strideP,
+                                  T* norms,
+                                  U alpha,
+                                  const rocblas_int shifta,
+                                  const rocblas_stride stride)
 {
     int b = hipBlockIdx_x;
 
@@ -48,11 +48,11 @@ ROCSOLVER_KERNEL void set_taubeta(T* tau,
 
 template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_taubeta(T* tau,
-                            const rocblas_stride strideP,
-                            T* norms,
-                            U alpha,
-                            const rocblas_int shifta,
-                            const rocblas_stride stride)
+                                  const rocblas_stride strideP,
+                                  T* norms,
+                                  U alpha,
+                                  const rocblas_int shifta,
+                                  const rocblas_stride stride)
 {
     using S = decltype(std::real(T{}));
     int b = hipBlockIdx_x;

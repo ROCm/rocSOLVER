@@ -657,16 +657,16 @@ __device__ void lasrt_increasing(const rocblas_int n, T* D, rocblas_int* stack)
 /** AXPY computes a constant times a vector plus a vector. **/
 template <typename T, typename U, typename V>
 ROCSOLVER_KERNEL void axpy_kernel(const rocblas_int n,
-                            T* alpha,
-                            const rocblas_stride stride_alpha,
-                            U X,
-                            const rocblas_int shiftX,
-                            const rocblas_int incx,
-                            const rocblas_stride strideX,
-                            V Y,
-                            const rocblas_int shiftY,
-                            const rocblas_int incy,
-                            const rocblas_stride strideY)
+                                  T* alpha,
+                                  const rocblas_stride stride_alpha,
+                                  U X,
+                                  const rocblas_int shiftX,
+                                  const rocblas_int incx,
+                                  const rocblas_stride strideX,
+                                  V Y,
+                                  const rocblas_int shiftY,
+                                  const rocblas_int incy,
+                                  const rocblas_stride strideY)
 {
     rocblas_int b = hipBlockIdx_x;
     rocblas_int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;

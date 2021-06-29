@@ -59,13 +59,13 @@ rocblas_int getrf_get_blksize(rocblas_int dim)
 
 template <typename U>
 ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
-                                        const rocblas_int j,
-                                        rocblas_int* ipivA,
-                                        const rocblas_int shiftP,
-                                        const rocblas_stride strideP,
-                                        const rocblas_int* iinfo,
-                                        rocblas_int* info,
-                                        const int pivot)
+                                              const rocblas_int j,
+                                              rocblas_int* ipivA,
+                                              const rocblas_int shiftP,
+                                              const rocblas_stride strideP,
+                                              const rocblas_int* iinfo,
+                                              rocblas_int* info,
+                                              const int pivot)
 {
     int id = hipBlockIdx_y;
     rocblas_int* ipiv;

@@ -16,16 +16,16 @@
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void sygs2_set_diag1(const rocblas_int k,
-                                U AA,
-                                const rocblas_int shiftA,
-                                const rocblas_int lda,
-                                const rocblas_stride strideA,
-                                U BB,
-                                const rocblas_int shiftB,
-                                const rocblas_int ldb,
-                                const rocblas_stride strideB,
-                                T* work,
-                                const rocblas_int batch_count)
+                                      U AA,
+                                      const rocblas_int shiftA,
+                                      const rocblas_int lda,
+                                      const rocblas_stride strideA,
+                                      U BB,
+                                      const rocblas_int shiftB,
+                                      const rocblas_int ldb,
+                                      const rocblas_stride strideB,
+                                      T* work,
+                                      const rocblas_int batch_count)
 {
     int b = hipThreadIdx_x;
 
@@ -48,16 +48,16 @@ ROCSOLVER_KERNEL void sygs2_set_diag1(const rocblas_int k,
 }
 template <typename T, typename U>
 ROCSOLVER_KERNEL void sygs2_set_diag2(const rocblas_int k,
-                                U AA,
-                                const rocblas_int shiftA,
-                                const rocblas_int lda,
-                                const rocblas_stride strideA,
-                                U BB,
-                                const rocblas_int shiftB,
-                                const rocblas_int ldb,
-                                const rocblas_stride strideB,
-                                T* work,
-                                const rocblas_int batch_count)
+                                      U AA,
+                                      const rocblas_int shiftA,
+                                      const rocblas_int lda,
+                                      const rocblas_stride strideA,
+                                      U BB,
+                                      const rocblas_int shiftB,
+                                      const rocblas_int ldb,
+                                      const rocblas_stride strideB,
+                                      T* work,
+                                      const rocblas_int batch_count)
 {
     int b = hipThreadIdx_x;
 
@@ -79,12 +79,12 @@ ROCSOLVER_KERNEL void sygs2_set_diag2(const rocblas_int k,
 }
 template <typename T, typename U>
 ROCSOLVER_KERNEL void sygs2_set_diag3(const rocblas_int k,
-                                U AA,
-                                const rocblas_int shiftA,
-                                const rocblas_int lda,
-                                const rocblas_stride strideA,
-                                T* work,
-                                const rocblas_int batch_count)
+                                      U AA,
+                                      const rocblas_int shiftA,
+                                      const rocblas_int lda,
+                                      const rocblas_stride strideA,
+                                      T* work,
+                                      const rocblas_int batch_count)
 {
     int b = hipThreadIdx_x;
 

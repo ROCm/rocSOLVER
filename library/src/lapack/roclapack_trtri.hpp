@@ -16,11 +16,11 @@
 #ifdef OPTIMAL
 template <rocblas_int DIM, typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) trti2_kernel_small(const rocblas_fill uplo,
-                                                               const rocblas_diagonal diagtype,
-                                                               U AA,
-                                                               const rocblas_int shiftA,
-                                                               const rocblas_int lda,
-                                                               const rocblas_stride strideA)
+                                                                     const rocblas_diagonal diagtype,
+                                                                     U AA,
+                                                                     const rocblas_int shiftA,
+                                                                     const rocblas_int lda,
+                                                                     const rocblas_stride strideA)
 {
     int b = hipBlockIdx_x;
     int i = hipThreadIdx_x;
@@ -198,12 +198,12 @@ void trti2_run_small(rocblas_handle handle,
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void invdiag(const rocblas_diagonal diag,
-                        const rocblas_int n,
-                        U A,
-                        const rocblas_int shiftA,
-                        const rocblas_int lda,
-                        const rocblas_stride strideA,
-                        T* alphas)
+                              const rocblas_int n,
+                              U A,
+                              const rocblas_int shiftA,
+                              const rocblas_int lda,
+                              const rocblas_stride strideA,
+                              T* alphas)
 {
     int b = hipBlockIdx_y;
     int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;

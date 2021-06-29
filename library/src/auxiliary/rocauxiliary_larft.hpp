@@ -15,18 +15,18 @@
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
-                               const rocblas_int k,
-                               U V,
-                               const rocblas_int shiftV,
-                               const rocblas_int ldv,
-                               const rocblas_stride strideV,
-                               T* tau,
-                               const rocblas_stride strideT,
-                               T* F,
-                               const rocblas_int ldf,
-                               const rocblas_stride strideF,
-                               const rocblas_direct direct,
-                               const rocblas_storev storev)
+                                     const rocblas_int k,
+                                     U V,
+                                     const rocblas_int shiftV,
+                                     const rocblas_int ldv,
+                                     const rocblas_stride strideV,
+                                     T* tau,
+                                     const rocblas_stride strideT,
+                                     T* F,
+                                     const rocblas_int ldf,
+                                     const rocblas_stride strideF,
+                                     const rocblas_direct direct,
+                                     const rocblas_storev storev)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -70,18 +70,18 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
 
 template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
-                               const rocblas_int k,
-                               U V,
-                               const rocblas_int shiftV,
-                               const rocblas_int ldv,
-                               const rocblas_stride strideV,
-                               T* tau,
-                               const rocblas_stride strideT,
-                               T* F,
-                               const rocblas_int ldf,
-                               const rocblas_stride strideF,
-                               const rocblas_direct direct,
-                               const rocblas_storev storev)
+                                     const rocblas_int k,
+                                     U V,
+                                     const rocblas_int shiftV,
+                                     const rocblas_int ldv,
+                                     const rocblas_stride strideV,
+                                     T* tau,
+                                     const rocblas_stride strideT,
+                                     T* F,
+                                     const rocblas_int ldf,
+                                     const rocblas_stride strideF,
+                                     const rocblas_direct direct,
+                                     const rocblas_storev storev)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
