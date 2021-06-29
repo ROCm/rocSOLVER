@@ -14,16 +14,16 @@
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void laswp_kernel(const rocblas_int n,
-                             U AA,
-                             const rocblas_int shiftA,
-                             const rocblas_int lda,
-                             const rocblas_stride stride,
-                             const rocblas_int i,
-                             const rocblas_int k1,
-                             const rocblas_int* ipivA,
-                             const rocblas_int shiftP,
-                             const rocblas_stride strideP,
-                             const rocblas_int incx)
+                                   U AA,
+                                   const rocblas_int shiftA,
+                                   const rocblas_int lda,
+                                   const rocblas_stride stride,
+                                   const rocblas_int i,
+                                   const rocblas_int k1,
+                                   const rocblas_int* ipivA,
+                                   const rocblas_int shiftP,
+                                   const rocblas_stride strideP,
+                                   const rocblas_int incx)
 {
     int id = hipBlockIdx_y;
 

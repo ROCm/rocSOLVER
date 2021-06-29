@@ -14,22 +14,22 @@
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void conj_in_place(const rocblas_int m,
-                              const rocblas_int n,
-                              U A,
-                              const rocblas_int shifta,
-                              const rocblas_int lda,
-                              const rocblas_stride stridea)
+                                    const rocblas_int n,
+                                    U A,
+                                    const rocblas_int shifta,
+                                    const rocblas_int lda,
+                                    const rocblas_stride stridea)
 {
     // do nothing
 }
 
 template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void conj_in_place(const rocblas_int m,
-                              const rocblas_int n,
-                              U A,
-                              const rocblas_int shifta,
-                              const rocblas_int lda,
-                              const rocblas_stride stridea)
+                                    const rocblas_int n,
+                                    U A,
+                                    const rocblas_int shifta,
+                                    const rocblas_int lda,
+                                    const rocblas_stride stridea)
 {
     int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     int j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;

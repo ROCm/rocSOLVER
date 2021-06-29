@@ -284,20 +284,20 @@ __device__ void run_steqr(const rocblas_int n,
 
 template <typename T, typename S, typename U>
 ROCSOLVER_KERNEL void steqr_kernel(const rocblas_int n,
-                             S* DD,
-                             const rocblas_stride strideD,
-                             S* EE,
-                             const rocblas_stride strideE,
-                             U CC,
-                             const rocblas_int shiftC,
-                             const rocblas_int ldc,
-                             const rocblas_stride strideC,
-                             rocblas_int* iinfo,
-                             S* WW,
-                             const rocblas_int max_iters,
-                             const S eps,
-                             const S ssfmin,
-                             const S ssfmax)
+                                   S* DD,
+                                   const rocblas_stride strideD,
+                                   S* EE,
+                                   const rocblas_stride strideE,
+                                   U CC,
+                                   const rocblas_int shiftC,
+                                   const rocblas_int ldc,
+                                   const rocblas_stride strideC,
+                                   rocblas_int* iinfo,
+                                   S* WW,
+                                   const rocblas_int max_iters,
+                                   const S eps,
+                                   const S ssfmin,
+                                   const S ssfmax)
 {
     // select bacth instance
     rocblas_int bid = hipBlockIdx_x;

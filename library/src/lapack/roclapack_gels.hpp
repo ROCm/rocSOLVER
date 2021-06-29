@@ -18,13 +18,13 @@
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void gels_set_zero(const rocblas_int k1,
-                              const rocblas_int k2,
-                              const rocblas_int nrhs,
-                              U B,
-                              const rocblas_int shiftB,
-                              const rocblas_int ldb,
-                              const rocblas_stride strideB,
-                              const rocblas_int* info)
+                                    const rocblas_int k2,
+                                    const rocblas_int nrhs,
+                                    U B,
+                                    const rocblas_int shiftB,
+                                    const rocblas_int ldb,
+                                    const rocblas_stride strideB,
+                                    const rocblas_int* info)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;

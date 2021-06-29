@@ -14,12 +14,12 @@
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void copymatA1(const rocblas_int ldw,
-                          const rocblas_int order,
-                          U A,
-                          const rocblas_int shiftA,
-                          const rocblas_int lda,
-                          const rocblas_stride strideA,
-                          T* tmptr)
+                                const rocblas_int order,
+                                U A,
+                                const rocblas_int shiftA,
+                                const rocblas_int lda,
+                                const rocblas_stride strideA,
+                                T* tmptr)
 {
     const auto blocksizex = hipBlockDim_x;
     const auto blocksizey = hipBlockDim_y;
@@ -40,12 +40,12 @@ ROCSOLVER_KERNEL void copymatA1(const rocblas_int ldw,
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void addmatA1(const rocblas_int ldw,
-                         const rocblas_int order,
-                         U A,
-                         const rocblas_int shiftA,
-                         const rocblas_int lda,
-                         const rocblas_stride strideA,
-                         T* tmptr)
+                               const rocblas_int order,
+                               U A,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               T* tmptr)
 {
     const auto blocksizex = hipBlockDim_x;
     const auto blocksizey = hipBlockDim_y;

@@ -15,12 +15,12 @@
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
-                               const rocblas_int shiftA,
-                               const rocblas_int strideA,
-                               const size_t loc,
-                               const rocblas_int j,
-                               T* res,
-                               rocblas_int* info)
+                                     const rocblas_int shiftA,
+                                     const rocblas_int strideA,
+                                     const size_t loc,
+                                     const rocblas_int j,
+                                     T* res,
+                                     rocblas_int* info)
 {
     int id = hipBlockIdx_x;
 
@@ -46,12 +46,12 @@ ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
 
 template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
-                               const rocblas_int shiftA,
-                               const rocblas_int strideA,
-                               const size_t loc,
-                               const rocblas_int j,
-                               T* res,
-                               rocblas_int* info)
+                                     const rocblas_int shiftA,
+                                     const rocblas_int strideA,
+                                     const size_t loc,
+                                     const rocblas_int j,
+                                     T* res,
+                                     rocblas_int* info)
 {
     int id = hipBlockIdx_x;
 

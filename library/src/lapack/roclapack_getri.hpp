@@ -17,14 +17,14 @@
 #ifdef OPTIMAL
 template <rocblas_int DIM, typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) getri_kernel_small(U AA,
-                                                               const rocblas_int shiftA,
-                                                               const rocblas_int lda,
-                                                               const rocblas_stride strideA,
-                                                               rocblas_int* ipivA,
-                                                               const rocblas_int shiftP,
-                                                               const rocblas_stride strideP,
-                                                               rocblas_int* info,
-                                                               const bool complete)
+                                                                     const rocblas_int shiftA,
+                                                                     const rocblas_int lda,
+                                                                     const rocblas_stride strideA,
+                                                                     rocblas_int* ipivA,
+                                                                     const rocblas_int shiftP,
+                                                                     const rocblas_stride strideP,
+                                                                     rocblas_int* info,
+                                                                     const bool complete)
 {
     int b = hipBlockIdx_x;
     int i = hipThreadIdx_x;
@@ -300,15 +300,15 @@ __device__ void getri_pivot(const rocblas_int n, T* a, const rocblas_int lda, ro
 
 template <typename T, typename U, typename V>
 ROCSOLVER_KERNEL void getri_kernel_large1(const rocblas_int n,
-                                    const rocblas_int j,
-                                    const rocblas_int jb,
-                                    U A,
-                                    const rocblas_int shiftA,
-                                    const rocblas_int lda,
-                                    const rocblas_stride strideA,
-                                    rocblas_int* info,
-                                    V work,
-                                    const rocblas_stride strideW)
+                                          const rocblas_int j,
+                                          const rocblas_int jb,
+                                          U A,
+                                          const rocblas_int shiftA,
+                                          const rocblas_int lda,
+                                          const rocblas_stride strideA,
+                                          rocblas_int* info,
+                                          V work,
+                                          const rocblas_stride strideW)
 {
     // Helper kernel for large-size matrices. Preps the matrix for calls to
     // gemm and trsm.
@@ -325,14 +325,14 @@ ROCSOLVER_KERNEL void getri_kernel_large1(const rocblas_int n,
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void getri_kernel_large2(const rocblas_int n,
-                                    U A,
-                                    const rocblas_int shiftA,
-                                    const rocblas_int lda,
-                                    const rocblas_stride strideA,
-                                    rocblas_int* ipiv,
-                                    const rocblas_int shiftP,
-                                    const rocblas_stride strideP,
-                                    rocblas_int* info)
+                                          U A,
+                                          const rocblas_int shiftA,
+                                          const rocblas_int lda,
+                                          const rocblas_stride strideA,
+                                          rocblas_int* ipiv,
+                                          const rocblas_int shiftP,
+                                          const rocblas_stride strideP,
+                                          rocblas_int* info)
 {
     // Helper kernel for large-size matrices. Applies the pivots to the inverted
     // matrix.
