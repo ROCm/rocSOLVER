@@ -90,7 +90,7 @@ def config_cmd():
     global OS_info
     cwd_path = os.getcwd()
     cmake_executable = ""
-    cmake_options = ['-DROCSOLVER_EMBED_FMT=ON']
+    cmake_options = ['-DROCSOLVER_EMBED_FMT=ON','-DOPTIMAL=OFF']
     src_path = cmake_path(cwd_path)
     cmake_platform_opts = []
     if os.name == "nt":
