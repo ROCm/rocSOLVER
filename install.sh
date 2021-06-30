@@ -185,7 +185,7 @@ install_fmt_from_source( )
     ${cmake_executable} \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-      -DCMAKE_CXX_STANDARD=14 \
+      -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_CXX_EXTENSIONS=OFF \
       -DCMAKE_CXX_STANDARD_REQUIRED=ON \
       -DFMT_DOC=OFF \
