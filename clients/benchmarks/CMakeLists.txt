@@ -9,6 +9,10 @@ add_executable(rocsolver-bench client.cpp)
 
 add_armor_flags(rocsolver-bench "${ARMOR_LEVEL}")
 
+target_include_directories(rocsolver-bench SYSTEM PRIVATE
+  ${CBLAS_INCLUDE_DIRS}
+)
+
 target_link_libraries(rocsolver-bench PRIVATE
   cblas
   lapack

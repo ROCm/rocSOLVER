@@ -108,6 +108,10 @@ if(WIN32)
   )
 endif()
 
+target_include_directories(rocsolver-test SYSTEM PRIVATE
+  ${CBLAS_INCLUDE_DIRS}
+)
+
 target_link_libraries(rocsolver-test PRIVATE
   cblas
   lapack
