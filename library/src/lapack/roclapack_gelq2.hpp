@@ -102,7 +102,6 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int dim = min(m, n); // total number of pivots
-    rocblas_int blocks = (n - 1) / 1024 + 1;
 
     for(rocblas_int j = 0; j < dim; ++j)
     {

@@ -93,6 +93,50 @@ rocblas_status rocsolver_gerq2_template(rocblas_handle handle,
                                         T* diag)
 {
     ROCSOLVER_ENTER("gerq2", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "bc:", batch_count);
+    // quick return
+    if(m == 0 || n == 0 || batch_count == 0)
+        return rocblas_status_success;
 
-    return rocblas_status_not_implemented;
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int dim = min(m, n); // total number of pivots
+
+    for(rocblas_int j = 0; j < dim; ++j)
+    {
+        // conjugate the jth row of A
+        if(COMPLEX)
+            rocsolver_lacgv_template<T>(handle, n - j, A, shiftA + idx2D(m - j - 1, 0, lda), lda,
+                                        strideA, batch_count);
+
+        // generate Householder reflector to work on row j
+        rocsolver_larfg_template(handle, n - j, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), A,
+                                 shiftA + idx2D(m - j - 1, 0, lda), lda, strideA,
+                                 (ipiv + dim - j - 1), strideP, batch_count, (T*)work_workArr,
+                                 Abyx_norms);
+
+        // insert one in A(j,j) tobuild/apply the householder matrix
+        hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag, 0,
+                           1, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), lda, strideA, 1, true);
+
+        // Apply Householder reflector to the rest of matrix from the right
+        if(j < m - 1)
+        {
+            rocsolver_larf_template(handle, rocblas_side_right, m - j - 1, n - j, A,
+                                    shiftA + idx2D(m - j - 1, 0, lda), lda, strideA,
+                                    (ipiv + dim - j - 1), strideP, A, shiftA, lda, strideA,
+                                    batch_count, scalars, Abyx_norms, (T**)work_workArr);
+        }
+
+        // restore original value of A(j,j)
+        hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag,
+                           0, 1, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), lda, strideA, 1);
+
+        // restore the jth row of A
+        if(COMPLEX)
+            rocsolver_lacgv_template<T>(handle, n - j - 1, A, shiftA + idx2D(m - j - 1, 0, lda),
+                                        lda, strideA, batch_count);
+    }
+
+    return rocblas_status_success;
 }
