@@ -7424,8 +7424,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief GETRS solves a system of n linear equations on n variables using the
-    LU factorization computed by \ref rocsolver_sgetrf "GETRF".
+    \brief GETRS solves a system of n linear equations on n variables in its factorized form. 
 
     \details
     It solves one of the following systems, depending on the value of trans:
@@ -7437,6 +7436,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(rocblas_handle 
         A^H X = B & \: \text{conjugate transposed.}
         \end{array}
     \f]
+
+    Matrix A is defined by its triangular factors as returned by \ref rocsolver_sgetrf "GETRF". 
 
     @param[in]
     handle      rocblas_handle.
@@ -7512,7 +7513,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(rocblas_handle handle,
 
 /*! @{
     \brief GETRS_BATCHED solves a batch of systems of n linear equations on n
-    variables using the LU factorization computed by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
+    variables in its factorized forms. 
 
     \details
     For each instance j in the batch, it solves one of the following systems, depending on the value of trans:
@@ -7524,6 +7525,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(rocblas_handle handle,
         A_j^H X_j = B_j & \: \text{conjugate transposed.}
         \end{array}
     \f]
+
+    Matrix \f$A_j\f$ is defined by its triangular factors as returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
 
     @param[in]
     handle      rocblas_handle.
@@ -7614,7 +7617,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
 
 /*! @{
     \brief GETRS_STRIDED_BATCHED solves a batch of systems of n linear equations
-    on n variables using the LU factorization computed by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
+    on n variables in its factorized forms.
 
     \details
     For each instance j in the batch, it solves one of the following systems, depending on the value of trans:
@@ -7627,6 +7630,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
         \end{array}
     \f]
 
+    Matrix \f$A_j\f$ is defined by its triangular factors as returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
+    
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -7728,6 +7733,324 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(rocblas_handle 
                                                                  const rocblas_int ldb,
                                                                  const rocblas_stride strideB,
                                                                  const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief GESV solves a general system of n linear equations on n variables. 
+
+    \details
+    The linear system is of the form
+
+    \f[
+        A X = B
+    \f]
+
+    where A is a general n-by-n matrix. Matrix A is first factorized in triangular factors L and U
+    using \ref rocsolver_sgetrf "GETRF"; then, the solution is computed with \ref rocsolver_sgetrs "GETRS".
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The order of the system, i.e. the number of columns and rows of A.
+    @param[in]
+    nrhs        rocblas_int. nrhs >= 0.\n
+                The number of right hand sides, i.e., the number of columns
+                of the matrix B.
+    @param[in]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A.
+                On exit, if info = 0, the factors L and U of the LU decomposition of A returned by
+                \ref rocsolver_sgetrf "GETRF".
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A.
+    @param[out]
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The pivot indices returned by \ref rocsolver_sgetrf "GETRF".
+    @param[in,out]
+    B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
+                On entry, the right hand side matrix B.
+                On exit, the solution matrix X.
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                The leading dimension of B.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, U is singular, and the solution could not be computed.
+                U[i,i] is the first zero element in the diagonal.
+
+   ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgesv(rocblas_handle handle,
+                                                const rocblas_int n,
+                                                const rocblas_int nrhs,
+                                                float* A,
+                                                const rocblas_int lda,
+                                                rocblas_int* ipiv,
+                                                float* B,
+                                                const rocblas_int ldb,
+                                                rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgesv(rocblas_handle handle,
+                                                const rocblas_int n,
+                                                const rocblas_int nrhs,
+                                                double* A,
+                                                const rocblas_int lda,
+                                                rocblas_int* ipiv,
+                                                double* B,
+                                                const rocblas_int ldb,
+                                                rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgesv(rocblas_handle handle,
+                                                const rocblas_int n,
+                                                const rocblas_int nrhs,
+                                                rocblas_float_complex* A,
+                                                const rocblas_int lda,
+                                                rocblas_int* ipiv,
+                                                rocblas_float_complex* B,
+                                                const rocblas_int ldb,
+                                                rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv(rocblas_handle handle,
+                                                const rocblas_int n,
+                                                const rocblas_int nrhs,
+                                                rocblas_double_complex* A,
+                                                const rocblas_int lda,
+                                                rocblas_int* ipiv,
+                                                rocblas_double_complex* B,
+                                                const rocblas_int ldb,
+                                                rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief GESV_BATCHED solves a batch of general systems of n linear equations on n
+    variables. 
+
+    \details
+    The linear systems are of the form
+
+    \f[
+        A_j X_j = B_j
+    \f]
+
+    where \f$A_j\f$ is a general n-by-n matrix. Matrix \f$A_j\f$ is first factorized in triangular factors \f$L_j\f$ and \f$U_j\f$
+    using \ref rocsolver_sgetrf_batched "GETRF_BATCHED"; then, the solutions are computed with \ref rocsolver_sgetrs_batched "GETRS_BATCHED".
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The order of the system, i.e. the number of columns and rows of all A_j matrices.
+    @param[in]
+    nrhs        rocblas_int. nrhs >= 0.\n
+                The number of right hand sides, i.e., the number of columns
+                of all the matrices B_j.
+    @param[in]
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j.
+                On exit, if info_j = 0, the factors L_j and U_j of the LU decomposition of A_j returned by
+                \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of matrices A_j.
+    @param[out]
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+                The vectors ipiv_j of pivot indices returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
+    @param[in]
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    @param[in,out]
+    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
+                On entry, the right hand side matrices B_j.
+                On exit, the solution matrix X_j of each system in the batch.
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                The leading dimension of matrices B_j.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for A_j.
+                If info[i] = j > 0, U_i is singular, and the solution could not be computed.
+                U_j[i,i] is the first zero element in the diagonal.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of instances (systems) in the batch.
+
+   ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgesv_batched(rocblas_handle handle,
+                                                        const rocblas_int n,
+                                                        const rocblas_int nrhs,
+                                                        float* const A[],
+                                                        const rocblas_int lda,
+                                                        rocblas_int* ipiv,
+                                                        const rocblas_stride strideP,
+                                                        float* const B[],
+                                                        const rocblas_int ldb,
+                                                        rocblas_int* info,
+                                                        const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgesv_batched(rocblas_handle handle,
+                                                        const rocblas_int n,
+                                                        const rocblas_int nrhs,
+                                                        double* const A[],
+                                                        const rocblas_int lda,
+                                                        rocblas_int* ipiv,
+                                                        const rocblas_stride strideP,
+                                                        double* const B[],
+                                                        const rocblas_int ldb,
+                                                        rocblas_int* info,
+                                                        const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgesv_batched(rocblas_handle handle,
+                                                        const rocblas_int n,
+                                                        const rocblas_int nrhs,
+                                                        rocblas_float_complex* const A[],
+                                                        const rocblas_int lda,
+                                                        rocblas_int* ipiv,
+                                                        const rocblas_stride strideP,
+                                                        rocblas_float_complex* const B[],
+                                                        const rocblas_int ldb,
+                                                        rocblas_int* info,
+                                                        const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv_batched(rocblas_handle handle,
+                                                        const rocblas_int n,
+                                                        const rocblas_int nrhs,
+                                                        rocblas_double_complex* const A[],
+                                                        const rocblas_int lda,
+                                                        rocblas_int* ipiv,
+                                                        const rocblas_stride strideP,
+                                                        rocblas_double_complex* const B[],
+                                                        const rocblas_int ldb,
+                                                        rocblas_int* info,
+                                                        const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief GESV_STRIDED_BATCHED solves a batch of general systems of n linear equations
+    on n variables.
+
+    \details
+    The linear systems are of the form
+
+    \f[
+        A_j X_j = B_j
+    \f]
+
+    where \f$A_j\f$ is a general n-by-n matrix. Matrix \f$A_j\f$ is first factorized in triangular factors \f$L_j\f$ and \f$U_j\f$
+    using \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED"; then, the solutions are computed with \ref rocsolver_sgetrs_strided_batched "GETRS_STRIDED_BATCHED".
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    trans       rocblas_operation.\n
+                Specifies the form of the system of equations of each instance in the batch.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The order of the system, i.e. the number of columns and rows of all A_j matrices.
+    @param[in]
+    nrhs        rocblas_int. nrhs >= 0.\n
+                The number of right hand sides, i.e., the number of columns
+                of all the matrices B_j.
+    @param[in]
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j.
+                On exit, if info_j = 0, the factors L_j and U_j of the LU decomposition of A_j returned by
+                \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of matrices A_j.
+    @param[in]
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[out]
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+                The vectors ipiv_j of pivot indices returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
+    @param[in]
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    @param[in,out]
+    B           pointer to type. Array on the GPU (size depends on the value of strideB).\n
+                On entry, the right hand side matrices B_j.
+                On exit, the solution matrix X_j of each system in the batch.
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                The leading dimension of matrices B_j.
+    @param[in]
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for A_j.
+                If info[i] = j > 0, U_i is singular, and the solution could not be computed.
+                U_j[i,i] is the first zero element in the diagonal.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of instances (systems) in the batch.
+
+   ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgesv_strided_batched(rocblas_handle handle,
+                                                                const rocblas_int n,
+                                                                const rocblas_int nrhs,
+                                                                float* A,
+                                                                const rocblas_int lda,
+                                                                const rocblas_stride strideA,
+                                                                rocblas_int* ipiv,
+                                                                const rocblas_stride strideP,
+                                                                float* B,
+                                                                const rocblas_int ldb,
+                                                                const rocblas_stride strideB,
+                                                                rocblas_int* info,
+                                                                const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgesv_strided_batched(rocblas_handle handle,
+                                                                const rocblas_int n,
+                                                                const rocblas_int nrhs,
+                                                                double* A,
+                                                                const rocblas_int lda,
+                                                                const rocblas_stride strideA,
+                                                                rocblas_int* ipiv,
+                                                                const rocblas_stride strideP,
+                                                                double* B,
+                                                                const rocblas_int ldb,
+                                                                const rocblas_stride strideB,
+                                                                rocblas_int* info,
+                                                                const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgesv_strided_batched(rocblas_handle handle,
+                                                                const rocblas_int n,
+                                                                const rocblas_int nrhs,
+                                                                rocblas_float_complex* A,
+                                                                const rocblas_int lda,
+                                                                const rocblas_stride strideA,
+                                                                rocblas_int* ipiv,
+                                                                const rocblas_stride strideP,
+                                                                rocblas_float_complex* B,
+                                                                const rocblas_int ldb,
+                                                                const rocblas_stride strideB,
+                                                                rocblas_int* info,
+                                                                const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv_strided_batched(rocblas_handle handle,
+                                                                const rocblas_int n,
+                                                                const rocblas_int nrhs,
+                                                                rocblas_double_complex* A,
+                                                                const rocblas_int lda,
+                                                                const rocblas_stride strideA,
+                                                                rocblas_int* ipiv,
+                                                                const rocblas_stride strideP,
+                                                                rocblas_double_complex* B,
+                                                                const rocblas_int ldb,
+                                                                const rocblas_stride strideB,
+                                                                rocblas_int* info,
+                                                                const rocblas_int batch_count);
 //! @}
 
 /*! @{

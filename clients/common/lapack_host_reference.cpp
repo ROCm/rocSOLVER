@@ -154,6 +154,25 @@ void zgetrs_(char* trans,
              int* ldb,
              int* info);
 
+void sgesv_(int* n, int* nrhs, float* A, int* lda, int* ipiv, float* B, int* ldb, int* info);
+void dgesv_(int* n, int* nrhs, double* A, int* lda, int* ipiv, double* B, int* ldb, int* info);
+void cgesv_(int* n,
+            int* nrhs,
+            rocblas_float_complex* A,
+            int* lda,
+            int* ipiv,
+            rocblas_float_complex* B,
+            int* ldb,
+            int* info);
+void zgesv_(int* n,
+            int* nrhs,
+            rocblas_double_complex* A,
+            int* lda,
+            int* ipiv,
+            rocblas_double_complex* B,
+            int* ldb,
+            int* info);
+
 void sgels_(char* trans,
             int* m,
             int* n,
@@ -4482,6 +4501,59 @@ void cblas_getrs<rocblas_double_complex>(rocblas_operation trans,
     rocblas_int info;
     char transC = rocblas2char_operation(trans);
     zgetrs_(&transC, &n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
+}
+
+// gesv
+template <>
+void cblas_gesv<float>(rocblas_int n,
+                       rocblas_int nrhs,
+                       float* A,
+                       rocblas_int lda,
+                       rocblas_int* ipiv,
+                       float* B,
+                       rocblas_int ldb,
+                       rocblas_int* info)
+{
+    sgesv_(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+}
+
+template <>
+void cblas_gesv<double>(rocblas_int n,
+                        rocblas_int nrhs,
+                        double* A,
+                        rocblas_int lda,
+                        rocblas_int* ipiv,
+                        double* B,
+                        rocblas_int ldb,
+                        rocblas_int* info)
+{
+    dgesv_(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+}
+
+template <>
+void cblas_gesv<rocblas_float_complex>(rocblas_int n,
+                                       rocblas_int nrhs,
+                                       rocblas_float_complex* A,
+                                       rocblas_int lda,
+                                       rocblas_int* ipiv,
+                                       rocblas_float_complex* B,
+                                       rocblas_int ldb,
+                                       rocblas_int* info)
+{
+    cgesv_(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+}
+
+template <>
+void cblas_gesv<rocblas_double_complex>(rocblas_int n,
+                                        rocblas_int nrhs,
+                                        rocblas_double_complex* A,
+                                        rocblas_int lda,
+                                        rocblas_int* ipiv,
+                                        rocblas_double_complex* B,
+                                        rocblas_int ldb,
+                                        rocblas_int* info)
+{
+    zgesv_(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
 }
 
 // gels
