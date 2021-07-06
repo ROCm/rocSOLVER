@@ -15,6 +15,7 @@
 #include "testing_gels.hpp"
 #include "testing_geql2_geqlf.hpp"
 #include "testing_geqr2_geqrf.hpp"
+#include "testing_gesv.hpp"
 #include "testing_gesvd.hpp"
 #include "testing_getf2_getrf.hpp"
 #include "testing_getf2_getrf_npvt.hpp"
@@ -127,6 +128,10 @@ class rocsolver_dispatcher
             {"getrs", testing_getrs<false, false, T>},
             {"getrs_batched", testing_getrs<true, true, T>},
             {"getrs_strided_batched", testing_getrs<false, true, T>},
+            // gesv
+            {"gesv", testing_gesv<false, false, T>},
+            {"gesv_batched", testing_gesv<true, true, T>},
+            {"gesv_strided_batched", testing_gesv<false, true, T>},
             // gesvd
             {"gesvd", testing_gesvd<false, false, T>},
             {"gesvd_batched", testing_gesvd<true, true, T>},
