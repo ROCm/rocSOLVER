@@ -7424,8 +7424,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief GETRS solves a system of n linear equations on n variables using the
-    LU factorization computed by \ref rocsolver_sgetrf "GETRF".
+    \brief GETRS solves a system of n linear equations on n variables in its factorized form. 
 
     \details
     It solves one of the following systems, depending on the value of trans:
@@ -7437,6 +7436,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(rocblas_handle 
         A^H X = B & \: \text{conjugate transposed.}
         \end{array}
     \f]
+
+    Matrix A is defined by its triangular factors as returned by \ref rocsolver_sgetrf "GETRF". 
 
     @param[in]
     handle      rocblas_handle.
@@ -7512,7 +7513,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(rocblas_handle handle,
 
 /*! @{
     \brief GETRS_BATCHED solves a batch of systems of n linear equations on n
-    variables using the LU factorization computed by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
+    variables in its factorized forms. 
 
     \details
     For each instance j in the batch, it solves one of the following systems, depending on the value of trans:
@@ -7524,6 +7525,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(rocblas_handle handle,
         A_j^H X_j = B_j & \: \text{conjugate transposed.}
         \end{array}
     \f]
+
+    Matrix \f$A_j\f$ is defined by its triangular factors as returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
 
     @param[in]
     handle      rocblas_handle.
@@ -7614,7 +7617,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
 
 /*! @{
     \brief GETRS_STRIDED_BATCHED solves a batch of systems of n linear equations
-    on n variables using the LU factorization computed by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
+    on n variables in its factorized forms.
 
     \details
     For each instance j in the batch, it solves one of the following systems, depending on the value of trans:
@@ -7627,6 +7630,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
         \end{array}
     \f]
 
+    Matrix \f$A_j\f$ is defined by its triangular factors as returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
+    
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -7731,17 +7736,17 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief GESV solves a system of n linear equations on n variables using the
-    LU factorization computed by \ref rocsolver_sgetrf "GETRF".
+    \brief GESV solves a general system of n linear equations on n variables. 
 
     \details
-    It solves the system
+    The linear system is of the form
 
     \f[
         A X = B
     \f]
 
-    where A is an n-by-n matrix.
+    where A is a general n-by-n matrix. Matrix A is first factorized in triangular factors L and U
+    using \ref rocsolver_sgetrf "GETRF"; then, the solution is computed with \ref rocsolver_sgetrs "GETRS".
 
     @param[in]
     handle      rocblas_handle.
@@ -7820,17 +7825,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief GESV_BATCHED solves a batch of systems of n linear equations on n
-    variables using the LU factorization computed by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
+    \brief GESV_BATCHED solves a batch of general systems of n linear equations on n
+    variables. 
 
     \details
-    It solves the system
+    The linear systems are of the form
 
     \f[
         A_j X_j = B_j
     \f]
 
-    where A_j is an n-by-n matrix.
+    where \f$A_j\f$ is a general n-by-n matrix. Matrix \f$A_j\f$ is first factorized in triangular factors \f$L_j\f$ and \f$U_j\f$
+    using \ref rocsolver_sgetrf_batched "GETRF_BATCHED"; then, the solutions are computed with \ref rocsolver_sgetrs_batched "GETRS_BATCHED".
 
     @param[in]
     handle      rocblas_handle.
@@ -7924,17 +7930,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv_batched(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief GESV_STRIDED_BATCHED solves a batch of systems of n linear equations
-    on n variables using the LU factorization computed by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
+    \brief GESV_STRIDED_BATCHED solves a batch of general systems of n linear equations
+    on n variables.
 
     \details
-    It solves the system
+    The linear systems are of the form
 
     \f[
         A_j X_j = B_j
     \f]
 
-    where A_j is an n-by-n matrix.
+    where \f$A_j\f$ is a general n-by-n matrix. Matrix \f$A_j\f$ is first factorized in triangular factors \f$L_j\f$ and \f$U_j\f$
+    using \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED"; then, the solutions are computed with \ref rocsolver_sgetrs_strided_batched "GETRS_STRIDED_BATCHED".
 
     @param[in]
     handle      rocblas_handle.
