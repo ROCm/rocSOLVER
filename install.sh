@@ -503,7 +503,7 @@ mkdir -p "$build_dir"
 if [[ "${build_docs}" == true ]]; then
   container_name="build_$(head -c 10 /dev/urandom | base32)"
   docs_build_command='cp -r /mnt/rocsolver /home/docs/ && /home/docs/rocsolver/docs/run_doc.sh'
-  docker build -t rocsolver:docs -f "$main/docker/dockerfile-docs" "$main/docker"
+  docker build -t rocsolver:docs -f "$main/docs/Dockerfile" "$main/docs"
   docker run -v "$main:/mnt/rocsolver:ro" --name "$container_name" rocsolver:docs /bin/sh -c "$docs_build_command"
   docker cp "$container_name:/home/docs/rocsolver/docs/build" "$main/docs/"
   docker cp "$container_name:/home/docs/rocsolver/docs/docBin" "$main/docs/"
