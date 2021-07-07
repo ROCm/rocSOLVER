@@ -539,7 +539,7 @@ __global__ void copyshift_down(const bool copy,
 /** set_offdiag kernel copies the off-diagonal element of A, which is the non-zero element
     resulting by applying the Householder reflector to the working column, to E. Then set it
     to 1 to prepare for the application of the Householder reflector to the rest of the matrix **/
-template <typename T, typename U, typename S, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename S, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 __global__ void set_offdiag(const rocblas_int batch_count,
                             U A,
                             const rocblas_int shiftA,
@@ -559,7 +559,7 @@ __global__ void set_offdiag(const rocblas_int batch_count,
     }
 }
 
-template <typename T, typename U, typename S, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename S, typename U, std::enable_if_t<is_complex<T>, int> = 0>
 __global__ void set_offdiag(const rocblas_int batch_count,
                             U A,
                             const rocblas_int shiftA,

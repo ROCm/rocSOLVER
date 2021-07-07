@@ -10,15 +10,18 @@ set(rocsolver_lapack_source
   lapack/roclapack_getrs.cpp
   lapack/roclapack_getrs_batched.cpp
   lapack/roclapack_getrs_strided_batched.cpp
-  lapack/roclapack_potrs.cpp
-  lapack/roclapack_potrs_batched.cpp
-  lapack/roclapack_potrs_strided_batched.cpp
+  lapack/roclapack_gesv.cpp
+  lapack/roclapack_gesv_batched.cpp
+  lapack/roclapack_gesv_strided_batched.cpp
   lapack/roclapack_getri.cpp
   lapack/roclapack_getri_batched.cpp
   lapack/roclapack_getri_strided_batched.cpp
   lapack/roclapack_getri_outofplace.cpp
   lapack/roclapack_getri_outofplace_batched.cpp
   lapack/roclapack_getri_outofplace_strided_batched.cpp
+  lapack/roclapack_potrs.cpp
+  lapack/roclapack_potrs_batched.cpp
+  lapack/roclapack_potrs_strided_batched.cpp
   lapack/roclapack_trtri.cpp
   lapack/roclapack_trtri_batched.cpp
   lapack/roclapack_trtri_strided_batched.cpp
@@ -163,7 +166,7 @@ target_link_libraries(rocsolver
 if(ROCSOLVER_EMBED_FMT)
   target_link_libraries(rocsolver PRIVATE fmt::fmt-header-only)
 else()
-  target_link_libraries(rocsolver PUBLIC fmt::fmt)
+  target_link_libraries(rocsolver PRIVATE fmt::fmt)
 endif()
 
 # In ROCm 4.0 and earlier, the default maximum threads per block is 256

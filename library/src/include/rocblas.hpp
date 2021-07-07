@@ -1023,7 +1023,7 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
 }
 
 // syrk
-template <typename S, typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_operation transA,
@@ -1045,13 +1045,15 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
     ROCBLAS_ENTER("syrk", "uplo:", uplo, "trans:", transA, "n:", n, "k:", k, "shiftA:", offsetA,
                   "lda:", lda, "shiftC:", offsetC, "ldc:", ldc, "bc:", batch_count);
 
+    using S = decltype(std::real(T{}));
+
     return rocblas_internal_syrk_template(
         handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
 }
 
 // herk
-template <typename S, typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_operation transA,
@@ -1072,6 +1074,8 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
     // TODO: How to get alpha and beta for trace logging
     ROCBLAS_ENTER("herk", "uplo:", uplo, "trans:", transA, "n:", n, "k:", k, "shiftA:", offsetA,
                   "lda:", lda, "shiftC:", offsetC, "ldc:", ldc, "bc:", batch_count);
+
+    using S = decltype(std::real(T{}));
 
     return rocblas_internal_herk_template(
         handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA, lda,
@@ -1234,6 +1238,16 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
         offsetC, ldc, strideC, batch_count);
 }
 
+// symv/hemv memory sizes
+template <bool BATCHED, typename T, bool COMPLEX = is_complex<T>>
+void rocblasCall_symv_hemv_mem(rocblas_int n, rocblas_int batch_count, size_t* w_temp)
+{
+    if(!COMPLEX)
+        *w_temp = 0;
+    else
+        *w_temp = rocblas_internal_hemv_kernel_workspace_size<T>(n, batch_count);
+}
+
 // symv
 template <typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
 rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
@@ -1256,7 +1270,8 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
                                      rocblas_int incy,
                                      rocblas_stride stridey,
                                      rocblas_int batch_count,
-                                     T** work)
+                                     T* work,
+                                     T** workArr)
 {
     // TODO: How to get alpha and beta for trace logging
     ROCBLAS_ENTER("symv", "uplo:", uplo, "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftX:", offsetx,
@@ -1290,7 +1305,8 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
                                      rocblas_int incy,
                                      rocblas_stride stridey,
                                      rocblas_int batch_count,
-                                     T** work)
+                                     T* work,
+                                     T** workArr)
 {
     // TODO: How to get alpha and beta for trace logging
     ROCBLAS_ENTER("symv", "uplo:", uplo, "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftX:", offsetx,
@@ -1300,12 +1316,13 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, y, stridey,
+                       batch_count);
 
     return rocblas_internal_symv_template<T>(
         handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb,
-        cast2constPointer<T>(work), offsety, incy, stridey, batch_count);
+        cast2constPointer<T>(workArr), offsety, incy, stridey, batch_count);
 }
 
 // hemv
@@ -1330,7 +1347,8 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
                                      rocblas_int incy,
                                      rocblas_stride stridey,
                                      rocblas_int batch_count,
-                                     T** work)
+                                     T* work,
+                                     T** workArr)
 {
     // TODO: How to get alpha and beta for trace logging
     ROCBLAS_ENTER("hemv", "uplo:", uplo, "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftX:", offsetx,
@@ -1339,7 +1357,7 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
     return rocblas_internal_hemv_template<T>(
         handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb, y,
-        offsety, incy, stridey, batch_count);
+        offsety, incy, stridey, batch_count, work);
 }
 
 // hemv overload
@@ -1364,7 +1382,8 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
                                      rocblas_int incy,
                                      rocblas_stride stridey,
                                      rocblas_int batch_count,
-                                     T** work)
+                                     T* work,
+                                     T** workArr)
 {
     // TODO: How to get alpha and beta for trace logging
     ROCBLAS_ENTER("hemv", "uplo:", uplo, "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftX:", offsetx,
@@ -1374,12 +1393,13 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
+    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, y, stridey,
+                       batch_count);
 
     return rocblas_internal_hemv_template<T>(
         handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb,
-        cast2constPointer<T>(work), offsety, incy, stridey, batch_count);
+        cast2constPointer<T>(workArr), offsety, incy, stridey, batch_count, work);
 }
 
 // symm
@@ -1469,7 +1489,6 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
                                 rocblas_int ldb,
                                 rocblas_stride stride_B,
                                 rocblas_int batch_count,
-                                rocblas_int* w_unique_row,
                                 rocblas_int* w_completed_sec,
                                 T** workArr = nullptr)
 {
@@ -1479,7 +1498,7 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
 
     return rocblas_internal_trsv_substitution_template<ROCBLAS_TRSV_BLOCK, T>(
         handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B, offset_B, ldb,
-        stride_B, batch_count, w_unique_row, w_completed_sec);
+        stride_B, batch_count, w_completed_sec);
 }
 
 template <bool BATCHED,
@@ -1500,7 +1519,6 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
                                 rocblas_int ldb,
                                 rocblas_stride stride_B,
                                 rocblas_int batch_count,
-                                rocblas_int* w_unique_row,
                                 rocblas_int* w_completed_sec,
                                 T** workArr = nullptr)
 {
@@ -1510,7 +1528,7 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
 
     return rocblas_internal_trsv_substitution_template<ROCBLAS_TRSV_Z_BLOCK, T>(
         handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B, offset_B, ldb,
-        stride_B, batch_count, w_unique_row, w_completed_sec);
+        stride_B, batch_count, w_completed_sec);
 }
 
 // trsm memory sizes

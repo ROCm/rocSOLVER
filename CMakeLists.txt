@@ -4,10 +4,6 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 # This has to be initialized before the project() command appears
 # Set the default build type to Release
 if(NOT DEFINED CMAKE_CONFIGURATION_TYPES AND NOT DEFINED CMAKE_BUILD_TYPE)
@@ -24,7 +20,12 @@ unset(ENV{ROCM_BUILD_ID})
 
 project(rocsolver LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 option(ROCSOLVER_EMBED_FMT "Hide libfmt symbols" OFF)
+option(OPTIMAL "Build specialized kernels for small matrix sizes" ON)
 
 # Add our CMake helper files to the lookup path
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")

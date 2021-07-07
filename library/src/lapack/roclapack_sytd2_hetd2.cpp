@@ -4,7 +4,7 @@
 
 #include "roclapack_sytd2_hetd2.hpp"
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_sytd2_hetd2_impl(rocblas_handle handle,
                                           const rocblas_fill uplo,
                                           const rocblas_int n,
@@ -44,7 +44,7 @@ rocblas_status rocsolver_sytd2_hetd2_impl(rocblas_handle handle,
     size_t size_tmptau;
     // size of array of pointers to workspace (batched case)
     size_t size_workArr;
-    rocsolver_sytd2_hetd2_getMemorySize<T, false>(n, batch_count, &size_scalars, &size_work,
+    rocsolver_sytd2_hetd2_getMemorySize<false, T>(n, batch_count, &size_scalars, &size_work,
                                                   &size_norms, &size_tmptau, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
@@ -67,9 +67,9 @@ rocblas_status rocsolver_sytd2_hetd2_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_sytd2_hetd2_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E,
-                                          strideE, tau, strideP, batch_count, (T*)scalars, (T*)work,
-                                          (T*)norms, (T*)tmptau, (T**)workArr);
+    return rocsolver_sytd2_hetd2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
+                                             E, strideE, tau, strideP, batch_count, (T*)scalars,
+                                             (T*)work, (T*)norms, (T*)tmptau, (T**)workArr);
 }
 
 /*
@@ -89,7 +89,7 @@ rocblas_status rocsolver_ssytd2(rocblas_handle handle,
                                 float* E,
                                 float* tau)
 {
-    return rocsolver_sytd2_hetd2_impl<float, float>(handle, uplo, n, A, lda, D, E, tau);
+    return rocsolver_sytd2_hetd2_impl<float>(handle, uplo, n, A, lda, D, E, tau);
 }
 
 rocblas_status rocsolver_dsytd2(rocblas_handle handle,
@@ -101,7 +101,7 @@ rocblas_status rocsolver_dsytd2(rocblas_handle handle,
                                 double* E,
                                 double* tau)
 {
-    return rocsolver_sytd2_hetd2_impl<double, double>(handle, uplo, n, A, lda, D, E, tau);
+    return rocsolver_sytd2_hetd2_impl<double>(handle, uplo, n, A, lda, D, E, tau);
 }
 
 rocblas_status rocsolver_chetd2(rocblas_handle handle,
@@ -113,8 +113,7 @@ rocblas_status rocsolver_chetd2(rocblas_handle handle,
                                 float* E,
                                 rocblas_float_complex* tau)
 {
-    return rocsolver_sytd2_hetd2_impl<float, rocblas_float_complex>(handle, uplo, n, A, lda, D, E,
-                                                                    tau);
+    return rocsolver_sytd2_hetd2_impl<rocblas_float_complex>(handle, uplo, n, A, lda, D, E, tau);
 }
 
 rocblas_status rocsolver_zhetd2(rocblas_handle handle,
@@ -126,8 +125,7 @@ rocblas_status rocsolver_zhetd2(rocblas_handle handle,
                                 double* E,
                                 rocblas_double_complex* tau)
 {
-    return rocsolver_sytd2_hetd2_impl<double, rocblas_double_complex>(handle, uplo, n, A, lda, D, E,
-                                                                      tau);
+    return rocsolver_sytd2_hetd2_impl<rocblas_double_complex>(handle, uplo, n, A, lda, D, E, tau);
 }
 
 } // extern C

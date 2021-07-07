@@ -51,7 +51,7 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
     size_t t1 = 0, t2 = 0;
 
     // requirements for tridiagonalization (sytrd/hetrd)
-    rocsolver_sytrd_hetrd_getMemorySize<T, BATCHED>(n, batch_count, size_scalars, &w11, &w21, &t1,
+    rocsolver_sytrd_hetrd_getMemorySize<BATCHED, T>(n, batch_count, size_scalars, &w11, &w21, &t1,
                                                     &unused);
 
     if(evect == rocblas_evect_original)
@@ -61,7 +61,7 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
                                                      &unused);
 
         // extra requirements for ormtr/unmtr
-        rocsolver_ormtr_unmtr_getMemorySize<T, BATCHED>(rocblas_side_left, uplo, n, n, batch_count,
+        rocsolver_ormtr_unmtr_getMemorySize<BATCHED, T>(rocblas_side_left, uplo, n, n, batch_count,
                                                         &unused, &w13, &w23, &w32, &unused);
 
         *size_work3 = std::max(w31, w32);

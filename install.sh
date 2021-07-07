@@ -185,7 +185,7 @@ install_fmt_from_source( )
     ${cmake_executable} \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-      -DCMAKE_CXX_STANDARD=14 \
+      -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_CXX_EXTENSIONS=OFF \
       -DCMAKE_CXX_STANDARD_REQUIRED=ON \
       -DFMT_DOC=OFF \
@@ -327,8 +327,10 @@ build_docs=false
 optimal=true
 cleanup=false
 build_sanitizer=false
-architecture=
 build_codecoverage=false
+unset architecture
+unset rocblas_dir
+unset rocsolver_dir
 
 
 # #################################################
@@ -501,7 +503,7 @@ mkdir -p "$build_dir"
 if [[ "${build_docs}" == true ]]; then
   container_name="build_$(head -c 10 /dev/urandom | base32)"
   docs_build_command='cp -r /mnt/rocsolver /home/docs/ && /home/docs/rocsolver/docs/run_doc.sh'
-  docker build -t rocsolver:docs -f "$main/docker/dockerfile-docs" "$main/docker"
+  docker build -t rocsolver:docs -f "$main/docs/Dockerfile" "$main/docs"
   docker run -v "$main:/mnt/rocsolver:ro" --name "$container_name" rocsolver:docs /bin/sh -c "$docs_build_command"
   docker cp "$container_name:/home/docs/rocsolver/docs/build" "$main/docs/"
   docker cp "$container_name:/home/docs/rocsolver/docs/docBin" "$main/docs/"
@@ -540,11 +542,11 @@ if [[ "${static_lib}" == true ]]; then
   cmake_common_options="${cmake_common_options} -DBUILD_SHARED_LIBS=OFF"
 fi
 
-if [[ "${optimal}" == true ]]; then
-  cmake_common_options="${cmake_common_options} -DOPTIMAL=ON"
+if [[ "${optimal}" == false ]]; then
+  cmake_common_options="${cmake_common_options} -DOPTIMAL=OFF"
 fi
 
-if [[ -n "${architecture}" ]]; then
+if [[ -n "${architecture+x}" ]]; then
   cmake_common_options="${cmake_common_options} -DAMDGPU_TARGETS=${architecture}"
 fi
 

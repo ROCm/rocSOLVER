@@ -173,6 +173,25 @@ void zgetrs_(char* trans,
              int* ldb,
              int* info);
 
+void sgesv_(int* n, int* nrhs, float* A, int* lda, int* ipiv, float* B, int* ldb, int* info);
+void dgesv_(int* n, int* nrhs, double* A, int* lda, int* ipiv, double* B, int* ldb, int* info);
+void cgesv_(int* n,
+            int* nrhs,
+            rocblas_float_complex* A,
+            int* lda,
+            int* ipiv,
+            rocblas_float_complex* B,
+            int* ldb,
+            int* info);
+void zgesv_(int* n,
+            int* nrhs,
+            rocblas_double_complex* A,
+            int* lda,
+            int* ipiv,
+            rocblas_double_complex* B,
+            int* ldb,
+            int* info);
+
 void sgels_(char* trans,
             int* m,
             int* n,
@@ -2307,7 +2326,7 @@ void cblas_latrd<double, double>(rocblas_fill uplo,
 }
 
 template <>
-void cblas_latrd<float, rocblas_float_complex>(rocblas_fill uplo,
+void cblas_latrd<rocblas_float_complex, float>(rocblas_fill uplo,
                                                rocblas_int n,
                                                rocblas_int k,
                                                rocblas_float_complex* A,
@@ -2322,7 +2341,7 @@ void cblas_latrd<float, rocblas_float_complex>(rocblas_fill uplo,
 }
 
 template <>
-void cblas_latrd<double, rocblas_double_complex>(rocblas_fill uplo,
+void cblas_latrd<rocblas_double_complex, double>(rocblas_fill uplo,
                                                  rocblas_int n,
                                                  rocblas_int k,
                                                  rocblas_double_complex* A,
@@ -2376,7 +2395,7 @@ void cblas_labrd<double, double>(rocblas_int m,
 }
 
 template <>
-void cblas_labrd<float, rocblas_float_complex>(rocblas_int m,
+void cblas_labrd<rocblas_float_complex, float>(rocblas_int m,
                                                rocblas_int n,
                                                rocblas_int nb,
                                                rocblas_float_complex* A,
@@ -2395,7 +2414,7 @@ void cblas_labrd<float, rocblas_float_complex>(rocblas_int m,
 }
 
 template <>
-void cblas_labrd<double, rocblas_double_complex>(rocblas_int m,
+void cblas_labrd<rocblas_double_complex, double>(rocblas_int m,
                                                  rocblas_int n,
                                                  rocblas_int nb,
                                                  rocblas_double_complex* A,
@@ -4560,6 +4579,59 @@ void cblas_getrs<rocblas_double_complex>(rocblas_operation trans,
     zgetrs_(&transC, &n, &nrhs, A, &lda, ipiv, B, &ldb, &info);
 }
 
+// gesv
+template <>
+void cblas_gesv<float>(rocblas_int n,
+                       rocblas_int nrhs,
+                       float* A,
+                       rocblas_int lda,
+                       rocblas_int* ipiv,
+                       float* B,
+                       rocblas_int ldb,
+                       rocblas_int* info)
+{
+    sgesv_(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+}
+
+template <>
+void cblas_gesv<double>(rocblas_int n,
+                        rocblas_int nrhs,
+                        double* A,
+                        rocblas_int lda,
+                        rocblas_int* ipiv,
+                        double* B,
+                        rocblas_int ldb,
+                        rocblas_int* info)
+{
+    dgesv_(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+}
+
+template <>
+void cblas_gesv<rocblas_float_complex>(rocblas_int n,
+                                       rocblas_int nrhs,
+                                       rocblas_float_complex* A,
+                                       rocblas_int lda,
+                                       rocblas_int* ipiv,
+                                       rocblas_float_complex* B,
+                                       rocblas_int ldb,
+                                       rocblas_int* info)
+{
+    cgesv_(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+}
+
+template <>
+void cblas_gesv<rocblas_double_complex>(rocblas_int n,
+                                        rocblas_int nrhs,
+                                        rocblas_double_complex* A,
+                                        rocblas_int lda,
+                                        rocblas_int* ipiv,
+                                        rocblas_double_complex* B,
+                                        rocblas_int ldb,
+                                        rocblas_int* info)
+{
+    zgesv_(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+}
+
 // gels
 template <>
 void cblas_gels<float>(rocblas_operation transR,
@@ -5151,7 +5223,7 @@ void cblas_gebd2<double, double>(rocblas_int m,
 }
 
 template <>
-void cblas_gebd2<float, rocblas_float_complex>(rocblas_int m,
+void cblas_gebd2<rocblas_float_complex, float>(rocblas_int m,
                                                rocblas_int n,
                                                rocblas_float_complex* A,
                                                rocblas_int lda,
@@ -5166,7 +5238,7 @@ void cblas_gebd2<float, rocblas_float_complex>(rocblas_int m,
 }
 
 template <>
-void cblas_gebd2<double, rocblas_double_complex>(rocblas_int m,
+void cblas_gebd2<rocblas_double_complex, double>(rocblas_int m,
                                                  rocblas_int n,
                                                  rocblas_double_complex* A,
                                                  rocblas_int lda,
@@ -5214,7 +5286,7 @@ void cblas_gebrd<double, double>(rocblas_int m,
 }
 
 template <>
-void cblas_gebrd<float, rocblas_float_complex>(rocblas_int m,
+void cblas_gebrd<rocblas_float_complex, float>(rocblas_int m,
                                                rocblas_int n,
                                                rocblas_float_complex* A,
                                                rocblas_int lda,
@@ -5230,7 +5302,7 @@ void cblas_gebrd<float, rocblas_float_complex>(rocblas_int m,
 }
 
 template <>
-void cblas_gebrd<double, rocblas_double_complex>(rocblas_int m,
+void cblas_gebrd<rocblas_double_complex, double>(rocblas_int m,
                                                  rocblas_int n,
                                                  rocblas_double_complex* A,
                                                  rocblas_int lda,
@@ -5279,7 +5351,7 @@ void cblas_sytrd_hetrd<double, double>(rocblas_fill uplo,
 }
 
 template <>
-void cblas_sytrd_hetrd<float, rocblas_float_complex>(rocblas_fill uplo,
+void cblas_sytrd_hetrd<rocblas_float_complex, float>(rocblas_fill uplo,
                                                      rocblas_int n,
                                                      rocblas_float_complex* A,
                                                      rocblas_int lda,
@@ -5295,7 +5367,7 @@ void cblas_sytrd_hetrd<float, rocblas_float_complex>(rocblas_fill uplo,
 }
 
 template <>
-void cblas_sytrd_hetrd<double, rocblas_double_complex>(rocblas_fill uplo,
+void cblas_sytrd_hetrd<rocblas_double_complex, double>(rocblas_fill uplo,
                                                        rocblas_int n,
                                                        rocblas_double_complex* A,
                                                        rocblas_int lda,
@@ -5340,7 +5412,7 @@ void cblas_sytd2_hetd2<double, double>(rocblas_fill uplo,
 }
 
 template <>
-void cblas_sytd2_hetd2<float, rocblas_float_complex>(rocblas_fill uplo,
+void cblas_sytd2_hetd2<rocblas_float_complex, float>(rocblas_fill uplo,
                                                      rocblas_int n,
                                                      rocblas_float_complex* A,
                                                      rocblas_int lda,
@@ -5354,7 +5426,7 @@ void cblas_sytd2_hetd2<float, rocblas_float_complex>(rocblas_fill uplo,
 }
 
 template <>
-void cblas_sytd2_hetd2<double, rocblas_double_complex>(rocblas_fill uplo,
+void cblas_sytd2_hetd2<rocblas_double_complex, double>(rocblas_fill uplo,
                                                        rocblas_int n,
                                                        rocblas_double_complex* A,
                                                        rocblas_int lda,
@@ -5411,7 +5483,7 @@ void cblas_steqr<double, double>(rocblas_evect evect,
     dsteqr_(&evectC, &n, D, E, C, &ldc, work, info);
 }
 template <>
-void cblas_steqr<float, rocblas_float_complex>(rocblas_evect evect,
+void cblas_steqr<rocblas_float_complex, float>(rocblas_evect evect,
                                                rocblas_int n,
                                                float* D,
                                                float* E,
@@ -5425,7 +5497,7 @@ void cblas_steqr<float, rocblas_float_complex>(rocblas_evect evect,
 }
 
 template <>
-void cblas_steqr<double, rocblas_double_complex>(rocblas_evect evect,
+void cblas_steqr<rocblas_double_complex, double>(rocblas_evect evect,
                                                  rocblas_int n,
                                                  double* D,
                                                  double* E,
@@ -5477,7 +5549,7 @@ void cblas_stedc<double, double>(rocblas_evect evect,
     dstedc_(&evectC, &n, D, E, C, &ldc, rwork, &lrwork, iwork, &liwork, info);
 }
 template <>
-void cblas_stedc<float, rocblas_float_complex>(rocblas_evect evect,
+void cblas_stedc<rocblas_float_complex, float>(rocblas_evect evect,
                                                rocblas_int n,
                                                float* D,
                                                float* E,
@@ -5496,7 +5568,7 @@ void cblas_stedc<float, rocblas_float_complex>(rocblas_evect evect,
 }
 
 template <>
-void cblas_stedc<double, rocblas_double_complex>(rocblas_evect evect,
+void cblas_stedc<rocblas_double_complex, double>(rocblas_evect evect,
                                                  rocblas_int n,
                                                  double* D,
                                                  double* E,
@@ -5834,7 +5906,7 @@ void cblas_sygv_hegv<double, double>(rocblas_eform itype,
 }
 
 template <>
-void cblas_sygv_hegv<float, rocblas_float_complex>(rocblas_eform itype,
+void cblas_sygv_hegv<rocblas_float_complex, float>(rocblas_eform itype,
                                                    rocblas_evect evect,
                                                    rocblas_fill uplo,
                                                    rocblas_int n,
@@ -5855,7 +5927,7 @@ void cblas_sygv_hegv<float, rocblas_float_complex>(rocblas_eform itype,
 }
 
 template <>
-void cblas_sygv_hegv<double, rocblas_double_complex>(rocblas_eform itype,
+void cblas_sygv_hegv<rocblas_double_complex, double>(rocblas_eform itype,
                                                      rocblas_evect evect,
                                                      rocblas_fill uplo,
                                                      rocblas_int n,
@@ -5925,7 +5997,7 @@ void cblas_sygvd_hegvd<double, double>(rocblas_eform itype,
 }
 
 template <>
-void cblas_sygvd_hegvd<float, rocblas_float_complex>(rocblas_eform itype,
+void cblas_sygvd_hegvd<rocblas_float_complex, float>(rocblas_eform itype,
                                                      rocblas_evect evect,
                                                      rocblas_fill uplo,
                                                      rocblas_int n,
@@ -5950,7 +6022,7 @@ void cblas_sygvd_hegvd<float, rocblas_float_complex>(rocblas_eform itype,
 }
 
 template <>
-void cblas_sygvd_hegvd<double, rocblas_double_complex>(rocblas_eform itype,
+void cblas_sygvd_hegvd<rocblas_double_complex, double>(rocblas_eform itype,
                                                        rocblas_evect evect,
                                                        rocblas_fill uplo,
                                                        rocblas_int n,

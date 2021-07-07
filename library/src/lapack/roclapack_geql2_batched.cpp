@@ -40,7 +40,7 @@ rocblas_status rocsolver_geql2_batched_impl(rocblas_handle handle,
     size_t size_Abyx_norms;
     // size of temporary array to store diagonal elements
     size_t size_diag;
-    rocsolver_geql2_getMemorySize<T, true>(m, n, batch_count, &size_scalars, &size_work_workArr,
+    rocsolver_geql2_getMemorySize<true, T>(m, n, batch_count, &size_scalars, &size_work_workArr,
                                            &size_Abyx_norms, &size_diag);
 
     if(rocblas_is_device_memory_size_query(handle))

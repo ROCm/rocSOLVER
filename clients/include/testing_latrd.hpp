@@ -11,7 +11,7 @@
 #include "rocsolver_arguments.hpp"
 #include "rocsolver_test.hpp"
 
-template <typename S, typename T>
+template <typename T, typename S>
 void latrd_checkBadArgs(const rocblas_handle handle,
                         const rocblas_fill uplo,
                         const rocblas_int n,

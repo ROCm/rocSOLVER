@@ -141,6 +141,16 @@ void cblas_getrs(rocblas_operation trans,
                  rocblas_int ldb);
 
 template <typename T>
+void cblas_gesv(rocblas_int n,
+                rocblas_int nrhs,
+                T* A,
+                rocblas_int lda,
+                rocblas_int* ipiv,
+                T* B,
+                rocblas_int ldb,
+                rocblas_int* info);
+
+template <typename T>
 void cblas_gels(rocblas_operation transR,
                 rocblas_int m,
                 rocblas_int n,
@@ -215,7 +225,7 @@ void cblas_larfb(rocblas_side side,
                  T* W,
                  rocblas_int ldw);
 
-template <typename S, typename T>
+template <typename T, typename S>
 void cblas_latrd(rocblas_fill uplo,
                  rocblas_int n,
                  rocblas_int k,
@@ -226,7 +236,7 @@ void cblas_latrd(rocblas_fill uplo,
                  T* W,
                  rocblas_int ldw);
 
-template <typename S, typename T>
+template <typename T, typename S>
 void cblas_labrd(rocblas_int m,
                  rocblas_int n,
                  rocblas_int nb,
@@ -481,10 +491,10 @@ void cblas_ormtr_unmtr(rocblas_side side,
                        T* work,
                        rocblas_int sizeW);
 
-template <typename S, typename T>
+template <typename T, typename S>
 void cblas_gebd2(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, S* D, S* E, T* tauq, T* taup, T* work);
 
-template <typename S, typename T>
+template <typename T, typename S>
 void cblas_gebrd(rocblas_int m,
                  rocblas_int n,
                  T* A,
@@ -496,7 +506,7 @@ void cblas_gebrd(rocblas_int m,
                  T* work,
                  rocblas_int size_w);
 
-template <typename S, typename T>
+template <typename T, typename S>
 void cblas_sytrd_hetrd(rocblas_fill uplo,
                        rocblas_int n,
                        T* A,
@@ -507,7 +517,7 @@ void cblas_sytrd_hetrd(rocblas_fill uplo,
                        T* work,
                        rocblas_int size_w);
 
-template <typename S, typename T>
+template <typename T, typename S>
 void cblas_sytd2_hetd2(rocblas_fill uplo, rocblas_int n, T* A, rocblas_int lda, S* D, S* E, T* tau);
 
 template <typename T, typename W>
@@ -530,7 +540,7 @@ void cblas_gesvd(rocblas_svect leftv,
 template <typename T>
 void cblas_sterf(rocblas_int n, T* D, T* E);
 
-template <typename S, typename T>
+template <typename T, typename S>
 void cblas_steqr(rocblas_evect evect,
                  rocblas_int n,
                  S* D,
@@ -540,7 +550,7 @@ void cblas_steqr(rocblas_evect evect,
                  S* work,
                  rocblas_int* info);
 
-template <typename S, typename T>
+template <typename T, typename S>
 void cblas_stedc(rocblas_evect evect,
                  rocblas_int n,
                  S* D,
@@ -601,7 +611,7 @@ void cblas_syevd_heevd(rocblas_evect evect,
                        rocblas_int liwork,
                        rocblas_int* info);
 
-template <typename S, typename T>
+template <typename T, typename S>
 void cblas_sygv_hegv(rocblas_eform itype,
                      rocblas_evect evect,
                      rocblas_fill uplo,
@@ -616,7 +626,7 @@ void cblas_sygv_hegv(rocblas_eform itype,
                      S* rwork,
                      rocblas_int* info);
 
-template <typename S, typename T>
+template <typename T, typename S>
 void cblas_sygvd_hegvd(rocblas_eform itype,
                        rocblas_evect evect,
                        rocblas_fill uplo,

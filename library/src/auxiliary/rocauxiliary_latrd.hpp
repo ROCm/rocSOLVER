@@ -14,7 +14,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_latrd_getMemorySize(const rocblas_int n,
                                    const rocblas_int k,
                                    const rocblas_int batch_count,
@@ -33,6 +33,8 @@ void rocsolver_latrd_getMemorySize(const rocblas_int n,
         return;
     }
 
+    size_t w_temp;
+
     // size of scalars (constants) for rocblas calls
     *size_scalars = sizeof(T) * 3;
 
@@ -44,9 +46,13 @@ void rocsolver_latrd_getMemorySize(const rocblas_int n,
 
     // extra requirements for calling larfg
     rocsolver_larfg_getMemorySize<T>(n, batch_count, size_work, size_norms);
+
+    // extra requirements for calling symv/hemv
+    rocblasCall_symv_hemv_mem<BATCHED, T>(n, batch_count, &w_temp);
+    *size_work = std::max(*size_work, w_temp);
 }
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_latrd_argCheck(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
@@ -80,7 +86,7 @@ rocblas_status rocsolver_latrd_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename S, typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
@@ -170,10 +176,10 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                shiftA + idx2D(j + 1, j, lda), strideA, (E + j), strideE);
 
             // compute/update column j of W
-            rocblasCall_symv_hemv<T>(handle, uplo, n - 1 - j, (scalars + 2), 0, A,
-                                     shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, A,
-                                     shiftA + idx2D(j + 1, j, lda), 1, strideA, (scalars + 1), 0, W,
-                                     shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count, workArr);
+            rocblasCall_symv_hemv<T>(
+                handle, uplo, n - 1 - j, (scalars + 2), 0, A, shiftA + idx2D(j + 1, j + 1, lda),
+                lda, strideA, A, shiftA + idx2D(j + 1, j, lda), 1, strideA, (scalars + 1), 0, W,
+                shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count, work, workArr);
 
             rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, n - j - 1, j,
                                 cast2constType<T>(scalars + 2), 0, W, shiftW + idx2D(j + 1, 0, ldw),
@@ -264,7 +270,8 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
             // compute/update column j of W
             rocblasCall_symv_hemv<T>(handle, uplo, j, (scalars + 2), 0, A, shiftA, lda, strideA, A,
                                      shiftA + idx2D(0, j, lda), 1, strideA, (scalars + 1), 0, W,
-                                     shiftW + idx2D(0, jw, ldw), 1, strideW, batch_count, workArr);
+                                     shiftW + idx2D(0, jw, ldw), 1, strideW, batch_count, work,
+                                     workArr);
 
             rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, j, n - 1 - j,
                                 cast2constType<T>(scalars + 2), 0, W, shiftW + idx2D(0, jw + 1, ldw),
