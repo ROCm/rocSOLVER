@@ -129,18 +129,14 @@ void posv_initData(const rocblas_handle handle,
 {
     if(CPU)
     {
-        host_strided_batch_vector<T> hATmp(size_t(lda) * n, 1, stA, bc);
-        rocblas_init<T>(hATmp, true);
+        rocblas_init<T>(hA, true);
         rocblas_init<T>(hB, true);
 
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            // make A hermitian and scale to ensure positive definiteness
-            cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, n, n,
-                       (T)1.0, hATmp[b], lda, hATmp[b], lda, (T)0.0, hA[b], lda);
-
+            // scale to ensure positive definiteness
             for(rocblas_int i = 0; i < n; i++)
-                hA[b][i + i * lda] += 400;
+                hA[b][i + i * lda] = hA[b][i + i * lda] * sconj(hA[b][i + i * lda]) * 400;
 
             if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
             {
@@ -456,9 +452,9 @@ void testing_posv(Arguments& argus)
     }
 
     // validate results for rocsolver-test
-    // using 5 * n * machine_precision as tolerance
+    // using n * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, 5 * n);
+        ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)
