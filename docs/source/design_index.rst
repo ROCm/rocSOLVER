@@ -1,6 +1,6 @@
 
 ########################################
-rocSOLVER Library Design Guide 
+rocSOLVER Library Design Guide
 ########################################
 
 .. toctree::

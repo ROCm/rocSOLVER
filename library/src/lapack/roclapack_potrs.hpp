@@ -4,32 +4,29 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
 
-#include "auxiliary/rocauxiliary_laswp.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
 template <typename T>
-rocblas_status rocsolver_getrs_argCheck(rocblas_handle handle,
-                                        const rocblas_operation trans,
+rocblas_status rocsolver_potrs_argCheck(rocblas_handle handle,
+                                        const rocblas_fill uplo,
                                         const rocblas_int n,
                                         const rocblas_int nrhs,
                                         const rocblas_int lda,
                                         const rocblas_int ldb,
                                         T A,
                                         T B,
-                                        const rocblas_int* ipiv,
                                         const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
 
     // 1. invalid/non-supported values
-    if(trans != rocblas_operation_none && trans != rocblas_operation_transpose
-       && trans != rocblas_operation_conjugate_transpose)
+    if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
         return rocblas_status_invalid_value;
 
     // 2. invalid size
@@ -41,14 +38,14 @@ rocblas_status rocsolver_getrs_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !A) || (n && !ipiv) || (nrhs * n && !B))
+    if((n && !A) || (nrhs * n && !B))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
 }
 
 template <bool BATCHED, typename T>
-void rocsolver_getrs_getMemorySize(const rocblas_int n,
+void rocsolver_potrs_getMemorySize(const rocblas_int n,
                                    const rocblas_int nrhs,
                                    const rocblas_int batch_count,
                                    size_t* size_work1,
@@ -72,16 +69,14 @@ void rocsolver_getrs_getMemorySize(const rocblas_int n,
 }
 
 template <bool BATCHED, typename T, typename U>
-rocblas_status rocsolver_getrs_template(rocblas_handle handle,
-                                        const rocblas_operation trans,
+rocblas_status rocsolver_potrs_template(rocblas_handle handle,
+                                        const rocblas_fill uplo,
                                         const rocblas_int n,
                                         const rocblas_int nrhs,
                                         U A,
                                         const rocblas_int shiftA,
                                         const rocblas_int lda,
                                         const rocblas_stride strideA,
-                                        const rocblas_int* ipiv,
-                                        const rocblas_stride strideP,
                                         U B,
                                         const rocblas_int shiftB,
                                         const rocblas_int ldb,
@@ -93,8 +88,8 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
                                         void* work4,
                                         bool optim_mem)
 {
-    ROCSOLVER_ENTER("getrs", "trans:", trans, "n:", n, "nrhs:", nrhs, "shiftA:", shiftA,
-                    "lda:", lda, "shiftB:", shiftB, "ldb:", ldb, "bc:", batch_count);
+    ROCSOLVER_ENTER("potrs", "uplo:", uplo, "n:", n, "nrhs:", nrhs, "shiftA:", shiftA, "lda:", lda,
+                    "shiftB:", shiftB, "ldb:", ldb, "bc:", batch_count);
 
     // quick return
     if(n == 0 || nrhs == 0 || batch_count == 0)
@@ -111,41 +106,33 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
     // constants to use when calling rocblas functions
     T one = 1; // constant 1 in host
 
-    if(trans == rocblas_operation_none)
+    if(uplo == rocblas_fill_upper)
     {
-        // first apply row interchanges to the right hand sides
-        rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0, strideP,
-                                    1, batch_count);
-
-        // solve L*X = B, overwriting B with X
-        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower, trans,
-                                     rocblas_diagonal_unit, n, nrhs, &one, A, shiftA, lda, strideA,
-                                     B, shiftB, ldb, strideB, batch_count, optim_mem, work1, work2,
-                                     work3, work4);
+        // solve U'*X = B, overwriting B with X
+        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, uplo,
+                                     rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit,
+                                     n, nrhs, &one, A, shiftA, lda, strideA, B, shiftB, ldb,
+                                     strideB, batch_count, optim_mem, work1, work2, work3, work4);
 
         // solve U*X = B, overwriting B with X
-        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_upper, trans,
+        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, uplo, rocblas_operation_none,
                                      rocblas_diagonal_non_unit, n, nrhs, &one, A, shiftA, lda,
                                      strideA, B, shiftB, ldb, strideB, batch_count, optim_mem,
                                      work1, work2, work3, work4);
     }
     else
     {
-        // solve U**T *X = B or U**H *X = B, overwriting B with X
-        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_upper, trans,
+        // solve L*X = B, overwriting B with X
+        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, uplo, rocblas_operation_none,
                                      rocblas_diagonal_non_unit, n, nrhs, &one, A, shiftA, lda,
                                      strideA, B, shiftB, ldb, strideB, batch_count, optim_mem,
                                      work1, work2, work3, work4);
 
-        // solve L**T *X = B, or L**H *X = B overwriting B with X
-        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower, trans,
-                                     rocblas_diagonal_unit, n, nrhs, &one, A, shiftA, lda, strideA,
-                                     B, shiftB, ldb, strideB, batch_count, optim_mem, work1, work2,
-                                     work3, work4);
-
-        // then apply row interchanges to the solution vectors
-        rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0, strideP,
-                                    -1, batch_count);
+        // solve L'*X = B, overwriting B with X
+        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, uplo,
+                                     rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit,
+                                     n, nrhs, &one, A, shiftA, lda, strideA, B, shiftB, ldb,
+                                     strideB, batch_count, optim_mem, work1, work2, work3, work4);
     }
 
     rocblas_set_pointer_mode(handle, old_mode);

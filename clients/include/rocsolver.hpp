@@ -1410,6 +1410,154 @@ inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
 }
 /********************************************************/
 
+/******************** POTRS ********************/
+// normal and strided_batched
+inline rocblas_status rocsolver_potrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int nrhs,
+                                      float* A,
+                                      rocblas_int lda,
+                                      rocblas_stride stA,
+                                      float* B,
+                                      rocblas_int ldb,
+                                      rocblas_stride stB,
+                                      rocblas_int batch_count)
+{
+    if(STRIDED)
+        return rocsolver_spotrs_strided_batched(handle, uplo, n, nrhs, A, lda, stA, B, ldb, stB,
+                                                batch_count);
+    else
+        return rocsolver_spotrs(handle, uplo, n, nrhs, A, lda, B, ldb);
+}
+
+inline rocblas_status rocsolver_potrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int nrhs,
+                                      double* A,
+                                      rocblas_int lda,
+                                      rocblas_stride stA,
+                                      double* B,
+                                      rocblas_int ldb,
+                                      rocblas_stride stB,
+                                      rocblas_int batch_count)
+{
+    if(STRIDED)
+        return rocsolver_dpotrs_strided_batched(handle, uplo, n, nrhs, A, lda, stA, B, ldb, stB,
+                                                batch_count);
+    else
+        return rocsolver_dpotrs(handle, uplo, n, nrhs, A, lda, B, ldb);
+}
+
+inline rocblas_status rocsolver_potrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int nrhs,
+                                      rocblas_float_complex* A,
+                                      rocblas_int lda,
+                                      rocblas_stride stA,
+                                      rocblas_float_complex* B,
+                                      rocblas_int ldb,
+                                      rocblas_stride stB,
+                                      rocblas_int batch_count)
+{
+    if(STRIDED)
+        return rocsolver_cpotrs_strided_batched(handle, uplo, n, nrhs, A, lda, stA, B, ldb, stB,
+                                                batch_count);
+    else
+        return rocsolver_cpotrs(handle, uplo, n, nrhs, A, lda, B, ldb);
+}
+
+inline rocblas_status rocsolver_potrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int nrhs,
+                                      rocblas_double_complex* A,
+                                      rocblas_int lda,
+                                      rocblas_stride stA,
+                                      rocblas_double_complex* B,
+                                      rocblas_int ldb,
+                                      rocblas_stride stB,
+                                      rocblas_int batch_count)
+{
+    if(STRIDED)
+        return rocsolver_zpotrs_strided_batched(handle, uplo, n, nrhs, A, lda, stA, B, ldb, stB,
+                                                batch_count);
+    else
+        return rocsolver_zpotrs(handle, uplo, n, nrhs, A, lda, B, ldb);
+}
+
+// batched
+inline rocblas_status rocsolver_potrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int nrhs,
+                                      float* const A[],
+                                      rocblas_int lda,
+                                      rocblas_stride stA,
+                                      float* const B[],
+                                      rocblas_int ldb,
+                                      rocblas_stride stB,
+                                      rocblas_int batch_count)
+{
+    return rocsolver_spotrs_batched(handle, uplo, n, nrhs, A, lda, B, ldb, batch_count);
+}
+
+inline rocblas_status rocsolver_potrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int nrhs,
+                                      double* const A[],
+                                      rocblas_int lda,
+                                      rocblas_stride stA,
+                                      double* const B[],
+                                      rocblas_int ldb,
+                                      rocblas_stride stB,
+                                      rocblas_int batch_count)
+{
+    return rocsolver_dpotrs_batched(handle, uplo, n, nrhs, A, lda, B, ldb, batch_count);
+}
+
+inline rocblas_status rocsolver_potrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int nrhs,
+                                      rocblas_float_complex* const A[],
+                                      rocblas_int lda,
+                                      rocblas_stride stA,
+                                      rocblas_float_complex* const B[],
+                                      rocblas_int ldb,
+                                      rocblas_stride stB,
+                                      rocblas_int batch_count)
+{
+    return rocsolver_cpotrs_batched(handle, uplo, n, nrhs, A, lda, B, ldb, batch_count);
+}
+
+inline rocblas_status rocsolver_potrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int nrhs,
+                                      rocblas_double_complex* const A[],
+                                      rocblas_int lda,
+                                      rocblas_stride stA,
+                                      rocblas_double_complex* const B[],
+                                      rocblas_int ldb,
+                                      rocblas_stride stB,
+                                      rocblas_int batch_count)
+{
+    return rocsolver_zpotrs_batched(handle, uplo, n, nrhs, A, lda, B, ldb, batch_count);
+}
+/********************************************************/
+
 /******************** GETF2_GETRF_NPVT ********************/
 // normal and strided_batched
 inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,

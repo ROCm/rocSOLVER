@@ -19,6 +19,9 @@ set(rocsolver_lapack_source
   lapack/roclapack_getri_outofplace.cpp
   lapack/roclapack_getri_outofplace_batched.cpp
   lapack/roclapack_getri_outofplace_strided_batched.cpp
+  lapack/roclapack_potrs.cpp
+  lapack/roclapack_potrs_batched.cpp
+  lapack/roclapack_potrs_strided_batched.cpp
   lapack/roclapack_trtri.cpp
   lapack/roclapack_trtri_batched.cpp
   lapack/roclapack_trtri_strided_batched.cpp
