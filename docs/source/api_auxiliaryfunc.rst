@@ -3,13 +3,13 @@
 LAPACK Auxiliary Functions
 ***************************
 
-These are functions that support more :ref:`advanced LAPACK routines <lapackfunc>`. 
+These are functions that support more :ref:`advanced LAPACK routines <lapackfunc>`.
 The auxiliary functions are divided into the following categories:
 
 * :ref:`vecmat`. Some basic operations with vectors and matrices that are not part of the BLAS standard.
 * :ref:`householder`. Generation and application of Householder matrices.
-* :ref:`bidiag`. Computations specialized in bidiagonal matrices. 
-* :ref:`tridiag`. Computations specialized in tridiagonal matrices. 
+* :ref:`bidiag`. Computations specialized in bidiagonal matrices.
+* :ref:`tridiag`. Computations specialized in tridiagonal matrices.
 * :ref:`orthonormal`. Generation and application of orthonormal matrices.
 * :ref:`unitary`. Generation and application of unitary matrices.
 
@@ -19,11 +19,11 @@ The auxiliary functions are divided into the following categories:
     * x[i] stands for the i-th element of vector x, while A[i,j] represents the element
       in the i-th row and j-th column of matrix A. Indices are 1-based, i.e. x[1] is the first
       element of x.
-    * If X is a real vector or matrix, :math:`X^T` indicates its transpose; if X is complex, then 
+    * If X is a real vector or matrix, :math:`X^T` indicates its transpose; if X is complex, then
       :math:`X^H` represents its conjugate transpose. When X could be real or complex, we use X' to
-      indicate X transposed or X conjugate transposed, accordingly. 
+      indicate X transposed or X conjugate transposed, accordingly.
     * x_i :math:`=x_i`; we sometimes use both notations, :math:`x_i` when displaying mathematical
-      equations, and x_i in the text describing the function parameters. 
+      equations, and x_i in the text describing the function parameters.
 
 
 

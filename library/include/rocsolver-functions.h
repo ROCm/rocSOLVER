@@ -7424,7 +7424,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief GETRS solves a system of n linear equations on n variables in its factorized form. 
+    \brief GETRS solves a system of n linear equations on n variables in its factorized form.
 
     \details
     It solves one of the following systems, depending on the value of trans:
@@ -7437,7 +7437,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(rocblas_handle 
         \end{array}
     \f]
 
-    Matrix A is defined by its triangular factors as returned by \ref rocsolver_sgetrf "GETRF". 
+    Matrix A is defined by its triangular factors as returned by \ref rocsolver_sgetrf "GETRF".
 
     @param[in]
     handle      rocblas_handle.
@@ -7513,7 +7513,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(rocblas_handle handle,
 
 /*! @{
     \brief GETRS_BATCHED solves a batch of systems of n linear equations on n
-    variables in its factorized forms. 
+    variables in its factorized forms.
 
     \details
     For each instance j in the batch, it solves one of the following systems, depending on the value of trans:
@@ -7631,7 +7631,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
     \f]
 
     Matrix \f$A_j\f$ is defined by its triangular factors as returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
-    
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -7736,7 +7736,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief GESV solves a general system of n linear equations on n variables. 
+    \brief GESV solves a general system of n linear equations on n variables.
 
     \details
     The linear system is of the form
@@ -7826,7 +7826,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv(rocblas_handle handle,
 
 /*! @{
     \brief GESV_BATCHED solves a batch of general systems of n linear equations on n
-    variables. 
+    variables.
 
     \details
     The linear systems are of the form
@@ -9099,6 +9099,301 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle 
                                                                  const rocblas_int lda,
                                                                  const rocblas_stride strideA,
                                                                  rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief POTRS solves a symmetric/hermitian system of n linear equations on n variables in its factorized form.
+
+    \details
+    It solves the system
+
+    \f[
+        A X = B
+    \f]
+
+    where A is a real symmetric (complex hermitian) positive definite matrix defined by its triangular factor
+
+    \f[
+        \begin{array}{cl}
+        A = U'U & \: \text{if uplo is upper, or}\\
+        A = LL' & \: \text{if uplo is lower.}
+        \end{array}
+    \f]
+
+    as returned by \ref rocsolver_spotrf "POTRF".
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The order of the system, i.e. the number of columns and rows of A.
+    @param[in]
+    nrhs        rocblas_int. nrhs >= 0.\n
+                The number of right hand sides, i.e., the number of columns
+                of the matrix B.
+    @param[in]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                The factor L or U of the Cholesky factorization of A returned by \ref rocsolver_spotrf "POTRF".
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A.
+    @param[in,out]
+    B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
+                On entry, the right hand side matrix B.
+                On exit, the solution matrix X.
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                The leading dimension of B.
+
+   ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotrs(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 const rocblas_int nrhs,
+                                                 float* A,
+                                                 const rocblas_int lda,
+                                                 float* B,
+                                                 const rocblas_int ldb);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrs(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 const rocblas_int nrhs,
+                                                 double* A,
+                                                 const rocblas_int lda,
+                                                 double* B,
+                                                 const rocblas_int ldb);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrs(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 const rocblas_int nrhs,
+                                                 rocblas_float_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_float_complex* B,
+                                                 const rocblas_int ldb);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 const rocblas_int nrhs,
+                                                 rocblas_double_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_double_complex* B,
+                                                 const rocblas_int ldb);
+//! @}
+
+/*! @{
+    \brief POTRS_BATCHED solves a batch of symmetric/hermitian systems of n linear equations on n
+    variables in its factorized forms.
+
+    \details
+    For each instance j in the batch, it solves the system
+
+    \f[
+        A_j X_j = B_j
+    \f]
+
+    where \f$A_j\f$ is a real symmetric (complex hermitian) positive definite matrix defined by its
+    triangular factor
+
+    \f[
+        \begin{array}{cl}
+        A_j = U_j'U_j & \: \text{if uplo is upper, or}\\
+        A_j = L_jL_j' & \: \text{if uplo is lower.}
+        \end{array}
+    \f]
+
+    as returned by \ref rocsolver_spotrf "POTRF_BATCHED".
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The order of the system, i.e. the number of columns and rows of all A_j matrices.
+    @param[in]
+    nrhs        rocblas_int. nrhs >= 0.\n
+                The number of right hand sides, i.e., the number of columns
+                of all the matrices B_j.
+    @param[in]
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                The factor L_j or U_j of the Cholesky factorization of A_j returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of matrices A_j.
+    @param[in,out]
+    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
+                On entry, the right hand side matrices B_j.
+                On exit, the solution matrix X_j of each system in the batch.
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                The leading dimension of matrices B_j.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of instances (systems) in the batch.
+
+   ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotrs_batched(rocblas_handle handle,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         const rocblas_int nrhs,
+                                                         float* const A[],
+                                                         const rocblas_int lda,
+                                                         float* const B[],
+                                                         const rocblas_int ldb,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrs_batched(rocblas_handle handle,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         const rocblas_int nrhs,
+                                                         double* const A[],
+                                                         const rocblas_int lda,
+                                                         double* const B[],
+                                                         const rocblas_int ldb,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrs_batched(rocblas_handle handle,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         const rocblas_int nrhs,
+                                                         rocblas_float_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_float_complex* const B[],
+                                                         const rocblas_int ldb,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs_batched(rocblas_handle handle,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         const rocblas_int nrhs,
+                                                         rocblas_double_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_double_complex* const B[],
+                                                         const rocblas_int ldb,
+                                                         const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief POTRS_STRIDED_BATCHED solves a batch of symmetric/hermitian systems of n linear equations
+    on n variables in its factorized forms.
+
+    \details
+    For each instance j in the batch, it solves the system
+
+    \f[
+        A_j X_j = B_j
+    \f]
+
+    where \f$A_j\f$ is a real symmetric (complex hermitian) positive definite matrix defined by its
+    triangular factor
+
+    \f[
+        \begin{array}{cl}
+        A_j = U_j'U_j & \: \text{if uplo is upper, or}\\
+        A_j = L_jL_j' & \: \text{if uplo is lower.}
+        \end{array}
+    \f]
+
+    as returned by \ref rocsolver_spotrf "POTRF_STRIDED_BATCHED".
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The order of the system, i.e. the number of columns and rows of all A_j matrices.
+    @param[in]
+    nrhs        rocblas_int. nrhs >= 0.\n
+                The number of right hand sides, i.e., the number of columns
+                of all the matrices B_j.
+    @param[in]
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                The factor L_j or U_j of the Cholesky factorization of A_j returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of matrices A_j.
+    @param[in]
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[in,out]
+    B           pointer to type. Array on the GPU (size depends on the value of strideB).\n
+                On entry, the right hand side matrices B_j.
+                On exit, the solution matrix X_j of each system in the batch.
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                The leading dimension of matrices B_j.
+    @param[in]
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of instances (systems) in the batch.
+
+   ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotrs_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 const rocblas_int nrhs,
+                                                                 float* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 float* B,
+                                                                 const rocblas_int ldb,
+                                                                 const rocblas_stride strideB,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrs_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 const rocblas_int nrhs,
+                                                                 double* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 double* B,
+                                                                 const rocblas_int ldb,
+                                                                 const rocblas_stride strideB,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrs_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 const rocblas_int nrhs,
+                                                                 rocblas_float_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_float_complex* B,
+                                                                 const rocblas_int ldb,
+                                                                 const rocblas_stride strideB,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 const rocblas_int nrhs,
+                                                                 rocblas_double_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_double_complex* B,
+                                                                 const rocblas_int ldb,
+                                                                 const rocblas_stride strideB,
                                                                  const rocblas_int batch_count);
 //! @}
 
