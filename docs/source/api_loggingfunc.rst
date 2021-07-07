@@ -4,11 +4,11 @@
 Logging Functions
 ******************
 
-These are functions that enable and control rocSOLVER's :ref:`logging-label` capabilities. Functions 
+These are functions that enable and control rocSOLVER's :ref:`logging-label` capabilities. Functions
 are divided in two categories:
 
-* :ref:`initialize` functions. Used to initialize and terminate the logging. 
-* :ref:`profile` functions. Provide functionality for the profile logging mode. 
+* :ref:`initialize` functions. Used to initialize and terminate the logging.
+* :ref:`profile` functions. Provide functionality for the profile logging mode.
 
 
 .. _initialize:

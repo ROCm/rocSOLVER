@@ -128,7 +128,7 @@ void potrs_initData(const rocblas_handle handle,
         {
             // scale to ensure positive definiteness
             for(rocblas_int i = 0; i < n; i++)
-                hA[b][i + i * lda] = hA[b][i + i * lda]*sconj(hA[b][i + i * lda])*400;
+                hA[b][i + i * lda] = hA[b][i + i * lda] * sconj(hA[b][i + i * lda]) * 400;
 
             // do the Cholesky factorization of matrix A w/ the reference LAPACK routine
             cblas_potrf<T>(uplo, n, hA[b], lda, &info);
