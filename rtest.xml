@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE testset SYSTEM "/usr/local/share/rtest.dtd">
 <testset>
     <var name="COMMAND">rocsolver-test --gtest_color=yes </var>
     <test sets="psdb">
