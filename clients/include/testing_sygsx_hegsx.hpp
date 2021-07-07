@@ -119,9 +119,7 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
                           const rocblas_stride stB,
                           const rocblas_int bc,
                           Th& hA,
-                          Th& hATmp,
-                          Th& hB,
-                          Th& hBTmp)
+                          Th& hB)
 {
     if(CPU)
     {
@@ -171,7 +169,7 @@ void sygsx_hegsx_getError(const rocblas_handle handle,
 {
     // input data initialization
     sygsx_hegsx_initData<true, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA,
-                                        hARes, hB, hBRes);
+                                        hB);
 
     // execute computations
     // GPU lapack
@@ -214,9 +212,7 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
                              const rocblas_stride stB,
                              const rocblas_int bc,
                              Th& hA,
-                             Th& hATmp,
                              Th& hB,
-                             Th& hBTmp,
                              double* gpu_time_used,
                              double* cpu_time_used,
                              const rocblas_int hot_calls,
@@ -226,7 +222,7 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
     if(!perf)
     {
         sygsx_hegsx_initData<true, false, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc,
-                                             hA, hATmp, hB, hBTmp);
+                                             hA, hB);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
@@ -239,13 +235,13 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
     }
 
     sygsx_hegsx_initData<true, false, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA,
-                                         hATmp, hB, hBTmp);
+                                         hB);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         sygsx_hegsx_initData<false, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc,
-                                             hA, hATmp, hB, hBTmp);
+                                             hA, hB);
 
         CHECK_ROCBLAS_ERROR(rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, itype, uplo, n, dA.data(),
                                                   lda, stA, dB.data(), ldb, stB, bc));
@@ -265,7 +261,7 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         sygsx_hegsx_initData<false, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc,
-                                             hA, hATmp, hB, hBTmp);
+                                             hA, hB);
 
         start = get_time_us_sync(stream);
         rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, itype, uplo, n, dA.data(), lda, stA,
@@ -293,9 +289,8 @@ void testing_sygsx_hegsx(Arguments& argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    // hARes and hBRes should always be allocated (used in initData)
-    size_t stARes = stA;
-    size_t stBRes = stB;
+    rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
+    rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
 
     // check non-supported values
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
@@ -322,9 +317,8 @@ void testing_sygsx_hegsx(Arguments& argus)
     size_t size_B = size_t(ldb) * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    // hARes and hBRes should always be allocated (used in initData)
-    size_t size_ARes = size_A;
-    size_t size_BRes = size_B;
+    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
+    size_t size_BRes = (argus.unit_check || argus.norm_check) ? size_B : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < n || ldb < n || bc < 0);
@@ -404,8 +398,8 @@ void testing_sygsx_hegsx(Arguments& argus)
         // collect performance data
         if(argus.timing)
             sygsx_hegsx_getPerfData<STRIDED, SYGST, T>(
-                handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA, hARes, hB, hBRes,
-                &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
+                handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA, hB, &gpu_time_used,
+                &cpu_time_used, hot_calls, argus.profile, argus.perf);
     }
 
     else
@@ -442,8 +436,8 @@ void testing_sygsx_hegsx(Arguments& argus)
         // collect performance data
         if(argus.timing)
             sygsx_hegsx_getPerfData<STRIDED, SYGST, T>(
-                handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA, hARes, hB, hBRes,
-                &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
+                handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA, hB, &gpu_time_used,
+                &cpu_time_used, hot_calls, argus.profile, argus.perf);
     }
 
     // validate results for rocsolver-test

@@ -8780,7 +8780,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief POTRS solves a symmetric system of n linear equations on n variables in its factorized form.
+    \brief POTRS solves a symmetric/hermitian system of n linear equations on n variables in its factorized form.
 
     \details
     It solves the system
@@ -8867,8 +8867,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief POTRS_BATCHED solves a batch of symmetric systems of n linear equations on n
-    variables in its factorized forms. 
+    \brief POTRS_BATCHED solves a batch of symmetric/hermitian systems of n linear equations on n
+    variables in its factorized forms.
 
     \details
     For each instance j in the batch, it solves the system
@@ -8877,7 +8877,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs(rocblas_handle handle,
         A_j X_j = B_j
     \f]
 
-    where \f$A_j\f$ is a real symmetric (complex hermitian) positive definite matrix defined by its 
+    where \f$A_j\f$ is a real symmetric (complex hermitian) positive definite matrix defined by its
     triangular factor
 
     \f[
@@ -8888,7 +8888,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs(rocblas_handle handle,
     \f]
 
     as returned by \ref rocsolver_spotrf "POTRF_BATCHED".
-   
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -8963,7 +8963,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs_batched(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief POTRS_STRIDED_BATCHED solves a batch of symmetric systems of n linear equations
+    \brief POTRS_STRIDED_BATCHED solves a batch of symmetric/hermitian systems of n linear equations
     on n variables in its factorized forms.
 
     \details
@@ -8984,7 +8984,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs_batched(rocblas_handle handle,
     \f]
 
     as returned by \ref rocsolver_spotrf "POTRF_STRIDED_BATCHED".
-    
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
