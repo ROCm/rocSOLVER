@@ -126,24 +126,17 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
     if(CPU)
     {
         rocblas_int info;
-        rocblas_init<T>(hATmp, true);
-        rocblas_init<T>(hBTmp, false);
+        rocblas_init<T>(hA, true);
+        rocblas_init<T>(hB, false);
 
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            // make A hermitian and scale to ensure positive definiteness
-            cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, n, n,
-                       (T)1.0, hATmp[b], lda, hATmp[b], lda, (T)0.0, hA[b], lda);
-
+            // scale to ensure positive definiteness
             for(rocblas_int i = 0; i < n; i++)
-                hA[b][i + i * lda] += 400;
-
-            // make B hermitian and scale to ensure positive definiteness
-            cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, n, n,
-                       (T)1.0, hBTmp[b], ldb, hBTmp[b], ldb, (T)0.0, hB[b], ldb);
-
-            for(rocblas_int i = 0; i < n; i++)
-                hB[b][i + i * lda] += 400;
+            {
+                hA[b][i + i * lda] = hA[b][i + i * lda] * sconj(hA[b][i + i * lda]) * 400;
+                hB[b][i + i * ldb] = hB[b][i + i * ldb] * sconj(hB[b][i + i * ldb]) * 400;
+            }
 
             // apply Cholesky factorization to B
             cblas_potrf(uplo, n, hB[b], ldb, &info);

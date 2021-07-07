@@ -8780,8 +8780,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief POTRS solves a system of n linear equations on n variables using the
-    Cholesky factorization computed by \ref rocsolver_spotrf "POTRF".
+    \brief POTRS solves a symmetric system of n linear equations on n variables in its factorized form.
 
     \details
     It solves the system
@@ -8790,7 +8789,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle 
         A X = B
     \f]
 
-    where A is a real symmetric (complex hermitian) positive definite matrix of the form
+    where A is a real symmetric (complex hermitian) positive definite matrix defined by its triangular factor
 
     \f[
         \begin{array}{cl}
@@ -8798,6 +8797,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle 
         A = LL' & \: \text{if uplo is lower.}
         \end{array}
     \f]
+
+    as returned by \ref rocsolver_spotrf "POTRF".
 
     @param[in]
     handle      rocblas_handle.
@@ -8866,8 +8867,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief POTRS_BATCHED solves a batch of systems of n linear equations on n
-    variables using the Cholesky factorization computed by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    \brief POTRS_BATCHED solves a batch of symmetric systems of n linear equations on n
+    variables in its factorized forms. 
 
     \details
     For each instance j in the batch, it solves the system
@@ -8876,7 +8877,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs(rocblas_handle handle,
         A_j X_j = B_j
     \f]
 
-    where A_j is a real symmetric (complex hermitian) positive definite matrix of the form
+    where \f$A_j\f$ is a real symmetric (complex hermitian) positive definite matrix defined by its 
+    triangular factor
 
     \f[
         \begin{array}{cl}
@@ -8885,6 +8887,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs(rocblas_handle handle,
         \end{array}
     \f]
 
+    as returned by \ref rocsolver_spotrf "POTRF_BATCHED".
+   
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -8959,8 +8963,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs_batched(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief POTRS_STRIDED_BATCHED solves a batch of systems of n linear equations
-    on n variables using the Cholesky factorization computed by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+    \brief POTRS_STRIDED_BATCHED solves a batch of symmetric systems of n linear equations
+    on n variables in its factorized forms.
 
     \details
     For each instance j in the batch, it solves the system
@@ -8969,7 +8973,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs_batched(rocblas_handle handle,
         A_j X_j = B_j
     \f]
 
-    where A_j is a real symmetric (complex hermitian) positive definite matrix of the form
+    where \f$A_j\f$ is a real symmetric (complex hermitian) positive definite matrix defined by its
+    triangular factor
 
     \f[
         \begin{array}{cl}
@@ -8978,6 +8983,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs_batched(rocblas_handle handle,
         \end{array}
     \f]
 
+    as returned by \ref rocsolver_spotrf "POTRF_STRIDED_BATCHED".
+    
     @param[in]
     handle      rocblas_handle.
     @param[in]

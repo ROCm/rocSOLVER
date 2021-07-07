@@ -120,24 +120,17 @@ void potrs_initData(const rocblas_handle handle,
 {
     if(CPU)
     {
-        host_strided_batch_vector<T> hATmp(size_t(lda) * n, 1, stA, bc);
-        rocblas_init<T>(hATmp, true);
+        rocblas_init<T>(hA, true);
         rocblas_init<T>(hB, true);
+        int info;
 
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            // make A hermitian and scale to ensure positive definiteness
-            cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, n, n,
-                       (T)1.0, hATmp[b], lda, hATmp[b], lda, (T)0.0, hA[b], lda);
-
+            // scale to ensure positive definiteness
             for(rocblas_int i = 0; i < n; i++)
-                hA[b][i + i * lda] += 400;
-        }
+                hA[b][i + i * lda] = hA[b][i + i * lda]*sconj(hA[b][i + i * lda])*400;
 
-        // do the Cholesky factorization of matrix A w/ the reference LAPACK routine
-        for(rocblas_int b = 0; b < bc; ++b)
-        {
-            int info;
+            // do the Cholesky factorization of matrix A w/ the reference LAPACK routine
             cblas_potrf<T>(uplo, n, hA[b], lda, &info);
         }
     }
