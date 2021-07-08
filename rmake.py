@@ -27,6 +27,8 @@ def parse_args():
     parser.add_argument(      '--skip_ld_conf_entry', required=False, default=False)
     parser.add_argument(      '--static', required=False, default = False, dest='static_lib', action='store_true',
                         help='Generate static library build (optional, default: False)')
+    parser.add_argument('-n', required=False, default=True, dest='optimal', action='store_false',
+                        help='Include specialized kernels for small matrix sizes for better performance. (optional, default: True')
     parser.add_argument('-c', '--clients', required=False, default = False, dest='build_clients', action='store_true',
                         help='Generate all client builds (optional, default: False)')
     parser.add_argument('-i', '--install', required=False, default = False, dest='install', action='store_true',
@@ -120,6 +122,9 @@ def config_cmd():
         cmake_executable = "cmake"
         cmake_platform_opts.append( f"-DROCM_DIR:PATH={rocm_path} -DCPACK_PACKAGING_INSTALL_PREFIX={rocm_path}" )
         cmake_platform_opts.append("-DCMAKE_INSTALL_PREFIX=rocsolver-install")
+    
+    if not args.optimal:
+        cmake_options.append('-DOPTIMAL=OFF')
 
     print( f"Build source path: {src_path}")
 
