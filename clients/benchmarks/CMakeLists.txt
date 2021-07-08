@@ -2,9 +2,6 @@
 # Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
-# Linking lapack library requires fortran flags
-find_package(cblas REQUIRED CONFIG)
-
 add_executable(rocsolver-bench client.cpp)
 
 add_armor_flags(rocsolver-bench "${ARMOR_LEVEL}")

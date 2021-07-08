@@ -2,8 +2,6 @@
 # Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
-# Linking lapack library requires fortran flags
-find_package(cblas REQUIRED CONFIG)
 find_package(GTest REQUIRED)
 
 set(roclapack_test_source
