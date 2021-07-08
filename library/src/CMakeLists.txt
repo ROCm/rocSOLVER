@@ -16,6 +16,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_getri.cpp
   lapack/roclapack_getri_batched.cpp
   lapack/roclapack_getri_strided_batched.cpp
+  lapack/roclapack_getri_optimized.cpp
   lapack/roclapack_getri_outofplace.cpp
   lapack/roclapack_getri_outofplace_batched.cpp
   lapack/roclapack_getri_outofplace_strided_batched.cpp
@@ -25,6 +26,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_trtri.cpp
   lapack/roclapack_trtri_batched.cpp
   lapack/roclapack_trtri_strided_batched.cpp
+  lapack/roclapack_trtri_optimized.cpp
   # least squares solvers
   lapack/roclapack_gels.cpp
   lapack/roclapack_gels_batched.cpp
@@ -33,6 +35,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_getf2.cpp
   lapack/roclapack_getf2_batched.cpp
   lapack/roclapack_getf2_strided_batched.cpp
+  lapack/roclapack_getf2_optimized.cpp
   lapack/roclapack_getrf.cpp
   lapack/roclapack_getrf_batched.cpp
   lapack/roclapack_getrf_strided_batched.cpp
