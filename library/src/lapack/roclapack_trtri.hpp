@@ -57,7 +57,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) trti2_kernel_small(const rocbl
     // compute element i of each column j
     if(uplo == rocblas_fill_upper)
     {
-#pragma unroll
         for(rocblas_int j = 1; j < DIM; j++)
         {
             // share current column and diagonal
@@ -77,7 +76,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) trti2_kernel_small(const rocbl
     }
     else
     {
-#pragma unroll
         for(rocblas_int j = DIM - 2; j >= 0; j--)
         {
             // share current column and diagonal

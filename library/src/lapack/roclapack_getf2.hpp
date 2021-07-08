@@ -235,7 +235,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     }
 
     // for each pivot (main loop)
-#pragma unroll DIM2
     for(int k = 0; k < DIM2; ++k)
     {
         // share current column
@@ -484,8 +483,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     for(int j = 0; j < DIM; ++j)
         rA[j] = A[myrow + j * lda];
 
-// for each pivot (main loop)
-#pragma unroll DIM
+    // for each pivot (main loop)
     for(int k = 0; k < DIM; ++k)
     {
         // share current column
