@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testset>
+    <var name="COMMAND">rocsolver-test --gtest_color=yes </var>
+    <test sets="psdb">
+        <run name="all-psdb">{COMMAND} --gtest_filter=*checkin_lapack* --gtest_output=xml:output_psdb.xml </run>
+    </test>
+    <test sets="osdb">
+        <run name="all-osdb">{COMMAND} --gtest_filter=*daily_lapack* --gtest_output=xml:output_osdb.xml </run>
+    </test>
+    <test sets="hmm">
+        <!-- * These tests should only be run on devices supporting HMM -->
+        <run name="hmm-adhoc">{COMMAND} --gtest_filter=*MANAGED_MALLOC* --gtest_output=xml:output_hmm.xml </run>
+    </test>
+</testset>
