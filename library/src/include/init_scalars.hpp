@@ -9,12 +9,14 @@
 #include <hip/hip_runtime.h>
 #include <rocblas.h>
 
+#include "lib_macros.hpp"
+
 #define IOTA_MAX_THDS 32
 
 // Fills the given range with sequentially increasing values.
 // The name and interface is based on std::iota
 template <typename T>
-__global__ void __launch_bounds__(IOTA_MAX_THDS) iota_n(T* first, uint32_t count, T value)
+ROCSOLVER_KERNEL void __launch_bounds__(IOTA_MAX_THDS) iota_n(T* first, uint32_t count, T value)
 {
     const auto idx = hipThreadIdx_x;
     if(idx < count)

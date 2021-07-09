@@ -13,7 +13,7 @@
  */
 
 template <typename T>
-__global__ void copy_array_to_ptrs(rocblas_stride n, T* const ptrs[], T* array)
+ROCSOLVER_KERNEL void copy_array_to_ptrs(rocblas_stride n, T* const ptrs[], T* array)
 {
     int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     int b = hipBlockIdx_y;

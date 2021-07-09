@@ -17,3 +17,18 @@ target_compile_definitions(rocsolver-common INTERFACE __HIP_HCC_COMPAT_MODE__=1)
 target_compile_options(rocsolver-common INTERFACE
   -Wno-unused-result # TODO: address [[nodiscard]] warnings
 )
+if(WIN32)
+  target_compile_definitions(rocsolver-common INTERFACE
+    WIN32_LEAN_AND_MEAN
+    _CRT_SECURE_NO_WARNINGS
+    NOMINMAX
+    __HIP_ROCclr__=1
+    __HIP_PLATFORM_AMD__=1
+  )
+  target_compile_options(rocsolver-common INTERFACE
+    -fms-extensions
+    -fms-compatibility
+    -Wno-ignored-attributes
+    -Wno-unused-command-line-argument
+  )
+endif()

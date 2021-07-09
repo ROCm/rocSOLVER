@@ -115,11 +115,11 @@ __forceinline__ __device__ __host__ T*
 {
     return p[block] + offset;
 }
-
+/*
 // Helper for batched functions with temporary memory, currently just trsm and
 // trsv. Copys addresses to array of pointers for batched versions.
 template <typename T>
-__global__ void setup_batched_array_kernel(T* src, rocblas_stride src_stride, T* dst[])
+ROCSOLVER_KERNEL void setup_batched_array_kernel(T* src, rocblas_stride src_stride, T* dst[])
 {
     dst[hipBlockIdx_x] = src + hipBlockIdx_x * src_stride;
 }
@@ -138,7 +138,7 @@ void setup_batched_array(hipStream_t stream,
 }
 
 template <typename T>
-__global__ void setup_device_pointer_array_kernel(T* src,
+ROCSOLVER_KERNEL void setup_device_pointer_array_kernel(T* src,
                                                   rocblas_stride src_stride,
                                                   T* dst[],
                                                   rocblas_int batch_count)
@@ -161,7 +161,7 @@ void setup_device_pointer_array(hipStream_t stream,
     hipLaunchKernelGGL(setup_device_pointer_array_kernel<T>, grid, threads, 0, stream, src,
                        src_stride, dst, batch_count);
 }
-
+*/
 #endif // GOOGLE_TEST
 
 inline bool isAligned(const void* pointer, size_t byte_count)
