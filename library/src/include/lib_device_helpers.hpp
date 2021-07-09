@@ -4,9 +4,11 @@
 
 #pragma once
 
-#include "ideal_sizes.hpp"
-#include "libcommon.hpp"
 #include <hip/hip_runtime.h>
+
+#include "ideal_sizes.hpp"
+#include "lib_macros.hpp"
+#include "libcommon.hpp"
 
 /*
  * ===========================================================================
@@ -93,18 +95,18 @@ enum copymat_direction
 };
 
 template <typename T, typename U>
-__global__ void masked_copymat(copymat_direction direction,
-                               const rocblas_int m,
-                               const rocblas_int n,
-                               U A,
-                               const rocblas_int shiftA,
-                               const rocblas_int lda,
-                               const rocblas_stride strideA,
-                               T* buffer,
-                               const rocblas_int* mask,
-                               const rocblas_fill uplo = rocblas_fill_full,
-                               const rocblas_diagonal diag = rocblas_diagonal_non_unit,
-                               const bool negate = false)
+ROCSOLVER_KERNEL void masked_copymat(copymat_direction direction,
+                                     const rocblas_int m,
+                                     const rocblas_int n,
+                                     U A,
+                                     const rocblas_int shiftA,
+                                     const rocblas_int lda,
+                                     const rocblas_stride strideA,
+                                     T* buffer,
+                                     const rocblas_int* mask,
+                                     const rocblas_fill uplo = rocblas_fill_full,
+                                     const rocblas_diagonal diag = rocblas_diagonal_non_unit,
+                                     const bool negate = false)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -133,12 +135,12 @@ __global__ void masked_copymat(copymat_direction direction,
 }
 
 template <typename T, typename U>
-__global__ void init_ident(const rocblas_int m,
-                           const rocblas_int n,
-                           U A,
-                           const rocblas_int shiftA,
-                           const rocblas_int lda,
-                           const rocblas_stride strideA)
+ROCSOLVER_KERNEL void init_ident(const rocblas_int m,
+                                 const rocblas_int n,
+                                 U A,
+                                 const rocblas_int shiftA,
+                                 const rocblas_int lda,
+                                 const rocblas_stride strideA)
 {
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -156,7 +158,7 @@ __global__ void init_ident(const rocblas_int m,
 }
 
 template <typename T, typename U>
-__global__ void reset_info(T* info, const rocblas_int n, U val)
+ROCSOLVER_KERNEL void reset_info(T* info, const rocblas_int n, U val)
 {
     int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -165,7 +167,7 @@ __global__ void reset_info(T* info, const rocblas_int n, U val)
 }
 
 template <typename T, typename S, typename U>
-__global__ void reset_batch_info(U info, const rocblas_stride stride, const rocblas_int n, S val)
+ROCSOLVER_KERNEL void reset_batch_info(U info, const rocblas_stride stride, const rocblas_int n, S val)
 {
     int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     int b = hipBlockIdx_y;
@@ -176,7 +178,7 @@ __global__ void reset_batch_info(U info, const rocblas_stride stride, const rocb
 }
 
 template <typename T>
-__global__ void get_array(T** out, T* in, rocblas_stride stride, rocblas_int batch)
+ROCSOLVER_KERNEL void get_array(T** out, T* in, rocblas_stride stride, rocblas_int batch)
 {
     int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -185,7 +187,7 @@ __global__ void get_array(T** out, T* in, rocblas_stride stride, rocblas_int bat
 }
 
 template <typename T, typename U>
-__global__ void shift_array(T** out, U in, rocblas_int shift, rocblas_int batch)
+ROCSOLVER_KERNEL void shift_array(T** out, U in, rocblas_int shift, rocblas_int batch)
 {
     int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -194,14 +196,14 @@ __global__ void shift_array(T** out, U in, rocblas_int shift, rocblas_int batch)
 }
 
 template <typename T, typename U>
-__global__ void subtract_tau(const rocblas_int i,
-                             const rocblas_int j,
-                             U A,
-                             const rocblas_int shiftA,
-                             const rocblas_int lda,
-                             const rocblas_stride strideA,
-                             T* ipiv,
-                             const rocblas_stride strideP)
+ROCSOLVER_KERNEL void subtract_tau(const rocblas_int i,
+                                   const rocblas_int j,
+                                   U A,
+                                   const rocblas_int shiftA,
+                                   const rocblas_int lda,
+                                   const rocblas_stride strideA,
+                                   T* ipiv,
+                                   const rocblas_stride strideP)
 {
     const auto b = hipBlockIdx_x;
     T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
@@ -213,7 +215,7 @@ __global__ void subtract_tau(const rocblas_int i,
 }
 
 template <typename T>
-__global__ void restau(const rocblas_int k, T* ipiv, const rocblas_stride strideP)
+ROCSOLVER_KERNEL void restau(const rocblas_int k, T* ipiv, const rocblas_stride strideP)
 {
     const auto blocksizex = hipBlockDim_x;
     const auto b = hipBlockIdx_y;
@@ -225,15 +227,15 @@ __global__ void restau(const rocblas_int k, T* ipiv, const rocblas_stride stride
 }
 
 template <typename T, typename S, typename U, std::enable_if_t<!is_complex<T> || is_complex<S>, int> = 0>
-__global__ void set_diag(S* D,
-                         const rocblas_int shiftd,
-                         const rocblas_stride strided,
-                         U A,
-                         const rocblas_int shifta,
-                         const rocblas_int lda,
-                         const rocblas_stride stridea,
-                         const rocblas_int n,
-                         bool set_one)
+ROCSOLVER_KERNEL void set_diag(S* D,
+                               const rocblas_int shiftd,
+                               const rocblas_stride strided,
+                               U A,
+                               const rocblas_int shifta,
+                               const rocblas_int lda,
+                               const rocblas_stride stridea,
+                               const rocblas_int n,
+                               bool set_one)
 {
     int b = hipBlockIdx_x;
     int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -250,15 +252,15 @@ __global__ void set_diag(S* D,
 }
 
 template <typename T, typename S, typename U, std::enable_if_t<is_complex<T> && !is_complex<S>, int> = 0>
-__global__ void set_diag(S* D,
-                         const rocblas_int shiftd,
-                         const rocblas_stride strided,
-                         U A,
-                         const rocblas_int shifta,
-                         const rocblas_int lda,
-                         const rocblas_stride stridea,
-                         const rocblas_int n,
-                         bool set_one)
+ROCSOLVER_KERNEL void set_diag(S* D,
+                               const rocblas_int shiftd,
+                               const rocblas_stride strided,
+                               U A,
+                               const rocblas_int shifta,
+                               const rocblas_int lda,
+                               const rocblas_stride stridea,
+                               const rocblas_int n,
+                               bool set_one)
 {
     int b = hipBlockIdx_x;
     int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -275,14 +277,14 @@ __global__ void set_diag(S* D,
 }
 
 template <typename T, typename S, typename U>
-__global__ void restore_diag(S* D,
-                             const rocblas_int shiftd,
-                             const rocblas_stride strided,
-                             U A,
-                             const rocblas_int shifta,
-                             const rocblas_int lda,
-                             const rocblas_stride stridea,
-                             const rocblas_int n)
+ROCSOLVER_KERNEL void restore_diag(S* D,
+                                   const rocblas_int shiftd,
+                                   const rocblas_stride strided,
+                                   U A,
+                                   const rocblas_int shifta,
+                                   const rocblas_int lda,
+                                   const rocblas_stride stridea,
+                                   const rocblas_int n)
 {
     int b = hipBlockIdx_x;
     int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -299,13 +301,13 @@ __global__ void restore_diag(S* D,
     If uplo = lower, the lower triangular part of A is kept unchanged.
     If uplo = upper, the upper triangular part of A is kept unchanged **/
 template <typename T, typename U>
-__global__ void set_zero(const rocblas_int m,
-                         const rocblas_int n,
-                         U A,
-                         const rocblas_int shiftA,
-                         const rocblas_int lda,
-                         const rocblas_stride strideA,
-                         const rocblas_fill uplo = rocblas_fill_full)
+ROCSOLVER_KERNEL void set_zero(const rocblas_int m,
+                               const rocblas_int n,
+                               U A,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               const rocblas_fill uplo = rocblas_fill_full)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -328,18 +330,18 @@ __global__ void set_zero(const rocblas_int m,
     If uplo = rocblas_fill_upper, only the upper triangular part is copied
     If uplo = rocblas_fill_lower, only the lower triangular part is copied **/
 template <typename T, typename U1, typename U2>
-__global__ void copy_mat(const rocblas_int m,
-                         const rocblas_int n,
-                         U1 A,
-                         const rocblas_int shiftA,
-                         const rocblas_int lda,
-                         const rocblas_stride strideA,
-                         U2 B,
-                         const rocblas_int shiftB,
-                         const rocblas_int ldb,
-                         const rocblas_stride strideB,
-                         const rocblas_fill uplo = rocblas_fill_full,
-                         const copymat_direction direction = copymat_to_buffer)
+ROCSOLVER_KERNEL void copy_mat(const rocblas_int m,
+                               const rocblas_int n,
+                               U1 A,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               U2 B,
+                               const rocblas_int shiftB,
+                               const rocblas_int ldb,
+                               const rocblas_stride strideB,
+                               const rocblas_fill uplo = rocblas_fill_full,
+                               const copymat_direction direction = copymat_to_buffer)
 {
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -368,18 +370,18 @@ __global__ void copy_mat(const rocblas_int m,
     Only valid when A is complex and B real. If REAL, only works with real part of A;
     if !REAL only works with imaginary part of A**/
 template <typename T, typename S, bool REAL, typename U1, typename U2, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void copy_mat(const rocblas_int m,
-                         const rocblas_int n,
-                         U1 A,
-                         const rocblas_int shiftA,
-                         const rocblas_int lda,
-                         const rocblas_stride strideA,
-                         U2 B,
-                         const rocblas_int shiftB,
-                         const rocblas_int ldb,
-                         const rocblas_stride strideB,
-                         const rocblas_fill uplo = rocblas_fill_full,
-                         const copymat_direction direction = copymat_to_buffer)
+ROCSOLVER_KERNEL void copy_mat(const rocblas_int m,
+                               const rocblas_int n,
+                               U1 A,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               U2 B,
+                               const rocblas_int shiftB,
+                               const rocblas_int ldb,
+                               const rocblas_stride strideB,
+                               const rocblas_fill uplo = rocblas_fill_full,
+                               const copymat_direction direction = copymat_to_buffer)
 {
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -405,16 +407,16 @@ __global__ void copy_mat(const rocblas_int m,
 }
 
 template <typename T, typename U>
-__global__ void copyshift_right(const bool copy,
-                                const rocblas_int dim,
-                                U A,
-                                const rocblas_int shiftA,
-                                const rocblas_int lda,
-                                const rocblas_stride strideA,
-                                T* W,
-                                const rocblas_int shiftW,
-                                const rocblas_int ldw,
-                                const rocblas_stride strideW)
+ROCSOLVER_KERNEL void copyshift_right(const bool copy,
+                                      const rocblas_int dim,
+                                      U A,
+                                      const rocblas_int shiftA,
+                                      const rocblas_int lda,
+                                      const rocblas_stride strideA,
+                                      T* W,
+                                      const rocblas_int shiftW,
+                                      const rocblas_int ldw,
+                                      const rocblas_stride strideW)
 {
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -449,16 +451,16 @@ __global__ void copyshift_right(const bool copy,
 }
 
 template <typename T, typename U>
-__global__ void copyshift_left(const bool copy,
-                               const rocblas_int dim,
-                               U A,
-                               const rocblas_int shiftA,
-                               const rocblas_int lda,
-                               const rocblas_stride strideA,
-                               T* W,
-                               const rocblas_int shiftW,
-                               const rocblas_int ldw,
-                               const rocblas_stride strideW)
+ROCSOLVER_KERNEL void copyshift_left(const bool copy,
+                                     const rocblas_int dim,
+                                     U A,
+                                     const rocblas_int shiftA,
+                                     const rocblas_int lda,
+                                     const rocblas_stride strideA,
+                                     T* W,
+                                     const rocblas_int shiftW,
+                                     const rocblas_int ldw,
+                                     const rocblas_stride strideW)
 {
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -493,16 +495,16 @@ __global__ void copyshift_left(const bool copy,
 }
 
 template <typename T, typename U>
-__global__ void copyshift_down(const bool copy,
-                               const rocblas_int dim,
-                               U A,
-                               const rocblas_int shiftA,
-                               const rocblas_int lda,
-                               const rocblas_stride strideA,
-                               T* W,
-                               const rocblas_int shiftW,
-                               const rocblas_int ldw,
-                               const rocblas_stride strideW)
+ROCSOLVER_KERNEL void copyshift_down(const bool copy,
+                                     const rocblas_int dim,
+                                     U A,
+                                     const rocblas_int shiftA,
+                                     const rocblas_int lda,
+                                     const rocblas_stride strideA,
+                                     T* W,
+                                     const rocblas_int shiftW,
+                                     const rocblas_int ldw,
+                                     const rocblas_stride strideW)
 {
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -540,12 +542,12 @@ __global__ void copyshift_down(const bool copy,
     resulting by applying the Householder reflector to the working column, to E. Then set it
     to 1 to prepare for the application of the Householder reflector to the rest of the matrix **/
 template <typename T, typename S, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-__global__ void set_offdiag(const rocblas_int batch_count,
-                            U A,
-                            const rocblas_int shiftA,
-                            const rocblas_stride strideA,
-                            S* E,
-                            const rocblas_stride strideE)
+ROCSOLVER_KERNEL void set_offdiag(const rocblas_int batch_count,
+                                  U A,
+                                  const rocblas_int shiftA,
+                                  const rocblas_stride strideA,
+                                  S* E,
+                                  const rocblas_stride strideE)
 {
     rocblas_int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -560,12 +562,12 @@ __global__ void set_offdiag(const rocblas_int batch_count,
 }
 
 template <typename T, typename S, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void set_offdiag(const rocblas_int batch_count,
-                            U A,
-                            const rocblas_int shiftA,
-                            const rocblas_stride strideA,
-                            S* E,
-                            const rocblas_stride strideE)
+ROCSOLVER_KERNEL void set_offdiag(const rocblas_int batch_count,
+                                  U A,
+                                  const rocblas_int shiftA,
+                                  const rocblas_stride strideA,
+                                  S* E,
+                                  const rocblas_stride strideE)
 {
     rocblas_int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -582,16 +584,16 @@ __global__ void set_offdiag(const rocblas_int batch_count,
 /** scale_axpy kernel executes axpy to update tau computing the scalar alpha with other
     results in different memopry locations **/
 template <typename T, typename U>
-__global__ void scale_axpy(const rocblas_int n,
-                           T* scl,
-                           T* S,
-                           const rocblas_stride strideS,
-                           U A,
-                           const rocblas_int shiftA,
-                           const rocblas_stride strideA,
-                           T* W,
-                           const rocblas_int shiftW,
-                           const rocblas_stride strideW)
+ROCSOLVER_KERNEL void scale_axpy(const rocblas_int n,
+                                 T* scl,
+                                 T* S,
+                                 const rocblas_stride strideS,
+                                 U A,
+                                 const rocblas_int shiftA,
+                                 const rocblas_stride strideA,
+                                 T* W,
+                                 const rocblas_int shiftW,
+                                 const rocblas_stride strideW)
 {
     rocblas_int b = hipBlockIdx_y;
     rocblas_int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -611,12 +613,12 @@ __global__ void scale_axpy(const rocblas_int n,
 }
 
 template <typename T, typename U>
-__global__ void check_singularity(const rocblas_int n,
-                                  U A,
-                                  const rocblas_int shiftA,
-                                  const rocblas_int lda,
-                                  const rocblas_stride strideA,
-                                  rocblas_int* info)
+ROCSOLVER_KERNEL void check_singularity(const rocblas_int n,
+                                        U A,
+                                        const rocblas_int shiftA,
+                                        const rocblas_int lda,
+                                        const rocblas_stride strideA,
+                                        rocblas_int* info)
 {
     // Checks for singularities in the matrix and updates info to indicate where
     // the first singularity (if any) occurs

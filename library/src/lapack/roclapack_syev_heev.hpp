@@ -18,12 +18,12 @@
 
 /** Set results for the scalar case (n=1) **/
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-__global__ void scalar_case(const rocblas_evect evect,
-                            U AA,
-                            const rocblas_stride strideA,
-                            T* DD,
-                            const rocblas_stride strideD,
-                            rocblas_int bc)
+ROCSOLVER_KERNEL void scalar_case(const rocblas_evect evect,
+                                  U AA,
+                                  const rocblas_stride strideA,
+                                  T* DD,
+                                  const rocblas_stride strideD,
+                                  rocblas_int bc)
 {
     int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -39,12 +39,12 @@ __global__ void scalar_case(const rocblas_evect evect,
 }
 
 template <typename T, typename S, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void scalar_case(const rocblas_evect evect,
-                            U AA,
-                            const rocblas_stride strideA,
-                            S* DD,
-                            const rocblas_stride strideD,
-                            rocblas_int bc)
+ROCSOLVER_KERNEL void scalar_case(const rocblas_evect evect,
+                                  U AA,
+                                  const rocblas_stride strideA,
+                                  S* DD,
+                                  const rocblas_stride strideD,
+                                  rocblas_int bc)
 {
     int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 

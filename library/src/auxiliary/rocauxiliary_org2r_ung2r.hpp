@@ -14,13 +14,13 @@
 #include "rocsolver.h"
 
 template <typename T, typename U>
-__global__ void org2r_init_ident(const rocblas_int m,
-                                 const rocblas_int n,
-                                 const rocblas_int k,
-                                 U A,
-                                 const rocblas_int shiftA,
-                                 const rocblas_int lda,
-                                 const rocblas_stride strideA)
+ROCSOLVER_KERNEL void org2r_init_ident(const rocblas_int m,
+                                       const rocblas_int n,
+                                       const rocblas_int k,
+                                       U A,
+                                       const rocblas_int shiftA,
+                                       const rocblas_int lda,
+                                       const rocblas_stride strideA)
 {
     const auto blocksizex = hipBlockDim_x;
     const auto blocksizey = hipBlockDim_y;
