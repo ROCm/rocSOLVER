@@ -31,7 +31,7 @@ def parse_args():
     Checks build arguments
     """)
     parser.add_argument('-t', '--test', required=True, 
-                        help='Test set to run from rtest.xml (required, e.g. osdb)')
+                        help='Test set to run from rtest.win.xml (required, e.g. osdb)')
     parser.add_argument('-g', '--debug', required=False, default=False,  action='store_true',
                         help='Test Debug build (optional, default: false)')
     parser.add_argument('-o', '--output', type=str, required=False, default="xml", 
@@ -204,7 +204,7 @@ def batch(script, xml):
     global args
     # 
     cwd = pathlib.os.curdir
-    rtest_cwd_path = os.path.abspath( os.path.join( cwd, 'rtest.xml') )
+    rtest_cwd_path = os.path.abspath( os.path.join( cwd, 'rtest.win.xml') )
     if os.path.isfile(rtest_cwd_path) and os.path.dirname(rtest_cwd_path).endswith( "staging" ):
         # if in a staging directory then test locally
         test_dir = cwd 
@@ -278,7 +278,7 @@ def run_tests():
     # install
     cwd = os.curdir
 
-    xmlPath = os.path.join( cwd, 'rtest.xml')
+    xmlPath = os.path.join( cwd, 'rtest.win.xml')
     xmlDoc = minidom.parse( xmlPath )
 
     scripts = []
