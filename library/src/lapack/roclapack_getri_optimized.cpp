@@ -13,14 +13,14 @@
 
 template <rocblas_int DIM, typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) getri_kernel_small(U AA,
-                                                               const rocblas_int shiftA,
-                                                               const rocblas_int lda,
-                                                               const rocblas_stride strideA,
-                                                               rocblas_int* ipivA,
-                                                               const rocblas_int shiftP,
-                                                               const rocblas_stride strideP,
-                                                               rocblas_int* info,
-                                                               const bool complete)
+                                                                     const rocblas_int shiftA,
+                                                                     const rocblas_int lda,
+                                                                     const rocblas_stride strideA,
+                                                                     rocblas_int* ipivA,
+                                                                     const rocblas_int shiftP,
+                                                                     const rocblas_stride strideP,
+                                                                     rocblas_int* info,
+                                                                     const bool complete)
 {
     int b = hipBlockIdx_x;
     int i = hipThreadIdx_x;
@@ -71,6 +71,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) getri_kernel_small(U AA,
         diag[i] = -rA[i];
 
         // compute element i of each column j
+#pragma unroll
         for(rocblas_int j = 1; j < DIM; j++)
         {
             // share current column and diagonal
@@ -93,7 +94,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) getri_kernel_small(U AA,
     if(info[b] != 0)
         return;
 
-    //--- GETRI ---
+        //--- GETRI ---
+#pragma unroll
     for(rocblas_int j = DIM - 2; j >= 0; j--)
     {
         // extract lower triangular column (copy_and_zero)
@@ -114,6 +116,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) getri_kernel_small(U AA,
     }
 
     // apply pivots (getri_pivot)
+#pragma unroll
     for(rocblas_int j = DIM - 2; j >= 0; j--)
     {
         jp = ipiv[j] - 1;

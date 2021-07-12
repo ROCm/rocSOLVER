@@ -13,11 +13,11 @@
 
 template <rocblas_int DIM, typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) trti2_kernel_small(const rocblas_fill uplo,
-                                                               const rocblas_diagonal diagtype,
-                                                               U AA,
-                                                               const rocblas_int shiftA,
-                                                               const rocblas_int lda,
-                                                               const rocblas_stride strideA)
+                                                                     const rocblas_diagonal diagtype,
+                                                                     U AA,
+                                                                     const rocblas_int shiftA,
+                                                                     const rocblas_int lda,
+                                                                     const rocblas_stride strideA)
 {
     int b = hipBlockIdx_x;
     int i = hipThreadIdx_x;
@@ -54,6 +54,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) trti2_kernel_small(const rocbl
     // compute element i of each column j
     if(uplo == rocblas_fill_upper)
     {
+#pragma unroll
         for(rocblas_int j = 1; j < DIM; j++)
         {
             // share current column and diagonal
@@ -73,6 +74,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) trti2_kernel_small(const rocbl
     }
     else
     {
+#pragma unroll
         for(rocblas_int j = DIM - 2; j >= 0; j--)
         {
             // share current column and diagonal

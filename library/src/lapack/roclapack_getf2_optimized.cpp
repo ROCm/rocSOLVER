@@ -20,18 +20,19 @@
     GETF2_MAX_THDS <= m <= GETF2_OPTIM_MAX_SIZE and n < WAVESIZE
 *************************************************************************/
 template <rocblas_int DIM, typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS) LUfact_panel_kernel(const rocblas_int m,
-                                                                      const rocblas_int n,
-                                                                      U AA,
-                                                                      const rocblas_int shiftA,
-                                                                      const rocblas_int lda,
-                                                                      const rocblas_stride strideA,
-                                                                      rocblas_int* ipivA,
-                                                                      const rocblas_int shiftP,
-                                                                      const rocblas_stride strideP,
-                                                                      rocblas_int* infoA,
-                                                                      const rocblas_int batch_count,
-                                                                      const int pivot)
+ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
+    LUfact_panel_kernel(const rocblas_int m,
+                        const rocblas_int n,
+                        U AA,
+                        const rocblas_int shiftA,
+                        const rocblas_int lda,
+                        const rocblas_stride strideA,
+                        rocblas_int* ipivA,
+                        const rocblas_int shiftP,
+                        const rocblas_stride strideP,
+                        rocblas_int* infoA,
+                        const rocblas_int batch_count,
+                        const int pivot)
 {
     using S = decltype(std::real(T{}));
 
@@ -227,6 +228,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     }
 
     // for each pivot (main loop)
+#pragma unroll DIM2
     for(int k = 0; k < DIM2; ++k)
     {
         // share current column
@@ -315,17 +317,18 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     m <= GETF2_MAX_THDS and n <= WAVESIZE
 ************************************************************************/
 template <rocblas_int DIM, typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS) LUfact_small_kernel(const rocblas_int m,
-                                                                      U AA,
-                                                                      const rocblas_int shiftA,
-                                                                      const rocblas_int lda,
-                                                                      const rocblas_stride strideA,
-                                                                      rocblas_int* ipivA,
-                                                                      const rocblas_int shiftP,
-                                                                      const rocblas_stride strideP,
-                                                                      rocblas_int* infoA,
-                                                                      const rocblas_int batch_count,
-                                                                      const int pivot)
+ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
+    LUfact_small_kernel(const rocblas_int m,
+                        U AA,
+                        const rocblas_int shiftA,
+                        const rocblas_int lda,
+                        const rocblas_stride strideA,
+                        rocblas_int* ipivA,
+                        const rocblas_int shiftP,
+                        const rocblas_stride strideP,
+                        rocblas_int* infoA,
+                        const rocblas_int batch_count,
+                        const int pivot)
 {
     using S = decltype(std::real(T{}));
 
@@ -362,7 +365,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS) LUfact_small_kernel(cons
     for(int j = 0; j < DIM; ++j)
         rA[j] = A[myrow + j * lda];
 
-    // for each pivot (main loop)
+        // for each pivot (main loop)
+#pragma unroll DIM
     for(int k = 0; k < DIM; ++k)
     {
         // share current column
