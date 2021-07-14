@@ -99,22 +99,18 @@ void potri_initData(const rocblas_handle handle,
                     Ud& dInfo,
                     const rocblas_int bc,
                     Th& hA,
-                    Th& hATmp,
                     Uh& hInfo,
                     const bool singular)
 {
     if(CPU)
     {
-        rocblas_init<T>(hATmp, true);
+        rocblas_init<T>(hA, true);
 
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            // make A hermitian and scale to ensure positive definiteness
-            cblas_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, n, n,
-                       (T)1.0, hATmp[b], lda, hATmp[b], lda, (T)0.0, hA[b], lda);
-
+            // scale to ensure positive definiteness
             for(rocblas_int i = 0; i < n; i++)
-                hA[b][i + i * lda] += 400;
+                hA[b][i + i * lda] = hA[b][i + i * lda] * sconj(hA[b][i + i * lda]) * 400;
 
             // do the Cholesky factorization of matrix A w/ the reference LAPACK routine
             cblas_potrf<T>(uplo, n, hA[b], lda, hInfo[b]);
@@ -162,8 +158,7 @@ void potri_getError(const rocblas_handle handle,
                     const bool singular)
 {
     // input data initialization
-    potri_initData<true, true, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hARes, hInfo,
-                                  singular);
+    potri_initData<true, true, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hInfo, singular);
 
     // execute computations
     // GPU lapack
@@ -212,7 +207,6 @@ void potri_getPerfData(const rocblas_handle handle,
                        Ud& dInfo,
                        const rocblas_int bc,
                        Th& hA,
-                       Th& hATmp,
                        Uh& hInfo,
                        double* gpu_time_used,
                        double* cpu_time_used,
@@ -223,8 +217,7 @@ void potri_getPerfData(const rocblas_handle handle,
 {
     if(!perf)
     {
-        potri_initData<true, false, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hATmp, hInfo,
-                                       singular);
+        potri_initData<true, false, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hInfo, singular);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
@@ -235,14 +228,12 @@ void potri_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    potri_initData<true, false, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hATmp, hInfo,
-                                   singular);
+    potri_initData<true, false, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hInfo, singular);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        potri_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hATmp, hInfo,
-                                       singular);
+        potri_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hInfo, singular);
 
         CHECK_ROCBLAS_ERROR(
             rocsolver_potri(STRIDED, handle, uplo, n, dA.data(), lda, stA, dInfo.data(), bc));
@@ -261,8 +252,7 @@ void potri_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        potri_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hATmp, hInfo,
-                                       singular);
+        potri_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hInfo, singular);
 
         start = get_time_us_sync(stream);
         rocsolver_potri(STRIDED, handle, uplo, n, dA.data(), lda, stA, dInfo.data(), bc);
@@ -285,8 +275,7 @@ void testing_potri(Arguments& argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    // hARes should always be allocated (used in initData)
-    size_t stARes = stA;
+    rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
 
     // check non-supported values
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
@@ -310,8 +299,7 @@ void testing_potri(Arguments& argus)
     size_t size_A = size_t(lda) * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    // hARes should always be allocated (used in initData)
-    size_t size_ARes = size_A;
+    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < n || bc < 0);
@@ -386,9 +374,9 @@ void testing_potri(Arguments& argus)
 
         // collect performance data
         if(argus.timing)
-            potri_getPerfData<STRIDED, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hARes,
-                                          hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
-                                          argus.profile, argus.perf, argus.singular);
+            potri_getPerfData<STRIDED, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hInfo,
+                                          &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
+                                          argus.perf, argus.singular);
     }
 
     else
@@ -423,9 +411,9 @@ void testing_potri(Arguments& argus)
 
         // collect performance data
         if(argus.timing)
-            potri_getPerfData<STRIDED, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hARes,
-                                          hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
-                                          argus.profile, argus.perf, argus.singular);
+            potri_getPerfData<STRIDED, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hInfo,
+                                          &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
+                                          argus.perf, argus.singular);
     }
 
     // validate results for rocsolver-test
