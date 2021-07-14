@@ -274,7 +274,22 @@ void testing_potrs(Arguments& argus)
     rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
 
     // check non-supported values
-    // N/A
+    if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
+    {
+        if(BATCHED)
+            EXPECT_ROCBLAS_STATUS(rocsolver_potrs(STRIDED, handle, uplo, n, nrhs, (T* const*)nullptr,
+                                                  lda, stA, (T* const*)nullptr, ldb, stB, bc),
+                                  rocblas_status_invalid_value);
+        else
+            EXPECT_ROCBLAS_STATUS(rocsolver_potrs(STRIDED, handle, uplo, n, nrhs, (T*)nullptr, lda,
+                                                  stA, (T*)nullptr, ldb, stB, bc),
+                                  rocblas_status_invalid_value);
+
+        if(argus.timing)
+            rocsolver_bench_inform(inform_invalid_args);
+
+        return;
+    }
 
     // determine sizes
     size_t size_A = size_t(lda) * n;
