@@ -2,9 +2,20 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## [(unreleased) rocSOLVER for ROCm 4.5.0]
+## [(Unreleased) rocSOLVER for ROCm 4.5.0]
 ### Added
+- RQ factorization routines:
+    - GERQ2, GERQF (with batched and strided\_batched versions)
+- Linear solvers for general square systems:
+    - GESV (with batched and strided\_batched versions)
+- Linear solvers for symmetric/hermitian positive definite systems:
+    - POTRS (with batched and strided\_batched versions)
+    - POSV (with batched and strided\_batched versions)
+- Inverse of symmetric/hermitian positive definite matrices:
+    - POTRI (with batched and strided\_batched versions)
+
 ### Optimizations
+
 ### Changed
 - Raised reference LAPACK version used for rocSOLVER test and benchmark clients to v3.9.1
 - Minor CMake improvements for users building from source without install.sh:
@@ -12,8 +23,11 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - Enabled small-size optimizations by default
 
 ### Removed
+
 ### Fixed
+
 ### Known Issues
+
 
 ## [rocSOLVER 3.14.0 for ROCm 4.4.0]
 ### Added
