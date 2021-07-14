@@ -9398,6 +9398,311 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
+    \brief POSV solves a symmetric/hermitian system of n linear equations on n variables.
+
+    \details
+    It solves the system
+
+    \f[
+        A X = B
+    \f]
+
+    where A is a real symmetric (complex hermitian) positive definite matrix. Matrix A is first
+    factorized as \f$A=LL'\f$ or \f$A=U'U\f$, depending on the value of uplo, using \ref rocsolver_spotrf "POTRF";
+    then, the solution is computed with \ref rocsolver_spotrs "POTRS".
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The order of the system, i.e. the number of columns and rows of A.
+    @param[in]
+    nrhs        rocblas_int. nrhs >= 0.\n
+                The number of right hand sides, i.e., the number of columns
+                of the matrix B.
+    @param[in]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the symmetric/hermitian matrix A.
+                On exit, if info = 0, the factor L or U of the Cholesky factorization of A returned by
+                \ref rocsolver_spotrf "POTRF".
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A.
+    @param[in,out]
+    B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
+                On entry, the right hand side matrix B.
+                On exit, the solution matrix X.
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                The leading dimension of B.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = j > 0, the leading minor of order j of A is not positive definite.
+                The solution could not be computed.
+
+   ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sposv(rocblas_handle handle,
+                                                const rocblas_fill uplo,
+                                                const rocblas_int n,
+                                                const rocblas_int nrhs,
+                                                float* A,
+                                                const rocblas_int lda,
+                                                float* B,
+                                                const rocblas_int ldb,
+                                                rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dposv(rocblas_handle handle,
+                                                const rocblas_fill uplo,
+                                                const rocblas_int n,
+                                                const rocblas_int nrhs,
+                                                double* A,
+                                                const rocblas_int lda,
+                                                double* B,
+                                                const rocblas_int ldb,
+                                                rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cposv(rocblas_handle handle,
+                                                const rocblas_fill uplo,
+                                                const rocblas_int n,
+                                                const rocblas_int nrhs,
+                                                rocblas_float_complex* A,
+                                                const rocblas_int lda,
+                                                rocblas_float_complex* B,
+                                                const rocblas_int ldb,
+                                                rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zposv(rocblas_handle handle,
+                                                const rocblas_fill uplo,
+                                                const rocblas_int n,
+                                                const rocblas_int nrhs,
+                                                rocblas_double_complex* A,
+                                                const rocblas_int lda,
+                                                rocblas_double_complex* B,
+                                                const rocblas_int ldb,
+                                                rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief POSV_BATCHED solves a batch of symmetric/hermitian systems of n linear equations on n
+    variables.
+
+    \details
+    For each instance j in the batch, it solves the system
+
+    \f[
+        A_j X_j = B_j
+    \f]
+
+    where \f$A_j\f$ is a real symmetric (complex hermitian) positive definite matrix. Matrix \f$A_j\f$ is first
+    factorized as \f$A_j=L_jL_j'\f$ or \f$A_j=U_j'U_j\f$, depending on the value of uplo, using \ref rocsolver_spotrf_batched "POTRF_BATCHED";
+    then, the solution is computed with \ref rocsolver_spotrs_batched "POTRS_BATCHED".
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The order of the system, i.e. the number of columns and rows of all A_j matrices.
+    @param[in]
+    nrhs        rocblas_int. nrhs >= 0.\n
+                The number of right hand sides, i.e., the number of columns
+                of all the matrices B_j.
+    @param[in]
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the symmetric/hermitian matrices A_j.
+                On exit, if info[j] = 0, the factor L_j or U_j of the Cholesky factorization of A_j returned by
+                \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of matrices A_j.
+    @param[in,out]
+    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
+                On entry, the right hand side matrices B_j.
+                On exit, the solution matrix X_j of each system in the batch.
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                The leading dimension of matrices B_j.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit.
+                If info[j] = i > 0, the leading minor of order i of A_j is not positive definite.
+                The j-th solution could not be computed.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of instances (systems) in the batch.
+
+   ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sposv_batched(rocblas_handle handle,
+                                                        const rocblas_fill uplo,
+                                                        const rocblas_int n,
+                                                        const rocblas_int nrhs,
+                                                        float* const A[],
+                                                        const rocblas_int lda,
+                                                        float* const B[],
+                                                        const rocblas_int ldb,
+                                                        rocblas_int* info,
+                                                        const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dposv_batched(rocblas_handle handle,
+                                                        const rocblas_fill uplo,
+                                                        const rocblas_int n,
+                                                        const rocblas_int nrhs,
+                                                        double* const A[],
+                                                        const rocblas_int lda,
+                                                        double* const B[],
+                                                        const rocblas_int ldb,
+                                                        rocblas_int* info,
+                                                        const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cposv_batched(rocblas_handle handle,
+                                                        const rocblas_fill uplo,
+                                                        const rocblas_int n,
+                                                        const rocblas_int nrhs,
+                                                        rocblas_float_complex* const A[],
+                                                        const rocblas_int lda,
+                                                        rocblas_float_complex* const B[],
+                                                        const rocblas_int ldb,
+                                                        rocblas_int* info,
+                                                        const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zposv_batched(rocblas_handle handle,
+                                                        const rocblas_fill uplo,
+                                                        const rocblas_int n,
+                                                        const rocblas_int nrhs,
+                                                        rocblas_double_complex* const A[],
+                                                        const rocblas_int lda,
+                                                        rocblas_double_complex* const B[],
+                                                        const rocblas_int ldb,
+                                                        rocblas_int* info,
+                                                        const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief POSV_STRIDED_BATCHED solves a batch of symmetric/hermitian systems of n linear equations
+    on n variables.
+
+    \details
+    For each instance j in the batch, it solves the system
+
+    \f[
+        A_j X_j = B_j
+    \f]
+
+    where \f$A_j\f$ is a real symmetric (complex hermitian) positive definite matrix. Matrix \f$A_j\f$ is first
+    factorized as \f$A_j=L_jL_j'\f$ or \f$A_j=U_j'U_j\f$, depending on the value of uplo, using \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED";
+    then, the solution is computed with \ref rocsolver_spotrs_strided_batched "POTRS_STRIDED_BATCHED".
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The order of the system, i.e. the number of columns and rows of all A_j matrices.
+    @param[in]
+    nrhs        rocblas_int. nrhs >= 0.\n
+                The number of right hand sides, i.e., the number of columns
+                of all the matrices B_j.
+    @param[in]
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the symmetric/hermitian matrices A_j.
+                On exit, if info[j] = 0, the factor L_j or U_j of the Cholesky factorization of A_j returned by
+                \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of matrices A_j.
+    @param[in]
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[in,out]
+    B           pointer to type. Array on the GPU (size depends on the value of strideB).\n
+                On entry, the right hand side matrices B_j.
+                On exit, the solution matrix X_j of each system in the batch.
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                The leading dimension of matrices B_j.
+    @param[in]
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit.
+                If info[j] = i > 0, the leading minor of order i of A_j is not positive definite.
+                The j-th solution could not be computed.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of instances (systems) in the batch.
+
+   ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sposv_strided_batched(rocblas_handle handle,
+                                                                const rocblas_fill uplo,
+                                                                const rocblas_int n,
+                                                                const rocblas_int nrhs,
+                                                                float* A,
+                                                                const rocblas_int lda,
+                                                                const rocblas_stride strideA,
+                                                                float* B,
+                                                                const rocblas_int ldb,
+                                                                const rocblas_stride strideB,
+                                                                rocblas_int* info,
+                                                                const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dposv_strided_batched(rocblas_handle handle,
+                                                                const rocblas_fill uplo,
+                                                                const rocblas_int n,
+                                                                const rocblas_int nrhs,
+                                                                double* A,
+                                                                const rocblas_int lda,
+                                                                const rocblas_stride strideA,
+                                                                double* B,
+                                                                const rocblas_int ldb,
+                                                                const rocblas_stride strideB,
+                                                                rocblas_int* info,
+                                                                const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cposv_strided_batched(rocblas_handle handle,
+                                                                const rocblas_fill uplo,
+                                                                const rocblas_int n,
+                                                                const rocblas_int nrhs,
+                                                                rocblas_float_complex* A,
+                                                                const rocblas_int lda,
+                                                                const rocblas_stride strideA,
+                                                                rocblas_float_complex* B,
+                                                                const rocblas_int ldb,
+                                                                const rocblas_stride strideB,
+                                                                rocblas_int* info,
+                                                                const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zposv_strided_batched(rocblas_handle handle,
+                                                                const rocblas_fill uplo,
+                                                                const rocblas_int n,
+                                                                const rocblas_int nrhs,
+                                                                rocblas_double_complex* A,
+                                                                const rocblas_int lda,
+                                                                const rocblas_stride strideA,
+                                                                rocblas_double_complex* B,
+                                                                const rocblas_int ldb,
+                                                                const rocblas_stride strideB,
+                                                                rocblas_int* info,
+                                                                const rocblas_int batch_count);
+//! @}
+
+/*! @{
     \brief GESVD computes the singular values and optionally the singular
     vectors of a general m-by-n matrix A (Singular Value Decomposition).
 

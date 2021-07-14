@@ -780,6 +780,38 @@ rocsolver_<type>potrs_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_spotrs_strided_batched
 
+.. _posv:
+
+rocsolver_<type>posv()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zposv
+   :outline:
+.. doxygenfunction:: rocsolver_cposv
+   :outline:
+.. doxygenfunction:: rocsolver_dposv
+   :outline:
+.. doxygenfunction:: rocsolver_sposv
+
+rocsolver_<type>posv_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zposv_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cposv_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dposv_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sposv_batched
+
+rocsolver_<type>posv_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zposv_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cposv_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dposv_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sposv_strided_batched
+
 
 
 .. _leastsqr:
