@@ -1542,19 +1542,13 @@ void rocblasCall_trsm_mem(rocblas_side side,
                           size_t* invA,
                           size_t* invA_arr)
 {
-    size_t w1, w2, w3, w4, no_opt_size;
+    size_t no_opt_size;
     /** TODO: For now, we always request the size for optimal performance.
         no_opt_size could be used in the future if we generalize the use of
         rocblas_workmode parameter **/
 
     rocblas_internal_trsm_workspace_size<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
-        side, m, n, batch_count, 0, &w1, &w2, &w3, &w4, &no_opt_size);
-
-    // return required memory sizes
-    *x_temp = w1;
-    *x_temp_arr = w2;
-    *invA = w3;
-    *invA_arr = w4;
+        side, m, n, batch_count, 0, x_temp, x_temp_arr, invA, invA_arr, &no_opt_size);
 }
 
 // trsm
