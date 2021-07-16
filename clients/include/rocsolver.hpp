@@ -53,53 +53,53 @@ rocblas_status rocsolver_zgeqrf_ptr_batched(rocblas_handle handle,
                                             rocblas_double_complex* const ipiv[],
                                             const rocblas_int batch_count);
 
-// rocblas_status rocsolver_sgesv_outofplace(rocblas_handle handle,
-//                                           const rocblas_int n,
-//                                           const rocblas_int nrhs,
-//                                           float* A,
-//                                           const rocblas_int lda,
-//                                           rocblas_int* ipiv,
-//                                           float* B,
-//                                           const rocblas_int ldb,
-//                                           float* X,
-//                                           const rocblas_int ldx,
-//                                           rocblas_int* info);
+rocblas_status rocsolver_sgesv_outofplace(rocblas_handle handle,
+                                          const rocblas_int n,
+                                          const rocblas_int nrhs,
+                                          float* A,
+                                          const rocblas_int lda,
+                                          rocblas_int* ipiv,
+                                          float* B,
+                                          const rocblas_int ldb,
+                                          float* X,
+                                          const rocblas_int ldx,
+                                          rocblas_int* info);
 
-// rocblas_status rocsolver_dgesv_outofplace(rocblas_handle handle,
-//                                           const rocblas_int n,
-//                                           const rocblas_int nrhs,
-//                                           double* A,
-//                                           const rocblas_int lda,
-//                                           rocblas_int* ipiv,
-//                                           double* B,
-//                                           const rocblas_int ldb,
-//                                           double* X,
-//                                           const rocblas_int ldx,
-//                                           rocblas_int* info);
+rocblas_status rocsolver_dgesv_outofplace(rocblas_handle handle,
+                                          const rocblas_int n,
+                                          const rocblas_int nrhs,
+                                          double* A,
+                                          const rocblas_int lda,
+                                          rocblas_int* ipiv,
+                                          double* B,
+                                          const rocblas_int ldb,
+                                          double* X,
+                                          const rocblas_int ldx,
+                                          rocblas_int* info);
 
-// rocblas_status rocsolver_cgesv_outofplace(rocblas_handle handle,
-//                                           const rocblas_int n,
-//                                           const rocblas_int nrhs,
-//                                           rocblas_float_complex* A,
-//                                           const rocblas_int lda,
-//                                           rocblas_int* ipiv,
-//                                           rocblas_float_complex* B,
-//                                           const rocblas_int ldb,
-//                                           rocblas_float_complex* X,
-//                                           const rocblas_int ldx,
-//                                           rocblas_int* info);
+rocblas_status rocsolver_cgesv_outofplace(rocblas_handle handle,
+                                          const rocblas_int n,
+                                          const rocblas_int nrhs,
+                                          rocblas_float_complex* A,
+                                          const rocblas_int lda,
+                                          rocblas_int* ipiv,
+                                          rocblas_float_complex* B,
+                                          const rocblas_int ldb,
+                                          rocblas_float_complex* X,
+                                          const rocblas_int ldx,
+                                          rocblas_int* info);
 
-// rocblas_status rocsolver_zgesv_outofplace(rocblas_handle handle,
-//                                           const rocblas_int n,
-//                                           const rocblas_int nrhs,
-//                                           rocblas_double_complex* A,
-//                                           const rocblas_int lda,
-//                                           rocblas_int* ipiv,
-//                                           rocblas_double_complex* B,
-//                                           const rocblas_int ldb,
-//                                           rocblas_double_complex* X,
-//                                           const rocblas_int ldx,
-//                                           rocblas_int* info);
+rocblas_status rocsolver_zgesv_outofplace(rocblas_handle handle,
+                                          const rocblas_int n,
+                                          const rocblas_int nrhs,
+                                          rocblas_double_complex* A,
+                                          const rocblas_int lda,
+                                          rocblas_int* ipiv,
+                                          rocblas_double_complex* B,
+                                          const rocblas_int ldb,
+                                          rocblas_double_complex* X,
+                                          const rocblas_int ldx,
+                                          rocblas_int* info);
 
 #ifdef __cplusplus
 }
@@ -2624,7 +2624,7 @@ inline rocblas_status rocsolver_gesv_outofplace(bool STRIDED,
 {
     return STRIDED
         ? rocblas_status_not_implemented // rocsolver_sgesv_outofplace_strided_batched(handle, n, nrhs, A, lda, stA, ipiv, stP, B, ldb, stB, X, ldx, stX, info, bc)
-        : rocblas_status_not_implemented; // rocsolver_sgesv_outofplace(handle, n, nrhs, A, lda, ipiv, B, ldb, X, ldx, info);
+        : rocsolver_sgesv_outofplace(handle, n, nrhs, A, lda, ipiv, B, ldb, X, ldx, info);
 }
 
 inline rocblas_status rocsolver_gesv_outofplace(bool STRIDED,
@@ -2647,7 +2647,7 @@ inline rocblas_status rocsolver_gesv_outofplace(bool STRIDED,
 {
     return STRIDED
         ? rocblas_status_not_implemented // rocsolver_dgesv_outofplace_strided_batched(handle, n, nrhs, A, lda, stA, ipiv, stP, B, ldb, stB, X, ldx, stX, info, bc)
-        : rocblas_status_not_implemented; // rocsolver_dgesv_outofplace(handle, n, nrhs, A, lda, ipiv, B, ldb, X, ldx, info);
+        : rocsolver_dgesv_outofplace(handle, n, nrhs, A, lda, ipiv, B, ldb, X, ldx, info);
 }
 
 inline rocblas_status rocsolver_gesv_outofplace(bool STRIDED,
@@ -2670,7 +2670,7 @@ inline rocblas_status rocsolver_gesv_outofplace(bool STRIDED,
 {
     return STRIDED
         ? rocblas_status_not_implemented // rocsolver_cgesv_outofplace_strided_batched(handle, n, nrhs, A, lda, stA, ipiv, stP, B, ldb, stB, X, ldx, stX, info, bc)
-        : rocblas_status_not_implemented; // rocsolver_cgesv_outofplace(handle, n, nrhs, A, lda, ipiv, B, ldb, X, ldx, info);
+        : rocsolver_cgesv_outofplace(handle, n, nrhs, A, lda, ipiv, B, ldb, X, ldx, info);
 }
 
 inline rocblas_status rocsolver_gesv_outofplace(bool STRIDED,
@@ -2693,7 +2693,7 @@ inline rocblas_status rocsolver_gesv_outofplace(bool STRIDED,
 {
     return STRIDED
         ? rocblas_status_not_implemented // rocsolver_zgesv_outofplace_strided_batched(handle, n, nrhs, A, lda, stA, ipiv, stP, B, ldb, stB, X, ldx, stX, info, bc)
-        : rocblas_status_not_implemented; // rocsolver_zgesv_outofplace(handle, n, nrhs, A, lda, ipiv, B, ldb, X, ldx, info);
+        : rocsolver_zgesv_outofplace(handle, n, nrhs, A, lda, ipiv, B, ldb, X, ldx, info);
 }
 
 // batched
