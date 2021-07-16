@@ -151,9 +151,8 @@ void local_gemm(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
     rocblas_int blocks = (n - 1) / 32 + 1;
-    hipLaunchKernelGGL(copy_mat<T>, dim3(blocks, blocks, batch_count), dim3(32, 32), 0, stream, n,
-                       n, A, shiftA, lda, strideA, temp, shiftT, ldt, strideT, rocblas_fill_full,
-                       copymat_from_buffer);
+    hipLaunchKernelGGL(copy_mat<T>, dim3(blocks, blocks, batch_count), dim3(32, 32), 0, stream,
+                       copymat_from_buffer, n, n, A, shiftA, lda, strideA, temp, rocblas_fill_full);
 
     rocblas_set_pointer_mode(handle, old_mode);
 }
@@ -188,8 +187,8 @@ void local_gemm(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
     rocblas_int blocks = (n - 1) / 32 + 1;
     hipLaunchKernelGGL((copy_mat<T, S, true>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                       stream, n, n, A, shiftA, lda, strideA, work, shiftT, ldt, strideT,
-                       rocblas_fill_full, copymat_to_buffer);
+                       stream, copymat_to_buffer, n, n, A, shiftA, lda, strideA, work,
+                       rocblas_fill_full);
 
     // temp = work*B
     rocblasCall_gemm<BATCHED, STRIDED, S>(
@@ -198,13 +197,13 @@ void local_gemm(rocblas_handle handle,
 
     // real(A) = temp
     hipLaunchKernelGGL((copy_mat<T, S, true>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                       stream, n, n, A, shiftA, lda, strideA, temp, shiftT, ldt, strideT,
-                       rocblas_fill_full, copymat_from_buffer);
+                       stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, temp,
+                       rocblas_fill_full);
 
     // work = imag(A)
     hipLaunchKernelGGL((copy_mat<T, S, false>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                       stream, n, n, A, shiftA, lda, strideA, work, shiftT, ldt, strideT,
-                       rocblas_fill_full, copymat_to_buffer);
+                       stream, copymat_to_buffer, n, n, A, shiftA, lda, strideA, work,
+                       rocblas_fill_full);
 
     // temp = work*B
     rocblasCall_gemm<BATCHED, STRIDED, S>(
@@ -213,8 +212,8 @@ void local_gemm(rocblas_handle handle,
 
     // imag(A) = temp
     hipLaunchKernelGGL((copy_mat<T, S, false>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                       stream, n, n, A, shiftA, lda, strideA, temp, shiftT, ldt, strideT,
-                       rocblas_fill_full, copymat_from_buffer);
+                       stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, temp,
+                       rocblas_fill_full);
 
     rocblas_set_pointer_mode(handle, old_mode);
 }

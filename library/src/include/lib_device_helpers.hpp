@@ -109,11 +109,11 @@ ROCSOLVER_KERNEL void masked_copymat(copymat_direction direction,
                                      const bool negate = false)
 {
     const auto b = hipBlockIdx_z;
-    const auto i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
-    const auto j = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
-    const rocblas_int ldw = m;
-    const rocblas_stride strideW = rocblas_stride(ldw) * n;
+    const rocblas_int ldb = m;
+    const rocblas_stride strideB = rocblas_stride(ldb) * n;
 
     const bool copy = negate ? !mask[b] : mask[b];
 
@@ -122,15 +122,57 @@ ROCSOLVER_KERNEL void masked_copymat(copymat_direction direction,
     const bool lower = (uplo == rocblas_fill_lower);
     const bool cdiag = (diag == rocblas_diagonal_non_unit);
 
-    if(i < m && j < n && copy && (full || (upper && j > i) || (lower && i > j) || (cdiag && i == j)))
+    if(i < m && j < n && copy)
     {
-        T* Wp = &buffer[b * strideW];
-        T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+        if(full || (upper && j > i) || (lower && i > j) || (cdiag && i == j))
+        {
+            T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+            T* Bp = &buffer[b * strideB];
 
-        if(direction == copymat_to_buffer)
-            Wp[i + j * ldw] = Ap[i + j * lda];
-        else // direction == copymat_from_buffer
-            Ap[i + j * lda] = Wp[i + j * ldw];
+            if(direction == copymat_to_buffer)
+                Bp[i + j * ldb] = Ap[i + j * lda];
+            else // direction == copymat_from_buffer
+                Ap[i + j * lda] = Bp[i + j * ldb];
+        }
+    }
+}
+
+template <typename T, typename U1, typename U2>
+ROCSOLVER_KERNEL void masked_copymat(const rocblas_int m,
+                                     const rocblas_int n,
+                                     U1 A,
+                                     const rocblas_int shiftA,
+                                     const rocblas_int lda,
+                                     const rocblas_stride strideA,
+                                     U2 B,
+                                     const rocblas_int shiftB,
+                                     const rocblas_int ldb,
+                                     const rocblas_stride strideB,
+                                     const rocblas_int* mask,
+                                     const rocblas_fill uplo = rocblas_fill_full,
+                                     const rocblas_diagonal diag = rocblas_diagonal_non_unit,
+                                     const bool negate = false)
+{
+    const auto b = hipBlockIdx_z;
+    const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    const bool copy = negate ? !mask[b] : mask[b];
+
+    const bool full = (uplo == rocblas_fill_full);
+    const bool upper = (uplo == rocblas_fill_upper);
+    const bool lower = (uplo == rocblas_fill_lower);
+    const bool cdiag = (diag == rocblas_diagonal_non_unit);
+
+    if(i < m && j < n && copy)
+    {
+        if(full || (upper && j > i) || (lower && i > j) || (cdiag && i == j))
+        {
+            T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+            T* Bp = load_ptr_batch<T>(B, b, shiftB, strideB);
+
+            Bp[i + j * ldb] = Ap[i + j * lda];
+        }
     }
 }
 
@@ -326,7 +368,95 @@ ROCSOLVER_KERNEL void set_zero(const rocblas_int m,
     }
 }
 
-/** COPY_MAT copies m-by-n array A into B if copymat_to_buffer, or B into A if copymat_from_buffer
+/** COPY_MAT copies m-by-n array A into buffer if copymat_to_buffer, or buffer into A if copymat_from_buffer
+    If uplo = rocblas_fill_upper, only the upper triangular part is copied
+    If uplo = rocblas_fill_lower, only the lower triangular part is copied **/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void copy_mat(copymat_direction direction,
+                               const rocblas_int m,
+                               const rocblas_int n,
+                               U A,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               T* buffer,
+                               const rocblas_fill uplo = rocblas_fill_full,
+                               const rocblas_diagonal diag = rocblas_diagonal_non_unit)
+{
+    const auto b = hipBlockIdx_z;
+    const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    const rocblas_int ldb = m;
+    const rocblas_stride strideB = rocblas_stride(ldb) * n;
+
+    const bool lower = (uplo == rocblas_fill_lower);
+    const bool full = (uplo == rocblas_fill_full);
+    const bool upper = (uplo == rocblas_fill_upper);
+    const bool cdiag = (diag == rocblas_diagonal_non_unit);
+
+    if(i < m && j < n)
+    {
+        if(full || (upper && j > i) || (lower && i > j) || (cdiag && i == j))
+        {
+            T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+            T* Bp = &buffer[b * strideB];
+
+            if(direction == copymat_to_buffer)
+                Bp[i + j * ldb] = Ap[i + j * lda];
+            else
+                Ap[i + j * lda] = Bp[i + j * ldb];
+        }
+    }
+}
+
+/** COPY_MAT copies m-by-n array A into buffer if copymat_to_buffer, or buffer into A if copymat_from_buffer
+    If uplo = rocblas_fill_upper, only the upper triangular part is copied
+    If uplo = rocblas_fill_lower, only the lower triangular part is copied
+    Only valid when A is complex and buffer real. If REAL, only works with real part of A;
+    if !REAL only works with imaginary part of A**/
+template <typename T, typename S, bool REAL, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+ROCSOLVER_KERNEL void copy_mat(copymat_direction direction,
+                               const rocblas_int m,
+                               const rocblas_int n,
+                               U A,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               S* buffer,
+                               const rocblas_fill uplo = rocblas_fill_full,
+                               const rocblas_diagonal diag = rocblas_diagonal_non_unit)
+{
+    const auto b = hipBlockIdx_z;
+    const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    const rocblas_int ldb = m;
+    const rocblas_stride strideB = rocblas_stride(ldb) * n;
+
+    const bool lower = (uplo == rocblas_fill_lower);
+    const bool full = (uplo == rocblas_fill_full);
+    const bool upper = (uplo == rocblas_fill_upper);
+    const bool cdiag = (diag == rocblas_diagonal_non_unit);
+
+    if(i < m && j < n)
+    {
+        if(full || (upper && j > i) || (lower && i > j) || (cdiag && i == j))
+        {
+            T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+            S* Bp = &buffer[b * strideB];
+
+            if(direction == copymat_to_buffer)
+                Bp[i + j * ldb] = REAL ? Ap[i + j * lda].real() : Ap[i + j * lda].imag();
+            else if(REAL)
+                Ap[i + j * lda] = rocblas_complex_num<S>(Bp[i + j * ldb], A[i + j * lda].imag());
+            else
+                Ap[i + j * lda] = rocblas_complex_num<S>(A[i + j * lda].real(), Bp[i + j * ldb]);
+        }
+    }
+}
+
+/** COPY_MAT copies m-by-n array A into B
     If uplo = rocblas_fill_upper, only the upper triangular part is copied
     If uplo = rocblas_fill_lower, only the lower triangular part is copied **/
 template <typename T, typename U1, typename U2>
@@ -341,67 +471,25 @@ ROCSOLVER_KERNEL void copy_mat(const rocblas_int m,
                                const rocblas_int ldb,
                                const rocblas_stride strideB,
                                const rocblas_fill uplo = rocblas_fill_full,
-                               const copymat_direction direction = copymat_to_buffer)
+                               const rocblas_diagonal diag = rocblas_diagonal_non_unit)
 {
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
     const bool lower = (uplo == rocblas_fill_lower);
     const bool full = (uplo == rocblas_fill_full);
     const bool upper = (uplo == rocblas_fill_upper);
+    const bool cdiag = (diag == rocblas_diagonal_non_unit);
 
     if(i < m && j < n)
     {
-        if(full || (lower && i >= j) || (upper && j >= i))
+        if(full || (upper && j > i) || (lower && i > j) || (cdiag && i == j))
         {
             T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
             T* Bp = load_ptr_batch<T>(B, b, shiftB, strideB);
-            if(direction == copymat_to_buffer)
-                Bp[i + j * ldb] = Ap[i + j * lda];
-            else
-                Ap[i + j * lda] = Bp[i + j * ldb];
-        }
-    }
-}
 
-/** COPY_MAT copies m-by-n array A into B if copymat_to_buffer, or B into A if copymat_from_buffer
-    If uplo = rocblas_fill_upper, only the upper triangular part is copied
-    If uplo = rocblas_fill_lower, only the lower triangular part is copied
-    Only valid when A is complex and B real. If REAL, only works with real part of A;
-    if !REAL only works with imaginary part of A**/
-template <typename T, typename S, bool REAL, typename U1, typename U2, std::enable_if_t<is_complex<T>, int> = 0>
-ROCSOLVER_KERNEL void copy_mat(const rocblas_int m,
-                               const rocblas_int n,
-                               U1 A,
-                               const rocblas_int shiftA,
-                               const rocblas_int lda,
-                               const rocblas_stride strideA,
-                               U2 B,
-                               const rocblas_int shiftB,
-                               const rocblas_int ldb,
-                               const rocblas_stride strideB,
-                               const rocblas_fill uplo = rocblas_fill_full,
-                               const copymat_direction direction = copymat_to_buffer)
-{
-    const auto b = hipBlockIdx_z;
-    const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
-    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-    const bool lower = (uplo == rocblas_fill_lower);
-    const bool full = (uplo == rocblas_fill_full);
-    const bool upper = (uplo == rocblas_fill_upper);
-
-    if(i < m && j < n)
-    {
-        if(full || (lower && i >= j) || (upper && j >= i))
-        {
-            T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
-            S* Bp = load_ptr_batch<S>(B, b, shiftB, strideB);
-            if(direction == copymat_to_buffer)
-                Bp[i + j * ldb] = REAL ? Ap[i + j * lda].real() : Ap[i + j * lda].imag();
-            else if(REAL)
-                Ap[i + j * lda] = rocblas_complex_num<S>(Bp[i + j * ldb], A[i + j * lda].imag());
-            else
-                Ap[i + j * lda] = rocblas_complex_num<S>(A[i + j * lda].real(), Bp[i + j * ldb]);
+            Bp[i + j * ldb] = Ap[i + j * lda];
         }
     }
 }

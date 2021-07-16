@@ -205,8 +205,8 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
     // constants in host memory
     const rocblas_stride strideP = std::min(m, n);
     const rocblas_int check_threads = std::min(((std::min(m, n) - 1) / 64 + 1) * 64, BLOCKSIZE);
-    const rocblas_int copyblocksx = (nrhs - 1) / 32 + 1;
-    const rocblas_int copyblocksy = (std::min(m, n) - 1) / 32 + 1;
+    const rocblas_int copyblocksx = (std::min(m, n) - 1) / 32 + 1;
+    const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;
     const T one = 1;
 
     // TODO: apply scaling to improve accuracy over a larger range of values

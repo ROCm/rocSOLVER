@@ -138,8 +138,8 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
         return rocblas_status_success;
 
     // constants in host memory
-    const rocblas_int copyblocksx = (nrhs - 1) / 32 + 1;
-    const rocblas_int copyblocksy = (n - 1) / 32 + 1;
+    const rocblas_int copyblocksx = (n - 1) / 32 + 1;
+    const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;
 
     // compute Cholesky factorization of A
     rocsolver_potrf_template<BATCHED, T, S>(handle, uplo, n, A, shiftA, lda, strideA, info,

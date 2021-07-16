@@ -143,8 +143,8 @@ rocblas_status rocsolver_gesv_template(rocblas_handle handle,
         return rocblas_status_success;
 
     // constants in host memory
-    const rocblas_int copyblocksx = (nrhs - 1) / 32 + 1;
-    const rocblas_int copyblocksy = (n - 1) / 32 + 1;
+    const rocblas_int copyblocksx = (n - 1) / 32 + 1;
+    const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;
 
     // compute LU factorization of A
     rocsolver_getrf_template<BATCHED, STRIDED, true, T>(
