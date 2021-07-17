@@ -1539,59 +1539,13 @@ void rocblasCall_trsm_mem(rocblas_side side,
                           size_t* invA,
                           size_t* invA_arr)
 {
-    const rocblas_int BLOCK = ROCBLAS_TRSM_BLOCK;
-    rocblas_int k = (side == rocblas_side_left) ? m : n;
-    const bool exact_blocks = (k % BLOCK) == 0;
-    size_t invA_els = k * BLOCK;
-    size_t invA_bytes = invA_els * sizeof(T) * batch_count;
-    size_t c_temp_els = (k / BLOCK) * ((BLOCK / 2) * (BLOCK / 2));
-    size_t c_temp_bytes = c_temp_els * sizeof(T);
+    size_t no_opt_size;
+    /** TODO: For now, we always request the size for optimal performance.
+        no_opt_size could be used in the future if we generalize the use of
+        rocblas_workmode parameter **/
 
-    size_t arrBytes = BATCHED ? sizeof(T*) * batch_count : 0;
-    size_t xarrBytes = BATCHED ? sizeof(T*) * batch_count : 0;
-
-    if(!exact_blocks)
-    {
-        // TODO: Make this more accurate -- right now it's much larger than
-        // necessary
-        size_t remainder_els = ROCBLAS_TRTRI_NB * BLOCK * 2;
-
-        // C is the maximum of the temporary space needed for TRTRI
-        c_temp_els = std::max(c_temp_els, remainder_els);
-        c_temp_bytes = c_temp_els * sizeof(T);
-    }
-
-    // Chunk size for special algorithm
-    size_t B_chunk_size = 0;
-
-    // Temporary solution matrix
-    size_t x_temp_els;
-    size_t x_temp_bytes;
-
-    if(exact_blocks)
-    {
-        // Optimal B_chunk_size is the orthogonal dimension to k
-        B_chunk_size = size_t(m) + size_t(n) - size_t(k);
-
-        // When k % BLOCK == 0, we only need BLOCK * B_chunk_size space
-        x_temp_els = BLOCK * B_chunk_size;
-        x_temp_bytes = x_temp_els * sizeof(T) * batch_count;
-    }
-    else
-    {
-        // When k % BLOCK != 0, we need m * n space
-        x_temp_els = size_t(m) * n;
-        x_temp_bytes = x_temp_els * sizeof(T) * batch_count;
-    }
-
-    // X and C temporaries can share space, so the maximum size is allocated
-    size_t x_c_temp_bytes = std::max(x_temp_bytes, c_temp_bytes);
-
-    // return required memory sizes
-    *x_temp = x_c_temp_bytes;
-    *x_temp_arr = xarrBytes;
-    *invA = invA_bytes;
-    *invA_arr = arrBytes;
+    rocblas_internal_trsm_workspace_size<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
+        side, m, n, batch_count, 0, x_temp, x_temp_arr, invA, invA_arr, &no_opt_size);
 }
 
 // trsm
