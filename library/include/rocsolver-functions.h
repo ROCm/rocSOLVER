@@ -9707,8 +9707,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zposv_strided_batched(rocblas_handle h
 
     \f[
         \begin{array}{cl}
-        A^{-1} = U^{-1} U^{-1}' & \: \text{if uplo is upper, or}\\
-        A^{-1} = L^{-1}' L^{-1} & \: \text{if uplo is lower.}
+        A^{-1} = U^{-1} {U^{-1}}' & \: \text{if uplo is upper, or}\\
+        A^{-1} = {L^{-1}}' L^{-1} & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
@@ -9776,8 +9776,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i^{-1} = U_i^{-1} U_i^{-1}' & \: \text{if uplo is upper, or}\\
-        A_i^{-1} = L_i^{-1}' L_i^{-1} & \: \text{if uplo is lower.}
+        A_i^{-1} = U_i^{-1} {U_i^{-1}}' & \: \text{if uplo is upper, or}\\
+        A_i^{-1} = {L_i^{-1}}' L_i^{-1} & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
@@ -9852,8 +9852,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i^{-1} = U_i^{-1} U_i^{-1}' & \: \text{if uplo is upper, or}\\
-        A_i^{-1} = L_i^{-1}' L_i^{-1} & \: \text{if uplo is lower.}
+        A_i^{-1} = U_i^{-1} {U_i^{-1}}' & \: \text{if uplo is upper, or}\\
+        A_i^{-1} = {L_i^{-1}}' L_i^{-1} & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
