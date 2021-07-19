@@ -81,7 +81,7 @@ void laswp_initData(const rocblas_handle handle,
         // put indices in range [1, x]
         // for simplicity, consider x = lda as this is the number of rows
         for(rocblas_int i = 0; i < hIpiv.n(); ++i)
-            hIpiv[0][i] *= lda / 10;
+            hIpiv[0][i] = hIpiv[0][i]*lda < 10 ? 1 : hIpiv[0][i]*lda/10;
     }
 
     if(GPU)

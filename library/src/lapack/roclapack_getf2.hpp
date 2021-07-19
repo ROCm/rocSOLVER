@@ -18,8 +18,9 @@
 #include "rocsolver.h"
 #include "rocsolver_small_kernels.hpp"
 
-template <typename T, typename U>
-ROCSOLVER_KERNEL void getf2_check_singularity(U AA,
+template <bool PIVOT, typename T, typename U>
+ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
+                                              U AA,
                                               const rocblas_int shiftA,
                                               const rocblas_stride strideA,
                                               rocblas_int* ipivA,
@@ -28,35 +29,47 @@ ROCSOLVER_KERNEL void getf2_check_singularity(U AA,
                                               const rocblas_int j,
                                               const rocblas_int lda,
                                               T* pivot_val,
-                                              rocblas_int* pivot_idx,
-                                              rocblas_int* info,
-                                              const int pivot)
+                                              rocblas_int* pivot_idxA,
+                                              rocblas_int* info)
 {
     using S = decltype(std::real(T{}));
 
-    const int id = hipBlockIdx_x;
-    rocblas_int idx;
+    const int id = hipBlockIdx_y;
+    int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
-    T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
-    rocblas_int* ipiv;
-
-    if(pivot)
+    if(tid < n)
     {
-        ipiv = ipivA + id * strideP + shiftP;
-        ipiv[j] = pivot_idx[id] + j; // update pivot index
-        idx = j * lda + ipiv[j] - 1;
-    }
-    else
-        idx = j * lda + j;
+        T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
+        rocblas_int pivot_idx = pivot_idxA[id];
 
-    if(A[idx] == 0)
-    {
-        pivot_val[id] = 1;
-        if(info[id] == 0)
-            info[id] = j + 1; // use Fortran 1-based indexing
+        if(PIVOT)
+        {
+            if(tid == j)
+            {
+                rocblas_int* ipiv = ipivA + id * strideP + shiftP;
+                ipiv[j] = pivot_idx + j; // update pivot index
+            }
+            if(pivot_idx > 1)
+            {
+                // swap rows
+                T orig = A[j+tid*lda];
+                A[j+tid*lda] = A[pivot_idx + j - 1 + tid*lda];
+                A[pivot_idx + j - 1 + tid*lda] = orig;
+            }
+        }
+
+        if(tid == j)
+        {
+            if(A[j + j*lda] == 0)
+            {
+                pivot_val[id] = 1;
+                if(info[id] == 0)
+                    info[id] = j + 1; // use Fortran 1-based indexing
+            }
+            else
+                pivot_val[id] = S(1) / A[j + j*lda];
+        }
     }
-    else
-        pivot_val[id] = S(1) / A[idx];
 }
 
 template <bool ISBATCHED, typename T, typename S>
@@ -168,11 +181,11 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
 
     rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
     dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(BLOCKSIZE, 1, 1);
+    dim3 threadsReset(BLOCKSIZE, 1, 1);
     rocblas_int dim = min(m, n); // total number of pivots
 
     // info=0 (starting with a nonsingular matrix)
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    hipLaunchKernelGGL(reset_info, gridReset, threadsReset, 0, stream, info, batch_count, 0);
 
     // quick return if no dimensions
     if(m == 0 || n == 0)
@@ -194,6 +207,10 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
+    rocblas_int blocksPivot = (n - 1) / LASWP_BLOCKSIZE + 1;
+    dim3 gridPivot(blocksPivot, batch_count, 1);
+    dim3 threadsPivot(LASWP_BLOCKSIZE, 1, 1);
+
     for(rocblas_int j = 0; j < dim; ++j)
     {
         if(PIVOT)
@@ -202,15 +219,9 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
             rocblasCall_iamax<ISBATCHED, T, S>(handle, m - j, A, shiftA + idx2D(j, j, lda), 1,
                                                strideA, batch_count, pivotidx, work);
 
-        // adjust pivot indices and check singularity
-        hipLaunchKernelGGL(getf2_check_singularity<T>, dim3(batch_count), dim3(1), 0, stream, A,
-                           shiftA, strideA, ipiv, shiftP, strideP, j, lda, pivotval, pivotidx, info,
-                           PIVOT);
-
-        if(PIVOT)
-            // Swap pivot row and j-th row
-            rocsolver_laswp_template<T>(handle, n, A, shiftA, lda, strideA, j + 1, j + 1, ipiv,
-                                        shiftP, strideP, 1, batch_count);
+        // adjust pivot indices, apply row interchanges and check singularity
+        hipLaunchKernelGGL((getf2_check_singularity<PIVOT,T>), gridPivot, threadsPivot, 0, stream, n, A,
+                           shiftA, strideA, ipiv, shiftP, strideP, j, lda, pivotval, pivotidx, info);
 
         // Compute elements J+1:M of J'th column
         rocblasCall_scal<T>(handle, m - j - 1, pivotval, 1, A, shiftA + idx2D(j + 1, j, lda), 1,

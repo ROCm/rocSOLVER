@@ -57,7 +57,7 @@ rocblas_int getrf_get_blksize(rocblas_int dim)
     return blk;
 }
 
-template <typename U>
+/*template <typename U>
 ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
                                               const rocblas_int j,
                                               rocblas_int* ipivA,
@@ -79,6 +79,63 @@ ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
     {
         ipiv = ipivA + id * strideP + shiftP;
         ipiv[tid] += j;
+    }
+}*/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
+                                              const rocblas_int j,
+                                              const rocblas_int jb,
+                                              U AA,
+                                              const rocblas_int shiftA,
+                                              const rocblas_int lda,
+                                              const rocblas_stride strideA,
+                                              rocblas_int* ipivA,
+                                              const rocblas_int shiftP,
+                                              const rocblas_stride strideP,
+                                              rocblas_int* iipivA,
+                                              const rocblas_int* iinfo,
+                                              rocblas_int* info,
+                                              const int pivot)
+{
+    int id = hipBlockIdx_y;
+    int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if(tid < n)
+    {
+        // update info (check singularity)
+        if(tid == j && info[id] == 0 && iinfo[id] > 0)
+                info[id] = iinfo[id] + j;
+
+        if(pivot)
+        {
+            T orig;
+            rocblas_int *iipiv = iipivA + id * jb;
+            T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
+
+            // update ipiv (pivots in columns j : j+jb-1)
+            if(tid >= j && tid < j + jb)
+            {
+                rocblas_int *ipiv = ipivA + id * strideP + shiftP;
+                ipiv[tid] = iipiv[tid-j] + j;
+            }
+            
+            // swap rows in columns 0 : j-1 and j+jb : n-1
+            else
+            {
+                for(rocblas_int i = j; i < j+jb; ++i)
+                {
+                    rocblas_int exch = iipiv[i-j] + j - 1;
+
+                    // will exchange rows i and exch if they are not the same
+                    if(exch != i)
+                    {
+                        orig = A[i+tid*lda];
+                        A[i+tid*lda] = A[exch+tid*lda];
+                        A[exch+tid*lda] = orig;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -117,6 +174,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
 
     rocblas_int dim = min(m, n);
     rocblas_int blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
+//rocblas_int blk = atoi(getenv("BLK"));
 
     if(blk == 1)
     {
@@ -172,6 +230,10 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                         rocblas_int* iinfo,
                                         bool optim_mem)
 {
+
+rocblas_int *iipiv;
+hipMalloc(&iipiv,n*sizeof(rocblas_int)*batch_count);
+
     ROCSOLVER_ENTER("getrf", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
                     "bc:", batch_count);
 
@@ -210,6 +272,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_int jb, sizePivot;
 
     rocblas_int blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
+//rocblas_int blk = atoi(getenv("BLK"));
 
     if(blk == 1)
         return rocsolver_getf2_template<ISBATCHED, PIVOT, T>(handle, m, n, A, shiftA, lda, strideA,
@@ -221,31 +284,37 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
         // Factor diagonal and subdiagonal blocks
         jb = min(dim - j, blk); // number of columns in the block
         hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
+//        rocsolver_getf2_template<ISBATCHED, PIVOT, T>(
+//            handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, ipiv, shiftP + j,
+//            strideP, iinfo, batch_count, scalars, work, pivotval, pivotidx);
         rocsolver_getf2_template<ISBATCHED, PIVOT, T>(
-            handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, ipiv, shiftP + j,
-            strideP, iinfo, batch_count, scalars, work, pivotval, pivotidx);
+            handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, iipiv, 0,
+            jb, iinfo, batch_count, scalars, work, pivotval, pivotidx);
 
         // adjust pivot indices and check singularity
-        sizePivot = min(m - j, jb); // number of pivots in the block
-        blocksPivot = (sizePivot - 1) / BLOCKSIZE + 1;
+//        sizePivot = min(m - j, jb); // number of pivots in the block
+//        blocksPivot = (sizePivot - 1) / BLOCKSIZE + 1;
+        blocksPivot = (n - 1) / BLOCKSIZE + 1;
         gridPivot = dim3(blocksPivot, batch_count, 1);
-        hipLaunchKernelGGL(getrf_check_singularity<U>, gridPivot, threads, 0, stream, sizePivot, j,
-                           ipiv, shiftP + j, strideP, iinfo, info, PIVOT);
+//        hipLaunchKernelGGL(getrf_check_singularity<U>, gridPivot, threads, 0, stream, sizePivot, j,
+//                           ipiv, shiftP + j, strideP, iinfo, info, PIVOT);
+        hipLaunchKernelGGL(getrf_check_singularity<T>, gridPivot, threads, 0, stream, n, j, jb,
+                           A, shiftA, lda, strideA, ipiv, shiftP, strideP, iipiv, iinfo, info, PIVOT);
 
-        // apply interchanges to columns 1 : j-1
-        if(PIVOT)
-            rocsolver_laswp_template<T>(handle, j, A, shiftA, lda, strideA, j + 1, j + jb, ipiv,
-                                        shiftP, strideP, 1, batch_count);
+//        // apply interchanges to columns 1 : j-1
+//        if(PIVOT)
+//            rocsolver_laswp_template<T>(handle, j, A, shiftA, lda, strideA, j + 1, j + jb, ipiv,
+//                                        shiftP, strideP, 1, batch_count);
 
         if(j + jb < n)
         {
-            if(PIVOT)
-            {
-                // apply interchanges to columns j+jb : n
-                rocsolver_laswp_template<T>(handle, (n - j - jb), A, shiftA + idx2D(0, j + jb, lda),
-                                            lda, strideA, j + 1, j + jb, ipiv, shiftP, strideP, 1,
-                                            batch_count);
-            }
+//            if(PIVOT)
+//            {
+//                // apply interchanges to columns j+jb : n
+//                rocsolver_laswp_template<T>(handle, (n - j - jb), A, shiftA + idx2D(0, j + jb, lda),
+//                                            lda, strideA, j + 1, j + jb, ipiv, shiftP, strideP, 1,
+//                                            batch_count);
+//            }
 
             // compute block row of U
             rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
