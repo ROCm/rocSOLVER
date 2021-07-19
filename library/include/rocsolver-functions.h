@@ -7946,9 +7946,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    trans       rocblas_operation.\n
-                Specifies the form of the system of equations of each instance in the batch.
-    @param[in]
     n           rocblas_int. n >= 0.\n
                 The order of the system, i.e. the number of columns and rows of all A_j matrices.
     @param[in]
