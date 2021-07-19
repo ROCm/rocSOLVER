@@ -27,7 +27,7 @@ ROCSOLVER_KERNEL void laswp_kernel(const rocblas_int n,
 {
     int id = hipBlockIdx_y;
     int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-    
+
     if(tid < n)
     {
         // batch instance
@@ -58,9 +58,9 @@ ROCSOLVER_KERNEL void laswp_kernel(const rocblas_int n,
             // will exchange rows i and exch if they are not the same
             if(exch != i)
             {
-                orig = A[i-1+tid*lda];
-                A[i-1+tid*lda] = A[exch-1+tid*lda];
-                A[exch-1+tid*lda] = orig;
+                orig = A[i - 1 + tid * lda];
+                A[i - 1 + tid * lda] = A[exch - 1 + tid * lda];
+                A[exch - 1 + tid * lda] = orig;
             }
         }
     }
@@ -121,11 +121,12 @@ rocblas_status rocsolver_laswp_template(rocblas_handle handle,
     rocblas_int blocksPivot = (n - 1) / LASWP_BLOCKSIZE + 1;
     dim3 gridPivot(blocksPivot, batch_count, 1);
     dim3 threads(LASWP_BLOCKSIZE, 1, 1);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    hipLaunchKernelGGL(laswp_kernel<T>, gridPivot, threads, 0, stream, n, A, shiftA, lda,
-                       strideA, k1, k2, ipiv, shiftP, strideP, incx);
+    hipLaunchKernelGGL(laswp_kernel<T>, gridPivot, threads, 0, stream, n, A, shiftA, lda, strideA,
+                       k1, k2, ipiv, shiftP, strideP, incx);
 
     return rocblas_status_success;
 }
