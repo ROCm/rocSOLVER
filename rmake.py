@@ -86,7 +86,7 @@ def cmake_path(os_path):
         return os_path.replace("\\", "/")
     else:
         return os_path
-    
+
 def config_cmd():
     global args
     global OS_info
@@ -122,7 +122,7 @@ def config_cmd():
         cmake_executable = "cmake"
         cmake_platform_opts.append( f"-DROCM_DIR:PATH={rocm_path} -DCPACK_PACKAGING_INSTALL_PREFIX={rocm_path}" )
         cmake_platform_opts.append("-DCMAKE_INSTALL_PREFIX=rocsolver-install")
-    
+
     if not args.optimal:
         cmake_options.append('-DOPTIMAL=OFF')
 
@@ -130,11 +130,11 @@ def config_cmd():
 
     cmake_options.extend( cmake_platform_opts )
 
-    cmake_base_options = f"-DROCM_PATH={rocm_path} -DCMAKE_PREFIX_PATH:PATH={rocm_path}" 
+    cmake_base_options = f"-DROCM_PATH={rocm_path} -DCMAKE_PREFIX_PATH:PATH={rocm_path}"
     cmake_options.append( cmake_base_options )
 
     # packaging options
-    cmake_pack_options = f"-DCPACK_SET_DESTDIR=OFF" 
+    cmake_pack_options = f"-DCPACK_SET_DESTDIR=OFF"
     cmake_options.append( cmake_pack_options )
 
     if os.getenv('CMAKE_CXX_COMPILER_LAUNCHER'):
@@ -152,7 +152,7 @@ def config_cmd():
         build_path = os.path.join(build_dir, "debug")
         cmake_config="Debug"
 
-    cmake_options.append( f"-DCMAKE_BUILD_TYPE={cmake_config}" ) 
+    cmake_options.append( f"-DCMAKE_BUILD_TYPE={cmake_config}" )
 
     # clean
     delete_dir( build_path )
@@ -190,7 +190,7 @@ def config_cmd():
 
     cmake_options.append( f"{src_path}")
     cmd_opts = " ".join(cmake_options)
-    
+
     try:
         os.environ['HIP_DIR'] = cmake_path(os.environ['HIP_DIR'])
     except:
