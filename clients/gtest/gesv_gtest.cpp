@@ -56,7 +56,7 @@ const vector<int> large_matrix_sizeB_range = {
     100, 150, 200, 524, 1000,
 };
 
-Arguments gesv_setup_arguments(gesv_tuple tup)
+Arguments gesv_setup_arguments(gesv_tuple tup, bool outofplace)
 {
     vector<int> matrix_sizeA = std::get<0>(tup);
     int matrix_sizeB = std::get<1>(tup);
@@ -67,7 +67,9 @@ Arguments gesv_setup_arguments(gesv_tuple tup)
     arg.set<rocblas_int>("nrhs", matrix_sizeB);
     arg.set<rocblas_int>("lda", matrix_sizeA[1]);
     arg.set<rocblas_int>("ldb", matrix_sizeA[2]);
-    arg.set<rocblas_int>("ldx", matrix_sizeA[2]);
+
+    if(outofplace)
+        arg.set<rocblas_int>("ldx", matrix_sizeA[2]);
 
     // only testing standard use case/defaults for strides
 
@@ -87,7 +89,7 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = gesv_setup_arguments(GetParam());
+        Arguments arg = gesv_setup_arguments(GetParam(), false);
 
         if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nrhs") == 0)
             testing_gesv_bad_arg<BATCHED, STRIDED, T>();
@@ -111,7 +113,7 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = gesv_setup_arguments(GetParam());
+        Arguments arg = gesv_setup_arguments(GetParam(), true);
 
         if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nrhs") == 0)
             testing_gesv_outofplace_bad_arg<BATCHED, STRIDED, T>();
