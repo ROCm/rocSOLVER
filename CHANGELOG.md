@@ -14,7 +14,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Inverse of symmetric/hermitian positive definite matrices:
     - POTRI (with batched and strided\_batched versions)
 
-### Optimizations
+### Optimized
 
 ### Changed
 - Raised reference LAPACK version used for rocSOLVER test and benchmark clients to v3.9.1
@@ -57,7 +57,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Out-of-place general matrix inversion
     - GETRI\_OUTOFPLACE (with batched and strided\_batched versions)
 
-### Optimizations
+### Optimized
 - Improved general performance of matrix inversion (GETRI)
 
 ### Changed
@@ -118,7 +118,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - HETD2, HETRD (with batched and strided\_batched versions)
 - Sample code and unit test for unified memory model/Heterogeneous Memory Management (HMM)
 
-### Optimizations
+### Optimized
 - Improved performance of LU factorization of small and mid-size matrices (n <= 2048)
 
 ### Changed
@@ -161,7 +161,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - SVD of general matrices routines:
     - GESVD (with batched and strided\_batched versions)
 
-### Optimizations
+### Optimized
 - Improved performance of mid-size matrix inversion (64 < n <= 2048)
 
 
@@ -171,7 +171,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - LU factorization without pivoting routines:
     - GETF2\_NPVT, GETRF\_NPVT (with batched and strided\_batched versions)
 
-### Optimizations
+### Optimized
 - Improved performance of LU factorization of mid-size matrices (64 < n <= 2048)
 - Improved performance of small-size matrix inversion (n <= 64)
 
@@ -198,7 +198,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - GEBD2, GEBRD (with batched and strided\_batched versions)
 - Integration of rocSOLVER to hipBLAS
 
-### Optimizations
+### Optimized
 - Improved performance of LU factorization of tiny matrices (n <= 64)
 
 ### Changed
