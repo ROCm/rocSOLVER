@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -128,10 +129,10 @@ void print_device_matrix(std::ostream& os,
                          const rocblas_stride stride = 1,
                          const rocblas_int idx = 0)
 {
-    T hA[lda * n];
-    hipMemcpy(hA, A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+    std::vector<T> hA(lda * n);
+    hipMemcpy(hA.data(), A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
-    print_to_stream<T>(os, name, m, n, hA, lda);
+    print_to_stream<T>(os, name, m, n, hA.data(), lda);
 }
 
 /*! \brief Print data from a batched array on the GPU to screen*/
@@ -145,12 +146,12 @@ void print_device_matrix(std::ostream& os,
                          const rocblas_stride stride = 1,
                          const rocblas_int idx = 0)
 {
-    T hA[lda * n];
+    std::vector<T> hA(lda * n);
     T* AA[1];
     hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost);
-    hipMemcpy(hA, AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+    hipMemcpy(hA.data(), AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
-    print_to_stream<T>(os, name, m, n, hA, lda);
+    print_to_stream<T>(os, name, m, n, hA.data(), lda);
 }
 
 /*! \brief Print data from a normal or strided_batched array on the GPU to file*/
@@ -164,10 +165,10 @@ void print_device_matrix(const std::string file,
                          const rocblas_int idx = 0)
 {
     std::ofstream os(file);
-    T hA[lda * n];
-    hipMemcpy(hA, A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+    std::vector<T> hA(lda * n);
+    hipMemcpy(hA.data(), A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
-    print_to_stream<T>(os, "", m, n, hA, lda);
+    print_to_stream<T>(os, "", m, n, hA.data(), lda);
 }
 
 /*! \brief Print data from a batched array on the GPU to file*/
@@ -181,12 +182,12 @@ void print_device_matrix(const std::string file,
                          const rocblas_int idx = 0)
 {
     std::ofstream os(file);
-    T hA[lda * n];
+    std::vector<T> hA(lda * n);
     T* AA[1];
     hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost);
     hipMemcpy(hA, AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
-    print_to_stream<T>(os, "", m, n, hA, lda);
+    print_to_stream<T>(os, "", m, n, hA.data(), lda);
 }
 
 /*! \brief Print data from a normal or strided_batched array on the CPU to screen*/

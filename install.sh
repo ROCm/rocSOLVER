@@ -79,6 +79,8 @@ Options:
 
   -k | --relwithdebinfo       Pass this flag to build in release debug mode (equivalent to set CMAKE_BUILD_TYPE=RelWithDebInfo).
                               (Default build type is Release)
+
+  --cmake-arg <argument>      Forward the given argument to CMake when configuring the build.
 EOF
 }
 
@@ -331,7 +333,8 @@ build_codecoverage=false
 unset architecture
 unset rocblas_dir
 unset rocsolver_dir
-
+declare -a cmake_common_options
+declare -a cmake_client_options
 
 # #################################################
 # Parameter parsing
@@ -340,7 +343,7 @@ unset rocsolver_dir
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs,address-sanitizer --options hipcdgsrnka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs,address-sanitizer,cmake-arg: --options hipcdgsrnka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -424,9 +427,12 @@ while true; do
     -k|--relwithdebinfo)
         build_type=RelWithDebInfo
         shift ;;
+    --cmake-arg)
+        cmake_common_options+=("${2}")
+        shift 2 ;;
     --) shift ; break ;;
     *)
-        echo "Unexpected command line parameter received; aborting";
+        echo "Unexpected command line parameter received (${1}); aborting";
         exit 1
         ;;
   esac
@@ -494,8 +500,6 @@ fi
 # configure & build
 # #################################################
 pushd .
-cmake_common_options=""
-cmake_client_options=""
 
 mkdir -p "$build_dir"
 
@@ -528,38 +532,45 @@ else
   mkdir -p release && cd release
 fi
 
-cmake_common_options="${cmake_common_options} -DROCM_PATH=${rocm_path} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${lib_dir} -DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir} -DROCSOLVER_EMBED_FMT=ON -DCMAKE_BUILD_TYPE=${build_type}"
+cmake_common_options+=(
+  "-DROCM_PATH=${rocm_path}"
+  '-DCPACK_SET_DESTDIR=OFF'
+  "-DCMAKE_INSTALL_PREFIX=${lib_dir}"
+  "-DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir}"
+  '-DROCSOLVER_EMBED_FMT=ON'
+  "-DCMAKE_BUILD_TYPE=${build_type}"
+)
 
 if [[ -n "${rocblas_dir+x}" ]]; then
-  cmake_common_options="${cmake_common_options} -Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas"
+  cmake_common_options+=("-Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas")
 fi
 
 if [[ -n "${rocsolver_dir+x}" ]]; then
-  cmake_common_options="${cmake_common_options} -Drocsolver_DIR=${rocsolver_dir}/lib/cmake/rocsolver"
+  cmake_common_options+=("-Drocsolver_DIR=${rocsolver_dir}/lib/cmake/rocsolver")
 fi
 
 if [[ "${static_lib}" == true ]]; then
-  cmake_common_options="${cmake_common_options} -DBUILD_SHARED_LIBS=OFF"
+  cmake_common_options+=('-DBUILD_SHARED_LIBS=OFF')
 fi
 
 if [[ "${optimal}" == false ]]; then
-  cmake_common_options="${cmake_common_options} -DOPTIMAL=OFF"
+  cmake_common_options+=('-DOPTIMAL=OFF')
 fi
 
 if [[ -n "${architecture+x}" ]]; then
-  cmake_common_options="${cmake_common_options} -DAMDGPU_TARGETS=${architecture}"
+  cmake_common_options+=("-DAMDGPU_TARGETS=${architecture}")
 fi
 
 if [[ "${build_sanitizer}" == true ]]; then
-  cmake_common_options="${cmake_common_options} -DBUILD_ADDRESS_SANITIZER=ON"
+  cmake_common_options+=('-DBUILD_ADDRESS_SANITIZER=ON')
 fi
 
 if [[ "${build_clients}" == true ]]; then
-  cmake_client_options="${cmake_client_options} -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON -DBUILD_CLIENTS_SAMPLES=ON"
+  cmake_client_options+=('-DBUILD_CLIENTS_TESTS=ON' '-DBUILD_CLIENTS_BENCHMARKS=ON' '-DBUILD_CLIENTS_SAMPLES=ON')
 fi
 
 if [[ "${build_library}" == false ]]; then
-  cmake_client_options="${cmake_client_options} -DBUILD_LIBRARY=OFF"
+  cmake_client_options+=('-DBUILD_LIBRARY=OFF')
 fi
 
 rocm_rpath=""
@@ -568,13 +579,13 @@ if [[ "${build_relocatable}" == true ]]; then
     if ! [ -z ${ROCM_RPATH+x} ]; then
         rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath,${ROCM_RPATH}"
     fi
-    cmake_common_options="${cmake_common_options} -DROCM_DISABLE_LDCONFIG=ON"
+    cmake_common_options+=('-DROCM_DISABLE_LDCONFIG=ON')
 fi
 
 case "${ID}" in
   centos|rhel)
     if [[ ( "${VERSION_ID}" -ge 7 ) ]]; then
-      cmake_common_options="${cmake_common_options} -DCMAKE_FIND_ROOT_PATH=/usr/lib64/llvm7.0/lib/cmake/"
+      cmake_common_options+=('-DCMAKE_FIND_ROOT_PATH=/usr/lib64/llvm7.0/lib/cmake/')
     fi
     ;;
 esac
@@ -584,11 +595,11 @@ if [[ "${build_codecoverage}" == true ]]; then
         echo "Code coverage is chosen to be disabled in Release mode, to enable code coverage select either Debug mode (-g | --debug) or RelWithDebInfo mode (-k | --relwithdebinfo); aborting";
         exit 1
     fi
-    cmake_common_options="${cmake_common_options} -DBUILD_CODE_COVERAGE=ON"
+    cmake_common_options+=('-DBUILD_CODE_COVERAGE=ON')
 fi
 
 
-${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
+${cmake_executable} "${cmake_common_options[@]}" "${cmake_client_options[@]}" -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
 check_exit_code "$?"
 
 if [[ "${build_library}" == true ]]; then
