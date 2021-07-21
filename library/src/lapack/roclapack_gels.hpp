@@ -27,8 +27,8 @@ ROCSOLVER_KERNEL void gels_set_zero(const rocblas_int k1,
                                     const rocblas_int* info)
 {
     const auto b = hipBlockIdx_z;
-    const auto i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
-    const auto j = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
     if(i < k2 - k1 && j < nrhs && !info[b])
     {
@@ -268,8 +268,8 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                 workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
 
             // zero row n to m-1 of B in cases where info is zero
-            const rocblas_int zeroblocksy = (m - n - 1) / 32 + 1;
-            hipLaunchKernelGGL((gels_set_zero<T, U>), dim3(copyblocksx, zeroblocksy, batch_count),
+            const rocblas_int zeroblocksx = (m - n - 1) / 32 + 1;
+            hipLaunchKernelGGL((gels_set_zero<T, U>), dim3(zeroblocksx, copyblocksy, batch_count),
                                dim3(32, 32), 0, stream, n, m, nrhs, B, shiftB, ldb, strideB, info);
 
             rocsolver_ormqr_unmqr_template<BATCHED, STRIDED>(
@@ -311,8 +311,8 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                          diag_trfac_invA, trfact_workTrmm_invA_arr);
 
             // zero row m to n-1 of B in cases where info is zero
-            const rocblas_int zeroblocksy = (n - m - 1) / 32 + 1;
-            hipLaunchKernelGGL((gels_set_zero<T, U>), dim3(copyblocksx, zeroblocksy, batch_count),
+            const rocblas_int zeroblocksx = (n - m - 1) / 32 + 1;
+            hipLaunchKernelGGL((gels_set_zero<T, U>), dim3(zeroblocksx, copyblocksy, batch_count),
                                dim3(32, 32), 0, stream, m, n, nrhs, B, shiftB, ldb, strideB, info);
 
             rocsolver_ormlq_unmlq_template<BATCHED, STRIDED>(
