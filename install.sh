@@ -603,9 +603,9 @@ ${cmake_executable} "${cmake_common_options[@]}" "${cmake_client_options[@]}" -D
 check_exit_code "$?"
 
 if [[ "${build_library}" == true ]]; then
-  make -j$(nproc) install
+  ${cmake_executable} --build . -j$(nproc) --target install
 else
-  make -j$(nproc)
+  ${cmake_executable} --build . -j$(nproc)
 fi
 check_exit_code "$?"
 
