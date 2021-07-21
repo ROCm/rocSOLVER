@@ -18,6 +18,10 @@ endif()
 # ROCM_BUILD_ID is added to the package name by rocm-cmake. Unsetting it prevents that.
 unset(ENV{ROCM_BUILD_ID})
 
+# CMake v3.21.0 can identify ROCMClang, but there are some issues with feature detection.
+# For now, disable ROCMClang detection to make it work the same as CMake v3.20 and earlier.
+set(__skip_rocmclang ON)
+
 project(rocsolver LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
