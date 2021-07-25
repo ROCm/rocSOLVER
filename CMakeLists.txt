@@ -47,7 +47,7 @@ include(ROCMCreatePackage)
 include(ROCMInstallTargets)
 include(ROCMPackageConfigHelpers)
 include(ROCMInstallSymlinks)
-include(ROCMCheckTargetIds OPTIONAL) # rocm-4.4: Require ROCMCheckTargetIds
+include(ROCMCheckTargetIds)
 
 include(os-detection)
 get_os_id(OS_ID)
@@ -114,15 +114,13 @@ message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
 # Force library install path to lib (CentOS 7 defaults to lib64)
 set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for libraries" FORCE)
 
-# rocm-4.4: Require rocm_check_target_ids
-if(COMMAND rocm_check_target_ids)
-  # Query for compiler support of GPU archs
-  rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
-    TARGETS
-      gfx90a:xnack-
-      gfx90a:xnack+
-  )
-endif()
+# Query for compiler support of GPU archs
+rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
+  TARGETS
+    gfx90a:xnack-
+    gfx90a:xnack+
+)
+
 # Set this before finding hip so that hip::device has the required arch flags
 # added as usage requirements on its interface
 set(AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx1030;${OPTIONAL_AMDGPU_TARGETS}"
