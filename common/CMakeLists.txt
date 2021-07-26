@@ -32,3 +32,28 @@ if(WIN32)
     -Wno-unused-command-line-argument
   )
 endif()
+if(WERROR)
+  target_compile_options(rocsolver-common INTERFACE
+    -Werror=vla
+    -Werror=reorder
+    -Werror=return-type
+  )
+endif()
+if(BUILD_ADDRESS_SANITIZER)
+  target_compile_options(rocsolver-common INTERFACE
+    -fsanitize=address
+    -shared-libasan
+  )
+  target_link_options(rocsolver-common INTERFACE
+    -fsanitize=address
+    -shared-libasan
+    -fuse-ld=lld
+  )
+endif()
+if(BUILD_CODE_COVERAGE)
+  target_compile_options(rocsolver-common INTERFACE
+    -fprofile-arcs
+    -ftest-coverage
+  )
+  target_link_options(rocsolver-common INTERFACE --coverage)
+endif()

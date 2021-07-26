@@ -18,6 +18,10 @@ endif()
 # ROCM_BUILD_ID is added to the package name by rocm-cmake. Unsetting it prevents that.
 unset(ENV{ROCM_BUILD_ID})
 
+# CMake v3.21.0 can identify ROCMClang, but there are some issues with feature detection.
+# For now, disable ROCMClang detection to make it work the same as CMake v3.20 and earlier.
+set(__skip_rocmclang ON)
+
 project(rocsolver LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -94,18 +98,8 @@ option(BUILD_CLIENTS_TESTS "Build rocSOLVER unit tests" OFF)
 option(BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmarks" OFF)
 option(BUILD_CLIENTS_SAMPLES "Build rocSOLVER samples" OFF)
 option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
-
-if(BUILD_ADDRESS_SANITIZER)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -shared-libasan")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -shared-libasan")
-  add_link_options(-fuse-ld=lld)
-endif()
-
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
-if(BUILD_CODE_COVERAGE)
-  add_compile_options(-fprofile-arcs -ftest-coverage)
-  add_link_options(--coverage)
-endif()
+option(WERROR "Treat warnings as errors" OFF)
 
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")

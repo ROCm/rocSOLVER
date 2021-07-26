@@ -42,10 +42,10 @@ public:
     //! @param batch_count The batch count.
     //!
     explicit device_batch_vector(rocblas_int n, rocblas_int inc, rocblas_int batch_count)
-        : m_n(n)
+        : d_vector<T, PAD, U>(size_t(n) * std::abs(inc))
+        , m_n(n)
         , m_inc(inc)
         , m_batch_count(batch_count)
-        , d_vector<T, PAD, U>(size_t(n) * std::abs(inc))
     {
         if(false == this->try_initialize_memory())
         {

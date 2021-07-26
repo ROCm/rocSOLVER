@@ -17,6 +17,7 @@ def runCI =
     def prj = new rocProject('rocSOLVER', 'StaticLibrary')
 
     prj.timeout.compile = 600
+    prj.timeout.test = 45
     prj.defaults.ccache = true
 
     // customize for project
