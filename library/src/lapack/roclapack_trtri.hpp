@@ -495,8 +495,8 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
     if(diag == rocblas_diagonal_non_unit && blk > 0)
     {
         // save copy of A to restore it in cases where info is nonzero
-        hipLaunchKernelGGL((masked_copymat<T>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                           stream, copymat_to_buffer, n, n, A, shiftA, lda, strideA, tmpcopy, info);
+        hipLaunchKernelGGL((copy_mat<T>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
+                           stream, copymat_to_buffer, n, n, A, shiftA, lda, strideA, tmpcopy, info_mask(info));
     }
 
     if(blk == 0)
@@ -507,9 +507,9 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
                                                (T**)work2, workArr);
 
         // copy result to A if info is zero
-        hipLaunchKernelGGL((masked_copymat<T>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
+        hipLaunchKernelGGL((copy_mat<T>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
                            stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, tmpcopy,
-                           info, uplo, diag, true);
+                           info_mask(info, info_mask::negate), uplo, diag);
     }
 
     else if(blk == 1)
@@ -570,8 +570,8 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
     if(diag == rocblas_diagonal_non_unit && blk > 0)
     {
         // restore A in cases where info is nonzero
-        hipLaunchKernelGGL((masked_copymat<T>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                           stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, tmpcopy, info);
+        hipLaunchKernelGGL((copy_mat<T>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
+                           stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, tmpcopy, info_mask(info));
     }
 
     rocblas_set_pointer_mode(handle, old_mode);

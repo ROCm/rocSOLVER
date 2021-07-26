@@ -152,7 +152,7 @@ void local_gemm(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
     rocblas_int blocks = (n - 1) / 32 + 1;
     hipLaunchKernelGGL(copy_mat<T>, dim3(blocks, blocks, batch_count), dim3(32, 32), 0, stream,
-                       copymat_from_buffer, n, n, A, shiftA, lda, strideA, temp, rocblas_fill_full);
+                       copymat_from_buffer, n, n, A, shiftA, lda, strideA, temp);
 
     rocblas_set_pointer_mode(handle, old_mode);
 }

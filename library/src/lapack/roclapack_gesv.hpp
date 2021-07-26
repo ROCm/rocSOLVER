@@ -153,9 +153,9 @@ rocblas_status rocsolver_gesv_template(rocblas_handle handle,
         optim_mem);
 
     // save elements of B that will be overwritten by GETRS for cases where info is nonzero
-    hipLaunchKernelGGL(masked_copymat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),
+    hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),
                        0, stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb, strideB, (T*)work,
-                       info);
+                       info_mask(info));
 
     // solve AX = B, overwriting B with X
     rocsolver_getrs_template<BATCHED, T>(handle, rocblas_operation_none, n, nrhs, A, shiftA, lda,
@@ -163,9 +163,9 @@ rocblas_status rocsolver_gesv_template(rocblas_handle handle,
                                          batch_count, work1, work2, work3, work4, optim_mem);
 
     // restore elements of B that were overwritten by GETRS in cases where info is nonzero
-    hipLaunchKernelGGL(masked_copymat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),
+    hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),
                        0, stream, copymat_from_buffer, n, nrhs, B, shiftB, ldb, strideB, (T*)work,
-                       info);
+                       info_mask(info));
 
     return rocblas_status_success;
 }
