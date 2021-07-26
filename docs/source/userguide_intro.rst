@@ -145,6 +145,7 @@ LAPACK main functions
     :ref:`rocsolver_getri <getri>`, x, x, x, x
     :ref:`rocsolver_getrs <getrs>`, x, x, x, x
     :ref:`rocsolver_gesv <gesv>`, x, x, x, x
+    :ref:`rocsolver_potri <potri>`, x, x, x, x
     :ref:`rocsolver_potrs <potrs>`, x, x, x, x
     :ref:`rocsolver_posv <posv>`, x, x, x, x
 
