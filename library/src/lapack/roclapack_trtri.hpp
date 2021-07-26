@@ -314,7 +314,8 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
     {
         // save copy of A to restore it in cases where info is nonzero
         hipLaunchKernelGGL((copy_mat<T>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                           stream, copymat_to_buffer, n, n, A, shiftA, lda, strideA, tmpcopy, info_mask(info));
+                           stream, copymat_to_buffer, n, n, A, shiftA, lda, strideA, tmpcopy,
+                           info_mask(info));
     }
 
     if(blk == 0)
@@ -389,7 +390,8 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
     {
         // restore A in cases where info is nonzero
         hipLaunchKernelGGL((copy_mat<T>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                           stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, tmpcopy, info_mask(info));
+                           stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, tmpcopy,
+                           info_mask(info));
     }
 
     rocblas_set_pointer_mode(handle, old_mode);

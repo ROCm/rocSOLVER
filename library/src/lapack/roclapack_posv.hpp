@@ -147,8 +147,8 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
                                             pivots_savedB, iinfo, optim_mem);
 
     // save elements of B that will be overwritten by POTRS for cases where info is nonzero
-    hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                       dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb, strideB,
+    hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),
+                       0, stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb, strideB,
                        pivots_savedB, info_mask(info));
 
     // solve AX = B, overwriting B with X
@@ -157,9 +157,9 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
                                          optim_mem);
 
     // restore elements of B that were overwritten by POTRS in cases where info is nonzero
-    hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                       dim3(32, 32), 0, stream, copymat_from_buffer, n, nrhs, B, shiftB, ldb,
-                       strideB, pivots_savedB, info_mask(info));
+    hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),
+                       0, stream, copymat_from_buffer, n, nrhs, B, shiftB, ldb, strideB,
+                       pivots_savedB, info_mask(info));
 
     return rocblas_status_success;
 }

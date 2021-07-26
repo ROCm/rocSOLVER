@@ -164,8 +164,9 @@ rocblas_status rocsolver_gesv_outofplace_template(rocblas_handle handle,
                                          batch_count, work1, work2, work3, work4, optim_mem);
 
     // recopy B to X in cases where info is nonzero
-    hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),
-                       0, stream, n, nrhs, B, shiftB, ldb, strideB, X, shiftX, ldx, strideX, info_mask(info));
+    hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32), 0,
+                       stream, n, nrhs, B, shiftB, ldb, strideB, X, shiftX, ldx, strideX,
+                       info_mask(info));
 
     return rocblas_status_success;
 }
