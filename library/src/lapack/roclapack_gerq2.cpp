@@ -2,23 +2,23 @@
  * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "roclapack_geqlf.hpp"
+#include "roclapack_gerq2.hpp"
 
 template <typename T, typename U>
-rocblas_status rocsolver_geqlf_impl(rocblas_handle handle,
+rocblas_status rocsolver_gerq2_impl(rocblas_handle handle,
                                     const rocblas_int m,
                                     const rocblas_int n,
                                     U A,
                                     const rocblas_int lda,
                                     T* ipiv)
 {
-    ROCSOLVER_ENTER_TOP("geqlf", "-m", m, "-n", n, "--lda", lda);
+    ROCSOLVER_ENTER_TOP("gerq2", "-m", m, "-n", n, "--lda", lda);
 
     if(!handle)
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_geql2_geqlf_argCheck(handle, m, n, lda, A, ipiv);
+    rocblas_status st = rocsolver_gerq2_gerqf_argCheck(handle, m, n, lda, A, ipiv);
     if(st != rocblas_status_continue)
         return st;
 
@@ -34,39 +34,36 @@ rocblas_status rocsolver_geqlf_impl(rocblas_handle handle,
     // size for constants in rocblas calls
     size_t size_scalars;
     // size of arrays of pointers (for batched cases) and re-usable workspace
-    size_t size_work_workArr, size_workArr;
-    // extra requirements for calling GEQL2 and to store temporary triangular factor
-    size_t size_Abyx_norms_trfact;
-    // extra requirements for calling GEQL2 and LARFB
-    size_t size_diag_tmptr;
-    rocsolver_geqlf_getMemorySize<false, T>(m, n, batch_count, &size_scalars, &size_work_workArr,
-                                            &size_Abyx_norms_trfact, &size_diag_tmptr, &size_workArr);
+    size_t size_work_workArr;
+    // extra requirements for calling LARF and LARFG
+    size_t size_Abyx_norms;
+    // size of temporary array to store diagonal elements
+    size_t size_diag;
+    rocsolver_gerq2_getMemorySize<false, T>(m, n, batch_count, &size_scalars, &size_work_workArr,
+                                            &size_Abyx_norms, &size_diag);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_workArr,
-                                                      size_Abyx_norms_trfact, size_diag_tmptr,
-                                                      size_workArr);
+                                                      size_Abyx_norms, size_diag);
 
     // memory workspace allocation
-    void *scalars, *work_workArr, *Abyx_norms_trfact, *diag_tmptr, *workArr;
-    rocblas_device_malloc mem(handle, size_scalars, size_work_workArr, size_Abyx_norms_trfact,
-                              size_diag_tmptr, size_workArr);
+    void *scalars, *work_workArr, *Abyx_norms, *diag;
+    rocblas_device_malloc mem(handle, size_scalars, size_work_workArr, size_Abyx_norms, size_diag);
 
     if(!mem)
         return rocblas_status_memory_error;
 
     scalars = mem[0];
     work_workArr = mem[1];
-    Abyx_norms_trfact = mem[2];
-    diag_tmptr = mem[3];
-    workArr = mem[4];
+    Abyx_norms = mem[2];
+    diag = mem[3];
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_geqlf_template<false, false, T>(
-        handle, m, n, A, shiftA, lda, strideA, ipiv, stridep, batch_count, (T*)scalars,
-        work_workArr, (T*)Abyx_norms_trfact, (T*)diag_tmptr, (T**)workArr);
+    return rocsolver_gerq2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, stridep,
+                                       batch_count, (T*)scalars, work_workArr, (T*)Abyx_norms,
+                                       (T*)diag);
 }
 
 /*
@@ -77,44 +74,44 @@ rocblas_status rocsolver_geqlf_impl(rocblas_handle handle,
 
 extern "C" {
 
-rocblas_status rocsolver_sgeqlf(rocblas_handle handle,
+rocblas_status rocsolver_sgerq2(rocblas_handle handle,
                                 const rocblas_int m,
                                 const rocblas_int n,
                                 float* A,
                                 const rocblas_int lda,
                                 float* ipiv)
 {
-    return rocsolver_geqlf_impl<float>(handle, m, n, A, lda, ipiv);
+    return rocsolver_gerq2_impl<float>(handle, m, n, A, lda, ipiv);
 }
 
-rocblas_status rocsolver_dgeqlf(rocblas_handle handle,
+rocblas_status rocsolver_dgerq2(rocblas_handle handle,
                                 const rocblas_int m,
                                 const rocblas_int n,
                                 double* A,
                                 const rocblas_int lda,
                                 double* ipiv)
 {
-    return rocsolver_geqlf_impl<double>(handle, m, n, A, lda, ipiv);
+    return rocsolver_gerq2_impl<double>(handle, m, n, A, lda, ipiv);
 }
 
-rocblas_status rocsolver_cgeqlf(rocblas_handle handle,
+rocblas_status rocsolver_cgerq2(rocblas_handle handle,
                                 const rocblas_int m,
                                 const rocblas_int n,
                                 rocblas_float_complex* A,
                                 const rocblas_int lda,
                                 rocblas_float_complex* ipiv)
 {
-    return rocsolver_geqlf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv);
+    return rocsolver_gerq2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv);
 }
 
-rocblas_status rocsolver_zgeqlf(rocblas_handle handle,
+rocblas_status rocsolver_zgerq2(rocblas_handle handle,
                                 const rocblas_int m,
                                 const rocblas_int n,
                                 rocblas_double_complex* A,
                                 const rocblas_int lda,
                                 rocblas_double_complex* ipiv)
 {
-    return rocsolver_geqlf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv);
+    return rocsolver_gerq2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv);
 }
 
 } // extern C

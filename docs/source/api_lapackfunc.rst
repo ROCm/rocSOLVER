@@ -246,6 +246,70 @@ rocsolver_<type>geqrf_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgeqrf_strided_batched
 
+.. _gerq2:
+
+rocsolver_<type>gerq2()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgerq2
+   :outline:
+.. doxygenfunction:: rocsolver_cgerq2
+   :outline:
+.. doxygenfunction:: rocsolver_dgerq2
+   :outline:
+.. doxygenfunction:: rocsolver_sgerq2
+
+rocsolver_<type>gerq2_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgerq2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgerq2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgerq2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgerq2_batched
+
+rocsolver_<type>gerq2_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgerq2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgerq2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgerq2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgerq2_strided_batched
+
+.. _gerqf:
+
+rocsolver_<type>gerqf()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgerqf
+   :outline:
+.. doxygenfunction:: rocsolver_cgerqf
+   :outline:
+.. doxygenfunction:: rocsolver_dgerqf
+   :outline:
+.. doxygenfunction:: rocsolver_sgerqf
+
+rocsolver_<type>gerqf_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgerqf_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgerqf_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgerqf_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgerqf_batched
+
+rocsolver_<type>gerqf_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgerqf_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgerqf_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgerqf_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgerqf_strided_batched
+
 .. _geql2:
 
 rocsolver_<type>geql2()
