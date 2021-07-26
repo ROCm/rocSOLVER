@@ -135,6 +135,9 @@ void cblas_posv(rocblas_fill uplo,
                 rocblas_int* info);
 
 template <typename T>
+void cblas_potri(rocblas_fill uplo, rocblas_int n, T* A, rocblas_int lda, rocblas_int* info);
+
+template <typename T>
 void cblas_getf2(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, rocblas_int* ipiv, rocblas_int* info);
 
 template <typename T>

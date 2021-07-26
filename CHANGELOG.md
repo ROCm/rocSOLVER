@@ -2,9 +2,20 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## [(unreleased) rocSOLVER for ROCm 4.5.0]
+## [(Unreleased) rocSOLVER]
 ### Added
-### Optimizations
+- RQ factorization routines:
+    - GERQ2, GERQF (with batched and strided\_batched versions)
+- Linear solvers for general square systems:
+    - GESV (with batched and strided\_batched versions)
+- Linear solvers for symmetric/hermitian positive definite systems:
+    - POTRS (with batched and strided\_batched versions)
+    - POSV (with batched and strided\_batched versions)
+- Inverse of symmetric/hermitian positive definite matrices:
+    - POTRI (with batched and strided\_batched versions)
+
+### Optimized
+
 ### Changed
 - Raised reference LAPACK version used for rocSOLVER test and benchmark clients to v3.9.1
 - Minor CMake improvements for users building from source without install.sh:
@@ -12,8 +23,11 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - Enabled small-size optimizations by default
 
 ### Removed
+
 ### Fixed
+
 ### Known Issues
+
 
 ## [rocSOLVER 3.14.0 for ROCm 4.4.0]
 ### Added
@@ -43,7 +57,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Out-of-place general matrix inversion
     - GETRI\_OUTOFPLACE (with batched and strided\_batched versions)
 
-### Optimizations
+### Optimized
 - Improved general performance of matrix inversion (GETRI)
 
 ### Changed
@@ -104,7 +118,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - HETD2, HETRD (with batched and strided\_batched versions)
 - Sample code and unit test for unified memory model/Heterogeneous Memory Management (HMM)
 
-### Optimizations
+### Optimized
 - Improved performance of LU factorization of small and mid-size matrices (n <= 2048)
 
 ### Changed
@@ -147,7 +161,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - SVD of general matrices routines:
     - GESVD (with batched and strided\_batched versions)
 
-### Optimizations
+### Optimized
 - Improved performance of mid-size matrix inversion (64 < n <= 2048)
 
 
@@ -157,7 +171,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - LU factorization without pivoting routines:
     - GETF2\_NPVT, GETRF\_NPVT (with batched and strided\_batched versions)
 
-### Optimizations
+### Optimized
 - Improved performance of LU factorization of mid-size matrices (64 < n <= 2048)
 - Improved performance of small-size matrix inversion (n <= 64)
 
@@ -184,7 +198,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - GEBD2, GEBRD (with batched and strided\_batched versions)
 - Integration of rocSOLVER to hipBLAS
 
-### Optimizations
+### Optimized
 - Improved performance of LU factorization of tiny matrices (n <= 64)
 
 ### Changed

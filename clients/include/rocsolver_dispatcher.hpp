@@ -43,6 +43,7 @@
 #include "testing_ormxr_unmxr.hpp"
 #include "testing_posv.hpp"
 #include "testing_potf2_potrf.hpp"
+#include "testing_potri.hpp"
 #include "testing_potrs.hpp"
 #include "testing_stedc.hpp"
 #include "testing_steqr.hpp"
@@ -99,6 +100,10 @@ class rocsolver_dispatcher
             {"posv", testing_posv<false, false, T>},
             {"posv_batched", testing_posv<true, true, T>},
             {"posv_strided_batched", testing_posv<false, true, T>},
+            // potri
+            {"potri", testing_potri<false, false, T>},
+            {"potri_batched", testing_potri<true, true, T>},
+            {"potri_strided_batched", testing_potri<false, true, T>},
             // getrf_npvt
             {"getf2_npvt", testing_getf2_getrf_npvt<false, false, 0, T>},
             {"getf2_npvt_batched", testing_getf2_getrf_npvt<true, true, 0, T>},
