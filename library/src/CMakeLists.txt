@@ -52,6 +52,9 @@ set(rocsolver_lapack_source
   lapack/roclapack_geqr2.cpp
   lapack/roclapack_geqr2_batched.cpp
   lapack/roclapack_geqr2_strided_batched.cpp
+  lapack/roclapack_gerq2.cpp
+  lapack/roclapack_gerq2_batched.cpp
+  lapack/roclapack_gerq2_strided_batched.cpp
   lapack/roclapack_geql2.cpp
   lapack/roclapack_geql2_batched.cpp
   lapack/roclapack_geql2_strided_batched.cpp
@@ -62,6 +65,9 @@ set(rocsolver_lapack_source
   lapack/roclapack_geqrf_batched.cpp
   lapack/roclapack_geqrf_ptr_batched.cpp
   lapack/roclapack_geqrf_strided_batched.cpp
+  lapack/roclapack_gerqf.cpp
+  lapack/roclapack_gerqf_batched.cpp
+  lapack/roclapack_gerqf_strided_batched.cpp
   lapack/roclapack_geqlf.cpp
   lapack/roclapack_geqlf_batched.cpp
   lapack/roclapack_geqlf_strided_batched.cpp
