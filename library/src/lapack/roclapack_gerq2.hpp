@@ -16,7 +16,7 @@
 #include "rocsolver.h"
 
 template <bool BATCHED, typename T>
-void rocsolver_gelq2_getMemorySize(const rocblas_int m,
+void rocsolver_gerq2_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
                                    const rocblas_int batch_count,
                                    size_t* size_scalars,
@@ -48,7 +48,7 @@ void rocsolver_gelq2_getMemorySize(const rocblas_int m,
 }
 
 template <typename T, typename U>
-rocblas_status rocsolver_gelq2_gelqf_argCheck(rocblas_handle handle,
+rocblas_status rocsolver_gerq2_gerqf_argCheck(rocblas_handle handle,
                                               const rocblas_int m,
                                               const rocblas_int n,
                                               const rocblas_int lda,
@@ -77,7 +77,7 @@ rocblas_status rocsolver_gelq2_gelqf_argCheck(rocblas_handle handle,
 }
 
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
-rocblas_status rocsolver_gelq2_template(rocblas_handle handle,
+rocblas_status rocsolver_gerq2_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,
                                         U A,
@@ -92,8 +92,7 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle,
                                         T* Abyx_norms,
                                         T* diag)
 {
-    ROCSOLVER_ENTER("gelq2", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "bc:", batch_count);
-
+    ROCSOLVER_ENTER("gerq2", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "bc:", batch_count);
     // quick return
     if(m == 0 || n == 0 || batch_count == 0)
         return rocblas_status_success;
@@ -107,35 +106,36 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle,
     {
         // conjugate the jth row of A
         if(COMPLEX)
-            rocsolver_lacgv_template<T>(handle, n - j, A, shiftA + idx2D(j, j, lda), lda, strideA,
-                                        batch_count);
+            rocsolver_lacgv_template<T>(handle, n - j, A, shiftA + idx2D(m - j - 1, 0, lda), lda,
+                                        strideA, batch_count);
 
         // generate Householder reflector to work on row j
-        rocsolver_larfg_template(handle, n - j, A, shiftA + idx2D(j, j, lda), A,
-                                 shiftA + idx2D(j, min(j + 1, n - 1), lda), lda, strideA,
-                                 (ipiv + j), strideP, batch_count, (T*)work_workArr, Abyx_norms);
+        rocsolver_larfg_template(handle, n - j, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), A,
+                                 shiftA + idx2D(m - j - 1, 0, lda), lda, strideA,
+                                 (ipiv + dim - j - 1), strideP, batch_count, (T*)work_workArr,
+                                 Abyx_norms);
 
         // insert one in A(j,j) tobuild/apply the householder matrix
         hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag, 0,
-                           1, A, shiftA + idx2D(j, j, lda), lda, strideA, 1, true);
+                           1, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), lda, strideA, 1, true);
 
         // Apply Householder reflector to the rest of matrix from the right
         if(j < m - 1)
         {
             rocsolver_larf_template(handle, rocblas_side_right, m - j - 1, n - j, A,
-                                    shiftA + idx2D(j, j, lda), lda, strideA, (ipiv + j), strideP, A,
-                                    shiftA + idx2D(j + 1, j, lda), lda, strideA, batch_count,
-                                    scalars, Abyx_norms, (T**)work_workArr);
+                                    shiftA + idx2D(m - j - 1, 0, lda), lda, strideA,
+                                    (ipiv + dim - j - 1), strideP, A, shiftA, lda, strideA,
+                                    batch_count, scalars, Abyx_norms, (T**)work_workArr);
         }
 
         // restore original value of A(j,j)
         hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag,
-                           0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA, 1);
+                           0, 1, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), lda, strideA, 1);
 
         // restore the jth row of A
         if(COMPLEX)
-            rocsolver_lacgv_template<T>(handle, n - j, A, shiftA + idx2D(j, j, lda), lda, strideA,
-                                        batch_count);
+            rocsolver_lacgv_template<T>(handle, n - j - 1, A, shiftA + idx2D(m - j - 1, 0, lda),
+                                        lda, strideA, batch_count);
     }
 
     return rocblas_status_success;

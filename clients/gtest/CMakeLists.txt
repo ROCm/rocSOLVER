@@ -20,6 +20,7 @@ set(roclapack_test_source
   potf2_potrf_gtest.cpp
   # orthogonal factorizations
   geqr2_geqrf_gtest.cpp
+  gerq2_gerqf_gtest.cpp
   geql2_geqlf_gtest.cpp
   gelq2_gelqf_gtest.cpp
   # problem and matrix reductions (diagonalizations)

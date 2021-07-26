@@ -1239,13 +1239,10 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
 }
 
 // symv/hemv memory sizes
-template <bool BATCHED, typename T, bool COMPLEX = is_complex<T>>
+template <bool BATCHED, typename T>
 void rocblasCall_symv_hemv_mem(rocblas_int n, rocblas_int batch_count, size_t* w_temp)
 {
-    if(!COMPLEX)
-        *w_temp = 0;
-    else
-        *w_temp = rocblas_internal_hemv_kernel_workspace_size<T>(n, batch_count);
+    *w_temp = rocblas_internal_hemv_symv_kernel_workspace_size<T>(n, batch_count);
 }
 
 // symv
@@ -1277,10 +1274,10 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
     ROCBLAS_ENTER("symv", "uplo:", uplo, "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftX:", offsetx,
                   "incx:", incx, "shiftY:", offsety, "incy:", incy, "bc:", batch_count);
 
-    return rocblas_internal_symv_template<T>(
+    return rocblas_internal_hemv_symv_template<false, T>(
         handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb, y,
-        offsety, incy, stridey, batch_count);
+        offsety, incy, stridey, batch_count, work);
 }
 
 // symv overload
@@ -1319,10 +1316,10 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, y, stridey,
                        batch_count);
 
-    return rocblas_internal_symv_template<T>(
+    return rocblas_internal_hemv_symv_template<false, T>(
         handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb,
-        cast2constPointer<T>(workArr), offsety, incy, stridey, batch_count);
+        cast2constPointer<T>(workArr), offsety, incy, stridey, batch_count, work);
 }
 
 // hemv
@@ -1354,7 +1351,7 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
     ROCBLAS_ENTER("hemv", "uplo:", uplo, "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftX:", offsetx,
                   "incx:", incx, "shiftY:", offsety, "incy:", incy, "bc:", batch_count);
 
-    return rocblas_internal_hemv_template<T>(
+    return rocblas_internal_hemv_symv_template<true, T>(
         handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb, y,
         offsety, incy, stridey, batch_count, work);
@@ -1396,7 +1393,7 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, y, stridey,
                        batch_count);
 
-    return rocblas_internal_hemv_template<T>(
+    return rocblas_internal_hemv_symv_template<true, T>(
         handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(x), offsetx, incx, stridex, cast2constType<T>(beta), strideb,
         cast2constPointer<T>(workArr), offsety, incy, stridey, batch_count, work);
@@ -1542,59 +1539,13 @@ void rocblasCall_trsm_mem(rocblas_side side,
                           size_t* invA,
                           size_t* invA_arr)
 {
-    const rocblas_int BLOCK = ROCBLAS_TRSM_BLOCK;
-    rocblas_int k = (side == rocblas_side_left) ? m : n;
-    const bool exact_blocks = (k % BLOCK) == 0;
-    size_t invA_els = k * BLOCK;
-    size_t invA_bytes = invA_els * sizeof(T) * batch_count;
-    size_t c_temp_els = (k / BLOCK) * ((BLOCK / 2) * (BLOCK / 2));
-    size_t c_temp_bytes = c_temp_els * sizeof(T);
+    size_t no_opt_size;
+    /** TODO: For now, we always request the size for optimal performance.
+        no_opt_size could be used in the future if we generalize the use of
+        rocblas_workmode parameter **/
 
-    size_t arrBytes = BATCHED ? sizeof(T*) * batch_count : 0;
-    size_t xarrBytes = BATCHED ? sizeof(T*) * batch_count : 0;
-
-    if(!exact_blocks)
-    {
-        // TODO: Make this more accurate -- right now it's much larger than
-        // necessary
-        size_t remainder_els = ROCBLAS_TRTRI_NB * BLOCK * 2;
-
-        // C is the maximum of the temporary space needed for TRTRI
-        c_temp_els = std::max(c_temp_els, remainder_els);
-        c_temp_bytes = c_temp_els * sizeof(T);
-    }
-
-    // Chunk size for special algorithm
-    size_t B_chunk_size = 0;
-
-    // Temporary solution matrix
-    size_t x_temp_els;
-    size_t x_temp_bytes;
-
-    if(exact_blocks)
-    {
-        // Optimal B_chunk_size is the orthogonal dimension to k
-        B_chunk_size = size_t(m) + size_t(n) - size_t(k);
-
-        // When k % BLOCK == 0, we only need BLOCK * B_chunk_size space
-        x_temp_els = BLOCK * B_chunk_size;
-        x_temp_bytes = x_temp_els * sizeof(T) * batch_count;
-    }
-    else
-    {
-        // When k % BLOCK != 0, we need m * n space
-        x_temp_els = size_t(m) * n;
-        x_temp_bytes = x_temp_els * sizeof(T) * batch_count;
-    }
-
-    // X and C temporaries can share space, so the maximum size is allocated
-    size_t x_c_temp_bytes = std::max(x_temp_bytes, c_temp_bytes);
-
-    // return required memory sizes
-    *x_temp = x_c_temp_bytes;
-    *x_temp_arr = xarrBytes;
-    *invA = invA_bytes;
-    *invA_arr = arrBytes;
+    rocblas_internal_trsm_workspace_size<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
+        side, m, n, batch_count, 0, x_temp, x_temp_arr, invA, invA_arr, &no_opt_size);
 }
 
 // trsm
