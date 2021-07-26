@@ -585,12 +585,12 @@ void testing_bdsqr(Arguments& argus)
     }
 
     // validate results for rocsolver-test
-    // using n * machine_precision as tolerance
+    // using 2 * n * machine_precision as tolerance
     if(argus.unit_check)
     {
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+        ROCSOLVER_TEST_CHECK(T, max_error, 2 * n);
         if(nv || nu || nc)
-            ROCSOLVER_TEST_CHECK(T, max_errorv, n);
+            ROCSOLVER_TEST_CHECK(T, max_errorv, 2 * n);
     }
 
     // output results for rocsolver-bench
