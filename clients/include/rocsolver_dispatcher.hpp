@@ -15,6 +15,7 @@
 #include "testing_gels.hpp"
 #include "testing_geql2_geqlf.hpp"
 #include "testing_geqr2_geqrf.hpp"
+#include "testing_gerq2_gerqf.hpp"
 #include "testing_gesv.hpp"
 #include "testing_gesvd.hpp"
 #include "testing_getf2_getrf.hpp"
@@ -42,6 +43,7 @@
 #include "testing_ormxr_unmxr.hpp"
 #include "testing_posv.hpp"
 #include "testing_potf2_potrf.hpp"
+#include "testing_potri.hpp"
 #include "testing_potrs.hpp"
 #include "testing_stedc.hpp"
 #include "testing_steqr.hpp"
@@ -98,6 +100,10 @@ class rocsolver_dispatcher
             {"posv", testing_posv<false, false, T>},
             {"posv_batched", testing_posv<true, true, T>},
             {"posv_strided_batched", testing_posv<false, true, T>},
+            // potri
+            {"potri", testing_potri<false, false, T>},
+            {"potri_batched", testing_potri<true, true, T>},
+            {"potri_strided_batched", testing_potri<false, true, T>},
             // getrf_npvt
             {"getf2_npvt", testing_getf2_getrf_npvt<false, false, 0, T>},
             {"getf2_npvt_batched", testing_getf2_getrf_npvt<true, true, 0, T>},
@@ -120,6 +126,13 @@ class rocsolver_dispatcher
             {"geqrf_batched", testing_geqr2_geqrf<true, true, 1, T>},
             {"geqrf_strided_batched", testing_geqr2_geqrf<false, true, 1, T>},
             {"geqrf_ptr_batched", testing_geqr2_geqrf<true, false, 1, T>},
+            // gerqf
+            {"gerq2", testing_gerq2_gerqf<false, false, 0, T>},
+            {"gerq2_batched", testing_gerq2_gerqf<true, true, 0, T>},
+            {"gerq2_strided_batched", testing_gerq2_gerqf<false, true, 0, T>},
+            {"gerqf", testing_gerq2_gerqf<false, false, 1, T>},
+            {"gerqf_batched", testing_gerq2_gerqf<true, true, 1, T>},
+            {"gerqf_strided_batched", testing_gerq2_gerqf<false, true, 1, T>},
             // geqlf
             {"geql2", testing_geql2_geqlf<false, false, 0, T>},
             {"geql2_batched", testing_geql2_geqlf<true, true, 0, T>},

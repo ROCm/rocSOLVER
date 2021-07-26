@@ -11,6 +11,7 @@ set(roclapack_test_source
   gesv_gtest.cpp
   potrs_gtest.cpp
   posv_gtest.cpp
+  potri_gtest.cpp
   trtri_gtest.cpp
   # least squares solvers
   gels_gtest.cpp
@@ -19,6 +20,7 @@ set(roclapack_test_source
   potf2_potrf_gtest.cpp
   # orthogonal factorizations
   geqr2_geqrf_gtest.cpp
+  gerq2_gerqf_gtest.cpp
   geql2_geqlf_gtest.cpp
   gelq2_gelqf_gtest.cpp
   # problem and matrix reductions (diagonalizations)

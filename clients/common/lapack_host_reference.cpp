@@ -118,6 +118,11 @@ void dgetrf_(int* m, int* n, double* A, int* lda, int* ipiv, int* info);
 void cgetrf_(int* m, int* n, rocblas_float_complex* A, int* lda, int* ipiv, int* info);
 void zgetrf_(int* m, int* n, rocblas_double_complex* A, int* lda, int* ipiv, int* info);
 
+void spotf2_(char* uplo, int* n, float* A, int* lda, int* info);
+void dpotf2_(char* uplo, int* n, double* A, int* lda, int* info);
+void cpotf2_(char* uplo, int* n, rocblas_float_complex* A, int* lda, int* info);
+void zpotf2_(char* uplo, int* n, rocblas_double_complex* A, int* lda, int* info);
+
 void spotrf_(char* uplo, int* n, float* A, int* lda, int* info);
 void dpotrf_(char* uplo, int* n, double* A, int* lda, int* info);
 void cpotrf_(char* uplo, int* n, rocblas_float_complex* A, int* lda, int* info);
@@ -161,10 +166,10 @@ void zposv_(char* uplo,
             int* ldb,
             int* info);
 
-void spotf2_(char* uplo, int* n, float* A, int* lda, int* info);
-void dpotf2_(char* uplo, int* n, double* A, int* lda, int* info);
-void cpotf2_(char* uplo, int* n, rocblas_float_complex* A, int* lda, int* info);
-void zpotf2_(char* uplo, int* n, rocblas_double_complex* A, int* lda, int* info);
+void spotri_(char* uplo, int* n, float* A, int* lda, int* info);
+void dpotri_(char* uplo, int* n, double* A, int* lda, int* info);
+void cpotri_(char* uplo, int* n, rocblas_float_complex* A, int* lda, int* info);
+void zpotri_(char* uplo, int* n, rocblas_double_complex* A, int* lda, int* info);
 
 void sgetf2_(int* m, int* n, float* A, int* lda, int* ipiv, int* info);
 void dgetf2_(int* m, int* n, double* A, int* lda, int* ipiv, int* info);
@@ -581,6 +586,42 @@ void zgeqrf_(int* m,
              int* lwork,
              int* info);
 
+void sgerq2_(int* m, int* n, float* A, int* lda, float* ipiv, float* work, int* info);
+void dgerq2_(int* m, int* n, double* A, int* lda, double* ipiv, double* work, int* info);
+void cgerq2_(int* m,
+             int* n,
+             rocblas_float_complex* A,
+             int* lda,
+             rocblas_float_complex* ipiv,
+             rocblas_float_complex* work,
+             int* info);
+void zgerq2_(int* m,
+             int* n,
+             rocblas_double_complex* A,
+             int* lda,
+             rocblas_double_complex* ipiv,
+             rocblas_double_complex* work,
+             int* info);
+
+void sgerqf_(int* m, int* n, float* A, int* lda, float* ipiv, float* work, int* lwork, int* info);
+void dgerqf_(int* m, int* n, double* A, int* lda, double* ipiv, double* work, int* lwork, int* info);
+void cgerqf_(int* m,
+             int* n,
+             rocblas_float_complex* A,
+             int* lda,
+             rocblas_float_complex* ipiv,
+             rocblas_float_complex* work,
+             int* lwork,
+             int* info);
+void zgerqf_(int* m,
+             int* n,
+             rocblas_double_complex* A,
+             int* lda,
+             rocblas_double_complex* ipiv,
+             rocblas_double_complex* work,
+             int* lwork,
+             int* info);
+
 void sgeql2_(int* m, int* n, float* A, int* lda, float* ipiv, float* work, int* info);
 void dgeql2_(int* m, int* n, double* A, int* lda, double* ipiv, double* work, int* info);
 void cgeql2_(int* m,
@@ -645,42 +686,6 @@ void cgelqf_(int* m,
              int* lwork,
              int* info);
 void zgelqf_(int* m,
-             int* n,
-             rocblas_double_complex* A,
-             int* lda,
-             rocblas_double_complex* ipiv,
-             rocblas_double_complex* work,
-             int* lwork,
-             int* info);
-
-void sgerq2_(int* m, int* n, float* A, int* lda, float* ipiv, float* work, int* info);
-void dgerq2_(int* m, int* n, double* A, int* lda, double* ipiv, double* work, int* info);
-void cgerq2_(int* m,
-             int* n,
-             rocblas_float_complex* A,
-             int* lda,
-             rocblas_float_complex* ipiv,
-             rocblas_float_complex* work,
-             int* info);
-void zgerq2_(int* m,
-             int* n,
-             rocblas_double_complex* A,
-             int* lda,
-             rocblas_double_complex* ipiv,
-             rocblas_double_complex* work,
-             int* info);
-
-void sgerqf_(int* m, int* n, float* A, int* lda, float* ipiv, float* work, int* lwork, int* info);
-void dgerqf_(int* m, int* n, double* A, int* lda, double* ipiv, double* work, int* lwork, int* info);
-void cgerqf_(int* m,
-             int* n,
-             rocblas_float_complex* A,
-             int* lda,
-             rocblas_float_complex* ipiv,
-             rocblas_float_complex* work,
-             int* lwork,
-             int* info);
-void zgerqf_(int* m,
              int* n,
              rocblas_double_complex* A,
              int* lda,
@@ -4420,6 +4425,43 @@ void cblas_posv(rocblas_fill uplo,
     zposv_(&uploC, &n, &nrhs, A, &lda, B, &ldb, info);
 }
 
+// potri
+template <>
+void cblas_potri(rocblas_fill uplo, rocblas_int n, float* A, rocblas_int lda, rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    spotri_(&uploC, &n, A, &lda, info);
+}
+
+template <>
+void cblas_potri(rocblas_fill uplo, rocblas_int n, double* A, rocblas_int lda, rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    dpotri_(&uploC, &n, A, &lda, info);
+}
+
+template <>
+void cblas_potri(rocblas_fill uplo,
+                 rocblas_int n,
+                 rocblas_float_complex* A,
+                 rocblas_int lda,
+                 rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    cpotri_(&uploC, &n, A, &lda, info);
+}
+
+template <>
+void cblas_potri(rocblas_fill uplo,
+                 rocblas_int n,
+                 rocblas_double_complex* A,
+                 rocblas_int lda,
+                 rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    zpotri_(&uploC, &n, A, &lda, info);
+}
+
 // getf2
 template <>
 void cblas_getf2(rocblas_int m,
@@ -4976,6 +5018,103 @@ void cblas_geqr2<rocblas_double_complex>(rocblas_int m,
     zgeqr2_(&m, &n, A, &lda, ipiv, work, &info);
 }
 
+// gerqf
+template <>
+void cblas_gerqf<float>(rocblas_int m,
+                        rocblas_int n,
+                        float* A,
+                        rocblas_int lda,
+                        float* ipiv,
+                        float* work,
+                        rocblas_int lwork)
+{
+    int info;
+    sgerqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_gerqf<double>(rocblas_int m,
+                         rocblas_int n,
+                         double* A,
+                         rocblas_int lda,
+                         double* ipiv,
+                         double* work,
+                         rocblas_int lwork)
+{
+    int info;
+    dgerqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_gerqf<rocblas_float_complex>(rocblas_int m,
+                                        rocblas_int n,
+                                        rocblas_float_complex* A,
+                                        rocblas_int lda,
+                                        rocblas_float_complex* ipiv,
+                                        rocblas_float_complex* work,
+                                        rocblas_int lwork)
+{
+    int info;
+    cgerqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+template <>
+void cblas_gerqf<rocblas_double_complex>(rocblas_int m,
+                                         rocblas_int n,
+                                         rocblas_double_complex* A,
+                                         rocblas_int lda,
+                                         rocblas_double_complex* ipiv,
+                                         rocblas_double_complex* work,
+                                         rocblas_int lwork)
+{
+    int info;
+    zgerqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
+}
+
+// gerq2
+template <>
+void cblas_gerq2<float>(rocblas_int m, rocblas_int n, float* A, rocblas_int lda, float* ipiv, float* work)
+{
+    int info;
+    sgerq2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_gerq2<double>(rocblas_int m,
+                         rocblas_int n,
+                         double* A,
+                         rocblas_int lda,
+                         double* ipiv,
+                         double* work)
+{
+    int info;
+    dgerq2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_gerq2<rocblas_float_complex>(rocblas_int m,
+                                        rocblas_int n,
+                                        rocblas_float_complex* A,
+                                        rocblas_int lda,
+                                        rocblas_float_complex* ipiv,
+                                        rocblas_float_complex* work)
+{
+    int info;
+    cgerq2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
+template <>
+void cblas_gerq2<rocblas_double_complex>(rocblas_int m,
+                                         rocblas_int n,
+                                         rocblas_double_complex* A,
+                                         rocblas_int lda,
+                                         rocblas_double_complex* ipiv,
+                                         rocblas_double_complex* work)
+{
+    int info;
+    zgerq2_(&m, &n, A, &lda, ipiv, work, &info);
+}
+
 // geqlf
 template <>
 void cblas_geqlf<float>(rocblas_int m,
@@ -5168,103 +5307,6 @@ void cblas_gelq2<rocblas_double_complex>(rocblas_int m,
 {
     int info;
     zgelq2_(&m, &n, A, &lda, ipiv, work, &info);
-}
-
-// gerqf
-template <>
-void cblas_gerqf<float>(rocblas_int m,
-                        rocblas_int n,
-                        float* A,
-                        rocblas_int lda,
-                        float* ipiv,
-                        float* work,
-                        rocblas_int lwork)
-{
-    int info;
-    sgerqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
-}
-
-template <>
-void cblas_gerqf<double>(rocblas_int m,
-                         rocblas_int n,
-                         double* A,
-                         rocblas_int lda,
-                         double* ipiv,
-                         double* work,
-                         rocblas_int lwork)
-{
-    int info;
-    dgerqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
-}
-
-template <>
-void cblas_gerqf<rocblas_float_complex>(rocblas_int m,
-                                        rocblas_int n,
-                                        rocblas_float_complex* A,
-                                        rocblas_int lda,
-                                        rocblas_float_complex* ipiv,
-                                        rocblas_float_complex* work,
-                                        rocblas_int lwork)
-{
-    int info;
-    cgerqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
-}
-
-template <>
-void cblas_gerqf<rocblas_double_complex>(rocblas_int m,
-                                         rocblas_int n,
-                                         rocblas_double_complex* A,
-                                         rocblas_int lda,
-                                         rocblas_double_complex* ipiv,
-                                         rocblas_double_complex* work,
-                                         rocblas_int lwork)
-{
-    int info;
-    zgerqf_(&m, &n, A, &lda, ipiv, work, &lwork, &info);
-}
-
-// gerq2
-template <>
-void cblas_gerq2<float>(rocblas_int m, rocblas_int n, float* A, rocblas_int lda, float* ipiv, float* work)
-{
-    int info;
-    sgerq2_(&m, &n, A, &lda, ipiv, work, &info);
-}
-
-template <>
-void cblas_gerq2<double>(rocblas_int m,
-                         rocblas_int n,
-                         double* A,
-                         rocblas_int lda,
-                         double* ipiv,
-                         double* work)
-{
-    int info;
-    dgerq2_(&m, &n, A, &lda, ipiv, work, &info);
-}
-
-template <>
-void cblas_gerq2<rocblas_float_complex>(rocblas_int m,
-                                        rocblas_int n,
-                                        rocblas_float_complex* A,
-                                        rocblas_int lda,
-                                        rocblas_float_complex* ipiv,
-                                        rocblas_float_complex* work)
-{
-    int info;
-    cgerq2_(&m, &n, A, &lda, ipiv, work, &info);
-}
-
-template <>
-void cblas_gerq2<rocblas_double_complex>(rocblas_int m,
-                                         rocblas_int n,
-                                         rocblas_double_complex* A,
-                                         rocblas_int lda,
-                                         rocblas_double_complex* ipiv,
-                                         rocblas_double_complex* work)
-{
-    int info;
-    zgerq2_(&m, &n, A, &lda, ipiv, work, &info);
 }
 
 // gebd2

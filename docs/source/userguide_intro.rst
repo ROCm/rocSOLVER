@@ -117,6 +117,8 @@ LAPACK main functions
 
     :ref:`rocsolver_geqr2 <geqr2>`, x, x, x, x
     :ref:`rocsolver_geqrf <geqrf>`, x, x, x, x
+    :ref:`rocsolver_gerq2 <gerq2>`, x, x, x, x
+    :ref:`rocsolver_gerqf <gerqf>`, x, x, x, x
     :ref:`rocsolver_gelq2 <gelq2>`, x, x, x, x
     :ref:`rocsolver_gelqf <gelqf>`, x, x, x, x
     :ref:`rocsolver_geql2 <geql2>`, x, x, x, x
@@ -143,6 +145,7 @@ LAPACK main functions
     :ref:`rocsolver_getri <getri>`, x, x, x, x
     :ref:`rocsolver_getrs <getrs>`, x, x, x, x
     :ref:`rocsolver_gesv <gesv>`, x, x, x, x
+    :ref:`rocsolver_potri <potri>`, x, x, x, x
     :ref:`rocsolver_potrs <potrs>`, x, x, x, x
     :ref:`rocsolver_posv <posv>`, x, x, x, x
 
