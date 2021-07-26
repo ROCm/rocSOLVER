@@ -111,7 +111,7 @@ rocblas_status rocsolver_potri_template(rocblas_handle handle,
         return rocblas_status_success;
     }
 
-    // compute inverse of U (also check singularity and update info)
+    // compute inverse of U or L (also check singularity and update info)
     rocsolver_trtri_template<BATCHED, STRIDED, T>(handle, uplo, rocblas_diagonal_non_unit, n, A,
                                                   shiftA, lda, strideA, info, batch_count, work1,
                                                   work2, work3, work4, tmpcopy, workArr, optim_mem);

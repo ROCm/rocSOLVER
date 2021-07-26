@@ -31,10 +31,8 @@ rocblas_status rocsolver_potri_batched_impl(rocblas_handle handle,
     rocblas_stride strideA = 0;
 
     // memory workspace sizes:
-    // size of reusable workspace (for calling TRSM)
-    size_t size_work1, size_work2, size_work3, size_work4;
     // extra requirements for calling TRTRI
-    size_t size_tmpcopy;
+    size_t size_work1, size_work2, size_work3, size_work4, size_tmpcopy;
     // size of arrays of pointers (for batched cases)
     size_t size_workArr;
     rocsolver_potri_getMemorySize<true, false, T>(n, batch_count, &size_work1, &size_work2,

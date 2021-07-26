@@ -9700,7 +9700,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zposv_strided_batched(rocblas_handle h
 //! @}
 
 /*! @{
-    \brief POTRI computes the inverse \f$C = A^{-1}\f$ of a symmetric/hermitian positive definite matrix A.
+    \brief POTRI inverts a symmetric/hermitian positive definite matrix A.
 
     \details
     The inverse of matrix \f$A\f$ is computed as
@@ -9728,13 +9728,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zposv_strided_batched(rocblas_handle h
     A         pointer to type. Array on the GPU of dimension lda*n.\n
               On entry, the factor L or U of the Cholesky factorization of A returned by
               \ref rocsolver_spotrf "POTRF".
-              On exit, the inverses of A if info = 0; otherwise undefined.
+              On exit, the inverses of A if info = 0.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               specifies the leading dimension of A.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit for inversion of A_i.
+              If info = 0, successful exit for inversion of A.
               If info = j > 0, A is singular. L[j,j] or U[j,j] is zero.
     ********************************************************************/
 
@@ -9768,8 +9768,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief POTRI_BATCHED computes the inverse \f$C = A_i^{-1}\f$ of a batch of symmetric/hermitian
-    positive definite matrices \f$A_i\f$.
+    \brief POTRI_BATCHED inverts a batch of symmetric/hermitian positive definite matrices \f$A_i\f$.
 
     \details
     The inverse of matrix \f$A_i\f$ in the batch is computed as
@@ -9797,7 +9796,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri(rocblas_handle handle,
     A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
               On entry, the factor L_i or U_i of the Cholesky factorization of A_i returned by
               \ref rocsolver_spotrf_batched "POTRF_BATCHED".
-              On exit, the inverses of A_i if info[i] = 0; otherwise undefined.
+              On exit, the inverses of A_i if info[i] = 0.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               specifies the leading dimension of A_i.
@@ -9844,8 +9843,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_batched(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief POTRI_STRIDED_BATCHED computes the inverse \f$C = A_i^{-1}\f$ of a batch of symmetric/hermitian
-    positive definite matrices \f$A_i\f$.
+    \brief POTRI_STRIDED_BATCHED inverts a batch of symmetric/hermitian positive definite matrices \f$A_i\f$.
 
     \details
     The inverse of matrix \f$A_i\f$ in the batch is computed as
@@ -9873,7 +9871,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_batched(rocblas_handle handle,
     A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
               On entry, the factor L_i or U_i of the Cholesky factorization of A_i returned by
               \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
-              On exit, the inverses of A_i if info[i] = 0; otherwise undefined.
+              On exit, the inverses of A_i if info[i] = 0.
     @param[in]
     lda       rocblas_int. lda >= n.\n
               specifies the leading dimension of A_i.

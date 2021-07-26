@@ -2,7 +2,7 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## [(Unreleased) rocSOLVER for ROCm 4.5.0]
+## [(Unreleased) rocSOLVER]
 ### Added
 - RQ factorization routines:
     - GERQ2, GERQF (with batched and strided\_batched versions)
