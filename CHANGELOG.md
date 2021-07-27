@@ -21,7 +21,10 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Minor CMake improvements for users building from source without install.sh:
     - Removed fmt::fmt from rocsolver's public usage requirements
     - Enabled small-size optimizations by default
-- Packaging split into a runtime package called rocsolver and a development package called rocsolver-devel. The development package depends on runtime. The runtime package suggests the development package for all supported OSes except CentOS 7 to aid in the transition. The suggests feature in packaging is introduced as a deprecated feature and will be removed in a future rocm release.
+- Split packaging into a runtime package ('rocsolver') and a development package ('rocsolver-devel').
+  The development package depends on the runtime package. To aid in the transition, the runtime
+  package suggests the development package (except on CentOS 7). This use of the suggests feature
+  is deprecated and will be removed in a future ROCm release.
 
 ### Removed
 
