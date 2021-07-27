@@ -26,6 +26,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Removed
 
 ### Fixed
+- Use of the GCC / Clang `__attribute__((deprecated(...)))` extension is now guarded by compiler
+  detection macros.
 
 ### Known Issues
 
