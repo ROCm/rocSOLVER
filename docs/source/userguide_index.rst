@@ -1,6 +1,6 @@
 
 #############################
-rocSOLVER User guide
+rocSOLVER User Guide
 #############################
 
 .. toctree::
