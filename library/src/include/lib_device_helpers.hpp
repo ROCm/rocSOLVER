@@ -216,6 +216,52 @@ ROCSOLVER_KERNEL void copy_mat(const rocblas_int m,
     }
 }
 
+/** COPY_MAT copies m-by-n array A into buffer if copymat_to_buffer, or buffer into A if copymat_from_buffer
+    If uplo = rocblas_fill_upper, only the upper triangular part is copied
+    If uplo = rocblas_fill_lower, only the lower triangular part is copied
+    Only valid when A is complex and buffer real. If REAL, only works with real part of A;
+    if !REAL only works with imaginary part of A**/
+template <typename T, typename S, bool REAL, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+ROCSOLVER_KERNEL void copy_mat(copymat_direction direction,
+                               const rocblas_int m,
+                               const rocblas_int n,
+                               U A,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               S* buffer,
+                               const rocblas_fill uplo = rocblas_fill_full,
+                               const rocblas_diagonal diag = rocblas_diagonal_non_unit)
+{
+    const auto b = hipBlockIdx_z;
+    const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    const rocblas_int ldb = m;
+    const rocblas_stride strideB = rocblas_stride(ldb) * n;
+
+    const bool lower = (uplo == rocblas_fill_lower);
+    const bool full = (uplo == rocblas_fill_full);
+    const bool upper = (uplo == rocblas_fill_upper);
+    const bool cdiag = (diag == rocblas_diagonal_non_unit);
+
+    if(i < m && j < n)
+    {
+        if(full || (upper && j > i) || (lower && i > j) || (cdiag && i == j))
+        {
+            T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+            S* Bp = &buffer[b * strideB];
+
+            if(direction == copymat_to_buffer)
+                Bp[i + j * ldb] = REAL ? Ap[i + j * lda].real() : Ap[i + j * lda].imag();
+            else if(REAL)
+                Ap[i + j * lda] = rocblas_complex_num<S>(Bp[i + j * ldb], A[i + j * lda].imag());
+            else
+                Ap[i + j * lda] = rocblas_complex_num<S>(A[i + j * lda].real(), Bp[i + j * ldb]);
+        }
+    }
+}
+
 template <typename T, typename U>
 ROCSOLVER_KERNEL void init_ident(const rocblas_int m,
                                  const rocblas_int n,
@@ -404,52 +450,6 @@ ROCSOLVER_KERNEL void set_zero(const rocblas_int m,
         {
             T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
             Ap[i + j * lda] = 0.0;
-        }
-    }
-}
-
-/** COPY_MAT copies m-by-n array A into buffer if copymat_to_buffer, or buffer into A if copymat_from_buffer
-    If uplo = rocblas_fill_upper, only the upper triangular part is copied
-    If uplo = rocblas_fill_lower, only the lower triangular part is copied
-    Only valid when A is complex and buffer real. If REAL, only works with real part of A;
-    if !REAL only works with imaginary part of A**/
-template <typename T, typename S, bool REAL, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-ROCSOLVER_KERNEL void copy_mat(copymat_direction direction,
-                               const rocblas_int m,
-                               const rocblas_int n,
-                               U A,
-                               const rocblas_int shiftA,
-                               const rocblas_int lda,
-                               const rocblas_stride strideA,
-                               S* buffer,
-                               const rocblas_fill uplo = rocblas_fill_full,
-                               const rocblas_diagonal diag = rocblas_diagonal_non_unit)
-{
-    const auto b = hipBlockIdx_z;
-    const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
-    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-
-    const rocblas_int ldb = m;
-    const rocblas_stride strideB = rocblas_stride(ldb) * n;
-
-    const bool lower = (uplo == rocblas_fill_lower);
-    const bool full = (uplo == rocblas_fill_full);
-    const bool upper = (uplo == rocblas_fill_upper);
-    const bool cdiag = (diag == rocblas_diagonal_non_unit);
-
-    if(i < m && j < n)
-    {
-        if(full || (upper && j > i) || (lower && i > j) || (cdiag && i == j))
-        {
-            T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
-            S* Bp = &buffer[b * strideB];
-
-            if(direction == copymat_to_buffer)
-                Bp[i + j * ldb] = REAL ? Ap[i + j * lda].real() : Ap[i + j * lda].imag();
-            else if(REAL)
-                Ap[i + j * lda] = rocblas_complex_num<S>(Bp[i + j * ldb], A[i + j * lda].imag());
-            else
-                Ap[i + j * lda] = rocblas_complex_num<S>(A[i + j * lda].real(), Bp[i + j * ldb]);
         }
     }
 }
