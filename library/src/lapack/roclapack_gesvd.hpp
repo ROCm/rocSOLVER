@@ -555,7 +555,7 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             // copy the triangular part to be used in the bidiagonalization
             hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
                                dim3(thread_count, thread_count, 1), 0, stream, k, k, A, shiftA, lda,
-                               strideA, bufferT, shiftT, ldt, strideT, uplo);
+                               strideA, bufferT, shiftT, ldt, strideT, no_mask{}, uplo);
 
             //*** STAGE 2: generate orthonormal/unitary matrix from row/column compression ***//
             if(leadvA)
@@ -704,7 +704,7 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                 // copy the triangular part
                 hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
                                    dim3(thread_count, thread_count, 1), 0, stream, k, k, A, shiftA,
-                                   lda, strideA, bufferT, shiftT, ldt, strideT, uplo);
+                                   lda, strideA, bufferT, shiftT, ldt, strideT, no_mask{}, uplo);
 
             //*** STAGE 2: generate orthonormal/unitary matrix from row/column compression ***//
             if(leadvO)
