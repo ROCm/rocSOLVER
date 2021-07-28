@@ -2,7 +2,7 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## [(Unreleased) rocSOLVER]
+## [rocSOLVER 3.15.0]
 ### Added
 - RQ factorization routines:
     - GERQ2, GERQF (with batched and strided\_batched versions)
@@ -14,8 +14,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Inverse of symmetric/hermitian positive definite matrices:
     - POTRI (with batched and strided\_batched versions)
 
-### Optimized
-
 ### Changed
 - Raised reference LAPACK version used for rocSOLVER test and benchmark clients to v3.9.1
 - Minor CMake improvements for users building from source without install.sh:
@@ -26,13 +24,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
   package suggests the development package (except on CentOS 7). This use of the suggests feature
   is deprecated and will be removed in a future ROCm release.
 
-### Removed
-
 ### Fixed
 - Use of the GCC / Clang `__attribute__((deprecated(...)))` extension is now guarded by compiler
   detection macros.
-
-### Known Issues
 
 
 ## [rocSOLVER 3.14.0 for ROCm 4.4.0]
