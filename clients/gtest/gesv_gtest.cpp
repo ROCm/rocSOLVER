@@ -4,6 +4,7 @@
  * ************************************************************************ */
 
 #include "testing_gesv.hpp"
+#include "testing_gesv_outofplace.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -13,7 +14,7 @@ using namespace std;
 
 typedef std::tuple<vector<int>, int> gesv_tuple;
 
-// each A_range vector is a {N, lda, ldb, singular};
+// each A_range vector is a {N, lda, ldb/ldx, singular};
 // if singular = 1, then the used matrix for the tests is singular
 
 // each B_range vector is a {nrhs};
@@ -55,7 +56,7 @@ const vector<int> large_matrix_sizeB_range = {
     100, 150, 200, 524, 1000,
 };
 
-Arguments gesv_setup_arguments(gesv_tuple tup)
+Arguments gesv_setup_arguments(gesv_tuple tup, bool outofplace)
 {
     vector<int> matrix_sizeA = std::get<0>(tup);
     int matrix_sizeB = std::get<1>(tup);
@@ -66,6 +67,9 @@ Arguments gesv_setup_arguments(gesv_tuple tup)
     arg.set<rocblas_int>("nrhs", matrix_sizeB);
     arg.set<rocblas_int>("lda", matrix_sizeA[1]);
     arg.set<rocblas_int>("ldb", matrix_sizeA[2]);
+
+    if(outofplace)
+        arg.set<rocblas_int>("ldx", matrix_sizeA[2]);
 
     // only testing standard use case/defaults for strides
 
@@ -85,7 +89,7 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = gesv_setup_arguments(GetParam());
+        Arguments arg = gesv_setup_arguments(GetParam(), false);
 
         if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nrhs") == 0)
             testing_gesv_bad_arg<BATCHED, STRIDED, T>();
@@ -96,6 +100,30 @@ protected:
 
         arg.singular = 0;
         testing_gesv<BATCHED, STRIDED, T>(arg);
+    }
+};
+
+class GESV_OUTOFPLACE : public ::TestWithParam<gesv_tuple>
+{
+protected:
+    GESV_OUTOFPLACE() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = gesv_setup_arguments(GetParam(), true);
+
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nrhs") == 0)
+            testing_gesv_outofplace_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        if(arg.singular == 1)
+            testing_gesv_outofplace<BATCHED, STRIDED, T>(arg);
+
+        arg.singular = 0;
+        testing_gesv_outofplace<BATCHED, STRIDED, T>(arg);
     }
 };
 
@@ -117,6 +145,26 @@ TEST_P(GESV, __float_complex)
 }
 
 TEST_P(GESV, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
+TEST_P(GESV_OUTOFPLACE, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(GESV_OUTOFPLACE, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(GESV_OUTOFPLACE, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(GESV_OUTOFPLACE, __double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }
@@ -165,14 +213,20 @@ TEST_P(GESV, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
-// daily_lapack tests normal execution with medium to large sizes
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          GESV,
                          Combine(ValuesIn(large_matrix_sizeA_range),
                                  ValuesIn(large_matrix_sizeB_range)));
 
-// checkin_lapack tests normal execution with small sizes, invalid sizes,
-// quick returns, and corner cases
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          GESV,
+                         Combine(ValuesIn(matrix_sizeA_range), ValuesIn(matrix_sizeB_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         GESV_OUTOFPLACE,
+                         Combine(ValuesIn(large_matrix_sizeA_range),
+                                 ValuesIn(large_matrix_sizeB_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         GESV_OUTOFPLACE,
                          Combine(ValuesIn(matrix_sizeA_range), ValuesIn(matrix_sizeB_range)));

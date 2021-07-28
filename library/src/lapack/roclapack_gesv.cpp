@@ -40,7 +40,7 @@ rocblas_status rocsolver_gesv_impl(rocblas_handle handle,
     // memory workspace sizes:
     // size for constants in rocblas calls
     size_t size_scalars;
-    // size of reusable workspace (and for calling TRSM)
+    // size of reusable workspace (and for calling GETRF and GETRS)
     size_t size_work, size_work1, size_work2, size_work3, size_work4;
     // extra requirements for calling GETRF
     size_t size_pivotval, size_pivotidx, size_iinfo;

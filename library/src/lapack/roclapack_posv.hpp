@@ -138,8 +138,8 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
         return rocblas_status_success;
 
     // constants in host memory
-    const rocblas_int copyblocksx = (nrhs - 1) / 32 + 1;
-    const rocblas_int copyblocksy = (n - 1) / 32 + 1;
+    const rocblas_int copyblocksx = (n - 1) / 32 + 1;
+    const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;
 
     // compute Cholesky factorization of A
     rocsolver_potrf_template<BATCHED, T, S>(handle, uplo, n, A, shiftA, lda, strideA, info,
@@ -147,9 +147,9 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
                                             pivots_savedB, iinfo, optim_mem);
 
     // save elements of B that will be overwritten by POTRS for cases where info is nonzero
-    hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                       dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb, strideB,
-                       pivots_savedB, info);
+    hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),
+                       0, stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb, strideB,
+                       pivots_savedB, info_mask(info));
 
     // solve AX = B, overwriting B with X
     rocsolver_potrs_template<BATCHED, T>(handle, uplo, n, nrhs, A, shiftA, lda, strideA, B, shiftB,
@@ -157,9 +157,9 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
                                          optim_mem);
 
     // restore elements of B that were overwritten by POTRS in cases where info is nonzero
-    hipLaunchKernelGGL((masked_copymat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                       dim3(32, 32), 0, stream, copymat_from_buffer, n, nrhs, B, shiftB, ldb,
-                       strideB, pivots_savedB, info);
+    hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),
+                       0, stream, copymat_from_buffer, n, nrhs, B, shiftB, ldb, strideB,
+                       pivots_savedB, info_mask(info));
 
     return rocblas_status_success;
 }

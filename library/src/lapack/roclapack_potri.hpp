@@ -127,7 +127,8 @@ rocblas_status rocsolver_potri_template(rocblas_handle handle,
 
     // copy elements of A to serve as B matrix for TRMM
     hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocks, copyblocks, batch_count), dim3(32, 32), 0,
-                       stream, n, n, A, shiftA, lda, strideA, tmpcopy, 0, n, n * n, uplo);
+                       stream, copymat_to_buffer, n, n, A, shiftA, lda, strideA, tmpcopy, no_mask{},
+                       uplo);
 
     // compute inv(U) * inv(U)' or inv(L)' * inv(L) and store in tmpcopy
     rocblas_side side = (uplo == rocblas_fill_upper ? rocblas_side_right : rocblas_side_left);
@@ -136,9 +137,9 @@ rocblas_status rocsolver_potri_template(rocblas_handle handle,
                                           strideA, tmpcopy, 0, n, n * n, batch_count, workArr);
 
     // copy elements of tmpcopy into A in cases where info is zero
-    hipLaunchKernelGGL(masked_copymat<T>, dim3(copyblocks, copyblocks, batch_count), dim3(32, 32),
-                       0, stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, tmpcopy, info,
-                       uplo, rocblas_diagonal_non_unit, true);
+    hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocks, copyblocks, batch_count), dim3(32, 32), 0,
+                       stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, tmpcopy,
+                       info_mask(info, info_mask::negate), uplo, rocblas_diagonal_non_unit);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
