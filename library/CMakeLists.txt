@@ -53,8 +53,8 @@ set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
 add_subdirectory(src)
 
 # Package-specific CPACK vars
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "rocblas (>= 2.41), rocblas (<< 2.42)")
-set(CPACK_RPM_PACKAGE_REQUIRES "rocblas >= 2.41, rocblas < 2.42")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "rocblas (>= 2.42), rocblas (<< 2.43)")
+set(CPACK_RPM_PACKAGE_REQUIRES "rocblas >= 2.42, rocblas < 2.43")
 
 if(OS_ID_sles)
   set(RPM_REQUIREMENTS "${RPM_REQUIREMENTS}, libLLVM7 >= 7.0.1")
