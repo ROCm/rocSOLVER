@@ -254,8 +254,11 @@ void gesv_outofplace_getError(const rocblas_handle handle,
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        err = norm_error('I', n, nrhs, ldb, hB[b], hBRes[b], ldx);
-        *max_err = err > *max_err ? err : *max_err;
+        if(hInfoRes[b][0] == 0)
+        {
+            err = norm_error('I', n, nrhs, ldb, hB[b], hBRes[b], ldx);
+            *max_err = err > *max_err ? err : *max_err;
+        }
     }
 
     // also check info for singularities
