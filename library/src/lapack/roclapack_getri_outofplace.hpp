@@ -15,7 +15,8 @@ void rocsolver_getri_outofplace_getMemorySize(const rocblas_int n,
                                               size_t* size_work1,
                                               size_t* size_work2,
                                               size_t* size_work3,
-                                              size_t* size_work4)
+                                              size_t* size_work4,
+                                              bool* optim_mem)
 {
     // if quick return, no need of workspace
     if(n == 0 || batch_count == 0)
@@ -24,12 +25,13 @@ void rocsolver_getri_outofplace_getMemorySize(const rocblas_int n,
         *size_work2 = 0;
         *size_work3 = 0;
         *size_work4 = 0;
+        *optim_mem = false;
         return;
     }
 
     // requirements for calling GETRS
     rocsolver_getrs_getMemorySize<BATCHED, T>(n, n, batch_count, size_work1, size_work2, size_work3,
-                                              size_work4);
+                                              size_work4, optim_mem);
 }
 
 template <typename T>

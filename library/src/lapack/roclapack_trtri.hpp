@@ -73,7 +73,8 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
                                    size_t* size_work3,
                                    size_t* size_work4,
                                    size_t* size_tmpcopy,
-                                   size_t* size_workArr)
+                                   size_t* size_workArr,
+                                   bool* optim_mem)
 {
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
@@ -86,6 +87,7 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
         *size_work4 = 0;
         *size_tmpcopy = 0;
         *size_workArr = 0;
+        *optim_mem = false;
         return;
     }
 
@@ -135,6 +137,7 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
         rocblasCall_trtri_mem<BATCHED, T>(n, batch_count, size_work1, size_work2);
         *size_work3 = 0;
         *size_work4 = 0;
+        *optim_mem = false;
     }
     else if(blk == 1)
     {
@@ -142,6 +145,7 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
         *size_work2 = 0;
         *size_work3 = w3a;
         *size_work4 = 0;
+        *optim_mem = false;
     }
     else
     {
@@ -149,6 +153,9 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
                                          &w3b, size_work4);
         *size_work1 = max(w1a, w1b);
         *size_work3 = max(w3a, w3b);
+
+        // always allocate all required memory for TRSM optimal performance
+        *optim_mem = true;
     }
 }
 

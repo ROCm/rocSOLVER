@@ -41,21 +41,19 @@ rocblas_status rocsolver_posv_batched_impl(rocblas_handle handle,
     // memory workspace sizes:
     // size for constants in rocblas calls
     size_t size_scalars;
-    // size of reusable workspace (and for calling TRSM)
+    // size of workspace (for calling POTRF and POTRS)
+    bool optim_mem;
     size_t size_work1, size_work2, size_work3, size_work4;
     // extra requirements for calling POTRF and to copy B
     size_t size_pivots_savedB, size_iinfo;
     rocsolver_posv_getMemorySize<true, T>(n, nrhs, uplo, batch_count, &size_scalars, &size_work1,
                                           &size_work2, &size_work3, &size_work4,
-                                          &size_pivots_savedB, &size_iinfo);
+                                          &size_pivots_savedB, &size_iinfo, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
                                                       size_work3, size_work4, size_pivots_savedB,
                                                       size_iinfo);
-
-    // always allocate all required memory for TRSM optimal performance
-    bool optim_mem = true;
 
     // memory workspace allocation
     void *scalars, *work1, *work2, *work3, *work4, *pivots_savedB, *iinfo;

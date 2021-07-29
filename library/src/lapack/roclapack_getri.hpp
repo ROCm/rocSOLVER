@@ -154,7 +154,8 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
                                    size_t* size_work3,
                                    size_t* size_work4,
                                    size_t* size_tmpcopy,
-                                   size_t* size_workArr)
+                                   size_t* size_workArr,
+                                   bool* optim_mem)
 {
     // if quick return, no need of workspace
     if(n == 0 || batch_count == 0)
@@ -165,6 +166,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
         *size_work4 = 0;
         *size_tmpcopy = 0;
         *size_workArr = 0;
+        *optim_mem = false;
         return;
     }
 
@@ -180,15 +182,18 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
         *size_work4 = 0;
         *size_tmpcopy = 0;
         *size_workArr = 0;
+        *optim_mem = false;
         return;
     }
 #endif
 
+    bool unused_opt;
     size_t unused, w1a = 0, w1b = 0, w2a = 0, w2b = 0, w3a = 0, w3b = 0, w4a = 0, w4b = 0, t1, t2;
 
     // requirements for calling TRTRI
     rocsolver_trtri_getMemorySize<BATCHED, STRIDED, T>(rocblas_diagonal_non_unit, n, batch_count,
-                                                       &w1b, &w2b, &w3b, &w4b, &t2, &unused);
+                                                       &w1b, &w2b, &w3b, &w4b, &t2, &unused,
+                                                       &unused_opt);
 
     // size of array of pointers (batched cases)
     if(BATCHED)
@@ -226,6 +231,9 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     *size_work3 = max(w3a, w3b);
     *size_work4 = max(w4a, w4b);
     *size_tmpcopy = max(t1, t2);
+
+    // always allocate all required memory for TRSM optimal performance
+    *optim_mem = true;
 }
 
 template <typename T>
