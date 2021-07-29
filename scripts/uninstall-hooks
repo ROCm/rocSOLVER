@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -eu
+
+cd -- "$(git rev-parse --git-dir)/hooks"
+if [ -L post-commit ]; then
+  rm post-commit
+  echo "Removed '$(pwd)/post-commit'"
+fi
