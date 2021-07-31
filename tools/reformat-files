@@ -9,7 +9,6 @@ exec >&2
 
 # Change the copyright date at the top of any text files
 for file in "$@"; do
-    echo "reformat-files: update copyright date ($file)"
     if [[ -e $file ]]; then
         /usr/bin/perl -pi -e 'INIT { exit 1 if !-f $ARGV[0] || -B $ARGV[0]; $year = (localtime)[5] + 1900 }
             s/^([*\/#[:space:]]*)Copyright\s+(?:\(C\)\s*)?(\d+)(?:\s*-\s*\d+)?/qq($1Copyright (c) $2@{[$year != $2 ? "-$year" : ""]})/ie
@@ -20,12 +19,10 @@ done
 # Do the formatting
 for file in "$@"; do
     if [[ -e $file ]] && echo "$file" | grep -Eq '\.c$|\.h$|\.hpp$|\.cpp$|\.cl$|\.in$|\.txt$|\.yaml$|\.sh$|\.py$|\.pl$|\.cmake$|\.md$|\.rst$|\.groovy$'; then
-        echo "reformat-files: cleanup trailing whitespace ($file)"
         sed -i -e 's/[[:space:]]*$//' "$file" # Remove whitespace at end of lines
         sed -i -e '$a\' "$file" # Add missing newline to end of file
 
         # Convert UTF8 non-ASCII to ASCII
-        echo "reformat-files: non-ASCII characters ($file)"
         temp=$(mktemp)
         [[ -w $temp ]] || exit
         iconv -s -f utf-8 -t ascii//TRANSLIT "$file" > "$temp" || exit
@@ -38,7 +35,6 @@ done
 if command -v clang-format >/dev/null; then
     for file in "$@"; do
        if [[ -e $file ]] && echo "$file" | grep -Eq '\.c$|\.h$|\.hpp$|\.cpp$|\.cl$|\.h\.in$|\.hpp\.in$|\.cpp\.in$'; then
-            echo "reformat-files: clang-format ($file)"
             clang-format -i -style=file "$file"
         fi
     done
