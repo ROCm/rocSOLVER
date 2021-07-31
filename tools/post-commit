@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# To enable this hook, move this file to ".git/hooks/post-commit"
+
+set -eu
+
+# utility function to display message in color (if supported)
+highlight() {
+  tput -S << EOF
+bold
+setaf $1
+EOF
+  echo "$2"
+  tput sgr0
+}
+
+# gather commit information
+commit=$(git rev-parse HEAD)
+short_commit=$(git rev-parse --short "$commit")
+
+# setup cleanup
+ok=0
+on_exit() {
+  if [ $ok -ne 1 ]; then
+    highlight 1 'post-commit: formatting failed'
+  fi
+  chmod +x "${BASH_SOURCE[0]}" # reenable hook
+}
+trap on_exit EXIT
+
+# check for unstaged changes
+if git diff-index --quiet HEAD; then
+  dirty=false
+else
+  dirty=true
+fi
+
+>&2 echo "post-commit: processing $short_commit"
+
+# save workspace
+if [ "$dirty" = true ]; then
+  >&2 echo 'post-commit: stashing uncomitted changes'
+  git stash push --quiet --message 'post-commit: uncomitted changes'
+fi
+
+# apply formatting and stage changes
+script_dir=$(dirname "${BASH_SOURCE[0]}")
+while IFS= read -r -d '' file; do
+  >&2 echo "post-commit: reformatting $file"
+  "$script_dir/reformat-files" "$file"
+  git add --update -- "$file"
+done < <(git diff-tree --no-commit-id --name-only -r -z HEAD)
+
+# commit changes and restore workspace
+if git diff --quiet --staged; then
+  >&2 echo 'post-commit: files unchanged'
+else
+  >&2 echo 'post-commit: amending commit with reformatted files'
+  chmod -x "${BASH_SOURCE[0]}" # prevent recursion
+  git config advice.ignoredHook false # disable warning
+  git commit --amend --no-edit --no-verify --no-post-rewrite
+  if [ "$dirty" = true ]; then
+    >&2 echo 'post-commit: restoring uncomitted changes from stash'
+    git stash pop --quiet
+  fi
+fi
+ok=1

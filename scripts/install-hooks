@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-set -eu
-
-cd -- "$(git rev-parse --git-dir)/hooks"
-
-ln -sf ../../scripts/post-commit post-commit
-echo "Installed '$(pwd)/post-commit'"

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -eu
+
+hooks_dir=$(git rev-parse --git-path hooks)
+scripts_dir=$(dirname "${BASH_SOURCE[0]}")
+
+install --backup --verbose "$scripts_dir/post-commit" "$hooks_dir"
+install --backup --verbose "$scripts_dir/reformat-files" "$hooks_dir"
