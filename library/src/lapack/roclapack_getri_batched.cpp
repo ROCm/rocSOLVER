@@ -12,6 +12,7 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle,
                                             rocblas_int* ipiv,
                                             const rocblas_stride strideP,
                                             rocblas_int* info,
+                                            const bool pivot,
                                             const rocblas_int batch_count)
 {
     ROCSOLVER_ENTER_TOP("getri_batched", "-n", n, "--lda", lda, "--strideP", strideP,
@@ -21,7 +22,7 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle,
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_getri_argCheck(handle, n, lda, A, ipiv, info, batch_count);
+    rocblas_status st = rocsolver_getri_argCheck(handle, n, lda, A, ipiv, info, pivot, batch_count);
     if(st != rocblas_status_continue)
         return st;
 
@@ -88,7 +89,8 @@ rocblas_status rocsolver_sgetri_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_getri_batched_impl<float>(handle, n, A, lda, ipiv, strideP, info, batch_count);
+    return rocsolver_getri_batched_impl<float>(handle, n, A, lda, ipiv, strideP, info, true,
+                                               batch_count);
 }
 
 rocblas_status rocsolver_dgetri_batched(rocblas_handle handle,
@@ -100,7 +102,8 @@ rocblas_status rocsolver_dgetri_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_getri_batched_impl<double>(handle, n, A, lda, ipiv, strideP, info, batch_count);
+    return rocsolver_getri_batched_impl<double>(handle, n, A, lda, ipiv, strideP, info, true,
+                                                batch_count);
 }
 
 rocblas_status rocsolver_cgetri_batched(rocblas_handle handle,
@@ -113,7 +116,7 @@ rocblas_status rocsolver_cgetri_batched(rocblas_handle handle,
                                         const rocblas_int batch_count)
 {
     return rocsolver_getri_batched_impl<rocblas_float_complex>(handle, n, A, lda, ipiv, strideP,
-                                                               info, batch_count);
+                                                               info, true, batch_count);
 }
 
 rocblas_status rocsolver_zgetri_batched(rocblas_handle handle,
@@ -126,7 +129,7 @@ rocblas_status rocsolver_zgetri_batched(rocblas_handle handle,
                                         const rocblas_int batch_count)
 {
     return rocsolver_getri_batched_impl<rocblas_double_complex>(handle, n, A, lda, ipiv, strideP,
-                                                                info, batch_count);
+                                                                info, true, batch_count);
 }
 
 } // extern C

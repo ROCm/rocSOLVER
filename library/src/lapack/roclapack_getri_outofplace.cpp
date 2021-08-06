@@ -12,7 +12,8 @@ rocblas_status rocsolver_getri_outofplace_impl(rocblas_handle handle,
                                                rocblas_int* ipiv,
                                                U C,
                                                const rocblas_int ldc,
-                                               rocblas_int* info)
+                                               rocblas_int* info,
+                                               const bool pivot)
 {
     ROCSOLVER_ENTER_TOP("getri_outofplace", "-n", n, "--lda", lda, "--ldc", ldc);
 
@@ -20,7 +21,8 @@ rocblas_status rocsolver_getri_outofplace_impl(rocblas_handle handle,
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_getri_outofplace_argCheck(handle, n, lda, ldc, A, C, ipiv, info);
+    rocblas_status st
+        = rocsolver_getri_outofplace_argCheck(handle, n, lda, ldc, A, C, ipiv, info, pivot);
     if(st != rocblas_status_continue)
         return st;
 
@@ -83,7 +85,7 @@ rocblas_status rocsolver_sgetri_outofplace(rocblas_handle handle,
                                            const rocblas_int ldc,
                                            rocblas_int* info)
 {
-    return rocsolver_getri_outofplace_impl<float>(handle, n, A, lda, ipiv, C, ldc, info);
+    return rocsolver_getri_outofplace_impl<float>(handle, n, A, lda, ipiv, C, ldc, info, true);
 }
 
 rocblas_status rocsolver_dgetri_outofplace(rocblas_handle handle,
@@ -95,7 +97,7 @@ rocblas_status rocsolver_dgetri_outofplace(rocblas_handle handle,
                                            const rocblas_int ldc,
                                            rocblas_int* info)
 {
-    return rocsolver_getri_outofplace_impl<double>(handle, n, A, lda, ipiv, C, ldc, info);
+    return rocsolver_getri_outofplace_impl<double>(handle, n, A, lda, ipiv, C, ldc, info, true);
 }
 
 rocblas_status rocsolver_cgetri_outofplace(rocblas_handle handle,
@@ -108,7 +110,7 @@ rocblas_status rocsolver_cgetri_outofplace(rocblas_handle handle,
                                            rocblas_int* info)
 {
     return rocsolver_getri_outofplace_impl<rocblas_float_complex>(handle, n, A, lda, ipiv, C, ldc,
-                                                                  info);
+                                                                  info, true);
 }
 
 rocblas_status rocsolver_zgetri_outofplace(rocblas_handle handle,
@@ -121,7 +123,7 @@ rocblas_status rocsolver_zgetri_outofplace(rocblas_handle handle,
                                            rocblas_int* info)
 {
     return rocsolver_getri_outofplace_impl<rocblas_double_complex>(handle, n, A, lda, ipiv, C, ldc,
-                                                                   info);
+                                                                   info, true);
 }
 
 } // extern C
