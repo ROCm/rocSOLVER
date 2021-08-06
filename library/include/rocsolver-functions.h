@@ -34,6 +34,18 @@ extern "C" {
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char* buf, size_t len);
 
+/*! \brief GET_VERSION_STRING_SIZE Queries the minimum buffer size for a
+    successful call to \ref rocsolver_get_version_string.
+
+    \details
+    @param[out]
+    len         pointer to size_t.\n
+                The minimum length of buffer to pass to
+                \ref rocsolver_get_version_string.
+
+ ******************************************************************************/
+ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string_size(size_t* len);
+
 /*
  * ===========================================================================
  *      Multi-level logging
