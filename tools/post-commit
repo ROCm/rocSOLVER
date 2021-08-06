@@ -34,7 +34,7 @@ else
   dirty=true
 fi
 
->&2 echo "post-commit: processing $short_commit"
+>&2 echo "post-commit: processing commit $short_commit"
 
 # save workspace
 if [ "$dirty" = true ]; then
@@ -52,7 +52,7 @@ done < <(git diff-tree --no-commit-id --name-only -r --diff-filter=d -z HEAD)
 
 # commit changes and restore workspace
 if git diff --quiet --staged; then
-  >&2 echo 'post-commit: files unchanged'
+  >&2 echo 'post-commit: files unchanged after reformatting'
 else
   >&2 echo 'post-commit: amending commit with reformatted files'
   chmod -x "${BASH_SOURCE[0]}" # prevent recursion
