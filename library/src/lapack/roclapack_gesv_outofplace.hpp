@@ -48,12 +48,11 @@ rocblas_status rocsolver_gesv_outofplace_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename S>
+template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_gesv_outofplace_getMemorySize(const rocblas_int n,
                                              const rocblas_int nrhs,
                                              const rocblas_int batch_count,
                                              size_t* size_scalars,
-                                             size_t* size_work,
                                              size_t* size_work1,
                                              size_t* size_work2,
                                              size_t* size_work3,
@@ -67,7 +66,6 @@ void rocsolver_gesv_outofplace_getMemorySize(const rocblas_int n,
     if(n == 0 || nrhs == 0 || batch_count == 0)
     {
         *size_scalars = 0;
-        *size_work = 0;
         *size_work1 = 0;
         *size_work2 = 0;
         *size_work3 = 0;
@@ -83,8 +81,8 @@ void rocsolver_gesv_outofplace_getMemorySize(const rocblas_int n,
     size_t w1, w2, w3, w4;
 
     // workspace required for calling GETRF
-    rocsolver_getrf_getMemorySize<BATCHED, STRIDED, true, T, S>(
-        n, n, batch_count, size_scalars, size_work, size_work1, size_work2, size_work3, size_work4,
+    rocsolver_getrf_getMemorySize<BATCHED, STRIDED, true, T>(
+        n, n, batch_count, size_scalars, size_work1, size_work2, size_work3, size_work4,
         size_pivotval, size_pivotidx, size_iinfo, &opt1);
 
     // workspace required for calling GETRS
@@ -97,7 +95,7 @@ void rocsolver_gesv_outofplace_getMemorySize(const rocblas_int n,
     *optim_mem = opt1 && opt2;
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_gesv_outofplace_template(rocblas_handle handle,
                                                   const rocblas_int n,
                                                   const rocblas_int nrhs,
@@ -118,7 +116,6 @@ rocblas_status rocsolver_gesv_outofplace_template(rocblas_handle handle,
                                                   rocblas_int* info,
                                                   const rocblas_int batch_count,
                                                   T* scalars,
-                                                  rocblas_index_value_t<S>* work,
                                                   void* work1,
                                                   void* work2,
                                                   void* work3,
@@ -155,8 +152,8 @@ rocblas_status rocsolver_gesv_outofplace_template(rocblas_handle handle,
 
     // compute LU factorization of A
     rocsolver_getrf_template<BATCHED, STRIDED, true, T>(
-        handle, n, n, A, shiftA, lda, strideA, ipiv, 0, strideP, info, batch_count, scalars, work,
-        work1, work2, work3, work4, pivotval, pivotidx, iinfo, optim_mem);
+        handle, n, n, A, shiftA, lda, strideA, ipiv, 0, strideP, info, batch_count, scalars, work1,
+        work2, work3, work4, pivotval, pivotidx, iinfo, optim_mem);
 
     // copy B to X
     hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32), 0,
