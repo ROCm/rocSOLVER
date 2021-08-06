@@ -4,8 +4,13 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## [(Unreleased) rocSOLVER]
 ### Added
+- Added `rocsolver_get_version_string_size` to help with version string queries
+
 ### Optimized
 ### Changed
+- The rocsolver-test client now prints the rocSOLVER version used to run the tests,
+  rather than the version used to build them
+
 ### Deprecated
 ### Removed
 ### Fixed

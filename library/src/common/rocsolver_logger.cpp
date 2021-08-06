@@ -6,6 +6,7 @@
 #include <climits>
 #include <cstdlib>
 #include <iostream>
+#include <string>
 
 #include "rocblascommon/utility.hpp"
 #include "rocsolver_logger.hpp"
@@ -16,6 +17,24 @@
 // initialize the static variable
 rocsolver_logger* rocsolver_logger::_instance = nullptr;
 std::mutex rocsolver_logger::_mutex;
+
+static std::string rocblas_version()
+{
+    size_t size;
+    rocblas_get_version_string_size(&size);
+    std::string str(size - 1, '\0');
+    rocblas_get_version_string(str.data(), size);
+    return str;
+}
+
+static std::string rocsolver_version()
+{
+    size_t size;
+    rocsolver_get_version_string_size(&size);
+    std::string str(size - 1, '\0');
+    rocsolver_get_version_string(str.data(), size);
+    return str;
+}
 
 /***************************************************************************
  * Open logging streams
@@ -35,11 +54,8 @@ std::ostream* rocsolver_logger::open_log_stream(const char* environment_variable
         {
             fmt::print(os,
                        "ROCSOLVER LOG FILE\n"
-                       "rocSOLVER Version: {}.{}.{}.{}\nrocBLAS Version: {}.{}.{}.{}\n",
-                       STRINGIFY(ROCSOLVER_VERSION_MAJOR), STRINGIFY(ROCSOLVER_VERSION_MINOR),
-                       STRINGIFY(ROCSOLVER_VERSION_PATCH), STRINGIFY(ROCSOLVER_VERSION_TWEAK),
-                       STRINGIFY(ROCBLAS_VERSION_MAJOR), STRINGIFY(ROCBLAS_VERSION_MINOR),
-                       STRINGIFY(ROCBLAS_VERSION_PATCH), STRINGIFY(ROCBLAS_VERSION_TWEAK));
+                       "rocSOLVER Version: {}\nrocBLAS Version: {}\n",
+                       rocsolver_version(), rocblas_version());
             os.flush();
         }
         return &os;

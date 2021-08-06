@@ -3,23 +3,35 @@
  * ************************************************************************ */
 
 #include <cstdio>
+#include <string>
+
 #include <fmt/core.h>
 #include <gtest/gtest.h>
+#include <rocsolver.h>
 
 #include "clientcommon.hpp"
-#include "internal/rocblas-version.h"
-#include "rocsolver-version.h"
 
-#define STRINGIFY(s) STRINGIFY_HELPER(s)
-#define STRINGIFY_HELPER(s) #s
+static std::string rocblas_version()
+{
+    size_t size;
+    rocblas_get_version_string_size(&size);
+    std::string str(size - 1, '\0');
+    rocblas_get_version_string(str.data(), size);
+    return str;
+}
+
+static std::string rocsolver_version()
+{
+    size_t size;
+    rocsolver_get_version_string_size(&size);
+    std::string str(size - 1, '\0');
+    rocsolver_get_version_string(str.data(), size);
+    return str;
+}
 
 static void print_version_info()
 {
-    fmt::print("rocSOLVER version {}.{}.{}.{} (with rocBLAS {}.{}.{}.{})\n",
-               STRINGIFY(ROCSOLVER_VERSION_MAJOR), STRINGIFY(ROCSOLVER_VERSION_MINOR),
-               STRINGIFY(ROCSOLVER_VERSION_PATCH), STRINGIFY(ROCSOLVER_VERSION_TWEAK),
-               STRINGIFY(ROCBLAS_VERSION_MAJOR), STRINGIFY(ROCBLAS_VERSION_MINOR),
-               STRINGIFY(ROCBLAS_VERSION_PATCH), STRINGIFY(ROCBLAS_VERSION_TWEAK));
+    fmt::print("rocSOLVER version {} (with rocBLAS {})\n", rocsolver_version(), rocblas_version());
     std::fflush(stdout);
 }
 
