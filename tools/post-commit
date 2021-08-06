@@ -48,7 +48,7 @@ while IFS= read -r -d '' file; do
   >&2 echo "post-commit: reformatting $file"
   "$script_dir/reformat-files" "$file"
   git add --update -- "$file"
-done < <(git diff-tree --no-commit-id --name-only -r -z HEAD)
+done < <(git diff-tree --no-commit-id --name-only -r --diff-filter=d -z HEAD)
 
 # commit changes and restore workspace
 if git diff --quiet --staged; then
