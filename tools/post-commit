@@ -58,9 +58,11 @@ else
   chmod -x "${BASH_SOURCE[0]}" # prevent recursion
   git config advice.ignoredHook false # disable warning
   git commit --amend --no-edit --no-verify --no-post-rewrite
-  if [ "$dirty" = true ]; then
-    >&2 echo 'post-commit: restoring uncommitted changes from stash'
-    git stash pop --quiet
-  fi
+fi
+
+# restore workspace
+if [ "$dirty" = true ]; then
+  >&2 echo 'post-commit: restoring uncommitted changes from stash'
+  git stash pop --quiet
 fi
 ok=1
