@@ -1,65 +1,44 @@
-***************************
-Logging and Other Functions
-***************************
+*****************************************
+Logging Functions and Library Information
+*****************************************
 
 .. _api_logging:
 
 Logging functions
 ===============================
 
-These are functions that enable and control rocSOLVER's :ref:`logging-label` capabilities. Functions
-are divided in two categories:
+These functions control rocSOLVER's :ref:`logging-label` capabilities.
 
-* :ref:`initialize` functions. Used to initialize and terminate the logging.
-* :ref:`profile` functions. Provide functionality for the profile logging mode.
-
-
-.. _initialize:
-
-Logging set-up and tear-down
--------------------------------
-
-.. contents:: List of logging initialization functions
+.. contents:: List of logging functions
    :local:
    :backlinks: top
 
 rocsolver_log_begin()
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 .. doxygenfunction:: rocsolver_log_begin
 
 rocsolver_log_end()
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 .. doxygenfunction:: rocsolver_log_end
 
 rocsolver_log_set_layer_mode()
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 .. doxygenfunction:: rocsolver_log_set_layer_mode
 
 rocsolver_log_set_max_levels()
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 .. doxygenfunction:: rocsolver_log_set_max_levels
 
 rocsolver_log_restore_defaults()
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 .. doxygenfunction:: rocsolver_log_restore_defaults
 
-
-
-.. _profile:
-
-Profile logging
-------------------------------
-
-.. contents:: List of profile logging functions
-   :local:
-   :backlinks: top
-
 rocsolver_log_write_profile()
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 .. doxygenfunction:: rocsolver_log_write_profile
 
 rocsolver_log_flush_profile()
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 .. doxygenfunction:: rocsolver_log_flush_profile
 
 
