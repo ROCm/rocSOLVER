@@ -144,4 +144,68 @@ rocblas_status rocsolver_zgetri_outofplace_strided_batched(rocblas_handle handle
         handle, n, A, lda, strideA, ipiv, strideP, C, ldc, strideC, info, true, batch_count);
 }
 
+rocblas_status rocsolver_sgetri_npvt_outofplace_strided_batched(rocblas_handle handle,
+                                                                const rocblas_int n,
+                                                                float* A,
+                                                                const rocblas_int lda,
+                                                                const rocblas_stride strideA,
+                                                                float* C,
+                                                                const rocblas_int ldc,
+                                                                const rocblas_stride strideC,
+                                                                rocblas_int* info,
+                                                                const rocblas_int batch_count)
+{
+    rocblas_int* ipiv = nullptr;
+    return rocsolver_getri_outofplace_strided_batched_impl<float>(
+        handle, n, A, lda, strideA, ipiv, 0, C, ldc, strideC, info, false, batch_count);
+}
+
+rocblas_status rocsolver_dgetri_npvt_outofplace_strided_batched(rocblas_handle handle,
+                                                                const rocblas_int n,
+                                                                double* A,
+                                                                const rocblas_int lda,
+                                                                const rocblas_stride strideA,
+                                                                double* C,
+                                                                const rocblas_int ldc,
+                                                                const rocblas_stride strideC,
+                                                                rocblas_int* info,
+                                                                const rocblas_int batch_count)
+{
+    rocblas_int* ipiv = nullptr;
+    return rocsolver_getri_outofplace_strided_batched_impl<double>(
+        handle, n, A, lda, strideA, ipiv, 0, C, ldc, strideC, info, false, batch_count);
+}
+
+rocblas_status rocsolver_cgetri_npvt_outofplace_strided_batched(rocblas_handle handle,
+                                                                const rocblas_int n,
+                                                                rocblas_float_complex* A,
+                                                                const rocblas_int lda,
+                                                                const rocblas_stride strideA,
+                                                                rocblas_float_complex* C,
+                                                                const rocblas_int ldc,
+                                                                const rocblas_stride strideC,
+                                                                rocblas_int* info,
+                                                                const rocblas_int batch_count)
+{
+    rocblas_int* ipiv = nullptr;
+    return rocsolver_getri_outofplace_strided_batched_impl<rocblas_float_complex>(
+        handle, n, A, lda, strideA, ipiv, 0, C, ldc, strideC, info, false, batch_count);
+}
+
+rocblas_status rocsolver_zgetri_npvt_outofplace_strided_batched(rocblas_handle handle,
+                                                                const rocblas_int n,
+                                                                rocblas_double_complex* A,
+                                                                const rocblas_int lda,
+                                                                const rocblas_stride strideA,
+                                                                rocblas_double_complex* C,
+                                                                const rocblas_int ldc,
+                                                                const rocblas_stride strideC,
+                                                                rocblas_int* info,
+                                                                const rocblas_int batch_count)
+{
+    rocblas_int* ipiv = nullptr;
+    return rocsolver_getri_outofplace_strided_batched_impl<rocblas_double_complex>(
+        handle, n, A, lda, strideA, ipiv, 0, C, ldc, strideC, info, false, batch_count);
+}
+
 } // extern C
