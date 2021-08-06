@@ -38,8 +38,8 @@ fi
 
 # save workspace
 if [ "$dirty" = true ]; then
-  >&2 echo 'post-commit: stashing uncomitted changes'
-  git stash push --quiet --message 'post-commit: uncomitted changes'
+  >&2 echo 'post-commit: stashing uncommitted changes'
+  git stash push --quiet --message 'post-commit: uncommitted changes'
 fi
 
 # apply formatting and stage changes
@@ -59,7 +59,7 @@ else
   git config advice.ignoredHook false # disable warning
   git commit --amend --no-edit --no-verify --no-post-rewrite
   if [ "$dirty" = true ]; then
-    >&2 echo 'post-commit: restoring uncomitted changes from stash'
+    >&2 echo 'post-commit: restoring uncommitted changes from stash'
     git stash pop --quiet
   fi
 fi
