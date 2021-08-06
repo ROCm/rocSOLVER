@@ -40,36 +40,33 @@ rocblas_status rocsolver_getf2_batched_impl(rocblas_handle handle,
     // memory workspace sizes:
     // size for constants in rocblas calls
     size_t size_scalars;
-    // size of reusable workspace
-    size_t size_work;
     // sizes to store pivots in intermediate computations
     size_t size_pivotval;
     size_t size_pivotidx;
-    rocsolver_getf2_getMemorySize<true, T, S>(m, n, batch_count, &size_scalars, &size_work,
-                                              &size_pivotval, &size_pivotidx);
+    rocsolver_getf2_getMemorySize<true, PIVOT, T>(m, n, batch_count, &size_scalars, &size_pivotval,
+                                                  &size_pivotidx);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work,
-                                                      size_pivotval, size_pivotidx);
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_pivotval,
+                                                      size_pivotidx);
 
     // memory workspace allocation
-    void *scalars, *pivotidx, *pivotval, *work;
-    rocblas_device_malloc mem(handle, size_scalars, size_work, size_pivotval, size_pivotidx);
+    void *scalars, *pivotidx, *pivotval;
+    rocblas_device_malloc mem(handle, size_scalars, size_pivotval, size_pivotidx);
 
     if(!mem)
         return rocblas_status_memory_error;
 
     scalars = mem[0];
-    work = mem[1];
-    pivotval = mem[2];
-    pivotidx = mem[3];
+    pivotval = mem[1];
+    pivotidx = mem[2];
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_getf2_template<true, PIVOT, T, S>(
-        handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count,
-        (T*)scalars, (rocblas_index_value_t<S>*)work, (T*)pivotval, (rocblas_int*)pivotidx);
+    return rocsolver_getf2_template<true, PIVOT, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
+                                                    shiftP, strideP, info, batch_count, (T*)scalars,
+                                                    (T*)pivotval, (rocblas_int*)pivotidx);
 }
 
 /*
