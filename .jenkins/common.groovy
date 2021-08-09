@@ -39,10 +39,22 @@ def runTestCommand (platform, project, gfilter)
 {
     String sudo = auxiliary.sudo(platform.jenkinsLabel)
     String buildType = project.buildName.contains('Debug') ? 'debug' : 'release'
+
+    def hmmTests= ''
+    if (platform.jenkinsLabel.contains('gfx90a'))
+    {
+        hmmTestCommand = """
+                            export HSA_XNACK=1
+                            GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml:test_detail_hmm_xnack.xml --gtest_color=yes --gtest_filter=*MANAGED_MALLOC*
+                         """
+    }
+
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}/build/${buildType}/clients/staging
-                ${sudo} GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}
+
+                GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}
+                ${hmmTests}
                 """
 
     platform.runCommand(this, command)
