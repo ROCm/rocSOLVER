@@ -244,188 +244,42 @@ inline rocblas_int get_2nd_innerBlkSize(rocblas_int m, rocblas_int n)
 {
     rocblas_int blk;
 
-    if(n <= 56) // n = 16,32,48
+    if(n <= 72) // n = 16,32,48,64
     {
         blk = n;
     }
-    else if(n <= 80) // n = 64
+    else if(n <= 88) // n = 80
     {
-        if(m > 5888)
+        if(m <= 32)
+            blk = 48;
+        else if(m <= 64)
+            blk = n;
+        else if(m <= 352)
             blk = 16;
-        else
-            blk = n;
-    }
-    else if(n <= 144) // n = 96,128
-    {
-        if(m <= 320 || m > 3839)
-            blk = 32;
-        else
-            blk = n;
-    }
-    else if(n <= 176) // n = 160
-    {
-        if(m <= 320 || m > 3071)
-            blk = 32;
-        else
-            blk = n;
-    }
-    else if(n <= 224) // n = 192
-    {
-        if(m <= 448 || m > 4352)
-            blk = 32;
-        else if(m <= 1216)
+        else if(m <= 8960)
             blk = n;
         else
-            blk = 96;
+            blk = 16;
     }
-    else if(n <= 288) // n = 256
+    else if(n <= 104) // n = 96
     {
-        if(m <= 448 || m > 3712)
+        if(m <= 32)
+            blk = 48;
+        else if(m <= 64)
+            blk = n;
+        else if(m <= 352)
             blk = 32;
-        else if(m <= 1216)
+        else if(m <= 4736)
             blk = n;
         else
-            blk = 96;
-    }
-    else if(n <= 352) // n = 320
-    {
-        if(m <= 576 || m > 3456)
             blk = 32;
-        else if(m <= 1216)
-            blk = n;
-        else
-            blk = 96;
     }
-    else if(n <= 416) // n = 384
+    else // n = 112,128,144,160,176,192,208,224,240,256,...
     {
-        if(m <= 576 || m > 3200)
-            blk = 32;
-        else if(m <= 832)
-            blk = n;
-        else
-            blk = 96;
-    }
-    else if(n <= 480) // n = 448
-    {
-        if(m <= 704 || m > 3968)
-            blk = 32;
-        else if(m <= 960)
-            blk = n;
-        else
-            blk = 96;
-    }
-    else if(n <= 544) // n = 512
-    {
-        if(m <= 704 || m > 3968)
-            blk = 32;
-        else
-            blk = 96;
-    }
-    else if(n <= 608) // n = 576
-    {
-        if(m <= 832 || m > 3968)
-            blk = 32;
-        else
-            blk = 96;
-    }
-    else if(n <= 672) // n = 640
-    {
-        if(m <= 576 || m > 3968)
-            blk = 32;
-        else if(m <= 832)
+        if(m < 64)
             blk = 64;
         else
-            blk = 96;
-    }
-    else if(n <= 736) // n = 704
-    {
-        if(m <= 960 || m > 7936)
             blk = 32;
-        if(m <= 3456)
-            blk = 96;
-        else
-            blk = 64;
-    }
-    else if(n <= 800) // n = 768
-    {
-        if(m <= 704 || m > 7936)
-            blk = 32;
-        if(m <= 3456 && m > 960)
-            blk = 96;
-        else
-            blk = 64;
-    }
-    else if(n <= 864) // n = 832
-    {
-        if(m <= 576 || m > 7936)
-            blk = 32;
-        if(m <= 3456 && m > 960)
-            blk = 96;
-        else
-            blk = 64;
-    }
-    else if(n <= 928) // n = 896
-    {
-        if(m <= 576 || m > 7936)
-            blk = 32;
-        if(m <= 2688 && m > 1088)
-            blk = 128;
-        else
-            blk = 64;
-    }
-    else if(n <= 992) // n = 960
-    {
-        if(m <= 576 || m > 7936)
-            blk = 32;
-        if(m <= 3968 && m > 1088)
-            blk = 96;
-        else
-            blk = 64;
-    }
-    else if(n <= 1088) // n = 1024
-    {
-        if(m <= 576 || m > 7936)
-            blk = 32;
-        if(m <= 3968 && m > 1088)
-            blk = 96;
-        else
-            blk = 64;
-    }
-    else if(n <= 1216) // n = 1152
-    {
-        if(m <= 576 || m > 7936)
-            blk = 32;
-        if(m <= 3456 && m > 1408)
-            blk = 96;
-        else
-            blk = 64;
-    }
-    else if(n <= 1344) // n = 1280
-    {
-        if(m <= 576 || m > 7936)
-            blk = 32;
-        if(m <= 2688 && m > 1408)
-            blk = 96;
-        else
-            blk = 64;
-    }
-    else if(n <= 1472) // n = 1408
-    {
-        if(m <= 576 || m > 8960)
-            blk = 32;
-        if(m <= 2944 && m > 1664)
-            blk = 96;
-        else
-            blk = 64;
-    }
-    else // n = 1536
-    {
-        if(m <= 576 || m > 8960)
-            blk = 32;
-        if(m <= 3968 && m > 1664)
-            blk = 96;
-        else
-            blk = 64;
     }
 
     return blk;
@@ -520,8 +374,8 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
     }
 
     rocblas_int dim = min(m, n);
-    rocblas_int blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
-    //rocblas_int blk = 18;//atoi(getenv("BLK"));
+    //    rocblas_int blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
+    rocblas_int blk = 18; //atoi(getenv("BLK"));
 
     if(blk == 1)
     {
@@ -618,7 +472,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
 
     // size of outter blocks
     blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
-    //blk = 18;//atoi(getenv("BLK"));
+    //blk = atoi(getenv("BLK"));
 
     if(blk == 1)
         return rocsolver_getf2_template<ISBATCHED, PIVOT, T>(handle, m, n, A, shiftA, lda, strideA,
@@ -626,21 +480,21 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                                              scalars, pivotval, pivotidx);
 
     //print_device_matrix("original",m,n,A,lda);
-    //print_device_matrix(std::cout,"original",m,n,A,lda);
+    //print_device_matrix(std::cout,"original",1,1,A,lda);
 
     // MAIN LOOP =====>
     for(rocblas_int j = 0; j < dim; j += blk)
     {
         jb = min(dim - j, blk); // number of columns/pivots in the block
-        blk1 = get_1st_innerBlkSize(m - j, jb); // size of 1st-level inner blocks
-        //blk1 = 6;//atoi(getenv("BLK"));
+        //        blk1 = get_1st_innerBlkSize(m - j, jb); // size of 1st-level inner blocks
+        blk1 = jb; //atoi(getenv("BLK"));
 
         // LOOP FACTORIZING 1st-LEVEL INNER BLOCKS =====>
         for(rocblas_int k = 0; k < jb; k += blk1)
         {
             jb1 = min(jb - k, blk1); // number of columns/pivots in the inner block
             blk2 = get_2nd_innerBlkSize(m - j - k, jb1); // size of 2nd-level inner block
-            //blk2 = 2;//atoi(getenv("BLK"));
+            //blk2 = atoi(getenv("BLK"));
 
             // LOOP FACTORIZING 2nd-LEVEL INNER BLOCKS =====>
             for(rocblas_int kk = 0; kk < jb1; kk += blk2)
@@ -653,13 +507,12 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                     lda, strideA, iipiv, 0, jb2, iinfo, batch_count, scalars, pivotval, pivotidx);
 
                 //print_device_matrix(std::cout,"after panel",1,1,A,lda);
-                //print_device_matrix(std::cout,"after panel",m,n,A,lda);
                 // adjust pivots, swap rows and check singularity
                 hipLaunchKernelGGL((getrf_check_singularity<PIVOT, T>), grid, threads, 0, stream, n,
                                    j + k + kk, jb2, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
                                    iipiv, iinfo, info);
 
-                //print_device_matrix(std::cout,"after pivoting",m,n,A,lda);
+                //print_device_matrix(std::cout,"after pivoting",1,1,A,lda);
                 // update trailing 2nd-level sub-block
                 if(kk + jb2 < jb1)
                 {
@@ -670,7 +523,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                         shiftA + idx2D(j + k + kk, j + k + kk + jb2, lda), lda, strideA,
                         batch_count, optim_mem, work1, work2, work3, work4);
                     //print_device_matrix(std::cout,"trsm2",1,1,A,lda);
-                    //print_device_matrix(std::cout,"trsm2",m,n,A,lda);
 
                     if(kk + jb2 < m - j - k)
                     {
@@ -682,7 +534,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                             A, shiftA + idx2D(j + k + kk + jb2, j + k + kk + jb2, lda), lda,
                             strideA, batch_count, nullptr);
                         //print_device_matrix(std::cout,"gemm2",1,1,A,lda);
-                        //print_device_matrix(std::cout,"gemm2",m,n,A,lda);
                     }
                 }
             }
@@ -698,7 +549,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                              shiftA + idx2D(j + k, j + k + jb1, lda), lda, strideA,
                                              batch_count, optim_mem, work1, work2, work3, work4);
                 //print_device_matrix(std::cout,"trsm1",1,1,A,lda);
-                //print_device_matrix(std::cout,"trsm1",m,n,A,lda);
                 if(k + jb1 < m - j)
                 {
                     rocblasCall_gemm<BATCHED, STRIDED, T>(
@@ -708,7 +558,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                         shiftA + idx2D(j + k + jb1, j + k + jb1, lda), lda, strideA, batch_count,
                         nullptr);
                     //print_device_matrix(std::cout,"gemm1",1,1,A,lda);
-                    //print_device_matrix(std::cout,"gemm1",m,n,A,lda);
                 }
             }
         }
@@ -723,7 +572,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                          strideA, A, shiftA + idx2D(j, j + jb, lda), lda, strideA,
                                          batch_count, optim_mem, work1, work2, work3, work4);
             //print_device_matrix(std::cout,"trsm",1,1,A,lda);
-            //print_device_matrix(std::cout,"trsm",m,n,A,lda);
 
             if(j + jb < m)
             {
@@ -733,13 +581,12 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                     shiftA + idx2D(j, j + jb, lda), lda, strideA, &one, A,
                     shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count, nullptr);
                 //print_device_matrix(std::cout,"gemm",1,1,A,lda);
-                //print_device_matrix(std::cout,"gemm",m,n,A,lda);
             }
         }
     }
     // <===== (MAIN LOOP)
 
-    //print_device_matrix(std::cout,"final",m,n,A,lda);
+    //print_device_matrix(std::cout,"final",1,1,A,lda);
     //print_device_matrix("final",m,n,A,lda);
 
     rocblas_set_pointer_mode(handle, old_mode);

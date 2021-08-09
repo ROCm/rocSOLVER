@@ -19,8 +19,9 @@
 #include "rocsolver_small_kernels.hpp"
 
 #define IAMAX_THDS 1024 // number of threads for the iamax reduction kernel
-#define GENERAL_PANEL_SWITCHSIZE \
-    128 // number of columns at which we switch from panel to general matrix
+#define GENERAL_PANEL_SWITCHSIZE                \
+    128 // number of columns at which we switch \
+        // from panel to general matrix
 
 /** This kernel executes an optimized scaled rank-update (scal + ger)
     for panel matrices (matrices with less than 128 columns).
@@ -43,7 +44,7 @@ ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
     // shared data arrays
     T pivot;
     __shared__ T x[DIMX];
-    __shared__ T y[128];
+    __shared__ T y[GENERAL_PANEL_SWITCHSIZE];
 
     // batch instance
     T* A = load_ptr_batch(AA, bid, shiftA + 1 + lda, strideA);
@@ -410,6 +411,9 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     dim3 gridPivot(blocksPivot, batch_count, 1);
     dim3 threadsPivot(LASWP_BLOCKSIZE, 1, 1);
 
+    //std::cout<<"  m: "<<m<<" n: "<<n<<"\n"<<std::flush;
+
+    //print_device_matrix(std::cout,"original",1,1,A,lda);
     for(rocblas_int j = 0; j < dim; ++j)
     {
         if(PIVOT)
@@ -419,12 +423,14 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
             threads = dim3(IAMAX_THDS, 1, 1);
             hipLaunchKernelGGL((getf2_iamax<T>), grid, threads, 0, stream, m - j, A,
                                shiftA + idx2D(j, j, lda), strideA, pivotidx);
+            //print_device_matrix(std::cout,"   after pivot",1,1,A,lda);
         }
 
         // adjust pivot indices, apply row interchanges and check singularity
         hipLaunchKernelGGL((getf2_check_singularity<PIVOT, T>), gridPivot, threadsPivot, 0, stream,
                            n, A, shiftA, strideA, ipiv, shiftP, strideP, j, lda, pivotval, pivotidx,
                            info);
+        //print_device_matrix(std::cout,"   after singularity",1,1,A,lda);
 
         if(n - j - 1 > GENERAL_PANEL_SWITCHSIZE) //if working with a general matrix:
         {
@@ -432,6 +438,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
             rocblasCall_scal<T>(handle, m - j - 1, pivotval, 1, A, shiftA + idx2D(j + 1, j, lda), 1,
                                 strideA, batch_count);
 
+            //print_device_matrix(std::cout,"   after scal",1,1,A,lda);
             // update trailing submatrix
             if(j < dim - 1)
             {
@@ -439,6 +446,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                     handle, m - j - 1, n - j - 1, scalars, 0, A, shiftA + idx2D(j + 1, j, lda), 1,
                     strideA, A, shiftA + idx2D(j, j + 1, lda), lda, strideA, A,
                     shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, batch_count, nullptr);
+                //print_device_matrix(std::cout,"   after ger",1,1,A,lda);
             }
         }
         else //if working with a panel matrix
@@ -451,6 +459,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
             hipLaunchKernelGGL((getf2_scale_update<SGER_DIMX, T>), grid, threads, 0, stream,
                                m - j - 1, n - j - 1, pivotval, A, shiftA + idx2D(j, j, lda), lda,
                                strideA);
+            //print_device_matrix(std::cout,"   after scal-update",1,1,A,lda);
         }
     }
 
