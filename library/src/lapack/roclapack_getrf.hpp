@@ -59,189 +59,11 @@ rocblas_int getrf_get_blksize(rocblas_int dim)
     return blk;
 }
 
-/** This function returns the inner block size. This has been tuned based on
-    experiments with panel matrices; it is not expected to change a lot.
-    (not tunable by user for now) **/
-/*inline rocblas_int get_1st_innerBlkSize(rocblas_int m, rocblas_int n)
-{
-    rocblas_int blk;
-
-    if(n <= 80) // n = 16,32,48,64
-    {
-        blk = n;
-    }
-    else if(n <= 144) // n = 96,128
-    {
-        if(m > 4352)
-            blk = 32;
-        else
-            blk = n;
-    }
-    else if(n <= 224) // n = 160,192
-    {
-        if(m <= 1664)
-            blk = n;
-        else if(m <= 3712)
-            blk = 96;
-        else if(m <= 7936)
-            blk = 128;
-        else
-            blk = 32;
-    }
-    else if(n <= 288) // n = 256
-    {
-        if(m <= 3456)
-            blk = n;
-        else if(m <= 3968)
-            blk = 96;
-        else
-            blk = 128;
-    }
-    else if(n <= 352) // n = 320
-    {
-        if(m <= 2176)
-            blk = n;
-        else if(m <= 4352)
-            blk = 96;
-        else
-            blk = 128;
-    }
-    else if(n <= 416) // n = 384
-    {
-        if(m <= 320)
-            blk = n;
-        else if(m <= 5376)
-            blk = 128;
-        else
-            blk = 256;
-    }
-    else if(n <= 480) // n = 448
-    {
-        if(m <= 448)
-            blk = 288;
-        else if(m <= 4864)
-            blk = 96;
-        else
-            blk = 256;
-    }
-    else if(n <= 544) // n = 512
-    {
-        if(m <= 2432)
-            blk = n;
-        else if(m <= 7424)
-            blk = 256;
-        else
-            blk = 128;
-    }
-    else if(n <= 608) // n = 576
-    {
-        if(m <= 1408)
-            blk = n;
-        else if(m <= 9472)
-            blk = 256;
-        else
-            blk = 128;
-    }
-    else if(n <= 672) //n = 640
-    {
-        if(m <= 2944)
-            blk = n;
-        else if(m <= 10496)
-            blk = 256;
-        else
-            blk = 128;
-    }
-    else if(n <= 736) // n = 704
-    {
-        if(m <= 1664)
-            blk = 128;
-        else
-            blk = 256;
-    }
-    else if(n <= 800) // n = 768
-    {
-        if(m <= 1664)
-            blk = 128;
-        else
-            blk = 256;
-    }
-    else if(n <= 864) // n = 832
-    {
-        if(m <= 1664)
-            blk = 128;
-        else
-            blk = 256;
-    }
-    else if(n <= 928) // n = 896
-    {
-        if(m <= 1408)
-            blk = 128;
-        else if(m <= 2432)
-            blk = 384;
-        else
-            blk = 256;
-    }
-    else if(n <= 992) // n = 960
-    {
-        if(m <= 1216)
-            blk = 128;
-        else if(m <= 1664)
-            blk = 384;
-        else
-            blk = 256;
-    }
-    else if(n <= 1088) // n = 1024
-    {
-        if(m <= 1920)
-            blk = 128;
-        else
-            blk = 256;
-    }
-    else if(n <= 1216) // n = 1152
-    {
-        if(m <= 1920)
-            blk = 128;
-        else if(m <= 3200)
-            blk = 384;
-        else
-            blk = 256;
-    }
-    else if(n <= 1344) // n = 1280
-    {
-        if(m <= 1920)
-            blk = 128;
-        else if(m <= 5376)
-            blk = 320;
-        else
-            blk = 256;
-    }
-    else if(n <= 1472) // n = 1408
-    {
-        if(m <= 1920)
-            blk = 128;
-        else if(m <= 6400)
-            blk = 320;
-        else
-            blk = 256;
-    }
-    else // n = 1536
-    {
-        if(m <= 1920)
-            blk = 128;
-        else if(m <= 6400)
-            blk = 448;
-        else
-            blk = 256;
-    }
-
-    return blk;
-}*/
-
 /** This function returns the inner-inner block size. This has been tuned based on
     experiments with panel matrices; it is not expected to change a lot.
     (not tunable by user for now) **/
 template <bool ISBATCHED>
-inline rocblas_int get_2nd_innerBlkSize(rocblas_int m, rocblas_int n)
+inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n)
 {
     rocblas_int blk;
 
@@ -314,7 +136,7 @@ inline rocblas_int get_2nd_innerBlkSize(rocblas_int m, rocblas_int n)
     return blk;
 }
 
-template <bool PIVOT, typename T, typename U>
+template <bool PIVOT, typename T, typename U, std::enable_if_t<PIVOT, int> = 0>
 ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
                                               const rocblas_int j,
                                               const rocblas_int jb,
@@ -369,6 +191,27 @@ ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
             }
         }
     }
+}
+template <bool PIVOT, typename T, typename U, std::enable_if_t<!PIVOT, int> = 0>
+ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
+                                              const rocblas_int j,
+                                              const rocblas_int jb,
+                                              U AA,
+                                              const rocblas_int shiftA,
+                                              const rocblas_int lda,
+                                              const rocblas_stride strideA,
+                                              rocblas_int* ipivA,
+                                              const rocblas_int shiftP,
+                                              const rocblas_stride strideP,
+                                              rocblas_int* iipivA,
+                                              const rocblas_int* iinfo,
+                                              rocblas_int* info)
+{
+    int id = hipBlockIdx_y;
+
+    // update info (check singularity)
+    if(info[id] == 0 && iinfo[id] > 0)
+        info[id] = iinfo[id] + j;
 }
 
 template <bool BATCHED, bool STRIDED, bool PIVOT, typename T>
@@ -496,79 +339,42 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_int dim = min(m, n); // total number of pivots
     rocblas_int jb, jb1, jb2, blk, blk1, blk2;
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
-    blocks = (n - 1) / BLOCKSIZE + 1;
+    blocks = PIVOT ? (n - 1) / BLOCKSIZE + 1 : 1;
     grid = dim3(blocks, batch_count, 1);
+    threads = dim3((PIVOT ? BLOCKSIZE : 1), 1, 1);
 
     // size of outter blocks
-    blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
-    //blk = atoi(getenv("BLK"));
+    //    blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
+    blk = dim; //atoi(getenv("BLK"));
 
     if(blk == 1)
         return rocsolver_getf2_template<ISBATCHED, PIVOT, T>(handle, m, n, A, shiftA, lda, strideA,
                                                              ipiv, shiftP, strideP, info, batch_count,
                                                              scalars, pivotval, pivotidx);
 
-    //print_device_matrix("original",m,n,A,lda);
-    //print_device_matrix(std::cout,"original",1,1,A,lda);
-
     // MAIN LOOP =====>
     for(rocblas_int j = 0; j < dim; j += blk)
     {
         jb = min(dim - j, blk); // number of columns/pivots in the block
-        //        blk1 = get_1st_innerBlkSize(m - j, jb); // size of 1st-level inner blocks
-        blk1 = jb; //atoi(getenv("BLK"));
+        //        blk1 = getrf_get_innerBlkSize<ISBATCHED>(m - j, jb); // size of inner blocks
+        blk1 = atoi(getenv("BLK"));
 
-        // LOOP FACTORIZING 1st-LEVEL INNER BLOCKS =====>
+        // LOOP FACTORIZING INNER BLOCKS =====>
         for(rocblas_int k = 0; k < jb; k += blk1)
         {
             jb1 = min(jb - k, blk1); // number of columns/pivots in the inner block
-            blk2 = get_2nd_innerBlkSize<ISBATCHED>(m - j - k, jb1); // size of 2nd-level inner block
-            //blk2 = atoi(getenv("BLK"));
 
-            // LOOP FACTORIZING 2nd-LEVEL INNER BLOCKS =====>
-            for(rocblas_int kk = 0; kk < jb1; kk += blk2)
-            {
-                jb2 = min(jb1 - kk, blk2); // number of columns/pivots in the inner-inner block
+            // factorize inner block panel
+            rocsolver_getf2_template<ISBATCHED, PIVOT, T>(
+                handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, iipiv,
+                0, jb1, iinfo, batch_count, scalars, pivotval, pivotidx);
 
-                // factorize panel
-                rocsolver_getf2_template<ISBATCHED, PIVOT, T>(
-                    handle, m - j - k - kk, jb2, A, shiftA + idx2D(j + k + kk, j + k + kk, lda),
-                    lda, strideA, iipiv, 0, jb2, iinfo, batch_count, scalars, pivotval, pivotidx);
+            // adjust pivots, swap rows and check singularity
+            hipLaunchKernelGGL((getrf_check_singularity<PIVOT, T>), grid, threads, 0, stream, n,
+                               j + k, jb1, A, shiftA, lda, strideA, ipiv, shiftP, strideP, iipiv,
+                               iinfo, info);
 
-                //print_device_matrix(std::cout,"after panel",1,1,A,lda);
-                // adjust pivots, swap rows and check singularity
-                hipLaunchKernelGGL((getrf_check_singularity<PIVOT, T>), grid, threads, 0, stream, n,
-                                   j + k + kk, jb2, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
-                                   iipiv, iinfo, info);
-
-                //print_device_matrix(std::cout,"after pivoting",1,1,A,lda);
-                // update trailing 2nd-level sub-block
-                if(kk + jb2 < jb1)
-                {
-                    rocblasCall_trsm<BATCHED, T>(
-                        handle, rocblas_side_left, rocblas_fill_lower, rocblas_operation_none,
-                        rocblas_diagonal_unit, jb2, jb1 - kk - jb2, &one, A,
-                        shiftA + idx2D(j + k + kk, j + k + kk, lda), lda, strideA, A,
-                        shiftA + idx2D(j + k + kk, j + k + kk + jb2, lda), lda, strideA,
-                        batch_count, optim_mem, work1, work2, work3, work4);
-                    //print_device_matrix(std::cout,"trsm2",1,1,A,lda);
-
-                    if(kk + jb2 < m - j - k)
-                    {
-                        rocblasCall_gemm<BATCHED, STRIDED, T>(
-                            handle, rocblas_operation_none, rocblas_operation_none,
-                            m - j - k - kk - jb2, jb1 - kk - jb2, jb2, &minone, A,
-                            shiftA + idx2D(j + k + kk + jb2, j + k + kk, lda), lda, strideA, A,
-                            shiftA + idx2D(j + k + kk, j + k + kk + jb2, lda), lda, strideA, &one,
-                            A, shiftA + idx2D(j + k + kk + jb2, j + k + kk + jb2, lda), lda,
-                            strideA, batch_count, nullptr);
-                        //print_device_matrix(std::cout,"gemm2",1,1,A,lda);
-                    }
-                }
-            }
-            // <===== (LOOP FACTORIZING 2nd-LEVEL INNER BLOCKS)
-
-            // update trailing 1st-level sub-block
+            // update trailing sub-block
             if(k + jb1 < jb)
             {
                 rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
@@ -577,7 +383,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                              shiftA + idx2D(j + k, j + k, lda), lda, strideA, A,
                                              shiftA + idx2D(j + k, j + k + jb1, lda), lda, strideA,
                                              batch_count, optim_mem, work1, work2, work3, work4);
-                //print_device_matrix(std::cout,"trsm1",1,1,A,lda);
+
                 if(k + jb1 < m - j)
                 {
                     rocblasCall_gemm<BATCHED, STRIDED, T>(
@@ -586,7 +392,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                         strideA, A, shiftA + idx2D(j + k, j + k + jb1, lda), lda, strideA, &one, A,
                         shiftA + idx2D(j + k + jb1, j + k + jb1, lda), lda, strideA, batch_count,
                         nullptr);
-                    //print_device_matrix(std::cout,"gemm1",1,1,A,lda);
                 }
             }
         }
@@ -600,7 +405,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                          n - j - jb, &one, A, shiftA + idx2D(j, j, lda), lda,
                                          strideA, A, shiftA + idx2D(j, j + jb, lda), lda, strideA,
                                          batch_count, optim_mem, work1, work2, work3, work4);
-            //print_device_matrix(std::cout,"trsm",1,1,A,lda);
 
             if(j + jb < m)
             {
@@ -609,14 +413,10 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                     jb, &minone, A, shiftA + idx2D(j + jb, j, lda), lda, strideA, A,
                     shiftA + idx2D(j, j + jb, lda), lda, strideA, &one, A,
                     shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count, nullptr);
-                //print_device_matrix(std::cout,"gemm",1,1,A,lda);
             }
         }
     }
     // <===== (MAIN LOOP)
-
-    //print_device_matrix(std::cout,"final",1,1,A,lda);
-    //print_device_matrix("final",m,n,A,lda);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;

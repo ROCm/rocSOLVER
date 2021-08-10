@@ -1,14 +1,9 @@
 /************************************************************************
- * Derived from the BSD3-licensed
- * LAPACK routine (version 3.7.0) --
- *     Univ. of Tennessee, Univ. of California Berkeley,
- *     Univ. of Colorado Denver and NAG Ltd..
- *     December 2016
  * Small sizes algorithm derived from MAGMA project
  * http://icl.cs.utk.edu/magma/.
  * https://doi.org/10.1016/j.procs.2017.05.250
  *
- * Copyright 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #include "rocsolver_small_kernels.hpp"

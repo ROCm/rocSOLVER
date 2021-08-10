@@ -19,7 +19,7 @@
 #include "rocsolver_small_kernels.hpp"
 
 #define IAMAX_THDS 1024 // number of threads for the iamax reduction kernel
-#define GENERAL_PANEL_SWITCHSIZE                \
+#define GENERAL_PANEL_SWITCHSIZE \
     128 // number of columns at which we switch \
         // from panel to general matrix
 
@@ -78,7 +78,7 @@ ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
 
 /** This kernel updates the choosen pivot, checks singularity and
     interchanges rows all at once (pivoting + laswp)**/
-template <bool PIVOT, typename T, typename U>
+template <bool PIVOT, typename T, typename U, std::enable_if_t<PIVOT, int> = 0>
 ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
                                               U AA,
                                               const rocblas_int shiftA,
@@ -119,6 +119,7 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
             }
         }
 
+        // update info (check singularity)
         if(tid == j)
         {
             if(A[j + j * lda] == 0)
@@ -131,6 +132,38 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
                 pivot_val[id] = S(1) / A[j + j * lda];
         }
     }
+}
+
+template <bool PIVOT, typename T, typename U, std::enable_if_t<!PIVOT, int> = 0>
+ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
+                                              U AA,
+                                              const rocblas_int shiftA,
+                                              const rocblas_stride strideA,
+                                              rocblas_int* ipivA,
+                                              const rocblas_int shiftP,
+                                              const rocblas_stride strideP,
+                                              const rocblas_int j,
+                                              const rocblas_int lda,
+                                              T* pivot_val,
+                                              rocblas_int* pivot_idxA,
+                                              rocblas_int* info)
+{
+    using S = decltype(std::real(T{}));
+
+    const int id = hipBlockIdx_y;
+
+    // batch instance
+    T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
+
+    // update info (check singularity)
+    if(A[j + j * lda] == 0)
+    {
+        pivot_val[id] = 1;
+        if(info[id] == 0)
+            info[id] = j + 1; // use Fortran 1-based indexing
+    }
+    else
+        pivot_val[id] = S(1) / A[j + j * lda];
 }
 
 /** This kernel executes an optimized reduction to find the index of the
@@ -217,7 +250,7 @@ ROCSOLVER_KERNEL void getf2_iamax(const rocblas_int m,
     __syncthreads();
 
     // from this point, as all the active threads will form a single wavefront
-    // and work in lock-step, there is no need of synchronizations and barriers
+    // and work in lock-step, there is no need for synchronizations and barriers
     if(tid < 64)
     {
         val1 = sval[tid];
@@ -405,32 +438,25 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
-    rocblas_int blocksx, blocksy;
+    rocblas_int blocksx;
     dim3 grid, threads;
-    rocblas_int blocksPivot = (n - 1) / LASWP_BLOCKSIZE + 1;
+    dim3 gridMax(1, batch_count, 1);
+    dim3 threadsMax(IAMAX_THDS, 1, 1);
+    rocblas_int blocksPivot = PIVOT ? (n - 1) / LASWP_BLOCKSIZE + 1 : 1;
     dim3 gridPivot(blocksPivot, batch_count, 1);
-    dim3 threadsPivot(LASWP_BLOCKSIZE, 1, 1);
+    dim3 threadsPivot((PIVOT ? LASWP_BLOCKSIZE : 1), 1, 1);
 
-    //std::cout<<"  m: "<<m<<" n: "<<n<<"\n"<<std::flush;
-
-    //print_device_matrix(std::cout,"original",1,1,A,lda);
     for(rocblas_int j = 0; j < dim; ++j)
     {
         if(PIVOT)
-        {
             // find pivot. Use Fortran 1-based indexing (to follow LAPACK)
-            grid = dim3(1, batch_count, 1);
-            threads = dim3(IAMAX_THDS, 1, 1);
-            hipLaunchKernelGGL((getf2_iamax<T>), grid, threads, 0, stream, m - j, A,
+            hipLaunchKernelGGL((getf2_iamax<T>), gridMax, threadsMax, 0, stream, m - j, A,
                                shiftA + idx2D(j, j, lda), strideA, pivotidx);
-            //print_device_matrix(std::cout,"   after pivot",1,1,A,lda);
-        }
 
         // adjust pivot indices, apply row interchanges and check singularity
         hipLaunchKernelGGL((getf2_check_singularity<PIVOT, T>), gridPivot, threadsPivot, 0, stream,
                            n, A, shiftA, strideA, ipiv, shiftP, strideP, j, lda, pivotval, pivotidx,
                            info);
-        //print_device_matrix(std::cout,"   after singularity",1,1,A,lda);
 
         if(n - j - 1 > GENERAL_PANEL_SWITCHSIZE) //if working with a general matrix:
         {
@@ -438,7 +464,6 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
             rocblasCall_scal<T>(handle, m - j - 1, pivotval, 1, A, shiftA + idx2D(j + 1, j, lda), 1,
                                 strideA, batch_count);
 
-            //print_device_matrix(std::cout,"   after scal",1,1,A,lda);
             // update trailing submatrix
             if(j < dim - 1)
             {
@@ -446,7 +471,6 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                     handle, m - j - 1, n - j - 1, scalars, 0, A, shiftA + idx2D(j + 1, j, lda), 1,
                     strideA, A, shiftA + idx2D(j, j + 1, lda), lda, strideA, A,
                     shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, batch_count, nullptr);
-                //print_device_matrix(std::cout,"   after ger",1,1,A,lda);
             }
         }
         else //if working with a panel matrix
@@ -459,7 +483,6 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
             hipLaunchKernelGGL((getf2_scale_update<SGER_DIMX, T>), grid, threads, 0, stream,
                                m - j - 1, n - j - 1, pivotval, A, shiftA + idx2D(j, j, lda), lda,
                                strideA);
-            //print_device_matrix(std::cout,"   after scal-update",1,1,A,lda);
         }
     }
 
