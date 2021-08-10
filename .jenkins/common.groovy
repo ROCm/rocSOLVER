@@ -54,7 +54,7 @@ def runTestCommand (platform, project, gfilter)
                 cd ${project.paths.project_build_prefix}/build/${buildType}/clients/staging
 
                 GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}
-                ${hmmTests}
+                ${hmmTestCommand}
                 """
 
     platform.runCommand(this, command)
