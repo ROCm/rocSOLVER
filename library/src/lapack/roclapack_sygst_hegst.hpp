@@ -32,7 +32,7 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
         *size_workArr_temp_arr = 0;
         *size_store_wcs_invA = 0;
         *size_invA_arr = 0;
-        *optim_mem = false;
+        *optim_mem = true;
         return;
     }
 
@@ -43,7 +43,7 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
                                                         size_work_x_temp, size_store_wcs_invA,
                                                         size_workArr_temp_arr);
         *size_invA_arr = 0;
-        *optim_mem = false;
+        *optim_mem = true;
     }
     else
     {
@@ -73,7 +73,7 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
             *optim_mem = true;
         }
         else
-            *optim_mem = false;
+            *optim_mem = true;
     }
 }
 

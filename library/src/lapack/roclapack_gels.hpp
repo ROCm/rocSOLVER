@@ -60,7 +60,7 @@ void rocsolver_gels_getMemorySize(const rocblas_int m,
         *size_diag_trfac_invA = 0;
         *size_trfact_workTrmm_invA_arr = 0;
         *size_ipiv_savedB = 0;
-        *optim_mem = false;
+        *optim_mem = true;
         return;
     }
 

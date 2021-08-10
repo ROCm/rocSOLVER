@@ -64,7 +64,7 @@ void rocsolver_getrs_getMemorySize(const rocblas_int n,
         *size_work2 = 0;
         *size_work3 = 0;
         *size_work4 = 0;
-        *optim_mem = false;
+        *optim_mem = true;
         return;
     }
 

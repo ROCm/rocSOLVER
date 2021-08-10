@@ -46,7 +46,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         *size_work4 = 0;
         *size_pivots = 0;
         *size_iinfo = 0;
-        *optim_mem = false;
+        *optim_mem = true;
         return;
     }
 
@@ -58,7 +58,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         *size_work3 = 0;
         *size_work4 = 0;
         *size_iinfo = 0;
-        *optim_mem = false;
+        *optim_mem = true;
     }
     else
     {

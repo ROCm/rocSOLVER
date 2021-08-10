@@ -54,22 +54,22 @@ void rocsolver_sygv_hegv_getMemorySize(const rocblas_eform itype,
         *size_work4 = 0;
         *size_pivots_workArr = 0;
         *size_iinfo = 0;
-        *optim_mem = false;
+        *optim_mem = true;
         return;
     }
 
-    bool unused_opt;
+    bool opt1, opt2, opt3 = true;
     size_t unused, temp1, temp2, temp3, temp4, temp5;
 
     // requirements for calling POTRF
     rocsolver_potrf_getMemorySize<BATCHED, T>(n, uplo, batch_count, size_scalars, size_work1,
                                               size_work2, size_work3, size_work4,
-                                              size_pivots_workArr, size_iinfo, &unused_opt);
+                                              size_pivots_workArr, size_iinfo, &opt1);
     *size_iinfo = max(*size_iinfo, sizeof(rocblas_int) * batch_count);
 
     // requirements for calling SYGST/HEGST
     rocsolver_sygst_hegst_getMemorySize<BATCHED, T>(itype, n, batch_count, &unused, &temp1, &temp2,
-                                                    &temp3, &temp4, &unused_opt);
+                                                    &temp3, &temp4, &opt2);
     *size_work1 = max(*size_work1, temp1);
     *size_work2 = max(*size_work2, temp2);
     *size_work3 = max(*size_work3, temp3);
@@ -95,11 +95,13 @@ void rocsolver_sygv_hegv_getMemorySize(const rocblas_eform itype,
             *size_work2 = max(*size_work2, temp2);
             *size_work3 = max(*size_work3, temp3);
             *size_work4 = max(*size_work4, temp4);
+
+            // always allocate all required memory for TRSM optimal performance
+            opt3 = true;
         }
     }
 
-    // always allocate all required memory for TRSM optimal performance
-    *optim_mem = true;
+    *optim_mem = opt1 && opt2 && opt3;
 }
 
 template <typename T, typename S>

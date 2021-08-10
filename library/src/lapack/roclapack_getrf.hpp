@@ -111,7 +111,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         *size_pivotval = 0;
         *size_pivotidx = 0;
         *size_iinfo = 0;
-        *optim_mem = false;
+        *optim_mem = true;
         return;
     }
 
@@ -128,7 +128,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         *size_work3 = 0;
         *size_work4 = 0;
         *size_iinfo = 0;
-        *optim_mem = false;
+        *optim_mem = true;
     }
     else
     {

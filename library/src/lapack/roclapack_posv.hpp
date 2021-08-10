@@ -71,31 +71,29 @@ void rocsolver_posv_getMemorySize(const rocblas_int n,
         *size_work4 = 0;
         *size_pivots_savedB = 0;
         *size_iinfo = 0;
-        *optim_mem = false;
+        *optim_mem = true;
         return;
     }
 
-    bool unused;
+    bool opt1, opt2;
     size_t w1, w2, w3, w4;
 
     // workspace required for potrf
     rocsolver_potrf_getMemorySize<BATCHED, T>(n, uplo, batch_count, size_scalars, size_work1,
                                               size_work2, size_work3, size_work4,
-                                              size_pivots_savedB, size_iinfo, &unused);
+                                              size_pivots_savedB, size_iinfo, &opt1);
 
     // workspace required for potrs
-    rocsolver_potrs_getMemorySize<BATCHED, T>(n, nrhs, batch_count, &w1, &w2, &w3, &w4, &unused);
+    rocsolver_potrs_getMemorySize<BATCHED, T>(n, nrhs, batch_count, &w1, &w2, &w3, &w4, &opt2);
 
     *size_work1 = std::max(*size_work1, w1);
     *size_work2 = std::max(*size_work2, w2);
     *size_work3 = std::max(*size_work3, w3);
     *size_work4 = std::max(*size_work4, w4);
+    *optim_mem = opt1 && opt2;
 
     // extra space to copy B
     *size_pivots_savedB = std::max(*size_pivots_savedB, sizeof(T) * n * nrhs * batch_count);
-
-    // always allocate all required memory for TRSM optimal performance
-    *optim_mem = true;
 }
 
 template <bool BATCHED, typename T, typename S, typename U>

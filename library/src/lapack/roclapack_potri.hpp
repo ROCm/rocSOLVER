@@ -33,7 +33,7 @@ void rocsolver_potri_getMemorySize(const rocblas_int n,
         *size_work4 = 0;
         *size_tmpcopy = 0;
         *size_workArr = 0;
-        *optim_mem = false;
+        *optim_mem = true;
         return;
     }
 

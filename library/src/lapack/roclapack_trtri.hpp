@@ -87,7 +87,7 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
         *size_work4 = 0;
         *size_tmpcopy = 0;
         *size_workArr = 0;
-        *optim_mem = false;
+        *optim_mem = true;
         return;
     }
 
@@ -137,7 +137,7 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
         rocblasCall_trtri_mem<BATCHED, T>(n, batch_count, size_work1, size_work2);
         *size_work3 = 0;
         *size_work4 = 0;
-        *optim_mem = false;
+        *optim_mem = true;
     }
     else if(blk == 1)
     {
@@ -145,7 +145,7 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
         *size_work2 = 0;
         *size_work3 = w3a;
         *size_work4 = 0;
-        *optim_mem = false;
+        *optim_mem = true;
     }
     else
     {
