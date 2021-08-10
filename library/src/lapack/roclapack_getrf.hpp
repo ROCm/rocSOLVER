@@ -62,7 +62,7 @@ rocblas_int getrf_get_blksize(rocblas_int dim)
 /** This function returns the inner block size. This has been tuned based on
     experiments with panel matrices; it is not expected to change a lot.
     (not tunable by user for now) **/
-inline rocblas_int get_1st_innerBlkSize(rocblas_int m, rocblas_int n)
+/*inline rocblas_int get_1st_innerBlkSize(rocblas_int m, rocblas_int n)
 {
     rocblas_int blk;
 
@@ -235,51 +235,80 @@ inline rocblas_int get_1st_innerBlkSize(rocblas_int m, rocblas_int n)
     }
 
     return blk;
-}
+}*/
 
 /** This function returns the inner-inner block size. This has been tuned based on
     experiments with panel matrices; it is not expected to change a lot.
     (not tunable by user for now) **/
+template <bool ISBATCHED>
 inline rocblas_int get_2nd_innerBlkSize(rocblas_int m, rocblas_int n)
 {
     rocblas_int blk;
 
-    if(n <= 72) // n = 16,32,48,64
+    if(ISBATCHED)
     {
-        blk = n;
+        if(n <= 72) // n = 16,32,48,64
+        {
+            if(m <= 64)
+                blk = n;
+            else
+                blk = 16;
+        }
+        else if(n <= 88) // n = 80
+        {
+            if(m <= 55)
+                blk = 64;
+            else
+                blk = 16;
+        }
+        else // n = 96,112,128,144,160,176,192,208,224,240,256,...
+        {
+            if(m <= 64)
+                blk = 64;
+            else
+                blk = 16;
+        }
     }
-    else if(n <= 88) // n = 80
+
+    else
     {
-        if(m <= 32)
-            blk = 48;
-        else if(m <= 64)
+        if(n <= 72) // n = 16,32,48,64
+        {
             blk = n;
-        else if(m <= 352)
-            blk = 16;
-        else if(m <= 8960)
-            blk = n;
-        else
-            blk = 16;
-    }
-    else if(n <= 104) // n = 96
-    {
-        if(m <= 32)
-            blk = 48;
-        else if(m <= 64)
-            blk = n;
-        else if(m <= 352)
-            blk = 32;
-        else if(m <= 4736)
-            blk = n;
-        else
-            blk = 32;
-    }
-    else // n = 112,128,144,160,176,192,208,224,240,256,...
-    {
-        if(m < 64)
-            blk = 64;
-        else
-            blk = 32;
+        }
+        else if(n <= 88) // n = 80
+        {
+            if(m <= 32)
+                blk = 48;
+            else if(m <= 64)
+                blk = n;
+            else if(m <= 352)
+                blk = 16;
+            else if(m <= 8960)
+                blk = n;
+            else
+                blk = 16;
+        }
+        else if(n <= 104) // n = 96
+        {
+            if(m <= 32)
+                blk = 48;
+            else if(m <= 64)
+                blk = n;
+            else if(m <= 352)
+                blk = 32;
+            else if(m <= 4736)
+                blk = n;
+            else
+                blk = 32;
+        }
+        else // n = 112,128,144,160,176,192,208,224,240,256,...
+        {
+            if(m < 64)
+                blk = 64;
+            else
+                blk = 32;
+        }
     }
 
     return blk;
@@ -493,7 +522,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
         for(rocblas_int k = 0; k < jb; k += blk1)
         {
             jb1 = min(jb - k, blk1); // number of columns/pivots in the inner block
-            blk2 = get_2nd_innerBlkSize(m - j - k, jb1); // size of 2nd-level inner block
+            blk2 = get_2nd_innerBlkSize<ISBATCHED>(m - j - k, jb1); // size of 2nd-level inner block
             //blk2 = atoi(getenv("BLK"));
 
             // LOOP FACTORIZING 2nd-LEVEL INNER BLOCKS =====>
