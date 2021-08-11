@@ -39,6 +39,7 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle,
     // size for constants in rocblas calls
     size_t size_scalars;
     // size of reusable workspace (and for calling TRSM)
+    bool optim_mem;
     size_t size_work, size_work1, size_work2, size_work3, size_work4;
     // extra requirements for calling GETF2
     size_t size_pivotval, size_pivotidx;
@@ -46,15 +47,12 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle,
     size_t size_iinfo;
     rocsolver_getrf_getMemorySize<false, false, PIVOT, T, S>(
         m, n, batch_count, &size_scalars, &size_work, &size_work1, &size_work2, &size_work3,
-        &size_work4, &size_pivotval, &size_pivotidx, &size_iinfo);
+        &size_work4, &size_pivotval, &size_pivotidx, &size_iinfo, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work, size_work1,
                                                       size_work2, size_work3, size_work4,
                                                       size_pivotval, size_pivotidx, size_iinfo);
-
-    // always allocate all required memory for TRSM optimal performance
-    bool optim_mem = true;
 
     // memory workspace allocation
     void *scalars, *work, *work1, *work2, *work3, *work4, *pivotval, *pivotidx, *iinfo;

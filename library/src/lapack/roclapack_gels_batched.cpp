@@ -37,19 +37,23 @@ rocblas_status rocsolver_gels_batched_impl(rocblas_handle handle,
     const rocblas_stride strideA = 0;
     const rocblas_stride strideB = 0;
 
-    size_t size_scalars, size_work_x_temp, size_workArr_temp_arr, size_diag_trfac_invA,
-        size_trfact_workTrmm_invA_arr, size_ipiv;
+    // memory workspace sizes:
+    // size for constants in rocblas calls
+    size_t size_scalars;
+    // size of workspace (for calling GEQRF/GELQF, ORMQR/ORMLQ, and TRSM)
+    bool optim_mem;
+    size_t size_work_x_temp, size_workArr_temp_arr, size_diag_trfac_invA,
+        size_trfact_workTrmm_invA_arr;
+    // extra requirements for calling ORMQR/ORMLQ and to copy B
+    size_t size_ipiv;
     rocsolver_gels_getMemorySize<true, false, T>(
         m, n, nrhs, batch_count, &size_scalars, &size_work_x_temp, &size_workArr_temp_arr,
-        &size_diag_trfac_invA, &size_trfact_workTrmm_invA_arr, &size_ipiv);
+        &size_diag_trfac_invA, &size_trfact_workTrmm_invA_arr, &size_ipiv, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_x_temp,
                                                       size_workArr_temp_arr, size_diag_trfac_invA,
                                                       size_trfact_workTrmm_invA_arr, size_ipiv);
-
-    // always allocate all required memory for TRSM optimal performance
-    bool optim_mem = true;
 
     // memory workspace allocation
     void *scalars, *work, *workArr, *diag_trfac_invA, *trfact_workTrmm_invA, *ipiv;
