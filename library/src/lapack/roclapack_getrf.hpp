@@ -94,7 +94,8 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
                                    size_t* size_work4,
                                    size_t* size_pivotval,
                                    size_t* size_pivotidx,
-                                   size_t* size_iinfo)
+                                   size_t* size_iinfo,
+                                   bool* optim_mem)
 {
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
@@ -110,6 +111,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         *size_pivotval = 0;
         *size_pivotidx = 0;
         *size_iinfo = 0;
+        *optim_mem = true;
         return;
     }
 
@@ -126,6 +128,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         *size_work3 = 0;
         *size_work4 = 0;
         *size_iinfo = 0;
+        *optim_mem = true;
     }
     else
     {
@@ -139,6 +142,9 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         // extra workspace (for calling TRSM)
         rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, blk, n - blk, batch_count, size_work1,
                                          size_work2, size_work3, size_work4);
+
+        // always allocate all required memory for TRSM optimal performance
+        *optim_mem = true;
     }
 }
 

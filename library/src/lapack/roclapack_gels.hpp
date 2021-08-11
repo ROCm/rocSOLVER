@@ -48,7 +48,8 @@ void rocsolver_gels_getMemorySize(const rocblas_int m,
                                   size_t* size_workArr_temp_arr,
                                   size_t* size_diag_trfac_invA,
                                   size_t* size_trfact_workTrmm_invA_arr,
-                                  size_t* size_ipiv_savedB)
+                                  size_t* size_ipiv_savedB,
+                                  bool* optim_mem)
 {
     // if quick return no workspace needed
     if(m == 0 || n == 0 || nrhs == 0 || batch_count == 0)
@@ -59,6 +60,7 @@ void rocsolver_gels_getMemorySize(const rocblas_int m,
         *size_diag_trfac_invA = 0;
         *size_trfact_workTrmm_invA_arr = 0;
         *size_ipiv_savedB = 0;
+        *optim_mem = true;
         return;
     }
 
@@ -100,6 +102,9 @@ void rocsolver_gels_getMemorySize(const rocblas_int m,
     *size_trfact_workTrmm_invA_arr = std::max({gexxf_trfact, ormxx_workTrmm, trsm_invA_arr});
     // size_ipiv = sizeof(T) * std::min(m, n) * batch_count, which is always less than size_savedB
     *size_ipiv_savedB = sizeof(T) * std::min(m, n) * nrhs * batch_count;
+
+    // always allocate all required memory for TRSM optimal performance
+    *optim_mem = true;
 }
 
 template <bool COMPLEX, typename T>

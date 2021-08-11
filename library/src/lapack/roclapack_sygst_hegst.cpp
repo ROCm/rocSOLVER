@@ -39,19 +39,17 @@ rocblas_status rocsolver_sygst_hegst_impl(rocblas_handle handle,
     // memory workspace sizes:
     // size for constants in rocblas calls
     size_t size_scalars;
-    // size of reusable workspace (and for calling TRSV or TRMV)
+    // size of reusable workspace (and for calling SYGS2/HEGS2 and TRSM)
+    bool optim_mem;
     size_t size_work_x_temp, size_workArr_temp_arr, size_store_wcs_invA, size_invA_arr;
     rocsolver_sygst_hegst_getMemorySize<false, T>(itype, n, batch_count, &size_scalars,
                                                   &size_work_x_temp, &size_workArr_temp_arr,
-                                                  &size_store_wcs_invA, &size_invA_arr);
+                                                  &size_store_wcs_invA, &size_invA_arr, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_x_temp,
                                                       size_workArr_temp_arr, size_store_wcs_invA,
                                                       size_invA_arr);
-
-    // always allocate all required memory for TRSM optimal performance
-    bool optim_mem = true;
 
     // memory workspace allocation
     void *scalars, *work_x_temp, *workArr_temp_arr, *store_wcs_invA, *invA_arr;

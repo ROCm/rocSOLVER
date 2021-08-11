@@ -21,7 +21,8 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
                                          size_t* size_work_x_temp,
                                          size_t* size_workArr_temp_arr,
                                          size_t* size_store_wcs_invA,
-                                         size_t* size_invA_arr)
+                                         size_t* size_invA_arr,
+                                         bool* optim_mem)
 {
     // if quick return no need of workspace
     if(n == 0 || batch_count == 0)
@@ -31,6 +32,7 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
         *size_workArr_temp_arr = 0;
         *size_store_wcs_invA = 0;
         *size_invA_arr = 0;
+        *optim_mem = true;
         return;
     }
 
@@ -41,6 +43,7 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
                                                         size_work_x_temp, size_store_wcs_invA,
                                                         size_workArr_temp_arr);
         *size_invA_arr = 0;
+        *optim_mem = true;
     }
     else
     {
@@ -65,7 +68,12 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
             *size_workArr_temp_arr = max(*size_workArr_temp_arr, max(temp2, temp6));
             *size_store_wcs_invA = max(*size_store_wcs_invA, max(temp3, temp7));
             *size_invA_arr = max(*size_invA_arr, max(temp4, temp8));
+
+            // always allocate all required memory for TRSM optimal performance
+            *optim_mem = true;
         }
+        else
+            *optim_mem = true;
     }
 }
 
