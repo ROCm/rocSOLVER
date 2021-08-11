@@ -33,7 +33,8 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
                                    size_t* size_work3,
                                    size_t* size_work4,
                                    size_t* size_pivots,
-                                   size_t* size_iinfo)
+                                   size_t* size_iinfo,
+                                   bool* optim_mem)
 {
     // if quick return no need of workspace
     if(n == 0 || batch_count == 0)
@@ -45,6 +46,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         *size_work4 = 0;
         *size_pivots = 0;
         *size_iinfo = 0;
+        *optim_mem = true;
         return;
     }
 
@@ -56,6 +58,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         *size_work3 = 0;
         *size_work4 = 0;
         *size_iinfo = 0;
+        *optim_mem = true;
     }
     else
     {
@@ -77,6 +80,9 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
                                              size_work2, size_work3, size_work4);
 
         *size_work1 = max(s1, s2);
+
+        // always allocate all required memory for TRSM optimal performance
+        *optim_mem = true;
     }
 }
 
