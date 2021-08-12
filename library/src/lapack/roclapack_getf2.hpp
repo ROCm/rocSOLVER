@@ -18,15 +18,18 @@
 #include "rocsolver.h"
 #include "rocsolver_small_kernels.hpp"
 
-#define IAMAX_THDS 1024 // number of threads for the iamax reduction kernel
-#define GENERAL_PANEL_SWITCHSIZE \
-    128 // number of columns at which we switch \
-        // from panel to general matrix
+// number of threads for the iamax reduction kernel
+#define IAMAX_THDS 1024
+// number of columns at which we switch from panel to general matrix
+#define GENERAL_PANEL_SWITCHSIZE 128
+// number of threads for the scal+ger kernel
+#define SGER_DIMX 128
+#define SGER_DIMY 8
 
 /** This kernel executes an optimized scaled rank-update (scal + ger)
     for panel matrices (matrices with less than 128 columns).
     Useful to speedup the factorization of block-columns in getrf **/
-template <rocblas_int DIMX, typename T, typename U>
+template <typename T, typename U>
 ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
                                          const rocblas_int n,
                                          T* pivotval,
@@ -43,7 +46,7 @@ ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
 
     // shared data arrays
     T pivot;
-    __shared__ T x[DIMX];
+    __shared__ T x[SGER_DIMX];
     __shared__ T y[GENERAL_PANEL_SWITCHSIZE];
 
     // batch instance
@@ -134,6 +137,7 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
     }
 }
 
+/** Non-pivoting version **/
 template <bool PIVOT, typename T, typename U, std::enable_if_t<!PIVOT, int> = 0>
 ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
                                               U AA,
@@ -310,6 +314,7 @@ ROCSOLVER_KERNEL void getf2_iamax(const rocblas_int m,
         pivotidx[bid] = sidx[0];
 }
 
+/** Return the sizes of the different workspace arrays **/
 template <bool ISBATCHED, bool PIVOT, typename T>
 void rocsolver_getf2_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
@@ -329,16 +334,12 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
 
 #ifdef OPTIMAL
     // if using optimized algorithm for small sizes, no workspace needed
-    if(n <= WAVESIZE)
+    if(n <= GETF2_MIN_COLS && m <= GETF2_MAX_THDS)
     {
-        if(m <= GETF2_MAX_THDS || (m <= GETF2_OPTIM_MAX_SIZE && !ISBATCHED)
-           || (m <= GETF2_BATCH_OPTIM_MAX_SIZE && ISBATCHED))
-        {
-            *size_scalars = 0;
-            *size_pivotval = 0;
-            *size_pivotidx = 0;
-            return;
-        }
+        *size_scalars = 0;
+        *size_pivotval = 0;
+        *size_pivotidx = 0;
+        return;
     }
 #endif
 
@@ -352,6 +353,7 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
     *size_pivotidx = PIVOT ? sizeof(rocblas_int) * batch_count : 0;
 }
 
+/** argument checking **/
 template <typename T>
 rocblas_status rocsolver_getf2_getrf_argCheck(rocblas_handle handle,
                                               const rocblas_int m,
@@ -424,13 +426,9 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
 
 #ifdef OPTIMAL
     // Use optimized LU factorization for the right sizes
-    if(n <= WAVESIZE)
-    {
-        if((m <= GETF2_OPTIM_MAX_SIZE && !ISBATCHED)
-           || (m <= GETF2_BATCH_OPTIM_MAX_SIZE && ISBATCHED))
-            return getf2_run_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
-                                      info, batch_count, PIVOT);
-    }
+    if(n <= GETF2_MIN_COLS && m <= GETF2_MAX_THDS)
+        return getf2_run_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
+                                  info, batch_count, PIVOT);
 #endif
 
     // everything must be executed with scalars on the device
@@ -438,6 +436,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
+    // prepare kernels
     rocblas_int blocksx;
     dim3 grid, threads;
     dim3 gridMax(1, batch_count, 1);
@@ -480,9 +479,8 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
             threads = dim3(SGER_DIMX, SGER_DIMY, 1);
 
             // scale and update panel trailing matrix with local function
-            hipLaunchKernelGGL((getf2_scale_update<SGER_DIMX, T>), grid, threads, 0, stream,
-                               m - j - 1, n - j - 1, pivotval, A, shiftA + idx2D(j, j, lda), lda,
-                               strideA);
+            hipLaunchKernelGGL((getf2_scale_update<T>), grid, threads, 0, stream, m - j - 1,
+                               n - j - 1, pivotval, A, shiftA + idx2D(j, j, lda), lda, strideA);
         }
     }
 

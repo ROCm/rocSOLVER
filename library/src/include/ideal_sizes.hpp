@@ -23,13 +23,10 @@
 #define ORMxx_ORMxx_BLOCKSIZE 32
 
 // getf2/getfr
-#define SGER_DIMX 128
-#define SGER_DIMY 8
+#define GETF2_MIN_COLS 256
 #define GETF2_MAX_THDS 256
 #define GETF2_OPTIM_NGRP \
     16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
-#define GETF2_BATCH_OPTIM_MAX_SIZE 256
-#define GETF2_OPTIM_MAX_SIZE 256
 #define GETRF_NUM_INTERVALS 4
 #define GETRF_INTERVALS 65, 1249, 2753, 8449
 #define GETRF_BLKSIZES 1, 32, 256, 288, 416

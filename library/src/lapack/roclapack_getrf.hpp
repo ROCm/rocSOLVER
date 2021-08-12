@@ -61,7 +61,7 @@ rocblas_int getrf_get_blksize(rocblas_int dim)
 
 /** This function returns the inner-inner block size. This has been tuned based on
     experiments with panel matrices; it is not expected to change a lot.
-    (not tunable by user for now) **/
+    (not tunable by the user for now) **/
 template <bool ISBATCHED, bool PIVOT>
 inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n)
 {
@@ -226,6 +226,8 @@ inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n)
     return blk;
 }
 
+/** This kernel updates the choosen pivots, checks singularity and
+    interchanges rows all at once (pivoting + laswp)**/
 template <bool PIVOT, typename T, typename U, std::enable_if_t<PIVOT, int> = 0>
 ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
                                               const rocblas_int j,
@@ -282,6 +284,8 @@ ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
         }
     }
 }
+
+/** non-pivoting version **/
 template <bool PIVOT, typename T, typename U, std::enable_if_t<!PIVOT, int> = 0>
 ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
                                               const rocblas_int j,
@@ -304,6 +308,7 @@ ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
         info[id] = iinfo[id] + j;
 }
 
+/** Return the sizes of the different workspace arrays **/
 template <bool BATCHED, bool STRIDED, bool PIVOT, typename T>
 void rocsolver_getrf_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
@@ -406,11 +411,10 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
+    // info=0 (starting with a nonsingular matrix)
     rocblas_int blocks = (batch_count - 1) / BLOCKSIZE + 1;
     dim3 grid(blocks, 1, 1);
     dim3 threads(BLOCKSIZE, 1, 1);
-
-    // info=0 (starting with a nonsingular matrix)
     hipLaunchKernelGGL(reset_info, grid, threads, 0, stream, info, batch_count, 0);
 
     // quick return if no dimensions
@@ -426,6 +430,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     T one = 1; // constant 1 in host
     T minone = -1; // constant -1 in host
 
+    // prepare kernels
     rocblas_int dim = min(m, n); // total number of pivots
     rocblas_int jb, jb1, jb2, blk, blk1, blk2;
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
@@ -483,7 +488,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                 }
             }
         }
-        // <===== (LOOP FACTORIZING 1st-LEVEL INNER BLOCKS)
+        // <===== (LOOP FACTORIZING INNER BLOCKS)
 
         // update trailing matrix
         if(j + jb < n)
