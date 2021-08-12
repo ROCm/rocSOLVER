@@ -4,9 +4,6 @@
 
 #pragma once
 
-// general
-#define WAVESIZE 64 // size of wavefront
-
 // These are used by different common kernels
 //(TODO: identify functions and name accordingly)
 #define BLOCKSIZE 256
@@ -23,7 +20,7 @@
 #define ORMxx_ORMxx_BLOCKSIZE 32
 
 // getf2/getfr
-#define GETF2_MIN_COLS 256
+#define GETF2_MAX_COLS 64 //always <= wavefront size
 #define GETF2_MAX_THDS 256
 #define GETF2_OPTIM_NGRP \
     16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
@@ -41,6 +38,7 @@
 #define GETRF_NPVT_BATCH_BLKSIZES 1, 16, 32, 256
 
 // getri
+#define GETRI_MAX_COLS 64 //always <= wavefront size
 #define GETRI_TINY_SIZE 43
 #define GETRI_NUM_INTERVALS 1
 #define GETRI_INTERVALS 1185
@@ -51,6 +49,7 @@
 #define GETRI_BATCH_BLKSIZES 32, 0, 256
 
 // TRTRI
+#define TRTRI_MAX_COLS 64 //always <= wavefront size
 #define TRTRI_NUM_INTERVALS 1
 #define TRTRI_INTERVALS 0
 #define TRTRI_BLKSIZES 0, 0

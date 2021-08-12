@@ -12,7 +12,7 @@
 
 /************************************************************************
     LUfact_small_kernel takes care of of matrices with
-    m <= GETF2_MAX_THDS and n <= WAVESIZE
+    m <= GETF2_MAX_THDS and n <= GETF2_MAX_COLS
 ************************************************************************/
 template <rocblas_int DIM, typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
@@ -48,7 +48,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     // (SHUFFLES DO NOT IMPROVE PERFORMANCE IN THIS CASE)
     extern __shared__ double lmem[];
     T* common = (T*)lmem;
-    common += ty * WAVESIZE;
+    common += ty * GETF2_MAX_COLS;
 
     // local variables
     T pivot_value;
@@ -155,7 +155,7 @@ rocblas_status getf2_run_small(rocblas_handle handle,
     rocblas_int ngrp = (batch_count < 2 || m > 32) ? 1 : opval[m - 1];
     rocblas_int blocks = (batch_count - 1) / ngrp + 1;
     rocblas_int nthds = m;
-    rocblas_int msize = (m <= 32) ? WAVESIZE : max(m, n);
+    rocblas_int msize = (m <= 32) ? GETF2_MAX_COLS : max(m, n);
 
     // prepare kernel launch
     dim3 grid(blocks, 1, 1);

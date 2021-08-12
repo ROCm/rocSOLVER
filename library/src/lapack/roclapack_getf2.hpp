@@ -334,7 +334,7 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
 
 #ifdef OPTIMAL
     // if using optimized algorithm for small sizes, no workspace needed
-    if(n <= GETF2_MIN_COLS && m <= GETF2_MAX_THDS)
+    if(n <= GETF2_MAX_COLS && m <= GETF2_MAX_THDS)
     {
         *size_scalars = 0;
         *size_pivotval = 0;
@@ -426,7 +426,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
 
 #ifdef OPTIMAL
     // Use optimized LU factorization for the right sizes
-    if(n <= GETF2_MIN_COLS && m <= GETF2_MAX_THDS)
+    if(n <= GETF2_MAX_COLS && m <= GETF2_MAX_THDS)
         return getf2_run_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
                                   info, batch_count, PIVOT);
 #endif

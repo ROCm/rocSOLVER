@@ -202,7 +202,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
 
 #ifdef OPTIMAL
     // if small size nothing else is needed
-    if(n <= WAVESIZE)
+    if(n <= TRTRI_MAX_COLS)
     {
         *size_work1 = w1b;
         *size_work2 = w2b;
@@ -326,7 +326,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
 
 #ifdef OPTIMAL
     // if small size, use optimized kernel for stage 2
-    if(n <= WAVESIZE)
+    if(n <= TRTRI_MAX_COLS)
     {
         return getri_run_small<T>(handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
                                   batch_count, false);

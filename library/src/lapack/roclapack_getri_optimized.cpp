@@ -12,15 +12,16 @@
 #ifdef OPTIMAL
 
 template <rocblas_int DIM, typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) getri_kernel_small(U AA,
-                                                                     const rocblas_int shiftA,
-                                                                     const rocblas_int lda,
-                                                                     const rocblas_stride strideA,
-                                                                     rocblas_int* ipivA,
-                                                                     const rocblas_int shiftP,
-                                                                     const rocblas_stride strideP,
-                                                                     rocblas_int* info,
-                                                                     const bool complete)
+ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
+    getri_kernel_small(U AA,
+                       const rocblas_int shiftA,
+                       const rocblas_int lda,
+                       const rocblas_stride strideA,
+                       rocblas_int* ipivA,
+                       const rocblas_int shiftP,
+                       const rocblas_stride strideP,
+                       rocblas_int* info,
+                       const bool complete)
 {
     int b = hipBlockIdx_x;
     int i = hipThreadIdx_x;
@@ -158,7 +159,7 @@ rocblas_status getri_run_small(rocblas_handle handle,
                        strideA, ipiv, shiftP, strideP, info, complete)
 
     dim3 grid(batch_count, 1, 1);
-    dim3 block(WAVESIZE, 1, 1);
+    dim3 block(TRTRI_MAX_COLS, 1, 1);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
