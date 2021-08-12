@@ -4,12 +4,12 @@
 
 #pragma once
 
+#include <internal/rocblas-exported-proto.hpp>
+#include <internal/rocblas_device_malloc.hpp>
 #include <rocblas.h>
 
 #include "common_host_helpers.hpp"
 #include "init_scalars.hpp"
-#include "internal/rocblas-exported-proto.hpp"
-#include "internal/rocblas_device_malloc.hpp"
 #include "lib_device_helpers.hpp"
 #include "lib_host_helpers.hpp"
 #include "rocsolver_logger.hpp"
@@ -546,10 +546,10 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
                   "shiftA:", offset_a, "lda:", ld_a, "shiftB:", offset_b, "ldb:", ld_b,
                   "shiftC:", offset_c, "ldc:", ld_c, "bc:", batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
-        handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
-        cast2constType<T>(B), offset_b, ld_b, stride_b, beta, C, offset_c, ld_c, stride_c,
-        batch_count);
+    return rocblas_internal_gemm_template<BATCHED>(handle, trans_a, trans_b, m, n, k, alpha,
+                                                   cast2constType<T>(A), offset_a, ld_a, stride_a,
+                                                   cast2constType<T>(B), offset_b, ld_b, stride_b,
+                                                   beta, C, offset_c, ld_c, stride_c, batch_count);
 }
 
 // gemm overload
@@ -588,10 +588,10 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, stride_a, batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
-        handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(work), offset_a, ld_a, stride_a,
-        cast2constType<T>(B), offset_b, ld_b, stride_b, beta, C, offset_c, ld_c, stride_c,
-        batch_count);
+    return rocblas_internal_gemm_template<BATCHED>(handle, trans_a, trans_b, m, n, k, alpha,
+                                                   cast2constType<T>(work), offset_a, ld_a, stride_a,
+                                                   cast2constType<T>(B), offset_b, ld_b, stride_b,
+                                                   beta, C, offset_c, ld_c, stride_c, batch_count);
 }
 
 // gemm overload
@@ -630,10 +630,10 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, stride_b, batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
-        handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
-        cast2constType<T>(work), offset_b, ld_b, stride_b, beta, C, offset_c, ld_c, stride_c,
-        batch_count);
+    return rocblas_internal_gemm_template<BATCHED>(handle, trans_a, trans_b, m, n, k, alpha,
+                                                   cast2constType<T>(A), offset_a, ld_a, stride_a,
+                                                   cast2constType<T>(work), offset_b, ld_b, stride_b,
+                                                   beta, C, offset_c, ld_c, stride_c, batch_count);
 }
 
 // gemm overload
@@ -672,7 +672,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, C, stride_c, batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_template<BATCHED>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
         cast2constType<T>(B), offset_b, ld_b, stride_b, beta, cast2constPointer(work), offset_c,
         ld_c, stride_c, batch_count);
@@ -716,7 +716,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, C,
                        stride_c, batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_template<BATCHED>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
         cast2constType<T>(work), offset_b, ld_b, stride_b, beta,
         cast2constPointer(work + batch_count), offset_c, ld_c, stride_c, batch_count);
@@ -760,7 +760,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, C,
                        stride_c, batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_template<BATCHED>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(work), offset_a, ld_a, stride_a,
         cast2constType<T>(B), offset_b, ld_b, stride_b, beta, cast2constPointer(work + batch_count),
         offset_c, ld_c, stride_c, batch_count);
@@ -804,7 +804,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, B,
                        stride_b, batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_template<BATCHED>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(work), offset_a, ld_a, stride_a,
         cast2constType<T>(work + batch_count), offset_b, ld_b, stride_b, beta, C, offset_c, ld_c,
         stride_c, batch_count);
