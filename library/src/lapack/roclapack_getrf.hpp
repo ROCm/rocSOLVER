@@ -62,74 +62,164 @@ rocblas_int getrf_get_blksize(rocblas_int dim)
 /** This function returns the inner-inner block size. This has been tuned based on
     experiments with panel matrices; it is not expected to change a lot.
     (not tunable by user for now) **/
-template <bool ISBATCHED>
+template <bool ISBATCHED, bool PIVOT>
 inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n)
 {
     rocblas_int blk;
 
     if(ISBATCHED)
     {
-        if(n <= 72) // n = 16,32,48,64
+        if(PIVOT)
         {
-            if(m <= 64)
-                blk = n;
-            else
-                blk = 16;
+            if(n <= 72) // n = 16,32,48,64
+            {
+                if(m <= 64)
+                    blk = n;
+                else
+                    blk = 16;
+            }
+            else if(n <= 88) // n = 80
+            {
+                if(m <= 55)
+                    blk = 64;
+                else
+                    blk = 16;
+            }
+            else // n = 96,112,128,144,160,176,192,208,224,240,256,...
+            {
+                if(m <= 64)
+                    blk = 64;
+                else
+                    blk = 16;
+            }
         }
-        else if(n <= 88) // n = 80
+        else
         {
-            if(m <= 55)
-                blk = 64;
-            else
-                blk = 16;
-        }
-        else // n = 96,112,128,144,160,176,192,208,224,240,256,...
-        {
-            if(m <= 64)
-                blk = 64;
-            else
-                blk = 16;
+            if(n <= 40) // n = 16,32
+            {
+                if(m <= 256)
+                    blk = n;
+                else
+                    blk = 16;
+            }
+            else if(n <= 72) // n = 48,64
+            {
+                if(m <= 45)
+                    blk = n;
+                else
+                    blk = 16;
+            }
+            else if(n <= 120) // n = 80,96,112
+            {
+                if(m <= 51)
+                    blk = 48;
+                else
+                    blk = 16;
+            }
+            else if(n <= 152) // n = 128,144
+            {
+                if(m <= 256)
+                    blk = 32;
+                else
+                    blk = 16;
+            }
+            else // n = 160,176,192,208,224,240,256,...
+            {
+                if(m <= 304)
+                    blk = 32;
+                else
+                    blk = 16;
+            }
         }
     }
 
     else
     {
-        if(n <= 72) // n = 16,32,48,64
+        if(PIVOT)
         {
-            blk = n;
+            if(n <= 72) // n = 16,32,48,64
+            {
+                blk = n;
+            }
+            else if(n <= 88) // n = 80
+            {
+                if(m <= 32)
+                    blk = 48;
+                else if(m <= 64)
+                    blk = n;
+                else if(m <= 352)
+                    blk = 16;
+                else if(m <= 8960)
+                    blk = n;
+                else
+                    blk = 16;
+            }
+            else if(n <= 104) // n = 96
+            {
+                if(m <= 32)
+                    blk = 48;
+                else if(m <= 64)
+                    blk = n;
+                else if(m <= 352)
+                    blk = 32;
+                else if(m <= 4736)
+                    blk = n;
+                else
+                    blk = 32;
+            }
+            else // n = 112,128,144,160,176,192,208,224,240,256,...
+            {
+                if(m < 64)
+                    blk = 64;
+                else
+                    blk = 32;
+            }
         }
-        else if(n <= 88) // n = 80
+        else
         {
-            if(m <= 32)
-                blk = 48;
-            else if(m <= 64)
+            if(n <= 56) // n = 16,32,48
+            {
                 blk = n;
-            else if(m <= 352)
-                blk = 16;
-            else if(m <= 8960)
-                blk = n;
-            else
-                blk = 16;
-        }
-        else if(n <= 104) // n = 96
-        {
-            if(m <= 32)
-                blk = 48;
-            else if(m <= 64)
-                blk = n;
-            else if(m <= 352)
-                blk = 32;
-            else if(m <= 4736)
-                blk = n;
-            else
-                blk = 32;
-        }
-        else // n = 112,128,144,160,176,192,208,224,240,256,...
-        {
-            if(m < 64)
-                blk = 64;
-            else
-                blk = 32;
+            }
+            else if(n <= 72) // n = 64
+            {
+                if(m <= 8192)
+                    blk = n;
+                else
+                    blk = 32;
+            }
+            else if(n <= 88) // n = 80
+            {
+                if(m <= 64)
+                    blk = 64;
+                else if(m <= 2048)
+                    blk = 16;
+                else if(m <= 4992)
+                    blk = n;
+                else
+                    blk = 16;
+            }
+            else if(n <= 104) // n = 96
+            {
+                if(m <= 64)
+                    blk = 64;
+                else
+                    blk = 32;
+            }
+            else if(n <= 152) // n = 112,128,144
+            {
+                if(m < 64)
+                    blk = 80;
+                else
+                    blk = 32;
+            }
+            else // n = 160,176,192,208,224,240,256,...
+            {
+                if(m < 64)
+                    blk = 96;
+                else
+                    blk = 32;
+            }
         }
     }
 
@@ -344,8 +434,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     threads = dim3((PIVOT ? BLOCKSIZE : 1), 1, 1);
 
     // size of outter blocks
-    //    blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
-    blk = dim; //atoi(getenv("BLK"));
+    blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
 
     if(blk == 1)
         return rocsolver_getf2_template<ISBATCHED, PIVOT, T>(handle, m, n, A, shiftA, lda, strideA,
@@ -356,8 +445,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     for(rocblas_int j = 0; j < dim; j += blk)
     {
         jb = min(dim - j, blk); // number of columns/pivots in the block
-        //        blk1 = getrf_get_innerBlkSize<ISBATCHED>(m - j, jb); // size of inner blocks
-        blk1 = atoi(getenv("BLK"));
+        blk1 = getrf_get_innerBlkSize<ISBATCHED, PIVOT>(m - j, jb); // size of inner blocks
 
         // LOOP FACTORIZING INNER BLOCKS =====>
         for(rocblas_int k = 0; k < jb; k += blk1)
