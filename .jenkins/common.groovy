@@ -40,12 +40,11 @@ def runTestCommand (platform, project, gfilter)
     String sudo = auxiliary.sudo(platform.jenkinsLabel)
     String buildType = project.buildName.contains('Debug') ? 'debug' : 'release'
 
-    def hmmTests= ''
+    def hmmTestCommand= ''
     if (platform.jenkinsLabel.contains('gfx90a'))
     {
         hmmTestCommand = """
-                            export HSA_XNACK=1
-                            GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml:test_detail_hmm_xnack.xml --gtest_color=yes --gtest_filter=*MANAGED_MALLOC*
+                            HSA_XNACK=1 GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml:test_detail_hmm_xnack.xml --gtest_color=yes --gtest_filter=*MANAGED_MALLOC*
                          """
     }
 
