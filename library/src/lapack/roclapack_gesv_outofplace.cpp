@@ -58,20 +58,20 @@ rocblas_status rocsolver_gesv_outofplace_impl(rocblas_handle handle,
     bool optim_mem;
     size_t size_work1, size_work2, size_work3, size_work4;
     // extra requirements for calling GETRF
-    size_t size_pivotval, size_pivotidx, size_iinfo;
+    size_t size_pivotval, size_pivotidx, size_iipiv, size_iinfo;
     rocsolver_gesv_outofplace_getMemorySize<false, false, T>(
         n, nrhs, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3, &size_work4,
-        &size_pivotval, &size_pivotidx, &size_iinfo, &optim_mem);
+        &size_pivotval, &size_pivotidx, &size_iipiv, &size_iinfo, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
                                                       size_work3, size_work4, size_pivotval,
-                                                      size_pivotidx, size_iinfo);
+                                                      size_pivotidx, size_iipiv, size_iinfo);
 
     // memory workspace allocation
-    void *scalars, *work1, *work2, *work3, *work4, *pivotval, *pivotidx, *iinfo;
+    void *scalars, *work1, *work2, *work3, *work4, *pivotval, *pivotidx, *iinfo, *iipiv;
     rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
-                              size_pivotval, size_pivotidx, size_iinfo);
+                              size_pivotval, size_pivotidx, size_iipiv, size_iinfo);
 
     if(!mem)
         return rocblas_status_memory_error;
@@ -83,7 +83,8 @@ rocblas_status rocsolver_gesv_outofplace_impl(rocblas_handle handle,
     work4 = mem[4];
     pivotval = mem[5];
     pivotidx = mem[6];
-    iinfo = mem[7];
+    iipiv = mem[7];
+    iinfo = mem[8];
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
 
@@ -91,7 +92,7 @@ rocblas_status rocsolver_gesv_outofplace_impl(rocblas_handle handle,
     return rocsolver_gesv_outofplace_template<false, false, T>(
         handle, n, nrhs, A, shiftA, lda, strideA, ipiv, strideP, B, shiftB, ldb, strideB, X, shiftX,
         ldx, strideX, info, batch_count, (T*)scalars, work1, work2, work3, work4, (T*)pivotval,
-        (rocblas_int*)pivotidx, (rocblas_int*)iinfo, optim_mem);
+        (rocblas_int*)pivotidx, (rocblas_int*)iipiv, (rocblas_int*)iinfo, optim_mem);
 }
 
 /*

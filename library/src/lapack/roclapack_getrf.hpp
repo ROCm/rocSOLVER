@@ -320,6 +320,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
                                    size_t* size_work4,
                                    size_t* size_pivotval,
                                    size_t* size_pivotidx,
+                                   size_t* size_iipiv,
                                    size_t* size_iinfo,
                                    bool* optim_mem)
 {
@@ -335,14 +336,14 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         *size_work4 = 0;
         *size_pivotval = 0;
         *size_pivotidx = 0;
+        *size_iipiv = 0;
         *size_iinfo = 0;
         *optim_mem = true;
         return;
     }
 
     rocblas_int dim = min(m, n);
-    //    rocblas_int blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
-    rocblas_int blk = 18; //atoi(getenv("BLK"));
+    rocblas_int blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
 
     if(blk == 1)
     {
@@ -353,20 +354,24 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         *size_work2 = 0;
         *size_work3 = 0;
         *size_work4 = 0;
+        *size_iipiv = 0;
         *size_iinfo = 0;
         *optim_mem = true;
     }
     else
     {
-        //////////////   check dimensions in getf2 and trsm ////////////////////////
         // requirements for calling GETF2 for the sub blocks
-        rocsolver_getf2_getMemorySize<ISBATCHED, PIVOT, T>(m, n, batch_count, size_scalars,
+        rocsolver_getf2_getMemorySize<ISBATCHED, PIVOT, T>(m, blk, batch_count, size_scalars,
                                                            size_pivotval, size_pivotidx);
 
-        // to store info about singularity of sub blocks
+        // to store info about singularity and pivots of sub blocks
         *size_iinfo = sizeof(rocblas_int) * batch_count;
+        *size_iipiv = blk * sizeof(rocblas_int) * batch_count;
 
         // extra workspace (for calling TRSM)
+        // (TODO: TRSM keeps acting weird and requires more investigation. Here, if
+        //  the dimensions are reduced to what actually is needed, the performance is
+        //  considerably degraded)
         rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, m, n, batch_count, size_work1,
                                          size_work2, size_work3, size_work4);
 
@@ -395,12 +400,10 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                         void* work4,
                                         T* pivotval,
                                         rocblas_int* pivotidx,
+                                        rocblas_int* iipiv,
                                         rocblas_int* iinfo,
                                         bool optim_mem)
 {
-    rocblas_int* iipiv;
-    hipMalloc(&iipiv, n * sizeof(rocblas_int) * batch_count);
-
     ROCSOLVER_ENTER("getrf", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
                     "bc:", batch_count);
 
