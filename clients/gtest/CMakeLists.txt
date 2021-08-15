@@ -126,3 +126,8 @@ target_link_libraries(rocsolver-test PRIVATE
 # Turn on f16c intrinsics
 target_compile_options(rocsolver-test PRIVATE -mf16c)
 target_compile_definitions(rocsolver-test PRIVATE ROCM_USE_FLOAT16)
+
+add_test(
+  NAME rocsolver-test
+  COMMAND rocsolver-test
+)
