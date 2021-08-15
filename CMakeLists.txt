@@ -71,8 +71,6 @@ list(APPEND CMAKE_PREFIX_PATH
   /opt/rocm/hip
 )
 
-option(BUILD_VERBOSE "Output additional build information" OFF)
-
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(DEFAULT_ARMOR_LEVEL 1)
 else()
