@@ -106,6 +106,38 @@ Linear-systems solvers
    :local:
    :backlinks: top
 
+.. _getri_npvt:
+
+rocsolver_<type>getri_npvt()
+-----------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetri_npvt
+   :outline:
+.. doxygenfunction:: rocsolver_cgetri_npvt
+   :outline:
+.. doxygenfunction:: rocsolver_dgetri_npvt
+   :outline:
+.. doxygenfunction:: rocsolver_sgetri_npvt
+
+rocsolver_<type>getri_npvt_batched()
+-----------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetri_npvt_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgetri_npvt_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgetri_npvt_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgetri_npvt_batched
+
+rocsolver_<type>getri_npvt_strided_batched()
+-----------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetri_npvt_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgetri_npvt_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgetri_npvt_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgetri_npvt_strided_batched
+
 .. _getri_outofplace:
 
 rocsolver_<type>getri_outofplace()
@@ -137,4 +169,36 @@ rocsolver_<type>getri_outofplace_strided_batched()
 .. doxygenfunction:: rocsolver_dgetri_outofplace_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgetri_outofplace_strided_batched
+
+.. _getri_npvt_outofplace:
+
+rocsolver_<type>getri_npvt_outofplace()
+-----------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetri_npvt_outofplace
+   :outline:
+.. doxygenfunction:: rocsolver_cgetri_npvt_outofplace
+   :outline:
+.. doxygenfunction:: rocsolver_dgetri_npvt_outofplace
+   :outline:
+.. doxygenfunction:: rocsolver_sgetri_npvt_outofplace
+
+rocsolver_<type>getri_npvt_outofplace_batched()
+-----------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetri_npvt_outofplace_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgetri_npvt_outofplace_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgetri_npvt_outofplace_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgetri_npvt_outofplace_batched
+
+rocsolver_<type>getri_npvt_outofplace_strided_batched()
+-----------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetri_npvt_outofplace_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgetri_npvt_outofplace_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgetri_npvt_outofplace_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgetri_npvt_outofplace_strided_batched
 

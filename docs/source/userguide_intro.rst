@@ -183,6 +183,8 @@ LAPACK-like functions
 .. csv-table:: Linear-systems solvers
     :header: "Function", "single", "double", "single complex", "double complex"
 
+    :ref:`rocsolver_getri_npvt <getri_npvt>`, x, x, x, x
     :ref:`rocsolver_getri_outofplace <getri_outofplace>`, x, x, x, x
+    :ref:`rocsolver_getri_npvt_outofplace <getri_npvt_outofplace>`, x, x, x, x
 
 
