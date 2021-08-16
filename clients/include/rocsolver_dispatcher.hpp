@@ -21,6 +21,8 @@
 #include "testing_getf2_getrf.hpp"
 #include "testing_getf2_getrf_npvt.hpp"
 #include "testing_getri.hpp"
+#include "testing_getri_npvt.hpp"
+#include "testing_getri_npvt_outofplace.hpp"
 #include "testing_getri_outofplace.hpp"
 #include "testing_getrs.hpp"
 #include "testing_labrd.hpp"
@@ -159,18 +161,26 @@ class rocsolver_dispatcher
             {"gesvd", testing_gesvd<false, false, T>},
             {"gesvd_batched", testing_gesvd<true, true, T>},
             {"gesvd_strided_batched", testing_gesvd<false, true, T>},
-            // getri
-            {"getri", testing_getri<false, false, T>},
-            {"getri_batched", testing_getri<true, true, T>},
-            {"getri_strided_batched", testing_getri<false, true, T>},
             // trtri
             {"trtri", testing_trtri<false, false, T>},
             {"trtri_batched", testing_trtri<true, true, T>},
             {"trtri_strided_batched", testing_trtri<false, true, T>},
+            // getri
+            {"getri", testing_getri<false, false, T>},
+            {"getri_batched", testing_getri<true, true, T>},
+            {"getri_strided_batched", testing_getri<false, true, T>},
+            // getri_npvt
+            {"getri_npvt", testing_getri_npvt<false, false, T>},
+            {"getri_npvt_batched", testing_getri_npvt<true, true, T>},
+            {"getri_npvt_strided_batched", testing_getri_npvt<false, true, T>},
             // getri_outofplace
             {"getri_outofplace", testing_getri_outofplace<false, false, T>},
             {"getri_outofplace_batched", testing_getri_outofplace<true, true, T>},
             {"getri_outofplace_strided_batched", testing_getri_outofplace<false, true, T>},
+            // getri_npvt_outofplace
+            {"getri_npvt_outofplace", testing_getri_npvt_outofplace<false, false, T>},
+            {"getri_npvt_outofplace_batched", testing_getri_npvt_outofplace<true, true, T>},
+            {"getri_npvt_outofplace_strided_batched", testing_getri_npvt_outofplace<false, true, T>},
             // gels
             {"gels", testing_gels<false, false, T>},
             {"gels_batched", testing_gels<true, true, T>},

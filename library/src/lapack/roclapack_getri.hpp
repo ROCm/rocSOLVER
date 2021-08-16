@@ -244,6 +244,7 @@ rocblas_status rocsolver_getri_argCheck(rocblas_handle handle,
                                         T A,
                                         rocblas_int* ipiv,
                                         rocblas_int* info,
+                                        const bool pivot,
                                         const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
@@ -260,7 +261,7 @@ rocblas_status rocsolver_getri_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !A) || (n && !ipiv) || (batch_count && !info))
+    if((n && !A) || (n && pivot && !ipiv) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -335,6 +336,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     rocblas_int threads = min(((n - 1) / 64 + 1) * 64, BLOCKSIZE);
     rocblas_int ldw = n;
     rocblas_stride strideW = n * n;
+    const bool pivot = (ipiv != nullptr);
 
     // get block size
     rocblas_int blk = getri_get_blksize<ISBATCHED>(n);
@@ -373,8 +375,9 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     }
 
     // apply pivoting (column interchanges)
-    hipLaunchKernelGGL(getri_kernel_large2<T>, dim3(batch_count, 1, 1), dim3(1, threads, 1), 0,
-                       stream, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info);
+    if(pivot)
+        hipLaunchKernelGGL(getri_kernel_large2<T>, dim3(batch_count, 1, 1), dim3(1, threads, 1), 0,
+                           stream, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info);
 
     rocblas_set_pointer_mode(handle, old_mode);
 

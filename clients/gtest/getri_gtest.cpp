@@ -4,6 +4,8 @@
  * ************************************************************************ */
 
 #include "testing_getri.hpp"
+#include "testing_getri_npvt.hpp"
+#include "testing_getri_npvt_outofplace.hpp"
 #include "testing_getri_outofplace.hpp"
 
 using ::testing::Combine;
@@ -79,6 +81,30 @@ protected:
     }
 };
 
+class GETRI_NPVT : public ::TestWithParam<getri_tuple>
+{
+protected:
+    GETRI_NPVT() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = getri_setup_arguments(GetParam(), false);
+
+        if(arg.peek<rocblas_int>("n") == 0)
+            testing_getri_npvt_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        if(arg.singular == 1)
+            testing_getri_npvt<BATCHED, STRIDED, T>(arg);
+
+        arg.singular = 0;
+        testing_getri_npvt<BATCHED, STRIDED, T>(arg);
+    }
+};
+
 class GETRI_OUTOFPLACE : public ::TestWithParam<getri_tuple>
 {
 protected:
@@ -100,6 +126,30 @@ protected:
 
         arg.singular = 0;
         testing_getri_outofplace<BATCHED, STRIDED, T>(arg);
+    }
+};
+
+class GETRI_NPVT_OUTOFPLACE : public ::TestWithParam<getri_tuple>
+{
+protected:
+    GETRI_NPVT_OUTOFPLACE() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = getri_setup_arguments(GetParam(), true);
+
+        if(arg.peek<rocblas_int>("n") == 0)
+            testing_getri_npvt_outofplace_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        if(arg.singular == 1)
+            testing_getri_npvt_outofplace<BATCHED, STRIDED, T>(arg);
+
+        arg.singular = 0;
+        testing_getri_npvt_outofplace<BATCHED, STRIDED, T>(arg);
     }
 };
 
@@ -125,6 +175,26 @@ TEST_P(GETRI, __double_complex)
     run_tests<false, false, rocblas_double_complex>();
 }
 
+TEST_P(GETRI_NPVT, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(GETRI_NPVT, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(GETRI_NPVT, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(GETRI_NPVT, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
 TEST_P(GETRI_OUTOFPLACE, __float)
 {
     run_tests<false, false, float>();
@@ -141,6 +211,26 @@ TEST_P(GETRI_OUTOFPLACE, __float_complex)
 }
 
 TEST_P(GETRI_OUTOFPLACE, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
+TEST_P(GETRI_NPVT_OUTOFPLACE, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(GETRI_NPVT_OUTOFPLACE, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(GETRI_NPVT_OUTOFPLACE, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(GETRI_NPVT_OUTOFPLACE, __double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }
@@ -167,6 +257,26 @@ TEST_P(GETRI, batched__double_complex)
     run_tests<true, true, rocblas_double_complex>();
 }
 
+TEST_P(GETRI_NPVT, batched__float)
+{
+    run_tests<true, true, float>();
+}
+
+TEST_P(GETRI_NPVT, batched__double)
+{
+    run_tests<true, true, double>();
+}
+
+TEST_P(GETRI_NPVT, batched__float_complex)
+{
+    run_tests<true, true, rocblas_float_complex>();
+}
+
+TEST_P(GETRI_NPVT, batched__double_complex)
+{
+    run_tests<true, true, rocblas_double_complex>();
+}
+
 TEST_P(GETRI_OUTOFPLACE, batched__float)
 {
     run_tests<true, true, float>();
@@ -183,6 +293,26 @@ TEST_P(GETRI_OUTOFPLACE, batched__float_complex)
 }
 
 TEST_P(GETRI_OUTOFPLACE, batched__double_complex)
+{
+    run_tests<true, true, rocblas_double_complex>();
+}
+
+TEST_P(GETRI_NPVT_OUTOFPLACE, batched__float)
+{
+    run_tests<true, true, float>();
+}
+
+TEST_P(GETRI_NPVT_OUTOFPLACE, batched__double)
+{
+    run_tests<true, true, double>();
+}
+
+TEST_P(GETRI_NPVT_OUTOFPLACE, batched__float_complex)
+{
+    run_tests<true, true, rocblas_float_complex>();
+}
+
+TEST_P(GETRI_NPVT_OUTOFPLACE, batched__double_complex)
 {
     run_tests<true, true, rocblas_double_complex>();
 }
@@ -209,6 +339,26 @@ TEST_P(GETRI, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
+TEST_P(GETRI_NPVT, strided_batched__float)
+{
+    run_tests<false, true, float>();
+}
+
+TEST_P(GETRI_NPVT, strided_batched__double)
+{
+    run_tests<false, true, double>();
+}
+
+TEST_P(GETRI_NPVT, strided_batched__float_complex)
+{
+    run_tests<false, true, rocblas_float_complex>();
+}
+
+TEST_P(GETRI_NPVT, strided_batched__double_complex)
+{
+    run_tests<false, true, rocblas_double_complex>();
+}
+
 TEST_P(GETRI_OUTOFPLACE, strided_batched__float)
 {
     run_tests<false, true, float>();
@@ -229,10 +379,38 @@ TEST_P(GETRI_OUTOFPLACE, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
+TEST_P(GETRI_NPVT_OUTOFPLACE, strided_batched__float)
+{
+    run_tests<false, true, float>();
+}
+
+TEST_P(GETRI_NPVT_OUTOFPLACE, strided_batched__double)
+{
+    run_tests<false, true, double>();
+}
+
+TEST_P(GETRI_NPVT_OUTOFPLACE, strided_batched__float_complex)
+{
+    run_tests<false, true, rocblas_float_complex>();
+}
+
+TEST_P(GETRI_NPVT_OUTOFPLACE, strided_batched__double_complex)
+{
+    run_tests<false, true, rocblas_double_complex>();
+}
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack, GETRI, ValuesIn(large_matrix_size_range));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, GETRI, ValuesIn(matrix_size_range));
 
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GETRI_NPVT, ValuesIn(large_matrix_size_range));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GETRI_NPVT, ValuesIn(matrix_size_range));
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack, GETRI_OUTOFPLACE, ValuesIn(large_matrix_size_range));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, GETRI_OUTOFPLACE, ValuesIn(matrix_size_range));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GETRI_NPVT_OUTOFPLACE, ValuesIn(large_matrix_size_range));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GETRI_NPVT_OUTOFPLACE, ValuesIn(matrix_size_range));

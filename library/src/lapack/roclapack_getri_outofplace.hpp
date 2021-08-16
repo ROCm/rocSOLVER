@@ -43,6 +43,7 @@ rocblas_status rocsolver_getri_outofplace_argCheck(rocblas_handle handle,
                                                    T C,
                                                    rocblas_int* ipiv,
                                                    rocblas_int* info,
+                                                   const bool pivot,
                                                    const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
@@ -59,7 +60,7 @@ rocblas_status rocsolver_getri_outofplace_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !A) || (n && !C) || (n && !ipiv) || (batch_count && !info))
+    if((n && !A) || (n && !C) || (n && pivot && !ipiv) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;

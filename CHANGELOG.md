@@ -2,6 +2,25 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
+## [(Unreleased) rocSOLVER]
+### Added
+- General matrix inversion without pivoting:
+    - GETRI\_NPVT (with batched and strided\_batched versions)
+    - GETRI\_NPVT\_OUTOFPLACE (with batched and strided\_batched versions)
+- Added `rocsolver_get_version_string_size` to help with version string queries
+
+### Optimized
+### Changed
+- The rocsolver-test client now prints the rocSOLVER version used to run the tests,
+  rather than the version used to build them
+
+### Deprecated
+### Removed
+### Fixed
+### Known Issues
+### Security
+
+
 ## [rocSOLVER 3.15.0]
 ### Added
 - RQ factorization routines:
