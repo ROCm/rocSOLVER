@@ -46,6 +46,7 @@ rocblas_status rocsolver_sygvd_hegvd_impl(rocblas_handle handle,
     // size for constants in rocblas calls
     size_t size_scalars;
     // size of reusable workspaces (and for calling TRSM, SYGST/HEGST, and SYEVD/HEEVD)
+    bool optim_mem;
     size_t size_work1, size_work2, size_work3, size_work4;
     // extra requirements for calling POTRF and SYEVD/HEEVD
     size_t size_tau;
@@ -54,15 +55,12 @@ rocblas_status rocsolver_sygvd_hegvd_impl(rocblas_handle handle,
     size_t size_iinfo;
     rocsolver_sygvd_hegvd_getMemorySize<false, T, S>(
         itype, evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
-        &size_work4, &size_tau, &size_pivots_workArr, &size_iinfo);
+        &size_work4, &size_tau, &size_pivots_workArr, &size_iinfo, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
                                                       size_work3, size_work4, size_tau,
                                                       size_pivots_workArr, size_iinfo);
-
-    // always allocate all required memory for TRSM optimal performance
-    bool optim_mem = true;
 
     // memory workspace allocation
     void *scalars, *work1, *work2, *work3, *work4, *tau, *pivots_workArr, *iinfo;

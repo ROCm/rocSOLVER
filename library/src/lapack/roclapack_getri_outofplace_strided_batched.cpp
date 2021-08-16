@@ -38,18 +38,16 @@ rocblas_status rocsolver_getri_outofplace_strided_batched_impl(rocblas_handle ha
     rocblas_int shiftC = 0;
 
     // memory workspace sizes:
-    // size of reusable workspace (for calling TRSM)
+    // size of reusable workspace (for calling GETRS)
+    bool optim_mem;
     size_t size_work1, size_work2, size_work3, size_work4;
 
     rocsolver_getri_outofplace_getMemorySize<false, T>(n, batch_count, &size_work1, &size_work2,
-                                                       &size_work3, &size_work4);
+                                                       &size_work3, &size_work4, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2, size_work3,
                                                       size_work4);
-
-    // always allocate all required memory for TRSM optimal performance
-    bool optim_mem = true;
 
     // memory workspace allocation
     void *work1, *work2, *work3, *work4;

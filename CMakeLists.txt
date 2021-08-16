@@ -117,7 +117,7 @@ rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
 
 # Set this before finding hip so that hip::device has the required arch flags
 # added as usage requirements on its interface
-set(AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx1030;${OPTIONAL_AMDGPU_TARGETS}"
+set(AMDGPU_TARGETS "gfx900;gfx906:xnack-;gfx908:xnack-;gfx1030;${OPTIONAL_AMDGPU_TARGETS}"
   CACHE STRING "List of specific machine types for library to target")
 
 # Find HIP dependencies
