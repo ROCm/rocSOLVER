@@ -15,8 +15,9 @@ rocblas_status rocsolver_getri_batched_impl(rocblas_handle handle,
                                             const bool pivot,
                                             const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER_TOP("getri_batched", "-n", n, "--lda", lda, "--strideP", strideP,
-                        "--batch_count", batch_count);
+    const char* name = (pivot ? "getri_batched" : "getri_npvt_batched");
+    ROCSOLVER_ENTER_TOP(name, "-n", n, "--lda", lda, "--strideP", strideP, "--batch_count",
+                        batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;

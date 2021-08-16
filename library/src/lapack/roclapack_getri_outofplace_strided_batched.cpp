@@ -19,9 +19,10 @@ rocblas_status rocsolver_getri_outofplace_strided_batched_impl(rocblas_handle ha
                                                                const bool pivot,
                                                                const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER_TOP("getri_outofplace_strided_batched", "-n", n, "--lda", lda, "--strideA",
-                        strideA, "--strideP", strideP, "--ldc", ldc, "--strideC", strideC,
-                        "--batch_count", batch_count);
+    const char* name
+        = (pivot ? "getri_outofplace_strided_batched" : "getri_npvt_outofplace_strided_batched");
+    ROCSOLVER_ENTER_TOP(name, "-n", n, "--lda", lda, "--strideA", strideA, "--strideP", strideP,
+                        "--ldc", ldc, "--strideC", strideC, "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;

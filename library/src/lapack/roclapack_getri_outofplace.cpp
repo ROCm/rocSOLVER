@@ -15,7 +15,8 @@ rocblas_status rocsolver_getri_outofplace_impl(rocblas_handle handle,
                                                rocblas_int* info,
                                                const bool pivot)
 {
-    ROCSOLVER_ENTER_TOP("getri_outofplace", "-n", n, "--lda", lda, "--ldc", ldc);
+    const char* name = (pivot ? "getri_outofplace" : "getri_npvt_outofplace");
+    ROCSOLVER_ENTER_TOP(name, "-n", n, "--lda", lda, "--ldc", ldc);
 
     if(!handle)
         return rocblas_status_invalid_handle;

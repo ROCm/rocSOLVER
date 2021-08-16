@@ -115,11 +115,12 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
 
     // constants to use when calling rocblas functions
     T one = 1; // constant 1 in host
+    const bool pivot = (ipiv != nullptr);
 
     if(trans == rocblas_operation_none)
     {
         // first apply row interchanges to the right hand sides
-        if(ipiv != nullptr)
+        if(pivot)
             rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0,
                                         strideP, 1, batch_count);
 
@@ -150,7 +151,7 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
                                      work3, work4);
 
         // then apply row interchanges to the solution vectors
-        if(ipiv != nullptr)
+        if(pivot)
             rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0,
                                         strideP, -1, batch_count);
     }

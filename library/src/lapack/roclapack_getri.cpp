@@ -13,7 +13,8 @@ rocblas_status rocsolver_getri_impl(rocblas_handle handle,
                                     rocblas_int* info,
                                     const bool pivot)
 {
-    ROCSOLVER_ENTER_TOP("getri", "-n", n, "--lda", lda);
+    const char* name = (pivot ? "getri" : "getri_npvt");
+    ROCSOLVER_ENTER_TOP(name, "-n", n, "--lda", lda);
 
     if(!handle)
         return rocblas_status_invalid_handle;

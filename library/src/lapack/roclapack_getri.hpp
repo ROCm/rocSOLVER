@@ -336,6 +336,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     rocblas_int threads = min(((n - 1) / 64 + 1) * 64, BLOCKSIZE);
     rocblas_int ldw = n;
     rocblas_stride strideW = n * n;
+    const bool pivot = (ipiv != nullptr);
 
     // get block size
     rocblas_int blk = getri_get_blksize<ISBATCHED>(n);
@@ -374,7 +375,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     }
 
     // apply pivoting (column interchanges)
-    if(ipiv != nullptr)
+    if(pivot)
         hipLaunchKernelGGL(getri_kernel_large2<T>, dim3(batch_count, 1, 1), dim3(1, threads, 1), 0,
                            stream, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info);
 
