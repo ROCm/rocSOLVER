@@ -115,12 +115,14 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
 
     // constants to use when calling rocblas functions
     T one = 1; // constant 1 in host
+    const bool pivot = (ipiv != nullptr);
 
     if(trans == rocblas_operation_none)
     {
         // first apply row interchanges to the right hand sides
-        rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0, strideP,
-                                    1, batch_count);
+        if(pivot)
+            rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0,
+                                        strideP, 1, batch_count);
 
         // solve L*X = B, overwriting B with X
         rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower, trans,
@@ -149,8 +151,9 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
                                      work3, work4);
 
         // then apply row interchanges to the solution vectors
-        rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0, strideP,
-                                    -1, batch_count);
+        if(pivot)
+            rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0,
+                                        strideP, -1, batch_count);
     }
 
     rocblas_set_pointer_mode(handle, old_mode);
