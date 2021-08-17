@@ -224,6 +224,7 @@ endif()
 target_compile_definitions(rocsolver PRIVATE
   ROCM_USE_FLOAT16
   ROCBLAS_INTERNAL_API
+  ROCSOLVER_LIBRARY
 )
 
 add_armor_flags(rocsolver "${ARMOR_LEVEL}")
