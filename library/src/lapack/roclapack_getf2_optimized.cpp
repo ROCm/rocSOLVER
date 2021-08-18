@@ -151,7 +151,7 @@ rocblas_status getf2_run_small(rocblas_handle handle,
                        lda, strideA, ipiv, shiftP, strideP, info, batch_count, pivot)
 
     // determine sizes
-    std::vector<int> opval{GETF2_OPTIM_NGRP};
+    int opval[] = {GETF2_OPTIM_NGRP};
     rocblas_int ngrp = (batch_count < 2 || m > 32) ? 1 : opval[m - 1];
     rocblas_int blocks = (batch_count - 1) / ngrp + 1;
     rocblas_int nthds = m;

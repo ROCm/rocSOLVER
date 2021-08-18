@@ -111,12 +111,7 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
                 ipiv[j] = pivot_idx + j; // update pivot index
             }
             if(pivot_idx > 1)
-            {
-                // swap rows
-                T orig = A[j + tid * lda];
-                A[j + tid * lda] = A[pivot_idx + j - 1 + tid * lda];
-                A[pivot_idx + j - 1 + tid * lda] = orig;
-            }
+                swap(A[j + tid * lda], A[pivot_idx + j - 1 + tid * lda]); // swap rows
         }
 
         // update info (check singularity)

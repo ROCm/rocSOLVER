@@ -50,18 +50,13 @@ ROCSOLVER_KERNEL void laswp_kernel(const rocblas_int n,
             inc = 1;
         }
 
-        T orig;
         for(rocblas_int i = start; i != end; i += inc)
         {
             rocblas_int exch = ipiv[k1 + (i - k1) * incx - 1];
 
             // will exchange rows i and exch if they are not the same
             if(exch != i)
-            {
-                orig = A[i - 1 + tid * lda];
-                A[i - 1 + tid * lda] = A[exch - 1 + tid * lda];
-                A[exch - 1 + tid * lda] = orig;
-            }
+                swap(A[i - 1 + tid * lda], A[exch - 1 + tid * lda]);
         }
     }
 }
