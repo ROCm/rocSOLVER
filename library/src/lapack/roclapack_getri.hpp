@@ -285,7 +285,8 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
                                         void* work4,
                                         T* tmpcopy,
                                         T** workArr,
-                                        bool optim_mem)
+                                        const bool optim_mem,
+                                        const bool pivot)
 {
     ROCSOLVER_ENTER("getri", "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
                     "bc:", batch_count);
@@ -312,7 +313,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     if((n <= GETRI_TINY_SIZE && !ISBATCHED) || (n <= GETRI_BATCH_TINY_SIZE && ISBATCHED))
     {
         return getri_run_small<T>(handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
-                                  batch_count, true);
+                                  batch_count, true, pivot);
     }
 #endif
 
@@ -329,7 +330,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     if(n <= TRTRI_MAX_COLS)
     {
         return getri_run_small<T>(handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
-                                  batch_count, false);
+                                  batch_count, false, pivot);
     }
 #endif
 

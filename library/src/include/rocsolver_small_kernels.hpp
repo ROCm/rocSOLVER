@@ -30,7 +30,7 @@ rocblas_status getf2_run_small(rocblas_handle handle,
                                const rocblas_stride strideP,
                                rocblas_int* info,
                                const rocblas_int batch_count,
-                               const rocblas_int pivot);
+                               const bool pivot);
 
 template <typename T, typename U>
 rocblas_status getri_run_small(rocblas_handle handle,
@@ -44,7 +44,8 @@ rocblas_status getri_run_small(rocblas_handle handle,
                                const rocblas_stride strideP,
                                rocblas_int* info,
                                const rocblas_int batch_count,
-                               const bool complete);
+                               const bool complete,
+                               const bool pivot);
 
 template <typename T, typename U>
 void trti2_run_small(rocblas_handle handle,

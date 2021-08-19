@@ -83,8 +83,8 @@ void rocsolver_gesv_getMemorySize(const rocblas_int n,
     size_t w1, w2, w3, w4;
 
     // workspace required for calling GETRF
-    rocsolver_getrf_getMemorySize<BATCHED, STRIDED, true, T>(
-        n, n, batch_count, size_scalars, size_work1, size_work2, size_work3, size_work4,
+    rocsolver_getrf_getMemorySize<BATCHED, STRIDED, T>(
+        n, n, true, batch_count, size_scalars, size_work1, size_work2, size_work3, size_work4,
         size_pivotval, size_pivotidx, size_iipiv, size_iinfo, &opt1);
 
     // workspace required for calling GETRS
@@ -154,9 +154,9 @@ rocblas_status rocsolver_gesv_template(rocblas_handle handle,
     const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;
 
     // compute LU factorization of A
-    rocsolver_getrf_template<BATCHED, STRIDED, true, T>(
+    rocsolver_getrf_template<BATCHED, STRIDED, T>(
         handle, n, n, A, shiftA, lda, strideA, ipiv, 0, strideP, info, batch_count, scalars, work1,
-        work2, work3, work4, pivotval, pivotidx, iipiv, iinfo, optim_mem);
+        work2, work3, work4, pivotval, pivotidx, iipiv, iinfo, optim_mem, true);
 
     // save elements of B that will be overwritten by GETRS for cases where info is nonzero
     hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32), 0,
@@ -166,7 +166,7 @@ rocblas_status rocsolver_gesv_template(rocblas_handle handle,
     // solve AX = B, overwriting B with X
     rocsolver_getrs_template<BATCHED, T>(handle, rocblas_operation_none, n, nrhs, A, shiftA, lda,
                                          strideA, ipiv, strideP, B, shiftB, ldb, strideB,
-                                         batch_count, work1, work2, work3, work4, optim_mem);
+                                         batch_count, work1, work2, work3, work4, optim_mem, true);
 
     // restore elements of B that were overwritten by GETRS in cases where info is nonzero
     hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32), 0,

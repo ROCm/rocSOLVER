@@ -14,16 +14,16 @@
 #include "roclapack_getf2.hpp"
 #include "rocsolver.h"
 
-/** This function returns the outter block size based on defined variables
+/** This function returns the outer block size based on defined variables
     tunable by the user (defined in ideal_sizes.hpp) **/
-template <bool ISBATCHED, bool PIVOT>
-rocblas_int getrf_get_blksize(rocblas_int dim)
+template <bool ISBATCHED>
+rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
 {
     rocblas_int blk;
 
     if(ISBATCHED)
     {
-        if(PIVOT)
+        if(pivot)
         {
             rocblas_int size[] = {GETRF_BATCH_BLKSIZES};
             rocblas_int intervals[] = {GETRF_BATCH_INTERVALS};
@@ -40,7 +40,7 @@ rocblas_int getrf_get_blksize(rocblas_int dim)
     }
     else
     {
-        if(PIVOT)
+        if(pivot)
         {
             rocblas_int size[] = {GETRF_BLKSIZES};
             rocblas_int intervals[] = {GETRF_INTERVALS};
@@ -59,17 +59,17 @@ rocblas_int getrf_get_blksize(rocblas_int dim)
     return blk;
 }
 
-/** This function returns the inner-inner block size. This has been tuned based on
+/** This function returns the inner block size. This has been tuned based on
     experiments with panel matrices; it is not expected to change a lot.
     (not tunable by the user for now) **/
-template <bool ISBATCHED, bool PIVOT>
-inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n)
+template <bool ISBATCHED>
+inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bool pivot)
 {
     rocblas_int blk;
 
     if(ISBATCHED)
     {
-        if(PIVOT)
+        if(pivot)
         {
             if(n <= 72) // n = 16,32,48,64
             {
@@ -135,7 +135,7 @@ inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n)
 
     else
     {
-        if(PIVOT)
+        if(pivot)
         {
             if(n <= 72) // n = 16,32,48,64
             {
@@ -226,9 +226,9 @@ inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n)
     return blk;
 }
 
-/** This kernel updates the choosen pivots, checks singularity and
+/** This kernel updates the chosen pivots, checks singularity and
     interchanges rows all at once (pivoting + laswp)**/
-template <bool PIVOT, typename T, typename U, std::enable_if_t<PIVOT, int> = 0>
+template <typename T, typename U>
 ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
                                               const rocblas_int j,
                                               const rocblas_int jb,
@@ -252,33 +252,30 @@ ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
         if(tid == j && info[id] == 0 && iinfo[id] > 0)
             info[id] = iinfo[id] + j;
 
-        if(PIVOT)
+        T orig;
+        rocblas_int* iipiv = iipivA + id * jb;
+        T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
+
+        // update ipiv (pivots in columns j : j+jb-1)
+        if(tid >= j && tid < j + jb)
         {
-            T orig;
-            rocblas_int* iipiv = iipivA + id * jb;
-            T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
+            rocblas_int* ipiv = ipivA + id * strideP + shiftP;
+            ipiv[tid] = iipiv[tid - j] + j;
+        }
 
-            // update ipiv (pivots in columns j : j+jb-1)
-            if(tid >= j && tid < j + jb)
+        // swap rows in columns 0 : j-1 and j+jb : n-1
+        else
+        {
+            for(rocblas_int i = j; i < j + jb; ++i)
             {
-                rocblas_int* ipiv = ipivA + id * strideP + shiftP;
-                ipiv[tid] = iipiv[tid - j] + j;
-            }
+                rocblas_int exch = iipiv[i - j] + j - 1;
 
-            // swap rows in columns 0 : j-1 and j+jb : n-1
-            else
-            {
-                for(rocblas_int i = j; i < j + jb; ++i)
+                // will exchange rows i and exch if they are not the same
+                if(exch != i)
                 {
-                    rocblas_int exch = iipiv[i - j] + j - 1;
-
-                    // will exchange rows i and exch if they are not the same
-                    if(exch != i)
-                    {
-                        orig = A[i + tid * lda];
-                        A[i + tid * lda] = A[exch + tid * lda];
-                        A[exch + tid * lda] = orig;
-                    }
+                    orig = A[i + tid * lda];
+                    A[i + tid * lda] = A[exch + tid * lda];
+                    A[exch + tid * lda] = orig;
                 }
             }
         }
@@ -286,20 +283,9 @@ ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
 }
 
 /** non-pivoting version **/
-template <bool PIVOT, typename T, typename U, std::enable_if_t<!PIVOT, int> = 0>
-ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
-                                              const rocblas_int j,
-                                              const rocblas_int jb,
-                                              U AA,
-                                              const rocblas_int shiftA,
-                                              const rocblas_int lda,
-                                              const rocblas_stride strideA,
-                                              rocblas_int* ipivA,
-                                              const rocblas_int shiftP,
-                                              const rocblas_stride strideP,
-                                              rocblas_int* iipivA,
-                                              const rocblas_int* iinfo,
-                                              rocblas_int* info)
+template <typename T>
+ROCSOLVER_KERNEL void
+    getrf_npvt_check_singularity(const rocblas_int j, const rocblas_int* iinfo, rocblas_int* info)
 {
     int id = hipBlockIdx_y;
 
@@ -309,9 +295,10 @@ ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
 }
 
 /** Return the sizes of the different workspace arrays **/
-template <bool BATCHED, bool STRIDED, bool PIVOT, typename T>
+template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_getrf_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
+                                   const bool pivot,
                                    const rocblas_int batch_count,
                                    size_t* size_scalars,
                                    size_t* size_work1,
@@ -343,13 +330,13 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
     }
 
     rocblas_int dim = min(m, n);
-    rocblas_int blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
+    rocblas_int blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
 
     if(blk == 1)
     {
         // requirements for one single GETF2
-        rocsolver_getf2_getMemorySize<ISBATCHED, PIVOT, T>(m, n, batch_count, size_scalars,
-                                                           size_pivotval, size_pivotidx);
+        rocsolver_getf2_getMemorySize<ISBATCHED, T>(m, n, pivot, batch_count, size_scalars,
+                                                    size_pivotval, size_pivotidx);
         *size_work1 = 0;
         *size_work2 = 0;
         *size_work3 = 0;
@@ -361,12 +348,12 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
     else
     {
         // requirements for calling GETF2 for the sub blocks
-        rocsolver_getf2_getMemorySize<ISBATCHED, PIVOT, T>(m, blk, batch_count, size_scalars,
-                                                           size_pivotval, size_pivotidx);
+        rocsolver_getf2_getMemorySize<ISBATCHED, T>(m, blk, pivot, batch_count, size_scalars,
+                                                    size_pivotval, size_pivotidx);
 
         // to store info about singularity and pivots of sub blocks
         *size_iinfo = sizeof(rocblas_int) * batch_count;
-        *size_iipiv = blk * sizeof(rocblas_int) * batch_count;
+        *size_iipiv = (pivot ? blk * sizeof(rocblas_int) * batch_count : 0);
 
         // extra workspace (for calling TRSM)
         // (TODO: TRSM keeps acting weird and requires more investigation. Here, if
@@ -380,7 +367,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
     }
 }
 
-template <bool BATCHED, bool STRIDED, bool PIVOT, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,
@@ -402,7 +389,8 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                         rocblas_int* pivotidx,
                                         rocblas_int* iipiv,
                                         rocblas_int* iinfo,
-                                        bool optim_mem)
+                                        const bool optim_mem,
+                                        const bool pivot)
 {
     ROCSOLVER_ENTER("getrf", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
                     "bc:", batch_count);
@@ -437,23 +425,23 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_int dim = min(m, n); // total number of pivots
     rocblas_int jb, jb1, jb2, blk, blk1, blk2;
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
-    blocks = PIVOT ? (n - 1) / BLOCKSIZE + 1 : 1;
+    blocks = pivot ? (n - 1) / BLOCKSIZE + 1 : 1;
     grid = dim3(blocks, batch_count, 1);
-    threads = dim3((PIVOT ? BLOCKSIZE : 1), 1, 1);
+    threads = dim3((pivot ? BLOCKSIZE : 1), 1, 1);
 
-    // size of outter blocks
-    blk = getrf_get_blksize<ISBATCHED, PIVOT>(dim);
+    // size of outer blocks
+    blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
 
     if(blk == 1)
-        return rocsolver_getf2_template<ISBATCHED, PIVOT, T>(handle, m, n, A, shiftA, lda, strideA,
-                                                             ipiv, shiftP, strideP, info, batch_count,
-                                                             scalars, pivotval, pivotidx);
+        return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
+                                                      shiftP, strideP, info, batch_count, scalars,
+                                                      pivotval, pivotidx, pivot);
 
     // MAIN LOOP =====>
     for(rocblas_int j = 0; j < dim; j += blk)
     {
         jb = min(dim - j, blk); // number of columns/pivots in the block
-        blk1 = getrf_get_innerBlkSize<ISBATCHED, PIVOT>(m - j, jb); // size of inner blocks
+        blk1 = getrf_get_innerBlkSize<ISBATCHED>(m - j, jb, pivot); // size of inner blocks
 
         // LOOP FACTORIZING INNER BLOCKS =====>
         for(rocblas_int k = 0; k < jb; k += blk1)
@@ -461,14 +449,19 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
             jb1 = min(jb - k, blk1); // number of columns/pivots in the inner block
 
             // factorize inner block panel
-            rocsolver_getf2_template<ISBATCHED, PIVOT, T>(
+            rocsolver_getf2_template<ISBATCHED, T>(
                 handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, iipiv,
-                0, jb1, iinfo, batch_count, scalars, pivotval, pivotidx);
+                0, jb1, iinfo, batch_count, scalars, pivotval, pivotidx, pivot);
 
-            // adjust pivots, swap rows and check singularity
-            hipLaunchKernelGGL((getrf_check_singularity<PIVOT, T>), grid, threads, 0, stream, n,
-                               j + k, jb1, A, shiftA, lda, strideA, ipiv, shiftP, strideP, iipiv,
-                               iinfo, info);
+            if(pivot)
+                // adjust pivots, swap rows and check singularity
+                hipLaunchKernelGGL(getrf_check_singularity<T>, grid, threads, 0, stream, n, j + k,
+                                   jb1, A, shiftA, lda, strideA, ipiv, shiftP, strideP, iipiv,
+                                   iinfo, info);
+            else
+                // check singularity
+                hipLaunchKernelGGL(getrf_npvt_check_singularity<T>, grid, threads, 0, stream, j + k,
+                                   iinfo, info);
 
             // update trailing sub-block
             if(k + jb1 < jb)

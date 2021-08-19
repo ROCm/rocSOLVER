@@ -76,18 +76,18 @@ ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
     }
 }
 
-/** This kernel updates the choosen pivot, checks singularity and
+/** This kernel updates the chosen pivot, checks singularity and
     interchanges rows all at once (pivoting + laswp)**/
-template <bool PIVOT, typename T, typename U, std::enable_if_t<PIVOT, int> = 0>
+template <typename T, typename U>
 ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
+                                              const rocblas_int j,
                                               U AA,
                                               const rocblas_int shiftA,
+                                              const rocblas_int lda,
                                               const rocblas_stride strideA,
                                               rocblas_int* ipivA,
                                               const rocblas_int shiftP,
                                               const rocblas_stride strideP,
-                                              const rocblas_int j,
-                                              const rocblas_int lda,
                                               T* pivot_val,
                                               rocblas_int* pivot_idxA,
                                               rocblas_int* info)
@@ -102,17 +102,14 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
         // batch instance
         T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
 
-        if(PIVOT)
+        rocblas_int pivot_idx = pivot_idxA[id];
+        if(tid == j)
         {
-            rocblas_int pivot_idx = pivot_idxA[id];
-            if(tid == j)
-            {
-                rocblas_int* ipiv = ipivA + id * strideP + shiftP;
-                ipiv[j] = pivot_idx + j; // update pivot index
-            }
-            if(pivot_idx > 1)
-                swap(A[j + tid * lda], A[pivot_idx + j - 1 + tid * lda]); // swap rows
+            rocblas_int* ipiv = ipivA + id * strideP + shiftP;
+            ipiv[j] = pivot_idx + j; // update pivot index
         }
+        if(pivot_idx > 1)
+            swap(A[j + tid * lda], A[pivot_idx + j - 1 + tid * lda]); // swap rows
 
         // update info (check singularity)
         if(tid == j)
@@ -130,19 +127,14 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
 }
 
 /** Non-pivoting version **/
-template <bool PIVOT, typename T, typename U, std::enable_if_t<!PIVOT, int> = 0>
-ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
-                                              U AA,
-                                              const rocblas_int shiftA,
-                                              const rocblas_stride strideA,
-                                              rocblas_int* ipivA,
-                                              const rocblas_int shiftP,
-                                              const rocblas_stride strideP,
-                                              const rocblas_int j,
-                                              const rocblas_int lda,
-                                              T* pivot_val,
-                                              rocblas_int* pivot_idxA,
-                                              rocblas_int* info)
+template <typename T, typename U>
+ROCSOLVER_KERNEL void getf2_npvt_check_singularity(const rocblas_int j,
+                                                   U AA,
+                                                   const rocblas_int shiftA,
+                                                   const rocblas_int lda,
+                                                   const rocblas_stride strideA,
+                                                   T* pivot_val,
+                                                   rocblas_int* info)
 {
     using S = decltype(std::real(T{}));
 
@@ -207,7 +199,7 @@ ROCSOLVER_KERNEL void getf2_iamax(const rocblas_int m,
             for(j = IAMAX_THDS; j > 0; j>>=1)
         to have half of the active threads at each step
         reducing two elements in the shared array.
-        As IAMAX_THDS is fixed to 1024, we can unroll the loop manualy) **/
+        As IAMAX_THDS is fixed to 1024, we can unroll the loop manually) **/
 
     if(tid < 512)
     {
@@ -307,9 +299,10 @@ ROCSOLVER_KERNEL void getf2_iamax(const rocblas_int m,
 }
 
 /** Return the sizes of the different workspace arrays **/
-template <bool ISBATCHED, bool PIVOT, typename T>
+template <bool ISBATCHED, typename T>
 void rocsolver_getf2_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
+                                   const bool pivot,
                                    const rocblas_int batch_count,
                                    size_t* size_scalars,
                                    size_t* size_pivotval,
@@ -342,7 +335,7 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
     *size_pivotval = sizeof(T) * batch_count;
 
     // for pivot indices
-    *size_pivotidx = PIVOT ? sizeof(rocblas_int) * batch_count : 0;
+    *size_pivotidx = pivot ? sizeof(rocblas_int) * batch_count : 0;
 }
 
 /** argument checking **/
@@ -354,7 +347,7 @@ rocblas_status rocsolver_getf2_getrf_argCheck(rocblas_handle handle,
                                               T A,
                                               rocblas_int* ipiv,
                                               rocblas_int* info,
-                                              const rocblas_int pivot,
+                                              const bool pivot,
                                               const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
@@ -377,7 +370,7 @@ rocblas_status rocsolver_getf2_getrf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool ISBATCHED, bool PIVOT, typename T, typename U>
+template <bool ISBATCHED, typename T, typename U>
 rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,
@@ -392,7 +385,8 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                                         const rocblas_int batch_count,
                                         T* scalars,
                                         T* pivotval,
-                                        rocblas_int* pivotidx)
+                                        rocblas_int* pivotidx,
+                                        const bool pivot)
 {
     ROCSOLVER_ENTER("getf2", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
                     "bc:", batch_count);
@@ -420,7 +414,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     // Use optimized LU factorization for the right sizes
     if(n <= GETF2_MAX_COLS && m <= GETF2_MAX_THDS)
         return getf2_run_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
-                                  info, batch_count, PIVOT);
+                                  info, batch_count, pivot);
 #endif
 
     // everything must be executed with scalars on the device
@@ -433,21 +427,27 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     dim3 grid, threads;
     dim3 gridMax(1, batch_count, 1);
     dim3 threadsMax(IAMAX_THDS, 1, 1);
-    rocblas_int blocksPivot = PIVOT ? (n - 1) / LASWP_BLOCKSIZE + 1 : 1;
+    rocblas_int blocksPivot = pivot ? (n - 1) / LASWP_BLOCKSIZE + 1 : 1;
     dim3 gridPivot(blocksPivot, batch_count, 1);
-    dim3 threadsPivot((PIVOT ? LASWP_BLOCKSIZE : 1), 1, 1);
+    dim3 threadsPivot((pivot ? LASWP_BLOCKSIZE : 1), 1, 1);
 
     for(rocblas_int j = 0; j < dim; ++j)
     {
-        if(PIVOT)
+        if(pivot)
+        {
             // find pivot. Use Fortran 1-based indexing (to follow LAPACK)
             hipLaunchKernelGGL((getf2_iamax<T>), gridMax, threadsMax, 0, stream, m - j, A,
                                shiftA + idx2D(j, j, lda), strideA, pivotidx);
 
-        // adjust pivot indices, apply row interchanges and check singularity
-        hipLaunchKernelGGL((getf2_check_singularity<PIVOT, T>), gridPivot, threadsPivot, 0, stream,
-                           n, A, shiftA, strideA, ipiv, shiftP, strideP, j, lda, pivotval, pivotidx,
-                           info);
+            // adjust pivot indices, apply row interchanges and check singularity
+            hipLaunchKernelGGL(getf2_check_singularity<T>, gridPivot, threadsPivot, 0, stream, n, j,
+                               A, shiftA, lda, strideA, ipiv, shiftP, strideP, pivotval, pivotidx,
+                               info);
+        }
+        else
+            // check singularity
+            hipLaunchKernelGGL(getf2_npvt_check_singularity<T>, gridPivot, threadsPivot, 0, stream,
+                               j, A, shiftA, lda, strideA, pivotval, info);
 
         if(n - j - 1 > GENERAL_PANEL_SWITCHSIZE) //if working with a general matrix:
         {
