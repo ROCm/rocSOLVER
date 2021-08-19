@@ -272,11 +272,7 @@ ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
 
                 // will exchange rows i and exch if they are not the same
                 if(exch != i)
-                {
-                    orig = A[i + tid * lda];
-                    A[i + tid * lda] = A[exch + tid * lda];
-                    A[exch + tid * lda] = orig;
-                }
+                    swap(A[i + tid * lda], A[exch + tid * lda]);
             }
         }
     }

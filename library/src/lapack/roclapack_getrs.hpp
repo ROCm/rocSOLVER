@@ -116,7 +116,6 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
 
     // constants to use when calling rocblas functions
     T one = 1; // constant 1 in host
-    const bool pivot = (ipiv != nullptr);
 
     if(trans == rocblas_operation_none)
     {

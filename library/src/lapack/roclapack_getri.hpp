@@ -66,11 +66,7 @@ __device__ void getri_pivot(const rocblas_int n, T* a, const rocblas_int lda, ro
         if(jp != j)
         {
             for(int i = hipThreadIdx_y; i < n; i += hipBlockDim_y)
-            {
-                temp = a[i + j * lda];
-                a[i + j * lda] = a[i + jp * lda];
-                a[i + jp * lda] = temp;
-            }
+                swap(a[i + j * lda], a[i + jp * lda]);
             __syncthreads();
         }
     }
@@ -337,7 +333,6 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     rocblas_int threads = min(((n - 1) / 64 + 1) * 64, BLOCKSIZE);
     rocblas_int ldw = n;
     rocblas_stride strideW = n * n;
-    const bool pivot = (ipiv != nullptr);
 
     // get block size
     rocblas_int blk = getri_get_blksize<ISBATCHED>(n);

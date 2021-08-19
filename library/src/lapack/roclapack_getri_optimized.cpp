@@ -127,11 +127,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
         {
             jp = ipiv[j] - 1;
             if(jp != j)
-            {
-                temp = rA[j];
-                rA[j] = rA[jp];
-                rA[jp] = temp;
-            }
+                swap(rA[j], rA[jp]);
         }
     }
 
