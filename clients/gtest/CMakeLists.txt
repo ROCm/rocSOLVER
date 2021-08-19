@@ -115,9 +115,6 @@ if(WIN32)
 endif()
 
 target_link_libraries(rocsolver-test PRIVATE
-  cblas
-  lapack
-  blas
   GTest::GTest
   hip::device
   rocsolver-common

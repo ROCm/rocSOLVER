@@ -3,9 +3,9 @@
 # run this script in develop after merging develop/staging into master at the feature-complete date
 # Edit script to bump versions for new development cycle/release.
 
-OLD_ROCSOLVER_VERSION="3.17.0"  
-NEW_ROCSOLVER_VERSION="3.18.0"  
-sed -i "s/${OLD_ROCSOLVER_VERSION}/${NEW_ROCSOLVER_VERSION}/g" CMakeLists.txt
+OLD_ROCSOLVER_VERSION="3.17.0"
+NEW_ROCSOLVER_VERSION="3.18.0"
+sed -i "s/${OLD_ROCSOLVER_VERSION}/${NEW_ROCSOLVER_VERSION}/g" CMakeLists.txt vcpkg.json
 
 # for documentation
 OLD_ROCSOLVER_DOCS_VERSION="3.17"
