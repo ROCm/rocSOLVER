@@ -18,6 +18,7 @@ set(roclapack_test_source
   # triangular factorizations
   getf2_getrf_gtest.cpp
   potf2_potrf_gtest.cpp
+  sytf2_sytrf_gtest.cpp
   # orthogonal factorizations
   geqr2_geqrf_gtest.cpp
   gerq2_gerqf_gtest.cpp
