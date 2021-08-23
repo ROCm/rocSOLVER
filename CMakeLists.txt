@@ -92,18 +92,22 @@ option(BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON)
 
 # Include helper functions and wrapper functions
 include(util)
+include(CMakeDependentOption)
+
+option(BUILD_TESTING "Build rocSOLVER tests" OFF)
+if(BUILD_TESTING)
+  enable_testing()
+endif()
 
 option(BUILD_LIBRARY "Build rocSOLVER library" ON)
 option_opposite(BUILD_LIBRARY SKIP_LIBRARY)
-option(BUILD_CLIENTS_TESTS "Build rocSOLVER unit tests" OFF)
-option(BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmarks" OFF)
+option(BUILD_CLIENTS_TESTS "Build rocSOLVER test client" "${BUILD_TESTING}")
+option(BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmark client" OFF)
 option(BUILD_CLIENTS_SAMPLES "Build rocSOLVER samples" OFF)
+cmake_dependent_option(BUILD_CLIENTS_EXTRA_TESTS "Build extra tests" OFF BUILD_TESTING OFF)
 option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
 option(WERROR "Treat warnings as errors" OFF)
-if(BUILD_CLIENTS_TESTS)
-  enable_testing()
-endif()
 
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")

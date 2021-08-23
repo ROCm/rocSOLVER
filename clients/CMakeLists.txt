@@ -48,3 +48,7 @@ endif()
 if(BUILD_CLIENTS_SAMPLES)
   add_subdirectory(samples)
 endif()
+
+if(BUILD_CLIENTS_EXTRA_TESTS)
+  add_subdirectory(extras)
+endif()
