@@ -16987,6 +16987,305 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ztrtri_strided_batched(rocblas_handle 
                                                                  const rocblas_int batch_count);
 //! @}
 
+/*! @{
+    \brief SYTF2 computes the factorization of a symmetric matrix \f$A\f$
+    using Bunch-Kaufman diagonal pivoting.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The factorization has the form
+
+    \f[
+        \begin{array}{cl}
+        A = U D U^T & \: \text{or}\\
+        A = L D L^T &
+        \end{array}
+    \f]
+
+    where \f$U\f$ or \f$L\f$ is a product of permutation and unit upper/lower
+    triangular matrices (depending on the value of uplo), and \f$D\f$ is a symmetric
+    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrix A is stored.
+              If uplo indicates lower (or upper), then the upper (or lower)
+              part of A is not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of the matrix A.
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the symmetric matrix A to be factored.
+              On exit, the block diagonal matrix D and the multipliers needed to
+              compute U or L.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A.
+    @param[out]
+    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
+              The vector of pivot indices. Elements of ipiv are 1-based indices.
+              For 1 <= k <= n, if ipiv[k] > 0 then rows and columns k and ipiv[k]
+              were interchanged and D[k,k] is a 1-by-1 diagonal block.
+              If, instead, ipiv[k] = ipiv[k-1] < 0 and uplo is upper (or ipiv[k]
+              = ipiv[k+1] < 0 and uplo is lower), then rows and columns k-1 and
+              -ipiv[k] (or rows and columns k+1 and -ipiv[k]) were interchanged
+              and D[k-1,k-1] to D[k,k] (or D[k,k] to D[k+1,k+1]) is a 2-by-2
+              diagonal block.
+    @param[out]
+    info      pointer to a rocblas_int on the GPU.\n
+              If info = 0, successful exit.
+              If info[i] = j > 0, D is singular. D[j,j] is the first diagonal zero.
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssytf2(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 float* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* ipiv,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsytf2(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 double* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* ipiv,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_csytf2(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_float_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* ipiv,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_double_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* ipiv,
+                                                 rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief SYTF2_BATCHED computes the factorization of a batch of symmetric matrices
+    using Bunch-Kaufman diagonal pivoting.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The factorization has the form
+
+    \f[
+        \begin{array}{cl}
+        A_i = U_i D_i U_i^T & \: \text{or}\\
+        A_i = L_i D_i L_i^T &
+        \end{array}
+    \f]
+
+    where \f$U_i\f$ or \f$L_i\f$ is a product of permutation and unit upper/lower
+    triangular matrices (depending on the value of uplo), and \f$D_i\f$ is a symmetric
+    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrices A_i are stored.
+              If uplo indicates lower (or upper), then the upper (or lower)
+              part of A_i is not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of all matrices A_i in the batch.
+    @param[inout]
+    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+              On entry, the symmetric matrices A_i to be factored.
+              On exit, the block diagonal matrices D_i and the multipliers needed to
+              compute U_i or L_i.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of matrices A_i.
+    @param[out]
+    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
+              The vector of pivot indices. Elements of ipiv are 1-based indices.
+              For 1 <= k <= n, if ipiv_i[k] > 0 then rows and columns k and ipiv_i[k]
+              were interchanged and D_i[k,k] is a 1-by-1 diagonal block.
+              If, instead, ipiv_i[k] = ipiv_i[k-1] < 0 and uplo is upper (or ipiv_i[k]
+              = ipiv_i[k+1] < 0 and uplo is lower), then rows and columns k-1 and
+              -ipiv_i[k] (or rows and columns k+1 and -ipiv_i[k]) were interchanged
+              and D_i[k-1,k-1] to D_i[k,k] (or D_i[k,k] to D_i[k+1,k+1]) is a 2-by-2
+              diagonal block.
+    @param[in]
+    strideP   rocblas_stride.\n
+              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
+              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    @param[out]
+    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+              If info[i] = 0, successful exit for factorization of A_i.
+              If info[i] = j > 0, D_i is singular. D_i[j,j] is the first diagonal zero.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssytf2_batched(rocblas_handle handle,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         float* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_int* ipiv,
+                                                         const rocblas_stride strideP,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsytf2_batched(rocblas_handle handle,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         double* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_int* ipiv,
+                                                         const rocblas_stride strideP,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_csytf2_batched(rocblas_handle handle,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_float_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_int* ipiv,
+                                                         const rocblas_stride strideP,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2_batched(rocblas_handle handle,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_double_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         rocblas_int* ipiv,
+                                                         const rocblas_stride strideP,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief SYTF2_STRIDED_BATCHED computes the factorization of a batch of symmetric matrices
+    using Bunch-Kaufman diagonal pivoting.
+
+    \details
+    (This is the unblocked version of the algorithm).
+
+    The factorization has the form
+
+    \f[
+        \begin{array}{cl}
+        A_i = U_i D_i U_i^T & \: \text{or}\\
+        A_i = L_i D_i L_i^T &
+        \end{array}
+    \f]
+
+    where \f$U_i\f$ or \f$L_i\f$ is a product of permutation and unit upper/lower
+    triangular matrices (depending on the value of uplo), and \f$D_i\f$ is a symmetric
+    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrices A_i are stored.
+              If uplo indicates lower (or upper), then the upper (or lower)
+              part of A_i is not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of all matrices A_i in the batch.
+    @param[inout]
+    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+              On entry, the symmetric matrices A_i to be factored.
+              On exit, the block diagonal matrices D_i and the multipliers needed to
+              compute U_i or L_i.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of matrices A_i.
+    @param[in]
+    strideA   rocblas_stride.\n
+              Stride from the start of one matrix A_i to the next one A_(i+1).
+              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    @param[out]
+    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
+              The vector of pivot indices. Elements of ipiv are 1-based indices.
+              For 1 <= k <= n, if ipiv_i[k] > 0 then rows and columns k and ipiv_i[k]
+              were interchanged and D_i[k,k] is a 1-by-1 diagonal block.
+              If, instead, ipiv_i[k] = ipiv_i[k-1] < 0 and uplo is upper (or ipiv_i[k]
+              = ipiv_i[k+1] < 0 and uplo is lower), then rows and columns k-1 and
+              -ipiv_i[k] (or rows and columns k+1 and -ipiv_i[k]) were interchanged
+              and D_i[k-1,k-1] to D_i[k,k] (or D_i[k,k] to D_i[k+1,k+1]) is a 2-by-2
+              diagonal block.
+    @param[in]
+    strideP   rocblas_stride.\n
+              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
+              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    @param[out]
+    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+              If info[i] = 0, successful exit for factorization of A_i.
+              If info[i] = j > 0, D_i is singular. D_i[j,j] is the first diagonal zero.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssytf2_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 float* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_int* ipiv,
+                                                                 const rocblas_stride strideP,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsytf2_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 double* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_int* ipiv,
+                                                                 const rocblas_stride strideP,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_csytf2_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_float_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_int* ipiv,
+                                                                 const rocblas_stride strideP,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_double_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 rocblas_int* ipiv,
+                                                                 const rocblas_stride strideP,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+//! @}
+
 #ifdef __cplusplus
 }
 #endif

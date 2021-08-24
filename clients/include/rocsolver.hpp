@@ -5641,11 +5641,11 @@ inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
     if(STRIDED)
         return SYTRF
             ? rocblas_status_not_implemented // rocsolver_ssytrf_strided_batched(handle, uplo, n, A, lda, stA, ipiv, stP, info, bc)
-            : rocblas_status_not_implemented; // rocsolver_ssytf2_strided_batched(handle, uplo, n, A, lda, stA, ipiv, stP, info, bc);
+            : rocsolver_ssytf2_strided_batched(handle, uplo, n, A, lda, stA, ipiv, stP, info, bc);
     else
         return SYTRF
             ? rocblas_status_not_implemented // rocsolver_ssytrf(handle, uplo, n, A, lda, ipiv, info)
-            : rocblas_status_not_implemented; // rocsolver_ssytf2(handle, uplo, n, A, lda, ipiv, info);
+            : rocsolver_ssytf2(handle, uplo, n, A, lda, ipiv, info);
 }
 
 inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
@@ -5664,11 +5664,11 @@ inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
     if(STRIDED)
         return SYTRF
             ? rocblas_status_not_implemented // rocsolver_dsytrf_strided_batched(handle, uplo, n, A, lda, stA, ipiv, stP, info, bc)
-            : rocblas_status_not_implemented; // rocsolver_dsytf2_strided_batched(handle, uplo, n, A, lda, stA, ipiv, stP, info, bc);
+            : rocsolver_dsytf2_strided_batched(handle, uplo, n, A, lda, stA, ipiv, stP, info, bc);
     else
         return SYTRF
             ? rocblas_status_not_implemented // rocsolver_dsytrf(handle, uplo, n, A, lda, ipiv, info)
-            : rocblas_status_not_implemented; // rocsolver_dsytf2(handle, uplo, n, A, lda, ipiv, info);
+            : rocsolver_dsytf2(handle, uplo, n, A, lda, ipiv, info);
 }
 
 inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
@@ -5687,11 +5687,11 @@ inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
     if(STRIDED)
         return SYTRF
             ? rocblas_status_not_implemented // rocsolver_csytrf_strided_batched(handle, uplo, n, A, lda, stA, ipiv, stP, info, bc)
-            : rocblas_status_not_implemented; // rocsolver_csytf2_strided_batched(handle, uplo, n, A, lda, stA, ipiv, stP, info, bc);
+            : rocsolver_csytf2_strided_batched(handle, uplo, n, A, lda, stA, ipiv, stP, info, bc);
     else
         return SYTRF
             ? rocblas_status_not_implemented // rocsolver_csytrf(handle, uplo, n, A, lda, ipiv, info)
-            : rocblas_status_not_implemented; // rocsolver_csytf2(handle, uplo, n, A, lda, ipiv, info);
+            : rocsolver_csytf2(handle, uplo, n, A, lda, ipiv, info);
 }
 
 inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
@@ -5710,11 +5710,11 @@ inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
     if(STRIDED)
         return SYTRF
             ? rocblas_status_not_implemented // rocsolver_zsytrf_strided_batched(handle, uplo, n, A, lda, stA, ipiv, stP, info, bc)
-            : rocblas_status_not_implemented; // rocsolver_zsytf2_strided_batched(handle, uplo, n, A, lda, stA, ipiv, stP, info, bc);
+            : rocsolver_zsytf2_strided_batched(handle, uplo, n, A, lda, stA, ipiv, stP, info, bc);
     else
         return SYTRF
             ? rocblas_status_not_implemented // rocsolver_zsytrf(handle, uplo, n, A, lda, ipiv, info)
-            : rocblas_status_not_implemented; // rocsolver_zsytf2(handle, uplo, n, A, lda, ipiv, info);
+            : rocsolver_zsytf2(handle, uplo, n, A, lda, ipiv, info);
 }
 
 // batched
@@ -5733,7 +5733,7 @@ inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
 {
     return SYTRF
         ? rocblas_status_not_implemented // rocsolver_ssytrf_batched(handle, uplo, n, A, lda, ipiv, stP, info, bc)
-        : rocblas_status_not_implemented; // rocsolver_ssytf2_batched(handle, uplo, n, A, lda, ipiv, stP, info, bc);
+        : rocsolver_ssytf2_batched(handle, uplo, n, A, lda, ipiv, stP, info, bc);
 }
 
 inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
@@ -5751,7 +5751,7 @@ inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
 {
     return SYTRF
         ? rocblas_status_not_implemented // rocsolver_dsytrf_batched(handle, uplo, n, A, lda, ipiv, stP, info, bc)
-        : rocblas_status_not_implemented; // rocsolver_dsytf2_batched(handle, uplo, n, A, lda, ipiv, stP, info, bc);
+        : rocsolver_dsytf2_batched(handle, uplo, n, A, lda, ipiv, stP, info, bc);
 }
 
 inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
@@ -5769,7 +5769,7 @@ inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
 {
     return SYTRF
         ? rocblas_status_not_implemented // rocsolver_csytrf_batched(handle, uplo, n, A, lda, ipiv, stP, info, bc)
-        : rocblas_status_not_implemented; // rocsolver_csytf2_batched(handle, uplo, n, A, lda, ipiv, stP, info, bc);
+        : rocsolver_csytf2_batched(handle, uplo, n, A, lda, ipiv, stP, info, bc);
 }
 
 inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
@@ -5787,6 +5787,6 @@ inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
 {
     return SYTRF
         ? rocblas_status_not_implemented // rocsolver_zsytrf_batched(handle, uplo, n, A, lda, ipiv, stP, info, bc)
-        : rocblas_status_not_implemented; // rocsolver_zsytf2_batched(handle, uplo, n, A, lda, ipiv, stP, info, bc);
+        : rocsolver_zsytf2_batched(handle, uplo, n, A, lda, ipiv, stP, info, bc);
 }
 /********************************************************/
