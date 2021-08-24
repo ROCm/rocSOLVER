@@ -229,19 +229,20 @@ inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bo
 /** This kernel updates the chosen pivots, checks singularity and
     interchanges rows all at once (pivoting + laswp)**/
 template <typename T, typename U>
-ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
-                                              const rocblas_int j,
-                                              const rocblas_int jb,
-                                              U AA,
-                                              const rocblas_int shiftA,
-                                              const rocblas_int lda,
-                                              const rocblas_stride strideA,
-                                              rocblas_int* ipivA,
-                                              const rocblas_int shiftP,
-                                              const rocblas_stride strideP,
-                                              rocblas_int* iipivA,
-                                              const rocblas_int* iinfo,
-                                              rocblas_int* info)
+ROCSOLVER_KERNEL void __launch_bounds__(LASWP_BLOCKSIZE)
+    getrf_check_singularity(const rocblas_int n,
+                            const rocblas_int j,
+                            const rocblas_int jb,
+                            U AA,
+                            const rocblas_int shiftA,
+                            const rocblas_int lda,
+                            const rocblas_stride strideA,
+                            rocblas_int* ipivA,
+                            const rocblas_int shiftP,
+                            const rocblas_stride strideP,
+                            rocblas_int* iipivA,
+                            const rocblas_int* iinfo,
+                            rocblas_int* info)
 {
     int id = hipBlockIdx_y;
     int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -280,7 +281,7 @@ ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
 
 /** non-pivoting version **/
 template <typename T>
-ROCSOLVER_KERNEL void
+ROCSOLVER_KERNEL void __launch_bounds__(LASWP_BLOCKSIZE)
     getrf_npvt_check_singularity(const rocblas_int j, const rocblas_int* iinfo, rocblas_int* info)
 {
     int id = hipBlockIdx_y;
@@ -422,9 +423,9 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_int dim = min(m, n); // total number of pivots
     rocblas_int jb, jb1, jb2, blk, blk1, blk2;
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
-    blocks = pivot ? (n - 1) / BLOCKSIZE + 1 : 1;
+    blocks = pivot ? (n - 1) / LASWP_BLOCKSIZE + 1 : 1;
     grid = dim3(blocks, batch_count, 1);
-    threads = dim3((pivot ? BLOCKSIZE : 1), 1, 1);
+    threads = dim3((pivot ? LASWP_BLOCKSIZE : 1), 1, 1);
 
     // size of outer blocks
     blk = getrf_get_blksize<ISBATCHED>(dim, pivot);

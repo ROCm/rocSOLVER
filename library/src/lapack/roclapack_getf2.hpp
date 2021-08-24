@@ -18,7 +18,7 @@
 // number of threads for the iamax reduction kernel
 #define IAMAX_THDS 1024
 // number of columns at which we switch from panel to general matrix
-#define GENERAL_PANEL_SWITCHSIZE 128
+#define GENERAL_PANEL_SWITCHSIZE 256
 // number of threads for the scal+ger kernel
 #define SGER_DIMX 128
 #define SGER_DIMY 8
@@ -27,13 +27,14 @@
     for panel matrices (matrices with less than 128 columns).
     Useful to speedup the factorization of block-columns in getrf **/
 template <typename T, typename U>
-ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
-                                         const rocblas_int n,
-                                         T* pivotval,
-                                         U AA,
-                                         const rocblas_int shiftA,
-                                         const rocblas_int lda,
-                                         const rocblas_stride strideA)
+ROCSOLVER_KERNEL void __launch_bounds__(SGER_DIMX* SGER_DIMY)
+    getf2_scale_update(const rocblas_int m,
+                       const rocblas_int n,
+                       T* pivotval,
+                       U AA,
+                       const rocblas_int shiftA,
+                       const rocblas_int lda,
+                       const rocblas_stride strideA)
 {
     // indices
     rocblas_int bid = hipBlockIdx_z;
@@ -79,18 +80,19 @@ ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
 /** This kernel updates the chosen pivot, checks singularity and
     interchanges rows all at once (pivoting + laswp)**/
 template <typename T, typename U>
-ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
-                                              const rocblas_int j,
-                                              U AA,
-                                              const rocblas_int shiftA,
-                                              const rocblas_int lda,
-                                              const rocblas_stride strideA,
-                                              rocblas_int* ipivA,
-                                              const rocblas_int shiftP,
-                                              const rocblas_stride strideP,
-                                              T* pivot_val,
-                                              rocblas_int* pivot_idxA,
-                                              rocblas_int* info)
+ROCSOLVER_KERNEL void __launch_bounds__(LASWP_BLOCKSIZE)
+    getf2_check_singularity(const rocblas_int n,
+                            const rocblas_int j,
+                            U AA,
+                            const rocblas_int shiftA,
+                            const rocblas_int lda,
+                            const rocblas_stride strideA,
+                            rocblas_int* ipivA,
+                            const rocblas_int shiftP,
+                            const rocblas_stride strideP,
+                            T* pivot_val,
+                            rocblas_int* pivot_idxA,
+                            rocblas_int* info)
 {
     using S = decltype(std::real(T{}));
 
@@ -128,13 +130,14 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
 
 /** Non-pivoting version **/
 template <typename T, typename U>
-ROCSOLVER_KERNEL void getf2_npvt_check_singularity(const rocblas_int j,
-                                                   U AA,
-                                                   const rocblas_int shiftA,
-                                                   const rocblas_int lda,
-                                                   const rocblas_stride strideA,
-                                                   T* pivot_val,
-                                                   rocblas_int* info)
+ROCSOLVER_KERNEL void __launch_bounds__(LASWP_BLOCKSIZE)
+    getf2_npvt_check_singularity(const rocblas_int j,
+                                 U AA,
+                                 const rocblas_int shiftA,
+                                 const rocblas_int lda,
+                                 const rocblas_stride strideA,
+                                 T* pivot_val,
+                                 rocblas_int* info)
 {
     using S = decltype(std::real(T{}));
 
@@ -157,11 +160,11 @@ ROCSOLVER_KERNEL void getf2_npvt_check_singularity(const rocblas_int j,
 /** This kernel executes an optimized reduction to find the index of the
     maximum element of a given vector (iamax) **/
 template <typename T, typename U>
-ROCSOLVER_KERNEL void getf2_iamax(const rocblas_int m,
-                                  U xx,
-                                  const rocblas_int shiftx,
-                                  const rocblas_stride stridex,
-                                  rocblas_int* pivotidx)
+ROCSOLVER_KERNEL void __launch_bounds__(IAMAX_THDS) getf2_iamax(const rocblas_int m,
+                                                                U xx,
+                                                                const rocblas_int shiftx,
+                                                                const rocblas_stride stridex,
+                                                                rocblas_int* pivotidx)
 {
     using S = decltype(std::real(T{}));
 
