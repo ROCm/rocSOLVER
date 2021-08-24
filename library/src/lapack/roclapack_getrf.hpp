@@ -352,10 +352,11 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         *size_iipiv = (pivot ? blk * sizeof(rocblas_int) * batch_count : 0);
 
         // extra workspace (for calling TRSM)
-        // (TODO: TRSM keeps acting weird and requires more investigation. Here, if
-        //  the dimensions are reduced to what actually is needed, the performance is
-        //  considerably degraded)
-        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, m, n, batch_count, size_work1,
+        // (Note: TRSM workspace size is less than expected when the number of rows is multiple of 128.
+        //  For this reason, when trying to set up a workspace that fits all the TRSM calls for m <= blk,
+        //  blk cannot be multiple of 128.)
+        rocblas_int mm = (blk % 128 != 0) ? blk : blk + 1;
+        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, mm, n, batch_count, size_work1,
                                          size_work2, size_work3, size_work4);
 
         // always allocate all required memory for TRSM optimal performance
@@ -434,7 +435,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                                       pivotval, pivotidx, pivot);
 
     // MAIN LOOP =====>
-    for(rocblas_int j = 0; j < dim; j += blk)
+    for(rocblas_int j = 0; j < dim; j += blk) //dim
     {
         jb = min(dim - j, blk); // number of columns/pivots in the block
         blk1 = getrf_get_innerBlkSize<ISBATCHED>(m - j, jb, pivot); // size of inner blocks
