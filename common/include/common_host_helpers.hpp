@@ -118,6 +118,94 @@ void print_to_stream(std::ostream& os,
     os.flush();
 }
 
+/*! \brief Print provided data into specified stream (real symmetric case)*/
+template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+void print_symmetric_to_stream(std::ostream& os,
+                               const std::string name,
+                               const rocblas_fill uplo,
+                               const rocblas_int n,
+                               T* A,
+                               const rocblas_int lda)
+{
+    std::string s;
+    bool empty = name.empty();
+    if(!empty)
+        s += fmt::format("{}-by-{} matrix: {}\n", n, n, name);
+    for(int i = 0; i < n; i++)
+    {
+        if(!empty)
+            s += "    ";
+        for(int j = 0; j < n; j++)
+        {
+            if(uplo == rocblas_fill_upper)
+            {
+                if(i < j)
+                    s += fmt::format("{}", A[j * lda + i]);
+                else
+                    s += fmt::format("{}", A[i * lda + j]);
+            }
+            else
+            {
+                if(i > j)
+                    s += fmt::format("{}", A[j * lda + i]);
+                else
+                    s += fmt::format("{}", A[i * lda + j]);
+            }
+
+            if(j < n - 1)
+                s += ", ";
+        }
+        s += '\n';
+    }
+    s += '\n';
+    os << s;
+    os.flush();
+}
+
+/*! \brief Print provided data into specified stream (complex symmetric case)*/
+template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+void print_symmetric_to_stream(std::ostream& os,
+                               const std::string name,
+                               const rocblas_fill uplo,
+                               const rocblas_int n,
+                               T* A,
+                               const rocblas_int lda)
+{
+    std::string s;
+    bool empty = name.empty();
+    if(!empty)
+        s += fmt::format("{}-by-{} matrix: {}\n", n, n, name);
+    for(int i = 0; i < n; i++)
+    {
+        if(!empty)
+            s += "    ";
+        for(int j = 0; j < n; j++)
+        {
+            if(uplo == rocblas_fill_upper)
+            {
+                if(i < j)
+                    s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
+                else
+                    s += fmt::format("[{}+{}i]", A[i * lda + j].real(), A[i * lda + j].imag());
+            }
+            else
+            {
+                if(i > j)
+                    s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
+                else
+                    s += fmt::format("[{}+{}i]", A[i * lda + j].real(), A[i * lda + j].imag());
+            }
+
+            if(j < n - 1)
+                s += ", ";
+        }
+        s += '\n';
+    }
+    s += '\n';
+    os << s;
+    os.flush();
+}
+
 /*! \brief Print data from a normal or strided_batched array on the GPU to screen*/
 template <typename T>
 void print_device_matrix(std::ostream& os,
@@ -190,6 +278,42 @@ void print_device_matrix(const std::string file,
     print_to_stream<T>(os, "", m, n, hA.data(), lda);
 }
 
+/*! \brief Print data from a normal or strided_batched array on the GPU to screen*/
+template <typename T>
+void print_symmetric_device_matrix(std::ostream& os,
+                                   const std::string name,
+                                   const rocblas_fill uplo,
+                                   const rocblas_int n,
+                                   T* A,
+                                   const rocblas_int lda,
+                                   const rocblas_stride stride = 1,
+                                   const rocblas_int idx = 0)
+{
+    std::vector<T> hA(lda * n);
+    hipMemcpy(hA.data(), A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+
+    print_symmetric_to_stream<T>(os, name, uplo, n, hA.data(), lda);
+}
+
+/*! \brief Print data from a batched array on the GPU to screen*/
+template <typename T>
+void print_symmetric_device_matrix(std::ostream& os,
+                                   const std::string name,
+                                   const rocblas_fill uplo,
+                                   const rocblas_int n,
+                                   T* const A[],
+                                   const rocblas_int lda,
+                                   const rocblas_stride stride = 1,
+                                   const rocblas_int idx = 0)
+{
+    std::vector<T> hA(lda * n);
+    T* AA[1];
+    hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost);
+    hipMemcpy(hA.data(), AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+
+    print_symmetric_to_stream<T>(os, name, uplo, n, hA.data(), lda);
+}
+
 /*! \brief Print data from a normal or strided_batched array on the CPU to screen*/
 template <typename T>
 void print_host_matrix(std::ostream& os,
@@ -244,6 +368,34 @@ void print_host_matrix(const std::string file,
 {
     std::ofstream os(file);
     print_to_stream<T>(os, "", m, n, A[idx], lda);
+}
+
+/*! \brief Print data from a normal or strided_batched array on the CPU to screen*/
+template <typename T>
+void print_symmetric_host_matrix(std::ostream& os,
+                                 const std::string name,
+                                 const rocblas_fill uplo,
+                                 const rocblas_int n,
+                                 T* A,
+                                 const rocblas_int lda,
+                                 const rocblas_stride stride = 1,
+                                 const rocblas_int idx = 0)
+{
+    print_symmetric_to_stream<T>(os, name, uplo, n, A + idx * stride, lda);
+}
+
+/*! \brief Print data from a batched array on the CPU to screen*/
+template <typename T>
+void print_symmetric_host_matrix(std::ostream& os,
+                                 const std::string name,
+                                 const rocblas_fill uplo,
+                                 const rocblas_int n,
+                                 T* const A[],
+                                 const rocblas_int lda,
+                                 const rocblas_stride stride = 1,
+                                 const rocblas_int idx = 0)
+{
+    print_symmetric_to_stream<T>(os, name, uplo, n, A[idx], lda);
 }
 
 /*! \brief  Debugging purpose, print out CPU and GPU result matrix */
