@@ -137,40 +137,179 @@ inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bo
     {
         if(pivot)
         {
-            if(n <= 72) // n = 16,32,48,64
+            if(n <= 40)
             {
-                blk = n;
-            }
-            else if(n <= 88) // n = 80
-            {
-                if(m <= 32)
-                    blk = 48;
-                else if(m <= 64)
+                if(m <= 10240)
                     blk = n;
-                else if(m <= 352)
+                else
                     blk = 16;
+            }
+            else if(n <= 56)
+            {
+                if(m <= 64)
+                    blk = 16;
+                else if(m <= 5760)
+                    blk = n;
+                else
+                    blk = 16;
+            }
+            else if(n <= 72)
+            {
+                if(m <= 96)
+                    blk = 16;
+                else if(m <= 4224)
+                    blk = n;
+                else
+                    blk = 16;
+            }
+            else if(n <= 88)
+            {
+                if(m <= 96)
+                    blk = 16;
+                else if(m <= 3776)
+                    blk = n;
+                else
+                    blk = 16;
+            }
+            else if(n <= 104)
+            {
+                if(m <= 96)
+                    blk = 16;
+                else if(m <= 3200)
+                    blk = n;
+                else if(m <= 6784)
+                    blk = 32;
+                else
+                    blk = 16;
+            }
+            else if(n <= 120)
+            {
+                if(m <= 128)
+                    blk = 16;
+                else if(m <= 2880)
+                    blk = n;
+                else if(m <= 6272)
+                    blk = 32;
+                else
+                    blk = 16;
+            }
+            else if(n <= 136)
+            {
+                if(m <= 128)
+                    blk = 16;
+                else if(m <= 2880)
+                    blk = n;
+                else if(m <= 6784)
+                    blk = 32;
+                else
+                    blk = 16;
+            }
+            else if(n <= 152)
+            {
+                if(m < 128)
+                    blk = 16;
+                else if(m < 176)
+                    blk = 32;
+                else if(m <= 2112)
+                    blk = n;
+                else if(m <= 8064)
+                    blk = 32;
+                else
+                    blk = 16;
+            }
+            else if(n <= 168)
+            {
+                if(m < 128)
+                    blk = 16;
+                else if(m < 176)
+                    blk = 32;
+                else if(m <= 1568)
+                    blk = n;
+                else if(m <= 10496)
+                    blk = 32;
+                else
+                    blk = 16;
+            }
+            else if(n <= 184)
+            {
+                if(m < 128)
+                    blk = 16;
+                else if(m < 208)
+                    blk = 32;
+                else if(m <= 1312)
+                    blk = n;
+                else if(m <= 2016)
+                    blk = 96;
                 else if(m <= 8960)
-                    blk = n;
+                    blk = 32;
                 else
                     blk = 16;
             }
-            else if(n <= 104) // n = 96
+            else if(n <= 200)
             {
-                if(m <= 32)
-                    blk = 48;
-                else if(m <= 64)
-                    blk = n;
-                else if(m <= 352)
+                if(m < 128)
+                    blk = 16;
+                else if(m < 256)
                     blk = 32;
-                else if(m <= 4736)
+                else if(m <= 1024)
+                    blk = n;
+                else if(m <= 1888)
+                    blk = 96;
+                else
+                    blk = 32;
+            }
+            else if(n <= 216)
+            {
+                if(m < 128)
+                    blk = 16;
+                else if(m < 256)
+                    blk = 32;
+                else if(m <= 1376)
                     blk = n;
                 else
                     blk = 32;
             }
-            else // n = 112,128,144,160,176,192,208,224,240,256,...
+            else if(n <= 232)
             {
-                if(m < 64)
-                    blk = 64;
+                if(m < 128)
+                    blk = 16;
+                else if(m <= 256)
+                    blk = 32;
+                else if(m <= 928)
+                    blk = n;
+                else if(m <= 1312)
+                    blk = 128;
+                else
+                    blk = 32;
+            }
+            else if(n <= 248)
+            {
+                if(m < 128)
+                    blk = 16;
+                else if(m <= 256)
+                    blk = 32;
+                else if(m <= 800)
+                    blk = n;
+                else if(m <= 1568)
+                    blk = 128;
+                else
+                    blk = 32;
+            }
+            else if(n <= 264)
+            {
+                if(m < 128)
+                    blk = 16;
+                else if(m <= 320)
+                    blk = 32;
+                else if(m <= 1440)
+                    blk = 128;
+                else
+                    blk = 32;
+            }
+            else
+            {
+                if(m < 128)
+                    blk = 16;
                 else
                     blk = 32;
             }
@@ -229,7 +368,7 @@ inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bo
 /** This kernel updates the chosen pivots, checks singularity and
     interchanges rows all at once (pivoting + laswp)**/
 template <typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(LASWP_BLOCKSIZE)
+ROCSOLVER_KERNEL void //__launch_bounds__(LASWP_BLOCKSIZE)
     getrf_check_singularity(const rocblas_int n,
                             const rocblas_int j,
                             const rocblas_int jb,
@@ -281,7 +420,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASWP_BLOCKSIZE)
 
 /** non-pivoting version **/
 template <typename T>
-ROCSOLVER_KERNEL void __launch_bounds__(LASWP_BLOCKSIZE)
+ROCSOLVER_KERNEL void //__launch_bounds__(LASWP_BLOCKSIZE)
     getrf_npvt_check_singularity(const rocblas_int j, const rocblas_int* iinfo, rocblas_int* info)
 {
     int id = hipBlockIdx_y;
@@ -419,13 +558,20 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     T one = 1; // constant 1 in host
     T minone = -1; // constant -1 in host
 
+    // number of threads for the check singularity kernel
+    rocblas_int singular_thds;
+    if(n < 4096)
+        singular_thds = 64;
+    else
+        singular_thds = 1024;
+
     // prepare kernels
     rocblas_int dim = min(m, n); // total number of pivots
     rocblas_int jb, jb1, jb2, blk, blk1, blk2;
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
-    blocks = pivot ? (n - 1) / LASWP_BLOCKSIZE + 1 : 1;
+    blocks = pivot ? (n - 1) / singular_thds + 1 : 1;
+    threads = dim3((pivot ? singular_thds : 1), 1, 1);
     grid = dim3(blocks, batch_count, 1);
-    threads = dim3((pivot ? LASWP_BLOCKSIZE : 1), 1, 1);
 
     // size of outer blocks
     blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
@@ -434,9 +580,8 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
         return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
                                                       shiftP, strideP, info, batch_count, scalars,
                                                       pivotval, pivotidx, pivot);
-
     // MAIN LOOP =====>
-    for(rocblas_int j = 0; j < dim; j += blk) //dim
+    for(rocblas_int j = 0; j < dim; j += blk)
     {
         jb = min(dim - j, blk); // number of columns/pivots in the block
         blk1 = getrf_get_innerBlkSize<ISBATCHED>(m - j, jb, pivot); // size of inner blocks

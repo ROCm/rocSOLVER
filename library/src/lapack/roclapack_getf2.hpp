@@ -17,24 +17,18 @@
 
 // number of threads for the iamax reduction kernel
 #define IAMAX_THDS 1024
-// number of columns at which we switch from panel to general matrix
-#define GENERAL_PANEL_SWITCHSIZE 256
-// number of threads for the scal+ger kernel
-#define SGER_DIMX 128
-#define SGER_DIMY 8
 
 /** This kernel executes an optimized scaled rank-update (scal + ger)
     for panel matrices (matrices with less than 128 columns).
     Useful to speedup the factorization of block-columns in getrf **/
 template <typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(SGER_DIMX* SGER_DIMY)
-    getf2_scale_update(const rocblas_int m,
-                       const rocblas_int n,
-                       T* pivotval,
-                       U AA,
-                       const rocblas_int shiftA,
-                       const rocblas_int lda,
-                       const rocblas_stride strideA)
+ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
+                                         const rocblas_int n,
+                                         T* pivotval,
+                                         U AA,
+                                         const rocblas_int shiftA,
+                                         const rocblas_int lda,
+                                         const rocblas_stride strideA)
 {
     // indices
     rocblas_int bid = hipBlockIdx_z;
@@ -44,16 +38,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(SGER_DIMX* SGER_DIMY)
 
     // shared data arrays
     T pivot;
-    __shared__ T x[SGER_DIMX];
-    __shared__ T y[GENERAL_PANEL_SWITCHSIZE];
+    __shared__ T x[256];
+    __shared__ T y[512];
 
     // batch instance
     T* A = load_ptr_batch(AA, bid, shiftA + 1 + lda, strideA);
     T* X = load_ptr_batch(AA, bid, shiftA + 1, strideA);
     T* Y = load_ptr_batch(AA, bid, shiftA + lda, strideA);
     pivot = pivotval[bid];
-
-    rocblas_int tyj;
 
     // read data from global to shared memory
     if(tx == 0)
@@ -80,19 +72,18 @@ ROCSOLVER_KERNEL void __launch_bounds__(SGER_DIMX* SGER_DIMY)
 /** This kernel updates the chosen pivot, checks singularity and
     interchanges rows all at once (pivoting + laswp)**/
 template <typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(LASWP_BLOCKSIZE)
-    getf2_check_singularity(const rocblas_int n,
-                            const rocblas_int j,
-                            U AA,
-                            const rocblas_int shiftA,
-                            const rocblas_int lda,
-                            const rocblas_stride strideA,
-                            rocblas_int* ipivA,
-                            const rocblas_int shiftP,
-                            const rocblas_stride strideP,
-                            T* pivot_val,
-                            rocblas_int* pivot_idxA,
-                            rocblas_int* info)
+ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
+                                              const rocblas_int j,
+                                              U AA,
+                                              const rocblas_int shiftA,
+                                              const rocblas_int lda,
+                                              const rocblas_stride strideA,
+                                              rocblas_int* ipivA,
+                                              const rocblas_int shiftP,
+                                              const rocblas_stride strideP,
+                                              T* pivot_val,
+                                              rocblas_int* pivot_idxA,
+                                              rocblas_int* info)
 {
     using S = decltype(std::real(T{}));
 
@@ -130,14 +121,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASWP_BLOCKSIZE)
 
 /** Non-pivoting version **/
 template <typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(LASWP_BLOCKSIZE)
-    getf2_npvt_check_singularity(const rocblas_int j,
-                                 U AA,
-                                 const rocblas_int shiftA,
-                                 const rocblas_int lda,
-                                 const rocblas_stride strideA,
-                                 T* pivot_val,
-                                 rocblas_int* info)
+ROCSOLVER_KERNEL void getf2_npvt_check_singularity(const rocblas_int j,
+                                                   U AA,
+                                                   const rocblas_int shiftA,
+                                                   const rocblas_int lda,
+                                                   const rocblas_stride strideA,
+                                                   T* pivot_val,
+                                                   rocblas_int* info)
 {
     using S = decltype(std::real(T{}));
 
@@ -301,6 +291,149 @@ ROCSOLVER_KERNEL void __launch_bounds__(IAMAX_THDS) getf2_iamax(const rocblas_in
         pivotidx[bid] = sidx[0];
 }
 
+inline void getf2_get_ger_blksize(const rocblas_int m,
+                                  const rocblas_int n,
+                                  rocblas_int* dimx,
+                                  rocblas_int* dimy)
+{
+    if(n <= 24)
+    {
+        if(m < 1536)
+        {
+            *dimx = 64;
+            *dimy = 16;
+        }
+        else if(m < 2688)
+        {
+            *dimx = 128;
+            *dimy = 8;
+        }
+        else if(m < 9216)
+        {
+            *dimx = 256;
+            *dimy = 4;
+        }
+        else
+        {
+            *dimx = 128;
+            *dimy = 8;
+        }
+    }
+    else if(n <= 40)
+    {
+        if(m < 1024)
+        {
+            *dimx = 64;
+            *dimy = 16;
+        }
+        else
+        {
+            *dimx = 128;
+            *dimy = 8;
+        }
+    }
+    else if(n <= 56)
+    {
+        if(m < 10240)
+        {
+            *dimx = 64;
+            *dimy = 16;
+        }
+        else
+        {
+            *dimx = 128;
+            *dimy = 8;
+        }
+    }
+    else if(n <= 88)
+    {
+        if(m < 5632)
+        {
+            *dimx = 64;
+            *dimy = 16;
+        }
+        else if(m < 7936)
+        {
+            *dimx = 128;
+            *dimy = 8;
+        }
+        else
+        {
+            *dimx = 256;
+            *dimy = 4;
+        }
+    }
+    else if(n <= 400)
+    {
+        if(m < 4096)
+        {
+            *dimx = 64;
+            *dimy = 16;
+        }
+        else if(m < 8192)
+        {
+            *dimx = 128;
+            *dimy = 8;
+        }
+        else
+        {
+            *dimx = 256;
+            *dimy = 4;
+        }
+    }
+    else if(n <= 464)
+    {
+        if(m < 1024)
+        {
+            *dimx = 1;
+            *dimy = 1;
+        }
+        else if(m < 4096)
+        {
+            *dimx = 64;
+            *dimy = 16;
+        }
+        else if(m < 8192)
+        {
+            *dimx = 128;
+            *dimy = 8;
+        }
+        else
+        {
+            *dimx = 256;
+            *dimy = 4;
+        }
+    }
+    else if(n <= 512)
+    {
+        if(m < 1536)
+        {
+            *dimx = 1;
+            *dimy = 1;
+        }
+        else if(m < 4096)
+        {
+            *dimx = 64;
+            *dimy = 16;
+        }
+        else if(m < 8192)
+        {
+            *dimx = 128;
+            *dimy = 8;
+        }
+        else
+        {
+            *dimx = 256;
+            *dimy = 4;
+        }
+    }
+    else
+    {
+        *dimx = 1;
+        *dimy = 1;
+    }
+}
+
 /** Return the sizes of the different workspace arrays **/
 template <bool ISBATCHED, typename T>
 void rocsolver_getf2_getMemorySize(const rocblas_int m,
@@ -425,14 +558,27 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
+    // number of threads for the check singularity kernel
+    rocblas_int singular_thds;
+    if(n < 1024)
+        singular_thds = 64;
+    else if(n < 2048)
+        singular_thds = 128;
+    else if(n < 4096)
+        singular_thds = 256;
+    else if(n < 8192)
+        singular_thds = 512;
+    else
+        singular_thds = 1024;
+
     // prepare kernels
     rocblas_int blocksx;
     dim3 grid, threads;
     dim3 gridMax(1, batch_count, 1);
     dim3 threadsMax(IAMAX_THDS, 1, 1);
-    rocblas_int blocksPivot = pivot ? (n - 1) / LASWP_BLOCKSIZE + 1 : 1;
+    rocblas_int blocksPivot = pivot ? (n - 1) / singular_thds + 1 : 1;
+    dim3 threadsPivot((pivot ? singular_thds : 1), 1, 1);
     dim3 gridPivot(blocksPivot, batch_count, 1);
-    dim3 threadsPivot((pivot ? LASWP_BLOCKSIZE : 1), 1, 1);
 
     for(rocblas_int j = 0; j < dim; ++j)
     {
@@ -452,7 +598,11 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
             hipLaunchKernelGGL(getf2_npvt_check_singularity<T>, gridPivot, threadsPivot, 0, stream,
                                j, A, shiftA, lda, strideA, pivotval, info);
 
-        if(n - j - 1 > GENERAL_PANEL_SWITCHSIZE) //if working with a general matrix:
+        // get thread block size for matrix update
+        rocblas_int sger_thds_x, sger_thds_y;
+        getf2_get_ger_blksize(m - j - 1, n - j - 1, &sger_thds_x, &sger_thds_y);
+
+        if(sger_thds_x == 1) //if working with a general matrix:
         {
             // Scale J'th column
             rocblasCall_scal<T>(handle, m - j - 1, pivotval, 1, A, shiftA + idx2D(j + 1, j, lda), 1,
@@ -469,9 +619,9 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         }
         else //if working with a panel matrix
         {
-            blocksx = (m - j - 2) / SGER_DIMX + 1;
+            blocksx = (m - j - 2) / sger_thds_x + 1;
+            threads = dim3(sger_thds_x, sger_thds_y, 1);
             grid = dim3(blocksx, 1, batch_count);
-            threads = dim3(SGER_DIMX, SGER_DIMY, 1);
 
             // scale and update panel trailing matrix with local function
             hipLaunchKernelGGL((getf2_scale_update<T>), grid, threads, 0, stream, m - j - 1,

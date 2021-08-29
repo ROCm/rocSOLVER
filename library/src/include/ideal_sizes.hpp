@@ -21,12 +21,12 @@
 
 // getf2/getfr
 #define GETF2_MAX_COLS 64 //always <= wavefront size
-#define GETF2_MAX_THDS 256
+#define GETF2_MAX_THDS 64
 #define GETF2_OPTIM_NGRP \
     16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
-#define GETRF_NUM_INTERVALS 4
-#define GETRF_INTERVALS 65, 1249, 2753, 8449
-#define GETRF_BLKSIZES 1, 32, 256, 288, 416
+#define GETRF_NUM_INTERVALS 3
+#define GETRF_INTERVALS 64, 2048, 4096
+#define GETRF_BLKSIZES 1, 32, 64, 128
 #define GETRF_BATCH_NUM_INTERVALS 3
 #define GETRF_BATCH_INTERVALS 52, 148, 1376
 #define GETRF_BATCH_BLKSIZES 1, 16, 32, 288
