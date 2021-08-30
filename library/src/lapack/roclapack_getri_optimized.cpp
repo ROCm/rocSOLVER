@@ -12,15 +12,17 @@
 #ifdef OPTIMAL
 
 template <rocblas_int DIM, typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) getri_kernel_small(U AA,
-                                                                     const rocblas_int shiftA,
-                                                                     const rocblas_int lda,
-                                                                     const rocblas_stride strideA,
-                                                                     rocblas_int* ipivA,
-                                                                     const rocblas_int shiftP,
-                                                                     const rocblas_stride strideP,
-                                                                     rocblas_int* info,
-                                                                     const bool complete)
+ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
+    getri_kernel_small(U AA,
+                       const rocblas_int shiftA,
+                       const rocblas_int lda,
+                       const rocblas_stride strideA,
+                       rocblas_int* ipivA,
+                       const rocblas_int shiftP,
+                       const rocblas_stride strideP,
+                       rocblas_int* info,
+                       const bool complete,
+                       const bool pivot)
 {
     int b = hipBlockIdx_x;
     int i = hipThreadIdx_x;
@@ -31,7 +33,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) getri_kernel_small(U AA,
     // batch instance
     T* A = load_ptr_batch<T>(AA, b, shiftA, strideA);
     rocblas_int* ipiv;
-    if(ipivA != nullptr)
+    if(pivot)
         ipiv = load_ptr_batch<rocblas_int>(ipivA, b, shiftP, strideP);
 
     // shared memory (for communication between threads in group)
@@ -118,18 +120,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(WAVESIZE) getri_kernel_small(U AA,
     }
 
     // apply pivots (getri_pivot)
-    if(ipivA != nullptr)
+    if(pivot)
     {
 #pragma unroll
         for(rocblas_int j = DIM - 2; j >= 0; j--)
         {
             jp = ipiv[j] - 1;
             if(jp != j)
-            {
-                temp = rA[j];
-                rA[j] = rA[jp];
-                rA[jp] = temp;
-            }
+                swap(rA[j], rA[jp]);
         }
     }
 
@@ -151,14 +149,15 @@ rocblas_status getri_run_small(rocblas_handle handle,
                                const rocblas_stride strideP,
                                rocblas_int* info,
                                const rocblas_int batch_count,
-                               const bool complete)
+                               const bool complete,
+                               const bool pivot)
 {
 #define RUN_GETRI_SMALL(DIM)                                                                 \
     hipLaunchKernelGGL((getri_kernel_small<DIM, T>), grid, block, 0, stream, A, shiftA, lda, \
-                       strideA, ipiv, shiftP, strideP, info, complete)
+                       strideA, ipiv, shiftP, strideP, info, complete, pivot)
 
     dim3 grid(batch_count, 1, 1);
-    dim3 block(WAVESIZE, 1, 1);
+    dim3 block(TRTRI_MAX_COLS, 1, 1);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -251,6 +250,7 @@ template rocblas_status getri_run_small<float, float*>(rocblas_handle,
                                                        const rocblas_stride,
                                                        rocblas_int*,
                                                        const rocblas_int,
+                                                       const bool,
                                                        const bool);
 template rocblas_status getri_run_small<double, double*>(rocblas_handle,
                                                          const rocblas_int,
@@ -263,6 +263,7 @@ template rocblas_status getri_run_small<double, double*>(rocblas_handle,
                                                          const rocblas_stride,
                                                          rocblas_int*,
                                                          const rocblas_int,
+                                                         const bool,
                                                          const bool);
 template rocblas_status
     getri_run_small<rocblas_float_complex, rocblas_float_complex*>(rocblas_handle,
@@ -276,6 +277,7 @@ template rocblas_status
                                                                    const rocblas_stride,
                                                                    rocblas_int*,
                                                                    const rocblas_int,
+                                                                   const bool,
                                                                    const bool);
 template rocblas_status
     getri_run_small<rocblas_double_complex, rocblas_double_complex*>(rocblas_handle,
@@ -289,6 +291,7 @@ template rocblas_status
                                                                      const rocblas_stride,
                                                                      rocblas_int*,
                                                                      const rocblas_int,
+                                                                     const bool,
                                                                      const bool);
 template rocblas_status getri_run_small<float, float* const*>(rocblas_handle,
                                                               const rocblas_int,
@@ -301,6 +304,7 @@ template rocblas_status getri_run_small<float, float* const*>(rocblas_handle,
                                                               const rocblas_stride,
                                                               rocblas_int*,
                                                               const rocblas_int,
+                                                              const bool,
                                                               const bool);
 template rocblas_status getri_run_small<double, double* const*>(rocblas_handle,
                                                                 const rocblas_int,
@@ -313,6 +317,7 @@ template rocblas_status getri_run_small<double, double* const*>(rocblas_handle,
                                                                 const rocblas_stride,
                                                                 rocblas_int*,
                                                                 const rocblas_int,
+                                                                const bool,
                                                                 const bool);
 template rocblas_status getri_run_small<rocblas_float_complex, rocblas_float_complex* const*>(
     rocblas_handle,
@@ -326,6 +331,7 @@ template rocblas_status getri_run_small<rocblas_float_complex, rocblas_float_com
     const rocblas_stride,
     rocblas_int*,
     const rocblas_int,
+    const bool,
     const bool);
 template rocblas_status getri_run_small<rocblas_double_complex, rocblas_double_complex* const*>(
     rocblas_handle,
@@ -339,6 +345,7 @@ template rocblas_status getri_run_small<rocblas_double_complex, rocblas_double_c
     const rocblas_stride,
     rocblas_int*,
     const rocblas_int,
+    const bool,
     const bool);
 
 #endif // OPTIMAL

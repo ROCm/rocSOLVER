@@ -66,11 +66,7 @@ __device__ void getri_pivot(const rocblas_int n, T* a, const rocblas_int lda, ro
         if(jp != j)
         {
             for(int i = hipThreadIdx_y; i < n; i += hipBlockDim_y)
-            {
-                temp = a[i + j * lda];
-                a[i + j * lda] = a[i + jp * lda];
-                a[i + jp * lda] = temp;
-            }
+                swap(a[i + j * lda], a[i + jp * lda]);
             __syncthreads();
         }
     }
@@ -202,7 +198,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
 
 #ifdef OPTIMAL
     // if small size nothing else is needed
-    if(n <= WAVESIZE)
+    if(n <= TRTRI_MAX_COLS)
     {
         *size_work1 = w1b;
         *size_work2 = w2b;
@@ -285,7 +281,8 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
                                         void* work4,
                                         T* tmpcopy,
                                         T** workArr,
-                                        bool optim_mem)
+                                        const bool optim_mem,
+                                        const bool pivot)
 {
     ROCSOLVER_ENTER("getri", "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
                     "bc:", batch_count);
@@ -312,7 +309,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     if((n <= GETRI_TINY_SIZE && !ISBATCHED) || (n <= GETRI_BATCH_TINY_SIZE && ISBATCHED))
     {
         return getri_run_small<T>(handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
-                                  batch_count, true);
+                                  batch_count, true, pivot);
     }
 #endif
 
@@ -326,17 +323,16 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
 
 #ifdef OPTIMAL
     // if small size, use optimized kernel for stage 2
-    if(n <= WAVESIZE)
+    if(n <= TRTRI_MAX_COLS)
     {
         return getri_run_small<T>(handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
-                                  batch_count, false);
+                                  batch_count, false, pivot);
     }
 #endif
 
     rocblas_int threads = min(((n - 1) / 64 + 1) * 64, BLOCKSIZE);
     rocblas_int ldw = n;
     rocblas_stride strideW = n * n;
-    const bool pivot = (ipiv != nullptr);
 
     // get block size
     rocblas_int blk = getri_get_blksize<ISBATCHED>(n);
