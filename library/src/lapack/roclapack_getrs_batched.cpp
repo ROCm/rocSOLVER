@@ -63,7 +63,7 @@ rocblas_status rocsolver_getrs_batched_impl(rocblas_handle handle,
     // execution
     return rocsolver_getrs_template<true, T>(handle, trans, n, nrhs, A, shiftA, lda, strideA, ipiv,
                                              strideP, B, shiftB, ldb, strideB, batch_count, work1,
-                                             work2, work3, work4, optim_mem);
+                                             work2, work3, work4, optim_mem, true);
 }
 
 /*

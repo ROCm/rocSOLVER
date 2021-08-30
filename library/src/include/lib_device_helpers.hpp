@@ -35,15 +35,19 @@ __device__ S aabs(T val)
 }
 
 template <typename T>
+__device__ __forceinline__ void swap(T& a, T& b)
+{
+    T temp = a;
+    a = b;
+    b = temp;
+}
+
+template <typename T>
 __device__ void swap(const rocblas_int n, T* a, const rocblas_int inca, T* b, const rocblas_int incb)
 {
     int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     if(tid < n)
-    {
-        T orig = a[inca * tid];
-        a[inca * tid] = b[incb * tid];
-        b[incb * tid] = orig;
-    }
+        swap(a[inca * tid], b[incb * tid]);
 }
 
 /** SWAPVECT device function swap vectors a and b of dimension n **/
@@ -51,13 +55,8 @@ template <typename T>
 __device__ void
     swapvect(const rocblas_int n, T* a, const rocblas_int inca, T* b, const rocblas_int incb)
 {
-    T orig;
     for(rocblas_int i = 0; i < n; ++i)
-    {
-        orig = a[inca * i];
-        a[inca * i] = b[incb * i];
-        b[incb * i] = orig;
-    }
+        swap(a[inca * i], b[incb * i]);
 }
 
 /** FIND_MAX_TRIDIAG finds the element with the largest magnitude in the

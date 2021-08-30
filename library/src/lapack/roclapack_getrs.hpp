@@ -96,7 +96,8 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
                                         void* work2,
                                         void* work3,
                                         void* work4,
-                                        bool optim_mem)
+                                        const bool optim_mem,
+                                        const bool pivot)
 {
     ROCSOLVER_ENTER("getrs", "trans:", trans, "n:", n, "nrhs:", nrhs, "shiftA:", shiftA,
                     "lda:", lda, "shiftB:", shiftB, "ldb:", ldb, "bc:", batch_count);
@@ -115,7 +116,6 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
 
     // constants to use when calling rocblas functions
     T one = 1; // constant 1 in host
-    const bool pivot = (ipiv != nullptr);
 
     if(trans == rocblas_operation_none)
     {

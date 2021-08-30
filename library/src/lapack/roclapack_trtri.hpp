@@ -111,7 +111,7 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
     // requirements for TRTI2
     rocblas_int nn = (blk == 1) ? n : blk;
 #ifdef OPTIMAL
-    if(nn <= WAVESIZE)
+    if(nn <= TRTRI_MAX_COLS)
     {
         // if very small size, no workspace needed
         w1a = 0;
@@ -207,7 +207,7 @@ void trti2(rocblas_handle handle,
 {
 #ifdef OPTIMAL
     // if very small size, use optimized kernel
-    if(n <= WAVESIZE)
+    if(n <= TRTRI_MAX_COLS)
     {
         trti2_run_small<T>(handle, uplo, diag, n, A, shiftA, lda, strideA, batch_count);
         return;

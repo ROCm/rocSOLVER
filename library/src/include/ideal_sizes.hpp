@@ -4,9 +4,6 @@
 
 #pragma once
 
-// general
-#define WAVESIZE 64 // size of wavefront
-
 // These are used by different common kernels
 //(TODO: identify functions and name accordingly)
 #define BLOCKSIZE 256
@@ -23,25 +20,25 @@
 #define ORMxx_ORMxx_BLOCKSIZE 32
 
 // getf2/getfr
-#define GETF2_MAX_THDS 256
+#define GETF2_MAX_COLS 64 //always <= wavefront size
+#define GETF2_MAX_THDS 64
 #define GETF2_OPTIM_NGRP \
     16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
-#define GETF2_BATCH_OPTIM_MAX_SIZE 1024
-#define GETF2_OPTIM_MAX_SIZE 1024
-#define GETRF_NUM_INTERVALS 4
-#define GETRF_INTERVALS 65, 657, 1217, 5249
-#define GETRF_BLKSIZES 1, 32, 1, 128, 192
+#define GETRF_NUM_INTERVALS 3
+#define GETRF_INTERVALS 64, 2048, 4096
+#define GETRF_BLKSIZES 1, 32, 64, 128
 #define GETRF_BATCH_NUM_INTERVALS 3
-#define GETRF_BATCH_INTERVALS 65, 497, 2049
-#define GETRF_BATCH_BLKSIZES 1, 16, 32, 64
-#define GETRF_NPVT_NUM_INTERVALS 3
-#define GETRF_NPVT_INTERVALS 65, 3073, 4609
-#define GETRF_NPVT_BLKSIZES 1, 32, 64, 192
+#define GETRF_BATCH_INTERVALS 52, 148, 1376
+#define GETRF_BATCH_BLKSIZES 1, 16, 32, 288
+#define GETRF_NPVT_NUM_INTERVALS 2
+#define GETRF_NPVT_INTERVALS 65, 1536
+#define GETRF_NPVT_BLKSIZES 1, 32, 256
 #define GETRF_NPVT_BATCH_NUM_INTERVALS 3
-#define GETRF_NPVT_BATCH_INTERVALS 45, 181, 2049
-#define GETRF_NPVT_BATCH_BLKSIZES 1, 16, 32, 64
+#define GETRF_NPVT_BATCH_INTERVALS 33, 148, 1216
+#define GETRF_NPVT_BATCH_BLKSIZES 1, 16, 32, 256
 
 // getri
+#define GETRI_MAX_COLS 64 //always <= wavefront size
 #define GETRI_TINY_SIZE 43
 #define GETRI_NUM_INTERVALS 1
 #define GETRI_INTERVALS 1185
@@ -52,6 +49,7 @@
 #define GETRI_BATCH_BLKSIZES 32, 0, 256
 
 // TRTRI
+#define TRTRI_MAX_COLS 64 //always <= wavefront size
 #define TRTRI_NUM_INTERVALS 1
 #define TRTRI_INTERVALS 0
 #define TRTRI_BLKSIZES 0, 0

@@ -185,7 +185,7 @@ void print_device_matrix(const std::string file,
     std::vector<T> hA(lda * n);
     T* AA[1];
     hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost);
-    hipMemcpy(hA, AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+    hipMemcpy(hA.data(), AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
     print_to_stream<T>(os, "", m, n, hA.data(), lda);
 }
