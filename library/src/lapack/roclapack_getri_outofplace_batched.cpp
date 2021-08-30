@@ -65,7 +65,7 @@ rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle,
     // Execution
     return rocsolver_getri_outofplace_template<true, T>(
         handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, C, shiftC, ldc, strideC, info,
-        batch_count, work1, work2, work3, work4, optim_mem);
+        batch_count, work1, work2, work3, work4, optim_mem, pivot);
 }
 
 /*

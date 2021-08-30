@@ -67,7 +67,7 @@ rocblas_status rocsolver_getri_impl(rocblas_handle handle,
     // execution
     return rocsolver_getri_template<false, false, T>(
         handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count, work1, work2,
-        work3, work4, (T*)tmpcopy, (T**)workArr, optim_mem);
+        work3, work4, (T*)tmpcopy, (T**)workArr, optim_mem, pivot);
 }
 
 /*

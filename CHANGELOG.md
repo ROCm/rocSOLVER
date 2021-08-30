@@ -10,6 +10,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Added `rocsolver_get_version_string_size` to help with version string queries
 
 ### Optimized
+- Improved performance of LU factorization (especially for large matrix sizes)
+
 ### Changed
 - The rocsolver-test client now prints the rocSOLVER version used to run the tests,
   rather than the version used to build them

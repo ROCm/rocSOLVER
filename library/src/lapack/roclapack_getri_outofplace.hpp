@@ -86,7 +86,8 @@ rocblas_status rocsolver_getri_outofplace_template(rocblas_handle handle,
                                                    void* work2,
                                                    void* work3,
                                                    void* work4,
-                                                   bool optim_mem)
+                                                   const bool optim_mem,
+                                                   const bool pivot)
 {
     ROCSOLVER_ENTER("getri_outofplace", "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
                     "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
@@ -119,7 +120,7 @@ rocblas_status rocsolver_getri_outofplace_template(rocblas_handle handle,
     // compute inverse
     rocsolver_getrs_template<BATCHED, T>(handle, rocblas_operation_none, n, n, A, shiftA, lda,
                                          strideA, ipiv, strideP, C, shiftC, ldc, strideC,
-                                         batch_count, work1, work2, work3, work4, optim_mem);
+                                         batch_count, work1, work2, work3, work4, optim_mem, pivot);
 
     return rocblas_status_success;
 }
