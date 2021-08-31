@@ -233,7 +233,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
 
                 for(i = tid; i < kp; i += SYTF2_MAX_THDS)
                     swap(A[i + kk * lda], A[i + kp * lda]);
-                __syncthreads();
                 for(i = tid; i < kk - kp - 1; i += SYTF2_MAX_THDS)
                     swap(A[(kp + i + 1) + kk * lda], A[kp + (kp + i + 1) * lda]);
                 __syncthreads();
@@ -256,7 +255,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                 // update column k (scal)
                 for(j = tid; j < k; j += SYTF2_MAX_THDS)
                     A[j + k * lda] *= r1;
-                __syncthreads();
             }
             else
             {
@@ -288,7 +286,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                         A[j + k * lda] = wk;
                         A[j + (k - 1) * lda] = wkm1;
                     }
-                    __syncthreads();
                 }
             }
         }
@@ -415,7 +412,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
 
                 for(i = tid; i < n - kp - 1; i += SYTF2_MAX_THDS)
                     swap(A[(kp + i + 1) + kk * lda], A[(kp + i + 1) + kp * lda]);
-                __syncthreads();
                 for(i = tid; i < kp - kk - 1; i += SYTF2_MAX_THDS)
                     swap(A[(kk + i + 1) + kk * lda], A[kp + (kk + i + 1) * lda]);
                 __syncthreads();
@@ -440,7 +436,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                     // update column k (scal)
                     for(j = tid; j < n - k - 1; j += SYTF2_MAX_THDS)
                         A[(k + j + 1) + k * lda] *= r1;
-                    __syncthreads();
                 }
             }
             else
@@ -473,7 +468,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                         A[j + k * lda] = wk;
                         A[j + (k + 1) * lda] = wkp1;
                     }
-                    __syncthreads();
                 }
             }
         }
