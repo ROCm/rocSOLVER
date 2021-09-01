@@ -14,6 +14,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Deprecated
 ### Removed
 ### Fixed
+- Added missing stdint.h include to rocsolver.h
+
 ### Known Issues
 ### Security
 
