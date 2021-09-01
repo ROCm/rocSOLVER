@@ -839,7 +839,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
 
     constexpr rocblas_int nb = (!is_complex<T> ? ROCBLAS_TRMM_REAL_NB : ROCBLAS_TRMM_COMPLEX_NB);
 
-    return rocblas_internal_trmm_recursive_template<nb, BATCHED, T>(
+    return rocblas_internal_trmm_recursive_inplace_template<nb, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), stride_alpha,
         cast2constType<T>(A), offsetA, lda, strideA, B, offsetB, ldb, strideB, batch_count);
 }
@@ -880,7 +880,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
     hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, B, strideB,
                        batch_count);
 
-    return rocblas_internal_trmm_recursive_template<nb, BATCHED, T>(
+    return rocblas_internal_trmm_recursive_inplace_template<nb, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), stride_alpha,
         cast2constType<T>(A), offsetA, lda, strideA, cast2constPointer<T>(workArr), offsetB, ldb,
         strideB, batch_count);
