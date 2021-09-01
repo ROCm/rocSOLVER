@@ -5,6 +5,8 @@
 #ifndef ROCSOLVER_EXTRAS_H_
 #define ROCSOLVER_EXTRAS_H_
 
+#include <stdint.h>
+
 /*! \brief Used to specify the logging layer mode using a bitwise combination
  *of rocblas_layer_mode values.
  ********************************************************************************/
