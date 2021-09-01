@@ -6237,7 +6237,6 @@ void cblas_sytf2<rocblas_double_complex>(rocblas_fill uplo,
     zsytf2_(&uploC, &n, A, &lda, ipiv, info);
 }
 
-#include <iostream>
 // sytrf
 template <>
 void cblas_sytrf<float>(rocblas_fill uplo,
