@@ -658,6 +658,18 @@ void cblas_sygvd_hegvd(rocblas_eform itype,
                        rocblas_int* info);
 
 template <typename T>
+void cblas_lasyf(rocblas_fill uplo,
+                 rocblas_int n,
+                 rocblas_int nb,
+                 rocblas_int* kb,
+                 T* A,
+                 rocblas_int lda,
+                 rocblas_int* ipiv,
+                 T* W,
+                 rocblas_int ldw,
+                 rocblas_int* info);
+
+template <typename T>
 void cblas_sytf2(rocblas_fill uplo,
                  rocblas_int n,
                  T* A,

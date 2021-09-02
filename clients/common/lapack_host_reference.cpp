@@ -1812,6 +1812,47 @@ void zhegvd_(int* itype,
              int* liwork,
              int* info);
 
+void slasyf_(char* uplo,
+             int* n,
+             int* nb,
+             int* kb,
+             float* A,
+             int* lda,
+             int* ipiv,
+             float* W,
+             int* ldw,
+             int* info);
+void dlasyf_(char* uplo,
+             int* n,
+             int* nb,
+             int* kb,
+             double* A,
+             int* lda,
+             int* ipiv,
+             double* W,
+             int* ldw,
+             int* info);
+void clasyf_(char* uplo,
+             int* n,
+             int* nb,
+             int* kb,
+             rocblas_float_complex* A,
+             int* lda,
+             int* ipiv,
+             rocblas_float_complex* W,
+             int* ldw,
+             int* info);
+void zlasyf_(char* uplo,
+             int* n,
+             int* nb,
+             int* kb,
+             rocblas_double_complex* A,
+             int* lda,
+             int* ipiv,
+             rocblas_double_complex* W,
+             int* ldw,
+             int* info);
+
 void ssytf2_(char* uplo, int* n, float* A, int* lda, int* ipiv, int* info);
 void dsytf2_(char* uplo, int* n, double* A, int* lda, int* ipiv, int* info);
 void csytf2_(char* uplo, int* n, rocblas_float_complex* A, int* lda, int* ipiv, int* info);
@@ -6186,6 +6227,71 @@ void cblas_sygvd_hegvd<rocblas_double_complex, double>(rocblas_eform itype,
     char uploC = rocblas2char_fill(uplo);
     zhegvd_(&itypeI, &evectC, &uploC, &n, A, &lda, B, &ldb, W, work, &lwork, rwork, &lrwork, iwork,
             &liwork, info);
+}
+
+// lasyf
+template <>
+void cblas_lasyf<float>(rocblas_fill uplo,
+                        rocblas_int n,
+                        rocblas_int nb,
+                        rocblas_int* kb,
+                        float* A,
+                        rocblas_int lda,
+                        rocblas_int* ipiv,
+                        float* W,
+                        rocblas_int ldw,
+                        rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    slasyf_(&uploC, &n, &nb, kb, A, &lda, ipiv, W, &ldw, info);
+}
+
+template <>
+void cblas_lasyf<double>(rocblas_fill uplo,
+                         rocblas_int n,
+                         rocblas_int nb,
+                         rocblas_int* kb,
+                         double* A,
+                         rocblas_int lda,
+                         rocblas_int* ipiv,
+                         double* W,
+                         rocblas_int ldw,
+                         rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    dlasyf_(&uploC, &n, &nb, kb, A, &lda, ipiv, W, &ldw, info);
+}
+
+template <>
+void cblas_lasyf<rocblas_float_complex>(rocblas_fill uplo,
+                                        rocblas_int n,
+                                        rocblas_int nb,
+                                        rocblas_int* kb,
+                                        rocblas_float_complex* A,
+                                        rocblas_int lda,
+                                        rocblas_int* ipiv,
+                                        rocblas_float_complex* W,
+                                        rocblas_int ldw,
+                                        rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    clasyf_(&uploC, &n, &nb, kb, A, &lda, ipiv, W, &ldw, info);
+}
+
+template <>
+void cblas_lasyf<rocblas_double_complex>(rocblas_fill uplo,
+                                         rocblas_int n,
+                                         rocblas_int nb,
+                                         rocblas_int* kb,
+                                         rocblas_double_complex* A,
+                                         rocblas_int lda,
+                                         rocblas_int* ipiv,
+                                         rocblas_double_complex* W,
+                                         rocblas_int ldw,
+                                         rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    zlasyf_(&uploC, &n, &nb, kb, A, &lda, ipiv, W, &ldw, info);
 }
 
 // sytf2

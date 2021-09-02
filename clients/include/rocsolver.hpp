@@ -1314,6 +1314,60 @@ inline rocblas_status rocsolver_stedc(rocblas_handle handle,
 }
 /********************************************************/
 
+/******************** LASYF ********************/
+inline rocblas_status rocsolver_lasyf(rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int nb,
+                                      rocblas_int* kb,
+                                      float* A,
+                                      rocblas_int lda,
+                                      rocblas_int* ipiv,
+                                      rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_slasyf(handle, uplo, n, nb, kb, A, lda, ipiv, info);
+}
+
+inline rocblas_status rocsolver_lasyf(rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int nb,
+                                      rocblas_int* kb,
+                                      double* A,
+                                      rocblas_int lda,
+                                      rocblas_int* ipiv,
+                                      rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_dlasyf(handle, uplo, n, nb, kb, A, lda, ipiv, info);
+}
+
+inline rocblas_status rocsolver_lasyf(rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int nb,
+                                      rocblas_int* kb,
+                                      rocblas_float_complex* A,
+                                      rocblas_int lda,
+                                      rocblas_int* ipiv,
+                                      rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_clasyf(handle, uplo, n, nb, kb, A, lda, ipiv, info);
+}
+
+inline rocblas_status rocsolver_lasyf(rocblas_handle handle,
+                                      rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int nb,
+                                      rocblas_int* kb,
+                                      rocblas_double_complex* A,
+                                      rocblas_int lda,
+                                      rocblas_int* ipiv,
+                                      rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_zlasyf(handle, uplo, n, nb, kb, A, lda, ipiv, info);
+}
+/********************************************************/
+
 /******************** POTF2_POTRF ********************/
 // normal and strided_batched
 inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
