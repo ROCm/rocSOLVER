@@ -2077,6 +2077,9 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = __attribute__(x)= \
                          __inline= \
+                         __declspec(x)= \
+                         ROCSOLVER_DEPRECATED= \
+                         ROCSOLVER_DEPRECATED_X(x)= \
                          ROCSOLVER_EXPORT=
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
