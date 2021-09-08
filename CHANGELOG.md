@@ -2,26 +2,6 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## [(Unreleased) rocSOLVER]
-### Added
-- General matrix inversion without pivoting:
-    - GETRI\_NPVT (with batched and strided\_batched versions)
-    - GETRI\_NPVT\_OUTOFPLACE (with batched and strided\_batched versions)
-- Added `rocsolver_get_version_string_size` to help with version string queries
-
-### Optimized
-- Improved performance of LU factorization (especially for large matrix sizes)
-
-### Changed
-- The rocsolver-test client now prints the rocSOLVER version used to run the tests,
-  rather than the version used to build them
-
-### Deprecated
-### Removed
-### Fixed
-### Known Issues
-### Security
-
 
 ## [rocSOLVER 3.15.0]
 ### Added
@@ -34,6 +14,12 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - POSV (with batched and strided\_batched versions)
 - Inverse of symmetric/hermitian positive definite matrices:
     - POTRI (with batched and strided\_batched versions)
+- General matrix inversion without pivoting:
+    - GETRI\_NPVT (with batched and strided\_batched versions)
+    - GETRI\_NPVT\_OUTOFPLACE (with batched and strided\_batched versions)
+
+### Optimized
+- Improved performance of LU factorization (especially for large matrix sizes)
 
 ### Changed
 - Raised reference LAPACK version used for rocSOLVER test and benchmark clients to v3.9.1
