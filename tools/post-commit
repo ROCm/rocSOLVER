@@ -13,6 +13,12 @@ EOF
   tput sgr0
 }
 
+# utility function to search for a program (in a subshell)
+find_program() (
+  export PATH=/opt/rocm/llvm/bin:/opt/rocm/bin:/usr/bin:/bin
+  command -v "$1" >/dev/null
+)
+
 # gather commit information
 commit=$(git rev-parse HEAD)
 short_commit=$(git rev-parse --short "$commit")
@@ -42,11 +48,18 @@ if [ "$dirty" = true ]; then
   git stash push --quiet --message 'post-commit: uncommitted changes'
 fi
 
+# check if clang-format is available
+declare -a format_options
+if ! find_program clang-format; then
+  format_options+=('--no-clang-format')
+  >&2 highlight 3 "post-commit: clang-format not found"
+fi
+
 # apply formatting and stage changes
 script_dir=$(dirname "${BASH_SOURCE[0]}")
 while IFS= read -r -d '' file; do
   >&2 echo "post-commit: reformatting $file"
-  "$script_dir/reformat-files" "$file"
+  "$script_dir/reformat-files" "${format_options[@]}" "$file"
   git add --update -- "$file"
 done < <(git diff-tree --no-commit-id --name-only -r --diff-filter=d -z HEAD)
 
