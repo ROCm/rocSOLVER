@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # To enable this hook, move this file to ".git/hooks/post-commit"
 
-set -eu
+set -euo pipefail
 
 # utility function to display message in color (if supported)
 highlight() {
@@ -18,6 +18,11 @@ find_program() (
   export PATH=/opt/rocm/llvm/bin:/opt/rocm/bin:/usr/bin:/bin
   command -v "$1" >/dev/null
 )
+
+# utility function to find the number of parents of a git commit
+get_commit_parent_count() {
+  git log -n 1 --format=%P "$1^!" | wc --words
+}
 
 # gather commit information
 commit=$(git rev-parse HEAD)
@@ -70,7 +75,12 @@ else
   >&2 echo 'post-commit: amending commit with reformatted files'
   chmod -x "${BASH_SOURCE[0]}" # prevent recursion
   git config advice.ignoredHook false # disable warning
-  git commit --amend --no-edit --no-verify --no-post-rewrite
+  git commit --amend --allow-empty --no-edit --no-verify --no-post-rewrite
+
+  # warn if commit is empty
+  if [ "$(get_commit_parent_count HEAD)" -eq 1 ] && git diff --quiet HEAD HEAD^@; then
+    >&2 highlight 3 "post-commit: commit is empty"
+  fi
 fi
 
 # restore workspace
