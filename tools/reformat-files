@@ -26,7 +26,6 @@ export PATH=/opt/rocm/llvm/bin:/opt/rocm/bin:/usr/bin:/bin
 exec >&2
 
 # Set defaults
-declare -a files
 apply_clang_format=true
 
 # Check getopt version
