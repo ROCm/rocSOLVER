@@ -36,7 +36,6 @@ __device__ void lasyf_gemv(const rocblas_int tid,
             temp[tid] -= A[i + j * lda] * x[j * incx];
         y[i * incy] = temp[tid];
     }
-    __syncthreads();
 }
 
 /** Device function to compute C = C - A B' (gemm) **/
@@ -62,7 +61,6 @@ __device__ void lasyf_gemm(const rocblas_int tid,
             temp[tid] -= A[i + l * lda] * B[j + l * ldb];
         C[i + j * ldc] = temp[tid];
     }
-    __syncthreads();
 }
 
 template <typename T, typename U>
@@ -85,7 +83,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     int tid = hipThreadIdx_x;
 
     using S = decltype(std::real(T{}));
-    const S alpha = (S)((1.0 + sqrt(17.0)) / 8.0);
+    const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
     const int ldw = n;
 
     // get array pointers
@@ -95,14 +93,17 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
 
     // local and shared variables
     __shared__ rocblas_int info;
+    int i, j;
     int k = n - 1;
     int kstep, kp, kk, kw, kkw;
 
-    // shared arrays for iamax
+    // shared variables for iamax
+    __shared__ S absakk;
+    __shared__ S colmax;
+    __shared__ S rowmax;
     __shared__ T sval[LASYF_MAX_THDS];
     __shared__ rocblas_int sidx[LASYF_MAX_THDS];
-    int idx, i, j;
-    S absakk, colmax, rowmax;
+    __shared__ rocblas_int imax;
 
     if(tid == 0)
         info = 0;
@@ -111,21 +112,26 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     while(k >= 0 && (k > n - nb || nb == n))
     {
         // copy column k of A to column kw of W and update
-        for(idx = tid; idx <= k; idx += LASYF_MAX_THDS)
-            W[idx + kw * ldw] = A[idx + k * lda];
+        for(i = tid; i <= k; i += LASYF_MAX_THDS)
+            W[i + kw * ldw] = A[i + k * lda];
         __syncthreads();
         if(k < n - 1)
+        {
             lasyf_gemv(tid, k + 1, n - k - 1, A + (k + 1) * lda, lda, W + k + (kw + 1) * ldw, ldw,
                        W + kw * ldw, 1, sval);
+            __syncthreads();
+        }
 
         kstep = 1;
-        absakk = aabs<S>(W[k + kw * ldw]);
 
         // find max off-diagonal entry in column k
         iamax<LASYF_MAX_THDS>(tid, k, W + kw * ldw, 1, sval, sidx);
-        __syncthreads();
-        i = sidx[0] - 1;
-        colmax = aabs<S>(sval[0]);
+        if(tid == 0)
+        {
+            imax = sidx[0] - 1;
+            colmax = aabs<S>(sval[0]);
+            absakk = aabs<S>(W[k + kw * ldw]);
+        }
         __syncthreads();
 
         if(max(absakk, colmax) == 0)
@@ -142,49 +148,49 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 kp = k;
             else
             {
-                // copy column i of A to column kw-1 of W and update
-                for(idx = tid; idx <= i; idx += LASYF_MAX_THDS)
-                    W[idx + (kw - 1) * ldw] = A[idx + i * lda];
-                for(idx = tid; idx < k - i; idx += LASYF_MAX_THDS)
-                    W[(i + idx + 1) + (kw - 1) * ldw] = A[i + (i + idx + 1) * lda];
+                // copy column imax of A to column kw-1 of W and update
+                for(i = tid; i <= imax; i += LASYF_MAX_THDS)
+                    W[i + (kw - 1) * ldw] = A[i + imax * lda];
+                for(i = tid; i < k - imax; i += LASYF_MAX_THDS)
+                    W[(imax + i + 1) + (kw - 1) * ldw] = A[imax + (imax + i + 1) * lda];
                 __syncthreads();
                 if(k < n - 1)
-                    lasyf_gemv(tid, k + 1, n - k - 1, A + (k + 1) * lda, lda,
-                               W + i + (kw + 1) * ldw, ldw, W + (kw - 1) * ldw, 1, sval);
-
-                // find max off-diagonal entry in row i
-                iamax<LASYF_MAX_THDS>(tid, k - i, W + (i + 1) + (kw - 1) * ldw, 1, sval, sidx);
-                __syncthreads();
-                j = i + sidx[0];
-                rowmax = aabs<S>(sval[0]);
-                __syncthreads();
-
-                if(i > 0)
                 {
-                    iamax<LASYF_MAX_THDS>(tid, i, W + (kw - 1) * ldw, 1, sval, sidx);
-                    __syncthreads();
-                    j = sidx[0] - 1;
-                    rowmax = max(rowmax, aabs<S>(sval[0]));
+                    lasyf_gemv(tid, k + 1, n - k - 1, A + (k + 1) * lda, lda,
+                               W + imax + (kw + 1) * ldw, ldw, W + (kw - 1) * ldw, 1, sval);
                     __syncthreads();
                 }
+
+                // find max off-diagonal entry in row imax
+                iamax<LASYF_MAX_THDS>(tid, k - imax, W + (imax + 1) + (kw - 1) * ldw, 1, sval, sidx);
+                if(tid == 0)
+                    rowmax = aabs<S>(sval[0]);
+
+                if(imax > 0)
+                {
+                    iamax<LASYF_MAX_THDS>(tid, imax, W + (kw - 1) * ldw, 1, sval, sidx);
+                    if(tid == 0)
+                        rowmax = max(rowmax, aabs<S>(sval[0]));
+                }
+                __syncthreads();
 
                 if(absakk >= alpha * colmax * (colmax / rowmax))
                     // no interchange (1-by-1 block)
                     kp = k;
-                else if(aabs<S>(W[i + (kw - 1) * ldw]) >= alpha * rowmax)
+                else if(aabs<S>(W[imax + (kw - 1) * ldw]) >= alpha * rowmax)
                 {
-                    // interchange rows and columns k and i (1-by-1 block)
-                    kp = i;
+                    // interchange rows and columns kk = k and kp = imax (1-by-1 block)
+                    kp = imax;
 
                     // copy column kw-1 of W to column kw of W
-                    for(idx = tid; idx <= k; idx += LASYF_MAX_THDS)
-                        W[idx + kw * ldw] = W[idx + (kw - 1) * ldw];
+                    for(i = tid; i <= k; i += LASYF_MAX_THDS)
+                        W[i + kw * ldw] = W[i + (kw - 1) * ldw];
                     __syncthreads();
                 }
                 else
                 {
-                    // interchange rows and columns k-1 and i (2-by-2 block)
-                    kp = i;
+                    // interchange rows and columns kk = k-1 and kp = imax (2-by-2 block)
+                    kp = imax;
                     kstep = 2;
                 }
             }
@@ -197,15 +203,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 if(tid == 0)
                     A[kp + kp * lda] = A[kk + kk * lda];
 
-                for(idx = tid; idx < kk - kp - 1; idx += LASYF_MAX_THDS)
-                    A[kp + (kp + idx + 1) * lda] = A[(kp + idx + 1) + kk * lda];
-                for(idx = tid; idx < kp; idx += LASYF_MAX_THDS)
-                    A[idx + kp * lda] = A[idx + kk * lda];
+                for(i = tid; i < kk - kp - 1; i += LASYF_MAX_THDS)
+                    A[kp + (kp + i + 1) * lda] = A[(kp + i + 1) + kk * lda];
+                for(i = tid; i < kp; i += LASYF_MAX_THDS)
+                    A[i + kp * lda] = A[i + kk * lda];
                 __syncthreads();
-                for(idx = tid; idx < n - k - 1; idx += LASYF_MAX_THDS)
-                    swap(A[kk + (k + idx + 1) * lda], A[kp + (k + idx + 1) * lda]);
-                for(idx = tid; idx < n - kk; idx += LASYF_MAX_THDS)
-                    swap(W[kk + (kkw + idx) * ldw], W[kp + (kkw + idx) * ldw]);
+                for(i = tid; i < n - k - 1; i += LASYF_MAX_THDS)
+                    swap(A[kk + (k + i + 1) * lda], A[kp + (k + i + 1) * lda]);
+                for(i = tid; i < n - kk; i += LASYF_MAX_THDS)
+                    swap(W[kk + (kkw + i) * ldw], W[kp + (kkw + i) * ldw]);
                 __syncthreads();
             }
 
@@ -216,8 +222,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 T r1 = T(1) / W[k + kw * ldw];
                 if(tid == 0)
                     A[k + k * lda] = W[k + kw * ldw];
-                for(idx = tid; idx < k; idx += LASYF_MAX_THDS)
-                    A[idx + k * lda] = r1 * W[idx + kw * ldw];
+                for(i = tid; i < k; i += LASYF_MAX_THDS)
+                    A[i + k * lda] = r1 * W[i + kw * ldw];
                 __syncthreads();
             }
             else
@@ -230,11 +236,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                     T d11 = W[k + kw * ldw] / d21;
                     T d22 = W[(k - 1) + (kw - 1) * ldw] / d21;
                     d21 = T(1) / ((d11 * d22 - T(1)) * d21);
-                    for(idx = tid; idx <= k - 2; idx += LASYF_MAX_THDS)
+                    for(i = tid; i <= k - 2; i += LASYF_MAX_THDS)
                     {
-                        A[idx + (k - 1) * lda]
-                            = d21 * (d11 * W[idx + (kw - 1) * ldw] - W[idx + kw * ldw]);
-                        A[idx + k * lda] = d21 * (d22 * W[idx + kw * ldw] - W[idx + (kw - 1) * ldw]);
+                        A[i + (k - 1) * lda] = d21 * (d11 * W[i + (kw - 1) * ldw] - W[i + kw * ldw]);
+                        A[i + k * lda] = d21 * (d22 * W[i + kw * ldw] - W[i + (kw - 1) * ldw]);
                     }
                 }
 
@@ -267,19 +272,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     // update A from [0,0] to [k,k], nb columns at a time
     for(j = (k / nb) * nb; j >= 0; j -= nb)
     {
-        idx = min(nb, k - j + 1); // jb
-        for(i = j; i < j + idx; i++)
+        int jb = min(nb, k - j + 1);
+        for(i = j; i < j + jb; i++)
             lasyf_gemv(tid, i - j + 1, n - k - 1, A + j + (k + 1) * lda, lda,
                        W + i + (kw + 1) * ldw, ldw, A + j + i * lda, 1, sval);
-        lasyf_gemm(tid, j, idx, n - k - 1, A + (k + 1) * lda, lda, W + j + (kw + 1) * ldw, ldw,
+        lasyf_gemm(tid, j, jb, n - k - 1, A + (k + 1) * lda, lda, W + j + (kw + 1) * ldw, ldw,
                    A + j * lda, lda, sval);
     }
+    __syncthreads();
 
     // partially undo interchanges to put U12 in standard form
     j = k + 1;
     while(j < n - 1)
     {
-        __syncthreads();
         kk = j; // jj
         kp = ipiv[j]; // jp
         if(kp < 0)
@@ -293,8 +298,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         j++;
         if(kp != kk && j < n)
         {
-            for(idx = tid; idx < n - j; idx += LASYF_MAX_THDS)
-                swap(A[kp + (j + idx) * lda], A[kk + (j + idx) * lda]);
+            for(i = tid; i < n - j; i += LASYF_MAX_THDS)
+                swap(A[kp + (j + i) * lda], A[kk + (j + i) * lda]);
+            __syncthreads();
         }
     }
 
@@ -325,7 +331,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     int tid = hipThreadIdx_x;
 
     using S = decltype(std::real(T{}));
-    const S alpha = (S)((1.0 + sqrt(17.0)) / 8.0);
+    const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
     const int ldw = n;
 
     // get array pointers
@@ -335,14 +341,17 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
 
     // local and shared variables
     __shared__ rocblas_int info;
+    int i, j;
     int k = 0;
     int kstep, kp, kk;
 
-    // shared arrays for iamax
+    // shared variables for iamax
+    __shared__ S absakk;
+    __shared__ S colmax;
+    __shared__ S rowmax;
     __shared__ T sval[LASYF_MAX_THDS];
     __shared__ rocblas_int sidx[LASYF_MAX_THDS];
-    int idx, i, j;
-    S absakk, colmax, rowmax;
+    __shared__ rocblas_int imax;
 
     if(tid == 0)
         info = 0;
@@ -350,19 +359,22 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     while(k < n && (k < nb - 1 || nb == n))
     {
         // copy column k of A to column k of W and update
-        for(idx = tid; idx < n - k; idx += LASYF_MAX_THDS)
-            W[(k + idx) + k * ldw] = A[(k + idx) + k * lda];
+        for(i = tid; i < n - k; i += LASYF_MAX_THDS)
+            W[(k + i) + k * ldw] = A[(k + i) + k * lda];
         __syncthreads();
         lasyf_gemv(tid, n - k, k, A + k, lda, W + k, ldw, W + k + k * ldw, 1, sval);
+        __syncthreads();
 
         kstep = 1;
-        absakk = aabs<S>(W[k + k * ldw]);
 
         // find max off-diagonal entry in column k
         iamax<LASYF_MAX_THDS>(tid, n - k - 1, W + (k + 1) + k * ldw, 1, sval, sidx);
-        __syncthreads();
-        i = k + sidx[0];
-        colmax = aabs<S>(sval[0]);
+        if(tid == 0)
+        {
+            imax = k + sidx[0];
+            colmax = aabs<S>(sval[0]);
+            absakk = aabs<S>(W[k + k * ldw]);
+        }
         __syncthreads();
 
         if(max(absakk, colmax) == 0)
@@ -379,47 +391,46 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 kp = k;
             else
             {
-                // copy column i of A to column k+1 of W and update
-                for(idx = tid; idx < i - k; idx += LASYF_MAX_THDS)
-                    W[(k + idx) + (k + 1) * ldw] = A[i + (k + idx) * lda];
-                for(idx = tid; idx < n - i; idx += LASYF_MAX_THDS)
-                    W[(i + idx) + (k + 1) * ldw] = A[(i + idx) + i * lda];
+                // copy column imax of A to column k+1 of W and update
+                for(i = tid; i < imax - k; i += LASYF_MAX_THDS)
+                    W[(k + i) + (k + 1) * ldw] = A[imax + (k + i) * lda];
+                for(i = tid; i < n - imax; i += LASYF_MAX_THDS)
+                    W[(imax + i) + (k + 1) * ldw] = A[(imax + i) + imax * lda];
                 __syncthreads();
-                lasyf_gemv(tid, n - k, k, A + k, lda, W + i, ldw, W + k + (k + 1) * ldw, 1, sval);
-
-                // find max off-diagonal entry in row i
-                iamax<LASYF_MAX_THDS>(tid, i - k, W + k + (k + 1) * ldw, 1, sval, sidx);
-                __syncthreads();
-                j = k - 1 + sidx[0];
-                rowmax = aabs<S>(sval[0]);
+                lasyf_gemv(tid, n - k, k, A + k, lda, W + imax, ldw, W + k + (k + 1) * ldw, 1, sval);
                 __syncthreads();
 
-                if(i < n - 1)
+                // find max off-diagonal entry in row imax
+                iamax<LASYF_MAX_THDS>(tid, imax - k, W + k + (k + 1) * ldw, 1, sval, sidx);
+                if(tid == 0)
+                    rowmax = aabs<S>(sval[0]);
+
+                if(imax < n - 1)
                 {
-                    iamax<LASYF_MAX_THDS>(tid, n - i - 1, W + (i + 1) + (k + 1) * ldw, 1, sval, sidx);
-                    __syncthreads();
-                    j = i + sidx[0];
-                    rowmax = max(rowmax, aabs<S>(sval[0]));
-                    __syncthreads();
+                    iamax<LASYF_MAX_THDS>(tid, n - imax - 1, W + (imax + 1) + (k + 1) * ldw, 1,
+                                          sval, sidx);
+                    if(tid == 0)
+                        rowmax = max(rowmax, aabs<S>(sval[0]));
                 }
+                __syncthreads();
 
                 if(absakk >= alpha * colmax * (colmax / rowmax))
                     // no interchange (1-by-1 block)
                     kp = k;
-                else if(aabs<S>(W[i + (k + 1) * ldw]) >= alpha * rowmax)
+                else if(aabs<S>(W[imax + (k + 1) * ldw]) >= alpha * rowmax)
                 {
-                    // interchange rows and columns k and i (1-by-1 block)
-                    kp = i;
+                    // interchange rows and columns kk = k and kp = imax (1-by-1 block)
+                    kp = imax;
 
                     // copy column kw-1 of W to column kw of W
-                    for(idx = tid; idx < n - k; idx += LASYF_MAX_THDS)
-                        W[(k + idx) + k * ldw] = W[(k + idx) + (k + 1) * ldw];
+                    for(i = tid; i < n - k; i += LASYF_MAX_THDS)
+                        W[(k + i) + k * ldw] = W[(k + i) + (k + 1) * ldw];
                     __syncthreads();
                 }
                 else
                 {
-                    // interchange rows and columns k+1 and i (2-by-2 block)
-                    kp = i;
+                    // interchange rows and columns kk = k+1 and kp = imax (2-by-2 block)
+                    kp = imax;
                     kstep = 2;
                 }
             }
@@ -431,15 +442,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 if(tid == 0)
                     A[kp + kp * lda] = A[kk + kk * lda];
 
-                for(idx = tid; idx < kp - kk - 1; idx += LASYF_MAX_THDS)
-                    A[kp + (kk + idx + 1) * lda] = A[(kk + idx + 1) + kk * lda];
-                for(idx = tid; idx < n - kp - 1; idx += LASYF_MAX_THDS)
-                    A[(kp + idx + 1) + kp * lda] = A[(kp + idx + 1) + kk * lda];
+                for(i = tid; i < kp - kk - 1; i += LASYF_MAX_THDS)
+                    A[kp + (kk + i + 1) * lda] = A[(kk + i + 1) + kk * lda];
+                for(i = tid; i < n - kp - 1; i += LASYF_MAX_THDS)
+                    A[(kp + i + 1) + kp * lda] = A[(kp + i + 1) + kk * lda];
                 __syncthreads();
-                for(idx = tid; idx < k; idx += LASYF_MAX_THDS)
-                    swap(A[kk + idx * lda], A[kp + idx * lda]);
-                for(idx = tid; idx <= kk; idx += LASYF_MAX_THDS)
-                    swap(W[kk + idx * ldw], W[kp + idx * ldw]);
+                for(i = tid; i < k; i += LASYF_MAX_THDS)
+                    swap(A[kk + i * lda], A[kp + i * lda]);
+                for(i = tid; i <= kk; i += LASYF_MAX_THDS)
+                    swap(W[kk + i * ldw], W[kp + i * ldw]);
                 __syncthreads();
             }
 
@@ -450,8 +461,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 T r1 = T(1) / W[k + k * ldw];
                 if(tid == 0)
                     A[k + k * lda] = W[k + k * ldw];
-                for(idx = tid; idx < n - k - 1; idx += LASYF_MAX_THDS)
-                    A[(k + idx + 1) + k * lda] = r1 * W[(k + idx + 1) + k * ldw];
+                for(i = tid; i < n - k - 1; i += LASYF_MAX_THDS)
+                    A[(k + i + 1) + k * lda] = r1 * W[(k + i + 1) + k * ldw];
                 __syncthreads();
             }
             else
@@ -464,11 +475,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                     T d11 = W[(k + 1) + (k + 1) * ldw] / d21;
                     T d22 = W[k + k * ldw] / d21;
                     d21 = T(1) / ((d11 * d22 - T(1)) * d21);
-                    for(idx = k + 2 + tid; idx < n; idx += LASYF_MAX_THDS)
+                    for(i = k + 2 + tid; i < n; i += LASYF_MAX_THDS)
                     {
-                        A[idx + k * lda] = d21 * (d11 * W[idx + k * ldw] - W[idx + (k + 1) * ldw]);
-                        A[idx + (k + 1) * lda]
-                            = d21 * (d22 * W[idx + (k + 1) * ldw] - W[idx + k * ldw]);
+                        A[i + k * lda] = d21 * (d11 * W[i + k * ldw] - W[i + (k + 1) * ldw]);
+                        A[i + (k + 1) * lda] = d21 * (d22 * W[i + (k + 1) * ldw] - W[i + k * ldw]);
                     }
                 }
 
@@ -500,19 +510,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     // update A from [k,k] to [n-1,n-1], nb columns at a time
     for(j = k; j < n; j += nb)
     {
-        idx = min(nb, n - j); // jb
-        for(i = j; i < j + idx; i++)
-            lasyf_gemv(tid, j + idx - i, k, A + i, lda, W + i, ldw, A + i + i * lda, 1, sval);
-        if(j + idx < n)
-            lasyf_gemm(tid, n - j - idx, idx, k, A + (j + idx), lda, W + j, ldw,
-                       A + (j + idx) + j * lda, lda, sval);
+        int jb = min(nb, n - j);
+        for(i = j; i < j + jb; i++)
+            lasyf_gemv(tid, j + jb - i, k, A + i, lda, W + i, ldw, A + i + i * lda, 1, sval);
+        if(j + jb < n)
+            lasyf_gemm(tid, n - j - jb, jb, k, A + (j + jb), lda, W + j, ldw,
+                       A + (j + jb) + j * lda, lda, sval);
     }
+    __syncthreads();
 
     // partially undo interchanges to put L21 in standard form
     j = k - 1;
     while(j > 0)
     {
-        __syncthreads();
         kk = j; // jj
         kp = ipiv[j]; // jp
         if(kp < 0)
@@ -526,8 +536,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         j--;
         if(kp != kk && j >= 0)
         {
-            for(idx = tid; idx <= j; idx += LASYF_MAX_THDS)
-                swap(A[kp + idx * lda], A[kk + idx * lda]);
+            for(i = tid; i <= j; i += LASYF_MAX_THDS)
+                swap(A[kp + i * lda], A[kk + i * lda]);
+            __syncthreads();
         }
     }
 
