@@ -121,7 +121,8 @@ void sytf2_sytrf_initData(const rocblas_handle handle,
                           const rocblas_int bc,
                           Th& hA,
                           Uh& hIpiv,
-                          Uh& hInfo)
+                          Uh& hInfo,
+                          const bool singular)
 {
     if(CPU)
     {
@@ -153,6 +154,35 @@ void sytf2_sytrf_initData(const rocblas_handle handle,
                     hA[b][n - 1 - i + j * lda] = tmp;
                 }
             }
+
+            if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
+            {
+                // add some singularities
+                // always the same elements for debugging purposes
+                // the algorithm must detect the first zero pivot in those
+                // matrices in the batch that are singular
+                rocblas_int j = n / 4 + b;
+                j -= (j / n) * n;
+                for(rocblas_int i = 0; i < n; i++)
+                {
+                    hA[b][i + j * lda] = 0;
+                    hA[b][j + i * lda] = 0;
+                }
+                j = n / 2 + b;
+                j -= (j / n) * n;
+                for(rocblas_int i = 0; i < n; i++)
+                {
+                    hA[b][i + j * lda] = 0;
+                    hA[b][j + i * lda] = 0;
+                }
+                j = n - 1 + b;
+                j -= (j / n) * n;
+                for(rocblas_int i = 0; i < n; i++)
+                {
+                    hA[b][i + j * lda] = 0;
+                    hA[b][j + i * lda] = 0;
+                }
+            }
         }
     }
 
@@ -180,14 +210,15 @@ void sytf2_sytrf_getError(const rocblas_handle handle,
                           Uh& hIpivRes,
                           Uh& hInfo,
                           Uh& hInfoRes,
-                          double* max_err)
+                          double* max_err,
+                          const bool singular)
 {
     int lwork = (SYTRF ? 64 * n : 0);
     std::vector<T> work(lwork);
 
     // input data initialization
     sytf2_sytrf_initData<true, true, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA,
-                                        hIpiv, hInfo);
+                                        hIpiv, hInfo, singular);
 
     // execute computations
     // GPU lapack
@@ -204,8 +235,7 @@ void sytf2_sytrf_getError(const rocblas_handle handle,
               : cblas_sytf2<T>(uplo, n, hA[b], lda, hIpiv[b], hInfo[b]);
     }
 
-    // expecting original matrix to be non-singular
-    // error is ||hA - hARes|| / ||hA|| (ideally ||LU - Lres Ures|| / ||LU||)
+    // error is ||hA - hARes|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
@@ -250,7 +280,8 @@ void sytf2_sytrf_getPerfData(const rocblas_handle handle,
                              double* cpu_time_used,
                              const rocblas_int hot_calls,
                              const int profile,
-                             const bool perf)
+                             const bool perf,
+                             const bool singular)
 {
     int lwork = (SYTRF ? 64 * n : 0);
     std::vector<T> work(lwork);
@@ -258,7 +289,7 @@ void sytf2_sytrf_getPerfData(const rocblas_handle handle,
     if(!perf)
     {
         sytf2_sytrf_initData<true, false, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP, dInfo, bc,
-                                             hA, hIpiv, hInfo);
+                                             hA, hIpiv, hInfo, singular);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
@@ -271,13 +302,13 @@ void sytf2_sytrf_getPerfData(const rocblas_handle handle,
     }
 
     sytf2_sytrf_initData<true, false, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA,
-                                         hIpiv, hInfo);
+                                         hIpiv, hInfo, singular);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         sytf2_sytrf_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP, dInfo, bc,
-                                             hA, hIpiv, hInfo);
+                                             hA, hIpiv, hInfo, singular);
 
         CHECK_ROCBLAS_ERROR(rocsolver_sytf2_sytrf(STRIDED, SYTRF, handle, uplo, n, dA.data(), lda,
                                                   stA, dIpiv.data(), stP, dInfo.data(), bc));
@@ -297,7 +328,7 @@ void sytf2_sytrf_getPerfData(const rocblas_handle handle,
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         sytf2_sytrf_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP, dInfo, bc,
-                                             hA, hIpiv, hInfo);
+                                             hA, hIpiv, hInfo, singular);
 
         start = get_time_us_sync(stream);
         rocsolver_sytf2_sytrf(STRIDED, SYTRF, handle, uplo, n, dA.data(), lda, stA, dIpiv.data(),
@@ -432,13 +463,14 @@ void testing_sytf2_sytrf(Arguments& argus)
         if(argus.unit_check || argus.norm_check)
             sytf2_sytrf_getError<STRIDED, SYTRF, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP,
                                                     dInfo, bc, hA, hARes, hIpiv, hIpivRes, hInfo,
-                                                    hInfoRes, &max_error);
+                                                    hInfoRes, &max_error, argus.singular);
 
         // collect performance data
         if(argus.timing)
-            sytf2_sytrf_getPerfData<STRIDED, SYTRF, T>(
-                handle, uplo, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA, hIpiv, hInfo,
-                &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
+            sytf2_sytrf_getPerfData<STRIDED, SYTRF, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP,
+                                                       dInfo, bc, hA, hIpiv, hInfo, &gpu_time_used,
+                                                       &cpu_time_used, hot_calls, argus.profile,
+                                                       argus.perf, argus.singular);
     }
 
     else
@@ -475,13 +507,14 @@ void testing_sytf2_sytrf(Arguments& argus)
         if(argus.unit_check || argus.norm_check)
             sytf2_sytrf_getError<STRIDED, SYTRF, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP,
                                                     dInfo, bc, hA, hARes, hIpiv, hIpivRes, hInfo,
-                                                    hInfoRes, &max_error);
+                                                    hInfoRes, &max_error, argus.singular);
 
         // collect performance data
         if(argus.timing)
-            sytf2_sytrf_getPerfData<STRIDED, SYTRF, T>(
-                handle, uplo, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA, hIpiv, hInfo,
-                &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
+            sytf2_sytrf_getPerfData<STRIDED, SYTRF, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP,
+                                                       dInfo, bc, hA, hIpiv, hInfo, &gpu_time_used,
+                                                       &cpu_time_used, hot_calls, argus.profile,
+                                                       argus.perf, argus.singular);
     }
 
     // validate results for rocsolver-test

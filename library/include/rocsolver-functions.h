@@ -16988,7 +16988,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ztrtri_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief SYTF2 computes the factorization of a symmetric matrix \f$A\f$
+    \brief SYTF2 computes the factorization of a symmetric indefinite matrix \f$A\f$
     using Bunch-Kaufman diagonal pivoting.
 
     \details
@@ -17005,7 +17005,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ztrtri_strided_batched(rocblas_handle 
 
     where \f$U\f$ or \f$L\f$ is a product of permutation and unit upper/lower
     triangular matrices (depending on the value of uplo), and \f$D\f$ is a symmetric
-    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks.
+    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks \f$D(k)\f$.
+
+    Specifically, \f$U\f$ and \f$L\f$ are computed as
+
+    \f[
+        \begin{array}{cl}
+        U = P(n) U(n) \cdots P(k) U(k) \cdots & \: \text{and}\\
+        L = P(1) L(1) \cdots P(k) L(k) \cdots &
+        \end{array}
+    \f]
+
+    where \f$k\f$ decreases from \f$n\f$ to 1 (increases from 1 to \f$n\f$) in steps of 1 or 2,
+    depending on the order of block \f$D(k)\f$, and \f$P(k)\f$ is a permutation matrix defined by
+    \f$ipiv[k]\f$. If we let \f$s\f$ denote the order of block \f$D(k)\f$, then \f$U(k)\f$
+    and \f$L(k)\f$ are unit upper/lower triangular matrices defined as
+
+    \f[
+        U(k) = \left[ \begin{array}{ccc}
+        I_{k-s} & v & 0 \\
+        0 & I_s & 0 \\
+        0 & 0 & I_{n-k}
+        \end{array} \right]
+    \f]
+
+    and
+
+    \f[
+        L(k) = \left[ \begin{array}{ccc}
+        I_{k-1} & 0 & 0 \\
+        0 & I_s & 0 \\
+        0 & v & I_{n-k-s+1}
+        \end{array} \right].
+    \f]
+
+    If \f$s = 1\f$, then \f$D(k)\f$ is stored in \f$A[k,k]\f$ and \f$v\f$ is stored in the upper/lower
+    part of column \f$k\f$ of \f$A\f$.
+    If \f$s = 2\f$ and uplo is upper, then \f$D(k)\f$ is stored in \f$A[k-1,k-1]\f$, \f$A[k-1,k]\f$,
+    and \f$A[k,k]\f$, and \f$v\f$ is stored in the upper parts of columns \f$k-1\f$ and \f$k\f$ of \f$A\f$.
+    If \f$s = 2\f$ and uplo is lower, then \f$D(k)\f$ is stored in \f$A[k,k]\f$, \f$A[k+1,k]\f$,
+    and \f$A[k+1,k+1]\f$, and \f$v\f$ is stored in the lower parts of columns \f$k\f$ and \f$k+1\f$ of \f$A\f$.
 
     @param[in]
     handle    rocblas_handle.
@@ -17075,8 +17114,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief SYTF2_BATCHED computes the factorization of a batch of symmetric matrices
-    using Bunch-Kaufman diagonal pivoting.
+    \brief SYTF2_BATCHED computes the factorization of a batch of symmetric indefinite
+    matrices using Bunch-Kaufman diagonal pivoting.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -17092,7 +17131,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2(rocblas_handle handle,
 
     where \f$U_i\f$ or \f$L_i\f$ is a product of permutation and unit upper/lower
     triangular matrices (depending on the value of uplo), and \f$D_i\f$ is a symmetric
-    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks.
+    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks \f$D_i(k)\f$.
+
+    Specifically, \f$U_i\f$ and \f$L_i\f$ are computed as
+
+    \f[
+        \begin{array}{cl}
+        U_i = P_i(n) U_i(n) \cdots P_i(k) U_i(k) \cdots & \: \text{and}\\
+        L_i = P_i(1) L_i(1) \cdots P_i(k) L_i(k) \cdots &
+        \end{array}
+    \f]
+
+    where \f$k\f$ decreases from \f$n\f$ to 1 (increases from 1 to \f$n\f$) in steps of 1 or 2,
+    depending on the order of block \f$D_i(k)\f$, and \f$P_i(k)\f$ is a permutation matrix defined by
+    \f$ipiv_i[k]\f$. If we let \f$s\f$ denote the order of block \f$D_i(k)\f$, then \f$U_i(k)\f$
+    and \f$L_i(k)\f$ are unit upper/lower triangular matrices defined as
+
+    \f[
+        U_i(k) = \left[ \begin{array}{ccc}
+        I_{k-s} & v & 0 \\
+        0 & I_s & 0 \\
+        0 & 0 & I_{n-k}
+        \end{array} \right]
+    \f]
+
+    and
+
+    \f[
+        L_i(k) = \left[ \begin{array}{ccc}
+        I_{k-1} & 0 & 0 \\
+        0 & I_s & 0 \\
+        0 & v & I_{n-k-s+1}
+        \end{array} \right].
+    \f]
+
+    If \f$s = 1\f$, then \f$D_i(k)\f$ is stored in \f$A_i[k,k]\f$ and \f$v\f$ is stored in the upper/lower
+    part of column \f$k\f$ of \f$A_i\f$.
+    If \f$s = 2\f$ and uplo is upper, then \f$D_i(k)\f$ is stored in \f$A_i[k-1,k-1]\f$, \f$A_i[k-1,k]\f$,
+    and \f$A_i[k,k]\f$, and \f$v\f$ is stored in the upper parts of columns \f$k-1\f$ and \f$k\f$ of \f$A_i\f$.
+    If \f$s = 2\f$ and uplo is lower, then \f$D_i(k)\f$ is stored in \f$A_i[k,k]\f$, \f$A_i[k+1,k]\f$,
+    and \f$A_i[k+1,k+1]\f$, and \f$v\f$ is stored in the lower parts of columns \f$k\f$ and \f$k+1\f$ of \f$A_i\f$.
 
     @param[in]
     handle    rocblas_handle.
@@ -17177,8 +17255,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2_batched(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief SYTF2_STRIDED_BATCHED computes the factorization of a batch of symmetric matrices
-    using Bunch-Kaufman diagonal pivoting.
+    \brief SYTF2_STRIDED_BATCHED computes the factorization of a batch of symmetric indefinite
+    matrices using Bunch-Kaufman diagonal pivoting.
 
     \details
     (This is the unblocked version of the algorithm).
@@ -17194,7 +17272,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2_batched(rocblas_handle handle,
 
     where \f$U_i\f$ or \f$L_i\f$ is a product of permutation and unit upper/lower
     triangular matrices (depending on the value of uplo), and \f$D_i\f$ is a symmetric
-    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks.
+    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks \f$D_i(k)\f$.
+
+    Specifically, \f$U_i\f$ and \f$L_i\f$ are computed as
+
+    \f[
+        \begin{array}{cl}
+        U_i = P_i(n) U_i(n) \cdots P_i(k) U_i(k) \cdots & \: \text{and}\\
+        L_i = P_i(1) L_i(1) \cdots P_i(k) L_i(k) \cdots &
+        \end{array}
+    \f]
+
+    where \f$k\f$ decreases from \f$n\f$ to 1 (increases from 1 to \f$n\f$) in steps of 1 or 2,
+    depending on the order of block \f$D_i(k)\f$, and \f$P_i(k)\f$ is a permutation matrix defined by
+    \f$ipiv_i[k]\f$. If we let \f$s\f$ denote the order of block \f$D_i(k)\f$, then \f$U_i(k)\f$
+    and \f$L_i(k)\f$ are unit upper/lower triangular matrices defined as
+
+    \f[
+        U_i(k) = \left[ \begin{array}{ccc}
+        I_{k-s} & v & 0 \\
+        0 & I_s & 0 \\
+        0 & 0 & I_{n-k}
+        \end{array} \right]
+    \f]
+
+    and
+
+    \f[
+        L_i(k) = \left[ \begin{array}{ccc}
+        I_{k-1} & 0 & 0 \\
+        0 & I_s & 0 \\
+        0 & v & I_{n-k-s+1}
+        \end{array} \right].
+    \f]
+
+    If \f$s = 1\f$, then \f$D_i(k)\f$ is stored in \f$A_i[k,k]\f$ and \f$v\f$ is stored in the upper/lower
+    part of column \f$k\f$ of \f$A_i\f$.
+    If \f$s = 2\f$ and uplo is upper, then \f$D_i(k)\f$ is stored in \f$A_i[k-1,k-1]\f$, \f$A_i[k-1,k]\f$,
+    and \f$A_i[k,k]\f$, and \f$v\f$ is stored in the upper parts of columns \f$k-1\f$ and \f$k\f$ of \f$A_i\f$.
+    If \f$s = 2\f$ and uplo is lower, then \f$D_i(k)\f$ is stored in \f$A_i[k,k]\f$, \f$A_i[k+1,k]\f$,
+    and \f$A_i[k+1,k+1]\f$, and \f$v\f$ is stored in the lower parts of columns \f$k\f$ and \f$k+1\f$ of \f$A_i\f$.
 
     @param[in]
     handle    rocblas_handle.

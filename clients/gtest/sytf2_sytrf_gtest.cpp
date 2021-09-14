@@ -13,7 +13,8 @@ using namespace std;
 
 typedef std::tuple<vector<int>, char> sytrf_tuple;
 
-// each matrix_size_range vector is a {n, lda}
+// each matrix_size_range vector is a {n, lda, singular}
+// if singular = 1, then the used matrix for the tests is singular
 
 // each uplo_range is a {uplo}
 
@@ -25,20 +26,20 @@ const vector<char> uplo_range = {'L', 'U'};
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
     // quick return
-    {0, 1},
+    {0, 1, 0},
     // invalid
-    {-1, 1},
-    {20, 5},
+    {-1, 1, 0},
+    {20, 5, 0},
     // normal (valid) samples
-    {32, 32},
-    {50, 50},
-    {70, 100}};
+    {32, 32, 1},
+    {50, 50, 0},
+    {70, 100, 1}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
-    {192, 192},
-    {640, 640},
-    {1000, 1024},
+    {192, 192, 1},
+    {640, 640, 0},
+    {1000, 1024, 1},
 };
 
 Arguments sytrf_setup_arguments(sytrf_tuple tup)
@@ -56,6 +57,7 @@ Arguments sytrf_setup_arguments(sytrf_tuple tup)
     // only testing standard use case/defaults for strides
 
     arg.timing = 0;
+    arg.singular = matrix_size[2];
 
     return arg;
 }
@@ -77,6 +79,10 @@ protected:
             testing_sytf2_sytrf_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        if(arg.singular == 1)
+            testing_sytf2_sytrf<BATCHED, STRIDED, BLOCKED, T>(arg);
+
+        arg.singular = 0;
         testing_sytf2_sytrf<BATCHED, STRIDED, BLOCKED, T>(arg);
     }
 };
