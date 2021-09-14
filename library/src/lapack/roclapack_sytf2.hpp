@@ -10,126 +10,12 @@
 
 #pragma once
 
+#include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
 // number of threads for the sytf2 kernel (currently not tunable)
 #define SYTF2_MAX_THDS 256
-
-/** Device function to execute an optimized reduction to find the index of the
-    maximum element of a given vector (iamax) **/
-template <typename T>
-__device__ void sytf2_iamax(const rocblas_int tid,
-                            const rocblas_int n,
-                            T* A,
-                            const rocblas_int incA,
-                            T* sval,
-                            rocblas_int* sidx)
-{
-    using S = decltype(std::real(T{}));
-
-    // local memory setup
-    T val1, val2;
-    rocblas_int idx1, idx2;
-
-    // read into shared memory while doing initial step
-    // (each thread reduce as many elements as needed to cover the original array)
-    val1 = 0;
-    idx1 = INT_MAX;
-    for(int i = tid; i < n; i += SYTF2_MAX_THDS)
-    {
-        val2 = A[i * incA];
-        idx2 = i + 1; // add one to make it 1-based index
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
-        {
-            val1 = val2;
-            idx1 = idx2;
-        }
-    }
-    sval[tid] = val1;
-    sidx[tid] = idx1;
-    __syncthreads();
-
-    if(n <= 1)
-        return;
-
-    /** <========= Next do the reduction on the shared memory array =========>
-        (We need to execute the for loop
-            for(j = SYTF2_MAX_THDS; j > 0; j>>=1)
-        to have half of the active threads at each step
-        reducing two elements in the shared array.
-        As SYTF2_MAX_THDS is fixed to 256, we can unroll the loop manually) **/
-
-    if(tid < 128)
-    {
-        val2 = sval[tid + 128];
-        idx2 = sidx[tid + 128];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
-        {
-            sval[tid] = val1 = val2;
-            sidx[tid] = idx1 = idx2;
-        }
-    }
-    __syncthreads();
-
-    // from this point, as all the active threads will form a single wavefront
-    // and work in lock-step, there is no need for synchronizations and barriers
-    if(tid < 64)
-    {
-        val2 = sval[tid + 64];
-        idx2 = sidx[tid + 64];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
-        {
-            sval[tid] = val1 = val2;
-            sidx[tid] = idx1 = idx2;
-        }
-        val2 = sval[tid + 32];
-        idx2 = sidx[tid + 32];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
-        {
-            sval[tid] = val1 = val2;
-            sidx[tid] = idx1 = idx2;
-        }
-        val2 = sval[tid + 16];
-        idx2 = sidx[tid + 16];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
-        {
-            sval[tid] = val1 = val2;
-            sidx[tid] = idx1 = idx2;
-        }
-        val2 = sval[tid + 8];
-        idx2 = sidx[tid + 8];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
-        {
-            sval[tid] = val1 = val2;
-            sidx[tid] = idx1 = idx2;
-        }
-        val2 = sval[tid + 4];
-        idx2 = sidx[tid + 4];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
-        {
-            sval[tid] = val1 = val2;
-            sidx[tid] = idx1 = idx2;
-        }
-        val2 = sval[tid + 2];
-        idx2 = sidx[tid + 2];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
-        {
-            sval[tid] = val1 = val2;
-            sidx[tid] = idx1 = idx2;
-        }
-        val2 = sval[tid + 1];
-        idx2 = sidx[tid + 1];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
-        {
-            sval[tid] = val1 = val2;
-            sidx[tid] = idx1 = idx2;
-        }
-    }
-    __syncthreads();
-
-    // after the reduction, the maximum of the elements is in sval[0] and sidx[0]
-}
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
@@ -156,14 +42,17 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
 
     // local and shared variables
     __shared__ rocblas_int info;
+    int i, j;
     int k = n - 1;
     int kstep, kp, kk;
 
-    // shared arrays for iamax
+    // shared variables for iamax
+    __shared__ S absakk;
+    __shared__ S colmax;
+    __shared__ S rowmax;
     __shared__ T sval[SYTF2_MAX_THDS];
     __shared__ rocblas_int sidx[SYTF2_MAX_THDS];
-    int i, j;
-    S absakk, colmax, rowmax;
+    __shared__ rocblas_int imax;
 
     if(tid == 0)
         info = 0;
@@ -171,12 +60,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
     while(k >= 0)
     {
         kstep = 1;
-        absakk = aabs<S>(A[k + k * lda]);
 
         // find max off-diagonal entry in column k
-        sytf2_iamax(tid, k, A + k * lda, 1, sval, sidx);
-        i = sidx[0] - 1;
-        colmax = aabs<S>(sval[0]);
+        iamax<SYTF2_MAX_THDS>(tid, k, A + k * lda, 1, sval, sidx);
+        if(tid == 0)
+        {
+            imax = sidx[0] - 1;
+            colmax = aabs<S>(sval[0]);
+            absakk = aabs<S>(A[k + k * lda]);
+        }
         __syncthreads();
 
         if(max(absakk, colmax) == 0)
@@ -194,27 +86,28 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
             else
             {
                 // find max off-diagonal entry in row i
-                sytf2_iamax(tid, k - i, A + i + (i + 1) * lda, lda, sval, sidx);
-                rowmax = aabs<S>(sval[0]);
-                __syncthreads();
+                iamax<SYTF2_MAX_THDS>(tid, k - imax, A + imax + (imax + 1) * lda, lda, sval, sidx);
+                if(tid == 0)
+                    rowmax = aabs<S>(sval[0]);
 
-                if(i > 0)
+                if(imax > 0)
                 {
-                    sytf2_iamax(tid, i, A + i * lda, 1, sval, sidx);
-                    rowmax = max(rowmax, aabs<S>(sval[0]));
-                    __syncthreads();
+                    iamax<SYTF2_MAX_THDS>(tid, imax, A + imax * lda, 1, sval, sidx);
+                    if(tid == 0)
+                        rowmax = max(rowmax, aabs<S>(sval[0]));
                 }
+                __syncthreads();
 
                 if(absakk >= alpha * colmax * (colmax / rowmax))
                     // no interchange (1-by-1 block)
                     kp = k;
-                else if(aabs<S>(A[i + i * lda]) >= alpha * rowmax)
-                    // interchange rows and columns kk = k and kp = i (1-by-1 block)
-                    kp = i;
+                else if(aabs<S>(A[imax + imax * lda]) >= alpha * rowmax)
+                    // interchange rows and columns kk = k and kp = imax (1-by-1 block)
+                    kp = imax;
                 else
                 {
-                    // interchange rows and columns kk = k-1 and kp = i (2-by-2 block)
-                    kp = i;
+                    // interchange rows and columns kk = k-1 and kp = imax (2-by-2 block)
+                    kp = imax;
                     kstep = 2;
                 }
             }
@@ -333,14 +226,17 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
 
     // local and shared variables
     __shared__ rocblas_int info;
+    int i, j;
     int k = 0;
     int kstep, kp, kk;
 
-    // shared arrays for iamax
+    // shared variables for iamax
+    __shared__ S absakk;
+    __shared__ S colmax;
+    __shared__ S rowmax;
     __shared__ T sval[SYTF2_MAX_THDS];
     __shared__ rocblas_int sidx[SYTF2_MAX_THDS];
-    int i, j;
-    S absakk, colmax, rowmax;
+    __shared__ rocblas_int imax;
 
     if(tid == 0)
         info = 0;
@@ -348,12 +244,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
     while(k < n)
     {
         kstep = 1;
-        absakk = aabs<S>(A[k + k * lda]);
 
         // find max off-diagonal entry in column k
-        sytf2_iamax(tid, n - k - 1, A + (k + 1) + k * lda, 1, sval, sidx);
-        i = k + sidx[0];
-        colmax = aabs<S>(sval[0]);
+        iamax<SYTF2_MAX_THDS>(tid, n - k - 1, A + (k + 1) + k * lda, 1, sval, sidx);
+        if(tid == 0)
+        {
+            imax = k + sidx[0];
+            colmax = aabs<S>(sval[0]);
+            absakk = aabs<S>(A[k + k * lda]);
+        }
         __syncthreads();
 
         if(max(absakk, colmax) == 0)
@@ -371,27 +270,29 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
             else
             {
                 // find max off-diagonal entry in row i
-                sytf2_iamax(tid, i - k, A + i + k * lda, lda, sval, sidx);
-                rowmax = aabs<S>(sval[0]);
-                __syncthreads();
+                iamax<SYTF2_MAX_THDS>(tid, imax - k, A + imax + k * lda, lda, sval, sidx);
+                if(tid == 0)
+                    rowmax = aabs<S>(sval[0]);
 
-                if(i < n - 1)
+                if(imax < n - 1)
                 {
-                    sytf2_iamax(tid, n - i - 1, A + (i + 1) + i * lda, 1, sval, sidx);
-                    rowmax = max(rowmax, aabs<S>(sval[0]));
-                    __syncthreads();
+                    iamax<SYTF2_MAX_THDS>(tid, n - imax - 1, A + (imax + 1) + imax * lda, 1, sval,
+                                          sidx);
+                    if(tid == 0)
+                        rowmax = max(rowmax, aabs<S>(sval[0]));
                 }
+                __syncthreads();
 
                 if(absakk >= alpha * colmax * (colmax / rowmax))
                     // no interchange (1-by-1 block)
                     kp = k;
-                else if(aabs<S>(A[i + i * lda]) >= alpha * rowmax)
-                    // interchange rows and columns kk = k and kp = i (1-by-1 block)
-                    kp = i;
+                else if(aabs<S>(A[imax + imax * lda]) >= alpha * rowmax)
+                    // interchange rows and columns kk = k and kp = imax (1-by-1 block)
+                    kp = imax;
                 else
                 {
-                    // interchange rows and columns kk = k+1 and kp = i (2-by-2 block)
-                    kp = i;
+                    // interchange rows and columns kk = k+1 and kp = imax (2-by-2 block)
+                    kp = imax;
                     kstep = 2;
                 }
             }
