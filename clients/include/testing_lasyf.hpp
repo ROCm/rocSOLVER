@@ -78,7 +78,8 @@ void lasyf_initData(const rocblas_handle handle,
                     const rocblas_int n,
                     Td& dA,
                     const rocblas_int lda,
-                    Th& hA)
+                    Th& hA,
+                    const bool singular)
 {
     if(CPU)
     {
@@ -108,6 +109,35 @@ void lasyf_initData(const rocblas_handle handle,
                 hA[0][n - 1 - i + j * lda] = tmp;
             }
         }
+
+        if(singular)
+        {
+            // add some singularities
+            // always the same elements for debugging purposes
+            // the algorithm must detect the first zero pivot in those
+            // matrices in the batch that are singular
+            rocblas_int j = n / 4;
+            j -= (j / n) * n;
+            for(rocblas_int i = 0; i < n; i++)
+            {
+                hA[0][i + j * lda] = 0;
+                hA[0][j + i * lda] = 0;
+            }
+            j = n / 2;
+            j -= (j / n) * n;
+            for(rocblas_int i = 0; i < n; i++)
+            {
+                hA[0][i + j * lda] = 0;
+                hA[0][j + i * lda] = 0;
+            }
+            j = n - 1;
+            j -= (j / n) * n;
+            for(rocblas_int i = 0; i < n; i++)
+            {
+                hA[0][i + j * lda] = 0;
+                hA[0][j + i * lda] = 0;
+            }
+        }
     }
 
     if(GPU)
@@ -135,14 +165,15 @@ void lasyf_getError(const rocblas_handle handle,
                     Uh& hIpivRes,
                     Uh& hInfo,
                     Uh& hInfoRes,
-                    double* max_err)
+                    double* max_err,
+                    const bool singular)
 {
     int ldw = n;
     int lwork = ldw * nb;
     std::vector<T> work(lwork);
 
     // input data initialization
-    lasyf_initData<true, true, T>(handle, n, dA, lda, hA);
+    lasyf_initData<true, true, T>(handle, n, dA, lda, hA, singular);
 
     // execute computations
     // GPU lapack
@@ -211,7 +242,8 @@ void lasyf_getPerfData(const rocblas_handle handle,
                        double* cpu_time_used,
                        const rocblas_int hot_calls,
                        const int profile,
-                       const bool perf)
+                       const bool perf,
+                       const bool singular)
 {
     int ldw = n;
     int lwork = ldw * nb;
@@ -219,7 +251,7 @@ void lasyf_getPerfData(const rocblas_handle handle,
 
     if(!perf)
     {
-        lasyf_initData<true, false, T>(handle, n, dA, lda, hA);
+        lasyf_initData<true, false, T>(handle, n, dA, lda, hA, singular);
 
         // cpu-lapack performance
         *cpu_time_used = get_time_us_no_sync();
@@ -227,12 +259,12 @@ void lasyf_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    lasyf_initData<true, false, T>(handle, n, dA, lda, hA);
+    lasyf_initData<true, false, T>(handle, n, dA, lda, hA, singular);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        lasyf_initData<false, true, T>(handle, n, dA, lda, hA);
+        lasyf_initData<false, true, T>(handle, n, dA, lda, hA, singular);
 
         CHECK_ROCBLAS_ERROR(rocsolver_lasyf(handle, uplo, n, nb, dKB.data(), dA.data(), lda,
                                             dIpiv.data(), dInfo.data()));
@@ -251,7 +283,7 @@ void lasyf_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        lasyf_initData<false, true, T>(handle, n, dA, lda, hA);
+        lasyf_initData<false, true, T>(handle, n, dA, lda, hA, singular);
 
         start = get_time_us_sync(stream);
         rocsolver_lasyf(handle, uplo, n, nb, dKB.data(), dA.data(), lda, dIpiv.data(), dInfo.data());
@@ -361,12 +393,13 @@ void testing_lasyf(Arguments& argus)
     // check computations
     if(argus.unit_check || argus.norm_check)
         lasyf_getError<T>(handle, uplo, n, nb, dKB, dA, lda, dIpiv, dInfo, hKB, hKBRes, hA, hARes,
-                          hIpiv, hIpivRes, hInfo, hInfoRes, &max_error);
+                          hIpiv, hIpivRes, hInfo, hInfoRes, &max_error, argus.singular);
 
     // collect performance data
     if(argus.timing)
         lasyf_getPerfData<T>(handle, uplo, n, nb, dKB, dA, lda, dIpiv, dInfo, hKB, hA, hIpiv, hInfo,
-                             &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
+                             &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf,
+                             argus.singular);
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance

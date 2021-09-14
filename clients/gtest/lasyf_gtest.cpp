@@ -13,7 +13,8 @@ using namespace std;
 
 typedef std::tuple<vector<int>, vector<int>> lasyf_tuple;
 
-// each matrix_size_range is a {n, lda}
+// each matrix_size_range is a {n, lda, singular}
+// if singular = 1, then the used matrix for the tests is singular
 
 // each op_range is a {nb, ul}
 // if ul = 0, then uplo = 'L'
@@ -25,16 +26,16 @@ typedef std::tuple<vector<int>, vector<int>> lasyf_tuple;
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
     // quick return
-    {0, 1},
+    {0, 1, 0},
     // invalid
-    {-1, 1},
-    {20, 5},
-    {20, 20},
+    {-1, 1, 0},
+    {20, 5, 0},
+    {20, 20, 0},
     // normal (valid) samples
-    {35, 50},
-    {70, 100},
-    {130, 130},
-    {150, 150}};
+    {35, 50, 0},
+    {70, 100, 1},
+    {130, 130, 0},
+    {150, 150, 1}};
 
 const vector<vector<int>> op_range = {
     // quick return
@@ -49,8 +50,7 @@ const vector<vector<int>> op_range = {
     {30, 1}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_matrix_size_range
-    = {{152, 152, 152}, {640, 640, 656}, {1000, 1024, 1000}};
+const vector<vector<int>> large_matrix_size_range = {{152, 152, 1}, {640, 640, 0}, {1000, 1024, 1}};
 
 const vector<vector<int>> large_op_range = {{64, 0}, {98, 1}, {130, 0}, {150, 1}};
 
@@ -68,6 +68,7 @@ Arguments lasyf_setup_arguments(lasyf_tuple tup)
     arg.set<char>("uplo", op_size[1] ? 'U' : 'L');
 
     arg.timing = 0;
+    arg.singular = matrix_size[2];
 
     return arg;
 }
@@ -87,6 +88,10 @@ protected:
         if(arg.peek<rocblas_int>("nb") == 0 && arg.peek<rocblas_int>("n") == 0)
             testing_lasyf_bad_arg<T>();
 
+        if(arg.singular == 1)
+            testing_lasyf<T>(arg);
+
+        arg.singular = 0;
         testing_lasyf<T>(arg);
     }
 };

@@ -132,7 +132,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         {
             // singularity found
             if(tid == 0 && info == 0)
-                info = k;
+                info = k + 1;
             kp = k;
         }
         else
@@ -369,7 +369,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         {
             // singularity found
             if(tid == 0 && info == 0)
-                info = k;
+                info = k + 1;
             kp = k;
         }
         else
