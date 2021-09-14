@@ -195,14 +195,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
             {
                 // find max off-diagonal entry in row i
                 sytf2_iamax(tid, k - i, A + i + (i + 1) * lda, lda, sval, sidx);
-                j = i + sidx[0];
                 rowmax = aabs<S>(sval[0]);
                 __syncthreads();
 
                 if(i > 0)
                 {
                     sytf2_iamax(tid, i, A + i * lda, 1, sval, sidx);
-                    j = sidx[0] - 1;
                     rowmax = max(rowmax, aabs<S>(sval[0]));
                     __syncthreads();
                 }
@@ -211,11 +209,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                     // no interchange (1-by-1 block)
                     kp = k;
                 else if(aabs<S>(A[i + i * lda]) >= alpha * rowmax)
-                    // interchange rows and columns k and i (1-by-1 block)
+                    // interchange rows and columns kk = k and kp = i (1-by-1 block)
                     kp = i;
                 else
                 {
-                    // interchange rows and columns k-1 and i (2-by-2 block)
+                    // interchange rows and columns kk = k-1 and kp = i (2-by-2 block)
                     kp = i;
                     kstep = 2;
                 }
@@ -229,7 +227,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                 {
                     swap(A[kk + kk * lda], A[kp + kp * lda]);
                     if(kstep == 2)
-                        swap(A[(k - 1) + k * lda], A[kp + k * lda]);
+                        swap(A[kk + k * lda], A[kp + k * lda]);
                 }
 
                 for(i = tid; i < kp; i += SYTF2_MAX_THDS)
@@ -374,14 +372,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
             {
                 // find max off-diagonal entry in row i
                 sytf2_iamax(tid, i - k, A + i + k * lda, lda, sval, sidx);
-                j = k - 1 + sidx[0];
                 rowmax = aabs<S>(sval[0]);
                 __syncthreads();
 
                 if(i < n - 1)
                 {
                     sytf2_iamax(tid, n - i - 1, A + (i + 1) + i * lda, 1, sval, sidx);
-                    j = i + sidx[0];
                     rowmax = max(rowmax, aabs<S>(sval[0]));
                     __syncthreads();
                 }
@@ -390,11 +386,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                     // no interchange (1-by-1 block)
                     kp = k;
                 else if(aabs<S>(A[i + i * lda]) >= alpha * rowmax)
-                    // interchange rows and columns k and i (1-by-1 block)
+                    // interchange rows and columns kk = k and kp = i (1-by-1 block)
                     kp = i;
                 else
                 {
-                    // interchange rows and columns k+1 and i (2-by-2 block)
+                    // interchange rows and columns kk = k+1 and kp = i (2-by-2 block)
                     kp = i;
                     kstep = 2;
                 }
@@ -408,7 +404,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                 {
                     swap(A[kk + kk * lda], A[kp + kp * lda]);
                     if(kstep == 2)
-                        swap(A[(k + 1) + k * lda], A[kp + k * lda]);
+                        swap(A[kk + k * lda], A[kp + k * lda]);
                 }
 
                 for(i = tid; i < n - kp - 1; i += SYTF2_MAX_THDS)
