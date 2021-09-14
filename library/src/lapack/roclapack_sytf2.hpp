@@ -30,23 +30,24 @@ __device__ void sytf2_iamax(const rocblas_int tid,
 
     // local memory setup
     T val1, val2;
-    rocblas_int pidx;
+    rocblas_int idx1, idx2;
 
     // read into shared memory while doing initial step
     // (each thread reduce as many elements as needed to cover the original array)
     val1 = 0;
-    pidx = 0;
+    idx1 = INT_MAX;
     for(int i = tid; i < n; i += SYTF2_MAX_THDS)
     {
         val2 = A[i * incA];
-        if(aabs<S>(val1) < aabs<S>(val2))
+        idx2 = i + 1; // add one to make it 1-based index
+        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
         {
             val1 = val2;
-            pidx = i + 1; //add one to make it 1-based index
+            idx1 = idx2;
         }
     }
     sval[tid] = val1;
-    sidx[tid] = pidx;
+    sidx[tid] = idx1;
     __syncthreads();
 
     if(n <= 1)
@@ -61,12 +62,12 @@ __device__ void sytf2_iamax(const rocblas_int tid,
 
     if(tid < 128)
     {
-        val1 = sval[tid];
         val2 = sval[tid + 128];
-        if(aabs<S>(val1) < aabs<S>(val2))
+        idx2 = sidx[tid + 128];
+        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
         {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 128];
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
         }
     }
     __syncthreads();
@@ -75,54 +76,54 @@ __device__ void sytf2_iamax(const rocblas_int tid,
     // and work in lock-step, there is no need for synchronizations and barriers
     if(tid < 64)
     {
-        val1 = sval[tid];
         val2 = sval[tid + 64];
-        if(aabs<S>(val1) < aabs<S>(val2))
+        idx2 = sidx[tid + 64];
+        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
         {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 64];
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
         }
-        val1 = sval[tid];
         val2 = sval[tid + 32];
-        if(aabs<S>(val1) < aabs<S>(val2))
+        idx2 = sidx[tid + 32];
+        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
         {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 32];
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
         }
-        val1 = sval[tid];
         val2 = sval[tid + 16];
-        if(aabs<S>(val1) < aabs<S>(val2))
+        idx2 = sidx[tid + 16];
+        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
         {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 16];
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
         }
-        val1 = sval[tid];
         val2 = sval[tid + 8];
-        if(aabs<S>(val1) < aabs<S>(val2))
+        idx2 = sidx[tid + 8];
+        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
         {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 8];
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
         }
-        val1 = sval[tid];
         val2 = sval[tid + 4];
-        if(aabs<S>(val1) < aabs<S>(val2))
+        idx2 = sidx[tid + 4];
+        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
         {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 4];
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
         }
-        val1 = sval[tid];
         val2 = sval[tid + 2];
-        if(aabs<S>(val1) < aabs<S>(val2))
+        idx2 = sidx[tid + 2];
+        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
         {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 2];
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
         }
-        val1 = sval[tid];
         val2 = sval[tid + 1];
-        if(aabs<S>(val1) < aabs<S>(val2))
+        idx2 = sidx[tid + 1];
+        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
         {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 1];
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
         }
     }
     __syncthreads();
@@ -182,7 +183,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
         {
             // singularity found
             if(tid == 0 && info == 0)
-                info = k;
+                info = k + 1;
             kp = k;
         }
         else
@@ -247,7 +248,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                 for(j = tid; j < k; j += SYTF2_MAX_THDS)
                 {
                     T r2 = -r1 * A[j + k * lda];
-                    for(i = 0; i < j; i++)
+                    for(i = 0; i <= j; i++)
                         A[i + j * lda] = A[i + j * lda] + A[i + k * lda] * r2;
                 }
                 __syncthreads();
@@ -361,7 +362,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
         {
             // singularity found
             if(tid == 0 && info == 0)
-                info = k;
+                info = k + 1;
             kp = k;
         }
         else
@@ -377,7 +378,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                 rowmax = aabs<S>(sval[0]);
                 __syncthreads();
 
-                if(i > 0)
+                if(i < n - 1)
                 {
                     sytf2_iamax(tid, n - i - 1, A + (i + 1) + i * lda, 1, sval, sidx);
                     j = i + sidx[0];
@@ -429,7 +430,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                     {
                         T r2 = -r1 * A[(k + j + 1) + k * lda];
                         for(i = j; i < n - k - 1; i++)
-                            A[i + j * lda] = A[i + j * lda] + A[(k + i + 1) + k * lda] * r2;
+                            A[(k + i + 1) + (k + j + 1) * lda]
+                                = A[(k + i + 1) + (k + j + 1) * lda] + A[(k + i + 1) + k * lda] * r2;
                     }
                     __syncthreads();
 
