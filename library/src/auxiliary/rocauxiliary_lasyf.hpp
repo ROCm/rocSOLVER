@@ -13,41 +13,27 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-// number of threads for the lasyf kernel (currently not tunable)
-#define LASYF_MAX_THDS 256
-
-template <typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
-    lasyf_kernel_upper(const rocblas_int n,
-                       const rocblas_int nb,
-                       rocblas_int* kb,
-                       U AA,
-                       const rocblas_int shiftA,
-                       const rocblas_int lda,
-                       const rocblas_stride strideA,
-                       rocblas_int* ipivA,
-                       const rocblas_stride strideP,
-                       rocblas_int* infoA,
-                       T* WA)
+template <int MAX_THDS, typename T>
+__device__ void lasyf_device_upper(const rocblas_int tid,
+                                   const rocblas_int n,
+                                   const rocblas_int nb,
+                                   rocblas_int* kb,
+                                   T* A,
+                                   const rocblas_int lda,
+                                   rocblas_int* ipiv,
+                                   rocblas_int* info,
+                                   T* W,
+                                   rocblas_int* sidx,
+                                   T* sval)
 {
-    // select batch instance
-    rocblas_int bid = hipBlockIdx_y;
-
-    int tid = hipThreadIdx_x;
-
     using S = decltype(std::real(T{}));
     const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
     const T one = 1;
     const T minone = -1;
     const int ldw = n;
 
-    // get array pointers
-    T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
-    T* W = WA + (bid * n * nb);
-    rocblas_int* ipiv = ipivA + (bid * strideP);
-
     // local and shared variables
-    __shared__ rocblas_int info;
+    __shared__ rocblas_int _info;
     int i, j;
     int k = n - 1;
     int kstep, kp, kk, kw, kkw;
@@ -56,23 +42,21 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     __shared__ S absakk;
     __shared__ S colmax;
     __shared__ S rowmax;
-    __shared__ T sval[LASYF_MAX_THDS];
-    __shared__ rocblas_int sidx[LASYF_MAX_THDS];
     __shared__ rocblas_int imax;
 
     if(tid == 0)
-        info = 0;
+        _info = 0;
 
     kw = nb + k - n;
     while(k >= 0 && (k > n - nb || nb == n))
     {
         // copy column k of A to column kw of W and update
-        for(i = tid; i <= k; i += LASYF_MAX_THDS)
+        for(i = tid; i <= k; i += MAX_THDS)
             W[i + kw * ldw] = A[i + k * lda];
         __syncthreads();
         if(k < n - 1)
         {
-            gemv<LASYF_MAX_THDS>(tid, k + 1, n - k - 1, &minone, A + (k + 1) * lda, lda,
+            gemv<MAX_THDS>(tid, k + 1, n - k - 1, &minone, A + (k + 1) * lda, lda,
                                  W + k + (kw + 1) * ldw, ldw, &one, W + kw * ldw, 1);
             __syncthreads();
         }
@@ -80,7 +64,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         kstep = 1;
 
         // find max off-diagonal entry in column k
-        iamax<LASYF_MAX_THDS>(tid, k, W + kw * ldw, 1, sval, sidx);
+        iamax<MAX_THDS>(tid, k, W + kw * ldw, 1, sval, sidx);
         if(tid == 0)
         {
             imax = sidx[0] - 1;
@@ -92,8 +76,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         if(max(absakk, colmax) == 0)
         {
             // singularity found
-            if(tid == 0 && info == 0)
-                info = k + 1;
+            if(tid == 0 && _info == 0)
+                _info = k + 1;
             kp = k;
         }
         else
@@ -104,26 +88,26 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
             else
             {
                 // copy column imax of A to column kw-1 of W and update
-                for(i = tid; i <= imax; i += LASYF_MAX_THDS)
+                for(i = tid; i <= imax; i += MAX_THDS)
                     W[i + (kw - 1) * ldw] = A[i + imax * lda];
-                for(i = tid; i < k - imax; i += LASYF_MAX_THDS)
+                for(i = tid; i < k - imax; i += MAX_THDS)
                     W[(imax + i + 1) + (kw - 1) * ldw] = A[imax + (imax + i + 1) * lda];
                 __syncthreads();
                 if(k < n - 1)
                 {
-                    gemv<LASYF_MAX_THDS>(tid, k + 1, n - k - 1, &minone, A + (k + 1) * lda, lda,
+                    gemv<MAX_THDS>(tid, k + 1, n - k - 1, &minone, A + (k + 1) * lda, lda,
                                          W + imax + (kw + 1) * ldw, ldw, &one, W + (kw - 1) * ldw, 1);
                     __syncthreads();
                 }
 
                 // find max off-diagonal entry in row imax
-                iamax<LASYF_MAX_THDS>(tid, k - imax, W + (imax + 1) + (kw - 1) * ldw, 1, sval, sidx);
+                iamax<MAX_THDS>(tid, k - imax, W + (imax + 1) + (kw - 1) * ldw, 1, sval, sidx);
                 if(tid == 0)
                     rowmax = aabs<S>(sval[0]);
 
                 if(imax > 0)
                 {
-                    iamax<LASYF_MAX_THDS>(tid, imax, W + (kw - 1) * ldw, 1, sval, sidx);
+                    iamax<MAX_THDS>(tid, imax, W + (kw - 1) * ldw, 1, sval, sidx);
                     if(tid == 0)
                         rowmax = max(rowmax, aabs<S>(sval[0]));
                 }
@@ -138,7 +122,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                     kp = imax;
 
                     // copy column kw-1 of W to column kw of W
-                    for(i = tid; i <= k; i += LASYF_MAX_THDS)
+                    for(i = tid; i <= k; i += MAX_THDS)
                         W[i + kw * ldw] = W[i + (kw - 1) * ldw];
                     __syncthreads();
                 }
@@ -158,14 +142,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 if(tid == 0)
                     A[kp + kp * lda] = A[kk + kk * lda];
 
-                for(i = tid; i < kk - kp - 1; i += LASYF_MAX_THDS)
+                for(i = tid; i < kk - kp - 1; i += MAX_THDS)
                     A[kp + (kp + i + 1) * lda] = A[(kp + i + 1) + kk * lda];
-                for(i = tid; i < kp; i += LASYF_MAX_THDS)
+                for(i = tid; i < kp; i += MAX_THDS)
                     A[i + kp * lda] = A[i + kk * lda];
                 __syncthreads();
-                for(i = tid; i < n - k - 1; i += LASYF_MAX_THDS)
+                for(i = tid; i < n - k - 1; i += MAX_THDS)
                     swap(A[kk + (k + i + 1) * lda], A[kp + (k + i + 1) * lda]);
-                for(i = tid; i < n - kk; i += LASYF_MAX_THDS)
+                for(i = tid; i < n - kk; i += MAX_THDS)
                     swap(W[kk + (kkw + i) * ldw], W[kp + (kkw + i) * ldw]);
                 __syncthreads();
             }
@@ -177,7 +161,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 T r1 = T(1) / W[k + kw * ldw];
                 if(tid == 0)
                     A[k + k * lda] = W[k + kw * ldw];
-                for(i = tid; i < k; i += LASYF_MAX_THDS)
+                for(i = tid; i < k; i += MAX_THDS)
                     A[i + k * lda] = r1 * W[i + kw * ldw];
                 __syncthreads();
             }
@@ -191,7 +175,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                     T d11 = W[k + kw * ldw] / d21;
                     T d22 = W[(k - 1) + (kw - 1) * ldw] / d21;
                     d21 = T(1) / ((d11 * d22 - T(1)) * d21);
-                    for(i = tid; i <= k - 2; i += LASYF_MAX_THDS)
+                    for(i = tid; i <= k - 2; i += MAX_THDS)
                     {
                         A[i + (k - 1) * lda] = d21 * (d11 * W[i + (kw - 1) * ldw] - W[i + kw * ldw]);
                         A[i + k * lda] = d21 * (d22 * W[i + kw * ldw] - W[i + (kw - 1) * ldw]);
@@ -224,14 +208,20 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         kw = nb + k - n;
     }
 
+    if(tid == 0)
+    {
+        *kb = n - k - 1;
+        *info = _info;
+    }
+
     // update A from [0,0] to [k,k], nb columns at a time
     for(j = (k / nb) * nb; j >= 0; j -= nb)
     {
         int jb = min(nb, k - j + 1);
         for(i = j; i < j + jb; i++)
-            gemv<LASYF_MAX_THDS>(tid, i - j + 1, n - k - 1, &minone, A + j + (k + 1) * lda, lda,
+            gemv<MAX_THDS>(tid, i - j + 1, n - k - 1, &minone, A + j + (k + 1) * lda, lda,
                                  W + i + (kw + 1) * ldw, ldw, &one, A + j + i * lda, 1);
-        gemm_btrans<LASYF_MAX_THDS>(tid, j, jb, n - k - 1, &minone, A + (k + 1) * lda, lda,
+        gemm_btrans<MAX_THDS>(tid, j, jb, n - k - 1, &minone, A + (k + 1) * lda, lda,
                                     W + j + (kw + 1) * ldw, ldw, &one, A + j * lda, lda);
     }
     __syncthreads();
@@ -253,51 +243,34 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         j++;
         if(kp != kk && j < n)
         {
-            for(i = tid; i < n - j; i += LASYF_MAX_THDS)
+            for(i = tid; i < n - j; i += MAX_THDS)
                 swap(A[kp + (j + i) * lda], A[kk + (j + i) * lda]);
             __syncthreads();
         }
     }
-
-    if(tid == 0)
-    {
-        kb[bid] = n - k - 1;
-        infoA[bid] = info;
-    }
 }
 
-template <typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
-    lasyf_kernel_lower(const rocblas_int n,
-                       const rocblas_int nb,
-                       rocblas_int* kb,
-                       U AA,
-                       const rocblas_int shiftA,
-                       const rocblas_int lda,
-                       const rocblas_stride strideA,
-                       rocblas_int* ipivA,
-                       const rocblas_stride strideP,
-                       rocblas_int* infoA,
-                       T* WA)
+template <int MAX_THDS, typename T>
+__device__ void lasyf_device_lower(const rocblas_int tid,
+                                   const rocblas_int n,
+                                   const rocblas_int nb,
+                                   rocblas_int* kb,
+                                   T* A,
+                                   const rocblas_int lda,
+                                   rocblas_int* ipiv,
+                                   rocblas_int* info,
+                                   T* W,
+                                   rocblas_int* sidx,
+                                   T* sval)
 {
-    // select batch instance
-    rocblas_int bid = hipBlockIdx_y;
-
-    int tid = hipThreadIdx_x;
-
     using S = decltype(std::real(T{}));
     const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
     const T one = 1;
     const T minone = -1;
     const int ldw = n;
 
-    // get array pointers
-    T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
-    T* W = WA + (bid * n * nb);
-    rocblas_int* ipiv = ipivA + (bid * strideP);
-
     // local and shared variables
-    __shared__ rocblas_int info;
+    __shared__ rocblas_int _info;
     int i, j;
     int k = 0;
     int kstep, kp, kk;
@@ -306,27 +279,25 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     __shared__ S absakk;
     __shared__ S colmax;
     __shared__ S rowmax;
-    __shared__ T sval[LASYF_MAX_THDS];
-    __shared__ rocblas_int sidx[LASYF_MAX_THDS];
     __shared__ rocblas_int imax;
 
     if(tid == 0)
-        info = 0;
+        _info = 0;
 
     while(k < n && (k < nb - 1 || nb == n))
     {
         // copy column k of A to column k of W and update
-        for(i = tid; i < n - k; i += LASYF_MAX_THDS)
+        for(i = tid; i < n - k; i += MAX_THDS)
             W[(k + i) + k * ldw] = A[(k + i) + k * lda];
         __syncthreads();
-        gemv<LASYF_MAX_THDS>(tid, n - k, k, &minone, A + k, lda, W + k, ldw, &one, W + k + k * ldw,
+        gemv<MAX_THDS>(tid, n - k, k, &minone, A + k, lda, W + k, ldw, &one, W + k + k * ldw,
                              1);
         __syncthreads();
 
         kstep = 1;
 
         // find max off-diagonal entry in column k
-        iamax<LASYF_MAX_THDS>(tid, n - k - 1, W + (k + 1) + k * ldw, 1, sval, sidx);
+        iamax<MAX_THDS>(tid, n - k - 1, W + (k + 1) + k * ldw, 1, sval, sidx);
         if(tid == 0)
         {
             imax = k + sidx[0];
@@ -338,8 +309,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         if(max(absakk, colmax) == 0)
         {
             // singularity found
-            if(tid == 0 && info == 0)
-                info = k + 1;
+            if(tid == 0 && _info == 0)
+                _info = k + 1;
             kp = k;
         }
         else
@@ -350,24 +321,23 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
             else
             {
                 // copy column imax of A to column k+1 of W and update
-                for(i = tid; i < imax - k; i += LASYF_MAX_THDS)
+                for(i = tid; i < imax - k; i += MAX_THDS)
                     W[(k + i) + (k + 1) * ldw] = A[imax + (k + i) * lda];
-                for(i = tid; i < n - imax; i += LASYF_MAX_THDS)
+                for(i = tid; i < n - imax; i += MAX_THDS)
                     W[(imax + i) + (k + 1) * ldw] = A[(imax + i) + imax * lda];
                 __syncthreads();
-                gemv<LASYF_MAX_THDS>(tid, n - k, k, &minone, A + k, lda, W + imax, ldw, &one,
+                gemv<MAX_THDS>(tid, n - k, k, &minone, A + k, lda, W + imax, ldw, &one,
                                      W + k + (k + 1) * ldw, 1);
                 __syncthreads();
 
                 // find max off-diagonal entry in row imax
-                iamax<LASYF_MAX_THDS>(tid, imax - k, W + k + (k + 1) * ldw, 1, sval, sidx);
+                iamax<MAX_THDS>(tid, imax - k, W + k + (k + 1) * ldw, 1, sval, sidx);
                 if(tid == 0)
                     rowmax = aabs<S>(sval[0]);
 
                 if(imax < n - 1)
                 {
-                    iamax<LASYF_MAX_THDS>(tid, n - imax - 1, W + (imax + 1) + (k + 1) * ldw, 1,
-                                          sval, sidx);
+                    iamax<MAX_THDS>(tid, n - imax - 1, W + (imax + 1) + (k + 1) * ldw, 1, sval, sidx);
                     if(tid == 0)
                         rowmax = max(rowmax, aabs<S>(sval[0]));
                 }
@@ -382,7 +352,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                     kp = imax;
 
                     // copy column kw-1 of W to column kw of W
-                    for(i = tid; i < n - k; i += LASYF_MAX_THDS)
+                    for(i = tid; i < n - k; i += MAX_THDS)
                         W[(k + i) + k * ldw] = W[(k + i) + (k + 1) * ldw];
                     __syncthreads();
                 }
@@ -401,14 +371,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 if(tid == 0)
                     A[kp + kp * lda] = A[kk + kk * lda];
 
-                for(i = tid; i < kp - kk - 1; i += LASYF_MAX_THDS)
+                for(i = tid; i < kp - kk - 1; i += MAX_THDS)
                     A[kp + (kk + i + 1) * lda] = A[(kk + i + 1) + kk * lda];
-                for(i = tid; i < n - kp - 1; i += LASYF_MAX_THDS)
+                for(i = tid; i < n - kp - 1; i += MAX_THDS)
                     A[(kp + i + 1) + kp * lda] = A[(kp + i + 1) + kk * lda];
                 __syncthreads();
-                for(i = tid; i < k; i += LASYF_MAX_THDS)
+                for(i = tid; i < k; i += MAX_THDS)
                     swap(A[kk + i * lda], A[kp + i * lda]);
-                for(i = tid; i <= kk; i += LASYF_MAX_THDS)
+                for(i = tid; i <= kk; i += MAX_THDS)
                     swap(W[kk + i * ldw], W[kp + i * ldw]);
                 __syncthreads();
             }
@@ -420,7 +390,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 T r1 = T(1) / W[k + k * ldw];
                 if(tid == 0)
                     A[k + k * lda] = W[k + k * ldw];
-                for(i = tid; i < n - k - 1; i += LASYF_MAX_THDS)
+                for(i = tid; i < n - k - 1; i += MAX_THDS)
                     A[(k + i + 1) + k * lda] = r1 * W[(k + i + 1) + k * ldw];
                 __syncthreads();
             }
@@ -434,7 +404,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                     T d11 = W[(k + 1) + (k + 1) * ldw] / d21;
                     T d22 = W[k + k * ldw] / d21;
                     d21 = T(1) / ((d11 * d22 - T(1)) * d21);
-                    for(i = k + 2 + tid; i < n; i += LASYF_MAX_THDS)
+                    for(i = k + 2 + tid; i < n; i += MAX_THDS)
                     {
                         A[i + k * lda] = d21 * (d11 * W[i + k * ldw] - W[i + (k + 1) * ldw]);
                         A[i + (k + 1) * lda] = d21 * (d22 * W[i + (k + 1) * ldw] - W[i + k * ldw]);
@@ -466,15 +436,21 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         k += kstep;
     }
 
+    if(tid == 0)
+    {
+        *kb = k;
+        *info = _info;
+    }
+
     // update A from [k,k] to [n-1,n-1], nb columns at a time
     for(j = k; j < n; j += nb)
     {
         int jb = min(nb, n - j);
         for(i = j; i < j + jb; i++)
-            gemv<LASYF_MAX_THDS>(tid, j + jb - i, k, &minone, A + i, lda, W + i, ldw, &one,
+            gemv<MAX_THDS>(tid, j + jb - i, k, &minone, A + i, lda, W + i, ldw, &one,
                                  A + i + i * lda, 1);
         if(j + jb < n)
-            gemm_btrans<LASYF_MAX_THDS>(tid, n - j - jb, jb, k, &minone, A + (j + jb), lda, W + j,
+            gemm_btrans<MAX_THDS>(tid, n - j - jb, jb, k, &minone, A + (j + jb), lda, W + j,
                                         ldw, &one, A + (j + jb) + j * lda, lda);
     }
     __syncthreads();
@@ -496,17 +472,73 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         j--;
         if(kp != kk && j >= 0)
         {
-            for(i = tid; i <= j; i += LASYF_MAX_THDS)
+            for(i = tid; i <= j; i += MAX_THDS)
                 swap(A[kp + i * lda], A[kk + i * lda]);
             __syncthreads();
         }
     }
+}
 
-    if(tid == 0)
-    {
-        kb[bid] = k;
-        infoA[bid] = info;
-    }
+template <typename T, typename U>
+ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
+    lasyf_kernel_upper(const rocblas_int n,
+                       const rocblas_int nb,
+                       rocblas_int* kbA,
+                       U AA,
+                       const rocblas_int shiftA,
+                       const rocblas_int lda,
+                       const rocblas_stride strideA,
+                       rocblas_int* ipivA,
+                       const rocblas_stride strideP,
+                       rocblas_int* infoA,
+                       T* WA)
+{
+    // select batch instance
+    rocblas_int bid = hipBlockIdx_y;
+    rocblas_int tid = hipThreadIdx_x;
+
+    // get array pointers
+    T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
+    T* W = WA + (bid * n * nb);
+    rocblas_int* ipiv = ipivA + (bid * strideP);
+
+    // shared arrays
+    __shared__ T sval[LASYF_MAX_THDS];
+    __shared__ rocblas_int sidx[LASYF_MAX_THDS];
+
+    lasyf_device_upper<LASYF_MAX_THDS>(tid, n, nb, kbA + bid, A, lda, ipiv, infoA + bid, W, sidx,
+                                       sval);
+}
+
+template <typename T, typename U>
+ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
+    lasyf_kernel_lower(const rocblas_int n,
+                       const rocblas_int nb,
+                       rocblas_int* kbA,
+                       U AA,
+                       const rocblas_int shiftA,
+                       const rocblas_int lda,
+                       const rocblas_stride strideA,
+                       rocblas_int* ipivA,
+                       const rocblas_stride strideP,
+                       rocblas_int* infoA,
+                       T* WA)
+{
+    // select batch instance
+    rocblas_int bid = hipBlockIdx_y;
+    rocblas_int tid = hipThreadIdx_x;
+
+    // get array pointers
+    T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
+    T* W = WA + (bid * n * nb);
+    rocblas_int* ipiv = ipivA + (bid * strideP);
+
+    // shared arrays
+    __shared__ T sval[LASYF_MAX_THDS];
+    __shared__ rocblas_int sidx[LASYF_MAX_THDS];
+
+    lasyf_device_lower<LASYF_MAX_THDS>(tid, n, nb, kbA + bid, A, lda, ipiv, infoA + bid, W, sidx,
+                                       sval);
 }
 
 template <typename T>

@@ -14,34 +14,21 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-// number of threads for the sytf2 kernel (currently not tunable)
-#define SYTF2_MAX_THDS 256
-
-template <typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
-    sytf2_kernel_upper(const rocblas_int n,
-                       U AA,
-                       const rocblas_int shiftA,
-                       const rocblas_int lda,
-                       const rocblas_stride strideA,
-                       rocblas_int* ipivA,
-                       const rocblas_stride strideP,
-                       rocblas_int* infoA)
+template <int MAX_THDS, typename T>
+__device__ void sytf2_device_upper(const rocblas_int tid,
+                                   const rocblas_int n,
+                                   T* A,
+                                   const rocblas_int lda,
+                                   rocblas_int* ipiv,
+                                   rocblas_int* info,
+                                   rocblas_int* sidx,
+                                   T* sval)
 {
-    // select batch instance
-    rocblas_int bid = hipBlockIdx_y;
-
-    int tid = hipThreadIdx_x;
-
     using S = decltype(std::real(T{}));
     const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
 
-    // get array pointers
-    T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
-    rocblas_int* ipiv = ipivA + (bid * strideP);
-
     // local and shared variables
-    __shared__ rocblas_int info;
+    __shared__ rocblas_int _info;
     int i, j;
     int k = n - 1;
     int kstep, kp, kk;
@@ -50,19 +37,17 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
     __shared__ S absakk;
     __shared__ S colmax;
     __shared__ S rowmax;
-    __shared__ T sval[SYTF2_MAX_THDS];
-    __shared__ rocblas_int sidx[SYTF2_MAX_THDS];
     __shared__ rocblas_int imax;
 
     if(tid == 0)
-        info = 0;
+        _info = 0;
 
     while(k >= 0)
     {
         kstep = 1;
 
         // find max off-diagonal entry in column k
-        iamax<SYTF2_MAX_THDS>(tid, k, A + k * lda, 1, sval, sidx);
+        iamax<MAX_THDS>(tid, k, A + k * lda, 1, sval, sidx);
         if(tid == 0)
         {
             imax = sidx[0] - 1;
@@ -74,8 +59,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
         if(max(absakk, colmax) == 0)
         {
             // singularity found
-            if(tid == 0 && info == 0)
-                info = k + 1;
+            if(tid == 0 && _info == 0)
+                _info = k + 1;
             kp = k;
         }
         else
@@ -86,13 +71,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
             else
             {
                 // find max off-diagonal entry in row i
-                iamax<SYTF2_MAX_THDS>(tid, k - imax, A + imax + (imax + 1) * lda, lda, sval, sidx);
+                iamax<MAX_THDS>(tid, k - imax, A + imax + (imax + 1) * lda, lda, sval, sidx);
                 if(tid == 0)
                     rowmax = aabs<S>(sval[0]);
 
                 if(imax > 0)
                 {
-                    iamax<SYTF2_MAX_THDS>(tid, imax, A + imax * lda, 1, sval, sidx);
+                    iamax<MAX_THDS>(tid, imax, A + imax * lda, 1, sval, sidx);
                     if(tid == 0)
                         rowmax = max(rowmax, aabs<S>(sval[0]));
                 }
@@ -123,9 +108,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                         swap(A[kk + k * lda], A[kp + k * lda]);
                 }
 
-                for(i = tid; i < kp; i += SYTF2_MAX_THDS)
+                for(i = tid; i < kp; i += MAX_THDS)
                     swap(A[i + kk * lda], A[i + kp * lda]);
-                for(i = tid; i < kk - kp - 1; i += SYTF2_MAX_THDS)
+                for(i = tid; i < kk - kp - 1; i += MAX_THDS)
                     swap(A[(kp + i + 1) + kk * lda], A[kp + (kp + i + 1) * lda]);
                 __syncthreads();
             }
@@ -136,7 +121,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
 
                 // perform rank 1 update of A from [0,0] to [k-1,k-1] (syr)
                 T r1 = T(1) / A[k + k * lda];
-                for(j = tid; j < k; j += SYTF2_MAX_THDS)
+                for(j = tid; j < k; j += MAX_THDS)
                 {
                     T r2 = -r1 * A[j + k * lda];
                     for(i = 0; i <= j; i++)
@@ -145,7 +130,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                 __syncthreads();
 
                 // update column k (scal)
-                for(j = tid; j < k; j += SYTF2_MAX_THDS)
+                for(j = tid; j < k; j += MAX_THDS)
                     A[j + k * lda] *= r1;
             }
             else
@@ -160,7 +145,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                     T d22 = A[(k - 1) + (k - 1) * lda] / d12;
                     T d11 = A[k + k * lda] / d12;
                     d12 = T(1) / ((d11 * d22 - T(1)) * d12);
-                    for(j = k - 2 - tid; j >= 0; j -= SYTF2_MAX_THDS)
+                    for(j = k - 2 - tid; j >= 0; j -= MAX_THDS)
                     {
                         wkm1 = d12 * (d11 * A[j + (k - 1) * lda] - A[j + k * lda]);
                         wk = d12 * (d22 * A[j + k * lda] - A[j + (k - 1) * lda]);
@@ -171,7 +156,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                     __syncthreads();
 
                     // update columns k and k-1
-                    for(j = k - 2 - tid; j >= 0; j -= SYTF2_MAX_THDS)
+                    for(j = k - 2 - tid; j >= 0; j -= MAX_THDS)
                     {
                         wkm1 = d12 * (d11 * A[j + (k - 1) * lda] - A[j + k * lda]);
                         wk = d12 * (d22 * A[j + k * lda] - A[j + (k - 1) * lda]);
@@ -198,34 +183,24 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
     }
 
     if(tid == 0)
-        infoA[bid] = info;
+        *info = _info;
 }
 
-template <typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
-    sytf2_kernel_lower(const rocblas_int n,
-                       U AA,
-                       const rocblas_int shiftA,
-                       const rocblas_int lda,
-                       const rocblas_stride strideA,
-                       rocblas_int* ipivA,
-                       const rocblas_stride strideP,
-                       rocblas_int* infoA)
+template <int MAX_THDS, typename T>
+__device__ void sytf2_device_lower(const rocblas_int tid,
+                                   const rocblas_int n,
+                                   T* A,
+                                   const rocblas_int lda,
+                                   rocblas_int* ipiv,
+                                   rocblas_int* info,
+                                   rocblas_int* sidx,
+                                   T* sval)
 {
-    // select batch instance
-    rocblas_int bid = hipBlockIdx_y;
-
-    int tid = hipThreadIdx_x;
-
     using S = decltype(std::real(T{}));
     const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
 
-    // get array pointers
-    T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
-    rocblas_int* ipiv = ipivA + (bid * strideP);
-
     // local and shared variables
-    __shared__ rocblas_int info;
+    __shared__ rocblas_int _info;
     int i, j;
     int k = 0;
     int kstep, kp, kk;
@@ -234,19 +209,17 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
     __shared__ S absakk;
     __shared__ S colmax;
     __shared__ S rowmax;
-    __shared__ T sval[SYTF2_MAX_THDS];
-    __shared__ rocblas_int sidx[SYTF2_MAX_THDS];
     __shared__ rocblas_int imax;
 
     if(tid == 0)
-        info = 0;
+        _info = 0;
 
     while(k < n)
     {
         kstep = 1;
 
         // find max off-diagonal entry in column k
-        iamax<SYTF2_MAX_THDS>(tid, n - k - 1, A + (k + 1) + k * lda, 1, sval, sidx);
+        iamax<MAX_THDS>(tid, n - k - 1, A + (k + 1) + k * lda, 1, sval, sidx);
         if(tid == 0)
         {
             imax = k + sidx[0];
@@ -258,8 +231,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
         if(max(absakk, colmax) == 0)
         {
             // singularity found
-            if(tid == 0 && info == 0)
-                info = k + 1;
+            if(tid == 0 && _info == 0)
+                _info = k + 1;
             kp = k;
         }
         else
@@ -270,14 +243,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
             else
             {
                 // find max off-diagonal entry in row i
-                iamax<SYTF2_MAX_THDS>(tid, imax - k, A + imax + k * lda, lda, sval, sidx);
+                iamax<MAX_THDS>(tid, imax - k, A + imax + k * lda, lda, sval, sidx);
                 if(tid == 0)
                     rowmax = aabs<S>(sval[0]);
 
                 if(imax < n - 1)
                 {
-                    iamax<SYTF2_MAX_THDS>(tid, n - imax - 1, A + (imax + 1) + imax * lda, 1, sval,
-                                          sidx);
+                    iamax<MAX_THDS>(tid, n - imax - 1, A + (imax + 1) + imax * lda, 1, sval, sidx);
                     if(tid == 0)
                         rowmax = max(rowmax, aabs<S>(sval[0]));
                 }
@@ -308,9 +280,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                         swap(A[kk + k * lda], A[kp + k * lda]);
                 }
 
-                for(i = tid; i < n - kp - 1; i += SYTF2_MAX_THDS)
+                for(i = tid; i < n - kp - 1; i += MAX_THDS)
                     swap(A[(kp + i + 1) + kk * lda], A[(kp + i + 1) + kp * lda]);
-                for(i = tid; i < kp - kk - 1; i += SYTF2_MAX_THDS)
+                for(i = tid; i < kp - kk - 1; i += MAX_THDS)
                     swap(A[(kk + i + 1) + kk * lda], A[kp + (kk + i + 1) * lda]);
                 __syncthreads();
             }
@@ -323,7 +295,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                 {
                     // perform rank 1 update of A from [k+1,k+1] to [n-1,n-1] (syr)
                     T r1 = T(1) / A[k + k * lda];
-                    for(j = tid; j < n - k - 1; j += SYTF2_MAX_THDS)
+                    for(j = tid; j < n - k - 1; j += MAX_THDS)
                     {
                         T r2 = -r1 * A[(k + j + 1) + k * lda];
                         for(i = j; i < n - k - 1; i++)
@@ -333,7 +305,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                     __syncthreads();
 
                     // update column k (scal)
-                    for(j = tid; j < n - k - 1; j += SYTF2_MAX_THDS)
+                    for(j = tid; j < n - k - 1; j += MAX_THDS)
                         A[(k + j + 1) + k * lda] *= r1;
                 }
             }
@@ -349,7 +321,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                     T d11 = A[(k + 1) + (k + 1) * lda] / d21;
                     T d22 = A[k + k * lda] / d21;
                     d21 = T(1) / ((d11 * d22 - T(1)) * d21);
-                    for(j = k + 2 + tid; j < n; j += SYTF2_MAX_THDS)
+                    for(j = k + 2 + tid; j < n; j += MAX_THDS)
                     {
                         wk = d21 * (d11 * A[j + k * lda] - A[j + (k + 1) * lda]);
                         wkp1 = d21 * (d22 * A[j + (k + 1) * lda] - A[j + k * lda]);
@@ -360,7 +332,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                     __syncthreads();
 
                     // update columns k and k+1
-                    for(j = k + 2 + tid; j < n; j += SYTF2_MAX_THDS)
+                    for(j = k + 2 + tid; j < n; j += MAX_THDS)
                     {
                         wk = d21 * (d11 * A[j + k * lda] - A[j + (k + 1) * lda]);
                         wkp1 = d21 * (d22 * A[j + (k + 1) * lda] - A[j + k * lda]);
@@ -387,7 +359,59 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
     }
 
     if(tid == 0)
-        infoA[bid] = info;
+        *info = _info;
+}
+
+template <typename T, typename U>
+ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
+    sytf2_kernel_upper(const rocblas_int n,
+                       U AA,
+                       const rocblas_int shiftA,
+                       const rocblas_int lda,
+                       const rocblas_stride strideA,
+                       rocblas_int* ipivA,
+                       const rocblas_stride strideP,
+                       rocblas_int* infoA)
+{
+    // select batch instance
+    rocblas_int bid = hipBlockIdx_y;
+    rocblas_int tid = hipThreadIdx_x;
+
+    // get array pointers
+    T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
+    rocblas_int* ipiv = ipivA + (bid * strideP);
+
+    // shared arrays
+    __shared__ T sval[SYTF2_MAX_THDS];
+    __shared__ rocblas_int sidx[SYTF2_MAX_THDS];
+
+    sytf2_device_upper<SYTF2_MAX_THDS>(tid, n, A, lda, ipiv, infoA + bid, sidx, sval);
+}
+
+template <typename T, typename U>
+ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
+    sytf2_kernel_lower(const rocblas_int n,
+                       U AA,
+                       const rocblas_int shiftA,
+                       const rocblas_int lda,
+                       const rocblas_stride strideA,
+                       rocblas_int* ipivA,
+                       const rocblas_stride strideP,
+                       rocblas_int* infoA)
+{
+    // select batch instance
+    rocblas_int bid = hipBlockIdx_y;
+    rocblas_int tid = hipThreadIdx_x;
+
+    // get array pointers
+    T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
+    rocblas_int* ipiv = ipivA + (bid * strideP);
+
+    // shared arrays
+    __shared__ T sval[SYTF2_MAX_THDS];
+    __shared__ rocblas_int sidx[SYTF2_MAX_THDS];
+
+    sytf2_device_lower<SYTF2_MAX_THDS>(tid, n, A, lda, ipiv, infoA + bid, sidx, sval);
 }
 
 template <typename T>

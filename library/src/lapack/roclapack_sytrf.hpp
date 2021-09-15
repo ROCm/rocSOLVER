@@ -15,10 +15,6 @@
 #include "roclapack_sytf2.hpp"
 #include "rocsolver.h"
 
-// number of threads for the sytrf kernel (currently not tunable)
-#define SYTRF_MAX_THDS 256
-#define SYTRF_BLOCKSIZE 256
-
 template <typename T>
 void rocsolver_sytrf_getMemorySize(const rocblas_int n, const rocblas_int batch_count, size_t* size_work)
 {
