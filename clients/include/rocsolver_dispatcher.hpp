@@ -199,9 +199,9 @@ class rocsolver_dispatcher
             {"sytf2", testing_sytf2_sytrf<false, false, 0, T>},
             {"sytf2_batched", testing_sytf2_sytrf<true, true, 0, T>},
             {"sytf2_strided_batched", testing_sytf2_sytrf<false, true, 0, T>},
-            // {"sytrf", testing_sytf2_sytrf<false, false, 1, T>},
-            // {"sytrf_batched", testing_sytf2_sytrf<true, true, 1, T>},
-            // {"sytrf_strided_batched", testing_sytf2_sytrf<false, true, 1, T>},
+            {"sytrf", testing_sytf2_sytrf<false, false, 1, T>},
+            {"sytrf_batched", testing_sytf2_sytrf<true, true, 1, T>},
+            {"sytrf_strided_batched", testing_sytf2_sytrf<false, true, 1, T>},
         };
 
         // Grab function from the map and execute
