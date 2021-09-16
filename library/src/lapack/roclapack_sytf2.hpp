@@ -34,7 +34,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
     int tid = hipThreadIdx_x;
 
     using S = decltype(std::real(T{}));
-    const S alpha = (S)((1.0 + sqrt(17.0)) / 8.0);
+    const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
 
     // get array pointers
     T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
@@ -218,7 +218,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
     int tid = hipThreadIdx_x;
 
     using S = decltype(std::real(T{}));
-    const S alpha = (S)((1.0 + sqrt(17.0)) / 8.0);
+    const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
 
     // get array pointers
     T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
