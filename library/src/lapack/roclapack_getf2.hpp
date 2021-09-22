@@ -11,6 +11,7 @@
 #pragma once
 
 #include "auxiliary/rocauxiliary_laswp.hpp"
+#include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
 #include "rocsolver_small_kernels.hpp"
@@ -156,134 +157,16 @@ ROCSOLVER_KERNEL void __launch_bounds__(IAMAX_THDS) getf2_iamax(const rocblas_in
                                                                 const rocblas_stride stridex,
                                                                 rocblas_int* pivotidx)
 {
-    using S = decltype(std::real(T{}));
-
     // batch instance
     const int bid = hipBlockIdx_y;
+    const int tid = hipThreadIdx_x;
     T* x = load_ptr_batch<T>(xx, bid, shiftx, stridex);
 
-    // shared & local memory setup
+    // shared memory setup
     __shared__ T sval[IAMAX_THDS];
     __shared__ rocblas_int sidx[IAMAX_THDS];
-    T val1, val2;
-    rocblas_int pidx;
 
-    // read into shared memory while doing initial step
-    // (each thread reduce as many elements as needed to cover the original array)
-    rocblas_int tid = hipThreadIdx_x;
-    rocblas_int bdim = hipBlockDim_x;
-    val1 = 0;
-    pidx = 1;
-    for(unsigned int i = tid; i < m; i += bdim)
-    {
-        val2 = x[i];
-        if(aabs<S>(val1) < aabs<S>(val2))
-        {
-            val1 = val2;
-            pidx = i + 1; //add one to make it 1-based index
-        }
-    }
-    sval[tid] = val1;
-    sidx[tid] = pidx;
-    __syncthreads();
-
-    /** <========= Next do the reduction on the shared memory array =========>
-        (We need to execute the for loop
-            for(j = IAMAX_THDS; j > 0; j>>=1)
-        to have half of the active threads at each step
-        reducing two elements in the shared array.
-        As IAMAX_THDS is fixed to 1024, we can unroll the loop manually) **/
-
-    if(tid < 512)
-    {
-        val1 = sval[tid];
-        val2 = sval[tid + 512];
-        if(aabs<S>(val1) < aabs<S>(val2))
-        {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 512];
-        }
-    }
-    __syncthreads();
-
-    if(tid < 256)
-    {
-        val1 = sval[tid];
-        val2 = sval[tid + 256];
-        if(aabs<S>(val1) < aabs<S>(val2))
-        {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 256];
-        }
-    }
-    __syncthreads();
-
-    if(tid < 128)
-    {
-        val1 = sval[tid];
-        val2 = sval[tid + 128];
-        if(aabs<S>(val1) < aabs<S>(val2))
-        {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 128];
-        }
-    }
-    __syncthreads();
-
-    // from this point, as all the active threads will form a single wavefront
-    // and work in lock-step, there is no need for synchronizations and barriers
-    if(tid < 64)
-    {
-        val1 = sval[tid];
-        val2 = sval[tid + 64];
-        if(aabs<S>(val1) < aabs<S>(val2))
-        {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 64];
-        }
-        val1 = sval[tid];
-        val2 = sval[tid + 32];
-        if(aabs<S>(val1) < aabs<S>(val2))
-        {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 32];
-        }
-        val1 = sval[tid];
-        val2 = sval[tid + 16];
-        if(aabs<S>(val1) < aabs<S>(val2))
-        {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 16];
-        }
-        val1 = sval[tid];
-        val2 = sval[tid + 8];
-        if(aabs<S>(val1) < aabs<S>(val2))
-        {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 8];
-        }
-        val1 = sval[tid];
-        val2 = sval[tid + 4];
-        if(aabs<S>(val1) < aabs<S>(val2))
-        {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 4];
-        }
-        val1 = sval[tid];
-        val2 = sval[tid + 2];
-        if(aabs<S>(val1) < aabs<S>(val2))
-        {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 2];
-        }
-        val1 = sval[tid];
-        val2 = sval[tid + 1];
-        if(aabs<S>(val1) < aabs<S>(val2))
-        {
-            sval[tid] = val2;
-            sidx[tid] = sidx[tid + 1];
-        }
-    }
+    iamax<IAMAX_THDS>(tid, m, x, 1, sval, sidx);
 
     // write results back to global memory
     // (after the reduction, the maximum of the elements is in sval[0] and sidx[0])

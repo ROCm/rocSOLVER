@@ -506,13 +506,13 @@ void testing_sygv_hegv(Arguments& argus)
                                                       (T* const*)nullptr, lda, stA,
                                                       (T* const*)nullptr, ldb, stB, (S*)nullptr, stD,
                                                       (S*)nullptr, stE, (rocblas_int*)nullptr, bc),
-                                  rocblas_status_invalid_size);
+                                  rocblas_status_invalid_value);
         else
             EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n,
                                                       (T*)nullptr, lda, stA, (T*)nullptr, ldb, stB,
                                                       (S*)nullptr, stD, (S*)nullptr, stE,
                                                       (rocblas_int*)nullptr, bc),
-                                  rocblas_status_invalid_size);
+                                  rocblas_status_invalid_value);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_invalid_args);

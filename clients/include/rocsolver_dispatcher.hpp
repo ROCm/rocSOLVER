@@ -55,6 +55,7 @@
 #include "testing_sygsx_hegsx.hpp"
 #include "testing_sygv_hegv.hpp"
 #include "testing_sygvd_hegvd.hpp"
+#include "testing_sytf2_sytrf.hpp"
 #include "testing_sytxx_hetxx.hpp"
 #include "testing_trtri.hpp"
 
@@ -192,6 +193,13 @@ class rocsolver_dispatcher
             {"gebrd", testing_gebd2_gebrd<false, false, 1, T>},
             {"gebrd_batched", testing_gebd2_gebrd<true, true, 1, T>},
             {"gebrd_strided_batched", testing_gebd2_gebrd<false, true, 1, T>},
+            // sytrf
+            {"sytf2", testing_sytf2_sytrf<false, false, 0, T>},
+            {"sytf2_batched", testing_sytf2_sytrf<true, true, 0, T>},
+            {"sytf2_strided_batched", testing_sytf2_sytrf<false, true, 0, T>},
+            // {"sytrf", testing_sytf2_sytrf<false, false, 1, T>},
+            // {"sytrf_batched", testing_sytf2_sytrf<true, true, 1, T>},
+            // {"sytrf_strided_batched", testing_sytf2_sytrf<false, true, 1, T>},
         };
 
         // Grab function from the map and execute
