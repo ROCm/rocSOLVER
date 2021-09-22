@@ -679,7 +679,7 @@ __device__ void iamax(const rocblas_int tid,
     {
         val2 = A[i * incA];
         idx2 = i + 1; // add one to make it 1-based index
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
+        if(aabs<S>(val1) < aabs<S>(val2) || idx1 == INT_MAX)
         {
             val1 = val2;
             idx1 = idx2;
@@ -697,7 +697,7 @@ __device__ void iamax(const rocblas_int tid,
         reducing two elements in the shared array. **/
 
 #pragma unroll
-    for(int i = MAX_THDS / 2; i > 64; i /= 2)
+    for(int i = MAX_THDS / 2; i > warpSize; i /= 2)
     {
         if(tid < i)
         {
@@ -714,14 +714,17 @@ __device__ void iamax(const rocblas_int tid,
 
     // from this point, as all the active threads will form a single wavefront
     // and work in lock-step, there is no need for synchronizations and barriers
-    if(tid < 64)
+    if(tid < warpSize)
     {
-        val2 = sval[tid + 64];
-        idx2 = sidx[tid + 64];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
+        if(warpSize >= 64)
         {
-            sval[tid] = val1 = val2;
-            sidx[tid] = idx1 = idx2;
+            val2 = sval[tid + 64];
+            idx2 = sidx[tid + 64];
+            if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
+            {
+                sval[tid] = val1 = val2;
+                sidx[tid] = idx1 = idx2;
+            }
         }
         val2 = sval[tid + 32];
         idx2 = sidx[tid + 32];
