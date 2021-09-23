@@ -22,7 +22,7 @@
 /** This kernel executes an optimized scaled rank-update (scal + ger)
     for panel matrices (matrices with less than 128 columns).
     Useful to speedup the factorization of block-columns in getrf **/
-template <typename T, typename U>
+template <rocblas_int N, typename T, typename U>
 ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
                                          const rocblas_int n,
                                          T* pivotval,
@@ -38,9 +38,9 @@ ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
     rocblas_int i = hipBlockIdx_x * hipBlockDim_x + tx;
 
     // shared data arrays
-    T pivot;
+    T pivot, val;
     __shared__ T x[256];
-    __shared__ T y[512];
+    __shared__ T y[256];
 
     // batch instance
     T* A = load_ptr_batch(AA, bid, shiftA + 1 + lda, strideA);
@@ -49,15 +49,15 @@ ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
     pivot = pivotval[bid];
 
     // read data from global to shared memory
-    if(tx == 0)
-    {
-        for(int j = ty; j < n; j += hipBlockDim_y)
-            y[j] = Y[j * lda];
-    }
+    int j = tx*hipBlockDim_y+ty;
+    if(j < n)
+        y[j] = Y[j * lda];
+    
+    // scale
     if(ty == 0 && i < m)
     {
-        // scale
-        x[tx] = X[i] * pivot;
+        x[tx] = X[i];
+        x[tx] *= pivot;
         X[i] = x[tx];
     }
     __syncthreads();
@@ -65,8 +65,22 @@ ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
     // rank update; put computed values back to global memory
     if(i < m)
     {
-        for(int j = ty; j < n; j += hipBlockDim_y)
-            A[i + j * lda] -= x[tx] * y[j];
+#pragma unroll 
+        for(int c = 0; c < N; ++c)
+        {
+            j = c*hipBlockDim_y+ty;
+            val = A[i + j * lda];
+            val -= x[tx] * y[j];
+            A[i + j * lda] = val;
+        }
+
+        j = N*hipBlockDim_y+ty;
+        if(j < n)
+        {
+            val = A[i + j * lda];
+            val -= x[tx] * y[j];
+            A[i + j * lda] = val;
+        }
     }
 }
 
@@ -179,7 +193,12 @@ inline void getf2_get_ger_blksize(const rocblas_int m,
                                   rocblas_int* dimx,
                                   rocblas_int* dimy)
 {
-    if(n <= 24)
+    if(n == 0 || n > 256 || m == 0)
+    {
+        *dimx = 1;
+        *dimy = 1;
+    }
+    else if(n <= 24)
     {
         if(m < 1536)
         {
@@ -246,7 +265,7 @@ inline void getf2_get_ger_blksize(const rocblas_int m,
             *dimy = 4;
         }
     }
-    else if(n <= 400)
+    else 
     {
         if(m < 4096)
         {
@@ -263,57 +282,6 @@ inline void getf2_get_ger_blksize(const rocblas_int m,
             *dimx = 256;
             *dimy = 4;
         }
-    }
-    else if(n <= 464)
-    {
-        if(m < 1024)
-        {
-            *dimx = 1;
-            *dimy = 1;
-        }
-        else if(m < 4096)
-        {
-            *dimx = 64;
-            *dimy = 16;
-        }
-        else if(m < 8192)
-        {
-            *dimx = 128;
-            *dimy = 8;
-        }
-        else
-        {
-            *dimx = 256;
-            *dimy = 4;
-        }
-    }
-    else if(n <= 512)
-    {
-        if(m < 1536)
-        {
-            *dimx = 1;
-            *dimy = 1;
-        }
-        else if(m < 4096)
-        {
-            *dimx = 64;
-            *dimy = 16;
-        }
-        else if(m < 8192)
-        {
-            *dimx = 128;
-            *dimy = 8;
-        }
-        else
-        {
-            *dimx = 256;
-            *dimy = 4;
-        }
-    }
-    else
-    {
-        *dimx = 1;
-        *dimy = 1;
     }
 }
 
@@ -462,6 +430,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     rocblas_int blocksPivot = pivot ? (n - 1) / singular_thds + 1 : 1;
     dim3 threadsPivot((pivot ? singular_thds : 1), 1, 1);
     dim3 gridPivot(blocksPivot, batch_count, 1);
+    rocblas_int c;
 
     for(rocblas_int j = 0; j < dim; ++j)
     {
@@ -502,13 +471,84 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         }
         else //if working with a panel matrix
         {
+            c = (n - j - 2) / sger_thds_y;
             blocksx = (m - j - 2) / sger_thds_x + 1;
             threads = dim3(sger_thds_x, sger_thds_y, 1);
             grid = dim3(blocksx, 1, batch_count);
 
             // scale and update panel trailing matrix with local function
-            hipLaunchKernelGGL((getf2_scale_update<T>), grid, threads, 0, stream, m - j - 1,
+#define RUN_UPDATE(N)                                                                           \
+            hipLaunchKernelGGL((getf2_scale_update<N,T>), grid, threads, 0, stream, m - j - 1,  \
                                n - j - 1, pivotval, A, shiftA + idx2D(j, j, lda), lda, strideA);
+
+            switch(c)
+            {
+            case 0: RUN_UPDATE(0); break;
+            case 1: RUN_UPDATE(1); break;
+            case 2: RUN_UPDATE(2); break;
+            case 3: RUN_UPDATE(3); break;
+            case 4: RUN_UPDATE(4); break;
+            case 5: RUN_UPDATE(5); break;
+            case 6: RUN_UPDATE(6); break;
+            case 7: RUN_UPDATE(7); break;
+            case 8: RUN_UPDATE(8); break;
+            case 9: RUN_UPDATE(9); break;
+            case 10: RUN_UPDATE(10); break;
+            case 11: RUN_UPDATE(11); break;
+            case 12: RUN_UPDATE(12); break;
+            case 13: RUN_UPDATE(13); break;
+            case 14: RUN_UPDATE(14); break;
+            case 15: RUN_UPDATE(15); break;
+            case 16: RUN_UPDATE(16); break;
+            case 17: RUN_UPDATE(17); break;
+            case 18: RUN_UPDATE(18); break;
+            case 19: RUN_UPDATE(19); break;
+            case 20: RUN_UPDATE(20); break;
+            case 21: RUN_UPDATE(21); break;
+            case 22: RUN_UPDATE(22); break;
+            case 23: RUN_UPDATE(23); break;
+            case 24: RUN_UPDATE(24); break;
+            case 25: RUN_UPDATE(25); break;
+            case 26: RUN_UPDATE(26); break;
+            case 27: RUN_UPDATE(27); break;
+            case 28: RUN_UPDATE(28); break;
+            case 29: RUN_UPDATE(29); break;
+            case 30: RUN_UPDATE(30); break;
+            case 31: RUN_UPDATE(31); break;
+            case 32: RUN_UPDATE(32); break;
+            case 33: RUN_UPDATE(33); break;
+            case 34: RUN_UPDATE(34); break;
+            case 35: RUN_UPDATE(35); break;
+            case 36: RUN_UPDATE(36); break;
+            case 37: RUN_UPDATE(37); break;
+            case 38: RUN_UPDATE(38); break;
+            case 39: RUN_UPDATE(39); break;
+            case 40: RUN_UPDATE(40); break;
+            case 41: RUN_UPDATE(41); break;
+            case 42: RUN_UPDATE(42); break;
+            case 43: RUN_UPDATE(43); break;
+            case 44: RUN_UPDATE(44); break;
+            case 45: RUN_UPDATE(45); break;
+            case 46: RUN_UPDATE(46); break;
+            case 47: RUN_UPDATE(47); break;
+            case 48: RUN_UPDATE(48); break;
+            case 49: RUN_UPDATE(49); break;
+            case 50: RUN_UPDATE(50); break;
+            case 51: RUN_UPDATE(51); break;
+            case 52: RUN_UPDATE(52); break;
+            case 53: RUN_UPDATE(53); break;
+            case 54: RUN_UPDATE(54); break;
+            case 55: RUN_UPDATE(55); break;
+            case 56: RUN_UPDATE(56); break;
+            case 57: RUN_UPDATE(57); break;
+            case 58: RUN_UPDATE(58); break;
+            case 59: RUN_UPDATE(59); break;
+            case 60: RUN_UPDATE(60); break;
+            case 61: RUN_UPDATE(61); break;
+            case 62: RUN_UPDATE(62); break;
+            case 63: RUN_UPDATE(63); break;
+            default: ROCSOLVER_UNREACHABLE();
+            }            
         }
     }
 
