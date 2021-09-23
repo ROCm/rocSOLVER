@@ -3,8 +3,18 @@
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
 
-## [rocSOLVER 3.15.0]
+## rocSOLVER 3.15.0 for ROCm 4.5.0
 ### Added
+- Eigensolver routines for symmetric/hermitian matrices using Divide and Conquer algorithm:
+    - STEDC
+    - SYEVD (with batched and strided\_batched versions)
+    - HEEVD (with batched and strided\_batched versions)
+- Generalized symmetric- and hermitian-definite eigensolvers using Divide and Conquer algorithm:
+    - SYGVD (with batched and strided\_batched versions)
+    - HEGVD (with batched and strided\_batched versions)
+- Added --mem\_query option to rocsolver-bench, which will print the amount of device memory required
+  by a function.
+- Added --profile option to rocsolver-bench, which will print profile logging results for a function.
 - RQ factorization routines:
     - GERQ2, GERQF (with batched and strided\_batched versions)
 - Linear solvers for general square systems:
@@ -22,6 +32,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Improved performance of LU factorization (especially for large matrix sizes)
 
 ### Changed
+- The -h option of install.sh now prints a help message, instead of doing nothing.
+- libfmt 7.1 is now a dependency
+- Raised minimum requirement for building rocSOLVER from source to CMake 3.13
 - Raised reference LAPACK version used for rocSOLVER test and benchmark clients to v3.9.1
 - Minor CMake improvements for users building from source without install.sh:
     - Removed fmt::fmt from rocsolver's public usage requirements
@@ -36,26 +49,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
   detection macros.
 
 
-## [rocSOLVER 3.14.0 for ROCm 4.4.0]
-### Added
-- Eigensolver routines for symmetric/hermitian matrices using Divide and Conquer algorithm:
-    - STEDC
-    - SYEVD (with batched and strided\_batched versions)
-    - HEEVD (with batched and strided\_batched versions)
-- Generalized symmetric- and hermitian-definite eigensolvers using Divide and Conquer algorithm:
-    - SYGVD (with batched and strided\_batched versions)
-    - HEGVD (with batched and strided\_batched versions)
-- Added --mem\_query option to rocsolver-bench, which will print the amount of device memory required
-  by a function.
-- Added --profile option to rocsolver-bench, which will print profile logging results for a function.
-
-### Changed
-- The -h option of install.sh now prints a help message, instead of doing nothing.
-- libfmt 7.1 is now a dependency
-- Raised minimum requirement for building rocSOLVER from source to CMake 3.13
-
-
-## [rocSOLVER 3.13.0 for ROCm 4.3.0]
+## rocSOLVER 3.13.0 for ROCm 4.3.0
 ### Added
 - Linear solvers for general non-square systems:
     - GELS now supports underdetermined and transposed cases
@@ -77,7 +71,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
   on the command line.
 
 
-## [rocSOLVER 3.12.0 for ROCm 4.2.0]
+## rocSOLVER 3.12.0 for ROCm 4.2.0
 ### Added
 - Multi-level logging functionality
 - Implementation of the Thin-SVD algorithm
@@ -109,7 +103,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
   bug in the gemm\_batched routines of rocBLAS.
 
 
-## [rocSOLVER 3.11.0 for ROCm 4.1.0]
+## rocSOLVER 3.11.0 for ROCm 4.1.0
 ### Added
 - Eigensolver routines for symmetric/hermitian matrices:
     - STERF, STEQR
@@ -144,7 +138,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Fixed GESVD right singular vectors for 1x1 matrices
 
 
-## [rocSOLVER 3.10.0 for ROCm 3.10.0]
+## rocSOLVER 3.10.0 for ROCm 3.10.0
 ### Added
 - Orthonormal/Unitary matrix generator routines (reverse order):
     - ORG2L, UNG2L, ORGQL, UNGQL
@@ -160,7 +154,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Returned values in parameter info of functions dealing with singularities
 
 
-## [rocSOLVER 3.9.0 for ROCm 3.9.0]
+## rocSOLVER 3.9.0 for ROCm 3.9.0
 ### Added
 - Improved debug build mode for developers
 - QL factorization routines:
@@ -172,7 +166,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Improved performance of mid-size matrix inversion (64 < n <= 2048)
 
 
-## [rocSOLVER 3.8.0 for ROCm 3.8.0]
+## rocSOLVER 3.8.0 for ROCm 3.8.0
 ### Added
 - Sample codes for C, C++ and FORTRAN
 - LU factorization without pivoting routines:
@@ -186,7 +180,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Ensure the public API is C compatible
 
 
-## [rocSOLVER 3.7.0 for ROCm 3.7.0]
+## rocSOLVER 3.7.0 for ROCm 3.7.0
 ### Added
 - LU-factorization-based matrix inverse routines:
     - GETRI (with batched and strided\_batched versions)
@@ -197,7 +191,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Ensure congruency on the input data when executing performance tests (benchmarks)
 
 
-## [rocSOLVER 3.6.0 for ROCm 3.6.0]
+## rocSOLVER 3.6.0 for ROCm 3.6.0
 ### Added
 - Complex precision support for all existing rocSOLVER functions
 - Bidiagonalization routines:
@@ -212,7 +206,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Major clients refactoring to achieve better test coverage and benchmarking
 
 
-## [rocSOLVER 3.5.0 for ROCm 3.5.0]
+## rocSOLVER 3.5.0 for ROCm 3.5.0
 ### Added
 - Installation script and new build procedure
 - Documentation and integration with ReadTheDocs
