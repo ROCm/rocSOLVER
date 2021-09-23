@@ -408,6 +408,8 @@ try
         print_version_info();
 
         rocblas_int device_count = query_device_property();
+        if(device_count <= 0)
+            throw std::runtime_error("No devices found");
         if(device_count <= device_id)
             throw std::invalid_argument("Invalid Device ID");
     }
@@ -439,8 +441,7 @@ try
 
     return 0;
 }
-
-catch(const std::invalid_argument& exp)
+catch(const std::exception& exp)
 {
     fmt::print(stderr, "{}\n", exp.what());
     return -1;
