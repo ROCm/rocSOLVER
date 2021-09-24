@@ -20,7 +20,7 @@ Options:
 EOF
 }
 
-export PATH=/opt/rocm/llvm/bin:/opt/rocm/bin:/usr/bin:/bin
+export PATH="$(git rev-parse --git-path hooks):/opt/rocm-4.3.1/llvm/bin:/opt/rocm-4.3.0/llvm/bin:$PATH"
 
 # Redirect stdout to stderr.
 exec >&2
@@ -55,7 +55,7 @@ done
 
 # Change the copyright date at the top of any text files
 for file in "$@"; do
-    /usr/bin/perl -pi -e 'INIT { exit 1 if !-f $ARGV[0] || -B $ARGV[0]; $year = (localtime)[5] + 1900 }
+    perl -pi -e 'INIT { exit 1 if !-f $ARGV[0] || -B $ARGV[0]; $year = (localtime)[5] + 1900 }
         s/^([*\/#[:space:]]*)Copyright\s+(?:\(C\)\s*)?(\d+)(?:\s*-\s*\d+)?/qq($1Copyright (c) $2@{[$year != $2 ? "-$year" : ""]})/ie
         if $. < 10' -- "$file"
 done
