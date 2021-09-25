@@ -20,7 +20,8 @@ Options:
 EOF
 }
 
-export PATH="$(git rev-parse --git-path hooks):/opt/rocm-4.3.1/llvm/bin:/opt/rocm-4.3.0/llvm/bin:$PATH"
+PATH="$(git rev-parse --git-path hooks):/opt/rocm-4.3.1/llvm/bin:/opt/rocm-4.3.0/llvm/bin:$PATH"
+export PATH
 
 # Redirect stdout to stderr.
 exec >&2

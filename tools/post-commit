@@ -15,7 +15,8 @@ EOF
 
 # utility function to search for a program (in a subshell)
 find_program() (
-  export PATH="$(git rev-parse --git-path hooks):/opt/rocm-4.3.1/llvm/bin:/opt/rocm-4.3.0/llvm/bin:$PATH"
+  PATH="$(git rev-parse --git-path hooks):/opt/rocm-4.3.1/llvm/bin:/opt/rocm-4.3.0/llvm/bin:$PATH"
+  export PATH
   command -v "$1" >/dev/null
 )
 
