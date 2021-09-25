@@ -39,8 +39,9 @@ ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
 
     // shared data arrays
     T pivot, val;
-    __shared__ T x[256];
-    __shared__ T y[256];
+    extern __shared__ double lmem[];
+    T* x = (T*)lmem;
+    T* y = x + hipBlockDim_x;
 
     // batch instance
     T* A = load_ptr_batch(AA, bid, shiftA + 1 + lda, strideA);
@@ -49,10 +50,10 @@ ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
     pivot = pivotval[bid];
 
     // read data from global to shared memory
-    int j = tx*hipBlockDim_y+ty;
+    int j = tx * hipBlockDim_y + ty;
     if(j < n)
         y[j] = Y[j * lda];
-    
+
     // scale
     if(ty == 0 && i < m)
     {
@@ -65,16 +66,16 @@ ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
     // rank update; put computed values back to global memory
     if(i < m)
     {
-#pragma unroll 
+#pragma unroll
         for(int c = 0; c < N; ++c)
         {
-            j = c*hipBlockDim_y+ty;
+            j = c * hipBlockDim_y + ty;
             val = A[i + j * lda];
             val -= x[tx] * y[j];
             A[i + j * lda] = val;
         }
 
-        j = N*hipBlockDim_y+ty;
+        j = N * hipBlockDim_y + ty;
         if(j < n)
         {
             val = A[i + j * lda];
@@ -193,96 +194,57 @@ inline void getf2_get_ger_blksize(const rocblas_int m,
                                   rocblas_int* dimx,
                                   rocblas_int* dimy)
 {
+    rocblas_int dim;
+
     if(n == 0 || n > 256 || m == 0)
     {
-        *dimx = 1;
-        *dimy = 1;
+        dim = 1024;
     }
     else if(n <= 24)
     {
         if(m < 1536)
-        {
-            *dimx = 64;
-            *dimy = 16;
-        }
+            dim = n < 16 ? n : 16;
         else if(m < 2688)
-        {
-            *dimx = 128;
-            *dimy = 8;
-        }
+            dim = n < 8 ? n : 8;
         else if(m < 9216)
-        {
-            *dimx = 256;
-            *dimy = 4;
-        }
+            dim = n < 4 ? n : 4;
         else
-        {
-            *dimx = 128;
-            *dimy = 8;
-        }
+            dim = n < 8 ? n : 8;
     }
     else if(n <= 40)
     {
         if(m < 1024)
-        {
-            *dimx = 64;
-            *dimy = 16;
-        }
+            dim = 16;
         else
-        {
-            *dimx = 128;
-            *dimy = 8;
-        }
+            dim = 8;
     }
     else if(n <= 56)
     {
         if(m < 10240)
-        {
-            *dimx = 64;
-            *dimy = 16;
-        }
+            dim = 16;
         else
-        {
-            *dimx = 128;
-            *dimy = 8;
-        }
+            dim = 8;
     }
     else if(n <= 88)
     {
         if(m < 5632)
-        {
-            *dimx = 64;
-            *dimy = 16;
-        }
+            dim = 16;
         else if(m < 7936)
-        {
-            *dimx = 128;
-            *dimy = 8;
-        }
+            dim = 8;
         else
-        {
-            *dimx = 256;
-            *dimy = 4;
-        }
+            dim = 4;
     }
-    else 
+    else
     {
         if(m < 4096)
-        {
-            *dimx = 64;
-            *dimy = 16;
-        }
+            dim = 16;
         else if(m < 8192)
-        {
-            *dimx = 128;
-            *dimy = 8;
-        }
+            dim = 8;
         else
-        {
-            *dimx = 256;
-            *dimy = 4;
-        }
+            dim = 4;
     }
+    *dimy = dim;
+    *dimx = 1024 / dim;
 }
 
 /** Return the sizes of the different workspace arrays **/
@@ -430,7 +392,9 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     rocblas_int blocksPivot = pivot ? (n - 1) / singular_thds + 1 : 1;
     dim3 threadsPivot((pivot ? singular_thds : 1), 1, 1);
     dim3 gridPivot(blocksPivot, batch_count, 1);
-    rocblas_int c;
+    rocblas_int c, mm, nn;
+    rocblas_int sger_thds_x, sger_thds_y;
+    size_t lmemsize;
 
     for(rocblas_int j = 0; j < dim; ++j)
     {
@@ -451,35 +415,37 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                                j, A, shiftA, lda, strideA, pivotval, info);
 
         // get thread block size for matrix update
-        rocblas_int sger_thds_x, sger_thds_y;
-        getf2_get_ger_blksize(m - j - 1, n - j - 1, &sger_thds_x, &sger_thds_y);
+        mm = m - j - 1;
+        nn = n - j - 1;
+        getf2_get_ger_blksize(mm, nn, &sger_thds_x, &sger_thds_y);
 
         if(sger_thds_x == 1) //if working with a general matrix:
         {
             // Scale J'th column
-            rocblasCall_scal<T>(handle, m - j - 1, pivotval, 1, A, shiftA + idx2D(j + 1, j, lda), 1,
+            rocblasCall_scal<T>(handle, mm, pivotval, 1, A, shiftA + idx2D(j + 1, j, lda), 1,
                                 strideA, batch_count);
 
             // update trailing submatrix
             if(j < dim - 1)
             {
                 rocblasCall_ger<false, T>(
-                    handle, m - j - 1, n - j - 1, scalars, 0, A, shiftA + idx2D(j + 1, j, lda), 1,
-                    strideA, A, shiftA + idx2D(j, j + 1, lda), lda, strideA, A,
+                    handle, mm, nn, scalars, 0, A, shiftA + idx2D(j + 1, j, lda), 1, strideA, A,
+                    shiftA + idx2D(j, j + 1, lda), lda, strideA, A,
                     shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, batch_count, nullptr);
             }
         }
         else //if working with a panel matrix
         {
-            c = (n - j - 2) / sger_thds_y;
-            blocksx = (m - j - 2) / sger_thds_x + 1;
+            lmemsize = sizeof(T) * (sger_thds_x + nn);
+            c = (nn - 1) / sger_thds_y;
+            blocksx = (mm - 1) / sger_thds_x + 1;
             threads = dim3(sger_thds_x, sger_thds_y, 1);
             grid = dim3(blocksx, 1, batch_count);
 
             // scale and update panel trailing matrix with local function
-#define RUN_UPDATE(N)                                                                           \
-            hipLaunchKernelGGL((getf2_scale_update<N,T>), grid, threads, 0, stream, m - j - 1,  \
-                               n - j - 1, pivotval, A, shiftA + idx2D(j, j, lda), lda, strideA);
+#define RUN_UPDATE(N)                                                                       \
+    hipLaunchKernelGGL((getf2_scale_update<N, T>), grid, threads, lmemsize, stream, mm, nn, \
+                       pivotval, A, shiftA + idx2D(j, j, lda), lda, strideA);
 
             switch(c)
             {
@@ -548,7 +514,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
             case 62: RUN_UPDATE(62); break;
             case 63: RUN_UPDATE(63); break;
             default: ROCSOLVER_UNREACHABLE();
-            }            
+            }
         }
     }
 
