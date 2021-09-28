@@ -35,9 +35,9 @@ ROCSOLVER_KERNEL void getrf_panelgemm(const rocblas_int m,
     rocblas_int i = hipBlockIdx_x * bdimx + tx;
 
     // batch instance
-    T* A = load_ptr_batch(AA, bid, shift+shiftA, stride);
-    T* B = load_ptr_batch(AA, bid, shift+shiftB, stride);
-    T* C = load_ptr_batch(AA, bid, shift+shiftC, stride);
+    T* A = load_ptr_batch(AA, bid, shift + shiftA, stride);
+    T* B = load_ptr_batch(AA, bid, shift + shiftB, stride);
+    T* C = load_ptr_batch(AA, bid, shift + shiftC, stride);
 
     // shared mem and local arrays
     extern __shared__ double lmem[];
@@ -47,26 +47,25 @@ ROCSOLVER_KERNEL void getrf_panelgemm(const rocblas_int m,
 
     // read block A into shared mem (row major order)
     for(int j = ty; j < k; j += bdimy)
-        a[tx*k + j] = A[i + j*lda];
+        a[tx * k + j] = A[i + j * lda];
 
     // for each column of B and C
     for(int j = ty; j < n; j += bdimy)
     {
         // read b and c
         for(int ii = tx; ii < k; ii += bdimx)
-            b[ii + j*k] = B[ii + j*lda];
-        c = C[i + j*lda];
+            b[ii + j * k] = B[ii + j * lda];
+        c = C[i + j * lda];
         __syncthreads();
 
         // update c
         for(int kk = 0; kk < k; ++kk)
-            c -= a[tx*k + kk] * b[kk + j*k];
+            c -= a[tx * k + kk] * b[kk + j * k];
 
         // write back to global memory
-        C[i + j*lda] = c; 
+        C[i + j * lda] = c;
     }
 }
-
 
 /** This function returns the outer block size based on defined variables
     tunable by the user (defined in ideal_sizes.hpp) **/
@@ -423,18 +422,18 @@ inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bo
     interchanges rows all at once (pivoting + laswp)**/
 template <typename T, typename U>
 ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
-                            const rocblas_int j,
-                            const rocblas_int jb,
-                            U AA,
-                            const rocblas_int shiftA,
-                            const rocblas_int lda,
-                            const rocblas_stride strideA,
-                            rocblas_int* ipivA,
-                            const rocblas_int shiftP,
-                            const rocblas_stride strideP,
-                            rocblas_int* iipivA,
-                            const rocblas_int* iinfo,
-                            rocblas_int* info)
+                                              const rocblas_int j,
+                                              const rocblas_int jb,
+                                              U AA,
+                                              const rocblas_int shiftA,
+                                              const rocblas_int lda,
+                                              const rocblas_stride strideA,
+                                              rocblas_int* ipivA,
+                                              const rocblas_int shiftP,
+                                              const rocblas_stride strideP,
+                                              rocblas_int* iipivA,
+                                              const rocblas_int* iinfo,
+                                              rocblas_int* info)
 {
     int id = hipBlockIdx_y;
     int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -442,18 +441,19 @@ ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
     if(tid < n)
     {
         // update info (check singularity)
-        if(tid == j && info[id] == 0 && iinfo[id] > 0)
-            info[id] = iinfo[id] + j;
+        //        if(tid == j && info[id] == 0 && iinfo[id] > 0)
+        //            info[id] = iinfo[id] + j;
 
-        T orig;
-        rocblas_int* iipiv = iipivA + id * jb;
+        //        T orig;
+        //        rocblas_int* iipiv = iipivA + id * jb;
         T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
+        rocblas_int* ipiv = ipivA + id * strideP + shiftP;
 
         // update ipiv (pivots in columns j : j+jb-1)
         if(tid >= j && tid < j + jb)
         {
-            rocblas_int* ipiv = ipivA + id * strideP + shiftP;
-            ipiv[tid] = iipiv[tid - j] + j;
+            //            rocblas_int* ipiv = ipivA + id * strideP + shiftP;
+            //            ipiv[tid] = iipiv[tid - j] + j;
         }
 
         // swap rows in columns 0 : j-1 and j+jb : n-1
@@ -461,7 +461,8 @@ ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
         {
             for(rocblas_int i = j; i < j + jb; ++i)
             {
-                rocblas_int exch = iipiv[i - j] + j - 1;
+                //                rocblas_int exch = iipiv[i - j] + j - 1;
+                rocblas_int exch = ipiv[i] - 1;
 
                 // will exchange rows i and exch if they are not the same
                 if(exch != i)
@@ -473,7 +474,8 @@ ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
 
 /** non-pivoting version **/
 template <typename T>
-ROCSOLVER_KERNEL void getrf_npvt_check_singularity(const rocblas_int j, const rocblas_int* iinfo, rocblas_int* info)
+ROCSOLVER_KERNEL void
+    getrf_npvt_check_singularity(const rocblas_int j, const rocblas_int* iinfo, rocblas_int* info)
 {
     int id = hipBlockIdx_y;
 
@@ -591,44 +593,40 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
 
     if(n <= 128)
     {
-        return rocsolver_getf2_template<ISBATCHED, T>(
-                handle, m, n, A, shiftA, lda, strideA, ipiv,
-                0, n, info, batch_count, scalars, pivotval, pivotidx, pivot);
+        return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
+                                                      0, n, info, batch_count, scalars, pivotval,
+                                                      pivotidx, pivot);
     }
-    
+
     else
     {
-        rocblas_int nin = n/2;
+        rocblas_int nin = n / 2;
         rocblas_int nout = n - nin;
 
-        getrf_panelLU<BATCHED, STRIDED, T>(handle, m, nin, A, shiftA, lda, strideA, ipiv, info, batch_count, scalars,
-                        work1, work2, work3, work4, pivotval, pivotidx, optim_mem, pivot); 
+        getrf_panelLU<BATCHED, STRIDED, T>(handle, m, nin, A, shiftA, lda, strideA, ipiv, info,
+                                           batch_count, scalars, work1, work2, work3, work4,
+                                           pivotval, pivotidx, optim_mem, pivot);
 
         if(pivot)
             // adjust pivots, swap rows and check singularity
-            hipLaunchKernelGGL(getrf_check_singularity<T>, grid, threads, 0, stream, n, 0,
-                               nin, A, shiftA, lda, strideA, ipiv, 0, n, ipiv,
-                               info, info);
-        else
-            // check singularity
-            hipLaunchKernelGGL(getrf_npvt_check_singularity<T>, grid, threads, 0, stream, 0,
-                               info, info);
+            hipLaunchKernelGGL(getrf_check_singularity<T>, grid, threads, 0, stream, n, 0, nin, A,
+                               shiftA, lda, strideA, ipiv, 0, n, ipiv, info, info);
+        //        else
+        //            // check singularity
+        //            hipLaunchKernelGGL(getrf_npvt_check_singularity<T>, grid, threads, 0, stream, 0,
+        //                               info, info);
 
         // update trailing sub-block
         rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
-                                     rocblas_operation_none, rocblas_diagonal_unit, nin,
-                                     nout, &one, A,
-                                     shiftA, lda, strideA, A,
-                                     shiftA + idx2D(0, nin, lda), lda, strideA,
-                                     batch_count, optim_mem, work1, work2, work3, work4);
+                                     rocblas_operation_none, rocblas_diagonal_unit, nin, nout, &one,
+                                     A, shiftA, lda, strideA, A, shiftA + idx2D(0, nin, lda), lda,
+                                     strideA, batch_count, optim_mem, work1, work2, work3, work4);
 
-       rocblasCall_gemm<BATCHED, STRIDED, T>(
-                        handle, rocblas_operation_none, rocblas_operation_none, m - nin,
-                        nout, nin, &minone, A, shiftA + idx2D(nin, 0, lda), lda,
-                        strideA, A, shiftA + idx2D(0, nin, lda), lda, strideA, &one, A,
-                        shiftA + idx2D(nin, nin, lda), lda, strideA, batch_count,
-                        nullptr);
-/*                    dimx = 128;
+        rocblasCall_gemm<BATCHED, STRIDED, T>(
+            handle, rocblas_operation_none, rocblas_operation_none, m - nin, nout, nin, &minone, A,
+            shiftA + idx2D(nin, 0, lda), lda, strideA, A, shiftA + idx2D(0, nin, lda), lda, strideA,
+            &one, A, shiftA + idx2D(nin, nin, lda), lda, strideA, batch_count, nullptr);
+        /*                    dimx = 128;
                     dimy = 8;
                     blocks = (m-j-k-jb1-1)/dimx + 1;
                     gridGemm = dim3(blocks,1,batch_count);
@@ -639,20 +637,20 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
                                         idx2D(j + k, j + k + jb1, lda), idx2D(j + k + jb1, j + k + jb1, lda),
                                         lda, strideA);*/
 
-        getrf_panelLU<BATCHED, STRIDED, T>(handle, m-nin, nout, A, shiftA + idx2D(nin, nin, lda), lda, strideA, ipiv + nin, info, batch_count, scalars,
-                      work1, work2, work3, work4, pivotval, pivotidx, optim_mem, pivot);
+        getrf_panelLU<BATCHED, STRIDED, T>(
+            handle, m - nin, nout, A, shiftA + idx2D(nin, nin, lda), lda, strideA, ipiv + nin, info,
+            batch_count, scalars, work1, work2, work3, work4, pivotval, pivotidx, optim_mem, pivot);
 
         if(pivot)
             // adjust pivots, swap rows and check singularity
-            hipLaunchKernelGGL(getrf_check_singularity<T>, grid, threads, 0, stream, n, nin,
-                               nin, A, shiftA, lda, strideA, ipiv, 0, n, ipiv + nin,
-                               info, info);
+            hipLaunchKernelGGL(getrf_check_singularity<T>, grid, threads, 0, stream, n, nin, nin, A,
+                               shiftA, lda, strideA, ipiv, 0, n, ipiv + nin, info, info);
         else
             // check singularity
-            hipLaunchKernelGGL(getrf_npvt_check_singularity<T>, grid, threads, 0, stream, nin,
-                               info, info);
+            hipLaunchKernelGGL(getrf_npvt_check_singularity<T>, grid, threads, 0, stream, nin, info,
+                               info);
     }
-    
+
     return rocblas_status_success;
 }
 
@@ -724,9 +722,8 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     blocks = pivot ? (n - 1) / singular_thds + 1 : 1;
     threads = dim3((pivot ? singular_thds : 1), 1, 1);
     grid = dim3(blocks, batch_count, 1);
-//dim3 gridGemm, thdsGemm;
-//rocblas_int dimx, dimy;
-    
+    //dim3 gridGemm, thdsGemm;
+    //rocblas_int dimx, dimy;
 
     // size of outer blocks
     blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
@@ -747,21 +744,25 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
             jb1 = min(jb - k, blk1); // number of columns/pivots in the inner block
 
             // factorize inner block panel
-            rocsolver_getf2_template<ISBATCHED, T>(
-                handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, iipiv,
-                0, jb1, iinfo, batch_count, scalars, pivotval, pivotidx, pivot);
-//            getrf_panelLU<BATCHED, STRIDED, T>(handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, iipiv,
-//                                        iinfo, batch_count, scalars, work1, work2, work3, work4, pivotval, pivotidx, optim_mem, pivot);
+            rocsolver_getf2_template<ISBATCHED, T>(handle, m - j - k, jb1, A,
+                                                   shiftA + idx2D(j + k, j + k, lda), lda, strideA,
+                                                   ipiv, shiftP + j + k, strideP, info, batch_count,
+                                                   scalars, pivotval, pivotidx, pivot, j + k);
+            //            rocsolver_getf2_template<ISBATCHED, T>(
+            //                handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, iipiv,
+            //                0, jb1, iinfo, batch_count, scalars, pivotval, pivotidx, pivot);
+            //            getrf_panelLU<BATCHED, STRIDED, T>(handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, iipiv,
+            //                                        iinfo, batch_count, scalars, work1, work2, work3, work4, pivotval, pivotidx, optim_mem, pivot);
 
             if(pivot)
                 // adjust pivots, swap rows and check singularity
                 hipLaunchKernelGGL(getrf_check_singularity<T>, grid, threads, 0, stream, n, j + k,
                                    jb1, A, shiftA, lda, strideA, ipiv, shiftP, strideP, iipiv,
                                    iinfo, info);
-            else
-                // check singularity
-                hipLaunchKernelGGL(getrf_npvt_check_singularity<T>, grid, threads, 0, stream, j + k,
-                                   iinfo, info);
+            //            else
+            //                // check singularity
+            //                hipLaunchKernelGGL(getrf_npvt_check_singularity<T>, grid, threads, 0, stream, j + k,
+            //                                   iinfo, info);
 
             // update trailing sub-block
             if(k + jb1 < jb)
@@ -781,7 +782,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                         strideA, A, shiftA + idx2D(j + k, j + k + jb1, lda), lda, strideA, &one, A,
                         shiftA + idx2D(j + k + jb1, j + k + jb1, lda), lda, strideA, batch_count,
                         nullptr);
-/*                    dimx = 128;
+                    /*                    dimx = 128;
                     dimy = 8;
                     blocks = (m-j-k-jb1-1)/dimx + 1;
                     gridGemm = dim3(blocks,1,batch_count);
@@ -812,7 +813,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                     jb, &minone, A, shiftA + idx2D(j + jb, j, lda), lda, strideA, A,
                     shiftA + idx2D(j, j + jb, lda), lda, strideA, &one, A,
                     shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count, nullptr);
-/*                dimx = 8;
+                /*                dimx = 8;
                 dimy = 128;
                 blocks = (m-j-jb-1)/dimx + 1;
                 gridGemm = dim3(blocks,1,batch_count);
