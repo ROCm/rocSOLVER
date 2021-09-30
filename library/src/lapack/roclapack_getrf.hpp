@@ -484,6 +484,47 @@ ROCSOLVER_KERNEL void
         info[id] = iinfo[id] + j;
 }
 
+template <typename T, typename U>
+ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int m,
+                                          const rocblas_int n,
+                                          const rocblas_int offset,
+                                          const rocblas_int blk,
+                                          U AA,
+                                          const rocblas_int shiftA,
+                                          const rocblas_int lda,
+                                          const rocblas_stride stride,
+                                          rocblas_int* pividx)
+{
+    int id = hipBlockIdx_z;
+    int tx = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int bdx = hipBlockDim_x;
+    int j = hipBlockIdx_y * hipBlockDim_y + ty;
+    if(j >= offset)
+        j += blk;
+
+    if(j < n)
+    {
+        // batch instance
+        T* A = load_ptr_batch(AA, id, shiftA, stride);
+        rocblas_int* piv = pividx + id * m;
+
+        // shared mem for temporary values
+        extern __shared__ double lmem[];
+        T* temp = (T*)lmem;
+
+        // do permutations in parallel (each tx perform a row swap)
+        rocblas_int idx1 = piv[tx];
+        rocblas_int idx2 = piv[idx1];
+        temp[tx + ty * bdx] = A[idx1 + j * lda];
+        A[idx1 + j * lda] = A[idx2 + j * lda];
+        __syncthreads();
+
+        // copy temp results back to A
+        A[tx + j * lda] = temp[tx + ty * bdx];
+    }
+}
+
 /** Return the sizes of the different workspace arrays **/
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_getrf_getMemorySize(const rocblas_int m,
@@ -534,6 +575,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         *size_iipiv = 0;
         *size_iinfo = 0;
         *optim_mem = true;
+        return;
     }
     else
     {
@@ -543,7 +585,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
 
         // to store info about singularity and pivots of sub blocks
         *size_iinfo = sizeof(rocblas_int) * batch_count;
-        *size_iipiv = (pivot ? blk * sizeof(rocblas_int) * batch_count : 0);
+        *size_iipiv = pivot ? m * sizeof(rocblas_int) * batch_count : 0;
 
         // extra workspace (for calling TRSM)
         // (Note: TRSM workspace size is less than expected when the number of rows is multiple of 128.
@@ -688,16 +730,28 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-
-    // info=0 (starting with a nonsingular matrix)
-    rocblas_int blocks = (batch_count - 1) / BLOCKSIZE + 1;
-    dim3 grid(blocks, 1, 1);
-    dim3 threads(BLOCKSIZE, 1, 1);
-    hipLaunchKernelGGL(reset_info, grid, threads, 0, stream, info, batch_count, 0);
+    static constexpr bool ISBATCHED = BATCHED || STRIDED;
+    rocblas_int dim = min(m, n);
+    rocblas_int blocks;
+    dim3 grid, threads;
 
     // quick return if no dimensions
     if(m == 0 || n == 0)
+    {
+        blocks = (batch_count - 1) / BLOCKSIZE + 1;
+        grid = dim3(blocks, 1, 1);
+        threads = dim3(BLOCKSIZE, 1, 1);
+        hipLaunchKernelGGL(reset_info, grid, threads, 0, stream, info, batch_count, 0);
         return rocblas_status_success;
+    }
+
+    // size of outer blocks
+    rocblas_int blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
+
+    if(blk == 1)
+        return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
+                                                      shiftP, strideP, info, batch_count, scalars,
+                                                      pivotval, pivotidx, pivot);
 
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
@@ -709,29 +763,33 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     T minone = -1; // constant -1 in host
 
     // number of threads for the check singularity kernel
-    rocblas_int singular_thds;
-    if(n < 4096)
-        singular_thds = 64;
-    else
-        singular_thds = 1024;
+    //    rocblas_int singular_thds;
+    //    if(n < 4096)
+    //        singular_thds = 64;
+    //    else
+    //        singular_thds = 1024;
+
+    //    if(pivot)
+    //    {
+    //        // initialize permutation array
+    //        blocks = (m - 1) / 256 + 1;
+    //        threads = dim3(256,1,1);
+    //        grid = dim3(blocks,batch_count,1);
+    //        hipLaunchKernelGGL(permut_init<T>, grid, threads, 0, stream, m, iipiv);
+    //    }
 
     // prepare kernels
-    rocblas_int dim = min(m, n); // total number of pivots
-    rocblas_int jb, jb1, jb2, blk, blk1, blk2;
-    static constexpr bool ISBATCHED = BATCHED || STRIDED;
-    blocks = pivot ? (n - 1) / singular_thds + 1 : 1;
-    threads = dim3((pivot ? singular_thds : 1), 1, 1);
-    grid = dim3(blocks, batch_count, 1);
+    rocblas_int jb, jb1, blk1, dimx, dimy;
+    size_t lmemsize;
+    //    blocks = pivot ? (n - 1) / singular_thds + 1 : 1;
+    //    threads = dim3((pivot ? singular_thds : 1), 1, 1);
+    //    grid = dim3(blocks, batch_count, 1);
     //dim3 gridGemm, thdsGemm;
     //rocblas_int dimx, dimy;
 
-    // size of outer blocks
-    blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
+    //print_device_matrix(std::cout,"A orig",m,n,A,lda,lda*n,1);
+    //print_device_matrix(std::cout,"iipiv orig",1,m,iipiv,1);
 
-    if(blk == 1)
-        return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
-                                                      shiftP, strideP, info, batch_count, scalars,
-                                                      pivotval, pivotidx, pivot);
     // MAIN LOOP =====>
     for(rocblas_int j = 0; j < dim; j += blk)
     {
@@ -744,10 +802,14 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
             jb1 = min(jb - k, blk1); // number of columns/pivots in the inner block
 
             // factorize inner block panel
-            rocsolver_getf2_template<ISBATCHED, T>(handle, m - j - k, jb1, A,
-                                                   shiftA + idx2D(j + k, j + k, lda), lda, strideA,
-                                                   ipiv, shiftP + j + k, strideP, info, batch_count,
-                                                   scalars, pivotval, pivotidx, pivot, j + k);
+            rocsolver_getf2_template<ISBATCHED, T>(
+                handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, ipiv,
+                shiftP + j + k, strideP, info, batch_count, scalars, pivotval, pivotidx, pivot,
+                j + k, iipiv, m);
+            //print_device_matrix(std::cout,"A after tf2",m,n,A,lda,lda*n,1);
+            //print_device_matrix(std::cout,"ipiv after tf2",1,m,ipiv,1,m,1);
+            //print_device_matrix(std::cout,"permut after tf2",1,m,iipiv,1,m,1);
+
             //            rocsolver_getf2_template<ISBATCHED, T>(
             //                handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, iipiv,
             //                0, jb1, iinfo, batch_count, scalars, pivotval, pivotidx, pivot);
@@ -755,10 +817,23 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
             //                                        iinfo, batch_count, scalars, work1, work2, work3, work4, pivotval, pivotidx, optim_mem, pivot);
 
             if(pivot)
-                // adjust pivots, swap rows and check singularity
-                hipLaunchKernelGGL(getrf_check_singularity<T>, grid, threads, 0, stream, n, j + k,
-                                   jb1, A, shiftA, lda, strideA, ipiv, shiftP, strideP, iipiv,
-                                   iinfo, info);
+            {
+                dimx = jb1;
+                dimy = 1024 / dimx;
+                blocks = (n - 1 - jb1) / dimy + 1;
+                grid = dim3(1, blocks, batch_count);
+                threads = dim3(dimx, dimy, 1);
+                lmemsize = dimx * dimy * sizeof(T);
+
+                // swap rows
+                hipLaunchKernelGGL(getrf_row_permutate<T>, grid, threads, lmemsize, stream, m, n,
+                                   j + k, jb1, A, shiftA + idx2D(j + k, 0, lda), lda, strideA, iipiv);
+
+                //print_device_matrix(std::cout,"A after permutate",m,n,A,lda,lda*n,1);
+            }
+            //                hipLaunchKernelGGL(getrf_check_singularity<T>, grid, threads, 0, stream, n, j + k,
+            //                                   jb1, A, shiftA, lda, strideA, ipiv, shiftP, strideP, iipiv,
+            //                                   iinfo, info);
             //            else
             //                // check singularity
             //                hipLaunchKernelGGL(getrf_npvt_check_singularity<T>, grid, threads, 0, stream, j + k,
@@ -826,6 +901,8 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
         }
     }
     // <===== (MAIN LOOP)
+
+    //print_device_matrix(std::cout,"final A",m,n,A,lda);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;

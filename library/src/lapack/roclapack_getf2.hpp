@@ -101,7 +101,8 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
                                               rocblas_int* pivot_idxA,
                                               rocblas_int* info,
                                               const rocblas_int offset,
-                                              rocblas_int* permut_idx)
+                                              rocblas_int* permut_idx,
+                                              const rocblas_stride stride)
 {
     using S = decltype(std::real(T{}));
 
@@ -112,22 +113,28 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
     {
         // batch instance
         T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
-        rocblas_int pivot_idx = pivot_idxA[id];
-
-        // update pivot index
-        if(tid == j)
-        {
-            rocblas_int* ipiv = ipivA + id * strideP + shiftP;
-            ipiv[j] = pivot_idx + j + offset;
-        }
+        rocblas_int pivot_idx = pivot_idxA[id] + j;
 
         // swap rows
-        if(pivot_idx > 1)
-            swap(A[j + tid * lda], A[pivot_idx + j - 1 + tid * lda]);
+        rocblas_int exch = pivot_idx - 1;
+        if(exch != j)
+            swap(A[j + tid * lda], A[exch + tid * lda]);
 
-        // update info (check singularity)
         if(tid == j)
         {
+            // update pivot index
+            rocblas_int* ipiv = ipivA + id * strideP + shiftP;
+            ipiv[j] = pivot_idx + offset;
+
+            // update row order of final permutated matrix
+            if(permut_idx)
+            {
+                rocblas_int* permut = permut_idx + id * stride;
+                if(exch != j)
+                    swap(permut[j], permut[exch]);
+            }
+
+            // update info (check singularity)
             if(A[j + j * lda] == 0)
             {
                 pivot_val[id] = 1;
@@ -193,6 +200,39 @@ ROCSOLVER_KERNEL void __launch_bounds__(IAMAX_THDS) getf2_iamax(const rocblas_in
     // (after the reduction, the maximum of the elements is in sval[0] and sidx[0])
     if(tid == 0)
         pivotidx[bid] = sidx[0];
+}
+
+inline rocblas_int getf2_get_checksingularity_blksize(const rocblas_int n)
+{
+    rocblas_int singular_thds;
+
+    if(n < 1024)
+        singular_thds = 64;
+    else if(n < 2048)
+        singular_thds = 128;
+    else if(n < 4096)
+        singular_thds = 256;
+    else if(n < 8192)
+        singular_thds = 512;
+    else
+        singular_thds = 1024;
+
+    return singular_thds;
+}
+
+template <typename T>
+ROCSOLVER_KERNEL void
+    getf2_permut_init(const rocblas_int m, rocblas_int* permutA, const rocblas_stride stride)
+{
+    int id = hipBlockIdx_y;
+    int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    // batch instance
+    rocblas_int* permut = permutA + id * stride;
+
+    // initialize
+    if(i < m)
+        permut[i] = i;
 }
 
 inline void getf2_get_ger_blksize(const rocblas_int m,
@@ -343,7 +383,8 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                                         rocblas_int* pivotidx,
                                         const bool pivot,
                                         const rocblas_int offset = 0,
-                                        rocblas_int* permut_idx = nullptr)
+                                        rocblas_int* permut_idx = nullptr,
+                                        const rocblas_stride stride = 0)
 {
     ROCSOLVER_ENTER("getf2", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
                     "bc:", batch_count);
@@ -355,24 +396,33 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
-    dim3 gridReset(blocksReset, 1, 1);
-    dim3 threadsReset(BLOCKSIZE, 1, 1);
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    dim3 grid(blocks, 1, 1);
+    dim3 threads(256, 1, 1);
     rocblas_int dim = min(m, n); // total number of pivots
 
     // info=0 (starting with a nonsingular matrix)
     if(offset == 0)
-        hipLaunchKernelGGL(reset_info, gridReset, threadsReset, 0, stream, info, batch_count, 0);
+        hipLaunchKernelGGL(reset_info, grid, threads, 0, stream, info, batch_count, 0);
 
     // quick return if no dimensions
     if(m == 0 || n == 0)
         return rocblas_status_success;
 
+    // initialize permutation array if needed
+    if(permut_idx)
+    {
+        blocks = (m - 1) / 256 + 1;
+        threads = dim3(256, 1, 1);
+        grid = dim3(blocks, batch_count, 1);
+        hipLaunchKernelGGL(getf2_permut_init<T>, grid, threads, 0, stream, m, permut_idx, stride);
+    }
+
 #ifdef OPTIMAL
-    // Use optimized LU factorization for the right sizes
+    // Use optimized LU factorization for small sizes
     if(n <= GETF2_MAX_COLS && m <= GETF2_MAX_THDS)
         return getf2_run_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
-                                  info, batch_count, pivot, offset, permut_idx);
+                                  info, batch_count, pivot, offset, permut_idx, stride);
 #endif
 
     // everything must be executed with scalars on the device
@@ -380,27 +430,13 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
-    // number of threads for the check singularity kernel
-    rocblas_int singular_thds;
-    if(n < 1024)
-        singular_thds = 64;
-    else if(n < 2048)
-        singular_thds = 128;
-    else if(n < 4096)
-        singular_thds = 256;
-    else if(n < 8192)
-        singular_thds = 512;
-    else
-        singular_thds = 1024;
-
     // prepare kernels
-    rocblas_int blocksx;
-    dim3 grid, threads;
+    rocblas_int singular_thds = getf2_get_checksingularity_blksize(n);
     dim3 gridMax(1, batch_count, 1);
     dim3 threadsMax(IAMAX_THDS, 1, 1);
-    rocblas_int blocksPivot = pivot ? (n - 1) / singular_thds + 1 : 1;
+    blocks = pivot ? (n - 1) / singular_thds + 1 : 1;
     dim3 threadsPivot((pivot ? singular_thds : 1), 1, 1);
-    dim3 gridPivot(blocksPivot, batch_count, 1);
+    dim3 gridPivot(blocks, batch_count, 1);
     rocblas_int c, mm, nn;
     rocblas_int sger_thds_x, sger_thds_y;
     size_t lmemsize;
@@ -416,7 +452,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
             // adjust pivot indices, apply row interchanges and check singularity
             hipLaunchKernelGGL(getf2_check_singularity<T>, gridPivot, threadsPivot, 0, stream, n, j,
                                A, shiftA, lda, strideA, ipiv, shiftP, strideP, pivotval, pivotidx,
-                               info, offset, permut_idx);
+                               info, offset, permut_idx, stride);
         }
         else
             // check singularity
@@ -447,9 +483,9 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         {
             lmemsize = sizeof(T) * (sger_thds_x + nn);
             c = (nn - 1) / sger_thds_y;
-            blocksx = (mm - 1) / sger_thds_x + 1;
+            blocks = (mm - 1) / sger_thds_x + 1;
             threads = dim3(sger_thds_x, sger_thds_y, 1);
-            grid = dim3(blocksx, 1, batch_count);
+            grid = dim3(blocks, 1, batch_count);
 
             // scale and update panel trailing matrix with local function
 #define RUN_UPDATE(N)                                                                       \
