@@ -12,6 +12,8 @@ Options:
 
   --get-clang-format          Download clang-format for use with the hooks.
                               This is an alternative to installing the llvm-amdgpu package.
+                              This option may require additional system packages
+                              (e.g., wget, binutils, rpm2cpio, or libtinfo5).
 EOF
 }
 
