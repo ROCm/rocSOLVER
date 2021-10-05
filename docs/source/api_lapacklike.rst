@@ -193,7 +193,7 @@ rocsolver_<type>getri_npvt_outofplace_batched()
 .. doxygenfunction:: rocsolver_sgetri_npvt_outofplace_batched
 
 rocsolver_<type>getri_npvt_outofplace_strided_batched()
------------------------------------------------------
+-------------------------------------------------------
 .. doxygenfunction:: rocsolver_zgetri_npvt_outofplace_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetri_npvt_outofplace_strided_batched
