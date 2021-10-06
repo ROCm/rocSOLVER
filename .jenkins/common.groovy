@@ -40,9 +40,10 @@ def runTestCommand (platform, project, gfilter)
     String sudo = auxiliary.sudo(platform.jenkinsLabel)
     String buildType = project.buildName.contains('Debug') ? 'debug' : 'release'
     def command = """#!/usr/bin/env bash
-                set -x
+                set -ex
                 cd ${project.paths.project_build_prefix}/build/${buildType}/clients/staging
-                ${sudo} GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}
+                ${sudo} ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}
+                ${sudo} ./test-rocsolver-dlopen --gtest_color=yes
                 """
 
     platform.runCommand(this, command)

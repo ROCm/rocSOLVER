@@ -568,6 +568,7 @@ fi
 
 if [[ "${build_clients}" == true ]]; then
   cmake_client_options+=('-DBUILD_CLIENTS_TESTS=ON' '-DBUILD_CLIENTS_BENCHMARKS=ON' '-DBUILD_CLIENTS_SAMPLES=ON')
+  cmake_client_options+=('-DBUILD_TESTING=ON' '-DBUILD_CLIENTS_EXTRA_TESTS=ON')
 fi
 
 if [[ "${build_library}" == false ]]; then

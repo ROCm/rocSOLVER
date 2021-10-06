@@ -24,9 +24,9 @@ constexpr double get_epsilon()
     return std::numeric_limits<S>::epsilon();
 }
 
-#ifdef GOOGLE_TEST
+#ifdef ROCSOLVER_CLIENTS_TEST
 #define ROCSOLVER_TEST_CHECK(T, max_error, tol) ASSERT_LE((max_error), (tol)*get_epsilon<T>())
-#else
+#else // ROCSOLVER_CLIENTS_BENCH
 #define ROCSOLVER_TEST_CHECK(T, max_error, tol)
 #endif
 

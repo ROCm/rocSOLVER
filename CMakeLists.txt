@@ -18,9 +18,12 @@ endif()
 # ROCM_BUILD_ID is added to the package name by rocm-cmake. Unsetting it prevents that.
 unset(ENV{ROCM_BUILD_ID})
 
-# CMake v3.21.0 can identify ROCMClang, but there are some issues with feature detection.
-# For now, disable ROCMClang detection to make it work the same as CMake v3.20 and earlier.
-set(__skip_rocmclang ON)
+# Disable ROCMClang detection to make CMake v3.21 work the same as CMake v3.20 and earlier.
+# https://gitlab.kitware.com/cmake/cmake/-/merge_requests/6533
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21.0 AND CMAKE_VERSION VERSION_LESS 3.21.3)
+  set(__skip_rocmclang ON)
+endif()
+message(STATUS "Using CMake ${CMAKE_VERSION}")
 
 project(rocsolver LANGUAGES CXX)
 
@@ -71,8 +74,6 @@ list(APPEND CMAKE_PREFIX_PATH
   /opt/rocm/hip
 )
 
-option(BUILD_VERBOSE "Output additional build information" OFF)
-
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(DEFAULT_ARMOR_LEVEL 1)
 else()
@@ -91,12 +92,19 @@ option(BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON)
 
 # Include helper functions and wrapper functions
 include(util)
+include(CMakeDependentOption)
+
+option(BUILD_TESTING "Build rocSOLVER tests" OFF)
+if(BUILD_TESTING)
+  enable_testing()
+endif()
 
 option(BUILD_LIBRARY "Build rocSOLVER library" ON)
 option_opposite(BUILD_LIBRARY SKIP_LIBRARY)
-option(BUILD_CLIENTS_TESTS "Build rocSOLVER unit tests" OFF)
-option(BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmarks" OFF)
+option(BUILD_CLIENTS_TESTS "Build rocSOLVER test client" "${BUILD_TESTING}")
+option(BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmark client" OFF)
 option(BUILD_CLIENTS_SAMPLES "Build rocSOLVER samples" OFF)
+cmake_dependent_option(BUILD_CLIENTS_EXTRA_TESTS "Build extra tests" OFF BUILD_TESTING OFF)
 option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
 option(WERROR "Treat warnings as errors" OFF)
