@@ -19,4 +19,7 @@ target_link_libraries(rocsolver-bench PRIVATE
 
 # Turn on f16c intrinsics
 target_compile_options(rocsolver-bench PRIVATE -mf16c)
-target_compile_definitions(rocsolver-bench PRIVATE ROCM_USE_FLOAT16)
+target_compile_definitions(rocsolver-bench PRIVATE
+  ROCM_USE_FLOAT16
+  ROCSOLVER_CLIENTS_BENCH
+)

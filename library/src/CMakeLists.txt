@@ -196,7 +196,7 @@ target_compile_options(rocsolver PRIVATE -Wno-pass-failed)
 
 target_include_directories(rocsolver
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/library/include>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:include>
   PRIVATE
@@ -227,6 +227,7 @@ endif()
 target_compile_definitions(rocsolver PRIVATE
   ROCM_USE_FLOAT16
   ROCBLAS_INTERNAL_API
+  ROCSOLVER_LIBRARY
 )
 
 add_armor_flags(rocsolver "${ARMOR_LEVEL}")

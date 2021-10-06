@@ -85,8 +85,6 @@ add_executable(rocsolver-test
 
 add_armor_flags(rocsolver-test "${ARMOR_LEVEL}")
 
-target_compile_definitions(rocsolver-test PRIVATE GOOGLE_TEST)
-
 if(WIN32)
   file(GLOB third_party_dlls
     LIST_DIRECTORIES OFF
@@ -126,4 +124,12 @@ target_link_libraries(rocsolver-test PRIVATE
 
 # Turn on f16c intrinsics
 target_compile_options(rocsolver-test PRIVATE -mf16c)
-target_compile_definitions(rocsolver-test PRIVATE ROCM_USE_FLOAT16)
+target_compile_definitions(rocsolver-test PRIVATE
+  ROCM_USE_FLOAT16
+  ROCSOLVER_CLIENTS_TEST
+)
+
+add_test(
+  NAME rocsolver-test
+  COMMAND rocsolver-test
+)

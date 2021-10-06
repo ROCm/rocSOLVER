@@ -6,10 +6,6 @@
 
 #include <cinttypes>
 #include <cstdio>
-#include <rocblas.h>
-
-#include "rocblas_init.hpp"
-#include "rocblas_test.hpp"
 
 #include <fmt/core.h>
 #include <rocblas.h>
@@ -32,7 +28,7 @@ public:
         return size;
     }
 
-#ifdef GOOGLE_TEST
+#ifdef ROCSOLVER_CLIENTS_TEST
     U guard[PAD];
     d_vector(size_t s)
         : size(s)
@@ -60,7 +56,7 @@ public:
             fmt::print(stderr, "Error allocating {} bytes ({} GB)\n", bytes, bytes >> 30);
             d = nullptr;
         }
-#ifdef GOOGLE_TEST
+#ifdef ROCSOLVER_CLIENTS_TEST
         else
         {
             if(PAD > 0)
@@ -81,7 +77,7 @@ public:
 
     void device_vector_check(T* d)
     {
-#ifdef GOOGLE_TEST
+#ifdef ROCSOLVER_CLIENTS_TEST
         if(PAD > 0)
         {
             U host[PAD];
@@ -108,7 +104,7 @@ public:
     {
         if(d != nullptr)
         {
-#ifdef GOOGLE_TEST
+#ifdef ROCSOLVER_CLIENTS_TEST
             if(PAD > 0)
             {
                 U host[PAD];

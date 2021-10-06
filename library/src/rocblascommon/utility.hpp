@@ -20,7 +20,7 @@
 typedef rocblas_half rocblas_half8 __attribute__((ext_vector_type(8)));
 typedef rocblas_half rocblas_half2 __attribute__((ext_vector_type(2)));
 
-#ifndef GOOGLE_TEST
+#ifndef ROCSOLVER_CLIENTS_TEST
 extern "C" __device__ rocblas_half2 llvm_fma_v2f16(rocblas_half2,
                                                    rocblas_half2,
                                                    rocblas_half2) __asm("llvm.fma.v2f16");
@@ -162,7 +162,7 @@ void setup_device_pointer_array(hipStream_t stream,
                        src_stride, dst, batch_count);
 }
 */
-#endif // GOOGLE_TEST
+#endif // ROCSOLVER_CLIENTS_TEST
 
 inline bool isAligned(const void* pointer, size_t byte_count)
 {
