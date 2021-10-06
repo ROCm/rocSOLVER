@@ -43,7 +43,9 @@ def runTestCommand (platform, project, gfilter)
                 set -ex
                 cd ${project.paths.project_build_prefix}/build/${buildType}/clients/staging
                 ${sudo} ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}
-                ${sudo} ./test-rocsolver-dlopen --gtest_color=yes
+                if [ -f ./test-rocsolver-dlopen ]; then
+                  ${sudo} ./test-rocsolver-dlopen --gtest_color=yes
+                fi
                 """
 
     platform.runCommand(this, command)
