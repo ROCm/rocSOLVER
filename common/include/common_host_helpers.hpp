@@ -149,7 +149,7 @@ void print_to_stream(std::ostream& os,
                 s += "    ";
             for(int j = 0; j < n; j++)
             {
-                s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
+                s += fmt::format("[{}+{}*i]", A[j * lda + i].real(), A[j * lda + i].imag());
                 if(j < n - 1)
                     s += ", ";
             }

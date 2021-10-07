@@ -76,7 +76,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     {
         // share current column
         common[myrow] = rA[k];
-        __syncthreads();
+        //        __syncthreads();
 
         // search pivot index
         pivot_index = k;
@@ -115,7 +115,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
             if(pivot && permut_idx && pivot_index != k)
                 swap(permut[k], permut[pivot_index]);
         }
-        __syncthreads();
+        //        __syncthreads();
 
         // scale current column and update trailing matrix
         if(myrow > k)
@@ -124,7 +124,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
             for(int j = k + 1; j < DIM; ++j)
                 rA[j] -= rA[k] * common[j];
         }
-        __syncthreads();
+        //        __syncthreads();
     }
 
     // write results to global memory

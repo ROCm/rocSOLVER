@@ -19,10 +19,228 @@
 // number of threads for the iamax reduction kernel
 #define IAMAX_THDS 1024
 
+template <rocblas_int DIM, typename T, typename U>
+ROCSOLVER_KERNEL void getf2_panel_kernel(const rocblas_int m,
+                                         const rocblas_int n,
+                                         U AA,
+                                         const rocblas_int shiftA,
+                                         const rocblas_int lda,
+                                         const rocblas_stride strideA,
+                                         rocblas_int* ipivA,
+                                         const rocblas_int shiftP,
+                                         const rocblas_stride strideP,
+                                         rocblas_int* infoA,
+                                         const rocblas_int batch_count,
+                                         const bool pivot,
+                                         const rocblas_int offset,
+                                         rocblas_int* permut_idx,
+                                         const rocblas_stride stride)
+{
+    using S = decltype(std::real(T{}));
+
+    const int tx = hipThreadIdx_x;
+    const int ty = hipThreadIdx_y;
+    const int id = hipBlockIdx_z;
+    const int bdx = hipBlockDim_x;
+    const int bdy = hipBlockDim_y;
+
+    // batch instance
+    T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
+    rocblas_int *ipiv, *permut;
+    if(pivot)
+    {
+        ipiv = load_ptr_batch<rocblas_int>(ipivA, id, shiftP, strideP);
+        if(permut_idx)
+            permut = permut_idx + id * stride;
+    }
+    rocblas_int* info = infoA + id;
+
+    // shared memory (for communication between threads in group)
+    extern __shared__ double lmem[];
+    T* x = (T*)lmem;
+    T* sval = x + bdx;
+    T* y = sval + bdx;
+    rocblas_int* sidx = (rocblas_int*)(y + n);
+    __shared__ T val;
+
+    // local variables
+    T val1, val2, pivot_val;
+    rocblas_int idx1, idx2, pivot_idx;
+    int myinfo = 0; // to build info
+
+    // init step: read column zero from A
+    if(ty == 0)
+    {
+        val1 = (tx < m) ? A[tx] : 0;
+        idx1 = tx;
+        x[tx] = val1;
+        sval[tx] = val1;
+        sidx[tx] = idx1;
+    }
+
+    // main loop (for each pivot)
+    for(rocblas_int k = 0; k < n; ++k)
+    {
+        // find pivot (maximum in column)
+        __syncthreads();
+        for(int i = bdx / 2; i > 0; i /= 2)
+        {
+            if(tx < i && ty == 0)
+            {
+                val2 = sval[tx + i];
+                idx2 = sidx[tx + i];
+                if(aabs<S>(val1) < aabs<S>(val2))
+                {
+                    sval[tx] = val1 = val2;
+                    sidx[tx] = idx1 = idx2;
+                }
+            }
+            __syncthreads();
+        }
+        pivot_idx = sidx[0]; //after reduction this is the index of max value
+        pivot_val = sval[0];
+
+        // check singularity and scale value for current column
+        if(pivot_val == T(0))
+        {
+            pivot_idx = k;
+            if(myinfo == 0)
+                myinfo = k + 1;
+        }
+        else
+            pivot_val = S(1) / pivot_val;
+
+        // update ipiv
+        if(tx == 0 && ty == 0)
+            ipiv[k] = pivot_idx + 1 + offset;
+
+        // update column k
+        if(tx != pivot_idx)
+        {
+            pivot_val *= x[tx];
+            if(ty == 0 && tx >= k && tx < m)
+                A[tx + k * lda] = pivot_val;
+        }
+
+        // put pivot row in shared mem
+        if(tx < n && ty == 0)
+        {
+            y[tx] = A[pivot_idx + tx * lda];
+            if(tx == k)
+                val = pivot_val;
+        }
+        __syncthreads();
+
+        // swap pivot row with updated row k
+        if(tx < n && ty == 0 && pivot_idx != k)
+        {
+            val1 = (tx == k) ? val : A[k + tx * lda];
+            val1 -= (tx > k) ? val * y[tx] : 0;
+            A[pivot_idx + tx * lda] = val1;
+            A[k + tx * lda] = y[tx];
+            if(tx == k + 1)
+            {
+                x[pivot_idx] = val1;
+                sval[pivot_idx] = val1;
+            }
+            if(pivot && permut_idx && tx == k)
+                swap(permut[k], permut[pivot_idx]);
+        }
+
+        // complete the rank update
+        if(tx > k && tx < m && tx != pivot_idx)
+        {
+            for(int j = ty + k + 2; j < n; j += bdy)
+            {
+                val1 = A[tx + j * lda];
+                val1 -= pivot_val * y[j];
+                A[tx + j * lda] = val1;
+            }
+
+            if(ty == 0 && k < n - 1)
+            {
+                val1 = A[tx + (k + 1) * lda];
+                val1 -= pivot_val * y[k + 1];
+                A[tx + (k + 1) * lda] = val1;
+                x[tx] = val1;
+                sval[tx] = val1;
+            }
+        }
+
+        // update ipiv and prepare for next step
+        if(tx <= k && ty == 0)
+        {
+            val1 = 0;
+            x[tx] = 0;
+            sval[tx] = 0;
+        }
+        idx1 = tx;
+        if(ty == 0)
+            sidx[tx] = idx1;
+    }
+
+    // update info
+    if(tx == 0 && *info == 0 && myinfo > 0 && ty == 0)
+        *info = myinfo + offset;
+}
+
+template <typename T, typename U>
+rocblas_status getf2_run_panel(rocblas_handle handle,
+                               const rocblas_int m,
+                               const rocblas_int n,
+                               U A,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               rocblas_int* ipiv,
+                               const rocblas_int shiftP,
+                               const rocblas_stride strideP,
+                               rocblas_int* info,
+                               const rocblas_int batch_count,
+                               const bool pivot,
+                               const rocblas_int offset,
+                               rocblas_int* permut_idx,
+                               const rocblas_stride stride)
+{
+    // determine sizes
+    rocblas_int dimy, dimx;
+    if(m <= 8)
+        dimx = 8;
+    else if(m <= 16)
+        dimx = 16;
+    else if(m <= 32)
+        dimx = 32;
+    else if(m <= 64)
+        dimx = 64;
+    else if(m <= 128)
+        dimx = 128;
+    else if(m <= 256)
+        dimx = 256;
+    else if(m <= 512)
+        dimx = 512;
+    else
+        dimx = 1024;
+    dimy = 1024 / dimx;
+
+    // prepare kernel launch
+    size_t lmemsize = (2 * dimx + n) * sizeof(T) + dimx * sizeof(rocblas_int);
+    dim3 grid(1, 1, batch_count);
+    dim3 block(dimx, dimy, 1);
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    hipLaunchKernelGGL((getf2_panel_kernel<0, T>), grid, block, lmemsize, stream, m, n, A, shiftA,
+                       lda, strideA, ipiv, shiftP, strideP, info, batch_count, pivot, offset,
+                       permut_idx, stride);
+
+    return rocblas_status_success;
+}
+
 /** This kernel executes an optimized scaled rank-update (scal + ger)
     for panel matrices (matrices with less than 128 columns).
     Useful to speedup the factorization of block-columns in getrf **/
-template <rocblas_int N, typename T, typename U>
+template <typename T, typename U>
+//template <rocblas_int N, typename T, typename U>
 ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
                                          const rocblas_int n,
                                          T* pivotval,
@@ -67,21 +285,22 @@ ROCSOLVER_KERNEL void getf2_scale_update(const rocblas_int m,
     if(i < m)
     {
 #pragma unroll
-        for(int c = 0; c < N; ++c)
+        //        for(int c = 0; c < cc; ++c)
+        for(int j = ty; j < n; j += hipBlockDim_y)
         {
-            j = c * hipBlockDim_y + ty;
+            //            j = c * hipBlockDim_y + ty;
             val = A[i + j * lda];
             val -= x[tx] * y[j];
             A[i + j * lda] = val;
         }
 
-        j = N * hipBlockDim_y + ty;
-        if(j < n)
-        {
-            val = A[i + j * lda];
-            val -= x[tx] * y[j];
-            A[i + j * lda] = val;
-        }
+        //        j = N * hipBlockDim_y + ty;
+        //        if(j < n)
+        //        {
+        //            val = A[i + j * lda];
+        //            val -= x[tx] * y[j];
+        //            A[i + j * lda] = val;
+        //        }
     }
 }
 
@@ -419,11 +638,19 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     }
 
 #ifdef OPTIMAL
-    // Use optimized LU factorization for small sizes
-    if(n <= GETF2_MAX_COLS && m <= GETF2_MAX_THDS)
+    // Use specialized kernels for small sizes
+    if(n <= GETF2_MAX_COLS && m <= GETF2_MAX_THDS && m < n)
         return getf2_run_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
                                   info, batch_count, pivot, offset, permut_idx, stride);
 #endif
+
+    // use kernel for small panel matrices
+    if(m >= n)
+    {
+        if((n <= 32 && m <= 1024) || (n <= 88 && m <= 512) || (n <= 128 && m <= 256))
+            return getf2_run_panel<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
+                                      info, batch_count, pivot, offset, permut_idx, stride);
+    }
 
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
@@ -479,19 +706,19 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                     shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, batch_count, nullptr);
             }
         }
-        else //if working with a panel matrix
+        else //if working with few columns in matrix
         {
             lmemsize = sizeof(T) * (sger_thds_x + nn);
-            c = (nn - 1) / sger_thds_y;
+            //            c = (nn - 1) / sger_thds_y;
             blocks = (mm - 1) / sger_thds_x + 1;
             threads = dim3(sger_thds_x, sger_thds_y, 1);
             grid = dim3(blocks, 1, batch_count);
 
-            // scale and update panel trailing matrix with local function
-#define RUN_UPDATE(N)                                                                       \
-    hipLaunchKernelGGL((getf2_scale_update<N, T>), grid, threads, lmemsize, stream, mm, nn, \
-                       pivotval, A, shiftA + idx2D(j, j, lda), lda, strideA);
-
+            // scale and update trailing matrix with local function
+            //#define RUN_UPDATE(N)
+            hipLaunchKernelGGL((getf2_scale_update<T>), grid, threads, lmemsize, stream, mm, nn,
+                               pivotval, A, shiftA + idx2D(j, j, lda), lda, strideA);
+            /*
             switch(c)
             {
             case 0: RUN_UPDATE(0); break;
@@ -559,7 +786,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
             case 62: RUN_UPDATE(62); break;
             case 63: RUN_UPDATE(63); break;
             default: ROCSOLVER_UNREACHABLE();
-            }
+            }*/
         }
     }
 
