@@ -31,7 +31,7 @@ double* create_example_matrix(rocblas_int *M_out,
 }
 
 // We use rocsolver_dgeqrf to factor a real M-by-N matrix, A.
-// See https://rocsolver.readthedocs.io/en/latest/userguide_api.html#c.rocsolver_dgeqrf
+// See https://rocsolver.readthedocs.io/en/latest/api_lapackfunc.html#c.rocsolver_dgeqrf
 // and https://www.netlib.org/lapack/explore-html/df/dc5/group__variants_g_ecomputational_ga3766ea903391b5cf9008132f7440ec7b.html
 int main() {
   rocblas_int M;          // rows
