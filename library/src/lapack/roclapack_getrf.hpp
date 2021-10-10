@@ -14,58 +14,6 @@
 #include "roclapack_getf2.hpp"
 #include "rocsolver.h"
 
-template <typename T, typename U>
-ROCSOLVER_KERNEL void getrf_panelgemm(const rocblas_int m,
-                                      const rocblas_int n,
-                                      const rocblas_int k,
-                                      U AA,
-                                      const rocblas_int shift,
-                                      const rocblas_int shiftA,
-                                      const rocblas_int shiftB,
-                                      const rocblas_int shiftC,
-                                      const rocblas_int lda,
-                                      const rocblas_stride stride)
-{
-    // indices
-    rocblas_int bid = hipBlockIdx_z;
-    rocblas_int tx = hipThreadIdx_x;
-    rocblas_int ty = hipThreadIdx_y;
-    rocblas_int bdimx = hipBlockDim_x;
-    rocblas_int bdimy = hipBlockDim_y;
-    rocblas_int i = hipBlockIdx_x * bdimx + tx;
-
-    // batch instance
-    T* A = load_ptr_batch(AA, bid, shift + shiftA, stride);
-    T* B = load_ptr_batch(AA, bid, shift + shiftB, stride);
-    T* C = load_ptr_batch(AA, bid, shift + shiftC, stride);
-
-    // shared mem and local arrays
-    extern __shared__ double lmem[];
-    T* a = (T*)lmem;
-    T* b = (T*)lmem + bdimx * k;
-    T c;
-
-    // read block A into shared mem (row major order)
-    for(int j = ty; j < k; j += bdimy)
-        a[tx * k + j] = A[i + j * lda];
-
-    // for each column of B and C
-    for(int j = ty; j < n; j += bdimy)
-    {
-        // read b and c
-        for(int ii = tx; ii < k; ii += bdimx)
-            b[ii + j * k] = B[ii + j * lda];
-        c = C[i + j * lda];
-        __syncthreads();
-
-        // update c
-        for(int kk = 0; kk < k; ++kk)
-            c -= a[tx * k + kk] * b[kk + j * k];
-
-        // write back to global memory
-        C[i + j * lda] = c;
-    }
-}
 
 /** This function returns the outer block size based on defined variables
     tunable by the user (defined in ideal_sizes.hpp) **/
@@ -418,72 +366,8 @@ inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bo
     return blk;
 }
 
-/** This kernel updates the chosen pivots, checks singularity and
-    interchanges rows all at once (pivoting + laswp)**/
-template <typename T, typename U>
-ROCSOLVER_KERNEL void getrf_check_singularity(const rocblas_int n,
-                                              const rocblas_int j,
-                                              const rocblas_int jb,
-                                              U AA,
-                                              const rocblas_int shiftA,
-                                              const rocblas_int lda,
-                                              const rocblas_stride strideA,
-                                              rocblas_int* ipivA,
-                                              const rocblas_int shiftP,
-                                              const rocblas_stride strideP,
-                                              rocblas_int* iipivA,
-                                              const rocblas_int* iinfo,
-                                              rocblas_int* info)
-{
-    int id = hipBlockIdx_y;
-    int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-
-    if(tid < n)
-    {
-        // update info (check singularity)
-        //        if(tid == j && info[id] == 0 && iinfo[id] > 0)
-        //            info[id] = iinfo[id] + j;
-
-        //        T orig;
-        //        rocblas_int* iipiv = iipivA + id * jb;
-        T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
-        rocblas_int* ipiv = ipivA + id * strideP + shiftP;
-
-        // update ipiv (pivots in columns j : j+jb-1)
-        if(tid >= j && tid < j + jb)
-        {
-            //            rocblas_int* ipiv = ipivA + id * strideP + shiftP;
-            //            ipiv[tid] = iipiv[tid - j] + j;
-        }
-
-        // swap rows in columns 0 : j-1 and j+jb : n-1
-        else
-        {
-            for(rocblas_int i = j; i < j + jb; ++i)
-            {
-                //                rocblas_int exch = iipiv[i - j] + j - 1;
-                rocblas_int exch = ipiv[i] - 1;
-
-                // will exchange rows i and exch if they are not the same
-                if(exch != i)
-                    swap(A[i + tid * lda], A[exch + tid * lda]);
-            }
-        }
-    }
-}
-
-/** non-pivoting version **/
-template <typename T>
-ROCSOLVER_KERNEL void
-    getrf_npvt_check_singularity(const rocblas_int j, const rocblas_int* iinfo, rocblas_int* info)
-{
-    int id = hipBlockIdx_y;
-
-    // update info (check singularity)
-    if(info[id] == 0 && iinfo[id] > 0)
-        info[id] = iinfo[id] + j;
-}
-
+/** Execute all permutations dictated by the panel factorization
+    in parallel (concurrency by rows and columns) **/
 template <typename T, typename U>
 ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int m,
                                           const rocblas_int n,
@@ -601,102 +485,6 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-rocblas_status getrf_panelLU(rocblas_handle handle,
-                             const rocblas_int m,
-                             const rocblas_int n,
-                             U A,
-                             const rocblas_int shiftA,
-                             const rocblas_int lda,
-                             const rocblas_stride strideA,
-                             rocblas_int* ipiv,
-                             rocblas_int* info,
-                             const rocblas_int batch_count,
-                             T* scalars,
-                             void* work1,
-                             void* work2,
-                             void* work3,
-                             void* work4,
-                             T* pivotval,
-                             rocblas_int* pivotidx,
-                             const bool optim_mem,
-                             const bool pivot)
-{
-    static constexpr bool ISBATCHED = BATCHED || STRIDED;
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
-
-    // constants to use when calling rocablas functions
-    T one = 1; // constant 1 in host
-    T minone = -1; // constant -1 in host
-
-    rocblas_int blocks = pivot ? (n - 1) / 64 + 1 : 1;
-    dim3 threads((pivot ? 64 : 1), 1, 1);
-    dim3 grid(blocks, batch_count, 1);
-
-    if(n <= 128)
-    {
-        return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
-                                                      0, n, info, batch_count, scalars, pivotval,
-                                                      pivotidx, pivot);
-    }
-
-    else
-    {
-        rocblas_int nin = n / 2;
-        rocblas_int nout = n - nin;
-
-        getrf_panelLU<BATCHED, STRIDED, T>(handle, m, nin, A, shiftA, lda, strideA, ipiv, info,
-                                           batch_count, scalars, work1, work2, work3, work4,
-                                           pivotval, pivotidx, optim_mem, pivot);
-
-        if(pivot)
-            // adjust pivots, swap rows and check singularity
-            hipLaunchKernelGGL(getrf_check_singularity<T>, grid, threads, 0, stream, n, 0, nin, A,
-                               shiftA, lda, strideA, ipiv, 0, n, ipiv, info, info);
-        //        else
-        //            // check singularity
-        //            hipLaunchKernelGGL(getrf_npvt_check_singularity<T>, grid, threads, 0, stream, 0,
-        //                               info, info);
-
-        // update trailing sub-block
-        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
-                                     rocblas_operation_none, rocblas_diagonal_unit, nin, nout, &one,
-                                     A, shiftA, lda, strideA, A, shiftA + idx2D(0, nin, lda), lda,
-                                     strideA, batch_count, optim_mem, work1, work2, work3, work4);
-
-        rocblasCall_gemm<BATCHED, STRIDED, T>(
-            handle, rocblas_operation_none, rocblas_operation_none, m - nin, nout, nin, &minone, A,
-            shiftA + idx2D(nin, 0, lda), lda, strideA, A, shiftA + idx2D(0, nin, lda), lda, strideA,
-            &one, A, shiftA + idx2D(nin, nin, lda), lda, strideA, batch_count, nullptr);
-        /*                    dimx = 128;
-                    dimy = 8;
-                    blocks = (m-j-k-jb1-1)/dimx + 1;
-                    gridGemm = dim3(blocks,1,batch_count);
-                    thdsGemm = dim3(dimx,dimy,1);
-                    size_t lmemsize = jb1*(dimx+dimy)*sizeof(T);
-                    hipLaunchKernelGGL((getrf_panelgemm<T>), gridGemm, thdsGemm, lmemsize, stream,
-                                        m-j-k-jb1, jb-k-jb1, jb1, A, shiftA, idx2D(j + k + jb1, j + k, lda),
-                                        idx2D(j + k, j + k + jb1, lda), idx2D(j + k + jb1, j + k + jb1, lda),
-                                        lda, strideA);*/
-
-        getrf_panelLU<BATCHED, STRIDED, T>(
-            handle, m - nin, nout, A, shiftA + idx2D(nin, nin, lda), lda, strideA, ipiv + nin, info,
-            batch_count, scalars, work1, work2, work3, work4, pivotval, pivotidx, optim_mem, pivot);
-
-        if(pivot)
-            // adjust pivots, swap rows and check singularity
-            hipLaunchKernelGGL(getrf_check_singularity<T>, grid, threads, 0, stream, n, nin, nin, A,
-                               shiftA, lda, strideA, ipiv, 0, n, ipiv + nin, info, info);
-        else
-            // check singularity
-            hipLaunchKernelGGL(getrf_npvt_check_singularity<T>, grid, threads, 0, stream, nin, info,
-                               info);
-    }
-
-    return rocblas_status_success;
-}
-
-template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,
@@ -761,34 +549,9 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     // constants to use when calling rocablas functions
     T one = 1; // constant 1 in host
     T minone = -1; // constant -1 in host
-
-    // number of threads for the check singularity kernel
-    //    rocblas_int singular_thds;
-    //    if(n < 4096)
-    //        singular_thds = 64;
-    //    else
-    //        singular_thds = 1024;
-
-    //    if(pivot)
-    //    {
-    //        // initialize permutation array
-    //        blocks = (m - 1) / 256 + 1;
-    //        threads = dim3(256,1,1);
-    //        grid = dim3(blocks,batch_count,1);
-    //        hipLaunchKernelGGL(permut_init<T>, grid, threads, 0, stream, m, iipiv);
-    //    }
-
-    // prepare kernels
+    
     rocblas_int jb, jb1, blk1, dimx, dimy;
     size_t lmemsize;
-    //    blocks = pivot ? (n - 1) / singular_thds + 1 : 1;
-    //    threads = dim3((pivot ? singular_thds : 1), 1, 1);
-    //    grid = dim3(blocks, batch_count, 1);
-    //dim3 gridGemm, thdsGemm;
-    //rocblas_int dimx, dimy;
-
-    //print_device_matrix(std::cout,"A orig",m,n,A,lda,lda*n,1);
-    //print_device_matrix(std::cout,"iipiv orig",1,m,iipiv,1);
 
     // MAIN LOOP =====>
     for(rocblas_int j = 0; j < dim; j += blk)
@@ -806,15 +569,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                 handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, ipiv,
                 shiftP + j + k, strideP, info, batch_count, scalars, pivotval, pivotidx, pivot,
                 j + k, iipiv, m);
-            //print_device_matrix(std::cout,"A after tf2",m,n,A,lda,lda*n,1);
-            //print_device_matrix(std::cout,"ipiv after tf2",1,m,ipiv,1,m,1);
-            //print_device_matrix(std::cout,"permut after tf2",1,m,iipiv,1,m,1);
-
-            //            rocsolver_getf2_template<ISBATCHED, T>(
-            //                handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, iipiv,
-            //                0, jb1, iinfo, batch_count, scalars, pivotval, pivotidx, pivot);
-            //            getrf_panelLU<BATCHED, STRIDED, T>(handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, iipiv,
-            //                                        iinfo, batch_count, scalars, work1, work2, work3, work4, pivotval, pivotidx, optim_mem, pivot);
 
             if(pivot)
             {
@@ -828,16 +582,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                 // swap rows
                 hipLaunchKernelGGL(getrf_row_permutate<T>, grid, threads, lmemsize, stream, m, n,
                                    j + k, jb1, A, shiftA + idx2D(j + k, 0, lda), lda, strideA, iipiv);
-
-                //print_device_matrix(std::cout,"A after permutate",m,n,A,lda,lda*n,1);
             }
-            //                hipLaunchKernelGGL(getrf_check_singularity<T>, grid, threads, 0, stream, n, j + k,
-            //                                   jb1, A, shiftA, lda, strideA, ipiv, shiftP, strideP, iipiv,
-            //                                   iinfo, info);
-            //            else
-            //                // check singularity
-            //                hipLaunchKernelGGL(getrf_npvt_check_singularity<T>, grid, threads, 0, stream, j + k,
-            //                                   iinfo, info);
 
             // update trailing sub-block
             if(k + jb1 < jb)
@@ -857,16 +602,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                         strideA, A, shiftA + idx2D(j + k, j + k + jb1, lda), lda, strideA, &one, A,
                         shiftA + idx2D(j + k + jb1, j + k + jb1, lda), lda, strideA, batch_count,
                         nullptr);
-                    /*                    dimx = 128;
-                    dimy = 8;
-                    blocks = (m-j-k-jb1-1)/dimx + 1;
-                    gridGemm = dim3(blocks,1,batch_count);
-                    thdsGemm = dim3(dimx,dimy,1);
-                    size_t lmemsize = jb1*(dimx+dimy)*sizeof(T);
-                    hipLaunchKernelGGL((getrf_panelgemm<T>), gridGemm, thdsGemm, lmemsize, stream,
-                                        m-j-k-jb1, jb-k-jb1, jb1, A, shiftA, idx2D(j + k + jb1, j + k, lda),
-                                        idx2D(j + k, j + k + jb1, lda), idx2D(j + k + jb1, j + k + jb1, lda),
-                                        lda, strideA);*/
                 }
             }
         }
@@ -888,21 +623,10 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                     jb, &minone, A, shiftA + idx2D(j + jb, j, lda), lda, strideA, A,
                     shiftA + idx2D(j, j + jb, lda), lda, strideA, &one, A,
                     shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count, nullptr);
-                /*                dimx = 8;
-                dimy = 128;
-                blocks = (m-j-jb-1)/dimx + 1;
-                gridGemm = dim3(blocks,1,batch_count);
-                thdsGemm = dim3(dimx,dimy,1);
-                size_t lmemsize = jb*(dimx+dimy)*sizeof(T);
-                hipLaunchKernelGGL((getrf_panelgemm<T>), gridGemm, thdsGemm, 0, stream,
-                                    m-j-jb, n-j-jb, jb, A, shiftA, idx2D(j + jb, j, lda), idx2D(j, j + jb, lda),
-                                    idx2D(j + jb, j + jb, lda), lda, strideA);*/
             }
         }
     }
     // <===== (MAIN LOOP)
-
-    //print_device_matrix(std::cout,"final A",m,n,A,lda);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
