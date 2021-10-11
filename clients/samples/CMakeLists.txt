@@ -28,15 +28,23 @@ add_executable(example-c-hmm
 add_executable(example-cpp-logging
   example_logging.cpp
 )
+add_executable(example-c-batched
+  example_batched.c
+)
+add_executable(example-cpp-strided-batched
+  example_strided_batched.cpp
+)
 
 # group sample programs by language
 set(c_samples
   example-c-basic
   example-c-hmm
+  example-c-batched
 )
 set(cpp_samples
   example-cpp-basic
   example-cpp-logging
+  example-cpp-strided-batched
 )
 if(UNIX)
   set(fortran_samples
