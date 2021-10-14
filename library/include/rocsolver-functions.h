@@ -1018,14 +1018,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlatrd(rocblas_handle handle,
     @param[out]
     ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
               The vector of pivot indices. Elements of ipiv are 1-based indices.
-              For 1 <= k <= n, if ipiv[k] > 0 then rows and columns k and ipiv[k]
-              were interchanged and D[k,k] is a 1-by-1 diagonal block.
-              If, instead, ipiv[k] = ipiv[k-1] < 0 and uplo is upper (or ipiv[k]
-              = ipiv[k+1] < 0 and uplo is lower), then rows and columns k-1 and
-              -ipiv[k] (or rows and columns k+1 and -ipiv[k]) were interchanged
-              and D[k-1,k-1] to D[k,k] (or D[k,k] to D[k+1,k+1]) is a 2-by-2
+              If uplo is upper, then only the last kb elements of ipiv will be
+              set. For n - kb < k <= n, if ipiv[k] > 0 then rows and columns k
+              and ipiv[k] were interchanged and D[k,k] is a 1-by-1 diagonal block.
+              If, instead, ipiv[k] = ipiv[k-1] < 0, then rows and columns k-1
+              and -ipiv[k] were interchanged and D[k-1,k-1] to D[k,k] is a 2-by-2
               diagonal block.
-              Only the last kb elements of ipiv will be set by LASYF.
+              If uplo is lower, then only the first kb elements of ipiv will be
+              set. For 1 <= k <= kb, if ipiv[k] > 0 then rows and columns k
+              and ipiv[k] were interchanged and D[k,k] is a 1-by-1 diagonal block.
+              If, instead, ipiv[k] = ipiv[k+1] < 0, then rows and columns k+1
+              and -ipiv[k] were interchanged and D[k,k] to D[k+1,k+1] is a 2-by-2
+              diagonal block.
     @param[out]
     info      pointer to a rocblas_int on the GPU.\n
               If info = 0, successful exit.

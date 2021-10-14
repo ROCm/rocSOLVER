@@ -16,53 +16,6 @@
 // number of threads for the lasyf kernel (currently not tunable)
 #define LASYF_MAX_THDS 256
 
-/** Device function to compute y = y - Ax (gemv) **/
-template <typename T>
-__device__ void lasyf_gemv(const rocblas_int tid,
-                           const rocblas_int m,
-                           const rocblas_int n,
-                           T* A,
-                           const rocblas_int lda,
-                           T* x,
-                           const rocblas_int incx,
-                           T* y,
-                           const rocblas_int incy,
-                           T* temp)
-{
-    for(int i = tid; i < m; i += LASYF_MAX_THDS)
-    {
-        temp[tid] = y[i * incy];
-        for(int j = 0; j < n; j++)
-            temp[tid] -= A[i + j * lda] * x[j * incx];
-        y[i * incy] = temp[tid];
-    }
-}
-
-/** Device function to compute C = C - A B' (gemm) **/
-template <typename T>
-__device__ void lasyf_gemm(const rocblas_int tid,
-                           const rocblas_int m,
-                           const rocblas_int n,
-                           const rocblas_int k,
-                           T* A,
-                           const rocblas_int lda,
-                           T* B,
-                           const rocblas_int ldb,
-                           T* C,
-                           const rocblas_int ldc,
-                           T* temp)
-{
-    for(int e = tid; e < m * n; e += LASYF_MAX_THDS)
-    {
-        int i = e % m;
-        int j = e / m;
-        temp[tid] = C[i + j * ldc];
-        for(int l = 0; l < k; l++)
-            temp[tid] -= A[i + l * lda] * B[j + l * ldb];
-        C[i + j * ldc] = temp[tid];
-    }
-}
-
 template <typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     lasyf_kernel_upper(const rocblas_int n,
@@ -84,6 +37,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
 
     using S = decltype(std::real(T{}));
     const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
+    const T one = 1;
+    const T minone = -1;
     const int ldw = n;
 
     // get array pointers
@@ -117,8 +72,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         __syncthreads();
         if(k < n - 1)
         {
-            lasyf_gemv(tid, k + 1, n - k - 1, A + (k + 1) * lda, lda, W + k + (kw + 1) * ldw, ldw,
-                       W + kw * ldw, 1, sval);
+            gemv<LASYF_MAX_THDS>(tid, k + 1, n - k - 1, &minone, A + (k + 1) * lda, lda,
+                                 W + k + (kw + 1) * ldw, ldw, &one, W + kw * ldw, 1);
             __syncthreads();
         }
 
@@ -156,8 +111,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 __syncthreads();
                 if(k < n - 1)
                 {
-                    lasyf_gemv(tid, k + 1, n - k - 1, A + (k + 1) * lda, lda,
-                               W + imax + (kw + 1) * ldw, ldw, W + (kw - 1) * ldw, 1, sval);
+                    gemv<LASYF_MAX_THDS>(tid, k + 1, n - k - 1, &minone, A + (k + 1) * lda, lda,
+                                         W + imax + (kw + 1) * ldw, ldw, &one, W + (kw - 1) * ldw, 1);
                     __syncthreads();
                 }
 
@@ -274,10 +229,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     {
         int jb = min(nb, k - j + 1);
         for(i = j; i < j + jb; i++)
-            lasyf_gemv(tid, i - j + 1, n - k - 1, A + j + (k + 1) * lda, lda,
-                       W + i + (kw + 1) * ldw, ldw, A + j + i * lda, 1, sval);
-        lasyf_gemm(tid, j, jb, n - k - 1, A + (k + 1) * lda, lda, W + j + (kw + 1) * ldw, ldw,
-                   A + j * lda, lda, sval);
+            gemv<LASYF_MAX_THDS>(tid, i - j + 1, n - k - 1, &minone, A + j + (k + 1) * lda, lda,
+                                 W + i + (kw + 1) * ldw, ldw, &one, A + j + i * lda, 1);
+        gemm_btrans<LASYF_MAX_THDS>(tid, j, jb, n - k - 1, &minone, A + (k + 1) * lda, lda,
+                                    W + j + (kw + 1) * ldw, ldw, &one, A + j * lda, lda);
     }
     __syncthreads();
 
@@ -332,6 +287,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
 
     using S = decltype(std::real(T{}));
     const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
+    const T one = 1;
+    const T minone = -1;
     const int ldw = n;
 
     // get array pointers
@@ -362,7 +319,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         for(i = tid; i < n - k; i += LASYF_MAX_THDS)
             W[(k + i) + k * ldw] = A[(k + i) + k * lda];
         __syncthreads();
-        lasyf_gemv(tid, n - k, k, A + k, lda, W + k, ldw, W + k + k * ldw, 1, sval);
+        gemv<LASYF_MAX_THDS>(tid, n - k, k, &minone, A + k, lda, W + k, ldw, &one, W + k + k * ldw,
+                             1);
         __syncthreads();
 
         kstep = 1;
@@ -397,7 +355,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 for(i = tid; i < n - imax; i += LASYF_MAX_THDS)
                     W[(imax + i) + (k + 1) * ldw] = A[(imax + i) + imax * lda];
                 __syncthreads();
-                lasyf_gemv(tid, n - k, k, A + k, lda, W + imax, ldw, W + k + (k + 1) * ldw, 1, sval);
+                gemv<LASYF_MAX_THDS>(tid, n - k, k, &minone, A + k, lda, W + imax, ldw, &one,
+                                     W + k + (k + 1) * ldw, 1);
                 __syncthreads();
 
                 // find max off-diagonal entry in row imax
@@ -512,10 +471,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     {
         int jb = min(nb, n - j);
         for(i = j; i < j + jb; i++)
-            lasyf_gemv(tid, j + jb - i, k, A + i, lda, W + i, ldw, A + i + i * lda, 1, sval);
+            gemv<LASYF_MAX_THDS>(tid, j + jb - i, k, &minone, A + i, lda, W + i, ldw, &one,
+                                 A + i + i * lda, 1);
         if(j + jb < n)
-            lasyf_gemm(tid, n - j - jb, jb, k, A + (j + jb), lda, W + j, ldw,
-                       A + (j + jb) + j * lda, lda, sval);
+            gemm_btrans<LASYF_MAX_THDS>(tid, n - j - jb, jb, k, &minone, A + (j + jb), lda, W + j,
+                                        ldw, &one, A + (j + jb) + j * lda, lda);
     }
     __syncthreads();
 
