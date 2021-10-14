@@ -10,6 +10,7 @@
 #include <rocblas.h>
 
 #include "lib_macros.hpp"
+#include "rocsolver_logger.hpp"
 
 #define IOTA_MAX_THDS 32
 
@@ -33,5 +34,5 @@ void init_scalars(rocblas_handle handle, T* scalars)
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-    hipLaunchKernelGGL(iota_n<T>, dim3(1), dim3(IOTA_MAX_THDS), 0, stream, scalars, 3, -1);
+    ROCSOLVER_LAUNCH_KERNEL(iota_n<T>, dim3(1), dim3(IOTA_MAX_THDS), 0, stream, scalars, 3, -1);
 }

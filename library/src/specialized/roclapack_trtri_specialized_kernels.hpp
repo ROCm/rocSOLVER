@@ -121,9 +121,9 @@ void trti2_run_small(rocblas_handle handle,
                      const rocblas_stride strideA,
                      const rocblas_int batch_count)
 {
-#define RUN_TRTI2_SMALL(DIM)                                                                \
-    hipLaunchKernelGGL((trti2_kernel_small<DIM, T>), grid, block, 0, stream, uplo, diag, A, \
-                       shiftA, lda, strideA)
+#define RUN_TRTI2_SMALL(DIM)                                                                     \
+    ROCSOLVER_LAUNCH_KERNEL((trti2_kernel_small<DIM, T>), grid, block, 0, stream, uplo, diag, A, \
+                            shiftA, lda, strideA)
 
     dim3 grid(batch_count, 1, 1);
     dim3 block(TRTRI_MAX_COLS, 1, 1);

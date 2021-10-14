@@ -143,7 +143,7 @@ rocblas_status rocsolver_gesv_outofplace_template(rocblas_handle handle,
     dim3 threads(BLOCKSIZE, 1, 1);
 
     // info=0 (starting with a nonsingular matrix)
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return if A or B are empty
     if(n == 0 || nrhs == 0)
@@ -159,8 +159,8 @@ rocblas_status rocsolver_gesv_outofplace_template(rocblas_handle handle,
         work2, work3, work4, pivotval, pivotidx, iipiv, iinfo, optim_mem, true);
 
     // copy B to X
-    hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32), 0,
-                       stream, n, nrhs, B, shiftB, ldb, strideB, X, shiftX, ldx, strideX);
+    ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),
+                            0, stream, n, nrhs, B, shiftB, ldb, strideB, X, shiftX, ldx, strideX);
 
     // solve AX = B
     rocsolver_getrs_template<BATCHED, T>(handle, rocblas_operation_none, n, nrhs, A, shiftA, lda,

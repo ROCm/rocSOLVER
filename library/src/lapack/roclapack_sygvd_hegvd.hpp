@@ -139,7 +139,7 @@ rocblas_status rocsolver_sygvd_hegvd_template(rocblas_handle handle,
     dim3 threads(BLOCKSIZE, 1, 1);
 
     // info=0 (starting with no errors)
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
     if(n == 0)
@@ -173,7 +173,8 @@ rocblas_status rocsolver_sygvd_hegvd_template(rocblas_handle handle,
         scalars, work1, work2, work3, (T*)work4, tau, (T**)pivots_workArr);
 
     // combine info from POTRF with info from SYEV/HEEV
-    hipLaunchKernelGGL(sygv_update_info, gridReset, threads, 0, stream, info, iinfo, n, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(sygv_update_info, gridReset, threads, 0, stream, info, iinfo, n,
+                            batch_count);
 
     // backtransform eigenvectors
     if(evect == rocblas_evect_original)

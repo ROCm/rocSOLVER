@@ -111,8 +111,8 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
                                  strideP, batch_count, (T*)work_workArr, Abyx_norms);
 
         // insert one in A(j,j) tobuild/apply the householder matrix
-        hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag, 0,
-                           1, A, shiftA + idx2D(j, j, lda), lda, strideA, 1, true);
+        ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
+                                diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA, 1, true);
 
         // conjugate tau
         if(COMPLEX)
@@ -128,8 +128,8 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
         }
 
         // restore original value of A(j,j)
-        hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag,
-                           0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA, 1);
+        ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
+                                diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA, 1);
 
         // restore tau
         if(COMPLEX)

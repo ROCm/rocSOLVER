@@ -117,8 +117,8 @@ rocblas_status rocsolver_orgql_ungql_template(rocblas_handle handle,
     {
         blocksx = (kk - 1) / 32 + 1;
         blocksy = (n - kk - 1) / 32 + 1;
-        hipLaunchKernelGGL(set_zero<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0,
-                           stream, kk, n - kk, A, shiftA + idx2D(m - kk, 0, lda), lda, strideA);
+        ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0,
+                                stream, kk, n - kk, A, shiftA + idx2D(m - kk, 0, lda), lda, strideA);
 
         rocsolver_org2l_ung2l_template<T>(handle, m - kk, n - kk, k - kk, A, shiftA, lda, strideA,
                                           ipiv, strideP, batch_count, scalars, Abyx_tmptr, workArr);
@@ -149,9 +149,9 @@ rocblas_status rocsolver_orgql_ungql_template(rocblas_handle handle,
         {
             blocksx = (k - j - jb - 1) / 32 + 1;
             blocksy = (jb - 1) / 32 + 1;
-            hipLaunchKernelGGL(set_zero<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0,
-                               stream, k - j - jb, jb, A,
-                               shiftA + idx2D(m - k + j + jb, n - k + j, lda), lda, strideA);
+            ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32),
+                                    0, stream, k - j - jb, jb, A,
+                                    shiftA + idx2D(m - k + j + jb, n - k + j, lda), lda, strideA);
         }
         rocsolver_org2l_ung2l_template<T>(handle, m - k + j + jb, jb, jb, A,
                                           shiftA + idx2D(0, n - k + j, lda), lda, strideA, (ipiv + j),

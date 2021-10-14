@@ -348,7 +348,7 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
     dim3 threads(BLOCKSIZE, 1, 1);
 
     // info = 0
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
     if(n <= 1)
@@ -360,8 +360,8 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
     ssfmin = sqrt(ssfmin) / (eps * eps);
     ssfmax = sqrt(ssfmax) / T(3.0);
 
-    hipLaunchKernelGGL(sterf_kernel<T>, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
-                       strideD, E + shiftE, strideE, info, stack, 30 * n, eps, ssfmin, ssfmax);
+    ROCSOLVER_LAUNCH_KERNEL(sterf_kernel<T>, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
+                            strideD, E + shiftE, strideE, info, stack, 30 * n, eps, ssfmin, ssfmax);
 
     return rocblas_status_success;
 }

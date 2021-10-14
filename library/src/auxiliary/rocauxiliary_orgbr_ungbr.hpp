@@ -162,12 +162,14 @@ rocblas_status rocsolver_orgbr_ungbr_template(rocblas_handle handle,
             rocblas_int blocks = (m - 2) / BS + 1;
 
             // copy
-            hipLaunchKernelGGL(copyshift_right<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
-                               stream, true, m - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
+            ROCSOLVER_LAUNCH_KERNEL(copyshift_right<T>, dim3(blocks, blocks, batch_count),
+                                    dim3(BS, BS), 0, stream, true, m - 1, A, shiftA, lda, strideA,
+                                    work, 0, ldw, strideW);
 
             // shift
-            hipLaunchKernelGGL(copyshift_right<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
-                               stream, false, m - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
+            ROCSOLVER_LAUNCH_KERNEL(copyshift_right<T>, dim3(blocks, blocks, batch_count),
+                                    dim3(BS, BS), 0, stream, false, m - 1, A, shiftA, lda, strideA,
+                                    work, 0, ldw, strideW);
 
             // result
             rocsolver_orgqr_ungqr_template<BATCHED, STRIDED, T>(
@@ -195,12 +197,14 @@ rocblas_status rocsolver_orgbr_ungbr_template(rocblas_handle handle,
             rocblas_int blocks = (n - 2) / BS + 1;
 
             // copy
-            hipLaunchKernelGGL(copyshift_down<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
-                               stream, true, n - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
+            ROCSOLVER_LAUNCH_KERNEL(copyshift_down<T>, dim3(blocks, blocks, batch_count),
+                                    dim3(BS, BS), 0, stream, true, n - 1, A, shiftA, lda, strideA,
+                                    work, 0, ldw, strideW);
 
             // shift
-            hipLaunchKernelGGL(copyshift_down<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
-                               stream, false, n - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
+            ROCSOLVER_LAUNCH_KERNEL(copyshift_down<T>, dim3(blocks, blocks, batch_count),
+                                    dim3(BS, BS), 0, stream, false, n - 1, A, shiftA, lda, strideA,
+                                    work, 0, ldw, strideW);
 
             // result
             rocsolver_orglq_unglq_template<BATCHED, STRIDED, T>(

@@ -172,8 +172,8 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                      (tau + j), strideP, batch_count, work, norms);
 
             // copy to E(j) the corresponding off-diagonal element of A, which is set to 1
-            hipLaunchKernelGGL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
-                               shiftA + idx2D(j + 1, j, lda), strideA, (E + j), strideE);
+            ROCSOLVER_LAUNCH_KERNEL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
+                                    shiftA + idx2D(j + 1, j, lda), strideA, (E + j), strideE);
 
             // compute/update column j of W
             rocblasCall_symv_hemv<T>(
@@ -215,9 +215,9 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
             // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes
             //  available, we can use it instead of the scale_axpy kernel, if it provides
             //  better performance.)
-            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, n - 1 - j, norms, tau + j,
-                               strideP, A, shiftA + idx2D(j + 1, j, lda), strideA, W,
-                               shiftW + idx2D(j + 1, j, ldw), strideW);
+            ROCSOLVER_LAUNCH_KERNEL(scale_axpy<T>, grid_n, threads, 0, stream, n - 1 - j, norms,
+                                    tau + j, strideP, A, shiftA + idx2D(j + 1, j, lda), strideA, W,
+                                    shiftW + idx2D(j + 1, j, ldw), strideW);
         }
     }
 
@@ -264,8 +264,8 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                      batch_count, work, norms);
 
             // copy to E(j) the corresponding off-diagonal element of A, which is set to 1
-            hipLaunchKernelGGL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
-                               shiftA + idx2D(j - 1, j, lda), strideA, (E + j - 1), strideE);
+            ROCSOLVER_LAUNCH_KERNEL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
+                                    shiftA + idx2D(j - 1, j, lda), strideA, (E + j - 1), strideE);
 
             // compute/update column j of W
             rocblasCall_symv_hemv<T>(handle, uplo, j, (scalars + 2), 0, A, shiftA, lda, strideA, A,
@@ -307,9 +307,9 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
             // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes
             //  available, we can use it instead of the scale_axpy kernel, if it provides
             //  better performance.)
-            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, j, norms, tau + j - 1,
-                               strideP, A, shiftA + idx2D(0, j, lda), strideA, W,
-                               shiftW + idx2D(0, jw, ldw), strideW);
+            ROCSOLVER_LAUNCH_KERNEL(scale_axpy<T>, grid_n, threads, 0, stream, j, norms,
+                                    tau + j - 1, strideP, A, shiftA + idx2D(0, j, lda), strideA, W,
+                                    shiftW + idx2D(0, jw, ldw), strideW);
         }
     }
 

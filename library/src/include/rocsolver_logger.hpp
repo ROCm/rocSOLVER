@@ -56,6 +56,17 @@
             _log_token = std::make_unique<rocsolver_logger::scope_guard<T>>(false, handle);   \
         }                                                                                     \
     } while(0)
+#define ROCSOLVER_LAUNCH_KERNEL(name, ...)                                                         \
+    do                                                                                             \
+    {                                                                                              \
+        std::unique_ptr<rocsolver_logger::scope_guard<T>> _kernel_log_token;                       \
+        if(rocsolver_logger::is_logging_enabled())                                                 \
+        {                                                                                          \
+            rocsolver_logger::instance()->log_enter<T>(handle, nullptr, #name);                    \
+            _kernel_log_token = std::make_unique<rocsolver_logger::scope_guard<T>>(false, handle); \
+        }                                                                                          \
+        hipLaunchKernelGGL((name), __VA_ARGS__);                                                   \
+    } while(0)
 
 /***************************************************************************
  * The rocsolver_log_entry struct records function data for trace and
@@ -153,11 +164,17 @@ private:
     template <typename T>
     std::string get_func_name(const char* func_prefix, const char* func_name)
     {
-        return fmt::format("{}_{}{}", func_prefix, rocblas2char_precision<T>, func_name);
+        if(func_prefix)
+            return fmt::format("{}_{}{}", func_prefix, rocblas2char_precision<T>, func_name);
+        else
+            return std::string(func_name);
     }
     std::string get_template_name(const char* func_prefix, const char* func_name)
     {
-        return fmt::format("{}_{}_template", func_prefix, func_name);
+        if(func_prefix)
+            return fmt::format("{}_{}_template", func_prefix, func_name);
+        else
+            return std::string(func_name);
     }
 
     // outputs bench logging
@@ -177,11 +194,19 @@ private:
         int indent_level = level - 1;
         int indent = shift_width * indent_level;
 
-        std::string pairs;
-        pairs_to_string(pairs, ", ", args...);
+        if(sizeof...(Ts) > 0)
+        {
+            std::string pairs;
+            pairs_to_string(pairs, ", ", args...);
 
-        trace_str += fmt::format("{: <{}}{} ({})\n", "", indent,
-                                 get_template_name(func_prefix, func_name), pairs);
+            trace_str += fmt::format("{: <{}}{} ({})\n", "", indent,
+                                     get_template_name(func_prefix, func_name), pairs);
+        }
+        else
+        {
+            trace_str
+                += fmt::format("{: <{}}{}\n", "", indent, get_template_name(func_prefix, func_name));
+        }
     }
 
     // populates profile logging data with information from call_stack
