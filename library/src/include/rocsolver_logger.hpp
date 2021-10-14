@@ -56,16 +56,16 @@
             _log_token = std::make_unique<rocsolver_logger::scope_guard<T>>(false, handle);   \
         }                                                                                     \
     } while(0)
-#define ROCSOLVER_LAUNCH_KERNEL(name, ...)                                                         \
-    do                                                                                             \
-    {                                                                                              \
-        std::unique_ptr<rocsolver_logger::scope_guard<T>> _kernel_log_token;                       \
-        if(rocsolver_logger::is_logging_enabled())                                                 \
-        {                                                                                          \
-            rocsolver_logger::instance()->log_enter<T>(handle, nullptr, #name);                    \
-            _kernel_log_token = std::make_unique<rocsolver_logger::scope_guard<T>>(false, handle); \
-        }                                                                                          \
-        hipLaunchKernelGGL((name), __VA_ARGS__);                                                   \
+#define ROCSOLVER_LAUNCH_KERNEL(name, ...)                                                          \
+    do                                                                                              \
+    {                                                                                               \
+        std::unique_ptr<rocsolver_logger::scope_guard<T>> _kernel_log_token;                        \
+        if(rocsolver_logger::is_logging_enabled() && rocsolver_logger::is_kernel_logging_enabled()) \
+        {                                                                                           \
+            rocsolver_logger::instance()->log_enter<T>(handle, nullptr, #name);                     \
+            _kernel_log_token = std::make_unique<rocsolver_logger::scope_guard<T>>(false, handle);  \
+        }                                                                                           \
+        hipLaunchKernelGGL((name), __VA_ARGS__);                                                    \
     } while(0)
 
 /***************************************************************************
@@ -254,6 +254,14 @@ public:
             && (rocsolver_logger::_instance->layer_mode
                 & (rocblas_layer_mode_log_trace | rocblas_layer_mode_log_bench
                    | rocblas_layer_mode_log_profile));
+    }
+
+    // returns true if logging facilities are enabled for kernels
+    static __forceinline__ bool is_kernel_logging_enabled()
+    {
+        return (rocsolver_logger::_instance != nullptr)
+            && (rocsolver_logger::_instance->layer_mode
+                & rocblas_layer_mode_ex_log_kernel);
     }
 
     // logging function to be called upon entering a top-level (i.e. impl) function
