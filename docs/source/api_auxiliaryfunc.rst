@@ -10,6 +10,7 @@ The auxiliary functions are divided into the following categories:
 * :ref:`householder`. Generation and application of Householder matrices.
 * :ref:`bidiag`. Computations specialized in bidiagonal matrices.
 * :ref:`tridiag`. Computations specialized in tridiagonal matrices.
+* :ref:`symmetric`. Computations specialized in symmetric matrices.
 * :ref:`orthonormal`. Generation and application of orthonormal matrices.
 * :ref:`unitary`. Generation and application of unitary matrices.
 
@@ -204,6 +205,29 @@ rocsolver_<type>stedc()
 .. doxygenfunction:: rocsolver_dstedc
    :outline:
 .. doxygenfunction:: rocsolver_sstedc
+
+
+
+.. _symmetric:
+
+Symmetric matrices
+==================================
+
+.. contents:: List of functions for symmetric matrices
+   :local:
+   :backlinks: top
+
+.. _lasyf:
+
+rocsolver_<type>lasyf()
+---------------------------------------
+.. doxygenfunction:: rocsolver_zlasyf
+   :outline:
+.. doxygenfunction:: rocsolver_clasyf
+   :outline:
+.. doxygenfunction:: rocsolver_dlasyf
+   :outline:
+.. doxygenfunction:: rocsolver_slasyf
 
 
 

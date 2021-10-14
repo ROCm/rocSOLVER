@@ -954,6 +954,130 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlatrd(rocblas_handle handle,
 //! @}
 
 /*! @{
+    \brief LASYF computes a partial factorization of a symmetric matrix \f$A\f$
+    using Bunch-Kaufman diagonal pivoting.
+
+    \details
+    The partial factorization has the form
+
+    \f[
+        A = \left[ \begin{array}{cc}
+        I & U_{12} \\
+        0 & U_{22}
+        \end{array} \right] \left[ \begin{array}{cc}
+        A_{11} & 0 \\
+        0 & D
+        \end{array} \right] \left[ \begin{array}{cc}
+        I & 0 \\
+        U_{12}^T & U_{22}^T
+        \end{array} \right]
+    \f]
+
+    or
+
+    \f[
+        A = \left[ \begin{array}{cc}
+        L_{11} & 0 \\
+        L_{21} & I
+        \end{array} \right] \left[ \begin{array}{cc}
+        D & 0 \\
+        0 & A_{22}
+        \end{array} \right] \left[ \begin{array}{cc}
+        L_{11}^T & L_{21}^T \\
+        0 & I
+        \end{array} \right]
+    \f]
+
+    depending on the value of uplo. The order of the block diagonal matrix \f$D\f$
+    is either \f$nb\f$ or \f$nb-1\f$, and is returned in the argument \f$kb\f$.
+
+    @param[in]
+    handle    rocblas_handle.
+    @param[in]
+    uplo      rocblas_fill.\n
+              Specifies whether the upper or lower part of the matrix A is stored.
+              If uplo indicates lower (or upper), then the upper (or lower)
+              part of A is not used.
+    @param[in]
+    n         rocblas_int. n >= 0.\n
+              The number of rows and columns of the matrix A.
+    @param[in]
+    nb        rocblas_int. 2 <= nb <= n.\n
+              The number of columns of A to be factored.
+    @param[out]
+    kb        pointer to a rocblas_int on the GPU.\n
+              The number of columns of A that were actually factored (either nb or
+              nb-1).
+    @param[inout]
+    A         pointer to type. Array on the GPU of dimension lda*n.\n
+              On entry, the symmetric matrix A to be factored.
+              On exit, the partially factored matrix.
+    @param[in]
+    lda       rocblas_int. lda >= n.\n
+              Specifies the leading dimension of A.
+    @param[out]
+    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
+              The vector of pivot indices. Elements of ipiv are 1-based indices.
+              If uplo is upper, then only the last kb elements of ipiv will be
+              set. For n - kb < k <= n, if ipiv[k] > 0 then rows and columns k
+              and ipiv[k] were interchanged and D[k,k] is a 1-by-1 diagonal block.
+              If, instead, ipiv[k] = ipiv[k-1] < 0, then rows and columns k-1
+              and -ipiv[k] were interchanged and D[k-1,k-1] to D[k,k] is a 2-by-2
+              diagonal block.
+              If uplo is lower, then only the first kb elements of ipiv will be
+              set. For 1 <= k <= kb, if ipiv[k] > 0 then rows and columns k
+              and ipiv[k] were interchanged and D[k,k] is a 1-by-1 diagonal block.
+              If, instead, ipiv[k] = ipiv[k+1] < 0, then rows and columns k+1
+              and -ipiv[k] were interchanged and D[k,k] to D[k+1,k+1] is a 2-by-2
+              diagonal block.
+    @param[out]
+    info      pointer to a rocblas_int on the GPU.\n
+              If info = 0, successful exit.
+              If info[i] = j > 0, D is singular. D[j,j] is the first diagonal zero.
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_slasyf(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 const rocblas_int nb,
+                                                 rocblas_int* kb,
+                                                 float* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* ipiv,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlasyf(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 const rocblas_int nb,
+                                                 rocblas_int* kb,
+                                                 double* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* ipiv,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_clasyf(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 const rocblas_int nb,
+                                                 rocblas_int* kb,
+                                                 rocblas_float_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* ipiv,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 const rocblas_int nb,
+                                                 rocblas_int* kb,
+                                                 rocblas_double_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* ipiv,
+                                                 rocblas_int* info);
+//! @}
+
+/*! @{
     \brief ORG2R generates an m-by-n Matrix Q with orthonormal columns.
 
     \details

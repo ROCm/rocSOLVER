@@ -61,6 +61,11 @@ LAPACK auxiliary functions
     :ref:`rocsolver_steqr <steqr>`, x, x, x, x
     :ref:`rocsolver_stedc <stedc>`, x, x, x, x
 
+.. csv-table:: Symmetric matrices
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_lasyf <lasyf>`, x, x, x, x
+
 .. csv-table:: Orthonormal matrices
     :header: "Function", "single", "double", "single complex", "double complex"
 

@@ -214,65 +214,84 @@ __device__ void trsm_kernel_right_lower(const rocblas_diagonal diag,
     }
 }
 
-template <typename T>
-__device__ void gemv_kernel(const rocblas_int m,
-                            const rocblas_int n,
-                            T* alpha,
-                            T* a,
-                            const rocblas_int lda,
-                            T* x,
-                            const rocblas_int incX,
-                            T* beta,
-                            T* y,
-                            const rocblas_int incY)
+/** GEMV device function to compute y = alpha * A * x + beta * y **/
+template <int MAX_THDS, typename T>
+__device__ void gemv(const rocblas_int tid,
+                     const rocblas_int m,
+                     const rocblas_int n,
+                     const T* alpha,
+                     T* A,
+                     const rocblas_int lda,
+                     T* x,
+                     const rocblas_int incx,
+                     const T* beta,
+                     T* y,
+                     const rocblas_int incy)
 {
-    // gemv kernel assuming no transpose
-    T yi;
-    for(int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
+    // gemv function assuming no transpose
+    T temp;
+    for(int i = tid; i < m; i += MAX_THDS)
     {
-        yi = 0;
-
-        if(*alpha != 0)
-        {
-            for(int k = 0; k < n; k++)
-                yi += a[i + k * lda] * x[k * incX];
-        }
-
-        y[i * incY] = *alpha * yi + *beta * y[i * incY];
+        temp = 0;
+        for(int j = 0; j < n; j++)
+            temp += A[i + j * lda] * x[j * incx];
+        y[i * incy] = *alpha * temp + *beta * y[i * incy];
     }
-    __syncthreads();
 }
 
-template <typename T>
-__device__ void gemm_kernel(const rocblas_int m,
+/** GEMM device function to compute C = alpha * A * B + beta * C **/
+template <int MAX_THDS, typename T>
+__device__ void gemm(const rocblas_int tid,
+                     const rocblas_int m,
+                     const rocblas_int n,
+                     const rocblas_int k,
+                     const T* alpha,
+                     T* A,
+                     const rocblas_int lda,
+                     T* B,
+                     const rocblas_int ldb,
+                     const T* beta,
+                     T* C,
+                     const rocblas_int ldc)
+{
+    // gemm function assuming no transpose
+    T temp;
+    for(int e = tid; e < m * n; e += MAX_THDS)
+    {
+        int i = e % m;
+        int j = e / m;
+        temp = 0;
+        for(int l = 0; l < k; l++)
+            temp += A[i + l * lda] * B[l + j * ldb];
+        C[i + j * ldc] = *alpha * temp + *beta * C[i + j * ldc];
+    }
+}
+
+/** GEMM device function to compute C = alpha * A * B' + beta * C **/
+template <int MAX_THDS, typename T>
+__device__ void gemm_btrans(const rocblas_int tid,
+                            const rocblas_int m,
                             const rocblas_int n,
                             const rocblas_int k,
-                            T* alpha,
-                            T* a,
+                            const T* alpha,
+                            T* A,
                             const rocblas_int lda,
-                            T* b,
+                            T* B,
                             const rocblas_int ldb,
-                            T* beta,
-                            T* c,
+                            const T* beta,
+                            T* C,
                             const rocblas_int ldc)
 {
-    // gemm kernel assuming no transpose
-    T cij;
-    for(int j = 0; j < n; j++)
+    // gemm function assuming B transpose
+    T temp;
+    for(int e = tid; e < m * n; e += MAX_THDS)
     {
-        for(int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
-        {
-            cij = 0;
-
-            if(*alpha != 0)
-            {
-                for(int l = 0; l < k; l++)
-                    cij += a[i + l * lda] * b[l + j * ldb];
-            }
-
-            c[i + j * ldc] = *alpha * cij + *beta * c[i + j * ldc];
-        }
-        __syncthreads();
+        int i = e % m;
+        int j = e / m;
+        temp = 0;
+        for(int l = 0; l < k; l++)
+            temp += A[i + l * lda] * B[j + l * ldb];
+        C[i + j * ldc] = *alpha * temp + *beta * C[i + j * ldc];
     }
 }
 

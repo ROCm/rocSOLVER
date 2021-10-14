@@ -32,6 +32,7 @@
 #include "testing_larfg.hpp"
 #include "testing_larft.hpp"
 #include "testing_laswp.hpp"
+#include "testing_lasyf.hpp"
 #include "testing_latrd.hpp"
 #include "testing_orgbr_ungbr.hpp"
 #include "testing_orglx_unglx.hpp"
@@ -88,6 +89,7 @@ class rocsolver_dispatcher
             {"bdsqr", testing_bdsqr<T>},
             {"steqr", testing_steqr<T>},
             {"stedc", testing_stedc<T>},
+            {"lasyf", testing_lasyf<T>},
             // potrf
             {"potf2", testing_potf2_potrf<false, false, 0, T>},
             {"potf2_batched", testing_potf2_potrf<true, true, 0, T>},

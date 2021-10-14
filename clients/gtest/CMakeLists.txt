@@ -65,6 +65,8 @@ set(rocauxiliary_test_source
   steqr_gtest.cpp
   stedc_gtest.cpp
   latrd_gtest.cpp
+  # symmetric matrices
+  lasyf_gtest.cpp
 )
 
 set(others_test_source
