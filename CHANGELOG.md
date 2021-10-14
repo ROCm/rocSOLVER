@@ -5,6 +5,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ## [(Unreleased) rocSOLVER]
 ### Added
 - Symmetric matrix factorizations:
+    - LASYF
     - SYTF2 (with batched and strided\_batched versions)
 - Added `rocsolver_get_version_string_size` to help with version string queries
 
