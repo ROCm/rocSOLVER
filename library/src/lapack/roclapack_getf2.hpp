@@ -136,13 +136,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(IAMAX_THDS) getf2_iamax(const rocblas_in
                                                                 const rocblas_stride stridex,
                                                                 rocblas_int* pivotidx)
 {
+    using S = decltype(std::real(T{}));
+
     // batch instance
     const int bid = hipBlockIdx_y;
     const int tid = hipThreadIdx_x;
     T* x = load_ptr_batch<T>(xx, bid, shiftx, stridex);
 
     // shared memory setup
-    __shared__ T sval[IAMAX_THDS];
+    __shared__ S sval[IAMAX_THDS];
     __shared__ rocblas_int sidx[IAMAX_THDS];
 
     iamax<IAMAX_THDS>(tid, m, x, 1, sval, sidx);
@@ -254,10 +256,12 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
     }
 
 #ifdef OPTIMAL
-    bool nomem = (m < n && (n <= 20 || (n <= 28 && m > 4) || (n <= 36 && m > 10) || (n <= 44 && m > 14) ||
-                 (n <= 52 && m > 16) || (n <= 60 && m > 32))) ||
-                 (m >= n && ((n <= 36 && m <= 1024) || (n <= 44 && m <= 600) || (n <= 84 && m <= 512) ||
-                 (n <= 92 && m <= 472) || (n <= 100 && m <= 344) || (n <= 128 && m <= 256)));
+    bool nomem = (m < n
+                  && (n <= 20 || (n <= 28 && m > 4) || (n <= 36 && m > 10) || (n <= 44 && m > 14)
+                      || (n <= 52 && m > 16) || (n <= 60 && m > 32)))
+        || (m >= n
+            && ((n <= 36 && m <= 1024) || (n <= 44 && m <= 600) || (n <= 84 && m <= 512)
+                || (n <= 92 && m <= 472) || (n <= 100 && m <= 344) || (n <= 128 && m <= 256)));
 
     // if using optimized algorithm for small sizes, no workspace needed
     if(nomem)
@@ -368,16 +372,16 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     if(m < n)
     {
         // Use specialized kernels for small fat matrices
-        if((n <= 20) || (n <= 28 && m > 4) || (n <= 36 && m > 10) || (n <= 44 && m > 14) ||
-                 (n <= 52 && m > 16) || (n <= 60 && m > 32))
+        if((n <= 20) || (n <= 28 && m > 4) || (n <= 36 && m > 10) || (n <= 44 && m > 14)
+           || (n <= 52 && m > 16) || (n <= 60 && m > 32))
             return getf2_run_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
                                       info, batch_count, pivot, offset, permut_idx, stride);
     }
     else
     {
         // use specialized kernels for small skinny matrices (panel factorization)
-        if((n <= 36 && m <= 1024) || (n <= 44 && m <= 600) || (n <= 84 && m <= 512) ||
-                 (n <= 92 && m <= 472) || (n <= 100 && m <= 344) || (n <= 128 && m <= 256))
+        if((n <= 36 && m <= 1024) || (n <= 44 && m <= 600) || (n <= 84 && m <= 512)
+           || (n <= 92 && m <= 472) || (n <= 100 && m <= 344) || (n <= 128 && m <= 256))
             return getf2_run_panel<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
                                       info, batch_count, pivot, offset, permut_idx, stride);
     }
