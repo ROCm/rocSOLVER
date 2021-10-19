@@ -254,9 +254,13 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
     }
 
 #ifdef OPTIMAL
+    bool nomem = (m < n && (n <= 20 || (n <= 28 && m > 4) || (n <= 36 && m > 10) || (n <= 44 && m > 14) ||
+                 (n <= 52 && m > 16) || (n <= 60 && m > 32))) ||
+                 (m >= n && ((n <= 36 && m <= 1024) || (n <= 44 && m <= 600) || (n <= 84 && m <= 512) ||
+                 (n <= 92 && m <= 472) || (n <= 100 && m <= 344) || (n <= 128 && m <= 256)));
+
     // if using optimized algorithm for small sizes, no workspace needed
-    if((m < n && n <= GETF2_MAX_COLS && m <= GETF2_MAX_THDS)
-       || (m >= n && ((n <= 32 && m <= 1024) || (n <= 88 && m <= 512) || (n <= 128 && m <= 256))))
+    if(nomem)
     {
         *size_scalars = 0;
         *size_pivotval = 0;
@@ -364,14 +368,16 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     if(m < n)
     {
         // Use specialized kernels for small fat matrices
-        if(n <= GETF2_MAX_COLS && m <= GETF2_MAX_THDS)
+        if((n <= 20) || (n <= 28 && m > 4) || (n <= 36 && m > 10) || (n <= 44 && m > 14) ||
+                 (n <= 52 && m > 16) || (n <= 60 && m > 32))
             return getf2_run_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
                                       info, batch_count, pivot, offset, permut_idx, stride);
     }
     else
     {
         // use specialized kernels for small skinny matrices (panel factorization)
-        if((n <= 32 && m <= 1024) || (n <= 88 && m <= 512) || (n <= 128 && m <= 256))
+        if((n <= 36 && m <= 1024) || (n <= 44 && m <= 600) || (n <= 84 && m <= 512) ||
+                 (n <= 92 && m <= 472) || (n <= 100 && m <= 344) || (n <= 128 && m <= 256))
             return getf2_run_panel<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
                                       info, batch_count, pivot, offset, permut_idx, stride);
     }
