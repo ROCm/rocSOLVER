@@ -14,7 +14,6 @@
 #include "roclapack_getf2.hpp"
 #include "rocsolver.h"
 
-
 /** This function returns the outer block size based on defined variables
     tunable by the user (defined in ideal_sizes.hpp) **/
 template <bool ISBATCHED>
@@ -376,7 +375,7 @@ ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int m,
                                           U AA,
                                           const rocblas_int shiftA,
                                           const rocblas_int lda,
-                                          const rocblas_stride stride,
+                                          const rocblas_stride strideA,
                                           rocblas_int* pividx)
 {
     int id = hipBlockIdx_z;
@@ -390,7 +389,7 @@ ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int m,
     if(j < n)
     {
         // batch instance
-        T* A = load_ptr_batch(AA, id, shiftA, stride);
+        T* A = load_ptr_batch(AA, id, shiftA, strideA);
         rocblas_int* piv = pividx + id * m;
 
         // shared mem for temporary values
@@ -549,7 +548,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     // constants to use when calling rocablas functions
     T one = 1; // constant 1 in host
     T minone = -1; // constant -1 in host
-    
+
     rocblas_int jb, jb1, blk1, dimx, dimy;
     size_t lmemsize;
 

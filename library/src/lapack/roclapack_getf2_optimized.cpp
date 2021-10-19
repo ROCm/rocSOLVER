@@ -30,7 +30,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
                        const rocblas_int batch_count,
                        const rocblas_int offset,
                        rocblas_int* permut_idx,
-                       const rocblas_stride stride)
+                       const rocblas_stride stridePI)
 {
     using S = decltype(std::real(T{}));
 
@@ -46,7 +46,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     rocblas_int *ipiv, *permut;
     ipiv = load_ptr_batch<rocblas_int>(ipivA, id, shiftP, strideP);
     if(permut_idx)
-        permut = permut_idx + id * stride;
+        permut = permut_idx + id * stridePI;
     rocblas_int* info = infoA + id;
 
     // shared memory (for communication between threads in group)
@@ -224,7 +224,7 @@ ROCSOLVER_KERNEL void getf2_panel_kernel(const rocblas_int m,
                                          const rocblas_int batch_count,
                                          const rocblas_int offset,
                                          rocblas_int* permut_idx,
-                                         const rocblas_stride stride)
+                                         const rocblas_stride stridePI)
 {
     using S = decltype(std::real(T{}));
 
@@ -239,28 +239,30 @@ ROCSOLVER_KERNEL void getf2_panel_kernel(const rocblas_int m,
     rocblas_int *ipiv, *permut;
     ipiv = load_ptr_batch<rocblas_int>(ipivA, id, shiftP, strideP);
     if(permut_idx)
-        permut = permut_idx + id * stride;
+        permut = permut_idx + id * stridePI;
     rocblas_int* info = infoA + id;
 
     // shared memory (for communication between threads in group)
     extern __shared__ double lmem[];
     T* x = (T*)lmem;
-    T* sval = x + bdx;
-    T* y = sval + bdx;
-    rocblas_int* sidx = (rocblas_int*)(y + n);
+    T* y = x + bdx;
+    S* sval = (S*)(y + n);
+    rocblas_int* sidx = (rocblas_int*)(sval + bdx);
     __shared__ T val;
 
     // local variables
-    T val1, val2, pivot_val;
+    S val1, val2;
+    T valtmp, pivot_val;
     rocblas_int idx1, idx2, pivot_idx;
     int myinfo = 0; // to build info
 
     // init step: read column zero from A
     if(ty == 0)
     {
-        val1 = (tx < m) ? A[tx] : 0;
+        valtmp = (tx < m) ? A[tx] : 0;
         idx1 = tx;
-        x[tx] = val1;
+        x[tx] = valtmp;
+        val1 = aabs<S>(valtmp);
         sval[tx] = val1;
         sidx[tx] = idx1;
     }
@@ -276,7 +278,7 @@ ROCSOLVER_KERNEL void getf2_panel_kernel(const rocblas_int m,
             {
                 val2 = sval[tx + i];
                 idx2 = sidx[tx + i];
-                if(aabs<S>(val1) < aabs<S>(val2))
+                if((val1 < val2) || (val1 == val2 && idx1 > idx2))
                 {
                     sval[tx] = val1 = val2;
                     sidx[tx] = idx1 = idx2;
@@ -285,7 +287,7 @@ ROCSOLVER_KERNEL void getf2_panel_kernel(const rocblas_int m,
             __syncthreads();
         }
         pivot_idx = sidx[0]; //after reduction this is the index of max value
-        pivot_val = sval[0];
+        pivot_val = x[pivot_idx];
 
         // check singularity and scale value for current column
         if(pivot_val == T(0))
@@ -321,13 +323,14 @@ ROCSOLVER_KERNEL void getf2_panel_kernel(const rocblas_int m,
         // swap pivot row with updated row k
         if(tx < n && ty == 0 && pivot_idx != k)
         {
-            val1 = (tx == k) ? val : A[k + tx * lda];
-            val1 -= (tx > k) ? val * y[tx] : 0;
-            A[pivot_idx + tx * lda] = val1;
+            valtmp = (tx == k) ? val : A[k + tx * lda];
+            valtmp -= (tx > k) ? val * y[tx] : 0;
+            A[pivot_idx + tx * lda] = valtmp;
             A[k + tx * lda] = y[tx];
             if(tx == k + 1)
             {
-                x[pivot_idx] = val1;
+                x[pivot_idx] = valtmp;
+                val1 = aabs<S>(valtmp);
                 sval[pivot_idx] = val1;
             }
             if(permut_idx && tx == k)
@@ -339,17 +342,18 @@ ROCSOLVER_KERNEL void getf2_panel_kernel(const rocblas_int m,
         {
             for(int j = ty + k + 2; j < n; j += bdy)
             {
-                val1 = A[tx + j * lda];
-                val1 -= pivot_val * y[j];
-                A[tx + j * lda] = val1;
+                valtmp = A[tx + j * lda];
+                valtmp -= pivot_val * y[j];
+                A[tx + j * lda] = valtmp;
             }
 
             if(ty == 0 && k < n - 1)
             {
-                val1 = A[tx + (k + 1) * lda];
-                val1 -= pivot_val * y[k + 1];
-                A[tx + (k + 1) * lda] = val1;
-                x[tx] = val1;
+                valtmp = A[tx + (k + 1) * lda];
+                valtmp -= pivot_val * y[k + 1];
+                A[tx + (k + 1) * lda] = valtmp;
+                x[tx] = valtmp;
+                val1 = aabs<S>(valtmp);
                 sval[tx] = val1;
             }
         }
@@ -672,6 +676,8 @@ rocblas_status getf2_run_panel(rocblas_handle handle,
                                rocblas_int* permut_idx,
                                const rocblas_stride stride)
 {
+    using S = decltype(std::real(T{}));
+
     // determine sizes
     rocblas_int dimy, dimx;
     if(m <= 8)
@@ -700,7 +706,7 @@ rocblas_status getf2_run_panel(rocblas_handle handle,
 
     if(pivot)
     {
-        size_t lmemsize = (2 * dimx + n) * sizeof(T) + dimx * sizeof(rocblas_int);
+        size_t lmemsize = (dimx + n) * sizeof(T) + dimx * (sizeof(rocblas_int) + sizeof(S));
         hipLaunchKernelGGL((getf2_panel_kernel<T>), grid, block, lmemsize, stream, m, n, A, shiftA,
                            lda, strideA, ipiv, shiftP, strideP, info, batch_count, offset,
                            permut_idx, stride);
