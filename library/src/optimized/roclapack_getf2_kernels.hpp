@@ -755,51 +755,24 @@ void getf2_run_scale_update(rocblas_handle handle,
     Instantiation macros
 *************************************************************/
 
-#define INSTANTIATE_GETF2_SMALL(T, U)                                        \
-template rocblas_status getf2_run_small<T, U>(rocblas_handle handle,         \
-                                              const rocblas_int m,           \
-                                              const rocblas_int n,           \
-                                              U A,                           \
-                                              const rocblas_int shiftA,      \
-                                              const rocblas_int lda,         \
-                                              const rocblas_stride strideA,  \
-                                              rocblas_int* ipiv,             \
-                                              const rocblas_int shiftP,      \
-                                              const rocblas_stride strideP,  \
-                                              rocblas_int* info,             \
-                                              const rocblas_int batch_count, \
-                                              const bool pivot,              \
-                                              const rocblas_int offset,      \
-                                              rocblas_int* permut_idx,       \
-                                              const rocblas_stride stride)
-#define INSTANTIATE_GETF2_PANEL(T, U)                                        \
-template rocblas_status getf2_run_panel<T, U>(rocblas_handle handle,         \
-                                              const rocblas_int m,           \
-                                              const rocblas_int n,           \
-                                              U A,                           \
-                                              const rocblas_int shiftA,      \
-                                              const rocblas_int lda,         \
-                                              const rocblas_stride strideA,  \
-                                              rocblas_int* ipiv,             \
-                                              const rocblas_int shiftP,      \
-                                              const rocblas_stride strideP,  \
-                                              rocblas_int* info,             \
-                                              const rocblas_int batch_count, \
-                                              const bool pivot,              \
-                                              const rocblas_int offset,      \
-                                              rocblas_int* permut_idx,       \
-                                              const rocblas_stride stride)
-#define INSTANTIATE_GETF2_SCALE_UPDATE(T, U)                              \
-template void getf2_run_scale_update<T, U>(rocblas_handle handle,         \
-                                           const rocblas_int m,           \
-                                           const rocblas_int n,           \
-                                           T* pivotval,                   \
-                                           U A,                           \
-                                           const rocblas_int shiftA,      \
-                                           const rocblas_int lda,         \
-                                           const rocblas_stride strideA,  \
-                                           const rocblas_int batch_count, \
-                                           const rocblas_int dimx,        \
-                                           const rocblas_int dimy)
+#define INSTANTIATE_GETF2_SMALL(T, U)                                                  \
+    template rocblas_status getf2_run_small<T, U>(                                     \
+        rocblas_handle handle, const rocblas_int m, const rocblas_int n, U A,          \
+        const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, \
+        rocblas_int* ipiv, const rocblas_int shiftP, const rocblas_stride strideP,     \
+        rocblas_int* info, const rocblas_int batch_count, const bool pivot,            \
+        const rocblas_int offset, rocblas_int* permut_idx, const rocblas_stride stride)
+#define INSTANTIATE_GETF2_PANEL(T, U)                                                  \
+    template rocblas_status getf2_run_panel<T, U>(                                     \
+        rocblas_handle handle, const rocblas_int m, const rocblas_int n, U A,          \
+        const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, \
+        rocblas_int* ipiv, const rocblas_int shiftP, const rocblas_stride strideP,     \
+        rocblas_int* info, const rocblas_int batch_count, const bool pivot,            \
+        const rocblas_int offset, rocblas_int* permut_idx, const rocblas_stride stride)
+#define INSTANTIATE_GETF2_SCALE_UPDATE(T, U)                                               \
+    template void getf2_run_scale_update<T, U>(                                            \
+        rocblas_handle handle, const rocblas_int m, const rocblas_int n, T* pivotval, U A, \
+        const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,     \
+        const rocblas_int batch_count, const rocblas_int dimx, const rocblas_int dimy)
 
 #endif // OPTIMAL

@@ -252,19 +252,11 @@ rocblas_status getri_run_small(rocblas_handle handle,
     Instantiation macros
 *************************************************************/
 
-#define INSTANTIATE_GETRI_SMALL(T, U)                                        \
-template rocblas_status getri_run_small<T, U>(rocblas_handle handle,         \
-                                              const rocblas_int n,           \
-                                              U A,                           \
-                                              const rocblas_int shiftA,      \
-                                              const rocblas_int lda,         \
-                                              const rocblas_stride strideA,  \
-                                              rocblas_int* ipiv,             \
-                                              const rocblas_int shiftP,      \
-                                              const rocblas_stride strideP,  \
-                                              rocblas_int* info,             \
-                                              const rocblas_int batch_count, \
-                                              const bool complete,           \
-                                              const bool pivot)
+#define INSTANTIATE_GETRI_SMALL(T, U)                                              \
+    template rocblas_status getri_run_small<T, U>(                                 \
+        rocblas_handle handle, const rocblas_int n, U A, const rocblas_int shiftA, \
+        const rocblas_int lda, const rocblas_stride strideA, rocblas_int* ipiv,    \
+        const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int* info, \
+        const rocblas_int batch_count, const bool complete, const bool pivot)
 
 #endif // OPTIMAL
