@@ -11,6 +11,12 @@
 
 #ifdef OPTIMAL
 
+/*************************************************************
+    Templated kernels are instantiated in separate cpp
+    files in order to improve compilation times and reduce
+    the library size.
+*************************************************************/
+
 template <rocblas_int DIM, typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
     getri_kernel_small(U AA,
@@ -137,6 +143,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
         A[i + j * lda] = rA[j];
 }
 
+/*************************************************************
+    Launchers of specilized  kernels
+*************************************************************/
+
 template <typename T, typename U>
 rocblas_status getri_run_small(rocblas_handle handle,
                                const rocblas_int n,
@@ -237,115 +247,22 @@ rocblas_status getri_run_small(rocblas_handle handle,
 }
 
 /*************************************************************
-    Instantiate template methods
+    Instantiation macros
 *************************************************************/
-template rocblas_status getri_run_small<float, float*>(rocblas_handle,
-                                                       const rocblas_int,
-                                                       float*,
-                                                       const rocblas_int,
-                                                       const rocblas_int,
-                                                       const rocblas_stride,
-                                                       rocblas_int*,
-                                                       const rocblas_int,
-                                                       const rocblas_stride,
-                                                       rocblas_int*,
-                                                       const rocblas_int,
-                                                       const bool,
-                                                       const bool);
-template rocblas_status getri_run_small<double, double*>(rocblas_handle,
-                                                         const rocblas_int,
-                                                         double*,
-                                                         const rocblas_int,
-                                                         const rocblas_int,
-                                                         const rocblas_stride,
-                                                         rocblas_int*,
-                                                         const rocblas_int,
-                                                         const rocblas_stride,
-                                                         rocblas_int*,
-                                                         const rocblas_int,
-                                                         const bool,
-                                                         const bool);
-template rocblas_status
-    getri_run_small<rocblas_float_complex, rocblas_float_complex*>(rocblas_handle,
-                                                                   const rocblas_int,
-                                                                   rocblas_float_complex*,
-                                                                   const rocblas_int,
-                                                                   const rocblas_int,
-                                                                   const rocblas_stride,
-                                                                   rocblas_int*,
-                                                                   const rocblas_int,
-                                                                   const rocblas_stride,
-                                                                   rocblas_int*,
-                                                                   const rocblas_int,
-                                                                   const bool,
-                                                                   const bool);
-template rocblas_status
-    getri_run_small<rocblas_double_complex, rocblas_double_complex*>(rocblas_handle,
-                                                                     const rocblas_int,
-                                                                     rocblas_double_complex*,
-                                                                     const rocblas_int,
-                                                                     const rocblas_int,
-                                                                     const rocblas_stride,
-                                                                     rocblas_int*,
-                                                                     const rocblas_int,
-                                                                     const rocblas_stride,
-                                                                     rocblas_int*,
-                                                                     const rocblas_int,
-                                                                     const bool,
-                                                                     const bool);
-template rocblas_status getri_run_small<float, float* const*>(rocblas_handle,
-                                                              const rocblas_int,
-                                                              float* const*,
-                                                              const rocblas_int,
-                                                              const rocblas_int,
-                                                              const rocblas_stride,
-                                                              rocblas_int*,
-                                                              const rocblas_int,
-                                                              const rocblas_stride,
-                                                              rocblas_int*,
-                                                              const rocblas_int,
-                                                              const bool,
-                                                              const bool);
-template rocblas_status getri_run_small<double, double* const*>(rocblas_handle,
-                                                                const rocblas_int,
-                                                                double* const*,
-                                                                const rocblas_int,
-                                                                const rocblas_int,
-                                                                const rocblas_stride,
-                                                                rocblas_int*,
-                                                                const rocblas_int,
-                                                                const rocblas_stride,
-                                                                rocblas_int*,
-                                                                const rocblas_int,
-                                                                const bool,
-                                                                const bool);
-template rocblas_status getri_run_small<rocblas_float_complex, rocblas_float_complex* const*>(
-    rocblas_handle,
-    const rocblas_int,
-    rocblas_float_complex* const*,
-    const rocblas_int,
-    const rocblas_int,
-    const rocblas_stride,
-    rocblas_int*,
-    const rocblas_int,
-    const rocblas_stride,
-    rocblas_int*,
-    const rocblas_int,
-    const bool,
-    const bool);
-template rocblas_status getri_run_small<rocblas_double_complex, rocblas_double_complex* const*>(
-    rocblas_handle,
-    const rocblas_int,
-    rocblas_double_complex* const*,
-    const rocblas_int,
-    const rocblas_int,
-    const rocblas_stride,
-    rocblas_int*,
-    const rocblas_int,
-    const rocblas_stride,
-    rocblas_int*,
-    const rocblas_int,
-    const bool,
-    const bool);
+
+#define INSTANTIATE_GETRI_SMALL(T, U)                                        \
+template rocblas_status getri_run_small<T, U>(rocblas_handle handle,         \
+                                              const rocblas_int n,           \
+                                              U A,                           \
+                                              const rocblas_int shiftA,      \
+                                              const rocblas_int lda,         \
+                                              const rocblas_stride strideA,  \
+                                              rocblas_int* ipiv,             \
+                                              const rocblas_int shiftP,      \
+                                              const rocblas_stride strideP,  \
+                                              rocblas_int* info,             \
+                                              const rocblas_int batch_count, \
+                                              const bool complete,           \
+                                              const bool pivot)
 
 #endif // OPTIMAL
