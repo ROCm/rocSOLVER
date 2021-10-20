@@ -56,7 +56,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     __shared__ S absakk;
     __shared__ S colmax;
     __shared__ S rowmax;
-    __shared__ T sval[LASYF_MAX_THDS];
+    __shared__ S sval[LASYF_MAX_THDS];
     __shared__ rocblas_int sidx[LASYF_MAX_THDS];
     __shared__ rocblas_int imax;
 
@@ -84,7 +84,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         if(tid == 0)
         {
             imax = sidx[0] - 1;
-            colmax = aabs<S>(sval[0]);
+            colmax = sval[0];
             absakk = aabs<S>(W[k + kw * ldw]);
         }
         __syncthreads();
@@ -119,13 +119,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 // find max off-diagonal entry in row imax
                 iamax<LASYF_MAX_THDS>(tid, k - imax, W + (imax + 1) + (kw - 1) * ldw, 1, sval, sidx);
                 if(tid == 0)
-                    rowmax = aabs<S>(sval[0]);
+                    rowmax = sval[0];
 
                 if(imax > 0)
                 {
                     iamax<LASYF_MAX_THDS>(tid, imax, W + (kw - 1) * ldw, 1, sval, sidx);
                     if(tid == 0)
-                        rowmax = max(rowmax, aabs<S>(sval[0]));
+                        rowmax = max(rowmax, sval[0]);
                 }
                 __syncthreads();
 
@@ -306,7 +306,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     __shared__ S absakk;
     __shared__ S colmax;
     __shared__ S rowmax;
-    __shared__ T sval[LASYF_MAX_THDS];
+    __shared__ S sval[LASYF_MAX_THDS];
     __shared__ rocblas_int sidx[LASYF_MAX_THDS];
     __shared__ rocblas_int imax;
 
@@ -330,7 +330,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
         if(tid == 0)
         {
             imax = k + sidx[0];
-            colmax = aabs<S>(sval[0]);
+            colmax = sval[0];
             absakk = aabs<S>(W[k + k * ldw]);
         }
         __syncthreads();
@@ -362,14 +362,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                 // find max off-diagonal entry in row imax
                 iamax<LASYF_MAX_THDS>(tid, imax - k, W + k + (k + 1) * ldw, 1, sval, sidx);
                 if(tid == 0)
-                    rowmax = aabs<S>(sval[0]);
+                    rowmax = sval[0];
 
                 if(imax < n - 1)
                 {
                     iamax<LASYF_MAX_THDS>(tid, n - imax - 1, W + (imax + 1) + (k + 1) * ldw, 1,
                                           sval, sidx);
                     if(tid == 0)
-                        rowmax = max(rowmax, aabs<S>(sval[0]));
+                        rowmax = max(rowmax, sval[0]);
                 }
                 __syncthreads();
 

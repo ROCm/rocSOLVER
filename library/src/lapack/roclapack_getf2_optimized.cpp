@@ -1,5 +1,5 @@
 /************************************************************************
- * Small sizes algorithm derived from MAGMA project
+ * Small kernel algorithm derived from MAGMA project
  * http://icl.cs.utk.edu/magma/.
  * https://doi.org/10.1016/j.procs.2017.05.250
  *
@@ -11,44 +11,49 @@
 #ifdef OPTIMAL
 
 /************************************************************************
-    LUfact_small_kernel takes care of of matrices with
-    m <= GETF2_MAX_THDS and n <= GETF2_MAX_COLS
+        specialized optimized kernels for small sizes
 ************************************************************************/
+
+/** getf2_small_kernel takes care of of matrices with m < n
+    m <= GETF2_MAX_THDS and n <= GETF2_MAX_COLS **/
 template <rocblas_int DIM, typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
-    LUfact_small_kernel(const rocblas_int m,
-                        U AA,
-                        const rocblas_int shiftA,
-                        const rocblas_int lda,
-                        const rocblas_stride strideA,
-                        rocblas_int* ipivA,
-                        const rocblas_int shiftP,
-                        const rocblas_stride strideP,
-                        rocblas_int* infoA,
-                        const rocblas_int batch_count,
-                        const bool pivot)
+    getf2_small_kernel(const rocblas_int m,
+                       U AA,
+                       const rocblas_int shiftA,
+                       const rocblas_int lda,
+                       const rocblas_stride strideA,
+                       rocblas_int* ipivA,
+                       const rocblas_int shiftP,
+                       const rocblas_stride strideP,
+                       rocblas_int* infoA,
+                       const rocblas_int batch_count,
+                       const rocblas_int offset,
+                       rocblas_int* permut_idx,
+                       const rocblas_stride stridePI)
 {
     using S = decltype(std::real(T{}));
 
     int myrow = hipThreadIdx_x;
     const int ty = hipThreadIdx_y;
-    const int id = hipBlockIdx_x * hipBlockDim_y + ty;
+    const int id = hipBlockIdx_y * hipBlockDim_y + ty;
 
     if(id >= batch_count)
         return;
 
     // batch instance
     T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
-    rocblas_int* ipiv;
-    if(pivot)
-        ipiv = load_ptr_batch<rocblas_int>(ipivA, id, shiftP, strideP);
+    rocblas_int *ipiv, *permut;
+    ipiv = load_ptr_batch<rocblas_int>(ipivA, id, shiftP, strideP);
+    if(permut_idx)
+        permut = permut_idx + id * stridePI;
     rocblas_int* info = infoA + id;
 
     // shared memory (for communication between threads in group)
     // (SHUFFLES DO NOT IMPROVE PERFORMANCE IN THIS CASE)
     extern __shared__ double lmem[];
     T* common = (T*)lmem;
-    common += ty * GETF2_MAX_COLS;
+    common += ty * max(m, DIM);
 
     // local variables
     T pivot_value;
@@ -74,16 +79,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
         // search pivot index
         pivot_index = k;
         pivot_value = common[k];
-        if(pivot)
+        for(int i = k + 1; i < m; ++i)
         {
-            for(int i = k + 1; i < m; ++i)
+            test_value = common[i];
+            if(aabs<S>(pivot_value) < aabs<S>(test_value))
             {
-                test_value = common[i];
-                if(aabs<S>(pivot_value) < aabs<S>(test_value))
-                {
-                    pivot_value = test_value;
-                    pivot_index = i;
-                }
+                pivot_value = test_value;
+                pivot_index = i;
             }
         }
 
@@ -105,6 +107,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
         {
             myrow = pivot_index;
             mypiv = pivot_index + 1;
+            if(permut_idx && pivot_index != k)
+                swap(permut[k], permut[pivot_index]);
         }
         __syncthreads();
 
@@ -119,18 +123,420 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     }
 
     // write results to global memory
-    if(myrow < DIM && pivot)
-        ipiv[myrow] = mypiv;
-    if(myrow == 0)
-        *info = myinfo;
+    if(myrow < DIM)
+        ipiv[myrow] = mypiv + offset;
+    if(myrow == 0 && *info == 0 && myinfo > 0)
+        *info = myinfo + offset;
 #pragma unroll DIM
     for(int j = 0; j < DIM; ++j)
         A[myrow + j * lda] = rA[j];
 }
 
+/** getf2_npvt_small_kernel (non pivoting version) **/
+template <rocblas_int DIM, typename T, typename U>
+ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
+    getf2_npvt_small_kernel(const rocblas_int m,
+                            U AA,
+                            const rocblas_int shiftA,
+                            const rocblas_int lda,
+                            const rocblas_stride strideA,
+                            rocblas_int* infoA,
+                            const rocblas_int batch_count,
+                            const rocblas_int offset)
+{
+    using S = decltype(std::real(T{}));
+
+    int myrow = hipThreadIdx_x;
+    const int ty = hipThreadIdx_y;
+    const int id = hipBlockIdx_y * hipBlockDim_y + ty;
+
+    if(id >= batch_count)
+        return;
+
+    // batch instance
+    T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
+    rocblas_int* info = infoA + id;
+
+    // shared memory (for communication between threads in group)
+    // (SHUFFLES DO NOT IMPROVE PERFORMANCE IN THIS CASE)
+    extern __shared__ double lmem[];
+    T* common = (T*)lmem;
+    T* val = common + hipBlockDim_y * DIM;
+    common += ty * DIM;
+
+    // local variables
+    int myinfo = 0; // to build info
+    T rA[DIM]; // to store this-row values
+
+    // read corresponding row from global memory into local array
+#pragma unroll DIM
+    for(int j = 0; j < DIM; ++j)
+        rA[j] = A[myrow + j * lda];
+
+        // for each pivot (main loop)
+#pragma unroll DIM
+    for(int k = 0; k < DIM; ++k)
+    {
+        // share pivot row and check singularity
+        if(myrow == k)
+        {
+            val[ty] = rA[k];
+            for(int j = k + 1; j < DIM; ++j)
+                common[j] = rA[j];
+
+            if(val[ty] != T(0))
+                val[ty] = S(1) / val[ty];
+            else if(myinfo == 0)
+                myinfo = k + 1;
+        }
+        __syncthreads();
+
+        // scale current column and update trailing matrix
+        if(myrow > k)
+        {
+            rA[k] *= val[ty];
+            for(int j = k + 1; j < DIM; ++j)
+                rA[j] -= rA[k] * common[j];
+        }
+        __syncthreads();
+    }
+
+    // write results to global memory
+    if(myrow == 0 && *info == 0 && myinfo > 0)
+        *info = myinfo + offset;
+#pragma unroll DIM
+    for(int j = 0; j < DIM; ++j)
+        A[myrow + j * lda] = rA[j];
+}
+
+/** getf2_panel_kernel takes care of small matrices with m >= n **/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void getf2_panel_kernel(const rocblas_int m,
+                                         const rocblas_int n,
+                                         U AA,
+                                         const rocblas_int shiftA,
+                                         const rocblas_int lda,
+                                         const rocblas_stride strideA,
+                                         rocblas_int* ipivA,
+                                         const rocblas_int shiftP,
+                                         const rocblas_stride strideP,
+                                         rocblas_int* infoA,
+                                         const rocblas_int batch_count,
+                                         const rocblas_int offset,
+                                         rocblas_int* permut_idx,
+                                         const rocblas_stride stridePI)
+{
+    using S = decltype(std::real(T{}));
+
+    const int tx = hipThreadIdx_x;
+    const int ty = hipThreadIdx_y;
+    const int id = hipBlockIdx_z;
+    const int bdx = hipBlockDim_x;
+    const int bdy = hipBlockDim_y;
+
+    // batch instance
+    T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
+    rocblas_int *ipiv, *permut;
+    ipiv = load_ptr_batch<rocblas_int>(ipivA, id, shiftP, strideP);
+    if(permut_idx)
+        permut = permut_idx + id * stridePI;
+    rocblas_int* info = infoA + id;
+
+    // shared memory (for communication between threads in group)
+    extern __shared__ double lmem[];
+    T* x = (T*)lmem;
+    T* y = x + bdx;
+    S* sval = (S*)(y + n);
+    rocblas_int* sidx = (rocblas_int*)(sval + bdx);
+    __shared__ T val;
+
+    // local variables
+    S val1, val2;
+    T valtmp, pivot_val;
+    rocblas_int idx1, idx2, pivot_idx;
+    int myinfo = 0; // to build info
+
+    // init step: read column zero from A
+    if(ty == 0)
+    {
+        valtmp = (tx < m) ? A[tx] : 0;
+        idx1 = tx;
+        x[tx] = valtmp;
+        val1 = aabs<S>(valtmp);
+        sval[tx] = val1;
+        sidx[tx] = idx1;
+    }
+
+    // main loop (for each pivot)
+    for(rocblas_int k = 0; k < n; ++k)
+    {
+        // find pivot (maximum in column)
+        __syncthreads();
+        for(int i = bdx / 2; i > 0; i /= 2)
+        {
+            if(tx < i && ty == 0)
+            {
+                val2 = sval[tx + i];
+                idx2 = sidx[tx + i];
+                if((val1 < val2) || (val1 == val2 && idx1 > idx2))
+                {
+                    sval[tx] = val1 = val2;
+                    sidx[tx] = idx1 = idx2;
+                }
+            }
+            __syncthreads();
+        }
+        pivot_idx = sidx[0]; //after reduction this is the index of max value
+        pivot_val = x[pivot_idx];
+
+        // check singularity and scale value for current column
+        if(pivot_val == T(0))
+        {
+            pivot_idx = k;
+            if(myinfo == 0)
+                myinfo = k + 1;
+        }
+        else
+            pivot_val = S(1) / pivot_val;
+
+        // update ipiv
+        if(tx == 0 && ty == 0)
+            ipiv[k] = pivot_idx + 1 + offset;
+
+        // update column k
+        if(tx != pivot_idx)
+        {
+            pivot_val *= x[tx];
+            if(ty == 0 && tx >= k && tx < m)
+                A[tx + k * lda] = pivot_val;
+        }
+
+        // put pivot row in shared mem
+        if(tx < n && ty == 0)
+        {
+            y[tx] = A[pivot_idx + tx * lda];
+            if(tx == k)
+                val = pivot_val;
+        }
+        __syncthreads();
+
+        // swap pivot row with updated row k
+        if(tx < n && ty == 0 && pivot_idx != k)
+        {
+            valtmp = (tx == k) ? val : A[k + tx * lda];
+            valtmp -= (tx > k) ? val * y[tx] : 0;
+            A[pivot_idx + tx * lda] = valtmp;
+            A[k + tx * lda] = y[tx];
+            if(tx == k + 1)
+            {
+                x[pivot_idx] = valtmp;
+                val1 = aabs<S>(valtmp);
+                sval[pivot_idx] = val1;
+            }
+            if(permut_idx && tx == k)
+                swap(permut[k], permut[pivot_idx]);
+        }
+
+        // complete the rank update
+        if(tx > k && tx < m && tx != pivot_idx)
+        {
+            for(int j = ty + k + 2; j < n; j += bdy)
+            {
+                valtmp = A[tx + j * lda];
+                valtmp -= pivot_val * y[j];
+                A[tx + j * lda] = valtmp;
+            }
+
+            if(ty == 0 && k < n - 1)
+            {
+                valtmp = A[tx + (k + 1) * lda];
+                valtmp -= pivot_val * y[k + 1];
+                A[tx + (k + 1) * lda] = valtmp;
+                x[tx] = valtmp;
+                val1 = aabs<S>(valtmp);
+                sval[tx] = val1;
+            }
+        }
+
+        // update ipiv and prepare for next step
+        if(tx <= k && ty == 0)
+        {
+            val1 = 0;
+            x[tx] = 0;
+            sval[tx] = 0;
+        }
+        idx1 = tx;
+        if(ty == 0)
+            sidx[tx] = idx1;
+    }
+
+    // update info
+    if(tx == 0 && *info == 0 && myinfo > 0 && ty == 0)
+        *info = myinfo + offset;
+}
+
+/** getf2_npvt_panel_kernel (non pivoting version) **/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void getf2_npvt_panel_kernel(const rocblas_int m,
+                                              const rocblas_int n,
+                                              U AA,
+                                              const rocblas_int shiftA,
+                                              const rocblas_int lda,
+                                              const rocblas_stride strideA,
+                                              rocblas_int* infoA,
+                                              const rocblas_int batch_count,
+                                              const rocblas_int offset)
+{
+    using S = decltype(std::real(T{}));
+
+    const int tx = hipThreadIdx_x;
+    const int ty = hipThreadIdx_y;
+    const int id = hipBlockIdx_z;
+    const int bdx = hipBlockDim_x;
+    const int bdy = hipBlockDim_y;
+
+    // batch instance
+    T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
+    rocblas_int* info = infoA + id;
+
+    // shared memory (for communication between threads in group)
+    extern __shared__ double lmem[];
+    T* x = (T*)lmem;
+    T* y = x + bdx;
+    __shared__ T val;
+
+    // local variables
+    T pivot_val, val1;
+    int myinfo = 0; // to build info
+
+    // init step: read column zero from A
+    if(ty == 0)
+    {
+        val1 = (tx < m) ? A[tx] : 0;
+        x[tx] = val1;
+    }
+
+    // main loop (for each pivot)
+    for(rocblas_int k = 0; k < n; ++k)
+    {
+        __syncthreads();
+        pivot_val = x[k];
+
+        // check singularity and scale value for current column
+        if(pivot_val == T(0) && myinfo == 0)
+            myinfo = k + 1;
+        else
+            pivot_val = S(1) / pivot_val;
+
+        // update column k
+        if(tx != k)
+        {
+            pivot_val *= x[tx];
+            if(ty == 0 && tx >= k && tx < m)
+                A[tx + k * lda] = pivot_val;
+        }
+
+        // put pivot row in shared mem
+        if(tx < n && ty == 0)
+        {
+            y[tx] = A[k + tx * lda];
+            if(tx == k)
+                val = pivot_val;
+        }
+        __syncthreads();
+
+        // complete the rank update
+        if(tx > k && tx < m)
+        {
+            for(int j = ty + k + 2; j < n; j += bdy)
+            {
+                val1 = A[tx + j * lda];
+                val1 -= pivot_val * y[j];
+                A[tx + j * lda] = val1;
+            }
+
+            if(ty == 0 && k < n - 1)
+            {
+                val1 = A[tx + (k + 1) * lda];
+                val1 -= pivot_val * y[k + 1];
+                A[tx + (k + 1) * lda] = val1;
+                x[tx] = val1;
+            }
+        }
+
+        // prepare for next step
+        if(tx <= k && ty == 0)
+            x[tx] = 0;
+    }
+
+    // update info
+    if(tx == 0 && *info == 0 && myinfo > 0 && ty == 0)
+        *info = myinfo + offset;
+}
+
+/** getf2_scale_update_kernel executes an optimized scaled rank-update (scal + ger)
+    for panel matrices (matrices with less than 128 columns).
+    Useful to speedup the factorization of block-columns in getrf **/
+template <typename T, typename U>
+//template <rocblas_int N, typename T, typename U>
+ROCSOLVER_KERNEL void getf2_scale_update_kernel(const rocblas_int m,
+                                                const rocblas_int n,
+                                                T* pivotval,
+                                                U AA,
+                                                const rocblas_int shiftA,
+                                                const rocblas_int lda,
+                                                const rocblas_stride strideA)
+{
+    // indices
+    rocblas_int bid = hipBlockIdx_z;
+    rocblas_int tx = hipThreadIdx_x;
+    rocblas_int ty = hipThreadIdx_y;
+    rocblas_int i = hipBlockIdx_x * hipBlockDim_x + tx;
+
+    // shared data arrays
+    T pivot, val;
+    extern __shared__ double lmem[];
+    T* x = (T*)lmem;
+    T* y = x + hipBlockDim_x;
+
+    // batch instance
+    T* A = load_ptr_batch(AA, bid, shiftA + 1 + lda, strideA);
+    T* X = load_ptr_batch(AA, bid, shiftA + 1, strideA);
+    T* Y = load_ptr_batch(AA, bid, shiftA + lda, strideA);
+    pivot = pivotval[bid];
+
+    // read data from global to shared memory
+    int j = tx * hipBlockDim_y + ty;
+    if(j < n)
+        y[j] = Y[j * lda];
+
+    // scale
+    if(ty == 0 && i < m)
+    {
+        x[tx] = X[i];
+        x[tx] *= pivot;
+        X[i] = x[tx];
+    }
+    __syncthreads();
+
+    // rank update; put computed values back to global memory
+    if(i < m)
+    {
+#pragma unroll
+        for(int j = ty; j < n; j += hipBlockDim_y)
+        {
+            val = A[i + j * lda];
+            val -= x[tx] * y[j];
+            A[i + j * lda] = val;
+        }
+    }
+}
+
 /*************************************************************
-    Launcher of LUfact kernels
+    Launchers of specilized  kernels
 *************************************************************/
+
+/** launcher of getf2_small_kernel **/
 template <typename T, typename U>
 rocblas_status getf2_run_small(rocblas_handle handle,
                                const rocblas_int m,
@@ -144,21 +550,33 @@ rocblas_status getf2_run_small(rocblas_handle handle,
                                const rocblas_stride strideP,
                                rocblas_int* info,
                                const rocblas_int batch_count,
-                               const bool pivot)
+                               const bool pivot,
+                               const rocblas_int offset,
+                               rocblas_int* permut_idx,
+                               const rocblas_stride stride)
 {
 #define RUN_LUFACT_SMALL(DIM)                                                                      \
-    hipLaunchKernelGGL((LUfact_small_kernel<DIM, T>), grid, block, lmemsize, stream, m, A, shiftA, \
-                       lda, strideA, ipiv, shiftP, strideP, info, batch_count, pivot)
+    if(pivot)                                                                                      \
+        hipLaunchKernelGGL((getf2_small_kernel<DIM, T>), grid, block, lmemsize, stream, m, A,      \
+                           shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count, offset, \
+                           permut_idx, stride);                                                    \
+    else                                                                                           \
+        hipLaunchKernelGGL((getf2_npvt_small_kernel<DIM, T>), grid, block, lmemsize, stream, m, A, \
+                           shiftA, lda, strideA, info, batch_count, offset)
 
     // determine sizes
     int opval[] = {GETF2_OPTIM_NGRP};
     rocblas_int ngrp = (batch_count < 2 || m > 32) ? 1 : opval[m - 1];
     rocblas_int blocks = (batch_count - 1) / ngrp + 1;
     rocblas_int nthds = m;
-    rocblas_int msize = (m <= 32) ? GETF2_MAX_COLS : max(m, n);
+    rocblas_int msize;
+    if(pivot)
+        msize = max(m, n);
+    else
+        msize = n + 1;
 
     // prepare kernel launch
-    dim3 grid(blocks, 1, 1);
+    dim3 grid(1, blocks, 1);
     dim3 block(nthds, ngrp, 1);
     size_t lmemsize = msize * ngrp * sizeof(T);
     hipStream_t stream;
@@ -239,10 +657,215 @@ rocblas_status getf2_run_small(rocblas_handle handle,
     return rocblas_status_success;
 }
 
+/** launcher of getf2_panel_kernel **/
+template <typename T, typename U>
+rocblas_status getf2_run_panel(rocblas_handle handle,
+                               const rocblas_int m,
+                               const rocblas_int n,
+                               U A,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               rocblas_int* ipiv,
+                               const rocblas_int shiftP,
+                               const rocblas_stride strideP,
+                               rocblas_int* info,
+                               const rocblas_int batch_count,
+                               const bool pivot,
+                               const rocblas_int offset,
+                               rocblas_int* permut_idx,
+                               const rocblas_stride stride)
+{
+    using S = decltype(std::real(T{}));
+
+    // determine sizes
+    rocblas_int dimy, dimx;
+    if(m <= 8)
+        dimx = 8;
+    else if(m <= 16)
+        dimx = 16;
+    else if(m <= 32)
+        dimx = 32;
+    else if(m <= 64)
+        dimx = 64;
+    else if(m <= 128)
+        dimx = 128;
+    else if(m <= 256)
+        dimx = 256;
+    else if(m <= 512)
+        dimx = 512;
+    else
+        dimx = 1024;
+    dimy = 1024 / dimx;
+
+    // prepare kernel launch
+    dim3 grid(1, 1, batch_count);
+    dim3 block(dimx, dimy, 1);
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    if(pivot)
+    {
+        size_t lmemsize = (dimx + n) * sizeof(T) + dimx * (sizeof(rocblas_int) + sizeof(S));
+        hipLaunchKernelGGL((getf2_panel_kernel<T>), grid, block, lmemsize, stream, m, n, A, shiftA,
+                           lda, strideA, ipiv, shiftP, strideP, info, batch_count, offset,
+                           permut_idx, stride);
+    }
+    else
+    {
+        size_t lmemsize = (dimx + n) * sizeof(T);
+        hipLaunchKernelGGL((getf2_npvt_panel_kernel<T>), grid, block, lmemsize, stream, m, n, A,
+                           shiftA, lda, strideA, info, batch_count, offset);
+    }
+
+    return rocblas_status_success;
+}
+
+/** launcher of getf2_scale_update_kernel **/
+template <typename T, typename U>
+void getf2_run_scale_update(rocblas_handle handle,
+                            const rocblas_int m,
+                            const rocblas_int n,
+                            T* pivotval,
+                            U A,
+                            const rocblas_int shiftA,
+                            const rocblas_int lda,
+                            const rocblas_stride strideA,
+                            const rocblas_int batch_count,
+                            const rocblas_int dimx,
+                            const rocblas_int dimy)
+{
+    size_t lmemsize = sizeof(T) * (dimx + n);
+    rocblas_int blocks = (m - 1) / dimx + 1;
+    dim3 threads(dimx, dimy, 1);
+    dim3 grid(blocks, 1, batch_count);
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    // scale and update trailing matrix with local function
+    hipLaunchKernelGGL((getf2_scale_update_kernel<T>), grid, threads, lmemsize, stream, m, n,
+                       pivotval, A, shiftA, lda, strideA);
+}
+
 /*************************************************************
     Instantiate template methods
 *************************************************************/
+
 // normal and strided_batched cases
+template void getf2_run_scale_update<float, float*>(rocblas_handle,
+                                                    const rocblas_int,
+                                                    const rocblas_int,
+                                                    float*,
+                                                    float*,
+                                                    const rocblas_int,
+                                                    const rocblas_int,
+                                                    const rocblas_stride,
+                                                    const rocblas_int,
+                                                    const rocblas_int,
+                                                    const rocblas_int);
+template void getf2_run_scale_update<double, double*>(rocblas_handle,
+                                                      const rocblas_int,
+                                                      const rocblas_int,
+                                                      double*,
+                                                      double*,
+                                                      const rocblas_int,
+                                                      const rocblas_int,
+                                                      const rocblas_stride,
+                                                      const rocblas_int,
+                                                      const rocblas_int,
+                                                      const rocblas_int);
+template void
+    getf2_run_scale_update<rocblas_float_complex, rocblas_float_complex*>(rocblas_handle,
+                                                                          const rocblas_int,
+                                                                          const rocblas_int,
+                                                                          rocblas_float_complex*,
+                                                                          rocblas_float_complex*,
+                                                                          const rocblas_int,
+                                                                          const rocblas_int,
+                                                                          const rocblas_stride,
+                                                                          const rocblas_int,
+                                                                          const rocblas_int,
+                                                                          const rocblas_int);
+template void
+    getf2_run_scale_update<rocblas_double_complex, rocblas_double_complex*>(rocblas_handle,
+                                                                            const rocblas_int,
+                                                                            const rocblas_int,
+                                                                            rocblas_double_complex*,
+                                                                            rocblas_double_complex*,
+                                                                            const rocblas_int,
+                                                                            const rocblas_int,
+                                                                            const rocblas_stride,
+                                                                            const rocblas_int,
+                                                                            const rocblas_int,
+                                                                            const rocblas_int);
+
+template rocblas_status getf2_run_panel<float, float*>(rocblas_handle,
+                                                       const rocblas_int,
+                                                       const rocblas_int,
+                                                       float*,
+                                                       const rocblas_int,
+                                                       const rocblas_int,
+                                                       const rocblas_stride,
+                                                       rocblas_int*,
+                                                       const rocblas_int,
+                                                       const rocblas_stride,
+                                                       rocblas_int*,
+                                                       const rocblas_int,
+                                                       const bool,
+                                                       const rocblas_int,
+                                                       rocblas_int*,
+                                                       const rocblas_stride);
+template rocblas_status getf2_run_panel<double, double*>(rocblas_handle,
+                                                         const rocblas_int,
+                                                         const rocblas_int,
+                                                         double*,
+                                                         const rocblas_int,
+                                                         const rocblas_int,
+                                                         const rocblas_stride,
+                                                         rocblas_int*,
+                                                         const rocblas_int,
+                                                         const rocblas_stride,
+                                                         rocblas_int*,
+                                                         const rocblas_int,
+                                                         const bool,
+                                                         const rocblas_int,
+                                                         rocblas_int*,
+                                                         const rocblas_stride);
+template rocblas_status
+    getf2_run_panel<rocblas_float_complex, rocblas_float_complex*>(rocblas_handle,
+                                                                   const rocblas_int,
+                                                                   const rocblas_int,
+                                                                   rocblas_float_complex*,
+                                                                   const rocblas_int,
+                                                                   const rocblas_int,
+                                                                   const rocblas_stride,
+                                                                   rocblas_int*,
+                                                                   const rocblas_int,
+                                                                   const rocblas_stride,
+                                                                   rocblas_int*,
+                                                                   const rocblas_int,
+                                                                   const bool,
+                                                                   const rocblas_int,
+                                                                   rocblas_int*,
+                                                                   const rocblas_stride);
+template rocblas_status
+    getf2_run_panel<rocblas_double_complex, rocblas_double_complex*>(rocblas_handle,
+                                                                     const rocblas_int,
+                                                                     const rocblas_int,
+                                                                     rocblas_double_complex*,
+                                                                     const rocblas_int,
+                                                                     const rocblas_int,
+                                                                     const rocblas_stride,
+                                                                     rocblas_int*,
+                                                                     const rocblas_int,
+                                                                     const rocblas_stride,
+                                                                     rocblas_int*,
+                                                                     const rocblas_int,
+                                                                     const bool,
+                                                                     const rocblas_int,
+                                                                     rocblas_int*,
+                                                                     const rocblas_stride);
+
 template rocblas_status getf2_run_small<float, float*>(rocblas_handle,
                                                        const rocblas_int,
                                                        const rocblas_int,
@@ -255,8 +878,10 @@ template rocblas_status getf2_run_small<float, float*>(rocblas_handle,
                                                        const rocblas_stride,
                                                        rocblas_int*,
                                                        const rocblas_int,
-                                                       const bool);
-
+                                                       const bool,
+                                                       const rocblas_int,
+                                                       rocblas_int*,
+                                                       const rocblas_stride);
 template rocblas_status getf2_run_small<double, double*>(rocblas_handle,
                                                          const rocblas_int,
                                                          const rocblas_int,
@@ -269,8 +894,10 @@ template rocblas_status getf2_run_small<double, double*>(rocblas_handle,
                                                          const rocblas_stride,
                                                          rocblas_int*,
                                                          const rocblas_int,
-                                                         const bool);
-
+                                                         const bool,
+                                                         const rocblas_int,
+                                                         rocblas_int*,
+                                                         const rocblas_stride);
 template rocblas_status
     getf2_run_small<rocblas_float_complex, rocblas_float_complex*>(rocblas_handle,
                                                                    const rocblas_int,
@@ -284,8 +911,10 @@ template rocblas_status
                                                                    const rocblas_stride,
                                                                    rocblas_int*,
                                                                    const rocblas_int,
-                                                                   const bool);
-
+                                                                   const bool,
+                                                                   const rocblas_int,
+                                                                   rocblas_int*,
+                                                                   const rocblas_stride);
 template rocblas_status
     getf2_run_small<rocblas_double_complex, rocblas_double_complex*>(rocblas_handle,
                                                                      const rocblas_int,
@@ -299,9 +928,127 @@ template rocblas_status
                                                                      const rocblas_stride,
                                                                      rocblas_int*,
                                                                      const rocblas_int,
-                                                                     const bool);
+                                                                     const bool,
+                                                                     const rocblas_int,
+                                                                     rocblas_int*,
+                                                                     const rocblas_stride);
 
 // batched cases
+
+template void getf2_run_scale_update<float, float* const*>(rocblas_handle,
+                                                           const rocblas_int,
+                                                           const rocblas_int,
+                                                           float*,
+                                                           float* const*,
+                                                           const rocblas_int,
+                                                           const rocblas_int,
+                                                           const rocblas_stride,
+                                                           const rocblas_int,
+                                                           const rocblas_int,
+                                                           const rocblas_int);
+template void getf2_run_scale_update<double, double* const*>(rocblas_handle,
+                                                             const rocblas_int,
+                                                             const rocblas_int,
+                                                             double*,
+                                                             double* const*,
+                                                             const rocblas_int,
+                                                             const rocblas_int,
+                                                             const rocblas_stride,
+                                                             const rocblas_int,
+                                                             const rocblas_int,
+                                                             const rocblas_int);
+template void getf2_run_scale_update<rocblas_float_complex, rocblas_float_complex* const*>(
+    rocblas_handle,
+    const rocblas_int,
+    const rocblas_int,
+    rocblas_float_complex*,
+    rocblas_float_complex* const*,
+    const rocblas_int,
+    const rocblas_int,
+    const rocblas_stride,
+    const rocblas_int,
+    const rocblas_int,
+    const rocblas_int);
+template void getf2_run_scale_update<rocblas_double_complex, rocblas_double_complex* const*>(
+    rocblas_handle,
+    const rocblas_int,
+    const rocblas_int,
+    rocblas_double_complex*,
+    rocblas_double_complex* const*,
+    const rocblas_int,
+    const rocblas_int,
+    const rocblas_stride,
+    const rocblas_int,
+    const rocblas_int,
+    const rocblas_int);
+
+template rocblas_status getf2_run_panel<float, float* const*>(rocblas_handle,
+                                                              const rocblas_int,
+                                                              const rocblas_int,
+                                                              float* const*,
+                                                              const rocblas_int,
+                                                              const rocblas_int,
+                                                              const rocblas_stride,
+                                                              rocblas_int*,
+                                                              const rocblas_int,
+                                                              const rocblas_stride,
+                                                              rocblas_int*,
+                                                              const rocblas_int,
+                                                              const bool,
+                                                              const rocblas_int,
+                                                              rocblas_int*,
+                                                              const rocblas_stride);
+template rocblas_status getf2_run_panel<double, double* const*>(rocblas_handle,
+                                                                const rocblas_int,
+                                                                const rocblas_int,
+                                                                double* const*,
+                                                                const rocblas_int,
+                                                                const rocblas_int,
+                                                                const rocblas_stride,
+                                                                rocblas_int*,
+                                                                const rocblas_int,
+                                                                const rocblas_stride,
+                                                                rocblas_int*,
+                                                                const rocblas_int,
+                                                                const bool,
+                                                                const rocblas_int,
+                                                                rocblas_int*,
+                                                                const rocblas_stride);
+template rocblas_status getf2_run_panel<rocblas_float_complex, rocblas_float_complex* const*>(
+    rocblas_handle,
+    const rocblas_int,
+    const rocblas_int,
+    rocblas_float_complex* const*,
+    const rocblas_int,
+    const rocblas_int,
+    const rocblas_stride,
+    rocblas_int*,
+    const rocblas_int,
+    const rocblas_stride,
+    rocblas_int*,
+    const rocblas_int,
+    const bool,
+    const rocblas_int,
+    rocblas_int*,
+    const rocblas_stride);
+template rocblas_status getf2_run_panel<rocblas_double_complex, rocblas_double_complex* const*>(
+    rocblas_handle,
+    const rocblas_int,
+    const rocblas_int,
+    rocblas_double_complex* const*,
+    const rocblas_int,
+    const rocblas_int,
+    const rocblas_stride,
+    rocblas_int*,
+    const rocblas_int,
+    const rocblas_stride,
+    rocblas_int*,
+    const rocblas_int,
+    const bool,
+    const rocblas_int,
+    rocblas_int*,
+    const rocblas_stride);
+
 template rocblas_status getf2_run_small<float, float* const*>(rocblas_handle,
                                                               const rocblas_int,
                                                               const rocblas_int,
@@ -314,8 +1061,10 @@ template rocblas_status getf2_run_small<float, float* const*>(rocblas_handle,
                                                               const rocblas_stride,
                                                               rocblas_int*,
                                                               const rocblas_int,
-                                                              const bool);
-
+                                                              const bool,
+                                                              const rocblas_int,
+                                                              rocblas_int*,
+                                                              const rocblas_stride);
 template rocblas_status getf2_run_small<double, double* const*>(rocblas_handle,
                                                                 const rocblas_int,
                                                                 const rocblas_int,
@@ -328,8 +1077,10 @@ template rocblas_status getf2_run_small<double, double* const*>(rocblas_handle,
                                                                 const rocblas_stride,
                                                                 rocblas_int*,
                                                                 const rocblas_int,
-                                                                const bool);
-
+                                                                const bool,
+                                                                const rocblas_int,
+                                                                rocblas_int*,
+                                                                const rocblas_stride);
 template rocblas_status getf2_run_small<rocblas_float_complex, rocblas_float_complex* const*>(
     rocblas_handle,
     const rocblas_int,
@@ -343,8 +1094,10 @@ template rocblas_status getf2_run_small<rocblas_float_complex, rocblas_float_com
     const rocblas_stride,
     rocblas_int*,
     const rocblas_int,
-    const bool);
-
+    const bool,
+    const rocblas_int,
+    rocblas_int*,
+    const rocblas_stride);
 template rocblas_status getf2_run_small<rocblas_double_complex, rocblas_double_complex* const*>(
     rocblas_handle,
     const rocblas_int,
@@ -358,6 +1111,9 @@ template rocblas_status getf2_run_small<rocblas_double_complex, rocblas_double_c
     const rocblas_stride,
     rocblas_int*,
     const rocblas_int,
-    const bool);
+    const bool,
+    const rocblas_int,
+    rocblas_int*,
+    const rocblas_stride);
 
 #endif // OPTIMAL
