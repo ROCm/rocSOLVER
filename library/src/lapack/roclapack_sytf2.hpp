@@ -14,7 +14,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <int MAX_THDS, typename T>
+template <int MAX_THDS, typename T, typename S>
 __device__ void sytf2_device_upper(const rocblas_int tid,
                                    const rocblas_int n,
                                    T* A,
@@ -22,9 +22,8 @@ __device__ void sytf2_device_upper(const rocblas_int tid,
                                    rocblas_int* ipiv,
                                    rocblas_int* info,
                                    rocblas_int* sidx,
-                                   T* sval)
+                                   S* sval)
 {
-    using S = decltype(std::real(T{}));
     const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
 
     // local and shared variables
@@ -51,7 +50,7 @@ __device__ void sytf2_device_upper(const rocblas_int tid,
         if(tid == 0)
         {
             imax = sidx[0] - 1;
-            colmax = aabs<S>(sval[0]);
+            colmax = sval[0];
             absakk = aabs<S>(A[k + k * lda]);
         }
         __syncthreads();
@@ -73,13 +72,13 @@ __device__ void sytf2_device_upper(const rocblas_int tid,
                 // find max off-diagonal entry in row i
                 iamax<MAX_THDS>(tid, k - imax, A + imax + (imax + 1) * lda, lda, sval, sidx);
                 if(tid == 0)
-                    rowmax = aabs<S>(sval[0]);
+                    rowmax = sval[0];
 
                 if(imax > 0)
                 {
                     iamax<MAX_THDS>(tid, imax, A + imax * lda, 1, sval, sidx);
                     if(tid == 0)
-                        rowmax = max(rowmax, aabs<S>(sval[0]));
+                        rowmax = max(rowmax, sval[0]);
                 }
                 __syncthreads();
 
@@ -186,7 +185,7 @@ __device__ void sytf2_device_upper(const rocblas_int tid,
         *info = _info;
 }
 
-template <int MAX_THDS, typename T>
+template <int MAX_THDS, typename T, typename S>
 __device__ void sytf2_device_lower(const rocblas_int tid,
                                    const rocblas_int n,
                                    T* A,
@@ -194,9 +193,8 @@ __device__ void sytf2_device_lower(const rocblas_int tid,
                                    rocblas_int* ipiv,
                                    rocblas_int* info,
                                    rocblas_int* sidx,
-                                   T* sval)
+                                   S* sval)
 {
-    using S = decltype(std::real(T{}));
     const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
 
     // local and shared variables
@@ -223,7 +221,7 @@ __device__ void sytf2_device_lower(const rocblas_int tid,
         if(tid == 0)
         {
             imax = k + sidx[0];
-            colmax = aabs<S>(sval[0]);
+            colmax = sval[0];
             absakk = aabs<S>(A[k + k * lda]);
         }
         __syncthreads();
@@ -245,13 +243,13 @@ __device__ void sytf2_device_lower(const rocblas_int tid,
                 // find max off-diagonal entry in row i
                 iamax<MAX_THDS>(tid, imax - k, A + imax + k * lda, lda, sval, sidx);
                 if(tid == 0)
-                    rowmax = aabs<S>(sval[0]);
+                    rowmax = sval[0];
 
                 if(imax < n - 1)
                 {
                     iamax<MAX_THDS>(tid, n - imax - 1, A + (imax + 1) + imax * lda, 1, sval, sidx);
                     if(tid == 0)
-                        rowmax = max(rowmax, aabs<S>(sval[0]));
+                        rowmax = max(rowmax, sval[0]);
                 }
                 __syncthreads();
 
@@ -373,6 +371,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                        const rocblas_stride strideP,
                        rocblas_int* infoA)
 {
+    using S = decltype(std::real(T{}));
+
     // select batch instance
     rocblas_int bid = hipBlockIdx_y;
     rocblas_int tid = hipThreadIdx_x;
@@ -382,7 +382,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
     rocblas_int* ipiv = ipivA + (bid * strideP);
 
     // shared arrays
-    __shared__ T sval[SYTF2_MAX_THDS];
+    __shared__ S sval[SYTF2_MAX_THDS];
     __shared__ rocblas_int sidx[SYTF2_MAX_THDS];
 
     sytf2_device_upper<SYTF2_MAX_THDS>(tid, n, A, lda, ipiv, infoA + bid, sidx, sval);
@@ -399,6 +399,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
                        const rocblas_stride strideP,
                        rocblas_int* infoA)
 {
+    using S = decltype(std::real(T{}));
+
     // select batch instance
     rocblas_int bid = hipBlockIdx_y;
     rocblas_int tid = hipThreadIdx_x;
@@ -408,7 +410,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
     rocblas_int* ipiv = ipivA + (bid * strideP);
 
     // shared arrays
-    __shared__ T sval[SYTF2_MAX_THDS];
+    __shared__ S sval[SYTF2_MAX_THDS];
     __shared__ rocblas_int sidx[SYTF2_MAX_THDS];
 
     sytf2_device_lower<SYTF2_MAX_THDS>(tid, n, A, lda, ipiv, infoA + bid, sidx, sval);

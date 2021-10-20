@@ -13,7 +13,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <int MAX_THDS, typename T>
+template <int MAX_THDS, typename T, typename S>
 __device__ void lasyf_device_upper(const rocblas_int tid,
                                    const rocblas_int n,
                                    const rocblas_int nb,
@@ -24,9 +24,8 @@ __device__ void lasyf_device_upper(const rocblas_int tid,
                                    rocblas_int* info,
                                    T* W,
                                    rocblas_int* sidx,
-                                   T* sval)
+                                   S* sval)
 {
-    using S = decltype(std::real(T{}));
     const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
     const T one = 1;
     const T minone = -1;
@@ -68,7 +67,7 @@ __device__ void lasyf_device_upper(const rocblas_int tid,
         if(tid == 0)
         {
             imax = sidx[0] - 1;
-            colmax = aabs<S>(sval[0]);
+            colmax = sval[0];
             absakk = aabs<S>(W[k + kw * ldw]);
         }
         __syncthreads();
@@ -103,13 +102,13 @@ __device__ void lasyf_device_upper(const rocblas_int tid,
                 // find max off-diagonal entry in row imax
                 iamax<MAX_THDS>(tid, k - imax, W + (imax + 1) + (kw - 1) * ldw, 1, sval, sidx);
                 if(tid == 0)
-                    rowmax = aabs<S>(sval[0]);
+                    rowmax = sval[0];
 
                 if(imax > 0)
                 {
                     iamax<MAX_THDS>(tid, imax, W + (kw - 1) * ldw, 1, sval, sidx);
                     if(tid == 0)
-                        rowmax = max(rowmax, aabs<S>(sval[0]));
+                        rowmax = max(rowmax, sval[0]);
                 }
                 __syncthreads();
 
@@ -250,7 +249,7 @@ __device__ void lasyf_device_upper(const rocblas_int tid,
     }
 }
 
-template <int MAX_THDS, typename T>
+template <int MAX_THDS, typename T, typename S>
 __device__ void lasyf_device_lower(const rocblas_int tid,
                                    const rocblas_int n,
                                    const rocblas_int nb,
@@ -261,9 +260,8 @@ __device__ void lasyf_device_lower(const rocblas_int tid,
                                    rocblas_int* info,
                                    T* W,
                                    rocblas_int* sidx,
-                                   T* sval)
+                                   S* sval)
 {
-    using S = decltype(std::real(T{}));
     const S alpha = S((1.0 + std::sqrt(17.0)) / 8.0);
     const T one = 1;
     const T minone = -1;
@@ -301,7 +299,7 @@ __device__ void lasyf_device_lower(const rocblas_int tid,
         if(tid == 0)
         {
             imax = k + sidx[0];
-            colmax = aabs<S>(sval[0]);
+            colmax = sval[0];
             absakk = aabs<S>(W[k + k * ldw]);
         }
         __syncthreads();
@@ -333,13 +331,13 @@ __device__ void lasyf_device_lower(const rocblas_int tid,
                 // find max off-diagonal entry in row imax
                 iamax<MAX_THDS>(tid, imax - k, W + k + (k + 1) * ldw, 1, sval, sidx);
                 if(tid == 0)
-                    rowmax = aabs<S>(sval[0]);
+                    rowmax = sval[0];
 
                 if(imax < n - 1)
                 {
                     iamax<MAX_THDS>(tid, n - imax - 1, W + (imax + 1) + (k + 1) * ldw, 1, sval, sidx);
                     if(tid == 0)
-                        rowmax = max(rowmax, aabs<S>(sval[0]));
+                        rowmax = max(rowmax, sval[0]);
                 }
                 __syncthreads();
 
@@ -493,6 +491,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                        rocblas_int* infoA,
                        T* WA)
 {
+    using S = decltype(std::real(T{}));
+
     // select batch instance
     rocblas_int bid = hipBlockIdx_y;
     rocblas_int tid = hipThreadIdx_x;
@@ -503,7 +503,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     rocblas_int* ipiv = ipivA + (bid * strideP);
 
     // shared arrays
-    __shared__ T sval[LASYF_MAX_THDS];
+    __shared__ S sval[LASYF_MAX_THDS];
     __shared__ rocblas_int sidx[LASYF_MAX_THDS];
 
     lasyf_device_upper<LASYF_MAX_THDS>(tid, n, nb, kbA + bid, A, lda, ipiv, infoA + bid, W, sidx,
@@ -524,6 +524,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
                        rocblas_int* infoA,
                        T* WA)
 {
+    using S = decltype(std::real(T{}));
+
     // select batch instance
     rocblas_int bid = hipBlockIdx_y;
     rocblas_int tid = hipThreadIdx_x;
@@ -534,7 +536,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     rocblas_int* ipiv = ipivA + (bid * strideP);
 
     // shared arrays
-    __shared__ T sval[LASYF_MAX_THDS];
+    __shared__ S sval[LASYF_MAX_THDS];
     __shared__ rocblas_int sidx[LASYF_MAX_THDS];
 
     lasyf_device_lower<LASYF_MAX_THDS>(tid, n, nb, kbA + bid, A, lda, ipiv, infoA + bid, W, sidx,

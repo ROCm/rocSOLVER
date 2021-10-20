@@ -27,6 +27,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
                        rocblas_int* info,
                        T* WA)
 {
+    using S = decltype(std::real(T{}));
+
     // select batch instance
     rocblas_int bid = hipBlockIdx_y;
     rocblas_int tid = hipThreadIdx_x;
@@ -42,7 +44,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
     int k = n - 1;
 
     // shared arrays
-    __shared__ T sval[SYTRF_MAX_THDS];
+    __shared__ S sval[SYTRF_MAX_THDS];
     __shared__ rocblas_int sidx[SYTRF_MAX_THDS];
 
     if(tid == 0)
@@ -79,6 +81,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
                        rocblas_int* info,
                        T* WA)
 {
+    using S = decltype(std::real(T{}));
+
     // select batch instance
     rocblas_int bid = hipBlockIdx_y;
     rocblas_int tid = hipThreadIdx_x;
@@ -95,7 +99,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
     int ktemp, j;
 
     // shared arrays
-    __shared__ T sval[SYTRF_MAX_THDS];
+    __shared__ S sval[SYTRF_MAX_THDS];
     __shared__ rocblas_int sidx[SYTRF_MAX_THDS];
 
     if(tid == 0)

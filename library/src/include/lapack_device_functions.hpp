@@ -676,18 +676,16 @@ __device__ void lasrt_increasing(const rocblas_int n, T* D, rocblas_int* stack)
 /** IAMAX finds the maximum element of a given vector and its index.
     MAX_THDS should be 128, 256, 512, or 1024, and sval and sidx should
     be shared arrays of size MAX_THDS. **/
-template <int MAX_THDS, typename T>
+template <int MAX_THDS, typename T, typename S>
 __device__ void iamax(const rocblas_int tid,
                       const rocblas_int n,
                       T* A,
                       const rocblas_int incA,
-                      T* sval,
+                      S* sval,
                       rocblas_int* sidx)
 {
-    using S = decltype(std::real(T{}));
-
     // local memory setup
-    T val1, val2;
+    S val1, val2;
     rocblas_int idx1, idx2;
 
     // read into shared memory while doing initial step
@@ -696,9 +694,9 @@ __device__ void iamax(const rocblas_int tid,
     idx1 = INT_MAX;
     for(int i = tid; i < n; i += MAX_THDS)
     {
-        val2 = A[i * incA];
+        val2 = aabs<S>(A[i * incA]);
         idx2 = i + 1; // add one to make it 1-based index
-        if(aabs<S>(val1) < aabs<S>(val2) || idx1 == INT_MAX)
+        if(val1 < val2 || idx1 == INT_MAX)
         {
             val1 = val2;
             idx1 = idx2;
@@ -722,7 +720,7 @@ __device__ void iamax(const rocblas_int tid,
         {
             val2 = sval[tid + i];
             idx2 = sidx[tid + i];
-            if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
+            if((val1 < val2) || (val1 == val2 && idx1 > idx2))
             {
                 sval[tid] = val1 = val2;
                 sidx[tid] = idx1 = idx2;
@@ -739,7 +737,7 @@ __device__ void iamax(const rocblas_int tid,
         {
             val2 = sval[tid + 64];
             idx2 = sidx[tid + 64];
-            if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
+            if((val1 < val2) || (val1 == val2 && idx1 > idx2))
             {
                 sval[tid] = val1 = val2;
                 sidx[tid] = idx1 = idx2;
@@ -747,42 +745,42 @@ __device__ void iamax(const rocblas_int tid,
         }
         val2 = sval[tid + 32];
         idx2 = sidx[tid + 32];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
+        if((val1 < val2) || (val1 == val2 && idx1 > idx2))
         {
             sval[tid] = val1 = val2;
             sidx[tid] = idx1 = idx2;
         }
         val2 = sval[tid + 16];
         idx2 = sidx[tid + 16];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
+        if((val1 < val2) || (val1 == val2 && idx1 > idx2))
         {
             sval[tid] = val1 = val2;
             sidx[tid] = idx1 = idx2;
         }
         val2 = sval[tid + 8];
         idx2 = sidx[tid + 8];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
+        if((val1 < val2) || (val1 == val2 && idx1 > idx2))
         {
             sval[tid] = val1 = val2;
             sidx[tid] = idx1 = idx2;
         }
         val2 = sval[tid + 4];
         idx2 = sidx[tid + 4];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
+        if((val1 < val2) || (val1 == val2 && idx1 > idx2))
         {
             sval[tid] = val1 = val2;
             sidx[tid] = idx1 = idx2;
         }
         val2 = sval[tid + 2];
         idx2 = sidx[tid + 2];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
+        if((val1 < val2) || (val1 == val2 && idx1 > idx2))
         {
             sval[tid] = val1 = val2;
             sidx[tid] = idx1 = idx2;
         }
         val2 = sval[tid + 1];
         idx2 = sidx[tid + 1];
-        if(aabs<S>(val1) < aabs<S>(val2) || (aabs<S>(val1) == aabs<S>(val2) && idx1 > idx2))
+        if((val1 < val2) || (val1 == val2 && idx1 > idx2))
         {
             sval[tid] = val1 = val2;
             sidx[tid] = idx1 = idx2;
