@@ -10,9 +10,6 @@
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_GETF2_SMALL(double, double*);
-INSTANTIATE_GETF2_SMALL(double, double* const*);
-
 INSTANTIATE_GETF2_PANEL(double, double*);
 INSTANTIATE_GETF2_PANEL(double, double* const*);
 

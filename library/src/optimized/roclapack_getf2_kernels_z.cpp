@@ -10,9 +10,6 @@
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_GETF2_SMALL(rocblas_double_complex, rocblas_double_complex*);
-INSTANTIATE_GETF2_SMALL(rocblas_double_complex, rocblas_double_complex* const*);
-
 INSTANTIATE_GETF2_PANEL(rocblas_double_complex, rocblas_double_complex*);
 INSTANTIATE_GETF2_PANEL(rocblas_double_complex, rocblas_double_complex* const*);
 

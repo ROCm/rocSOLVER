@@ -161,6 +161,14 @@ set(rocsolver_optimized_source
   optimized/roclapack_getf2_kernels_d.cpp
   optimized/roclapack_getf2_kernels_c.cpp
   optimized/roclapack_getf2_kernels_z.cpp
+  optimized/roclapack_getf2_small_s.cpp
+  optimized/roclapack_getf2_small_d.cpp
+  optimized/roclapack_getf2_small_c.cpp
+  optimized/roclapack_getf2_small_z.cpp
+  optimized/roclapack_getf2_small_sb.cpp
+  optimized/roclapack_getf2_small_db.cpp
+  optimized/roclapack_getf2_small_cb.cpp
+  optimized/roclapack_getf2_small_zb.cpp
   # getri
   optimized/roclapack_getri_kernels_s.cpp
   optimized/roclapack_getri_kernels_d.cpp
