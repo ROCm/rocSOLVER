@@ -260,8 +260,7 @@ public:
     static __forceinline__ bool is_kernel_logging_enabled()
     {
         return (rocsolver_logger::_instance != nullptr)
-            && (rocsolver_logger::_instance->layer_mode
-                & rocblas_layer_mode_ex_log_kernel);
+            && (rocsolver_logger::_instance->layer_mode & rocblas_layer_mode_ex_log_kernel);
     }
 
     // logging function to be called upon entering a top-level (i.e. impl) function
