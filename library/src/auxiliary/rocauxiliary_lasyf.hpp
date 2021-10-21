@@ -56,7 +56,7 @@ __device__ void lasyf_device_upper(const rocblas_int tid,
         if(k < n - 1)
         {
             gemv<MAX_THDS>(tid, k + 1, n - k - 1, &minone, A + (k + 1) * lda, lda,
-                                 W + k + (kw + 1) * ldw, ldw, &one, W + kw * ldw, 1);
+                           W + k + (kw + 1) * ldw, ldw, &one, W + kw * ldw, 1);
             __syncthreads();
         }
 
@@ -95,7 +95,7 @@ __device__ void lasyf_device_upper(const rocblas_int tid,
                 if(k < n - 1)
                 {
                     gemv<MAX_THDS>(tid, k + 1, n - k - 1, &minone, A + (k + 1) * lda, lda,
-                                         W + imax + (kw + 1) * ldw, ldw, &one, W + (kw - 1) * ldw, 1);
+                                   W + imax + (kw + 1) * ldw, ldw, &one, W + (kw - 1) * ldw, 1);
                     __syncthreads();
                 }
 
@@ -219,9 +219,9 @@ __device__ void lasyf_device_upper(const rocblas_int tid,
         int jb = min(nb, k - j + 1);
         for(i = j; i < j + jb; i++)
             gemv<MAX_THDS>(tid, i - j + 1, n - k - 1, &minone, A + j + (k + 1) * lda, lda,
-                                 W + i + (kw + 1) * ldw, ldw, &one, A + j + i * lda, 1);
+                           W + i + (kw + 1) * ldw, ldw, &one, A + j + i * lda, 1);
         gemm_btrans<MAX_THDS>(tid, j, jb, n - k - 1, &minone, A + (k + 1) * lda, lda,
-                                    W + j + (kw + 1) * ldw, ldw, &one, A + j * lda, lda);
+                              W + j + (kw + 1) * ldw, ldw, &one, A + j * lda, lda);
     }
     __syncthreads();
 
@@ -288,8 +288,7 @@ __device__ void lasyf_device_lower(const rocblas_int tid,
         for(i = tid; i < n - k; i += MAX_THDS)
             W[(k + i) + k * ldw] = A[(k + i) + k * lda];
         __syncthreads();
-        gemv<MAX_THDS>(tid, n - k, k, &minone, A + k, lda, W + k, ldw, &one, W + k + k * ldw,
-                             1);
+        gemv<MAX_THDS>(tid, n - k, k, &minone, A + k, lda, W + k, ldw, &one, W + k + k * ldw, 1);
         __syncthreads();
 
         kstep = 1;
@@ -325,7 +324,7 @@ __device__ void lasyf_device_lower(const rocblas_int tid,
                     W[(imax + i) + (k + 1) * ldw] = A[(imax + i) + imax * lda];
                 __syncthreads();
                 gemv<MAX_THDS>(tid, n - k, k, &minone, A + k, lda, W + imax, ldw, &one,
-                                     W + k + (k + 1) * ldw, 1);
+                               W + k + (k + 1) * ldw, 1);
                 __syncthreads();
 
                 // find max off-diagonal entry in row imax
@@ -446,10 +445,10 @@ __device__ void lasyf_device_lower(const rocblas_int tid,
         int jb = min(nb, n - j);
         for(i = j; i < j + jb; i++)
             gemv<MAX_THDS>(tid, j + jb - i, k, &minone, A + i, lda, W + i, ldw, &one,
-                                 A + i + i * lda, 1);
+                           A + i + i * lda, 1);
         if(j + jb < n)
-            gemm_btrans<MAX_THDS>(tid, n - j - jb, jb, k, &minone, A + (j + jb), lda, W + j,
-                                        ldw, &one, A + (j + jb) + j * lda, lda);
+            gemm_btrans<MAX_THDS>(tid, n - j - jb, jb, k, &minone, A + (j + jb), lda, W + j, ldw,
+                                  &one, A + (j + jb) + j * lda, lda);
     }
     __syncthreads();
 
