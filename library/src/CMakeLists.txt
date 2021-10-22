@@ -155,31 +155,33 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_lasyf.cpp
 )
 
-set(rocsolver_optimized_source
-  # getf2
-  optimized/roclapack_getf2_kernels_s.cpp
-  optimized/roclapack_getf2_kernels_d.cpp
-  optimized/roclapack_getf2_kernels_c.cpp
-  optimized/roclapack_getf2_kernels_z.cpp
-  optimized/roclapack_getf2_small_s.cpp
-  optimized/roclapack_getf2_small_d.cpp
-  optimized/roclapack_getf2_small_c.cpp
-  optimized/roclapack_getf2_small_z.cpp
-  optimized/roclapack_getf2_small_sb.cpp
-  optimized/roclapack_getf2_small_db.cpp
-  optimized/roclapack_getf2_small_cb.cpp
-  optimized/roclapack_getf2_small_zb.cpp
-  # getri
-  optimized/roclapack_getri_kernels_s.cpp
-  optimized/roclapack_getri_kernels_d.cpp
-  optimized/roclapack_getri_kernels_c.cpp
-  optimized/roclapack_getri_kernels_z.cpp
-  # trtri
-  optimized/roclapack_trtri_kernels_s.cpp
-  optimized/roclapack_trtri_kernels_d.cpp
-  optimized/roclapack_trtri_kernels_c.cpp
-  optimized/roclapack_trtri_kernels_z.cpp
-)
+if(OPTIMAL)
+  set(rocsolver_specialized_source
+    # getf2
+    specialized/roclapack_getf2_specialized_kernels_s.cpp
+    specialized/roclapack_getf2_specialized_kernels_d.cpp
+    specialized/roclapack_getf2_specialized_kernels_c.cpp
+    specialized/roclapack_getf2_specialized_kernels_z.cpp
+    specialized/roclapack_getf2_small_s.cpp
+    specialized/roclapack_getf2_small_d.cpp
+    specialized/roclapack_getf2_small_c.cpp
+    specialized/roclapack_getf2_small_z.cpp
+    specialized/roclapack_getf2_small_sb.cpp
+    specialized/roclapack_getf2_small_db.cpp
+    specialized/roclapack_getf2_small_cb.cpp
+    specialized/roclapack_getf2_small_zb.cpp
+    # getri
+    specialized/roclapack_getri_specialized_kernels_s.cpp
+    specialized/roclapack_getri_specialized_kernels_d.cpp
+    specialized/roclapack_getri_specialized_kernels_c.cpp
+    specialized/roclapack_getri_specialized_kernels_z.cpp
+    # trtri
+    specialized/roclapack_trtri_specialized_kernels_s.cpp
+    specialized/roclapack_trtri_specialized_kernels_d.cpp
+    specialized/roclapack_trtri_specialized_kernels_c.cpp
+    specialized/roclapack_trtri_specialized_kernels_z.cpp
+  )
+endif()
 
 set(auxiliaries
   common/buildinfo.cpp
@@ -191,7 +193,7 @@ prepend_path(".." rocsolver_headers_public relative_rocsolver_headers_public)
 add_library(rocsolver
   ${relative_rocsolver_headers_public}
   ${auxiliaries}
-  ${rocsolver_optimized_source}
+  ${rocsolver_specialized_source}
   ${rocsolver_auxiliary_source}
   ${rocsolver_lapack_source}
 )

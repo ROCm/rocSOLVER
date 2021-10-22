@@ -12,7 +12,7 @@
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
-#include "rocsolver_small_kernels.hpp"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void invdiag(const rocblas_diagonal diag,

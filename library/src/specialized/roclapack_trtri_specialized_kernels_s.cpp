@@ -2,15 +2,11 @@
  * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "roclapack_getri_kernels.hpp"
-
-#ifdef OPTIMAL
+#include "roclapack_trtri_specialized_kernels.hpp"
 
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_GETRI_SMALL(float, float*);
-INSTANTIATE_GETRI_SMALL(float, float* const*);
-
-#endif
+INSTANTIATE_TRTI2_SMALL(float, float*);
+INSTANTIATE_TRTI2_SMALL(float, float* const*);

@@ -8,9 +8,7 @@
 
 #pragma once
 
-#include "rocsolver_small_kernels.hpp"
-
-#ifdef OPTIMAL
+#include "rocsolver_run_specialized_kernels.hpp"
 
 /*************************************************************
     Templated kernels are instantiated in separate cpp
@@ -774,5 +772,3 @@ void getf2_run_scale_update(rocblas_handle handle,
         rocblas_handle handle, const rocblas_int m, const rocblas_int n, T* pivotval, U A, \
         const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,     \
         const rocblas_int batch_count, const rocblas_int dimx, const rocblas_int dimy)
-
-#endif // OPTIMAL

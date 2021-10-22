@@ -2,18 +2,11 @@
  * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "roclapack_getf2_kernels.hpp"
-
-#ifdef OPTIMAL
+#include "roclapack_getri_specialized_kernels.hpp"
 
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_GETF2_PANEL(float, float*);
-INSTANTIATE_GETF2_PANEL(float, float* const*);
-
-INSTANTIATE_GETF2_SCALE_UPDATE(float, float*);
-INSTANTIATE_GETF2_SCALE_UPDATE(float, float* const*);
-
-#endif
+INSTANTIATE_GETRI_SMALL(rocblas_float_complex, rocblas_float_complex*);
+INSTANTIATE_GETRI_SMALL(rocblas_float_complex, rocblas_float_complex* const*);
