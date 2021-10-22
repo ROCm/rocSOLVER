@@ -117,6 +117,7 @@ LAPACK main functions
     :ref:`rocsolver_getf2 <getf2>`, x, x, x, x
     :ref:`rocsolver_getrf <getrf>`, x, x, x, x
     :ref:`rocsolver_sytf2 <sytf2>`, x, x, x, x
+    :ref:`rocsolver_sytrf <sytrf>`, x, x, x, x
 
 .. csv-table:: Orthogonal factorizations
     :header: "Function", "single", "double", "single complex", "double complex"

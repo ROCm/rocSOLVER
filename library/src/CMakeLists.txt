@@ -55,6 +55,9 @@ set(rocsolver_lapack_source
   lapack/roclapack_sytf2.cpp
   lapack/roclapack_sytf2_batched.cpp
   lapack/roclapack_sytf2_strided_batched.cpp
+  lapack/roclapack_sytrf.cpp
+  lapack/roclapack_sytrf_batched.cpp
+  lapack/roclapack_sytrf_strided_batched.cpp
   # orthogonal factorizations
   lapack/roclapack_geqr2.cpp
   lapack/roclapack_geqr2_batched.cpp

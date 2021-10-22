@@ -199,6 +199,38 @@ rocsolver_<type>sytf2_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_ssytf2_strided_batched
 
+.. _sytrf:
+
+rocsolver_<type>sytrf()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zsytrf
+   :outline:
+.. doxygenfunction:: rocsolver_csytrf
+   :outline:
+.. doxygenfunction:: rocsolver_dsytrf
+   :outline:
+.. doxygenfunction:: rocsolver_ssytrf
+
+rocsolver_<type>sytrf_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zsytrf_batched
+   :outline:
+.. doxygenfunction:: rocsolver_csytrf_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dsytrf_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssytrf_batched
+
+rocsolver_<type>sytrf_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zsytrf_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_csytrf_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dsytrf_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssytrf_strided_batched
+
 
 
 .. _orthogonal:

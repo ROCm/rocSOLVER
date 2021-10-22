@@ -229,10 +229,10 @@ INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          SYTF2,
                          Combine(ValuesIn(matrix_size_range), ValuesIn(uplo_range)));
 
-// INSTANTIATE_TEST_SUITE_P(daily_lapack,
-//                          SYTRF,
-//                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(uplo_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         SYTRF,
+                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(uplo_range)));
 
-// INSTANTIATE_TEST_SUITE_P(checkin_lapack,
-//                          SYTRF,
-//                          Combine(ValuesIn(matrix_size_range), ValuesIn(uplo_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         SYTRF,
+                         Combine(ValuesIn(matrix_size_range), ValuesIn(uplo_range)));
