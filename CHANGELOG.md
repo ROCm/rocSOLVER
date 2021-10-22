@@ -25,6 +25,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Optimized
 - Improved general performance of LU factorization
 - Increased parallelism of specialized kernels when compiling from source, reducing build times on multi-core systems.
+- Improved general performance of LU factorization (non-batched routines)
 
 ### Changed
 - The rocsolver-test client now prints the rocSOLVER version used to run the tests,

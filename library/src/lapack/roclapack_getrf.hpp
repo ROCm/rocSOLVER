@@ -14,6 +14,148 @@
 #include "roclapack_getf2.hpp"
 #include "rocsolver.h"
 
+/** Execute all permutations dictated by the panel factorization
+    in parallel (concurrency by rows and columns) **/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int m,
+                                          const rocblas_int n,
+                                          const rocblas_int offset,
+                                          const rocblas_int blk,
+                                          U AA,
+                                          const rocblas_int shiftA,
+                                          const rocblas_int lda,
+                                          const rocblas_stride strideA,
+                                          rocblas_int* pividx)
+{
+    int id = hipBlockIdx_z;
+    int tx = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int bdx = hipBlockDim_x;
+    int j = hipBlockIdx_y * hipBlockDim_y + ty;
+    if(j >= offset)
+        j += blk;
+
+    if(j < n)
+    {
+        // batch instance
+        T* A = load_ptr_batch(AA, id, shiftA, strideA);
+        rocblas_int* piv = pividx + id * m;
+
+        // shared mem for temporary values
+        extern __shared__ double lmem[];
+        T* temp = (T*)lmem;
+
+        // do permutations in parallel (each tx perform a row swap)
+        rocblas_int idx1 = piv[tx];
+        rocblas_int idx2 = piv[idx1];
+        temp[tx + ty * bdx] = A[idx1 + j * lda];
+        A[idx1 + j * lda] = A[idx2 + j * lda];
+        __syncthreads();
+
+        // copy temp results back to A
+        A[tx + j * lda] = temp[tx + ty * bdx];
+    }
+}
+
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+rocblas_status getrf_panelLU(rocblas_handle handle,
+                             const rocblas_int m,
+                             const rocblas_int n,
+                             U A,
+                             const rocblas_int shiftA,
+                             const rocblas_int lda,
+                             const rocblas_stride strideA,
+                             rocblas_int* ipiv,
+                             const rocblas_int shiftP,
+                             const rocblas_stride strideP,
+                             rocblas_int* info,
+                             const rocblas_int batch_count,
+                             const bool pivot,
+                             T* scalars,
+                             void* work1,
+                             void* work2,
+                             void* work3,
+                             void* work4,
+                             const bool optim_mem,
+                             T* pivotval,
+                             rocblas_int* pivotidx,
+                             const rocblas_int offset,
+                             rocblas_int* permut_idx,
+                             const rocblas_stride stridePI)
+{
+    static constexpr bool ISBATCHED = BATCHED || STRIDED;
+    
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    // constants to use when calling rocablas functions
+    T one = 1; // constant 1 in host
+    T minone = -1; // constant -1 in host
+
+rocblas_int minblk = atoi(getenv("BLK"));
+
+    if(n <= minblk) // Base case
+    {
+        return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
+                                                      shiftP, strideP, info, batch_count, scalars, pivotval,
+                                                      pivotidx, pivot, offset, permut_idx, stridePI);
+    }
+
+    else            // recursion
+    {
+        // halve the dimension and factorize
+        rocblas_int nin = n / 2;
+        rocblas_int nout = n - nin;
+        getrf_panelLU<BATCHED, STRIDED, T>(handle, m, nin, A, shiftA, lda, strideA, ipiv, shiftP, strideP, 
+                                           info, batch_count, pivot, scalars, work1, work2, work3, work4,
+                                           optim_mem, pivotval, pivotidx, offset, permut_idx, stridePI);
+
+        if(pivot)
+        {
+            rocblas_int dimx = nin;
+            rocblas_int dimy = 1024 / dimx;
+            rocblas_int blocks = (nout - 1) / dimy + 1;
+            dim3 grid(1, blocks, batch_count);
+            dim3 threads(dimx, dimy, 1);
+            size_t lmemsize = dimx * dimy * sizeof(T);
+
+            // swap rows
+            hipLaunchKernelGGL(getrf_row_permutate<T>, grid, threads, lmemsize, stream, m, n,
+                               0, nin, A, shiftA, lda, strideA, iipiv);
+        }
+
+            // update trailing sub-block
+            if(k + jb1 < jb)
+            {
+                rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
+                                             rocblas_operation_none, rocblas_diagonal_unit, jb1,
+                                             jb - k - jb1, &one, A,
+                                             shiftA + idx2D(j + k, j + k, lda), lda, strideA, A,
+                                             shiftA + idx2D(j + k, j + k + jb1, lda), lda, strideA,
+                                             batch_count, optim_mem, work1, work2, work3, work4);
+
+                if(k + jb1 < m - j)
+                {
+                    rocblasCall_gemm<BATCHED, STRIDED, T>(
+                        handle, rocblas_operation_none, rocblas_operation_none, m - j - k - jb1,
+                        jb - k - jb1, jb1, &minone, A, shiftA + idx2D(j + k + jb1, j + k, lda), lda,
+                        strideA, A, shiftA + idx2D(j + k, j + k + jb1, lda), lda, strideA, &one, A,
+                        shiftA + idx2D(j + k + jb1, j + k + jb1, lda), lda, strideA, batch_count,
+                        nullptr);
+                }
+            }
+
+        
+    }
+
+    return rocsolver_getf2_template<ISBATCHED, T>(
+                handle, m, n, A, shiftA, lda, strideA, ipiv,
+                shiftP, strideP, info, batch_count, scalars, pivotval, pivotidx, pivot,
+                offset, permut_idx, stridePI);
+}
+
+
+
 /** This function returns the outer block size based on defined variables
     tunable by the user (defined in ideal_sizes.hpp) **/
 template <bool ISBATCHED>
@@ -365,48 +507,6 @@ inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bo
     return blk;
 }
 
-/** Execute all permutations dictated by the panel factorization
-    in parallel (concurrency by rows and columns) **/
-template <typename T, typename U>
-ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int m,
-                                          const rocblas_int n,
-                                          const rocblas_int offset,
-                                          const rocblas_int blk,
-                                          U AA,
-                                          const rocblas_int shiftA,
-                                          const rocblas_int lda,
-                                          const rocblas_stride strideA,
-                                          rocblas_int* pividx)
-{
-    int id = hipBlockIdx_z;
-    int tx = hipThreadIdx_x;
-    int ty = hipThreadIdx_y;
-    int bdx = hipBlockDim_x;
-    int j = hipBlockIdx_y * hipBlockDim_y + ty;
-    if(j >= offset)
-        j += blk;
-
-    if(j < n)
-    {
-        // batch instance
-        T* A = load_ptr_batch(AA, id, shiftA, strideA);
-        rocblas_int* piv = pividx + id * m;
-
-        // shared mem for temporary values
-        extern __shared__ double lmem[];
-        T* temp = (T*)lmem;
-
-        // do permutations in parallel (each tx perform a row swap)
-        rocblas_int idx1 = piv[tx];
-        rocblas_int idx2 = piv[idx1];
-        temp[tx + ty * bdx] = A[idx1 + j * lda];
-        A[idx1 + j * lda] = A[idx2 + j * lda];
-        __syncthreads();
-
-        // copy temp results back to A
-        A[tx + j * lda] = temp[tx + ty * bdx];
-    }
-}
 
 /** Return the sizes of the different workspace arrays **/
 template <bool BATCHED, bool STRIDED, typename T>
@@ -568,6 +668,10 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                 handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, ipiv,
                 shiftP + j + k, strideP, info, batch_count, scalars, pivotval, pivotidx, pivot,
                 j + k, iipiv, m);
+//            getrf_panelLU<BATCHED, STRIDED, T>(
+//                handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, ipiv,
+//                shiftP + j + k, strideP, info, batch_count, pivot, scalars, work1, work2, work3, work4,
+//                optim_mem, pivotval, pivotidx, j + k, iipiv, m);
 
             if(pivot)
             {
