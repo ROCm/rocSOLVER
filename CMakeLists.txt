@@ -60,7 +60,9 @@ rocm_setup_version( VERSION ${VERSION_STRING} )
 # NOTE:  workaround until llvm & hip cmake modules fixes symlink logic in their config files; remove when fixed
 list( APPEND CMAKE_PREFIX_PATH
   ${ROCM_PATH}
+  ${ROCM_PATH}/llvm
   /opt/rocm
+  /opt/rocm/llvm
 )
 
 option( BUILD_VERBOSE "Output additional build information" OFF )
@@ -178,7 +180,7 @@ add_custom_target(coverage_output
     COMMAND mkdir -p lcoverage
     COMMAND echo "\\#!/bin/bash" > llvm-gcov.sh
     COMMAND echo "\\# THIS FILE HAS BEEN GENERATED" >> llvm-gcov.sh
-    COMMAND printf "exec /opt/rocm/bin/llvm/llvm-cov gcov $$\\@" >> llvm-gcov.sh
+    COMMAND printf "exec /opt/rocm/llvm/bin/llvm-cov gcov $$\\@" >> llvm-gcov.sh
     COMMAND chmod +x llvm-gcov.sh
     )
 
