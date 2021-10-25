@@ -11,4 +11,12 @@
         <!-- * These tests should only be run on devices supporting HMM -->
         <run name="hmm-adhoc">{COMMAND} --gtest_filter=*MANAGED_MALLOC*-*known_bug* --gtest_output=xml </run>
     </test>
+    <test sets="new5.0">
+        <!-- ! SWDEV-291463 -->
+        <run name="infra-tests">{COMMAND} --gtest_filter=*MEMORY_MODEL* --gtest_output=xml</run>
+        <!-- ! SWDEV-291553 -->
+        <run name="sym-tri-fact">{COMMAND} --gtest_filter=*SYTF2*:*SYTRF*-*known_bug* --gtest_output=xml</run>
+        <!-- ! SWDEV-297006 -->
+        <run name="cusolver-missing">{COMMAND} --gtest_filter=*POTRS*:*GESV*:*GELS*:*SYEV* --gtest_output=xml</run>
+    </test>
 </testset>
