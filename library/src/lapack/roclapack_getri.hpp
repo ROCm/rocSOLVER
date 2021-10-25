@@ -13,7 +13,7 @@
 #include "rocblas.hpp"
 #include "roclapack_trtri.hpp"
 #include "rocsolver.h"
-#include "rocsolver_small_kernels.hpp"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 template <typename T>
 __device__ void copy_and_zero(const rocblas_int m,

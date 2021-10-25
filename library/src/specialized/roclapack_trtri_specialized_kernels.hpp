@@ -7,9 +7,15 @@
  * Copyright (c) 2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#include "rocsolver_small_kernels.hpp"
+#pragma once
 
-#ifdef OPTIMAL
+#include "rocsolver_run_specialized_kernels.hpp"
+
+/*************************************************************
+    Templated kernels are instantiated in separate cpp
+    files in order to improve compilation times and reduce
+    the library size.
+*************************************************************/
 
 template <rocblas_int DIM, typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
@@ -99,6 +105,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
     for(int j = 0; j < DIM; j++)
         A[i + j * lda] = rA[j];
 }
+
+/*************************************************************
+    Launchers of specilized  kernels
+*************************************************************/
 
 template <typename T, typename U>
 void trti2_run_small(rocblas_handle handle,
@@ -194,81 +204,11 @@ void trti2_run_small(rocblas_handle handle,
 }
 
 /*************************************************************
-    Instantiate template methods
+    Instantiation macros
 *************************************************************/
-template void trti2_run_small<float, float*>(rocblas_handle,
-                                             const rocblas_fill,
-                                             const rocblas_diagonal,
-                                             const rocblas_int,
-                                             float*,
-                                             const rocblas_int,
-                                             const rocblas_int,
-                                             const rocblas_stride,
-                                             const rocblas_int);
-template void trti2_run_small<double, double*>(rocblas_handle,
-                                               const rocblas_fill,
-                                               const rocblas_diagonal,
-                                               const rocblas_int,
-                                               double*,
-                                               const rocblas_int,
-                                               const rocblas_int,
-                                               const rocblas_stride,
-                                               const rocblas_int);
-template void trti2_run_small<rocblas_float_complex, rocblas_float_complex*>(rocblas_handle,
-                                                                             const rocblas_fill,
-                                                                             const rocblas_diagonal,
-                                                                             const rocblas_int,
-                                                                             rocblas_float_complex*,
-                                                                             const rocblas_int,
-                                                                             const rocblas_int,
-                                                                             const rocblas_stride,
-                                                                             const rocblas_int);
-template void trti2_run_small<rocblas_double_complex, rocblas_double_complex*>(rocblas_handle,
-                                                                               const rocblas_fill,
-                                                                               const rocblas_diagonal,
-                                                                               const rocblas_int,
-                                                                               rocblas_double_complex*,
-                                                                               const rocblas_int,
-                                                                               const rocblas_int,
-                                                                               const rocblas_stride,
-                                                                               const rocblas_int);
-template void trti2_run_small<float, float* const*>(rocblas_handle,
-                                                    const rocblas_fill,
-                                                    const rocblas_diagonal,
-                                                    const rocblas_int,
-                                                    float* const*,
-                                                    const rocblas_int,
-                                                    const rocblas_int,
-                                                    const rocblas_stride,
-                                                    const rocblas_int);
-template void trti2_run_small<double, double* const*>(rocblas_handle,
-                                                      const rocblas_fill,
-                                                      const rocblas_diagonal,
-                                                      const rocblas_int,
-                                                      double* const*,
-                                                      const rocblas_int,
-                                                      const rocblas_int,
-                                                      const rocblas_stride,
-                                                      const rocblas_int);
-template void trti2_run_small<rocblas_float_complex, rocblas_float_complex* const*>(
-    rocblas_handle,
-    const rocblas_fill,
-    const rocblas_diagonal,
-    const rocblas_int,
-    rocblas_float_complex* const*,
-    const rocblas_int,
-    const rocblas_int,
-    const rocblas_stride,
-    const rocblas_int);
-template void trti2_run_small<rocblas_double_complex, rocblas_double_complex* const*>(
-    rocblas_handle,
-    const rocblas_fill,
-    const rocblas_diagonal,
-    const rocblas_int,
-    rocblas_double_complex* const*,
-    const rocblas_int,
-    const rocblas_int,
-    const rocblas_stride,
-    const rocblas_int);
 
-#endif // OPTIMAL
+#define INSTANTIATE_TRTI2_SMALL(T, U)                                                          \
+    template void trti2_run_small<T, U>(rocblas_handle handle, const rocblas_fill uplo,        \
+                                        const rocblas_diagonal diag, const rocblas_int n, U A, \
+                                        const rocblas_int shiftA, const rocblas_int lda,       \
+                                        const rocblas_stride strideA, const rocblas_int batch_count)

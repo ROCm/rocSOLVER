@@ -6,13 +6,15 @@
  * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
-#include "rocsolver_small_kernels.hpp"
+#pragma once
 
-#ifdef OPTIMAL
+#include "rocsolver_run_specialized_kernels.hpp"
 
-/************************************************************************
-        specialized optimized kernels for small sizes
-************************************************************************/
+/*************************************************************
+    Templated kernels are instantiated in separate cpp
+    files in order to improve compilation times and reduce
+    the library size.
+*************************************************************/
 
 /** getf2_small_kernel takes care of of matrices with m < n
     m <= GETF2_MAX_THDS and n <= GETF2_MAX_COLS **/
@@ -748,372 +750,25 @@ void getf2_run_scale_update(rocblas_handle handle,
 }
 
 /*************************************************************
-    Instantiate template methods
+    Instantiation macros
 *************************************************************/
 
-// normal and strided_batched cases
-template void getf2_run_scale_update<float, float*>(rocblas_handle,
-                                                    const rocblas_int,
-                                                    const rocblas_int,
-                                                    float*,
-                                                    float*,
-                                                    const rocblas_int,
-                                                    const rocblas_int,
-                                                    const rocblas_stride,
-                                                    const rocblas_int,
-                                                    const rocblas_int,
-                                                    const rocblas_int);
-template void getf2_run_scale_update<double, double*>(rocblas_handle,
-                                                      const rocblas_int,
-                                                      const rocblas_int,
-                                                      double*,
-                                                      double*,
-                                                      const rocblas_int,
-                                                      const rocblas_int,
-                                                      const rocblas_stride,
-                                                      const rocblas_int,
-                                                      const rocblas_int,
-                                                      const rocblas_int);
-template void
-    getf2_run_scale_update<rocblas_float_complex, rocblas_float_complex*>(rocblas_handle,
-                                                                          const rocblas_int,
-                                                                          const rocblas_int,
-                                                                          rocblas_float_complex*,
-                                                                          rocblas_float_complex*,
-                                                                          const rocblas_int,
-                                                                          const rocblas_int,
-                                                                          const rocblas_stride,
-                                                                          const rocblas_int,
-                                                                          const rocblas_int,
-                                                                          const rocblas_int);
-template void
-    getf2_run_scale_update<rocblas_double_complex, rocblas_double_complex*>(rocblas_handle,
-                                                                            const rocblas_int,
-                                                                            const rocblas_int,
-                                                                            rocblas_double_complex*,
-                                                                            rocblas_double_complex*,
-                                                                            const rocblas_int,
-                                                                            const rocblas_int,
-                                                                            const rocblas_stride,
-                                                                            const rocblas_int,
-                                                                            const rocblas_int,
-                                                                            const rocblas_int);
-
-template rocblas_status getf2_run_panel<float, float*>(rocblas_handle,
-                                                       const rocblas_int,
-                                                       const rocblas_int,
-                                                       float*,
-                                                       const rocblas_int,
-                                                       const rocblas_int,
-                                                       const rocblas_stride,
-                                                       rocblas_int*,
-                                                       const rocblas_int,
-                                                       const rocblas_stride,
-                                                       rocblas_int*,
-                                                       const rocblas_int,
-                                                       const bool,
-                                                       const rocblas_int,
-                                                       rocblas_int*,
-                                                       const rocblas_stride);
-template rocblas_status getf2_run_panel<double, double*>(rocblas_handle,
-                                                         const rocblas_int,
-                                                         const rocblas_int,
-                                                         double*,
-                                                         const rocblas_int,
-                                                         const rocblas_int,
-                                                         const rocblas_stride,
-                                                         rocblas_int*,
-                                                         const rocblas_int,
-                                                         const rocblas_stride,
-                                                         rocblas_int*,
-                                                         const rocblas_int,
-                                                         const bool,
-                                                         const rocblas_int,
-                                                         rocblas_int*,
-                                                         const rocblas_stride);
-template rocblas_status
-    getf2_run_panel<rocblas_float_complex, rocblas_float_complex*>(rocblas_handle,
-                                                                   const rocblas_int,
-                                                                   const rocblas_int,
-                                                                   rocblas_float_complex*,
-                                                                   const rocblas_int,
-                                                                   const rocblas_int,
-                                                                   const rocblas_stride,
-                                                                   rocblas_int*,
-                                                                   const rocblas_int,
-                                                                   const rocblas_stride,
-                                                                   rocblas_int*,
-                                                                   const rocblas_int,
-                                                                   const bool,
-                                                                   const rocblas_int,
-                                                                   rocblas_int*,
-                                                                   const rocblas_stride);
-template rocblas_status
-    getf2_run_panel<rocblas_double_complex, rocblas_double_complex*>(rocblas_handle,
-                                                                     const rocblas_int,
-                                                                     const rocblas_int,
-                                                                     rocblas_double_complex*,
-                                                                     const rocblas_int,
-                                                                     const rocblas_int,
-                                                                     const rocblas_stride,
-                                                                     rocblas_int*,
-                                                                     const rocblas_int,
-                                                                     const rocblas_stride,
-                                                                     rocblas_int*,
-                                                                     const rocblas_int,
-                                                                     const bool,
-                                                                     const rocblas_int,
-                                                                     rocblas_int*,
-                                                                     const rocblas_stride);
-
-template rocblas_status getf2_run_small<float, float*>(rocblas_handle,
-                                                       const rocblas_int,
-                                                       const rocblas_int,
-                                                       float*,
-                                                       const rocblas_int,
-                                                       const rocblas_int,
-                                                       const rocblas_stride,
-                                                       rocblas_int*,
-                                                       const rocblas_int,
-                                                       const rocblas_stride,
-                                                       rocblas_int*,
-                                                       const rocblas_int,
-                                                       const bool,
-                                                       const rocblas_int,
-                                                       rocblas_int*,
-                                                       const rocblas_stride);
-template rocblas_status getf2_run_small<double, double*>(rocblas_handle,
-                                                         const rocblas_int,
-                                                         const rocblas_int,
-                                                         double*,
-                                                         const rocblas_int,
-                                                         const rocblas_int,
-                                                         const rocblas_stride,
-                                                         rocblas_int*,
-                                                         const rocblas_int,
-                                                         const rocblas_stride,
-                                                         rocblas_int*,
-                                                         const rocblas_int,
-                                                         const bool,
-                                                         const rocblas_int,
-                                                         rocblas_int*,
-                                                         const rocblas_stride);
-template rocblas_status
-    getf2_run_small<rocblas_float_complex, rocblas_float_complex*>(rocblas_handle,
-                                                                   const rocblas_int,
-                                                                   const rocblas_int,
-                                                                   rocblas_float_complex*,
-                                                                   const rocblas_int,
-                                                                   const rocblas_int,
-                                                                   const rocblas_stride,
-                                                                   rocblas_int*,
-                                                                   const rocblas_int,
-                                                                   const rocblas_stride,
-                                                                   rocblas_int*,
-                                                                   const rocblas_int,
-                                                                   const bool,
-                                                                   const rocblas_int,
-                                                                   rocblas_int*,
-                                                                   const rocblas_stride);
-template rocblas_status
-    getf2_run_small<rocblas_double_complex, rocblas_double_complex*>(rocblas_handle,
-                                                                     const rocblas_int,
-                                                                     const rocblas_int,
-                                                                     rocblas_double_complex*,
-                                                                     const rocblas_int,
-                                                                     const rocblas_int,
-                                                                     const rocblas_stride,
-                                                                     rocblas_int*,
-                                                                     const rocblas_int,
-                                                                     const rocblas_stride,
-                                                                     rocblas_int*,
-                                                                     const rocblas_int,
-                                                                     const bool,
-                                                                     const rocblas_int,
-                                                                     rocblas_int*,
-                                                                     const rocblas_stride);
-
-// batched cases
-
-template void getf2_run_scale_update<float, float* const*>(rocblas_handle,
-                                                           const rocblas_int,
-                                                           const rocblas_int,
-                                                           float*,
-                                                           float* const*,
-                                                           const rocblas_int,
-                                                           const rocblas_int,
-                                                           const rocblas_stride,
-                                                           const rocblas_int,
-                                                           const rocblas_int,
-                                                           const rocblas_int);
-template void getf2_run_scale_update<double, double* const*>(rocblas_handle,
-                                                             const rocblas_int,
-                                                             const rocblas_int,
-                                                             double*,
-                                                             double* const*,
-                                                             const rocblas_int,
-                                                             const rocblas_int,
-                                                             const rocblas_stride,
-                                                             const rocblas_int,
-                                                             const rocblas_int,
-                                                             const rocblas_int);
-template void getf2_run_scale_update<rocblas_float_complex, rocblas_float_complex* const*>(
-    rocblas_handle,
-    const rocblas_int,
-    const rocblas_int,
-    rocblas_float_complex*,
-    rocblas_float_complex* const*,
-    const rocblas_int,
-    const rocblas_int,
-    const rocblas_stride,
-    const rocblas_int,
-    const rocblas_int,
-    const rocblas_int);
-template void getf2_run_scale_update<rocblas_double_complex, rocblas_double_complex* const*>(
-    rocblas_handle,
-    const rocblas_int,
-    const rocblas_int,
-    rocblas_double_complex*,
-    rocblas_double_complex* const*,
-    const rocblas_int,
-    const rocblas_int,
-    const rocblas_stride,
-    const rocblas_int,
-    const rocblas_int,
-    const rocblas_int);
-
-template rocblas_status getf2_run_panel<float, float* const*>(rocblas_handle,
-                                                              const rocblas_int,
-                                                              const rocblas_int,
-                                                              float* const*,
-                                                              const rocblas_int,
-                                                              const rocblas_int,
-                                                              const rocblas_stride,
-                                                              rocblas_int*,
-                                                              const rocblas_int,
-                                                              const rocblas_stride,
-                                                              rocblas_int*,
-                                                              const rocblas_int,
-                                                              const bool,
-                                                              const rocblas_int,
-                                                              rocblas_int*,
-                                                              const rocblas_stride);
-template rocblas_status getf2_run_panel<double, double* const*>(rocblas_handle,
-                                                                const rocblas_int,
-                                                                const rocblas_int,
-                                                                double* const*,
-                                                                const rocblas_int,
-                                                                const rocblas_int,
-                                                                const rocblas_stride,
-                                                                rocblas_int*,
-                                                                const rocblas_int,
-                                                                const rocblas_stride,
-                                                                rocblas_int*,
-                                                                const rocblas_int,
-                                                                const bool,
-                                                                const rocblas_int,
-                                                                rocblas_int*,
-                                                                const rocblas_stride);
-template rocblas_status getf2_run_panel<rocblas_float_complex, rocblas_float_complex* const*>(
-    rocblas_handle,
-    const rocblas_int,
-    const rocblas_int,
-    rocblas_float_complex* const*,
-    const rocblas_int,
-    const rocblas_int,
-    const rocblas_stride,
-    rocblas_int*,
-    const rocblas_int,
-    const rocblas_stride,
-    rocblas_int*,
-    const rocblas_int,
-    const bool,
-    const rocblas_int,
-    rocblas_int*,
-    const rocblas_stride);
-template rocblas_status getf2_run_panel<rocblas_double_complex, rocblas_double_complex* const*>(
-    rocblas_handle,
-    const rocblas_int,
-    const rocblas_int,
-    rocblas_double_complex* const*,
-    const rocblas_int,
-    const rocblas_int,
-    const rocblas_stride,
-    rocblas_int*,
-    const rocblas_int,
-    const rocblas_stride,
-    rocblas_int*,
-    const rocblas_int,
-    const bool,
-    const rocblas_int,
-    rocblas_int*,
-    const rocblas_stride);
-
-template rocblas_status getf2_run_small<float, float* const*>(rocblas_handle,
-                                                              const rocblas_int,
-                                                              const rocblas_int,
-                                                              float* const*,
-                                                              const rocblas_int,
-                                                              const rocblas_int,
-                                                              const rocblas_stride,
-                                                              rocblas_int*,
-                                                              const rocblas_int,
-                                                              const rocblas_stride,
-                                                              rocblas_int*,
-                                                              const rocblas_int,
-                                                              const bool,
-                                                              const rocblas_int,
-                                                              rocblas_int*,
-                                                              const rocblas_stride);
-template rocblas_status getf2_run_small<double, double* const*>(rocblas_handle,
-                                                                const rocblas_int,
-                                                                const rocblas_int,
-                                                                double* const*,
-                                                                const rocblas_int,
-                                                                const rocblas_int,
-                                                                const rocblas_stride,
-                                                                rocblas_int*,
-                                                                const rocblas_int,
-                                                                const rocblas_stride,
-                                                                rocblas_int*,
-                                                                const rocblas_int,
-                                                                const bool,
-                                                                const rocblas_int,
-                                                                rocblas_int*,
-                                                                const rocblas_stride);
-template rocblas_status getf2_run_small<rocblas_float_complex, rocblas_float_complex* const*>(
-    rocblas_handle,
-    const rocblas_int,
-    const rocblas_int,
-    rocblas_float_complex* const*,
-    const rocblas_int,
-    const rocblas_int,
-    const rocblas_stride,
-    rocblas_int*,
-    const rocblas_int,
-    const rocblas_stride,
-    rocblas_int*,
-    const rocblas_int,
-    const bool,
-    const rocblas_int,
-    rocblas_int*,
-    const rocblas_stride);
-template rocblas_status getf2_run_small<rocblas_double_complex, rocblas_double_complex* const*>(
-    rocblas_handle,
-    const rocblas_int,
-    const rocblas_int,
-    rocblas_double_complex* const*,
-    const rocblas_int,
-    const rocblas_int,
-    const rocblas_stride,
-    rocblas_int*,
-    const rocblas_int,
-    const rocblas_stride,
-    rocblas_int*,
-    const rocblas_int,
-    const bool,
-    const rocblas_int,
-    rocblas_int*,
-    const rocblas_stride);
-
-#endif // OPTIMAL
+#define INSTANTIATE_GETF2_SMALL(T, U)                                                  \
+    template rocblas_status getf2_run_small<T, U>(                                     \
+        rocblas_handle handle, const rocblas_int m, const rocblas_int n, U A,          \
+        const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, \
+        rocblas_int* ipiv, const rocblas_int shiftP, const rocblas_stride strideP,     \
+        rocblas_int* info, const rocblas_int batch_count, const bool pivot,            \
+        const rocblas_int offset, rocblas_int* permut_idx, const rocblas_stride stride)
+#define INSTANTIATE_GETF2_PANEL(T, U)                                                  \
+    template rocblas_status getf2_run_panel<T, U>(                                     \
+        rocblas_handle handle, const rocblas_int m, const rocblas_int n, U A,          \
+        const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, \
+        rocblas_int* ipiv, const rocblas_int shiftP, const rocblas_stride strideP,     \
+        rocblas_int* info, const rocblas_int batch_count, const bool pivot,            \
+        const rocblas_int offset, rocblas_int* permut_idx, const rocblas_stride stride)
+#define INSTANTIATE_GETF2_SCALE_UPDATE(T, U)                                               \
+    template void getf2_run_scale_update<T, U>(                                            \
+        rocblas_handle handle, const rocblas_int m, const rocblas_int n, T* pivotval, U A, \
+        const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,     \
+        const rocblas_int batch_count, const rocblas_int dimx, const rocblas_int dimy)
