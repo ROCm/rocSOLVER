@@ -1,17 +1,15 @@
-#include <algorithm> // for std::min
 #include <hip/hip_runtime_api.h> // for hip functions
 #include <rocsolver.h> // for all the rocsolver C interfaces and type declarations
-#include <stdio.h>   // for size_t, printf
-#include <vector>
+#include <stdio.h>   // for printf
+#include <stdlib.h> // for malloc
 
 // Example: Compute the QR Factorizations of an array of matrices on the GPU
 
-void get_example_matrices(std::vector<double>& hA,
-                        rocblas_int& M,
-                        rocblas_int& N,
-                        rocblas_int& lda,
-                        rocblas_stride& strideA,
-                        rocblas_int& batch_count) {
+double *create_example_matrices(rocblas_int *M_out,
+                                rocblas_int *N_out,
+                                rocblas_int *lda_out,
+                                rocblas_stride *strideA_out,
+                                rocblas_int *batch_count_out) {
   const double A[2][3][3] = {
     // First input matrix
     { { 12, -51,   4},
@@ -23,17 +21,27 @@ void get_example_matrices(std::vector<double>& hA,
       {  4, -46,  -2},
       {  0,   5,  15} } };
 
-  M = 3;
-  N = 3;
-  lda = 3;
-  batch_count = 2;
-  strideA = lda * N;
-  hA.resize(strideA * batch_count);
+  const rocblas_int M = 3;
+  const rocblas_int N = 3;
+  const rocblas_int lda = 3;
+  const rocblas_stride strideA = lda * N;
+  const rocblas_int batch_count = 2;
+  *M_out = M;
+  *N_out = N;
+  *lda_out = lda;
+  *strideA_out = strideA;
+  *batch_count_out = batch_count;
+
+  // allocate space for input matrix data on CPU
+  double *hA = (double*)malloc(sizeof(double)*strideA*batch_count);
+
   // copy A (3D array) into hA (1D array, column-major)
   for (size_t b = 0; b < batch_count; ++b)
     for (size_t i = 0; i < M; ++i)
       for (size_t j = 0; j < N; ++j)
         hA[i + j*lda + b*strideA] = A[b][i][j];
+
+  return hA;
 }
 
 // Use rocsolver_dgeqrf_strided_batched to factor an array of real M-by-N matrices.
@@ -43,8 +51,7 @@ int main() {
   rocblas_int lda;         // leading dimension
   rocblas_stride strideA;  // stride from start of one matrix to the next
   rocblas_int batch_count; // number of matricies
-  std::vector<double> hA;  // input matrix data on CPU
-  get_example_matrices(hA, M, N, lda, strideA, batch_count);
+  double *hA = create_example_matrices(&M, &N, &lda, &strideA, &batch_count);
 
   // print the input matrices
   for (size_t b = 0; b < batch_count; ++b) {
@@ -64,25 +71,25 @@ int main() {
   rocblas_create_handle(&handle);
 
   // calculate the sizes of our arrays
-  size_t size_A = size_t(strideA) * batch_count;   // elements in array for matrices
-  rocblas_stride strideP = std::min(M, N);         // stride of Householder scalar sets
-  size_t size_piv = size_t(strideP) * batch_count; // elements in array for Householder scalars
+  size_t size_A = strideA * (size_t)batch_count;   // elements in array for matrices
+  rocblas_stride strideP = (M < N) ? M : N;        // stride of Householder scalar sets
+  size_t size_piv = strideP * (size_t)batch_count; // elements in array for Householder scalars
 
   // allocate memory on GPU
   double *dA, *dIpiv;
-  hipMalloc(&dA, sizeof(double)*size_A);
-  hipMalloc(&dIpiv, sizeof(double)*size_piv);
+  hipMalloc((void**)&dA, sizeof(double)*size_A);
+  hipMalloc((void**)&dIpiv, sizeof(double)*size_piv);
 
   // copy data to GPU
-  hipMemcpy(dA, hA.data(), sizeof(double)*size_A, hipMemcpyHostToDevice);
+  hipMemcpy(dA, hA, sizeof(double)*size_A, hipMemcpyHostToDevice);
 
   // compute the QR factorizations on the GPU
   rocsolver_dgeqrf_strided_batched(handle, M, N, dA, lda, strideA, dIpiv, strideP, batch_count);
 
   // copy the results back to CPU
-  std::vector<double> hIpiv(size_piv); // array for householder scalars on CPU
-  hipMemcpy(hA.data(), dA, sizeof(double)*size_A, hipMemcpyDeviceToHost);
-  hipMemcpy(hIpiv.data(), dIpiv, sizeof(double)*size_piv, hipMemcpyDeviceToHost);
+  double *hIpiv = (double*)malloc(sizeof(double)*size_piv); // householder scalars on CPU
+  hipMemcpy(hA, dA, sizeof(double)*size_A, hipMemcpyDeviceToHost);
+  hipMemcpy(hIpiv, dIpiv, sizeof(double)*size_piv, hipMemcpyDeviceToHost);
 
   // the results are now in hA and hIpiv
   // print some of the results
@@ -99,7 +106,9 @@ int main() {
   }
 
   // clean up
+  free(hIpiv);
   hipFree(dA);
   hipFree(dIpiv);
+  free(hA);
   rocblas_destroy_handle(handle);
 }
