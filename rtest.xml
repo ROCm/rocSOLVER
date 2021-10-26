@@ -11,12 +11,27 @@
         <!-- * These tests should only be run on devices supporting HMM -->
         <run name="hmm-adhoc">{COMMAND} --gtest_filter=*MANAGED_MALLOC*-*known_bug* --gtest_output=xml </run>
     </test>
-    <test sets="new5.0">
-        <!-- ! SWDEV-291463 -->
-        <run name="infra-tests">{COMMAND} --gtest_filter=*MEMORY_MODEL* --gtest_output=xml</run>
-        <!-- ! SWDEV-291553 -->
+    <test sets="new5.0,swdev-291463,swdev-291464">
+        <run name="memory-model">{COMMAND} --gtest_filter=*MEMORY_MODEL* --gtest_output=xml</run>
+    </test>
+    <!-- TODO
+    <test sets="new5.0,swdev-291463,swdev-291465">
+        <run name="logging-functionality"></run>
+    </test>
+    -->
+    <!-- TODO
+    <test sets="new5.0,swdev-291463,swdev-291466">
+        <run name="bench-interface"></run>
+    </test>
+    -->
+    <test sets="new5.0,swdev-291553">
         <run name="sym-tri-fact">{COMMAND} --gtest_filter=*SYTF2*:*SYTRF*-*known_bug* --gtest_output=xml</run>
-        <!-- ! SWDEV-297006 -->
+    </test>
+    <test sets="new5.0,swdev-297006">
+        <!-- TODO Ensure this covers the issue, without extraneous testing -->
         <run name="cusolver-missing">{COMMAND} --gtest_filter=*POTRS*:*GESV*:*GELS*:*SYEV* --gtest_output=xml</run>
+    </test>
+    <test sets="new5.0,swdev-304856">
+        <!-- TODO Add tests to cover this item, break into smaller sets if necessary -->
     </test>
 </testset>
