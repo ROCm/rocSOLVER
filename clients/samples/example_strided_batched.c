@@ -101,7 +101,7 @@ int main() {
     for (size_t i = 0; i < M; ++i) {
       printf("  ");
       for (size_t j = 0; j < N; ++j) {
-        printf("% 4.f ", (i <= j) ? hA[i + j*lda] : 0);
+        printf("% 4.f ", (i <= j) ? hA[i + j*lda + strideA*b] : 0);
       }
       printf(";\n");
     }
