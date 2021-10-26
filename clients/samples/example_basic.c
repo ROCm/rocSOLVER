@@ -54,6 +54,13 @@ int main() {
   rocblas_handle handle;
   rocblas_create_handle(&handle);
 
+  // Some rocsolver functions may trigger rocblas to load its GEMM kernels.
+  // You can preload the kernels by explicitly invoking rocblas_initialize
+  // (e.g., to exclude one-time initialization overhead from benchmarking).
+
+  // preload rocBLAS GEMM kernels (optional)
+  // rocblas_initialize();
+
   // calculate the sizes of our arrays
   size_t size_A = lda * (size_t)N;   // count of elements in matrix A
   size_t size_piv = (M < N) ? M : N; // count of Householder scalars

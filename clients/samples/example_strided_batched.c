@@ -70,6 +70,9 @@ int main() {
   rocblas_handle handle;
   rocblas_create_handle(&handle);
 
+  // preload rocBLAS GEMM kernels (optional)
+  // rocblas_initialize();
+
   // calculate the sizes of our arrays
   size_t size_A = strideA * (size_t)batch_count;   // elements in array for matrices
   rocblas_stride strideP = (M < N) ? M : N;        // stride of Householder scalar sets
