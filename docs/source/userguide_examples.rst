@@ -23,15 +23,15 @@ QR factorization of a single matrix
 The following code snippet uses rocSOLVER to compute the QR factorization of a general m-by-n real matrix in double precision.
 For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`rocsolver_dgeqrf() <geqrf>`.
 
-.. literalinclude:: ../../clients/samples/example_basic.cpp
-    :language: cpp
+.. literalinclude:: ../../clients/samples/example_basic.c
+    :language: c
 
 The exact command used to compile the example above may vary depending on the
 system environment, but here is a typical example:
 
 .. code-block:: bash
 
-    /opt/rocm/bin/hipcc -I/opt/rocm/include -c example.cpp
+    /opt/rocm/bin/hipcc -I/opt/rocm/include -c example.c
     /opt/rocm/bin/hipcc -o example -L/opt/rocm/lib -lrocsolver -lrocblas example.o
 
 
@@ -51,8 +51,8 @@ The matrices must be stored in contiguous memory locations on the GPU, and are a
 stride value that gives the separation between one matrix and the next.
 For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`rocsolver_dgeqrf_strided_batched() <geqrf_strided_batched>`.
 
-.. literalinclude:: ../../clients/samples/example_strided_batched.cpp
-    :language: cpp
+.. literalinclude:: ../../clients/samples/example_strided_batched.c
+    :language: c
 
 Batched version
 ---------------------------
