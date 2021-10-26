@@ -5,7 +5,7 @@
 
 // Example: Compute the QR Factorization of a matrix on the GPU
 
-double* create_example_matrix(rocblas_int *M_out,
+double *create_example_matrix(rocblas_int *M_out,
                               rocblas_int *N_out,
                               rocblas_int *lda_out) {
   // a *very* small example input; not a very efficient use of the API
@@ -20,7 +20,7 @@ double* create_example_matrix(rocblas_int *M_out,
   *lda_out = lda;
   // note: rocsolver matrices must be stored in column major format,
   //       i.e. entry (i,j) should be accessed by hA[i + j*lda]
-  double* hA = malloc(sizeof(double)*lda*N);
+  double *hA = (double*)malloc(sizeof(double)*lda*N);
   for (size_t i = 0; i < M; ++i) {
     for (size_t j = 0; j < N; ++j) {
       // copy A (2D array) into hA (1D array, column-major)
@@ -37,7 +37,7 @@ int main() {
   rocblas_int M;          // rows
   rocblas_int N;          // cols
   rocblas_int lda;        // leading dimension
-  double* hA = create_example_matrix(&M, &N, &lda); // input matrix on CPU
+  double *hA = create_example_matrix(&M, &N, &lda); // input matrix on CPU
 
   // let's print the input matrix, just to see it
   printf("A = [\n");
@@ -70,7 +70,7 @@ int main() {
   rocsolver_dgeqrf(handle, M, N, dA, lda, dIpiv);
 
   // copy the results back to CPU
-  double* hIpiv = malloc(sizeof(double)*size_piv); // array for householder scalars on CPU
+  double *hIpiv = (double*)malloc(sizeof(double)*size_piv); // householder scalars on CPU
   hipMemcpy(hA, dA, sizeof(double)*size_A, hipMemcpyDeviceToHost);
   hipMemcpy(hIpiv, dIpiv, sizeof(double)*size_piv, hipMemcpyDeviceToHost);
 

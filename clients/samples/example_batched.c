@@ -5,10 +5,10 @@
 
 // Example: Compute the QR Factorizations of an array of matrices on the GPU
 
-double** create_example_matrices(rocblas_int* M_out,
-                        rocblas_int* N_out,
-                        rocblas_int* lda_out,
-                        rocblas_int* batch_count_out) {
+double **create_example_matrices(rocblas_int *M_out,
+                                 rocblas_int *N_out,
+                                 rocblas_int *lda_out,
+                                 rocblas_int *batch_count_out) {
   // a small example input
   const double A[2][3][3] = {
     // First input matrix
@@ -19,8 +19,7 @@ double** create_example_matrices(rocblas_int* M_out,
     // Second input matrix
     { {  3, -12,  11},
       {  4, -46,  -2},
-      {  0,   5,  15} }
-  };
+      {  0,   5,  15} } };
 
   const rocblas_int M = 3;
   const rocblas_int N = 3;
@@ -31,9 +30,10 @@ double** create_example_matrices(rocblas_int* M_out,
   *lda_out = lda;
   *batch_count_out = batch_count;
 
-  double** hA = malloc(sizeof(double*)*batch_count);
-  hA[0] = malloc(sizeof(double)*lda*N);
-  hA[1] = malloc(sizeof(double)*lda*N);
+  // allocate space for input matrix data on CPU
+  double **hA = (double**)malloc(sizeof(double*)*batch_count);
+  hA[0] = (double*)malloc(sizeof(double)*lda*N);
+  hA[1] = (double*)malloc(sizeof(double)*lda*N);
 
   for (size_t b = 0; b < batch_count; ++b)
     for (size_t i = 0; i < M; ++i)
@@ -49,7 +49,7 @@ int main() {
   rocblas_int N;           // cols
   rocblas_int lda;         // leading dimension
   rocblas_int batch_count; // number of matricies
-  double** hA = create_example_matrices(&M, &N, &lda, &batch_count);
+  double **hA = create_example_matrices(&M, &N, &lda, &batch_count);
 
   // print the input matrices
   for (size_t b = 0; b < batch_count; ++b) {
@@ -75,7 +75,7 @@ int main() {
 
   // allocate memory on the CPU for an array of pointers,
   // then allocate memory for each matrix on the GPU.
-  double** A = malloc(sizeof(double*)*batch_count);
+  double **A = (double**)malloc(sizeof(double*)*batch_count);
   for (rocblas_int b = 0; b < batch_count; ++b)
     hipMalloc((void**)&A[b], sizeof(double)*size_A);
 
@@ -95,7 +95,7 @@ int main() {
   rocsolver_dgeqrf_batched(handle, M, N, dA, lda, dIpiv, strideP, batch_count);
 
   // copy the results back to CPU
-  double* hIpiv = malloc(sizeof(double)*size_piv); // array for householder scalars on CPU
+  double *hIpiv = (double*)malloc(sizeof(double)*size_piv); // householder scalars on CPU
   hipMemcpy(hIpiv, dIpiv, sizeof(double)*size_piv, hipMemcpyDeviceToHost);
   for (rocblas_int b = 0; b < batch_count; ++b)
     hipMemcpy(hA[b], A[b], sizeof(double)*size_A, hipMemcpyDeviceToHost);
