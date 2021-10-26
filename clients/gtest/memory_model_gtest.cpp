@@ -5,8 +5,6 @@
 
 #include <stdlib.h>
 
-#include <fmt/format.h>
-#include <fmt/ostream.h>
 #include <gtest/gtest.h>
 #include <rocblas.h>
 #include <rocsolver.h>
@@ -35,8 +33,8 @@ protected:
     void SetUp() override
     {
         if(char* envvar = getenv("ROCBLAS_DEVICE_MEMORY_SIZE"))
-            GTEST_SKIP() << fmt::format(
-                "Cannot execute in dirty environment; ROCBLAS_DEVICE_MEMORY_SIZE={:s}", envvar);
+            GTEST_SKIP() << "Cannot execute in dirty environment; ROCBLAS_DEVICE_MEMORY_SIZE="
+                         << envvar;
 
         ASSERT_EQ(hipMalloc(&dA, sizeof(double) * stA * bc), hipSuccess);
         ASSERT_EQ(hipMalloc(&dP, sizeof(rocblas_int) * stP * bc), hipSuccess);
