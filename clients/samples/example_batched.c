@@ -3,7 +3,7 @@
 #include <stdio.h> // for printf
 #include <stdlib.h> // for malloc
 
-// Example: Compute the QR Factorizations of an array of matrices on the GPU
+// Example: Compute the QR Factorizations of a batch of matrices on the GPU
 
 double **create_example_matrices(rocblas_int *M_out,
                                  rocblas_int *N_out,
