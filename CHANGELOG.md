@@ -18,7 +18,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Changed
 - The rocsolver-test client now prints the rocSOLVER version used to run the tests,
   rather than the version used to build them
-  - The rocsolver-bench client now prints the rocSOLVER version used in the benchmark
+- The rocsolver-bench client now prints the rocSOLVER version used in the benchmark
   
 ### Fixed
 - Added missing stdint.h include to rocsolver.h
