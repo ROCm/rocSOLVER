@@ -169,6 +169,92 @@ ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int n,
     }
 }
 
+/** This function returns the outer block size based on defined variables
+    tunable by the user (defined in ideal_sizes.hpp) **/
+template <bool ISBATCHED>
+rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
+{
+    rocblas_int blk;
+
+    if(ISBATCHED)
+    {
+        if(pivot)
+        {
+            rocblas_int size[] = {GETRF_BATCH_BLKSIZES};
+            rocblas_int intervals[] = {GETRF_BATCH_INTERVALS};
+            rocblas_int max = GETRF_BATCH_NUM_INTERVALS;
+            blk = size[get_index(intervals, max, dim)];
+        }
+        else
+        {
+            rocblas_int size[] = {GETRF_NPVT_BATCH_BLKSIZES};
+            rocblas_int intervals[] = {GETRF_NPVT_BATCH_INTERVALS};
+            rocblas_int max = GETRF_NPVT_BATCH_NUM_INTERVALS;
+            blk = size[get_index(intervals, max, dim)];
+        }
+    }
+    else
+    {
+        if(pivot)
+        {
+            rocblas_int size[] = {GETRF_BLKSIZES};
+            rocblas_int intervals[] = {GETRF_INTERVALS};
+            rocblas_int max = GETRF_NUM_INTERVALS;
+            blk = size[get_index(intervals, max, dim)];
+        }
+        else
+        {
+            rocblas_int size[] = {GETRF_NPVT_BLKSIZES};
+            rocblas_int intervals[] = {GETRF_NPVT_INTERVALS};
+            rocblas_int max = GETRF_NPVT_NUM_INTERVALS;
+            blk = size[get_index(intervals, max, dim)];
+        }
+    }
+
+    return blk;
+}
+
+/** This function returns the inner block size. This has been tuned based on
+    experiments with panel matrices; it is not expected to change a lot.
+    (not tunable by the user for now) **/
+template <bool ISBATCHED>
+inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bool pivot)
+{
+    rocblas_int blk;
+
+    /** TODO: We need to do especific tuning for batched and non-pivoting cases.
+        Constants could go to ideal_sizes.hpp. Leaving here for now) **/
+    rocblas_int N = 6;
+    rocblas_int M = 7;
+    rocblas_int intervalsN[] = {24, 40, 56, 72, 88, 104};
+    rocblas_int intervalsM[] = {128, 256, 512, 1024, 2048, 4096, 8192};
+    rocblas_int size[8][7]
+        = {{0, 0, 0, 0, 0, 0, 0},       {0, 0, 16, 24, 16, 16, 16}, {0, 16, 8, 8, 16, 16, 16},
+           {0, 8, 8, 8, 8, 8, 8},       {0, 0, 0, 16, 16, 32, 16},  {0, 0, 16, 24, 16, 32, 32},
+           {0, 16, 16, 16, 16, 16, 24}, {0, 16, 16, 16, 16, 16, 16}};
+
+    //if(ISBATCHED)
+    //{
+    //   if(pivot)
+    //    {
+    //    }
+    //    else
+    //    {
+    //    }
+    //}
+    //else
+    //{
+    //    if(pivot)
+    //    {
+    blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+    //    }
+    //    else
+    //    {
+    //    }
+    //}
+    return blk;
+}
+
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status getrf_panelLU(rocblas_handle handle,
                              const rocblas_int mm,
@@ -209,8 +295,10 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
     // the actual position of the panel-block in the matrix is:
     rocblas_int shiftA = r_shiftA + idx2D(0, offset, lda);
 
-    rocblas_int blk = atoi(getenv("BLK"));
-    rocblas_int trsm = atoi(getenv("TRSM"));
+    rocblas_int blk = getrf_get_innerBlkSize<ISBATCHED>(mm, nn, pivot);
+    rocblas_int trsm = 1; //atoi(getenv("TRSM"));
+    if(blk == 0)
+        blk = nn;
 
     rocblas_int jb;
     rocblas_int dimx, dimy, blocks;
@@ -400,357 +488,6 @@ rocblas_status getrf_panelLU_recursive(rocblas_handle handle,
     return rocblas_status_success;
 }
 
-/** This function returns the outer block size based on defined variables
-    tunable by the user (defined in ideal_sizes.hpp) **/
-template <bool ISBATCHED>
-rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
-{
-    rocblas_int blk;
-
-    if(ISBATCHED)
-    {
-        if(pivot)
-        {
-            rocblas_int size[] = {GETRF_BATCH_BLKSIZES};
-            rocblas_int intervals[] = {GETRF_BATCH_INTERVALS};
-            rocblas_int max = GETRF_BATCH_NUM_INTERVALS;
-            blk = size[get_index(intervals, max, dim)];
-        }
-        else
-        {
-            rocblas_int size[] = {GETRF_NPVT_BATCH_BLKSIZES};
-            rocblas_int intervals[] = {GETRF_NPVT_BATCH_INTERVALS};
-            rocblas_int max = GETRF_NPVT_BATCH_NUM_INTERVALS;
-            blk = size[get_index(intervals, max, dim)];
-        }
-    }
-    else
-    {
-        if(pivot)
-        {
-            rocblas_int size[] = {GETRF_BLKSIZES};
-            rocblas_int intervals[] = {GETRF_INTERVALS};
-            rocblas_int max = GETRF_NUM_INTERVALS;
-            blk = size[get_index(intervals, max, dim)];
-        }
-        else
-        {
-            rocblas_int size[] = {GETRF_NPVT_BLKSIZES};
-            rocblas_int intervals[] = {GETRF_NPVT_INTERVALS};
-            rocblas_int max = GETRF_NPVT_NUM_INTERVALS;
-            blk = size[get_index(intervals, max, dim)];
-        }
-    }
-
-    return blk;
-}
-
-/** This function returns the inner block size. This has been tuned based on
-    experiments with panel matrices; it is not expected to change a lot.
-    (not tunable by the user for now) **/
-template <bool ISBATCHED>
-inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bool pivot)
-{
-    rocblas_int blk;
-
-    if(ISBATCHED)
-    {
-        if(pivot)
-        {
-            if(n <= 72) // n = 16,32,48,64
-            {
-                if(m <= 64)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 88) // n = 80
-            {
-                if(m <= 55)
-                    blk = 64;
-                else
-                    blk = 16;
-            }
-            else // n = 96,112,128,144,160,176,192,208,224,240,256,...
-            {
-                if(m <= 64)
-                    blk = 64;
-                else
-                    blk = 16;
-            }
-        }
-        else
-        {
-            if(n <= 40) // n = 16,32
-            {
-                if(m <= 256)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 72) // n = 48,64
-            {
-                if(m <= 45)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 120) // n = 80,96,112
-            {
-                if(m <= 51)
-                    blk = 48;
-                else
-                    blk = 16;
-            }
-            else if(n <= 152) // n = 128,144
-            {
-                if(m <= 256)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else // n = 160,176,192,208,224,240,256,...
-            {
-                if(m <= 304)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-        }
-    }
-
-    else
-    {
-        if(pivot)
-        {
-            if(n <= 40)
-            {
-                if(m <= 10240)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 56)
-            {
-                if(m <= 64)
-                    blk = 16;
-                else if(m <= 5760)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 72)
-            {
-                if(m <= 96)
-                    blk = 16;
-                else if(m <= 4224)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 88)
-            {
-                if(m <= 96)
-                    blk = 16;
-                else if(m <= 3776)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 104)
-            {
-                if(m <= 96)
-                    blk = 16;
-                else if(m <= 3200)
-                    blk = n;
-                else if(m <= 6784)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else if(n <= 120)
-            {
-                if(m <= 128)
-                    blk = 16;
-                else if(m <= 2880)
-                    blk = n;
-                else if(m <= 6272)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else if(n <= 136)
-            {
-                if(m <= 128)
-                    blk = 16;
-                else if(m <= 2880)
-                    blk = n;
-                else if(m <= 6784)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else if(n <= 152)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m < 176)
-                    blk = 32;
-                else if(m <= 2112)
-                    blk = n;
-                else if(m <= 8064)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else if(n <= 168)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m < 176)
-                    blk = 32;
-                else if(m <= 1568)
-                    blk = n;
-                else if(m <= 10496)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else if(n <= 184)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m < 208)
-                    blk = 32;
-                else if(m <= 1312)
-                    blk = n;
-                else if(m <= 2016)
-                    blk = 96;
-                else if(m <= 8960)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else if(n <= 200)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m < 256)
-                    blk = 32;
-                else if(m <= 1024)
-                    blk = n;
-                else if(m <= 1888)
-                    blk = 96;
-                else
-                    blk = 32;
-            }
-            else if(n <= 216)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m < 256)
-                    blk = 32;
-                else if(m <= 1376)
-                    blk = n;
-                else
-                    blk = 32;
-            }
-            else if(n <= 232)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m <= 256)
-                    blk = 32;
-                else if(m <= 928)
-                    blk = n;
-                else if(m <= 1312)
-                    blk = 128;
-                else
-                    blk = 32;
-            }
-            else if(n <= 248)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m <= 256)
-                    blk = 32;
-                else if(m <= 800)
-                    blk = n;
-                else if(m <= 1568)
-                    blk = 128;
-                else
-                    blk = 32;
-            }
-            else if(n <= 264)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m <= 320)
-                    blk = 32;
-                else if(m <= 1440)
-                    blk = 128;
-                else
-                    blk = 32;
-            }
-            else
-            {
-                if(m < 128)
-                    blk = 16;
-                else
-                    blk = 32;
-            }
-        }
-        else
-        {
-            if(n <= 56) // n = 16,32,48
-            {
-                blk = n;
-            }
-            else if(n <= 72) // n = 64
-            {
-                if(m <= 8192)
-                    blk = n;
-                else
-                    blk = 32;
-            }
-            else if(n <= 88) // n = 80
-            {
-                if(m <= 64)
-                    blk = 64;
-                else if(m <= 2048)
-                    blk = 16;
-                else if(m <= 4992)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 104) // n = 96
-            {
-                if(m <= 64)
-                    blk = 64;
-                else
-                    blk = 32;
-            }
-            else if(n <= 152) // n = 112,128,144
-            {
-                if(m < 64)
-                    blk = 80;
-                else
-                    blk = 32;
-            }
-            else // n = 160,176,192,208,224,240,256,...
-            {
-                if(m < 64)
-                    blk = 96;
-                else
-                    blk = 32;
-            }
-        }
-    }
-
-    return blk;
-}
-
 /** Return the sizes of the different workspace arrays **/
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_getrf_getMemorySize(const rocblas_int m,
@@ -787,8 +524,8 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
     }
 
     rocblas_int dim = min(m, n);
-    //    rocblas_int blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
-    rocblas_int blk = dim; //atoi(getenv("FIRST"));
+    rocblas_int blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
+    //    rocblas_int blk = dim; //atoi(getenv("FIRST"));
 
     if(blk == 1)
     {
@@ -877,8 +614,8 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     }
 
     // size of outer blocks
-    //    rocblas_int blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
-    rocblas_int blk = dim; //atoi(getenv("FIRST"));
+    rocblas_int blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
+    //    rocblas_int blk = dim; //atoi(getenv("FIRST"));
 
     if(blk == 1)
         return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
@@ -898,7 +635,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_int nextpiv, mm, nn;
     size_t lmemsize;
 
-    rocblas_int recur = atoi(getenv("RECUR"));
+    rocblas_int recur = 0; //atoi(getenv("RECUR"));
 
     // MAIN LOOP
     for(rocblas_int j = 0; j < dim; j += blk)
@@ -987,11 +724,25 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
         // update trailing matrix
         if(nextpiv < n)
         {
-            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
-                                         rocblas_operation_none, rocblas_diagonal_unit, jb, nn,
-                                         &one, A, shiftA + idx2D(j, j, lda), lda, strideA, A,
-                                         shiftA + idx2D(j, nextpiv, lda), lda, strideA, batch_count,
-                                         optim_mem, work1, work2, work3, work4);
+            if(nn <= 128)
+            {
+                rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
+                                             rocblas_operation_none, rocblas_diagonal_unit, jb, nn,
+                                             &one, A, shiftA + idx2D(j, j, lda), lda, strideA, A,
+                                             shiftA + idx2D(j, nextpiv, lda), lda, strideA,
+                                             batch_count, optim_mem, work1, work2, work3, work4);
+            }
+            else
+            {
+                dimx = jb;
+                dimy = min(nn, 1024 / dimx);
+                grid = dim3(1, 1, batch_count);
+                threads = dim3(dimx, dimy, 1);
+                lmemsize = (jb * dimy + ((jb - 1) * jb) / 2) * sizeof(T);
+                hipLaunchKernelGGL(getrf_trsm<T>, grid, threads, lmemsize, stream, jb, nn, A,
+                                   shiftA + idx2D(j, j, lda), shiftA + idx2D(j, nextpiv, lda), lda,
+                                   strideA);
+            }
 
             if(nextpiv < m)
             {
