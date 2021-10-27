@@ -24,14 +24,16 @@
         <run name="bench-interface"></run>
     </test>
     -->
+    <!-- TODO
+    <test sets="new5.0,swdev-304856">
+        <run name="getrf"></run>
+    </test>
+    -->
     <test sets="new5.0,swdev-291553">
         <run name="sym-tri-fact">{COMMAND} --gtest_filter=*SYTF2*:*SYTRF*-*known_bug* --gtest_output=xml</run>
     </test>
     <test sets="new5.0,swdev-297006">
         <!-- TODO Ensure this covers the issue, without extraneous testing -->
         <run name="cusolver-missing">{COMMAND} --gtest_filter=*POTRS*:*GESV*:*GELS*:*SYEV* --gtest_output=xml</run>
-    </test>
-    <test sets="new5.0,swdev-304856">
-        <!-- TODO Add tests to cover this item, break into smaller sets if necessary -->
     </test>
 </testset>
