@@ -72,6 +72,8 @@ set(rocauxiliary_test_source
 set(others_test_source
   # unified memory model
   managed_malloc_gtest.cpp
+  # rocblas memory model
+  memory_model_gtest.cpp
 )
 
 set(rocsolver_test_source
