@@ -145,6 +145,6 @@ CMake system.
 Currently, sample code exists to demonstrate the following:
 
 * Basic use of rocSOLVER in C, C++, and Fortran, using the example of :ref:`rocsolver_geqrf <geqrf>`;
-* Use of rocSOLVER with the Heterogeneous Memory Management (HMM) model ; and
+* Use of batched and strided_batched functions, using :ref:`rocsolver_geqrf_batched <geqrf_batched>` and :ref:`rocsolver_geqrf_strided_batched <geqrf_strided_batched>` as examples;
+* Use of rocSOLVER with the Heterogeneous Memory Management (HMM) model; and
 * Use of rocSOLVER's :ref:`multi-level logging <logging-label>` functionality.
-
