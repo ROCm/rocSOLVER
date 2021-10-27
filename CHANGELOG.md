@@ -9,19 +9,18 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - SYTF2, SYTRF (with batched and strided\_batched versions)
 - Added `rocsolver_get_version_string_size` to help with version string queries
 - Added `rocblas_layer_mode_ex` and the ability to print kernel calls in the trace and profile logs
+- Expanded batched and strided\_batched sample programs.
 
 ### Optimized
+- Improved general performance of LU factorization
+- Increased parallelism of specialized kernels when compiling from source, reducing build times on multi-core systems.
+
 ### Changed
 - The rocsolver-test client now prints the rocSOLVER version used to run the tests,
   rather than the version used to build them
 
-### Deprecated
-### Removed
 ### Fixed
 - Added missing stdint.h include to rocsolver.h
-
-### Known Issues
-### Security
 
 
 ## rocSOLVER 3.15.0 for ROCm 4.5.0
