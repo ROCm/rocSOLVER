@@ -8,6 +8,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - LASYF
     - SYTF2, SYTRF (with batched and strided\_batched versions)
 - Added `rocsolver_get_version_string_size` to help with version string queries
+- Added `rocblas_layer_mode_ex` and the ability to print kernel calls in the trace and profile logs
 
 ### Optimized
 ### Changed

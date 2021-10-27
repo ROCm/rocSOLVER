@@ -528,7 +528,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
         blocks = (batch_count - 1) / BLOCKSIZE + 1;
         grid = dim3(blocks, 1, 1);
         threads = dim3(BLOCKSIZE, 1, 1);
-        hipLaunchKernelGGL(reset_info, grid, threads, 0, stream, info, batch_count, 0);
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, grid, threads, 0, stream, info, batch_count, 0);
         return rocblas_status_success;
     }
 
@@ -579,8 +579,9 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                 lmemsize = dimx * dimy * sizeof(T);
 
                 // swap rows
-                hipLaunchKernelGGL(getrf_row_permutate<T>, grid, threads, lmemsize, stream, m, n,
-                                   j + k, jb1, A, shiftA + idx2D(j + k, 0, lda), lda, strideA, iipiv);
+                ROCSOLVER_LAUNCH_KERNEL(getrf_row_permutate<T>, grid, threads, lmemsize, stream, m,
+                                        n, j + k, jb1, A, shiftA + idx2D(j + k, 0, lda), lda,
+                                        strideA, iipiv);
             }
 
             // update trailing sub-block

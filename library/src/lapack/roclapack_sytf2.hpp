@@ -477,7 +477,7 @@ rocblas_status rocsolver_sytf2_template(rocblas_handle handle,
         rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
         dim3 gridReset(blocksReset, 1, 1);
         dim3 threadsReset(BLOCKSIZE, 1, 1);
-        hipLaunchKernelGGL(reset_info, gridReset, threadsReset, 0, stream, info, batch_count, 0);
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, info, batch_count, 0);
 
         return rocblas_status_success;
     }
@@ -486,11 +486,11 @@ rocblas_status rocsolver_sytf2_template(rocblas_handle handle,
     dim3 threads(SYTF2_MAX_THDS, 1, 1);
 
     if(uplo == rocblas_fill_upper)
-        hipLaunchKernelGGL(sytf2_kernel_upper<T>, grid, threads, 0, stream, n, A, shiftA, lda,
-                           strideA, ipiv, strideP, info);
+        ROCSOLVER_LAUNCH_KERNEL(sytf2_kernel_upper<T>, grid, threads, 0, stream, n, A, shiftA, lda,
+                                strideA, ipiv, strideP, info);
     else
-        hipLaunchKernelGGL(sytf2_kernel_lower<T>, grid, threads, 0, stream, n, A, shiftA, lda,
-                           strideA, ipiv, strideP, info);
+        ROCSOLVER_LAUNCH_KERNEL(sytf2_kernel_lower<T>, grid, threads, 0, stream, n, A, shiftA, lda,
+                                strideA, ipiv, strideP, info);
 
     return rocblas_status_success;
 }

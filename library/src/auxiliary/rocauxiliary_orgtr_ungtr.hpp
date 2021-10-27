@@ -121,12 +121,13 @@ rocblas_status rocsolver_orgtr_ungtr_template(rocblas_handle handle,
         // first superdiagonal and must be shifted left
 
         // copy
-        hipLaunchKernelGGL(copyshift_left<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
-                           stream, true, n - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
+        ROCSOLVER_LAUNCH_KERNEL(copyshift_left<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
+                                stream, true, n - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
 
         // shift
-        hipLaunchKernelGGL(copyshift_left<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
-                           stream, false, n - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
+        ROCSOLVER_LAUNCH_KERNEL(copyshift_left<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS),
+                                0, stream, false, n - 1, A, shiftA, lda, strideA, work, 0, ldw,
+                                strideW);
 
         // result
         rocsolver_orgql_ungql_template<BATCHED, STRIDED, T>(
@@ -140,12 +141,14 @@ rocblas_status rocsolver_orgtr_ungtr_template(rocblas_handle handle,
         // first subdiagonal and must be shifted right
 
         // copy
-        hipLaunchKernelGGL(copyshift_right<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
-                           stream, true, n - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
+        ROCSOLVER_LAUNCH_KERNEL(copyshift_right<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS),
+                                0, stream, true, n - 1, A, shiftA, lda, strideA, work, 0, ldw,
+                                strideW);
 
         // shift
-        hipLaunchKernelGGL(copyshift_right<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
-                           stream, false, n - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
+        ROCSOLVER_LAUNCH_KERNEL(copyshift_right<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS),
+                                0, stream, false, n - 1, A, shiftA, lda, strideA, work, 0, ldw,
+                                strideW);
 
         // result
         rocsolver_orgqr_ungqr_template<BATCHED, STRIDED, T>(

@@ -248,9 +248,11 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     // setup tau (changing signs) and account for the non-stored 1's on the
     // householder vectors
     rocblas_int blocks = (k - 1) / 32 + 1;
-    hipLaunchKernelGGL(set_triangular, dim3(blocks, blocks, batch_count), dim3(32, 32), 0, stream,
-                       n, k, V, shiftV, ldv, strideV, tau, strideT, F, ldf, strideF, direct, storev);
-    hipLaunchKernelGGL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau, strideT);
+    ROCSOLVER_LAUNCH_KERNEL(set_triangular, dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
+                            stream, n, k, V, shiftV, ldv, strideV, tau, strideT, F, ldf, strideF,
+                            direct, storev);
+    ROCSOLVER_LAUNCH_KERNEL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau,
+                            strideT);
 
     if(direct == rocblas_forward_direction)
     {
@@ -341,7 +343,8 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     }
 
     // restore tau
-    hipLaunchKernelGGL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau, strideT);
+    ROCSOLVER_LAUNCH_KERNEL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau,
+                            strideT);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;

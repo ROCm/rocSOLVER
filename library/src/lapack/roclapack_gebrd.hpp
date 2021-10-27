@@ -148,19 +148,21 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
         blocks = (jb - 1) / 64 + 1;
         if(m >= n)
         {
-            hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count, blocks, 1), dim3(1, 64, 1), 0,
-                               stream, D, j, strideD, A, shiftA + idx2D(j, j, lda), lda, strideA, jb);
-            hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count, blocks, 1), dim3(1, 64, 1), 0,
-                               stream, E, j, strideE, A, shiftA + idx2D(j, j + 1, lda), lda,
-                               strideA, jb);
+            ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, blocks, 1), dim3(1, 64, 1),
+                                    0, stream, D, j, strideD, A, shiftA + idx2D(j, j, lda), lda,
+                                    strideA, jb);
+            ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, blocks, 1), dim3(1, 64, 1),
+                                    0, stream, E, j, strideE, A, shiftA + idx2D(j, j + 1, lda), lda,
+                                    strideA, jb);
         }
         else
         {
-            hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count, blocks, 1), dim3(1, 64, 1), 0,
-                               stream, D, j, strideD, A, shiftA + idx2D(j, j, lda), lda, strideA, jb);
-            hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count, blocks, 1), dim3(1, 64, 1), 0,
-                               stream, E, j, strideE, A, shiftA + idx2D(j + 1, j, lda), lda,
-                               strideA, jb);
+            ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, blocks, 1), dim3(1, 64, 1),
+                                    0, stream, D, j, strideD, A, shiftA + idx2D(j, j, lda), lda,
+                                    strideA, jb);
+            ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, blocks, 1), dim3(1, 64, 1),
+                                    0, stream, E, j, strideE, A, shiftA + idx2D(j + 1, j, lda), lda,
+                                    strideA, jb);
         }
 
         j += GEBRD_GEBD2_SWITCHSIZE;

@@ -127,7 +127,8 @@ rocblas_status rocblasCall_dot(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex,
+                            batch_count);
 
     return rocblas_internal_dot_template<ROCBLAS_DOT_NB, CONJ, T>(
         handle, n, cast2constType<T>(work), offsetx, incx, stridex, cast2constType<T>(y), offsety,
@@ -195,7 +196,8 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey,
+                            batch_count);
 
     return rocblas_internal_ger_template<CONJ, T>(
         handle, m, n, alpha, stridea, cast2constType<T>(x), offsetx, incx, stridex,
@@ -232,7 +234,8 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex,
+                            batch_count);
 
     return rocblas_internal_ger_template<CONJ, T>(
         handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex,
@@ -309,7 +312,8 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, strideA, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, strideA,
+                            batch_count);
 
     return rocblas_internal_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha,
                                              cast2constType<T>(work), offseta, lda, strideA,
@@ -351,7 +355,8 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex,
+                            batch_count);
 
     return rocblas_internal_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha,
                                              cast2constType<T>(A), offseta, lda, strideA,
@@ -393,7 +398,8 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey,
+                            batch_count);
 
     return rocblas_internal_gemv_template<T>(
         handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A), offseta, lda, strideA,
@@ -435,9 +441,10 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex, batch_count);
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, (work + batch_count), y,
-                       stridey, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex,
+                            batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, (work + batch_count), y,
+                            stridey, batch_count);
 
     return rocblas_internal_gemv_template<T>(
         handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A), offseta, lda, strideA,
@@ -479,9 +486,10 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, strideA, batch_count);
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, (work + batch_count), y,
-                       stridey, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, strideA,
+                            batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, (work + batch_count), y,
+                            stridey, batch_count);
 
     return rocblas_internal_gemv_template<T>(
         handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(work), offseta, lda, strideA,
@@ -586,7 +594,8 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, stride_a, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, stride_a,
+                            batch_count);
 
     return rocblas_internal_gemm_template<BATCHED, T>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(work), offset_a, ld_a, stride_a,
@@ -628,7 +637,8 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, stride_b, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, stride_b,
+                            batch_count);
 
     return rocblas_internal_gemm_template<BATCHED, T>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
@@ -670,7 +680,8 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, C, stride_c, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, C, stride_c,
+                            batch_count);
 
     return rocblas_internal_gemm_template<BATCHED, T>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
@@ -712,9 +723,10 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, stride_b, batch_count);
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, C,
-                       stride_c, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, stride_b,
+                            batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, C,
+                            stride_c, batch_count);
 
     return rocblas_internal_gemm_template<BATCHED, T>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
@@ -756,9 +768,10 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, stride_a, batch_count);
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, C,
-                       stride_c, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, stride_a,
+                            batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, C,
+                            stride_c, batch_count);
 
     return rocblas_internal_gemm_template<BATCHED, T>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(work), offset_a, ld_a, stride_a,
@@ -800,9 +813,10 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, stride_a, batch_count);
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, B,
-                       stride_b, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, stride_a,
+                            batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, B,
+                            stride_b, batch_count);
 
     return rocblas_internal_gemm_template<BATCHED, T>(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(work), offset_a, ld_a, stride_a,
@@ -877,8 +891,8 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
 
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, B, strideB,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, B, strideB,
+                            batch_count);
 
     return rocblas_internal_trmm_recursive_inplace_template<nb, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), stride_alpha,
@@ -947,7 +961,8 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey,
+                            batch_count);
 
     return rocblas_internal_syr2_template(
         handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x), offsetx, incx, stridex,
@@ -1015,7 +1030,8 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey,
+                            batch_count);
 
     return rocblas_internal_her2_template(
         handle, uplo, n, cast2constType<T>(alpha), cast2constType<T>(x), offsetx, incx, stridex,
@@ -1150,7 +1166,8 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, strideB, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, strideB,
+                            batch_count);
 
     return rocblas_internal_syr2k_template<true>(
         handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
@@ -1230,7 +1247,8 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, strideB, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, strideB,
+                            batch_count);
 
     return rocblas_internal_her2k_template<true>(
         handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
@@ -1313,8 +1331,8 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, y, stridey,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, y, stridey,
+                            batch_count);
 
     return rocblas_internal_hemv_symv_template<false, T>(
         handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda,
@@ -1390,8 +1408,8 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, y, stridey,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, y, stridey,
+                            batch_count);
 
     return rocblas_internal_hemv_symv_template<true, T>(
         handle, uplo, n, cast2constType<T>(alpha), stridea, cast2constType<T>(A), offsetA, lda,
@@ -1623,8 +1641,8 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, A, stride_A,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, A, stride_A,
+                            batch_count);
 
     U supplied_invA = nullptr;
     return rocblas_internal_trsm_template<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
@@ -1698,8 +1716,8 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, c_temp_arr, c_temp,
-                       c_temp_els, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, c_temp_arr, c_temp,
+                            c_temp_els, batch_count);
 
     return rocblas_internal_trtri_template<ROCBLAS_TRTRI_NB, BATCHED, STRIDED, T>(
         handle, uplo, diag, n, cast2constType(A), offset_A, lda, stride_A, 0, invA, offset_invA,
@@ -1734,10 +1752,10 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, invA, stride_invA,
-                       batch_count);
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, c_temp_arr, c_temp,
-                       c_temp_els, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, invA,
+                            stride_invA, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, c_temp_arr, c_temp,
+                            c_temp_els, batch_count);
 
     return rocblas_internal_trtri_template<ROCBLAS_TRTRI_NB, BATCHED, STRIDED, T>(
         handle, uplo, diag, n, cast2constType(A), offset_A, lda, stride_A, 0,

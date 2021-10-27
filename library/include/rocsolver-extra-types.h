@@ -12,6 +12,13 @@
  ********************************************************************************/
 typedef uint32_t rocblas_layer_mode_flags;
 
+/*! \brief Used to expand the logging layer modes offered for rocSOLVER logging.
+ ********************************************************************************/
+typedef enum rocblas_layer_mode_ex_
+{
+    rocblas_layer_mode_ex_log_kernel = 0x10, /**< Enable logging for kernel calls. */
+} rocblas_layer_mode_ex;
+
 /*! \brief Used to specify the order in which multiple Householder matrices are
  *applied together
  ********************************************************************************/

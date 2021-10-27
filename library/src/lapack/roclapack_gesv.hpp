@@ -143,7 +143,7 @@ rocblas_status rocsolver_gesv_template(rocblas_handle handle,
     dim3 threads(BLOCKSIZE, 1, 1);
 
     // info=0 (starting with a nonsingular matrix)
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return if A or B are empty
     if(n == 0 || nrhs == 0)
@@ -159,9 +159,9 @@ rocblas_status rocsolver_gesv_template(rocblas_handle handle,
         work2, work3, work4, pivotval, pivotidx, iipiv, iinfo, optim_mem, true);
 
     // save elements of B that will be overwritten by GETRS for cases where info is nonzero
-    hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32), 0,
-                       stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb, strideB, (T*)work,
-                       info_mask(info));
+    ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),
+                            0, stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb, strideB,
+                            (T*)work, info_mask(info));
 
     // solve AX = B, overwriting B with X
     rocsolver_getrs_template<BATCHED, T>(handle, rocblas_operation_none, n, nrhs, A, shiftA, lda,
@@ -169,9 +169,9 @@ rocblas_status rocsolver_gesv_template(rocblas_handle handle,
                                          batch_count, work1, work2, work3, work4, optim_mem, true);
 
     // restore elements of B that were overwritten by GETRS in cases where info is nonzero
-    hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32), 0,
-                       stream, copymat_from_buffer, n, nrhs, B, shiftB, ldb, strideB, (T*)work,
-                       info_mask(info));
+    ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),
+                            0, stream, copymat_from_buffer, n, nrhs, B, shiftB, ldb, strideB,
+                            (T*)work, info_mask(info));
 
     return rocblas_status_success;
 }

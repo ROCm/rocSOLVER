@@ -129,8 +129,8 @@ rocblas_status rocsolver_org2r_ung2r_template(rocblas_handle handle,
     // Initialize identity matrix (non used columns)
     rocblas_int blocksx = (m - 1) / 32 + 1;
     rocblas_int blocksy = (n - 1) / 32 + 1;
-    hipLaunchKernelGGL(org2r_init_ident<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0,
-                       stream, m, n, k, A, shiftA, lda, strideA);
+    ROCSOLVER_LAUNCH_KERNEL(org2r_init_ident<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32),
+                            0, stream, m, n, k, A, shiftA, lda, strideA);
 
     for(rocblas_int j = k - 1; j >= 0; --j)
     {
@@ -144,8 +144,8 @@ rocblas_status rocsolver_org2r_ung2r_template(rocblas_handle handle,
         }
 
         // set the diagonal element and negative tau
-        hipLaunchKernelGGL(subtract_tau<T>, dim3(batch_count), dim3(1), 0, stream, j, j, A, shiftA,
-                           lda, strideA, ipiv + j, strideP);
+        ROCSOLVER_LAUNCH_KERNEL(subtract_tau<T>, dim3(batch_count), dim3(1), 0, stream, j, j, A,
+                                shiftA, lda, strideA, ipiv + j, strideP);
 
         // update i-th column -corresponding to H(i)-
         if(j < m - 1)
@@ -157,8 +157,8 @@ rocblas_status rocsolver_org2r_ung2r_template(rocblas_handle handle,
     if(k > 0)
     {
         blocksx = (k - 1) / 128 + 1;
-        hipLaunchKernelGGL(restau<T>, dim3(blocksx, batch_count), dim3(128), 0, stream, k, ipiv,
-                           strideP);
+        ROCSOLVER_LAUNCH_KERNEL(restau<T>, dim3(blocksx, batch_count), dim3(128), 0, stream, k,
+                                ipiv, strideP);
     }
 
     rocblas_set_pointer_mode(handle, old_mode);
