@@ -153,6 +153,19 @@ The user may then set the desired logging modes and max depth on the command lin
    export ROCSOLVER_LEVELS=5
 
 
+Kernel logging
+================================================
+
+Kernel launches from within rocSOLVER can be added to the trace and profile logs using an
+additional layer mode flag. The flag ``rocblas_layer_mode_ex_log_kernel`` can be combined with
+``rocblas_layer_mode`` flags and passed to ``rocsolver_log_set_layer_mode`` in order to enable
+kernel logging. Alternatively, the environment variable ``ROCSOLVER_LAYER`` can be set such that
+``(ROCSOLVER_LAYER & 16) != 0``:
+
+*  If ``(ROCSOLVER_LAYER & 17) != 0``, then kernel calls will be added to the trace log
+*  If ``(ROCSOLVER_LAYER & 20) != 0``, then kernel calls will be added to the profile log
+
+
 Multiple host threads
 ================================================
 

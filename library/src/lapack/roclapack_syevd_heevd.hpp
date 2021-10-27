@@ -130,7 +130,7 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
     dim3 threads(BLOCKSIZE, 1, 1);
 
     // info = 0
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
     if(n == 0)
@@ -139,8 +139,8 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
     // quick return for n = 1 (scalar case)
     if(n == 1)
     {
-        hipLaunchKernelGGL(scalar_case<T>, gridReset, threads, 0, stream, evect, A, strideA, D,
-                           strideD, batch_count);
+        ROCSOLVER_LAUNCH_KERNEL(scalar_case<T>, gridReset, threads, 0, stream, evect, A, strideA, D,
+                                strideD, batch_count);
         return rocblas_status_success;
     }
 
@@ -174,8 +174,8 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
 
         // copy matrix product into A
         const rocblas_int copyblocks = (n - 1) / 32 + 1;
-        hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocks, copyblocks, batch_count), dim3(32, 32), 0,
-                           stream, n, n, tmptau_W, 0, ldw, strideW, A, shiftA, lda, strideA);
+        ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(copyblocks, copyblocks, batch_count), dim3(32, 32),
+                                0, stream, n, n, tmptau_W, 0, ldw, strideW, A, shiftA, lda, strideA);
     }
 
     return rocblas_status_success;

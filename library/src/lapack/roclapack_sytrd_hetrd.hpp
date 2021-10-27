@@ -196,8 +196,8 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
 
     // Copy results (set tridiagonal form in A)
     rocblas_int blocks = (n - 1) / BLOCKSIZE + 1;
-    hipLaunchKernelGGL(set_tridiag<T>, dim3(blocks, batch_count), dim3(BLOCKSIZE), 0, stream, uplo,
-                       n, A, shiftA, lda, strideA, D, strideD, E, strideE);
+    ROCSOLVER_LAUNCH_KERNEL(set_tridiag<T>, dim3(blocks, batch_count), dim3(BLOCKSIZE), 0, stream,
+                            uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;

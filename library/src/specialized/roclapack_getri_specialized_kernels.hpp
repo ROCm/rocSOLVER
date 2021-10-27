@@ -162,9 +162,9 @@ rocblas_status getri_run_small(rocblas_handle handle,
                                const bool complete,
                                const bool pivot)
 {
-#define RUN_GETRI_SMALL(DIM)                                                                 \
-    hipLaunchKernelGGL((getri_kernel_small<DIM, T>), grid, block, 0, stream, A, shiftA, lda, \
-                       strideA, ipiv, shiftP, strideP, info, complete, pivot)
+#define RUN_GETRI_SMALL(DIM)                                                                      \
+    ROCSOLVER_LAUNCH_KERNEL((getri_kernel_small<DIM, T>), grid, block, 0, stream, A, shiftA, lda, \
+                            strideA, ipiv, shiftP, strideP, info, complete, pivot)
 
     dim3 grid(batch_count, 1, 1);
     dim3 block(TRTRI_MAX_COLS, 1, 1);

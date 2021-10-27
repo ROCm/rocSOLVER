@@ -98,8 +98,8 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
         rocblas_get_stream(handle, &stream);
 
         rocblas_int blocks = (strideP - 1) / 32 + 1;
-        hipLaunchKernelGGL(copy_array_to_ptrs, dim3(blocks, batch_count), dim3(32, 1), 0, stream,
-                           strideP, tau, (T*)ipiv);
+        ROCSOLVER_LAUNCH_KERNEL(copy_array_to_ptrs, dim3(blocks, batch_count), dim3(32, 1), 0,
+                                stream, strideP, tau, (T*)ipiv);
     }
 
     return status;

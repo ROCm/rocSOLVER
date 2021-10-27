@@ -189,7 +189,7 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
     dim3 threads(BLOCKSIZE, 1, 1);
 
     // info=0 (starting with no errors)
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
     if(n == 0)
@@ -223,7 +223,8 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
         scalars, work1, (T*)work2, (T*)work3, (T*)work4, (T**)pivots_workArr);
 
     // combine info from POTRF with info from SYEV/HEEV
-    hipLaunchKernelGGL(sygv_update_info, gridReset, threads, 0, stream, info, iinfo, n, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(sygv_update_info, gridReset, threads, 0, stream, info, iinfo, n,
+                            batch_count);
 
     /** (TODO: Similarly, if only neig < n eigenvalues converged, TRSMM or TRMM below should not
         work with the entire matrix. Need to find a way to do this efficiently; for now we ignore

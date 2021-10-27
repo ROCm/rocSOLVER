@@ -120,8 +120,8 @@ rocblas_status rocsolver_laswp_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    hipLaunchKernelGGL(laswp_kernel<T>, gridPivot, threads, 0, stream, n, A, shiftA, lda, strideA,
-                       k1, k2, ipiv, shiftP, strideP, incx);
+    ROCSOLVER_LAUNCH_KERNEL(laswp_kernel<T>, gridPivot, threads, 0, stream, n, A, shiftA, lda,
+                            strideA, k1, k2, ipiv, shiftP, strideP, incx);
 
     return rocblas_status_success;
 }

@@ -235,8 +235,8 @@ void rocsolver_ormbr_unmbr_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, C, strideC,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, C, strideC,
+                            batch_count);
 
     rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
         handle, storev, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP,
@@ -274,8 +274,8 @@ void rocsolver_ormbr_unmbr_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, A, strideA,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, A, strideA,
+                            batch_count);
 
     rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
         handle, storev, side, trans, m, n, k, (T* const*)workArr, shiftA, lda, strideA, ipiv,

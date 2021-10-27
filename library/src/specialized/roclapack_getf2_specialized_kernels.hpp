@@ -559,12 +559,12 @@ rocblas_status getf2_run_small(rocblas_handle handle,
 {
 #define RUN_LUFACT_SMALL(DIM)                                                                      \
     if(pivot)                                                                                      \
-        hipLaunchKernelGGL((getf2_small_kernel<DIM, T>), grid, block, lmemsize, stream, m, A,      \
-                           shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count, offset, \
-                           permut_idx, stride);                                                    \
+        ROCSOLVER_LAUNCH_KERNEL((getf2_small_kernel<DIM, T>), grid, block, lmemsize, stream, m, A, \
+                                shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count,    \
+                                offset, permut_idx, stride);                                       \
     else                                                                                           \
-        hipLaunchKernelGGL((getf2_npvt_small_kernel<DIM, T>), grid, block, lmemsize, stream, m, A, \
-                           shiftA, lda, strideA, info, batch_count, offset)
+        ROCSOLVER_LAUNCH_KERNEL((getf2_npvt_small_kernel<DIM, T>), grid, block, lmemsize, stream,  \
+                                m, A, shiftA, lda, strideA, info, batch_count, offset)
 
     // determine sizes
     int opval[] = {GETF2_OPTIM_NGRP};
@@ -709,15 +709,15 @@ rocblas_status getf2_run_panel(rocblas_handle handle,
     if(pivot)
     {
         size_t lmemsize = (dimx + n) * sizeof(T) + dimx * (sizeof(rocblas_int) + sizeof(S));
-        hipLaunchKernelGGL((getf2_panel_kernel<T>), grid, block, lmemsize, stream, m, n, A, shiftA,
-                           lda, strideA, ipiv, shiftP, strideP, info, batch_count, offset,
-                           permut_idx, stride);
+        ROCSOLVER_LAUNCH_KERNEL((getf2_panel_kernel<T>), grid, block, lmemsize, stream, m, n, A,
+                                shiftA, lda, strideA, ipiv, shiftP, strideP, info, batch_count,
+                                offset, permut_idx, stride);
     }
     else
     {
         size_t lmemsize = (dimx + n) * sizeof(T);
-        hipLaunchKernelGGL((getf2_npvt_panel_kernel<T>), grid, block, lmemsize, stream, m, n, A,
-                           shiftA, lda, strideA, info, batch_count, offset);
+        ROCSOLVER_LAUNCH_KERNEL((getf2_npvt_panel_kernel<T>), grid, block, lmemsize, stream, m, n,
+                                A, shiftA, lda, strideA, info, batch_count, offset);
     }
 
     return rocblas_status_success;
@@ -745,8 +745,8 @@ void getf2_run_scale_update(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     // scale and update trailing matrix with local function
-    hipLaunchKernelGGL((getf2_scale_update_kernel<T>), grid, threads, lmemsize, stream, m, n,
-                       pivotval, A, shiftA, lda, strideA);
+    ROCSOLVER_LAUNCH_KERNEL((getf2_scale_update_kernel<T>), grid, threads, lmemsize, stream, m, n,
+                            pivotval, A, shiftA, lda, strideA);
 }
 
 /*************************************************************

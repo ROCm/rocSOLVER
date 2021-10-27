@@ -298,8 +298,8 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     if(n == 0)
     {
         rocblas_int blocks = (batch_count - 1) / 32 + 1;
-        hipLaunchKernelGGL(reset_info, dim3(blocks, 1, 1), dim3(32, 1, 1), 0, stream, info,
-                           batch_count, 0);
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, dim3(blocks, 1, 1), dim3(32, 1, 1), 0, stream, info,
+                                batch_count, 0);
         return rocblas_status_success;
     }
 
@@ -354,8 +354,8 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
         jb = min(n - j, blk);
 
         // copy and zero entries in case info is nonzero
-        hipLaunchKernelGGL(getri_kernel_large1<T>, dim3(batch_count, 1, 1), dim3(1, threads, 1), 0,
-                           stream, n, j, jb, A, shiftA, lda, strideA, info, tmpcopy, strideW);
+        ROCSOLVER_LAUNCH_KERNEL(getri_kernel_large1<T>, dim3(batch_count, 1, 1), dim3(1, threads, 1),
+                                0, stream, n, j, jb, A, shiftA, lda, strideA, info, tmpcopy, strideW);
 
         if(j + jb < n)
             rocblasCall_gemm<BATCHED, STRIDED>(
@@ -372,8 +372,8 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
 
     // apply pivoting (column interchanges)
     if(pivot)
-        hipLaunchKernelGGL(getri_kernel_large2<T>, dim3(batch_count, 1, 1), dim3(1, threads, 1), 0,
-                           stream, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info);
+        ROCSOLVER_LAUNCH_KERNEL(getri_kernel_large2<T>, dim3(batch_count, 1, 1), dim3(1, threads, 1),
+                                0, stream, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info);
 
     rocblas_set_pointer_mode(handle, old_mode);
 

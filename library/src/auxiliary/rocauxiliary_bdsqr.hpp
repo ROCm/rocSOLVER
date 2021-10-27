@@ -581,15 +581,16 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     // rotate to upper bidiagonal if necessary
     if(uplo == rocblas_fill_lower)
     {
-        hipLaunchKernelGGL((lower2upper<T>), dim3(batch_count), dim3(1), 0, stream, n, nu, nc, D,
-                           strideD, E, strideE, U, shiftU, ldu, strideU, C, shiftC, ldc, strideC,
-                           work, strideW);
+        ROCSOLVER_LAUNCH_KERNEL((lower2upper<T>), dim3(batch_count), dim3(1), 0, stream, n, nu, nc,
+                                D, strideD, E, strideE, U, shiftU, ldu, strideU, C, shiftC, ldc,
+                                strideC, work, strideW);
     }
 
     // main computation of SVD
-    hipLaunchKernelGGL((bdsqrKernel<T>), dim3(batch_count), dim3(1), 0, stream, n, nv, nu, nc, D,
-                       strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu, strideU, C,
-                       shiftC, ldc, strideC, info, maxiter, eps, sfm, tol, minshift, work, strideW);
+    ROCSOLVER_LAUNCH_KERNEL((bdsqrKernel<T>), dim3(batch_count), dim3(1), 0, stream, n, nv, nu, nc,
+                            D, strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu,
+                            strideU, C, shiftC, ldc, strideC, info, maxiter, eps, sfm, tol,
+                            minshift, work, strideW);
 
     return rocblas_status_success;
 }
@@ -627,8 +628,8 @@ void rocsolver_bdsqr_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, U, strideU,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, U, strideU,
+                            batch_count);
 
     rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, 0, D, strideD, E, strideE, V, shiftV, ldv,
                                 strideV, (T* const*)workArr, shiftU, ldu, strideU, C, shiftC, ldc,
@@ -668,8 +669,8 @@ void rocsolver_bdsqr_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, V, strideV,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, V, strideV,
+                            batch_count);
 
     rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, nc, D, strideD, E, strideE,
                                 (T* const*)workArr, shiftV, ldv, strideV, U, shiftU, ldu, strideU,

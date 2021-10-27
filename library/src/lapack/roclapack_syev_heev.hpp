@@ -189,7 +189,7 @@ rocblas_status rocsolver_syev_heev_template(rocblas_handle handle,
     dim3 threads(BLOCKSIZE, 1, 1);
 
     // info = 0
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
     if(n == 0)
@@ -198,8 +198,8 @@ rocblas_status rocsolver_syev_heev_template(rocblas_handle handle,
     // quick return for n = 1 (scalar case)
     if(n == 1)
     {
-        hipLaunchKernelGGL(scalar_case<T>, gridReset, threads, 0, stream, evect, A, strideA, D,
-                           strideD, batch_count);
+        ROCSOLVER_LAUNCH_KERNEL(scalar_case<T>, gridReset, threads, 0, stream, evect, A, strideA, D,
+                                strideD, batch_count);
         return rocblas_status_success;
     }
 

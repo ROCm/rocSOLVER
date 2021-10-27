@@ -184,7 +184,7 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
     dim3 threads(BLOCKSIZE, 1, 1);
 
     // info=0 (starting with a nonsingular matrix)
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return if B is empty
     if(nrhs == 0)
@@ -196,8 +196,8 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
         rocblas_int rowsB = std::max(m, n);
         rocblas_int blocksx = (rowsB - 1) / 32 + 1;
         rocblas_int blocksy = (nrhs - 1) / 32 + 1;
-        hipLaunchKernelGGL(set_zero<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0,
-                           stream, rowsB, nrhs, B, shiftB, ldb, strideB);
+        ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0,
+                                stream, rowsB, nrhs, B, shiftB, ldb, strideB);
 
         return rocblas_status_success;
     }
@@ -232,14 +232,14 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                 (T**)trfact_workTrmm_invA_arr);
 
             // do the equivalent of trtrs
-            hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1),
-                               dim3(1, check_threads, 1), 0, stream, n, A, shiftA, lda, strideA,
-                               info);
+            ROCSOLVER_LAUNCH_KERNEL(check_singularity<T>, dim3(batch_count, 1, 1),
+                                    dim3(1, check_threads, 1), 0, stream, n, A, shiftA, lda,
+                                    strideA, info);
 
             // save elements of B that will be overwritten by TRSM for cases where info is nonzero
-            hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                               dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb,
-                               strideB, ipiv_savedB, info_mask(info));
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                                    dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB,
+                                    ldb, strideB, ipiv_savedB, info_mask(info));
 
             // solve RX = Q'B, overwriting B with X
             rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_upper,
@@ -249,21 +249,21 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                          diag_trfac_invA, trfact_workTrmm_invA_arr);
 
             // restore elements of B that were overwritten by TRSM in cases where info is nonzero
-            hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                               dim3(32, 32), 0, stream, copymat_from_buffer, n, nrhs, B, shiftB,
-                               ldb, strideB, ipiv_savedB, info_mask(info));
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                                    dim3(32, 32), 0, stream, copymat_from_buffer, n, nrhs, B,
+                                    shiftB, ldb, strideB, ipiv_savedB, info_mask(info));
         }
         else
         {
             // do the equivalent of trtrs
-            hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1),
-                               dim3(1, check_threads, 1), 0, stream, n, A, shiftA, lda, strideA,
-                               info);
+            ROCSOLVER_LAUNCH_KERNEL(check_singularity<T>, dim3(batch_count, 1, 1),
+                                    dim3(1, check_threads, 1), 0, stream, n, A, shiftA, lda,
+                                    strideA, info);
 
             // save elements of B that will be overwritten by TRSM for cases where info is nonzero
-            hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                               dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB, ldb,
-                               strideB, ipiv_savedB, info_mask(info));
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                                    dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB,
+                                    ldb, strideB, ipiv_savedB, info_mask(info));
 
             // solve R'Y = B overwriting B with Y (here Y = Q'X)
             rocblasCall_trsm<BATCHED, T>(
@@ -274,8 +274,9 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
 
             // zero row n to m-1 of B in cases where info is zero
             const rocblas_int zeroblocksx = (m - n - 1) / 32 + 1;
-            hipLaunchKernelGGL((gels_set_zero<T, U>), dim3(zeroblocksx, copyblocksy, batch_count),
-                               dim3(32, 32), 0, stream, n, m, nrhs, B, shiftB, ldb, strideB, info);
+            ROCSOLVER_LAUNCH_KERNEL((gels_set_zero<T, U>),
+                                    dim3(zeroblocksx, copyblocksy, batch_count), dim3(32, 32), 0,
+                                    stream, n, m, nrhs, B, shiftB, ldb, strideB, info);
 
             rocsolver_ormqr_unmqr_template<BATCHED, STRIDED>(
                 handle, rocblas_side_left, rocblas_operation_none, m, nrhs, n, A, shiftA, lda,
@@ -284,9 +285,9 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                 (T**)trfact_workTrmm_invA_arr);
 
             // restore elements of B that were overwritten by TRSM and ORMQR/UNMQR in cases where info is nonzero
-            hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                               dim3(32, 32), 0, stream, copymat_from_buffer, n, nrhs, B, shiftB,
-                               ldb, strideB, ipiv_savedB, info_mask(info));
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                                    dim3(32, 32), 0, stream, copymat_from_buffer, n, nrhs, B,
+                                    shiftB, ldb, strideB, ipiv_savedB, info_mask(info));
         }
     }
     else
@@ -299,14 +300,14 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
         if(trans == rocblas_operation_none)
         {
             // do the equivalent of trtrs
-            hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1),
-                               dim3(1, check_threads, 1), 0, stream, m, A, shiftA, lda, strideA,
-                               info);
+            ROCSOLVER_LAUNCH_KERNEL(check_singularity<T>, dim3(batch_count, 1, 1),
+                                    dim3(1, check_threads, 1), 0, stream, m, A, shiftA, lda,
+                                    strideA, info);
 
             // save elements of B that will be overwritten by TRSM for cases where info is nonzero
-            hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                               dim3(32, 32), 0, stream, copymat_to_buffer, m, nrhs, B, shiftB, ldb,
-                               strideB, ipiv_savedB, info_mask(info));
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                                    dim3(32, 32), 0, stream, copymat_to_buffer, m, nrhs, B, shiftB,
+                                    ldb, strideB, ipiv_savedB, info_mask(info));
 
             // solve LY = B overwriting B with Y (here Y = QX)
             rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
@@ -317,8 +318,9 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
 
             // zero row m to n-1 of B in cases where info is zero
             const rocblas_int zeroblocksx = (n - m - 1) / 32 + 1;
-            hipLaunchKernelGGL((gels_set_zero<T, U>), dim3(zeroblocksx, copyblocksy, batch_count),
-                               dim3(32, 32), 0, stream, m, n, nrhs, B, shiftB, ldb, strideB, info);
+            ROCSOLVER_LAUNCH_KERNEL((gels_set_zero<T, U>),
+                                    dim3(zeroblocksx, copyblocksy, batch_count), dim3(32, 32), 0,
+                                    stream, m, n, nrhs, B, shiftB, ldb, strideB, info);
 
             rocsolver_ormlq_unmlq_template<BATCHED, STRIDED>(
                 handle, rocblas_side_left, rocblas_operation_conjugate_transpose, n, nrhs, m, A,
@@ -327,9 +329,9 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                 (T**)trfact_workTrmm_invA_arr);
 
             // restore elements of B that were overwritten by TRSM and ORMLQ/UNMLQ in cases where info is nonzero
-            hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                               dim3(32, 32), 0, stream, copymat_from_buffer, m, nrhs, B, shiftB,
-                               ldb, strideB, ipiv_savedB, info_mask(info));
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                                    dim3(32, 32), 0, stream, copymat_from_buffer, m, nrhs, B,
+                                    shiftB, ldb, strideB, ipiv_savedB, info_mask(info));
         }
         else
         {
@@ -340,14 +342,14 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                 (T**)trfact_workTrmm_invA_arr);
 
             // do the equivalent of trtrs
-            hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1),
-                               dim3(1, check_threads, 1), 0, stream, m, A, shiftA, lda, strideA,
-                               info);
+            ROCSOLVER_LAUNCH_KERNEL(check_singularity<T>, dim3(batch_count, 1, 1),
+                                    dim3(1, check_threads, 1), 0, stream, m, A, shiftA, lda,
+                                    strideA, info);
 
             // save elements of B that will be overwritten by TRSM for cases where info is nonzero
-            hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                               dim3(32, 32), 0, stream, copymat_to_buffer, m, nrhs, B, shiftB, ldb,
-                               strideB, ipiv_savedB, info_mask(info));
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                                    dim3(32, 32), 0, stream, copymat_to_buffer, m, nrhs, B, shiftB,
+                                    ldb, strideB, ipiv_savedB, info_mask(info));
 
             // solve L'X = QB, overwriting B with X
             rocblasCall_trsm<BATCHED, T>(
@@ -357,9 +359,9 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                 workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
 
             // restore elements of B that were overwritten by TRSM in cases where info is nonzero
-            hipLaunchKernelGGL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                               dim3(32, 32), 0, stream, copymat_from_buffer, m, nrhs, B, shiftB,
-                               ldb, strideB, ipiv_savedB, info_mask(info));
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+                                    dim3(32, 32), 0, stream, copymat_from_buffer, m, nrhs, B,
+                                    shiftB, ldb, strideB, ipiv_savedB, info_mask(info));
         }
     }
 

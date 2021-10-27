@@ -353,7 +353,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
 
     // info=0 (starting with a nonsingular matrix)
     if(offset == 0)
-        hipLaunchKernelGGL(reset_info, grid, threads, 0, stream, info, batch_count, 0);
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, grid, threads, 0, stream, info, batch_count, 0);
 
     // quick return if no dimensions
     if(m == 0 || n == 0)
@@ -365,7 +365,8 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         blocks = (m - 1) / 256 + 1;
         threads = dim3(256, 1, 1);
         grid = dim3(blocks, batch_count, 1);
-        hipLaunchKernelGGL(getf2_permut_init<T>, grid, threads, 0, stream, m, permut_idx, stride);
+        ROCSOLVER_LAUNCH_KERNEL(getf2_permut_init<T>, grid, threads, 0, stream, m, permut_idx,
+                                stride);
     }
 
 #ifdef OPTIMAL
@@ -408,18 +409,18 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         if(pivot)
         {
             // find pivot. Use Fortran 1-based indexing (to follow LAPACK)
-            hipLaunchKernelGGL((getf2_iamax<T>), gridMax, threadsMax, 0, stream, m - j, A,
-                               shiftA + idx2D(j, j, lda), strideA, pivotidx);
+            ROCSOLVER_LAUNCH_KERNEL((getf2_iamax<T>), gridMax, threadsMax, 0, stream, m - j, A,
+                                    shiftA + idx2D(j, j, lda), strideA, pivotidx);
 
             // adjust pivot indices, apply row interchanges and check singularity
-            hipLaunchKernelGGL(getf2_check_singularity<T>, gridPivot, threadsPivot, 0, stream, n, j,
-                               A, shiftA, lda, strideA, ipiv, shiftP, strideP, pivotval, pivotidx,
-                               info, offset, permut_idx, stride);
+            ROCSOLVER_LAUNCH_KERNEL(getf2_check_singularity<T>, gridPivot, threadsPivot, 0, stream,
+                                    n, j, A, shiftA, lda, strideA, ipiv, shiftP, strideP, pivotval,
+                                    pivotidx, info, offset, permut_idx, stride);
         }
         else
             // check singularity
-            hipLaunchKernelGGL(getf2_npvt_check_singularity<T>, gridPivot, threadsPivot, 0, stream,
-                               j, A, shiftA, lda, strideA, pivotval, info, offset);
+            ROCSOLVER_LAUNCH_KERNEL(getf2_npvt_check_singularity<T>, gridPivot, threadsPivot, 0,
+                                    stream, j, A, shiftA, lda, strideA, pivotval, info, offset);
 
         mm = m - j - 1;
         nn = n - j - 1;

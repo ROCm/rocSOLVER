@@ -194,8 +194,8 @@ rocblas_status rocsolver_ormtr_unmtr_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, C, strideC,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, C, strideC,
+                            batch_count);
 
     return rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
         handle, side, uplo, trans, m, n, A, shiftA, lda, strideA, ipiv, strideP,

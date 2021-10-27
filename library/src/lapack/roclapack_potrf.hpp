@@ -120,7 +120,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     dim3 threads(BLOCKSIZE, 1, 1);
 
     // info=0 (starting with a positive definite matrix)
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
     if(n == 0)
@@ -155,13 +155,13 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
         {
             // Factor diagonal and subdiagonal blocks
             jb = min(n - j, POTRF_POTF2_SWITCHSIZE); // number of columns in the block
-            hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
+            ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
 
             // test for non-positive-definiteness.
-            hipLaunchKernelGGL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info, j,
-                               batch_count);
+            ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info, j,
+                                    batch_count);
 
             if(j + jb < n)
             {
@@ -186,13 +186,13 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
         {
             // Factor diagonal and subdiagonal blocks
             jb = min(n - j, POTRF_POTF2_SWITCHSIZE); // number of columns in the block
-            hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
+            ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
 
             // test for non-positive-definiteness.
-            hipLaunchKernelGGL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info, j,
-                               batch_count);
+            ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info, j,
+                                    batch_count);
 
             if(j + jb < n)
             {

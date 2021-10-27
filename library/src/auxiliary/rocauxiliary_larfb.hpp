@@ -289,8 +289,8 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
     // copy A1 to tmptr
     rocblas_int blocksx = (order - 1) / 32 + 1;
     rocblas_int blocksy = (ldw - 1) / 32 + 1;
-    hipLaunchKernelGGL(copymatA1, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0, stream, ldw,
-                       order, A, offsetA1, lda, strideA, tmptr);
+    ROCSOLVER_LAUNCH_KERNEL(copymatA1, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0, stream,
+                            ldw, order, A, offsetA1, lda, strideA, tmptr);
 
     // compute: V1' * A1
     //   or    A1 * V1
@@ -349,8 +349,8 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
 
     // compute: A1 - V1 * trans(T) * (V1' * A1 + V2' * A2)
     //    or    A1 - (A1 * V1 + A2 * V2) * trans(T) * V1'
-    hipLaunchKernelGGL(addmatA1, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0, stream, ldw,
-                       order, A, offsetA1, lda, strideA, tmptr);
+    ROCSOLVER_LAUNCH_KERNEL(addmatA1, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0, stream,
+                            ldw, order, A, offsetA1, lda, strideA, tmptr);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
