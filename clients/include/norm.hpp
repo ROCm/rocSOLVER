@@ -5,7 +5,7 @@
 #pragma once
 
 #include "clientcommon.hpp"
-#include "rocblas.h"
+#include "rocblas/rocblas.h"
 
 /* LAPACK fortran library functionality */
 
