@@ -9,7 +9,7 @@
 #include <cstring>
 #include <hip/hip_runtime.h>
 #include <limits>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 
 /*
  * ===========================================================================

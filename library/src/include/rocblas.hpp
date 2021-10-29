@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 
 #include "common_host_helpers.hpp"
 #include "init_scalars.hpp"

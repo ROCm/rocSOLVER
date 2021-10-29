@@ -6,7 +6,7 @@
 #pragma once
 
 #include <fmt/core.h>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 
 /*******************************************************************************
  * Definitions
