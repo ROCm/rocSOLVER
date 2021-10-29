@@ -7,7 +7,7 @@
 #include <cassert>
 
 #include <hip/hip_runtime.h>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 
 #define IOTA_MAX_THDS 32
 
