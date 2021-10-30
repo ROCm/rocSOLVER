@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "clientcommon.hpp"
-#include "internal/rocblas-version.h"
+#include "rocblas/internal/rocblas-version.h"
 #include "rocsolver-version.h"
 
 #define STRINGIFY(s) STRINGIFY_HELPER(s)
