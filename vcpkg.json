@@ -4,7 +4,7 @@
   "description": "AMD GPU implementation of LAPACK",
   "homepage": "https://github.com/ROCmSoftwarePlatform/rocSOLVER",
   "documentation": "https://rocsolver.readthedocs.io",
-  "builtin-baseline": "193880f0a8d9738a62142dd49aab19069b1ff8d6",
+  "builtin-baseline": "5568f110b509a9fd90711978a7cb76bae75bb092",
   "dependencies": [
     "fmt"
   ],
