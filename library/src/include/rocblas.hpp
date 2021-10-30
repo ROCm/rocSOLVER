@@ -8,8 +8,8 @@
 
 #include "common_host_helpers.hpp"
 #include "init_scalars.hpp"
-#include "internal/rocblas-exported-proto.hpp"
-#include "internal/rocblas_device_malloc.hpp"
+#include "rocblas/internal/rocblas-exported-proto.hpp"
+#include "rocblas/internal/rocblas_device_malloc.hpp"
 #include "lib_device_helpers.hpp"
 #include "lib_host_helpers.hpp"
 #include "rocsolver_logger.hpp"
