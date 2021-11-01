@@ -467,7 +467,7 @@ esac
 export CXX="hipcc"
 export CC="clang"
 export FC="gfortran"
-export PATH="${rocm_path}/bin:${rocm_path}/bin/llvm:${PATH}"
+export PATH="${rocm_path}/bin:${rocm_path}/llvm/bin:${PATH}"
 
 # #################################################
 # dependencies
