@@ -4422,9 +4422,10 @@ inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
                                                 rocblas_int bc)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_sgels_outofplace_strided_batched(handle, trans, m, n, nrhs, A, lda, stA, B, ldb, stB, X, ldx, stX, info, bc);
+        return rocsolver_sgels_outofplace_strided_batched(handle, trans, m, n, nrhs, A, lda, stA, B,
+                                                          ldb, stB, X, ldx, stX, info, bc);
     else
-        return rocblas_status_not_implemented; // rocsolver_sgels_outofplace(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info);
+        return rocsolver_sgels_outofplace(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info);
 }
 
 inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
@@ -4446,9 +4447,10 @@ inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
                                                 rocblas_int bc)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_dgels_outofplace_strided_batched(handle, trans, m, n, nrhs, A, lda, stA, B, ldb, stB, X, ldx, stX, info, bc);
+        return rocsolver_dgels_outofplace_strided_batched(handle, trans, m, n, nrhs, A, lda, stA, B,
+                                                          ldb, stB, X, ldx, stX, info, bc);
     else
-        return rocblas_status_not_implemented; // rocsolver_dgels_outofplace(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info);
+        return rocsolver_dgels_outofplace(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info);
 }
 
 inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
@@ -4470,9 +4472,10 @@ inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
                                                 rocblas_int bc)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_cgels_outofplace_strided_batched(handle, trans, m, n, nrhs, A, lda, stA, B, ldb, stB, X, ldx, stX, info, bc);
+        return rocsolver_cgels_outofplace_strided_batched(handle, trans, m, n, nrhs, A, lda, stA, B,
+                                                          ldb, stB, X, ldx, stX, info, bc);
     else
-        return rocblas_status_not_implemented; // rocsolver_cgels_outofplace(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info);
+        return rocsolver_cgels_outofplace(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info);
 }
 
 inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
@@ -4494,9 +4497,10 @@ inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
                                                 rocblas_int bc)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_zgels_outofplace_strided_batched(handle, trans, m, n, nrhs, A, lda, stA, B, ldb, stB, X, ldx, stX, info, bc);
+        return rocsolver_zgels_outofplace_strided_batched(handle, trans, m, n, nrhs, A, lda, stA, B,
+                                                          ldb, stB, X, ldx, stX, info, bc);
     else
-        return rocblas_status_not_implemented; // rocsolver_zgels_outofplace(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info);
+        return rocsolver_zgels_outofplace(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info);
 }
 
 // batched
@@ -4518,7 +4522,8 @@ inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
                                                 rocblas_int* info,
                                                 rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_sgels_outofplace_batched(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info, bc);
+    return rocsolver_sgels_outofplace_batched(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx,
+                                              info, bc);
 }
 
 inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
@@ -4539,7 +4544,8 @@ inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
                                                 rocblas_int* info,
                                                 rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_dgels_outofplace_batched(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info, bc);
+    return rocsolver_dgels_outofplace_batched(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx,
+                                              info, bc);
 }
 
 inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
@@ -4560,7 +4566,8 @@ inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
                                                 rocblas_int* info,
                                                 rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_cgels_outofplace_batched(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info, bc);
+    return rocsolver_cgels_outofplace_batched(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx,
+                                              info, bc);
 }
 
 inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
@@ -4581,7 +4588,8 @@ inline rocblas_status rocsolver_gels_outofplace(bool STRIDED,
                                                 rocblas_int* info,
                                                 rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_zgels_outofplace_batched(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info, bc);
+    return rocsolver_zgels_outofplace_batched(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx,
+                                              info, bc);
 }
 /********************************************************/
 

@@ -4,6 +4,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## (Unreleased) rocSOLVER
 ### Added
+- Out-of-place linear solvers:
+    - GELS\_OUTOFPLACE (with batched and strided\_batched versions)
+
 ### Optimized
 ### Changed
 ### Deprecated
@@ -30,7 +33,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - The rocsolver-test client now prints the rocSOLVER version used to run the tests,
   rather than the version used to build them
 - The rocsolver-bench client now prints the rocSOLVER version used in the benchmark
-  
+
 ### Fixed
 - Added missing stdint.h include to rocsolver.h
 

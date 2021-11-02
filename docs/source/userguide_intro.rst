@@ -194,4 +194,9 @@ LAPACK-like functions
     :ref:`rocsolver_getri_outofplace <getri_outofplace>`, x, x, x, x
     :ref:`rocsolver_getri_npvt_outofplace <getri_npvt_outofplace>`, x, x, x, x
 
+.. csv-table:: Least-square solvers
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_gels_outofplace <gels_outofplace>`, x, x, x, x
+
 
