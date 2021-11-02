@@ -57,41 +57,41 @@ class rocblas_nan_rng
 public:
     // Random integer
     template <typename T, std::enable_if_t<std::is_integral<T>{}, int> = 0>
-    explicit operator T()
+    explicit operator T() const
     {
         return std::uniform_int_distribution<T>{}(rocblas_rng);
     }
 
     // Random NaN double
-    explicit operator double()
+    explicit operator double() const
     {
         return random_nan_data<double, uint64_t, 52, 11>();
     }
 
     // Random NaN float
-    explicit operator float()
+    explicit operator float() const
     {
         return random_nan_data<float, uint32_t, 23, 8>();
     }
 
     // Random NaN half
-    explicit operator rocblas_half()
+    explicit operator rocblas_half() const
     {
         return random_nan_data<rocblas_half, uint16_t, 10, 5>();
     }
 
     // Random NaN bfloat16
-    explicit operator rocblas_bfloat16()
+    explicit operator rocblas_bfloat16() const
     {
         return random_nan_data<rocblas_bfloat16, uint16_t, 7, 8>();
     }
 
-    explicit operator rocblas_float_complex()
+    explicit operator rocblas_float_complex() const
     {
         return {float(*this), float(*this)};
     }
 
-    explicit operator rocblas_double_complex()
+    explicit operator rocblas_double_complex() const
     {
         return {double(*this), double(*this)};
     }
