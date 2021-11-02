@@ -2,7 +2,13 @@
 # Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
-if(UNIX)
+if(UNIX AND NOT BUILD_ADDRESS_SANITIZER)
+  set(BUILD_FORTRAN_SAMPLES ON)
+else()
+  set(BUILD_FORTRAN_SAMPLES OFF)
+endif()
+
+if(BUILD_FORTRAN_SAMPLES)
   # the interface to rocblas for Fortran programs
   add_library(rocblas_module OBJECT
     "${ROCBLAS_INCLUDE_DIR}/rocblas_module.f90"
@@ -16,7 +22,7 @@ add_executable(example-c-basic
 add_executable(example-cpp-basic
   example_basic.cpp
 )
-if(UNIX)
+if(BUILD_FORTRAN_SAMPLES)
   add_executable(example-fortran-basic
     example_basic.f90
     $<TARGET_OBJECTS:rocblas_module>
@@ -46,7 +52,7 @@ set(cpp_samples
   example-cpp-basic
   example-cpp-logging
 )
-if(UNIX)
+if(BUILD_FORTRAN_SAMPLES)
   set(fortran_samples
     example-fortran-basic
   )
