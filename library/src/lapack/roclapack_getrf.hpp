@@ -49,15 +49,15 @@ ROCSOLVER_KERNEL void getrf_gemm(const rocblas_int m,
     a += tx * k;
     b += ty * k;
 
+    // read A and B into shared mem
+    for(int kk = ty; kk < k; kk += bdy)
+        a[kk] = i < m ? A[i + kk * ldim] : 0;
+    for(int kk = tx; kk < k; kk += bdx)
+        b[kk] = j < n ? B[kk + j * ldim] : 0;
+    __syncthreads();
+
     if(i < m && j < n)
     {
-        // read A and B into shared mem
-        for(int kk = ty; kk < k; kk += bdy)
-            a[kk] = A[i + kk * ldim];
-        for(int kk = tx; kk < k; kk += bdx)
-            b[kk] = B[kk + j * ldim];
-        __syncthreads();
-
         // update c
         c = C[i + j * ldim];
         for(int kk = 0; kk < k; ++kk)
@@ -279,19 +279,19 @@ inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bo
     // clang-format off
     rocblas_int N = 9;
     rocblas_int M = 10;
-    rocblas_int intervalsN[9] = {24, 40, 56, 72, 104, 184, 200, 232, 248};
-    rocblas_int intervalsM[10] = {128, 256, 512, 1024, 1536, 2048, 3072, 4096, 8192, 10240};
-    rocblas_int size[11][10] = {{0,  0,  0,  0, 16, 16, 16, 16, 16, 16},
+    rocblas_int intervalsN[9] = {24, 40, 56, 72, 136, 168, 184, 216, 248};
+    rocblas_int intervalsM[10] = {128, 256, 512, 1024, 1536, 3072, 4096, 5120, 6144, 7168};
+    rocblas_int size[11][10] = {{0,  0,  0, 16, 16, 16, 16, 16, 16, 16},
+                                {0, 16, 16, 16, 16, 16, 16, 16, 16, 16},
+                                {0, 16,  8,  8, 16, 16, 16, 16, 16, 16},
+                                {8,  8,  8,  8,  8,  8,  8,  8,  8,  8},
                                 {0,  0, 16, 16, 16, 16, 16, 16, 16, 16},
-                                {0, 16,  8,  8,  8, 16, 16, 16, 16, 16},
-                                {0,  8,  8,  8,  8,  8,  8,  8,  8,  8},
-                                {0,  0,  0, 16, 16, 16, 16, 16, 16, 16},
-                                {0,  0,  0, 16, 16, 16, 16, 16, 16, 24},
-                                {0,  0, 16, 16, 16, 16, 24, 16, 16, 24},
-                                {0,  0, 16, 16, 16, 16, 16, 16, 24, 32},
-                                {0, 16, 16, 16, 16, 16, 16, 24, 24, 32},
-                                {0, 16, 16, 16, 16, 16, 16, 16, 24, 24},
-                                {0, 16, 16, 16, 16, 16, 16, 16, 16, 24}};
+                                {0, 16, 16, 16, 16, 16, 16, 16, 16, 16},
+                                {0,  8,  8, 16, 16, 16, 16, 16, 16, 16},
+                                {0,  8,  8, 16, 16,  8, 16, 16,  8, 16},
+                                {0,  8,  8,  8,  8,  8, 16, 16,  8, 16},
+                                {8,  8,  8,  8,  8,  8,  8, 16,  8, 16},
+                                {8,  8,  8,  8,  8,  8,  8,  8,  8,  8}};
     // clang-format on
 
     //if(ISBATCHED)
@@ -362,7 +362,7 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
 
     rocblas_int blk = atoi(getenv("BLK"));
     //rocblas_int blk = getrf_get_innerBlkSize<ISBATCHED>(mm, nn, pivot);
-    rocblas_int trsm = atoi(getenv("TRSM"));
+    rocblas_int gemm = atoi(getenv("GEMM"));
 
     rocblas_int jb;
     rocblas_int dimx, dimy, blocks, blocksy;
@@ -380,7 +380,7 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
                                                batch_count, scalars, pivotval, pivotidx, pivot,
                                                offset + k, permut_idx, stridePI);
 
-        //print_device_matrix(std::cout,"After tf2",18,8,A,lda);
+        //print_device_matrix(std::cout,"After tf2",mm,nn,A,lda);
         if(pivot)
         {
             dimx = jb;
@@ -394,7 +394,7 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
             hipLaunchKernelGGL(getrf_row_permutate<T>, grid, threads, lmemsize, stream, n,
                                offset + k, jb, A, r_shiftA + k, lda, strideA, permut_idx, stridePI);
         }
-        //print_device_matrix(std::cout,"After permut",18,8,A,lda);
+        //print_device_matrix(std::cout,"After permut",mm,nn,A,lda);
 
         // update trailing sub-block
         if(k + jb < nn)
@@ -410,26 +410,23 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
             //            else
             //            {
             dimx = jb;
-            //            dimy = min(nn - k - jb, 1024 / dimx);
             dimy = 1024 / dimx;
             blocks = (nn - k - jb - 1) / dimy + 1;
-            //            grid = dim3(1, 1, batch_count);
             grid = dim3(1, blocks, batch_count);
             threads = dim3(dimx, dimy, 1);
-            //            lmemsize = (jb * dimy + ((jb - 1) * jb) / 2) * sizeof(T);
             lmemsize = dimy * sizeof(T);
             hipLaunchKernelGGL(getrf_trsm2<T>, grid, threads, lmemsize, stream, jb, nn - k - jb, A,
                                shiftA + idx2D(k, k, lda), shiftA + idx2D(k, k + jb, lda), lda,
                                strideA);
             //            }
-            //print_device_matrix(std::cout,"After trsm",18,8,A,lda);
+            //print_device_matrix(std::cout,"After trsm",mm,nn,A,lda);
 
             if(k + jb < mm)
             {
-                if(trsm == 1)
+                if(gemm == 1)
                 {
-                    dimx = min(mm - k - jb - 1, (4096 / jb) / 2);
-                    dimy = min(nn - k - jb - 1, dimx);
+                    dimx = std::min({mm - k - jb, (4096 / jb) / 2, 32});
+                    dimy = std::min({nn - k - jb, (4096 / jb) / 2, 32});
                     blocks = (mm - k - jb - 1) / dimx + 1;
                     blocksy = (nn - k - jb - 1) / dimy + 1;
                     grid = dim3(blocks, blocksy, batch_count);
@@ -449,7 +446,8 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
                         shiftA + idx2D(k + jb, k + jb, lda), lda, strideA, batch_count, nullptr);
                 }
             }
-            //print_device_matrix(std::cout,"After gemm",18,8,A,lda);
+            //printf("%d x %d\n",dimx,dimy);
+            //print_device_matrix(std::cout,"After gemm",mm,nn,A,lda);
         }
     }
 
@@ -704,7 +702,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
     rocblas_int dim = min(m, n);
-    rocblas_int blocks;
+    rocblas_int blocks, blocksy;
     dim3 grid, threads;
 
     // quick return if no dimensions
@@ -718,9 +716,11 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     }
 
     // size of outer blocks
-    //rocblas_int blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
+    //    rocblas_int blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
     rocblas_int blk = dim; //atoi(getenv("BLK"));
     rocblas_int recur = 0; //atoi(getenv("RECUR"));
+    rocblas_int gemm = 0; //atoi(getenv("GEMM"));
+    rocblas_int trsm = 1; //atoi(getenv("TRSM"));
 
     if(blk == 1)
         return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
@@ -914,37 +914,52 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
             if(nextpiv < n)
 >>>>>>> tuning
             {
-                //                if(jb > 32)
-                //                {
-                //                    rocblasCall_trsm<BATCHED, T>(
-                //                        handle, rocblas_side_left, rocblas_fill_lower, rocblas_operation_none,
-                //                        rocblas_diagonal_unit, jb, nn, &one, A, shiftA + idx2D(j, j, lda), lda,
-                //                        strideA, A, shiftA + idx2D(j, nextpiv, lda), lda, strideA, batch_count,
-                //                        optim_mem, work1, work2, work3, work4);
-                //                }
-                //                else
-                //                {
-                dimx = jb;
-                //                    dimy = min(nn, 1024 / dimx);
-                dimy = 1024 / dimx;
-                blocks = (nn - 1) / dimy + 1;
-                //                    grid = dim3(1, 1, batch_count);
-                grid = dim3(1, blocks, batch_count);
-                threads = dim3(dimx, dimy, 1);
-                //                    lmemsize = (jb * dimy + ((jb - 1) * jb) / 2) * sizeof(T);
-                lmemsize = dimy * sizeof(T);
-                hipLaunchKernelGGL(getrf_trsm2<T>, grid, threads, lmemsize, stream, jb, nn, A,
-                                   shiftA + idx2D(j, j, lda), shiftA + idx2D(j, nextpiv, lda), lda,
-                                   strideA);
-                //                }
+                if(trsm == 0)
+                {
+                    rocblasCall_trsm<BATCHED, T>(
+                        handle, rocblas_side_left, rocblas_fill_lower, rocblas_operation_none,
+                        rocblas_diagonal_unit, jb, nn, &one, A, shiftA + idx2D(j, j, lda), lda,
+                        strideA, A, shiftA + idx2D(j, nextpiv, lda), lda, strideA, batch_count,
+                        optim_mem, work1, work2, work3, work4);
+                }
+                else
+                {
+                    dimx = jb;
+                    dimy = 1024 / dimx;
+                    blocks = (nn - 1) / dimy + 1;
+                    grid = dim3(1, blocks, batch_count);
+                    threads = dim3(dimx, dimy, 1);
+                    lmemsize = dimy * sizeof(T);
+                    hipLaunchKernelGGL(getrf_trsm2<T>, grid, threads, lmemsize, stream, jb, nn, A,
+                                       shiftA + idx2D(j, j, lda), shiftA + idx2D(j, nextpiv, lda),
+                                       lda, strideA);
+                }
 
                 if(nextpiv < m)
                 {
-                    rocblasCall_gemm<BATCHED, STRIDED, T>(
-                        handle, rocblas_operation_none, rocblas_operation_none, mm, nn, jb, &minone,
-                        A, shiftA + idx2D(nextpiv, j, lda), lda, strideA, A,
-                        shiftA + idx2D(j, nextpiv, lda), lda, strideA, &one, A,
-                        shiftA + idx2D(nextpiv, nextpiv, lda), lda, strideA, batch_count, nullptr);
+                    if(gemm == 0)
+                    {
+                        rocblasCall_gemm<BATCHED, STRIDED, T>(
+                            handle, rocblas_operation_none, rocblas_operation_none, mm, nn, jb,
+                            &minone, A, shiftA + idx2D(nextpiv, j, lda), lda, strideA, A,
+                            shiftA + idx2D(j, nextpiv, lda), lda, strideA, &one, A,
+                            shiftA + idx2D(nextpiv, nextpiv, lda), lda, strideA, batch_count,
+                            nullptr);
+                    }
+                    else
+                    {
+                        dimx = min(mm, (4096 / jb) / 2);
+                        dimy = min(nn, dimx);
+                        blocks = (mm - 1) / dimx + 1;
+                        blocksy = (nn - 1) / dimy + 1;
+                        grid = dim3(blocks, blocksy, batch_count);
+                        threads = dim3(dimx, dimy, 1);
+                        lmemsize = jb * (dimx + dimy) * sizeof(T);
+                        /*                    hipLaunchKernelGGL(getrf_gemm<T>, grid, threads, lmemsize, stream, mm,
+                                       nn, jb, A, shiftA + idx2D(nextpiv, j, lda),
+                                       shiftA + idx2D(j, nextpiv, lda),
+                                       shiftA + idx2D(nextpiv, nextpiv, lda), lda, strideA);*/
+                    }
                 }
             }
         }
