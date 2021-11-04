@@ -51,7 +51,7 @@ rocblas_status rocsolver_gels_outofplace_batched_impl(rocblas_handle handle,
     // extra requirements to copy B
     size_t size_savedB;
     rocsolver_gels_outofplace_getMemorySize<true, false, T>(
-        m, n, nrhs, batch_count, &size_scalars, &size_work_x_temp, &size_workArr_temp_arr,
+        trans, m, n, nrhs, batch_count, &size_scalars, &size_work_x_temp, &size_workArr_temp_arr,
         &size_diag_trfac_invA, &size_trfact_workTrmm_invA_arr, &size_ipiv, &size_savedB, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
