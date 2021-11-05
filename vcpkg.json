@@ -6,7 +6,8 @@
   "documentation": "https://rocsolver.readthedocs.io",
   "builtin-baseline": "603748b5dbed0bcd6aee02025c80260362e7d0df",
   "dependencies": [
-    "fmt"
+    "fmt",
+    "rocm-cmake"
   ],
   "features": {
     "tests": {

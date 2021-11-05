@@ -2,10 +2,11 @@
   "registries": [
     {
       "kind": "git",
-      "baseline": "f9d6e76bda1110cd8612881454c06dcedfc4ceb6",
+      "baseline": "d665e72c1561a98a28036f1f7f985f9f16dd5458",
       "repository": "https://github.com/cgmb/rocm-vcpkg",
       "packages": [
-        "cblas"
+        "cblas",
+        "rocm-cmake"
       ]
     }
   ]
