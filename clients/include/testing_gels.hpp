@@ -252,13 +252,12 @@ void gels_getError(const rocblas_handle handle,
     // error is ||hB - hBRes|| / ||hB||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
-    // using vector-induced infinity norm
+    // using frobenius norm
     double err;
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        const rocblas_int rowsB = (trans == rocblas_operation_none) ? m : n;
-        err = norm_error('I', rowsB, nrhs, ldb, hB[b], hBRes[b]);
+        err = norm_error('F', max(m, n), nrhs, ldb, hB[b], hBRes[b]);
         *max_err = err > *max_err ? err : *max_err;
     }
 

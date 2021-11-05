@@ -49,7 +49,7 @@ void rocsolver_gels_outofplace_getMemorySize(const rocblas_operation trans,
     size_t unused;
 
     rocsolver_gels_getMemorySize<BATCHED, STRIDED, T>(
-        m, n, nrhs, batch_count, size_scalars, size_work_x_temp, size_workArr_temp_arr,
+        trans, m, n, nrhs, batch_count, size_scalars, size_work_x_temp, size_workArr_temp_arr,
         size_diag_trfac_invA, size_trfact_workTrmm_invA_arr, &unused, optim_mem);
 
     *size_ipiv = sizeof(T) * std::min(m, n) * batch_count;
