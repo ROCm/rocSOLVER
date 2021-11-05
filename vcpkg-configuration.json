@@ -1,0 +1,12 @@
+{
+  "registries": [
+    {
+      "kind": "git",
+      "baseline": "f9d6e76bda1110cd8612881454c06dcedfc4ceb6",
+      "repository": "https://github.com/cgmb/rocm-vcpkg",
+      "packages": [
+        "cblas"
+      ]
+    }
+  ]
+}

@@ -4,7 +4,7 @@
   "description": "AMD GPU implementation of LAPACK",
   "homepage": "https://github.com/ROCmSoftwarePlatform/rocSOLVER",
   "documentation": "https://rocsolver.readthedocs.io",
-  "builtin-baseline": "5568f110b509a9fd90711978a7cb76bae75bb092",
+  "builtin-baseline": "603748b5dbed0bcd6aee02025c80260362e7d0df",
   "dependencies": [
     "fmt"
   ],
@@ -12,13 +12,11 @@
     "tests": {
       "description": "The rocsolver-test client",
       "dependencies": [
+        "cblas",
         "gtest",
         {
           "name": "lapack-reference",
-          "default-features": false,
-          "features": [
-            "cblas"
-          ]
+          "default-features": false
         }
       ]
     }

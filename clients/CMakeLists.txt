@@ -27,18 +27,14 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     ${CMAKE_CURRENT_SOURCE_DIR}/include
   )
   target_link_libraries(clients-common INTERFACE fmt::fmt)
-  if(ROCSOLVER_USE_VCPKG_LAPACK)
-    find_package(lapack REQUIRED)
-    target_link_libraries(clients-common INTERFACE lapack)
-  else()
-    find_package(cblas REQUIRED CONFIG)
-    target_include_directories(cblas SYSTEM INTERFACE ${CBLAS_INCLUDE_DIRS})
-    target_link_libraries(clients-common INTERFACE
-      cblas
-      lapack
-      blas
-    )
-  endif()
+  find_package(lapack REQUIRED CONFIG)
+  find_package(cblas REQUIRED CONFIG)
+  target_include_directories(cblas SYSTEM INTERFACE ${CBLAS_INCLUDE_DIRS})
+  target_link_libraries(clients-common INTERFACE
+    cblas
+    lapack
+    blas
+  )
   set(common_source_files
     common/lapack_host_reference.cpp
     rocblascommon/utility.cpp
