@@ -19,8 +19,6 @@ if(NOT TARGET rocsolver)
 endif()
 
 if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
-  option(ROCSOLVER_USE_VCPKG_LAPACK "Use the LAPACK provided by vcpkg" OFF)
-
   add_library(clients-common INTERFACE)
   target_include_directories(clients-common INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
