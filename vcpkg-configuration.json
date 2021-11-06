@@ -2,7 +2,7 @@
   "registries": [
     {
       "kind": "git",
-      "baseline": "d665e72c1561a98a28036f1f7f985f9f16dd5458",
+      "baseline": "21cdaaa75fea30ef19a943d0c5fcc83cfad9525a",
       "repository": "https://github.com/cgmb/rocm-vcpkg",
       "packages": [
         "cblas",

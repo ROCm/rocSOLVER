@@ -28,6 +28,13 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   find_package(lapack REQUIRED CONFIG)
   find_package(cblas REQUIRED CONFIG)
   target_include_directories(cblas SYSTEM INTERFACE ${CBLAS_INCLUDE_DIRS})
+  # Fixup targets for vcpkg lapack-reference 3.8.0#6 on x64-windows
+  if(NOT TARGET lapack)
+    add_library(lapack ALIAS LAPACK::LAPACK)
+  endif()
+  if(NOT TARGET blas)
+    add_library(blas ALIAS BLAS::BLAS)
+  endif()
   target_link_libraries(clients-common INTERFACE
     cblas
     lapack
