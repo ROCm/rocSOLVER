@@ -112,6 +112,8 @@ def config_cmd():
             vcpkg_path =  pathlib.Path(os.getenv("VCPKG_PATH", "C:/github/vcpkg"))
             vcpkg_toolchain = vcpkg_path / 'scripts/buildsystems/vcpkg.cmake'
             cmake_options.append(f"-DCMAKE_TOOLCHAIN_FILE={vcpkg_toolchain.as_posix()} -DVCPKG_TARGET_TRIPLET=x64-windows")
+            if args.build_clients:
+                cmake_options.append("-DVCPKG_MANIFEST_FEATURES=tests")
         cmake_options.append("-DCMAKE_STATIC_LIBRARY_SUFFIX=.a")
         cmake_options.append("-DCMAKE_STATIC_LIBRARY_PREFIX=static_")
         cmake_options.append("-DCMAKE_SHARED_LIBRARY_SUFFIX=.dll")
