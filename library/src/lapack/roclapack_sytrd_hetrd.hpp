@@ -150,11 +150,11 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
 
             // update unreduced block as a rank-2k update
             // A = A - V*W' - W*V'
-            rocblasCall_syr2k_her2k<BATCHED, T>(handle, uplo, rocblas_operation_none, n - j - k, k, &minonej,
-                                       A, shiftA + idx2D(j + k, j, lda), lda, strideA, tmptau_W,
-                                       idx2D(k, 0, ldw), ldw, strideW, &one, A,
-                                       shiftA + idx2D(j + k, j + k, lda), lda, strideA, batch_count,
-                                       workArr);
+            rocblasCall_syr2k_her2k<BATCHED, T>(handle, uplo, rocblas_operation_none, n - j - k, k,
+                                                &minonej, A, shiftA + idx2D(j + k, j, lda), lda,
+                                                strideA, tmptau_W, idx2D(k, 0, ldw), ldw, strideW,
+                                                &one, A, shiftA + idx2D(j + k, j + k, lda), lda,
+                                                strideA, batch_count, workArr);
 
             j += k;
         }
@@ -182,9 +182,10 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
 
             // update unreduced block as a rank-2k update
             // A = A - V*W' - W*V'
-            rocblasCall_syr2k_her2k<BATCHED, T>(handle, uplo, rocblas_operation_none, j, k, &minonej, A,
-                                       shiftA + idx2D(0, j, lda), lda, strideA, tmptau_W, 0, ldw,
-                                       strideW, &one, A, shiftA, lda, strideA, batch_count, workArr);
+            rocblasCall_syr2k_her2k<BATCHED, T>(handle, uplo, rocblas_operation_none, j, k,
+                                                &minonej, A, shiftA + idx2D(0, j, lda), lda,
+                                                strideA, tmptau_W, 0, ldw, strideW, &one, A, shiftA,
+                                                lda, strideA, batch_count, workArr);
             j -= k;
         }
 

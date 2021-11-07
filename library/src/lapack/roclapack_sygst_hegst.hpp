@@ -245,10 +245,10 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
                                          shiftB + idx2D(0, k, ldb), ldb, strideB, &t_one, A,
                                          shiftA + idx2D(0, k, lda), lda, strideA, batch_count);
 
-                rocblasCall_syr2k_her2k<BATCHED, T>(handle, uplo, rocblas_operation_none, k, kb, &t_one, A,
-                                           shiftA + idx2D(0, k, lda), lda, strideA, B,
-                                           shiftB + idx2D(0, k, ldb), ldb, strideB, &s_one, A,
-                                           shiftA, lda, strideA, batch_count);
+                rocblasCall_syr2k_her2k<BATCHED, T>(
+                    handle, uplo, rocblas_operation_none, k, kb, &t_one, A,
+                    shiftA + idx2D(0, k, lda), lda, strideA, B, shiftB + idx2D(0, k, ldb), ldb,
+                    strideB, &s_one, A, shiftA, lda, strideA, batch_count);
 
                 rocblasCall_symm_hemm<T>(handle, rocblas_side_right, uplo, k, kb, &t_half, A,
                                          shiftA + idx2D(k, k, lda), lda, strideA, B,
@@ -284,10 +284,10 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
                                          shiftB + idx2D(k, 0, ldb), ldb, strideB, &t_one, A,
                                          shiftA + idx2D(k, 0, lda), lda, strideA, batch_count);
 
-                rocblasCall_syr2k_her2k<BATCHED, T>(handle, uplo, rocblas_operation_conjugate_transpose, k,
-                                           kb, &t_one, A, shiftA + idx2D(k, 0, lda), lda, strideA,
-                                           B, shiftB + idx2D(k, 0, ldb), ldb, strideB, &s_one, A,
-                                           shiftA, lda, strideA, batch_count);
+                rocblasCall_syr2k_her2k<BATCHED, T>(
+                    handle, uplo, rocblas_operation_conjugate_transpose, k, kb, &t_one, A,
+                    shiftA + idx2D(k, 0, lda), lda, strideA, B, shiftB + idx2D(k, 0, ldb), ldb,
+                    strideB, &s_one, A, shiftA, lda, strideA, batch_count);
 
                 rocblasCall_symm_hemm<T>(handle, rocblas_side_left, uplo, kb, k, &t_half, A,
                                          shiftA + idx2D(k, k, lda), lda, strideA, B,
