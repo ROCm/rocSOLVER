@@ -68,9 +68,9 @@ rocblas_status rocsolver_sytrd_hetrd_strided_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_sytrd_hetrd_template<BATCHED, T>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
-                                             E, strideE, tau, strideP, batch_count, (T*)scalars,
-                                             (T*)work, (T*)norms, (T*)tmptau_W, (T**)workArr);
+    return rocsolver_sytrd_hetrd_template<BATCHED, T>(
+        handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE, tau, strideP, batch_count,
+        (T*)scalars, (T*)work, (T*)norms, (T*)tmptau_W, (T**)workArr);
 }
 
 /*
