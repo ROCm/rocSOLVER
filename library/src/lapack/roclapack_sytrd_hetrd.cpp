@@ -14,6 +14,7 @@ rocblas_status rocsolver_sytrd_hetrd_impl(rocblas_handle handle,
                                           S* E,
                                           T* tau)
 {
+    constexpr bool BATCHED = false;
     const char* name = (!is_complex<T> ? "sytrd" : "hetrd");
     ROCSOLVER_ENTER_TOP(name, "--uplo", uplo, "-n", n, "--lda", lda);
 
@@ -66,7 +67,7 @@ rocblas_status rocsolver_sytrd_hetrd_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_sytrd_hetrd_template<T>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
+    return rocsolver_sytrd_hetrd_template<BATCHED, T>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
                                              E, strideE, tau, strideP, batch_count, (T*)scalars,
                                              (T*)work, (T*)norms, (T*)tmptau_W, (T**)workArr);
 }
