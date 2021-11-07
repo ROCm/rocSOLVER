@@ -147,7 +147,7 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
     // TODO: Scale the matrix
 
     // reduce A to tridiagonal form
-    rocsolver_sytrd_hetrd_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE,
+    rocsolver_sytrd_hetrd_template<BATCHED>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE,
                                    tau, n, batch_count, scalars, (T*)work1, (T*)work2, tmptau_W,
                                    workArr);
 

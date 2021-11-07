@@ -18,6 +18,7 @@ rocblas_status rocsolver_sytrd_hetrd_batched_impl(rocblas_handle handle,
                                                   const rocblas_stride strideP,
                                                   const rocblas_int batch_count)
 {
+    constexpr bool BATCHED = true;
     const char* name = (!is_complex<T> ? "sytrd_batched" : "hetrd_batched");
     ROCSOLVER_ENTER_TOP(name, "--uplo", uplo, "-n", n, "--lda", lda, "--strideD", strideD,
                         "--strideE", strideE, "--strideP", strideP, "--batch_count", batch_count);
@@ -68,7 +69,7 @@ rocblas_status rocsolver_sytrd_hetrd_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_sytrd_hetrd_template<T>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
+    return rocsolver_sytrd_hetrd_template<BATCHED, T>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
                                              E, strideE, tau, strideP, batch_count, (T*)scalars,
                                              (T*)work, (T*)norms, (T*)tmptau_W, (T**)workArr);
 }

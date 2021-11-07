@@ -204,7 +204,7 @@ rocblas_status rocsolver_syev_heev_template(rocblas_handle handle,
     }
 
     // reduce A to tridiagonal form
-    rocsolver_sytrd_hetrd_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE,
+    rocsolver_sytrd_hetrd_template<BATCHED>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE,
                                    tau, n, batch_count, scalars, (T*)work_stack, Abyx_norms_tmptr,
                                    tmptau_trfact, workArr);
 
