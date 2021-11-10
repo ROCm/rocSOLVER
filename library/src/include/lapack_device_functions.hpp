@@ -817,3 +817,128 @@ ROCSOLVER_KERNEL void axpy_kernel(const rocblas_int n,
         y[i * incy] = a[0] * x[i * incx] + y[i * incy];
     }
 }
+
+/** Optimized kernel that executes a simple gemm A = BC
+    where A, B and C are sub blocks of the same matrix MM with
+    leading dimension ldim and stride. A, B and C are
+    located in MM by their respective shifts.
+
+    Call this kernel with 'batch_count' groups in z, and enough
+    groups in x and y to cover all the 'm' rows and 'n' columns of C.
+    Size of shared memory per group should be:
+    lmemsize = k * (hipBlockDim_x + hipBlockDim_y) * sizeof(T); **/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void gemm_kernel(const rocblas_int m,
+                                  const rocblas_int n,
+                                  const rocblas_int k,
+                                  U MM,
+                                  const rocblas_int shiftA,
+                                  const rocblas_int shiftB,
+                                  const rocblas_int shiftC,
+                                  const rocblas_int ldim,
+                                  const rocblas_stride stride)
+{
+    // indices
+    int id = hipBlockIdx_z;
+    int tx = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int bdx = hipBlockDim_x;
+    int bdy = hipBlockDim_y;
+    int i = hipBlockIdx_x * bdx + tx;
+    int j = hipBlockIdx_y * bdy + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(MM, id, shiftA, stride);
+    T* B = load_ptr_batch(MM, id, shiftB, stride);
+    T* C = load_ptr_batch(MM, id, shiftC, stride);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* a = (T*)lmem;
+    T* b = a + k * bdx;
+    T c;
+
+    // local row and column of the shared arrays
+    a += tx * k;
+    b += ty * k;
+
+    // read A and B into shared mem
+    for(int kk = ty; kk < k; kk += bdy)
+        a[kk] = i < m ? A[i + kk * ldim] : 0;
+    for(int kk = tx; kk < k; kk += bdx)
+        b[kk] = j < n ? B[kk + j * ldim] : 0;
+    __syncthreads();
+
+    if(i < m && j < n)
+    {
+        // update c
+        c = C[i + j * ldim];
+        for(int kk = 0; kk < k; ++kk)
+            c -= a[kk] * b[kk];
+
+        // write back to global memory
+        C[i + j * ldim] = c;
+    }
+}
+
+/** Optimized kernel that solves a simple triangular system B <- Ax=B
+    with A unit matrix. A and B are sub blocks of the same matrix MM with
+    leading dimension ldim and stride. A and B are
+    located in MM by their respective shifts.
+
+    Call this kernel with 'batch_count' groups in z, and enough
+    groups in y to cover all the 'n' right-hand-sides (columns of B).
+    There should be only one group in x with hipBlockDim_x = m.
+    Size of shared memory per group should be:
+    lmemsize = hipBlockDim_y * sizeof(T); **/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void trsm2_kernel(const rocblas_int m,
+                                   const rocblas_int n,
+                                   U MM,
+                                   const rocblas_int shiftA,
+                                   const rocblas_int shiftB,
+                                   const rocblas_int ldim,
+                                   const rocblas_stride stride)
+{
+    int id = hipBlockIdx_z;
+    int i = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int bdy = hipBlockDim_y;
+    int j = hipBlockIdx_y * bdy + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(MM, id, shiftA, stride);
+    T* B = load_ptr_batch(MM, id, shiftB, stride);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = (T*)lmem;
+    T c;
+
+    // local column of the shared array b
+    b += ty;
+
+    if(j < n)
+    {
+        // read data
+        c = B[i + j * ldim];
+        if(i == 0)
+            b[0] = c;
+        __syncthreads();
+
+        // solve for right-hand sides
+        for(int k = 0; k < m - 1; ++k)
+        {
+            if(i > k)
+            {
+                c -= A[i + k * ldim] * b[0];
+                if(i == k + 1)
+                    b[0] = c;
+            }
+            __syncthreads();
+        }
+
+        // move results back to global
+        B[i + j * ldim] = c;
+    }
+}
