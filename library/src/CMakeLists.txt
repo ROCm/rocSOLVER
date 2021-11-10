@@ -283,19 +283,22 @@ endif()
 
 rocm_install_targets(
   TARGETS ${package_targets}
-  INCLUDE
-    ${CMAKE_SOURCE_DIR}/library/include
-    ${CMAKE_BINARY_DIR}/include
-  PREFIX rocsolver
 )
+
+install(
+DIRECTORY "${CMAKE_SOURCE_DIR}/library/include/" "${CMAKE_BINARY_DIR}/include/"
+  DESTINATION include/rocsolver
+  FILES_MATCHING
+  PATTERN "*.h"
+  PATTERN "*.hpp"
+  PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+)
+
 
 rocm_export_targets(
   TARGETS roc::rocsolver
-  PREFIX rocsolver
   DEPENDS
     PACKAGE hip
     PACKAGE rocblas
   NAMESPACE roc::
 )
-
-rocm_install_symlink_subdir(rocsolver)

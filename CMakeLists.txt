@@ -68,10 +68,8 @@ rocm_setup_version(VERSION ${VERSION_STRING})
 list(APPEND CMAKE_PREFIX_PATH
   ${ROCM_PATH}
   ${ROCM_PATH}/llvm
-  ${ROCM_PATH}/hip
   /opt/rocm
   /opt/rocm/llvm
-  /opt/rocm/hip
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
