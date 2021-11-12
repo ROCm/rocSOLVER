@@ -281,6 +281,11 @@ endif()
 ############################################################
 # Installation
 
+# Force installation of LICENSE.md
+install(FILES "../../LICENSE.md"
+	DESTINATION "share/doc/rocSOLVER"
+)
+
 rocm_install_targets(
   TARGETS ${package_targets}
   INCLUDE
