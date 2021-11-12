@@ -22,4 +22,5 @@ see the rocSOLVER API.
    userguide_index
    design_index
    api_index
+   attributions
 
