@@ -6,7 +6,7 @@
 
 #include "definitions.hpp"
 #include "rocblas/rocblas.h"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 #include <cmath>
 #include <complex>
 #include <exception>

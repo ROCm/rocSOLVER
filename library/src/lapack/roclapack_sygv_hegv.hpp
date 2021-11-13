@@ -13,7 +13,7 @@
 #include "roclapack_potrf.hpp"
 #include "roclapack_syev_heev.hpp"
 #include "roclapack_sygst_hegst.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T>
 __global__ void sygv_update_info(T* info, T* iinfo, const rocblas_int n, const rocblas_int bc)

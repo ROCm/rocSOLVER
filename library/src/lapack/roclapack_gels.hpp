@@ -14,7 +14,7 @@
 #include "rocblas.hpp"
 #include "roclapack_gelqf.hpp"
 #include "roclapack_geqrf.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, typename U>
 __global__ void gels_set_zero(const rocblas_int k1,

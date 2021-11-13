@@ -12,7 +12,7 @@
 #include "rocauxiliary_orgql_ungql.hpp"
 #include "rocauxiliary_orgqr_ungqr.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, bool BATCHED>
 void rocsolver_orgtr_ungtr_getMemorySize(const rocblas_fill uplo,

@@ -16,7 +16,7 @@
 #include "roclapack_gebrd.hpp"
 #include "roclapack_gelqf.hpp"
 #include "roclapack_geqrf.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /** wrapper to xxGQR/xxGLQ_TEMPLATE **/
 template <bool BATCHED, bool STRIDED, typename T, typename U>

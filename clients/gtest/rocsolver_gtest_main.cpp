@@ -8,7 +8,7 @@
 
 #include "clientcommon.hpp"
 #include "rocblas/internal/rocblas-version.h"
-#include "rocsolver-version.h"
+#include "rocsolver/rocsolver-version.h"
 
 #define STRINGIFY(s) STRINGIFY_HELPER(s)
 #define STRINGIFY_HELPER(s) #s

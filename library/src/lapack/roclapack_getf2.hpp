@@ -15,7 +15,7 @@
 
 #include "auxiliary/rocauxiliary_laswp.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 #ifdef OPTIMAL
 ////////////////////////////////////////////////////////////////////////////////////

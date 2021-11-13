@@ -12,7 +12,7 @@
 #include "auxiliary/rocauxiliary_labrd.hpp"
 #include "rocblas.hpp"
 #include "roclapack_gebd2.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, bool BATCHED>
 void rocsolver_gebrd_getMemorySize(const rocblas_int m,

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "lib_device_helpers.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /*
  * ===========================================================================

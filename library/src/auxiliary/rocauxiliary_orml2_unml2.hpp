@@ -12,7 +12,7 @@
 #include "rocauxiliary_lacgv.hpp"
 #include "rocauxiliary_larf.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, bool BATCHED>
 void rocsolver_orml2_unml2_getMemorySize(const rocblas_side side,
