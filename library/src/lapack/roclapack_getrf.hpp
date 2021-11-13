@@ -12,7 +12,7 @@
 #include "auxiliary/rocauxiliary_laswp.hpp"
 #include "rocblas.hpp"
 #include "roclapack_getf2.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool ISBATCHED, bool PIVOT>
 rocblas_int getrf_get_blksize(rocblas_int dim)

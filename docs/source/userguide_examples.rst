@@ -33,7 +33,7 @@ For a full description of the used rocSOLVER routine, see the API documentation 
     #include <stdio.h>   // for size_t, printf
     #include <vector>
     #include <hip/hip_runtime_api.h> // for hip functions
-    #include <rocsolver.h> // for all the rocsolver C interfaces and type declarations
+    #include <rocsolver/rocsolver.h> // for all the rocsolver C interfaces and type declarations
 
     // Example: Compute the QR Factorization of a matrix on the GPU
 
@@ -154,7 +154,7 @@ For a full description of the used rocSOLVER routine, see the API documentation 
     #include <iostream>
     #include <stdlib.h>
     #include <vector>
-    #include <rocsolver.h>      //  this includes all the rocsolver C interfaces and type declarations
+    #include <rocsolver/rocsolver.h>      //  this includes all the rocsolver C interfaces and type declarations
 
     using namespace std;
 
@@ -221,7 +221,7 @@ For a full description of the used rocSOLVER routine, see the API documentation 
     #include <iostream>
     #include <stdlib.h>
     #include <vector>
-    #include <rocsolver.h>      //  this includes all the rocsolver C interfaces and type declarations
+    #include <rocsolver/rocsolver.h>      //  this includes all the rocsolver C interfaces and type declarations
 
     using namespace std;
 

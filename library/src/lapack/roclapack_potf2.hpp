@@ -11,7 +11,7 @@
 
 #include "auxiliary/rocauxiliary_lacgv.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 __global__ void sqrtDiagOnward(U A,

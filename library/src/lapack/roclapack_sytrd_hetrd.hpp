@@ -12,7 +12,7 @@
 #include "auxiliary/rocauxiliary_latrd.hpp"
 #include "rocblas.hpp"
 #include "roclapack_sytd2_hetd2.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, bool BATCHED>
 void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,

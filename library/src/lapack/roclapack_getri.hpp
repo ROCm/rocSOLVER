@@ -12,7 +12,7 @@
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "roclapack_trtri.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 #ifdef OPTIMAL
 template <rocblas_int DIM, typename T, typename U>
