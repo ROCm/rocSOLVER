@@ -11,7 +11,7 @@
 
 #include "rocblas.hpp"
 #include "roclapack_potf2.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename U>
 __global__ void chk_positive(rocblas_int* iinfo, rocblas_int* info, int j, rocblas_int batch_count)

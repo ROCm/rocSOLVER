@@ -2,7 +2,7 @@
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "rocsolver-aliases.h"
+#include "rocsolver/rocsolver-aliases.h"
 
 // We need to include extern definitions for these inline functions to ensure
 // that librocsolver.so will contain these symbols for FFI or when inlining

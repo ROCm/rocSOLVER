@@ -12,7 +12,7 @@
 #include "auxiliary/rocauxiliary_lacgv.hpp"
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, typename U>
 __global__ void sygs2_set_diag1(const rocblas_int k,

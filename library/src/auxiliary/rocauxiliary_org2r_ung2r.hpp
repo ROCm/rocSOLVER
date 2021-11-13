@@ -11,7 +11,7 @@
 
 #include "rocauxiliary_larf.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, typename U>
 __global__ void org2r_init_ident(const rocblas_int m,
