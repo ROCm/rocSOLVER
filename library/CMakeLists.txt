@@ -6,15 +6,22 @@
 set(rocsolver_SOVERSION 0.1)
 
 # Create version header from templated .in file using CMake info
-configure_file(include/rocsolver-version.h.in "${PROJECT_BINARY_DIR}/include/rocsolver-version.h")
+configure_file(include/rocsolver/rocsolver-version.h.in "${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-version.h")
+
+# Copy source headers to build dir
+configure_file(include/rocsolver/rocsolver.h "${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver.h" COPYONLY)
+configure_file(include/rocsolver/rocsolver-aliases.h "${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-aliases.h" COPYONLY)
+configure_file(include/rocsolver/rocsolver-functions.h "${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-functions.h" COPYONLY)
+configure_file(include/rocsolver/rocsolver-extra-types.h "${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-extra-types.h" COPYONLY)
+
 
 set(rocsolver_headers_public
-  include/rocsolver.h
-  include/rocsolver-extra-types.h
-  include/rocsolver-aliases.h
-  include/rocsolver-functions.h
-  ${PROJECT_BINARY_DIR}/include/rocsolver-version.h
-  ${PROJECT_BINARY_DIR}/include/rocsolver-export.h
+  include/rocsolver/rocsolver.h
+  include/rocsolver/rocsolver-extra-types.h
+  include/rocsolver/rocsolver-aliases.h
+  include/rocsolver/rocsolver-functions.h
+  ${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-version.h
+  ${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-export.h
 )
 
 # For IDE integration

@@ -12,7 +12,7 @@
 #include "../auxiliary/rocauxiliary_lacgv.hpp"
 #include "../auxiliary/rocauxiliary_larfg.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool BATCHED, typename T>
 void rocsolver_latrd_getMemorySize(const rocblas_int n,

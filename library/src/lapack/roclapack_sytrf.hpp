@@ -13,7 +13,7 @@
 #include "../auxiliary/rocauxiliary_lasyf.hpp"
 #include "rocblas.hpp"
 #include "roclapack_sytf2.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)

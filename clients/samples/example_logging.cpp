@@ -1,6 +1,6 @@
 #include <algorithm> // for std::min
 #include <hip/hip_runtime_api.h> // for hip functions
-#include <rocsolver.h> // for all the rocsolver C interfaces and type declarations
+#include <rocsolver/rocsolver.h> // for all the rocsolver C interfaces and type declarations
 #include <stdio.h>   // for size_t, printf
 #include <vector>
 
