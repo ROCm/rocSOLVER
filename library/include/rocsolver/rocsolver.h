@@ -3,7 +3,7 @@
  * ************************************************************************ */
 
 /*! \file
-    \brief rocsolver/rocsolver/rocsolver.h includes other *.h and exposes a common interface
+    \brief rocsolver.h includes other *.h and exposes a common interface
  ***************************************************************************/
 
 #ifndef _ROCSOLVER_H_
