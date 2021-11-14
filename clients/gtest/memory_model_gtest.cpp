@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <rocblas/rocblas.h>
-#include <rocsolver.h>
+#include <rocsolver/rocsolver.h>
 
 static bool set_environment_variable(const char* name, const char* value)
 {

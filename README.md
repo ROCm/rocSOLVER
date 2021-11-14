@@ -19,7 +19,7 @@ more information about rocBLAS and how to install it, see the
 [rocBLAS documentation][4].
 
 After a standard installation of rocBLAS, the following commands will build
-rocSOLVER and install to `/opt/rocm/rocsolver`:
+rocSOLVER and install to `/opt/rocm`:
 
     cd rocSOLVER
     ./install.sh -i
@@ -49,7 +49,7 @@ For a description of the function `rocsolver_dgeqrf`, see the
 #include <stddef.h>  // for size_t
 #include <vector>
 #include <hip/hip_runtime_api.h> // for hip functions
-#include <rocsolver.h> // for all the rocsolver C interfaces and type declarations
+#include <rocsolver/rocsolver.h> // for all the rocsolver C interfaces and type declarations
 
 int main() {
   rocblas_int M;
