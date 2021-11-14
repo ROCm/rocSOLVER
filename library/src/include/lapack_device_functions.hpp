@@ -6,7 +6,7 @@
 
 #include "lib_device_helpers.hpp"
 #include "lib_macros.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /*
  * ===========================================================================

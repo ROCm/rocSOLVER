@@ -11,7 +11,7 @@
 
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <int MAX_THDS, typename T, typename S>
 __device__ void lasyf_device_upper(const rocblas_int tid,

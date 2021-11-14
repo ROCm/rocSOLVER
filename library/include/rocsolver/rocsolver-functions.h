@@ -5,7 +5,7 @@
 #ifndef _ROCLAPACK_FUNCTIONS_H
 #define _ROCLAPACK_FUNCTIONS_H
 
-#include "rocsolver-extra-types.h"
+#include "rocsolver/rocsolver-extra-types.h"
 #include <rocblas/rocblas.h>
 
 /*! \file

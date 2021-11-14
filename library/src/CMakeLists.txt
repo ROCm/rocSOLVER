@@ -244,7 +244,7 @@ set_target_properties(rocsolver PROPERTIES
   CXX_VISIBILITY_PRESET "hidden"
   VISIBILITY_INLINES_HIDDEN ON
 )
-generate_export_header(rocsolver EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsolver-export.h)
+generate_export_header(rocsolver EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-export.h)
 
 # Following Boost conventions of prefixing 'lib' on static built libraries, across all platforms
 if(NOT BUILD_SHARED_LIBS)
@@ -286,7 +286,7 @@ rocm_install_targets(
 )
 
 install(
-DIRECTORY "${CMAKE_SOURCE_DIR}/library/include/" "${CMAKE_BINARY_DIR}/include/"
+DIRECTORY "${CMAKE_SOURCE_DIR}/library/include/rocsolver/" "${CMAKE_BINARY_DIR}/include/rocsolver/"
   DESTINATION include/rocsolver
   FILES_MATCHING
   PATTERN "*.h"

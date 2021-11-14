@@ -12,7 +12,7 @@
 #include "auxiliary/rocauxiliary_laswp.hpp"
 #include "rocblas.hpp"
 #include "roclapack_getf2.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /** This function returns the outer block size based on defined variables
     tunable by the user (defined in ideal_sizes.hpp) **/
