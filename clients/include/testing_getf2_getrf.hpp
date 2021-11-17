@@ -224,34 +224,6 @@ void getf2_getrf_getError(const rocblas_handle handle,
               : cblas_getf2<T>(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
     }
 
-    /*    std::vector<T> a(m*n);
-    std::vector<T> b(m*n);
-    for(int i=0;i<m;++i)
-    {
-        for(int j=0;j<n;++j)
-        {
-            if(i==j)
-            {
-                a[i+i*m]=1;
-                b[i+i*m]=hARes[0][i+i*lda];
-            }
-            else if(i>j)
-            {
-                a[i+j*m]=hARes[0][i+j*lda];
-                b[i+j*m]=0;
-            }
-            else
-            {
-                a[i+j*m]=0;
-                b[i+j*m]=hARes[0][i+j*lda];
-            }
-        }
-    }
-
-    cblas_gemm<T>(rocblas_operation_none,rocblas_operation_none,m,n,n,1,a.data(),m,b.data(),m,0,hARes[0],lda);
-    cblas_laswp<T>(n,hARes[0],lda,1,m,hIpivRes[0],1);
-  */
-
     // expecting original matrix to be non-singular
     // error is ||hA - hARes|| / ||hA|| (ideally ||LU - Lres Ures|| / ||LU||)
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -264,12 +236,12 @@ void getf2_getrf_getError(const rocblas_handle handle,
         err = norm_error('F', m, n, lda, hA[b], hARes[b]);
         *max_err = err > *max_err ? err : *max_err;
 
-        //        // also check pivoting (count the number of incorrect pivots)
-        //        err = 0;
-        //        for(rocblas_int i = 0; i < min(m, n); ++i)
-        //            if(hIpiv[b][i] != hIpivRes[b][i])
-        //                err++;
-        //        *max_err = err > *max_err ? err : *max_err;
+        // also check pivoting (count the number of incorrect pivots)
+        err = 0;
+        for(rocblas_int i = 0; i < min(m, n); ++i)
+            if(hIpiv[b][i] != hIpivRes[b][i])
+                err++;
+        *max_err = err > *max_err ? err : *max_err;
     }
 
     // also check info for singularities
@@ -463,7 +435,7 @@ void testing_getf2_getrf(Arguments& argus)
                                                     &max_error, argus.singular);
 
         // collect performance data
-        if(argus.timing && hot_calls > 0)
+        if(argus.timing)
             getf2_getrf_getPerfData<STRIDED, GETRF, T>(
                 handle, m, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA, hIpiv, hInfo, &gpu_time_used,
                 &cpu_time_used, hot_calls, argus.profile, argus.perf, argus.singular);
@@ -506,7 +478,7 @@ void testing_getf2_getrf(Arguments& argus)
                                                     &max_error, argus.singular);
 
         // collect performance data
-        if(argus.timing && hot_calls > 0)
+        if(argus.timing)
             getf2_getrf_getPerfData<STRIDED, GETRF, T>(
                 handle, m, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA, hIpiv, hInfo, &gpu_time_used,
                 &cpu_time_used, hot_calls, argus.profile, argus.perf, argus.singular);
