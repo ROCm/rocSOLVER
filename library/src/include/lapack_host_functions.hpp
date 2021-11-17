@@ -15,7 +15,66 @@
  * ===========================================================================
  */
 
-/** Optimized function that solves a simple triangular system B <- Ax=B
+/** This function returns the block size for the internal
+    (blocked) trsm implementation **/
+inline rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
+{
+    rocblas_int M = 6;
+    rocblas_int N = 9;
+    rocblas_int intervalsM[6] = {96, 160, 224, 352, 416, 480};
+    rocblas_int intervalsN[9] = {256, 512, 768, 1024, 1280, 1536, 2048, 3072, 4096};
+    //clang-format off
+    rocblas_int size[7][10]
+        = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},       {1, 1, 1, 1, 64, 64, 64, 48, 48, 0},
+           {1, 1, 1, 64, 64, 64, 64, 48, 64, 0}, {1, 1, 64, 64, 64, 64, 64, 0, 0, 0},
+           {1, 1, 64, 64, 64, 64, 0, 0, 0, 0},   {1, 64, 64, 64, 64, 64, 0, 0, 0, 0},
+           {1, 64, 64, 64, 64, 0, 0, 0, 0, 0}};
+    //clang-format on
+    return size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+}
+
+/** This function determine workspace size fir the internal trsm **/
+template <bool BATCHED, typename T>
+void rocsolver_trsm_mem(const rocblas_side side,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        const rocblas_int batch_count,
+                        size_t* size_work1,
+                        size_t* size_work2,
+                        size_t* size_work3,
+                        size_t* size_work4,
+                        bool* optim_mem)
+{
+    // determine block size
+    rocblas_int blk = rocsolver_trsm_blksize(m, n);
+
+    if(blk == 1)
+        blk = m;
+
+    if(blk == 0)
+    {
+        // (Note: rocblas TRSM workspace size is less than expected when the number of rows is multiple of 128.
+        //  For this reason, when trying to set up a workspace that fits all the TRSM calls for m <= blk,
+        //  blk cannot be multiple of 128.)
+        //        rocblas_int mm = (blk % 128 != 0) ? blk : blk + 1;
+        rocblas_int mm = (m % 128 != 0) ? m : m + 1;
+        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, mm, n, batch_count, size_work1,
+                                         size_work2, size_work3, size_work4);
+    }
+    else
+    {
+        *size_work1 = 0;
+        *size_work2 = 0;
+        *size_work3 = 0;
+        *size_work4 = 0;
+    }
+
+    // always allocate all required memory for TRSM optimal performance
+    *optim_mem = true;
+}
+
+/** Internal TRSM:
+    Optimized function that solves a simple triangular system B <- Ax=B
     with A unit matrix. A and B are sub blocks of the same matrix MM with
     leading dimension ldim and stride. A and B are
     located in MM by their respective shifts.
@@ -50,50 +109,7 @@ void rocsolver_trsm(rocblas_handle handle,
     size_t lmemsize;
 
     // determine block size
-    rocblas_int blk;
-    /*    if(m <= 44)
-        blk = m;
-    else if(m <= 68)
-    {
-        if(n <= 6144)
-            blk = m;
-        else
-            blk = 32;
-    }
-    else if(m <= 88)
-    {
-        if(n <= 2048)
-            blk = m;
-        else
-            blk = 32;
-    }
-    else if(m <= 120)
-    {
-        if(n <= 1536)
-            blk = m;
-        else
-            blk = 32;
-    }
-    else if(m <= 192)
-    {
-        if(n <= 1024)
-            blk = m;
-        else
-            blk = 32;
-    }
-    else
-        blk = 64;)*/
-
-    rocblas_int M = 6;
-    rocblas_int N = 9;
-    rocblas_int intervalsM[6] = {96, 160, 224, 352, 416, 480};
-    rocblas_int intervalsN[9] = {256, 512, 768, 1024, 1280, 1536, 2048, 3072, 4096};
-    rocblas_int size[7][10]
-        = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},       {1, 1, 1, 1, 64, 64, 64, 48, 48, 0},
-           {1, 1, 1, 64, 64, 64, 64, 48, 64, 0}, {1, 1, 64, 64, 64, 64, 64, 0, 0, 0},
-           {1, 1, 64, 64, 64, 64, 0, 0, 0, 0},   {1, 64, 64, 64, 64, 64, 0, 0, 0, 0},
-           {1, 64, 64, 64, 64, 0, 0, 0, 0, 0}};
-    blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+    rocblas_int blk = rocsolver_trsm_blksize(m, n);
 
     if(blk == 1)
         blk = m;
