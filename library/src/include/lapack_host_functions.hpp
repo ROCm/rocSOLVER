@@ -31,7 +31,12 @@ void rocsolver_trsm(rocblas_handle handle,
                     const rocblas_int shiftB,
                     const rocblas_int ldim,
                     const rocblas_stride stride,
-                    const rocblas_int batch_count)
+                    const rocblas_int batch_count,
+                    const bool optim_mem,
+                    void* work1,
+                    void* work2,
+                    void* work3,
+                    void* work4)
 {
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -46,7 +51,7 @@ void rocsolver_trsm(rocblas_handle handle,
 
     // determine block size
     rocblas_int blk;
-    if(m <= 44)
+    /*    if(m <= 44)
         blk = m;
     else if(m <= 68)
     {
@@ -77,7 +82,30 @@ void rocsolver_trsm(rocblas_handle handle,
             blk = 32;
     }
     else
-        blk = 64;
+        blk = 64;)*/
+
+    rocblas_int M = 6;
+    rocblas_int N = 9;
+    rocblas_int intervalsM[6] = {96, 160, 224, 352, 416, 480};
+    rocblas_int intervalsN[9] = {256, 512, 768, 1024, 1280, 1536, 2048, 3072, 4096};
+    rocblas_int size[7][10]
+        = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},       {1, 1, 1, 1, 64, 64, 64, 48, 48, 0},
+           {1, 1, 1, 64, 64, 64, 64, 48, 64, 0}, {1, 1, 64, 64, 64, 64, 64, 0, 0, 0},
+           {1, 1, 64, 64, 64, 64, 0, 0, 0, 0},   {1, 64, 64, 64, 64, 64, 0, 0, 0, 0},
+           {1, 64, 64, 64, 64, 0, 0, 0, 0, 0}};
+    blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+
+    if(blk == 1)
+        blk = m;
+
+    if(blk == 0)
+    {
+        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
+                                     rocblas_operation_none, rocblas_diagonal_unit, m, n, &one, MM,
+                                     shiftA, ldim, stride, MM, shiftB, ldim, stride, batch_count,
+                                     optim_mem, work1, work2, work3, work4);
+        return;
+    }
 
     // main loop
     for(rocblas_int j = 0; j < m; j += blk)
