@@ -97,6 +97,9 @@ void rocsolver_trsm(rocblas_handle handle,
                     void* work3,
                     void* work4)
 {
+    ROCSOLVER_ENTER("trsm", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", ldim, "shiftB:", shiftB,
+                    "ldb:", ldim, "bc:", batch_count);
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -136,8 +139,8 @@ void rocsolver_trsm(rocblas_handle handle,
         grid = dim3(1, blocks, batch_count);
         threads = dim3(dimx, dimy, 1);
         lmemsize = dimy * sizeof(T);
-        hipLaunchKernelGGL(trsm2_kernel<T>, grid, threads, lmemsize, stream, jb, n, MM,
-                           shiftA + idx2D(j, j, ldim), shiftB + idx2D(j, 0, ldim), ldim, stride);
+        ROCSOLVER_LAUNCH_KERNEL(trsm2_kernel<T>, grid, threads, lmemsize, stream, jb, n, MM,
+                                shiftA + idx2D(j, j, ldim), shiftB + idx2D(j, 0, ldim), ldim, stride);
 
         // update right hand sides
         if(nextpiv < m)
