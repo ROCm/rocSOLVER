@@ -1511,8 +1511,9 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
                   "shiftA:", offset_A, "lda:", lda, "shiftB:", offset_B, "ldb:", ldb,
                   "bc:", batch_count);
 
+    // nullptr f or optional alpha
     return rocblas_internal_trsv_substitution_template<ROCBLAS_TRSV_BLOCK, T>(
-        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B, offset_B, ldb,
+        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, nullptr, B, offset_B, ldb,
         stride_B, batch_count, w_completed_sec);
 }
 
@@ -1541,8 +1542,9 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
                   "shiftA:", offset_A, "lda:", lda, "shiftB:", offset_B, "ldb:", ldb,
                   "bc:", batch_count);
 
+    // nullptr for optional alpha
     return rocblas_internal_trsv_substitution_template<ROCBLAS_TRSV_Z_BLOCK, T>(
-        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, B, offset_B, ldb,
+        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, nullptr, B, offset_B, ldb,
         stride_B, batch_count, w_completed_sec);
 }
 
