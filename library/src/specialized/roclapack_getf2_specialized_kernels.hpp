@@ -1,5 +1,8 @@
 /************************************************************************
- * Small kernel algorithm derived from MAGMA project
+ * Small kernel algorithm based on:
+ * Abdelfattah, A., Haidar, A., Tomov, S., & Dongarra, J. (2017).
+ * Factorization and inversion of a million matrices using GPUs: Challenges
+ * and countermeasures. Procedia Computer Science, 108, 606-615.
  *
  * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  * ***********************************************************************/
