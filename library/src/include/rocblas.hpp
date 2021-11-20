@@ -1569,7 +1569,8 @@ void rocblasCall_trsm_mem(rocblas_side side,
 }
 
 // trsm
-template <bool BATCHED, typename T, typename U>
+template <bool BATCHED, typename T, typename U,
+          std::enable_if_t<!std::is_same<T, rocblas_double_complex>::value, int> = 0>
 rocblas_status rocblasCall_trsm(rocblas_handle handle,
                                 rocblas_side side,
                                 rocblas_fill uplo,
@@ -1600,14 +1601,53 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                   "bc:", batch_count);
 
     U supplied_invA = nullptr;
-    return rocblas_internal_trsm_template<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
+    return rocblas_internal_trsm_template<ROCBLAS_TRSM_BLOCK, ROCBLAS_TRSV_BLOCK, BATCHED, T>(
+        handle, side, uplo, transA, diag, m, n, alpha, cast2constType(A), offset_A, lda, stride_A,
+        B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA, invA_arr,
+        cast2constType(supplied_invA), 0);
+}
+
+template <bool BATCHED, typename T, typename U,
+          std::enable_if_t<std::is_same<T, rocblas_double_complex>::value, int> = 0>
+rocblas_status rocblasCall_trsm(rocblas_handle handle,
+                                rocblas_side side,
+                                rocblas_fill uplo,
+                                rocblas_operation transA,
+                                rocblas_diagonal diag,
+                                rocblas_int m,
+                                rocblas_int n,
+                                const T* alpha,
+                                U A,
+                                rocblas_int offset_A,
+                                rocblas_int lda,
+                                rocblas_stride stride_A,
+                                U B,
+                                rocblas_int offset_B,
+                                rocblas_int ldb,
+                                rocblas_stride stride_B,
+                                rocblas_int batch_count,
+                                bool optimal_mem,
+                                void* x_temp,
+                                void* x_temp_arr,
+                                void* invA,
+                                void* invA_arr,
+                                T** workArr = nullptr)
+{
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("trsm", "side:", side, "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
+                  "n:", n, "shiftA:", offset_A, "lda:", lda, "shiftB:", offset_B, "ldb:", ldb,
+                  "bc:", batch_count);
+
+    U supplied_invA = nullptr;
+    return rocblas_internal_trsm_template<ROCBLAS_TRSM_BLOCK, ROCBLAS_TRSV_Z_BLOCK, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, alpha, cast2constType(A), offset_A, lda, stride_A,
         B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA, invA_arr,
         cast2constType(supplied_invA), 0);
 }
 
 // trsm overload
-template <bool BATCHED, typename T>
+template <bool BATCHED, typename T,
+          std::enable_if_t<!std::is_same<T, rocblas_double_complex>::value, int> = 0>
 rocblas_status rocblasCall_trsm(rocblas_handle handle,
                                 rocblas_side side,
                                 rocblas_fill uplo,
@@ -1647,7 +1687,54 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                             batch_count);
 
     U supplied_invA = nullptr;
-    return rocblas_internal_trsm_template<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
+    return rocblas_internal_trsm_template<ROCBLAS_TRSM_BLOCK, ROCBLAS_TRSV_BLOCK, BATCHED, T>(
+        handle, side, uplo, transA, diag, m, n, alpha, cast2constType((U)workArr), offset_A, lda,
+        stride_A, B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA,
+        invA_arr, cast2constType(supplied_invA), 0);
+}
+
+template <bool BATCHED, typename T,
+          std::enable_if_t<std::is_same<T, rocblas_double_complex>::value, int> = 0>
+rocblas_status rocblasCall_trsm(rocblas_handle handle,
+                                rocblas_side side,
+                                rocblas_fill uplo,
+                                rocblas_operation transA,
+                                rocblas_diagonal diag,
+                                rocblas_int m,
+                                rocblas_int n,
+                                const T* alpha,
+                                T* A,
+                                rocblas_int offset_A,
+                                rocblas_int lda,
+                                rocblas_stride stride_A,
+                                T* const B[],
+                                rocblas_int offset_B,
+                                rocblas_int ldb,
+                                rocblas_stride stride_B,
+                                rocblas_int batch_count,
+                                bool optimal_mem,
+                                void* x_temp,
+                                void* x_temp_arr,
+                                void* invA,
+                                void* invA_arr,
+                                T** workArr)
+{
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("trsm", "side:", side, "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
+                  "n:", n, "shiftA:", offset_A, "lda:", lda, "shiftB:", offset_B, "ldb:", ldb,
+                  "bc:", batch_count);
+
+    using U = T* const*;
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, A, stride_A,
+                            batch_count);
+
+    U supplied_invA = nullptr;
+    return rocblas_internal_trsm_template<ROCBLAS_TRSM_BLOCK, ROCBLAS_TRSV_Z_BLOCK, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, alpha, cast2constType((U)workArr), offset_A, lda,
         stride_A, B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA,
         invA_arr, cast2constType(supplied_invA), 0);
