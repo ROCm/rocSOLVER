@@ -915,27 +915,19 @@ ROCSOLVER_KERNEL void trsm2_kernel(const rocblas_int m,
     T* b = (T*)lmem;
     T c;
 
-    // local column of the shared array b
-    b += ty;
-
     if(j < n)
     {
         // read data
         c = B[i + j * ldim];
-        if(i == 0)
-            b[0] = c;
-        __syncthreads();
 
         // solve for right-hand sides
         for(int k = 0; k < m - 1; ++k)
         {
-            if(i > k)
-            {
-                c -= A[i + k * ldim] * b[0];
-                if(i == k + 1)
-                    b[0] = c;
-            }
             __syncthreads();
+            if(i == k)
+                b[ty] = c;
+            __syncthreads();
+            c -= (i > k) ? A[i + k * ldim] * b[ty] : 0;
         }
 
         // move results back to global

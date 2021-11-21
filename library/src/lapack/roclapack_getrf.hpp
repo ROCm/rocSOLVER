@@ -401,28 +401,19 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     size_t lmemsize;
     rocblas_int j = 0;
 
-    // MAIN LOOP (work iteratively with blocks of "ideal" size at each iteration)
-    while(j < dim)
+    if(blk == 1)
+        blk = dim;
+
+    // MAIN LOOP
+    for(rocblas_int j = 0; j < dim; j += blk)
     {
-        jb = getrf_get_blksize<ISBATCHED>(dim - j, pivot);
-        if(jb == 1)
-            jb = dim - j;
+        jb = min(dim - j, blk);
 
         // factorize inner block panel
-        if(jb == 0)
-        {
-            rocsolver_getf2_template<ISBATCHED, T>(handle, m - j, jb, A, shiftA + j, lda, strideA,
-                                                   ipiv, shiftP + j, strideP, info, batch_count,
-                                                   scalars, pivotval, pivotidx, pivot, j, iipiv, m);
-            jb = dim - j;
-        }
-        else
-        {
-            getrf_panelLU<BATCHED, STRIDED, T>(handle, m - j, jb, n, A, shiftA + j, lda, strideA,
-                                               ipiv, shiftP + j, strideP, info, batch_count, pivot,
-                                               scalars, work1, work2, work3, work4, optim_mem,
-                                               pivotval, pivotidx, j, iipiv, m);
-        }
+        getrf_panelLU<BATCHED, STRIDED, T>(handle, m - j, jb, n, A, shiftA + j, lda, strideA, ipiv,
+                                           shiftP + j, strideP, info, batch_count, pivot, scalars,
+                                           work1, work2, work3, work4, optim_mem, pivotval,
+                                           pivotidx, j, iipiv, m);
 
         // update trailing matrix
         nextpiv = j + jb; //posicion for the matrix update
@@ -456,8 +447,6 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                        shiftA + idx2D(nextpiv, nextpiv, lda), lda, strideA);*/
             }
         }
-
-        j += jb;
     }
 
     rocblas_set_pointer_mode(handle, old_mode);
