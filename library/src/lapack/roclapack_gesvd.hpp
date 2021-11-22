@@ -180,13 +180,13 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
     const bool rightvO = (right_svect == rocblas_svect_overwrite);
     const bool rightvA = (right_svect == rocblas_svect_all);
     const bool rightvN = (right_svect == rocblas_svect_none);
-    //const bool leadvS = row ? leftvS : rightvS;
+    const bool leadvS = row ? leftvS : rightvS;
     const bool leadvO = row ? leftvO : rightvO;
     const bool leadvA = row ? leftvA : rightvA;
     const bool leadvN = row ? leftvN : rightvN;
-    //const bool othervS = !row ? leftvS : rightvS;
+    const bool othervS = !row ? leftvS : rightvS;
     const bool othervO = !row ? leftvO : rightvO;
-    //const bool othervA = !row ? leftvA : rightvA;
+    const bool othervA = !row ? leftvA : rightvA;
     const bool othervN = !row ? leftvN : rightvN;
     const bool thinSVD = (m >= THIN_SVD_SWITCH * n || n >= THIN_SVD_SWITCH * m);
     const bool fast_thinSVD = (thinSVD && fast_alg == rocblas_outofplace);

@@ -2460,6 +2460,7 @@ void cblas_labrd<float, float>(rocblas_int m,
                                float* Y,
                                rocblas_int ldy)
 {
+    int info;
     slabrd_(&m, &n, &nb, A, &lda, D, E, tauq, taup, X, &ldx, Y, &ldy);
 }
 
@@ -2478,6 +2479,7 @@ void cblas_labrd<double, double>(rocblas_int m,
                                  double* Y,
                                  rocblas_int ldy)
 {
+    int info;
     dlabrd_(&m, &n, &nb, A, &lda, D, E, tauq, taup, X, &ldx, Y, &ldy);
 }
 
@@ -2496,6 +2498,7 @@ void cblas_labrd<rocblas_float_complex, float>(rocblas_int m,
                                                rocblas_float_complex* Y,
                                                rocblas_int ldy)
 {
+    int info;
     clabrd_(&m, &n, &nb, A, &lda, D, E, tauq, taup, X, &ldx, Y, &ldy);
 }
 
@@ -2514,6 +2517,7 @@ void cblas_labrd<rocblas_double_complex, double>(rocblas_int m,
                                                  rocblas_double_complex* Y,
                                                  rocblas_int ldy)
 {
+    int info;
     zlabrd_(&m, &n, &nb, A, &lda, D, E, tauq, taup, X, &ldx, Y, &ldy);
 }
 

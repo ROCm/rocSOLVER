@@ -70,8 +70,8 @@ try
     argus.timing = 1;
 
     std::string function;
-    char precision = 's';
-    rocblas_int device_id = 0;
+    char precision;
+    rocblas_int device_id;
 
     // take arguments and set default values
     // clang-format off
