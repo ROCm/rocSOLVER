@@ -129,7 +129,7 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = gels_setup_arguments(GetParam(), false);
+        Arguments arg = gels_setup_arguments(GetParam(), true);
 
         if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nrhs") == 0)
             testing_gels_outofplace_bad_arg<BATCHED, STRIDED, T>();

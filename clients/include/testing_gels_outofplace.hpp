@@ -298,7 +298,7 @@ void gels_outofplace_getError(const rocblas_handle handle,
         if(hInfo[b][0] == 0)
         {
             const rocblas_int rowsX = (trans == rocblas_operation_none) ? n : m;
-            err = norm_error('F', rowsX, nrhs, max(m, n), hX[b], hXRes[b], ldx);
+            err = norm_error('I', rowsX, nrhs, max(m, n), hX[b], hXRes[b], ldx);
             *max_err = err > *max_err ? err : *max_err;
         }
     }

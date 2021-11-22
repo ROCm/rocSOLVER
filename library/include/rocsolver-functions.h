@@ -9604,7 +9604,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_strided_batched(rocblas_handle h
               Specifies the leading dimension of matrix B.
     @param[out]
     X         pointer to type. Array on the GPU of dimension ldx*nrhs.\n
-              On exit, when info = 0, the solution vectors stored as columns.
+              On exit, when info = 0, the solution vectors stored as columns; otherwise undefined.
     @param[in]
     ldx       rocblas_int. ldx >= n if trans is none; ldx >= m otherwise.\n
               Specifies the leading dimension of matrix X.
@@ -9724,7 +9724,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_outofplace(rocblas_handle handle
               Specifies the leading dimension of matrices B_i.
     @param[out]
     X         array of pointer to type. Each pointer points to an array on the GPU of dimension ldx*nrhs.\n
-              On exit, when info[i] = 0, the solution vectors stored as columns.
+              On exit, when info[i] = 0, the solution vectors stored as columns; otherwise undefined.
     @param[in]
     ldx       rocblas_int. ldx >= n if trans is none; ldx >= m otherwise.\n
               Specifies the leading dimension of matrices X_i.
@@ -9861,7 +9861,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_outofplace_batched(rocblas_handl
               There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs
     @param[out]
     X         pointer to type. Array on the GPU (the size depends on the value of strideX).\n
-              On exit, when info = 0, the solution vectors stored as columns.
+              On exit, when info = 0, the solution vectors stored as columns; otherwise undefined.
     @param[in]
     ldx       rocblas_int. ldx >= n if trans is none; ldx >= m otherwise.\n
               Specifies the leading dimension of matrices X_i.
