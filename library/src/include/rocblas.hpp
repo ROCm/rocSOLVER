@@ -1511,10 +1511,10 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
                   "shiftA:", offset_A, "lda:", lda, "shiftB:", offset_B, "ldb:", ldb,
                   "bc:", batch_count);
 
-    // nullptr f or optional alpha
+    // nullptr for optional alpha
     return rocblas_internal_trsv_substitution_template<ROCBLAS_TRSV_BLOCK, T>(
-        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, nullptr, B, offset_B, ldb,
-        stride_B, batch_count, w_completed_sec);
+        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, nullptr, B,
+        offset_B, ldb, stride_B, batch_count, w_completed_sec);
 }
 
 template <bool BATCHED,
@@ -1544,8 +1544,8 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
 
     // nullptr for optional alpha
     return rocblas_internal_trsv_substitution_template<ROCBLAS_TRSV_Z_BLOCK, T>(
-        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, nullptr, B, offset_B, ldb,
-        stride_B, batch_count, w_completed_sec);
+        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, nullptr, B,
+        offset_B, ldb, stride_B, batch_count, w_completed_sec);
 }
 
 // trsm memory sizes
@@ -1569,7 +1569,9 @@ void rocblasCall_trsm_mem(rocblas_side side,
 }
 
 // trsm
-template <bool BATCHED, typename T, typename U,
+template <bool BATCHED,
+          typename T,
+          typename U,
           std::enable_if_t<!std::is_same<T, rocblas_double_complex>::value, int> = 0>
 rocblas_status rocblasCall_trsm(rocblas_handle handle,
                                 rocblas_side side,
@@ -1607,7 +1609,9 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
         cast2constType(supplied_invA), 0);
 }
 
-template <bool BATCHED, typename T, typename U,
+template <bool BATCHED,
+          typename T,
+          typename U,
           std::enable_if_t<std::is_same<T, rocblas_double_complex>::value, int> = 0>
 rocblas_status rocblasCall_trsm(rocblas_handle handle,
                                 rocblas_side side,
@@ -1646,8 +1650,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
 }
 
 // trsm overload
-template <bool BATCHED, typename T,
-          std::enable_if_t<!std::is_same<T, rocblas_double_complex>::value, int> = 0>
+template <bool BATCHED, typename T, std::enable_if_t<!std::is_same<T, rocblas_double_complex>::value, int> = 0>
 rocblas_status rocblasCall_trsm(rocblas_handle handle,
                                 rocblas_side side,
                                 rocblas_fill uplo,
@@ -1693,8 +1696,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
         invA_arr, cast2constType(supplied_invA), 0);
 }
 
-template <bool BATCHED, typename T,
-          std::enable_if_t<std::is_same<T, rocblas_double_complex>::value, int> = 0>
+template <bool BATCHED, typename T, std::enable_if_t<std::is_same<T, rocblas_double_complex>::value, int> = 0>
 rocblas_status rocblasCall_trsm(rocblas_handle handle,
                                 rocblas_side side,
                                 rocblas_fill uplo,
