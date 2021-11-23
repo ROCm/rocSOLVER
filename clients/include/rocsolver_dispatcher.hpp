@@ -13,7 +13,6 @@
 #include "testing_gebd2_gebrd.hpp"
 #include "testing_gelq2_gelqf.hpp"
 #include "testing_gels.hpp"
-#include "testing_gels_outofplace.hpp"
 #include "testing_geql2_geqlf.hpp"
 #include "testing_geqr2_geqrf.hpp"
 #include "testing_gerq2_gerqf.hpp"
