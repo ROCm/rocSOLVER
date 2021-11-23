@@ -4,9 +4,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## (Unreleased) rocSOLVER
 ### Added
-- Out-of-place least-square problem solvers:
-    - GELS\_OUTOFPLACE (with batched and strided\_batched versions)
-
 ### Optimized
 ### Changed
 ### Deprecated

@@ -207,26 +207,6 @@ TEST_P(GELS, batched__double_complex)
     run_tests<true, true, rocblas_double_complex>();
 }
 
-TEST_P(GELS_OUTOFPLACE, batched__float)
-{
-    run_tests<true, true, float>();
-}
-
-TEST_P(GELS_OUTOFPLACE, batched__double)
-{
-    run_tests<true, true, double>();
-}
-
-TEST_P(GELS_OUTOFPLACE, batched__float_complex)
-{
-    run_tests<true, true, rocblas_float_complex>();
-}
-
-TEST_P(GELS_OUTOFPLACE, batched__double_complex)
-{
-    run_tests<true, true, rocblas_double_complex>();
-}
-
 // strided_batched tests
 
 TEST_P(GELS, strided_batched__float)
@@ -245,26 +225,6 @@ TEST_P(GELS, strided_batched__float_complex)
 }
 
 TEST_P(GELS, strided_batched__double_complex)
-{
-    run_tests<false, true, rocblas_double_complex>();
-}
-
-TEST_P(GELS_OUTOFPLACE, strided_batched__float)
-{
-    run_tests<false, true, float>();
-}
-
-TEST_P(GELS_OUTOFPLACE, strided_batched__double)
-{
-    run_tests<false, true, double>();
-}
-
-TEST_P(GELS_OUTOFPLACE, strided_batched__float_complex)
-{
-    run_tests<false, true, rocblas_float_complex>();
-}
-
-TEST_P(GELS_OUTOFPLACE, strided_batched__double_complex)
 {
     run_tests<false, true, rocblas_double_complex>();
 }

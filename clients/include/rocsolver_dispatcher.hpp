@@ -189,10 +189,6 @@ class rocsolver_dispatcher
             {"gels", testing_gels<false, false, T>},
             {"gels_batched", testing_gels<true, true, T>},
             {"gels_strided_batched", testing_gels<false, true, T>},
-            // gels_outofplace
-            {"gels_outofplace", testing_gels_outofplace<false, false, T>},
-            {"gels_outofplace_batched", testing_gels_outofplace<true, true, T>},
-            {"gels_outofplace_strided_batched", testing_gels_outofplace<false, true, T>},
             // gebrd
             {"gebd2", testing_gebd2_gebrd<false, false, 0, T>},
             {"gebd2_batched", testing_gebd2_gebrd<true, true, 0, T>},

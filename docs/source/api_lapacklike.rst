@@ -7,7 +7,6 @@ Other Lapack-like routines provided by rocSOLVER. These are divided into the fol
 
 * :ref:`liketriangular`. Based on Gaussian elimination.
 * :ref:`likelinears`. Based on triangular factorizations.
-* :ref:`likeleastsqr`. Based on orthogonal factorizations.
 
 .. note::
     Throughout the APIs' descriptions, we use the following notations:
@@ -202,47 +201,4 @@ rocsolver_<type>getri_npvt_outofplace_strided_batched()
 .. doxygenfunction:: rocsolver_dgetri_npvt_outofplace_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgetri_npvt_outofplace_strided_batched
-
-
-
-.. _likeleastsqr:
-
-Least-squares solvers
-================================
-
-.. contents:: List of Lapack-like least-squares solvers
-   :local:
-   :backlinks: top
-
-.. _gels_outofplace:
-
-rocsolver_<type>gels_outofplace()
----------------------------------------------------
-.. doxygenfunction:: rocsolver_zgels_outofplace
-   :outline:
-.. doxygenfunction:: rocsolver_cgels_outofplace
-   :outline:
-.. doxygenfunction:: rocsolver_dgels_outofplace
-   :outline:
-.. doxygenfunction:: rocsolver_sgels_outofplace
-
-rocsolver_<type>gels_outofplace_batched()
----------------------------------------------------
-.. doxygenfunction:: rocsolver_zgels_outofplace_batched
-   :outline:
-.. doxygenfunction:: rocsolver_cgels_outofplace_batched
-   :outline:
-.. doxygenfunction:: rocsolver_dgels_outofplace_batched
-   :outline:
-.. doxygenfunction:: rocsolver_sgels_outofplace_batched
-
-rocsolver_<type>gels_outofplace_strided_batched()
----------------------------------------------------
-.. doxygenfunction:: rocsolver_zgels_outofplace_strided_batched
-   :outline:
-.. doxygenfunction:: rocsolver_cgels_outofplace_strided_batched
-   :outline:
-.. doxygenfunction:: rocsolver_dgels_outofplace_strided_batched
-   :outline:
-.. doxygenfunction:: rocsolver_sgels_outofplace_strided_batched
 

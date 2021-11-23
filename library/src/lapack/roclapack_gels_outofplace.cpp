@@ -4,6 +4,14 @@
 
 #include "roclapack_gels_outofplace.hpp"
 
+/*
+ * ===========================================================================
+ *    gels_outofplace is not intended for inclusion in the public API. It
+ *    exists to provide a gels method with a signature identical to
+ *    the cuSOLVER implementation, for use exclusively in hipSOLVER.
+ * ===========================================================================
+ */
+
 template <typename T, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_gels_outofplace_impl(rocblas_handle handle,
                                               rocblas_operation trans,
@@ -94,69 +102,69 @@ rocblas_status rocsolver_gels_outofplace_impl(rocblas_handle handle,
 
 extern "C" {
 
-rocblas_status rocsolver_sgels_outofplace(rocblas_handle handle,
-                                          rocblas_operation trans,
-                                          const rocblas_int m,
-                                          const rocblas_int n,
-                                          const rocblas_int nrhs,
-                                          float* A,
-                                          const rocblas_int lda,
-                                          float* B,
-                                          const rocblas_int ldb,
-                                          float* X,
-                                          const rocblas_int ldx,
-                                          rocblas_int* info)
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgels_outofplace(rocblas_handle handle,
+                                                           rocblas_operation trans,
+                                                           const rocblas_int m,
+                                                           const rocblas_int n,
+                                                           const rocblas_int nrhs,
+                                                           float* A,
+                                                           const rocblas_int lda,
+                                                           float* B,
+                                                           const rocblas_int ldb,
+                                                           float* X,
+                                                           const rocblas_int ldx,
+                                                           rocblas_int* info)
 {
     return rocsolver_gels_outofplace_impl<float>(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx,
                                                  info);
 }
 
-rocblas_status rocsolver_dgels_outofplace(rocblas_handle handle,
-                                          rocblas_operation trans,
-                                          const rocblas_int m,
-                                          const rocblas_int n,
-                                          const rocblas_int nrhs,
-                                          double* A,
-                                          const rocblas_int lda,
-                                          double* B,
-                                          const rocblas_int ldb,
-                                          double* X,
-                                          const rocblas_int ldx,
-                                          rocblas_int* info)
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgels_outofplace(rocblas_handle handle,
+                                                           rocblas_operation trans,
+                                                           const rocblas_int m,
+                                                           const rocblas_int n,
+                                                           const rocblas_int nrhs,
+                                                           double* A,
+                                                           const rocblas_int lda,
+                                                           double* B,
+                                                           const rocblas_int ldb,
+                                                           double* X,
+                                                           const rocblas_int ldx,
+                                                           rocblas_int* info)
 {
     return rocsolver_gels_outofplace_impl<double>(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx,
                                                   info);
 }
 
-rocblas_status rocsolver_cgels_outofplace(rocblas_handle handle,
-                                          rocblas_operation trans,
-                                          const rocblas_int m,
-                                          const rocblas_int n,
-                                          const rocblas_int nrhs,
-                                          rocblas_float_complex* A,
-                                          const rocblas_int lda,
-                                          rocblas_float_complex* B,
-                                          const rocblas_int ldb,
-                                          rocblas_float_complex* X,
-                                          const rocblas_int ldx,
-                                          rocblas_int* info)
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgels_outofplace(rocblas_handle handle,
+                                                           rocblas_operation trans,
+                                                           const rocblas_int m,
+                                                           const rocblas_int n,
+                                                           const rocblas_int nrhs,
+                                                           rocblas_float_complex* A,
+                                                           const rocblas_int lda,
+                                                           rocblas_float_complex* B,
+                                                           const rocblas_int ldb,
+                                                           rocblas_float_complex* X,
+                                                           const rocblas_int ldx,
+                                                           rocblas_int* info)
 {
     return rocsolver_gels_outofplace_impl<rocblas_float_complex>(handle, trans, m, n, nrhs, A, lda,
                                                                  B, ldb, X, ldx, info);
 }
 
-rocblas_status rocsolver_zgels_outofplace(rocblas_handle handle,
-                                          rocblas_operation trans,
-                                          const rocblas_int m,
-                                          const rocblas_int n,
-                                          const rocblas_int nrhs,
-                                          rocblas_double_complex* A,
-                                          const rocblas_int lda,
-                                          rocblas_double_complex* B,
-                                          const rocblas_int ldb,
-                                          rocblas_double_complex* X,
-                                          const rocblas_int ldx,
-                                          rocblas_int* info)
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_outofplace(rocblas_handle handle,
+                                                           rocblas_operation trans,
+                                                           const rocblas_int m,
+                                                           const rocblas_int n,
+                                                           const rocblas_int nrhs,
+                                                           rocblas_double_complex* A,
+                                                           const rocblas_int lda,
+                                                           rocblas_double_complex* B,
+                                                           const rocblas_int ldb,
+                                                           rocblas_double_complex* X,
+                                                           const rocblas_int ldx,
+                                                           rocblas_int* info)
 {
     return rocsolver_gels_outofplace_impl<rocblas_double_complex>(handle, trans, m, n, nrhs, A, lda,
                                                                   B, ldb, X, ldx, info);
