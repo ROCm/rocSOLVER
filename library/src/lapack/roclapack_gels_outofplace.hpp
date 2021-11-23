@@ -206,7 +206,6 @@ rocblas_status rocsolver_gels_outofplace_template(rocblas_handle handle,
                 shiftA, lda, strideA, ipiv, strideP, B, shiftB, ldb, strideB, batch_count, scalars,
                 work_x_temp, workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
 
-            // do the equivalent of trtrs
             ROCSOLVER_LAUNCH_KERNEL(check_singularity<T>, dim3(batch_count, 1, 1),
                                     dim3(1, check_threads, 1), 0, stream, n, A, shiftA, lda,
                                     strideA, info);
@@ -230,7 +229,6 @@ rocblas_status rocsolver_gels_outofplace_template(rocblas_handle handle,
         }
         else
         {
-            // do the equivalent of trtrs
             ROCSOLVER_LAUNCH_KERNEL(check_singularity<T>, dim3(batch_count, 1, 1),
                                     dim3(1, check_threads, 1), 0, stream, n, A, shiftA, lda,
                                     strideA, info);
@@ -268,7 +266,6 @@ rocblas_status rocsolver_gels_outofplace_template(rocblas_handle handle,
 
         if(trans == rocblas_operation_none)
         {
-            // do the equivalent of trtrs
             ROCSOLVER_LAUNCH_KERNEL(check_singularity<T>, dim3(batch_count, 1, 1),
                                     dim3(1, check_threads, 1), 0, stream, m, A, shiftA, lda,
                                     strideA, info);
@@ -308,7 +305,6 @@ rocblas_status rocsolver_gels_outofplace_template(rocblas_handle handle,
                 strideA, ipiv, strideP, B, shiftB, ldb, strideB, batch_count, scalars, work_x_temp,
                 workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
 
-            // do the equivalent of trtrs
             ROCSOLVER_LAUNCH_KERNEL(check_singularity<T>, dim3(batch_count, 1, 1),
                                     dim3(1, check_threads, 1), 0, stream, m, A, shiftA, lda,
                                     strideA, info);

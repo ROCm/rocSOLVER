@@ -252,7 +252,7 @@ void gels_getError(const rocblas_handle handle,
     // error is ||hB - hBRes|| / ||hB||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
-    // using frobenius norm
+    // using vector-induced infinity norm
     double err;
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
