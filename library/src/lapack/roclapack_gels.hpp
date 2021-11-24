@@ -39,7 +39,8 @@ ROCSOLVER_KERNEL void gels_set_zero(const rocblas_int k1,
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void rocsolver_gels_getMemorySize(const rocblas_int m,
+void rocsolver_gels_getMemorySize(const rocblas_operation trans,
+                                  const rocblas_int m,
                                   const rocblas_int n,
                                   const rocblas_int nrhs,
                                   const rocblas_int batch_count,
@@ -100,8 +101,12 @@ void rocsolver_gels_getMemorySize(const rocblas_int m,
     *size_workArr_temp_arr = std::max({gexxf_workArr, ormxx_workArr, trsm_x_temp_arr});
     *size_diag_trfac_invA = std::max({gexxf_diag, ormxx_trfact, trsm_invA});
     *size_trfact_workTrmm_invA_arr = std::max({gexxf_trfact, ormxx_workTrmm, trsm_invA_arr});
-    // size_ipiv = sizeof(T) * std::min(m, n) * batch_count, which is always less than size_savedB
-    *size_ipiv_savedB = sizeof(T) * std::min(m, n) * nrhs * batch_count;
+
+    // size_ipiv is always less than size_savedB
+    if((trans == rocblas_operation_none && m >= n) || (trans != rocblas_operation_none && m < n))
+        *size_ipiv_savedB = sizeof(T) * std::min(m, n) * nrhs * batch_count;
+    else
+        *size_ipiv_savedB = sizeof(T) * std::max(m, n) * nrhs * batch_count;
 
     // always allocate all required memory for TRSM optimal performance
     *optim_mem = true;
@@ -210,7 +215,8 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
     // constants in host memory
     const rocblas_stride strideP = std::min(m, n);
     const rocblas_int check_threads = std::min(((std::min(m, n) - 1) / 64 + 1) * 64, BLOCKSIZE);
-    const rocblas_int copyblocksx = (std::min(m, n) - 1) / 32 + 1;
+    const rocblas_int copyblocksmin = (std::min(m, n) - 1) / 32 + 1;
+    const rocblas_int copyblocksmax = (std::max(m, n) - 1) / 32 + 1;
     const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;
     const T one = 1;
 
@@ -236,8 +242,8 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                     dim3(1, check_threads, 1), 0, stream, n, A, shiftA, lda,
                                     strideA, info);
 
-            // save elements of B that will be overwritten by TRSM for cases where info is nonzero
-            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+            // save elements of B that will be overwritten in cases where info is nonzero
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksmin, copyblocksy, batch_count),
                                     dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB,
                                     ldb, strideB, ipiv_savedB, info_mask(info));
 
@@ -248,8 +254,8 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                          batch_count, optim_mem, work_x_temp, workArr_temp_arr,
                                          diag_trfac_invA, trfact_workTrmm_invA_arr);
 
-            // restore elements of B that were overwritten by TRSM in cases where info is nonzero
-            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+            // restore elements of B that were overwritten in cases where info is nonzero
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksmin, copyblocksy, batch_count),
                                     dim3(32, 32), 0, stream, copymat_from_buffer, n, nrhs, B,
                                     shiftB, ldb, strideB, ipiv_savedB, info_mask(info));
         }
@@ -260,9 +266,9 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                     dim3(1, check_threads, 1), 0, stream, n, A, shiftA, lda,
                                     strideA, info);
 
-            // save elements of B that will be overwritten by TRSM for cases where info is nonzero
-            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                                    dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB,
+            // save elements of B that will be overwritten in cases where info is nonzero
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksmax, copyblocksy, batch_count),
+                                    dim3(32, 32), 0, stream, copymat_to_buffer, m, nrhs, B, shiftB,
                                     ldb, strideB, ipiv_savedB, info_mask(info));
 
             // solve R'Y = B overwriting B with Y (here Y = Q'X)
@@ -284,9 +290,9 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                 (T*)work_x_temp, (T*)workArr_temp_arr, (T*)diag_trfac_invA,
                 (T**)trfact_workTrmm_invA_arr);
 
-            // restore elements of B that were overwritten by TRSM and ORMQR/UNMQR in cases where info is nonzero
-            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                                    dim3(32, 32), 0, stream, copymat_from_buffer, n, nrhs, B,
+            // restore elements of B that were overwritten in cases where info is nonzero
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksmax, copyblocksy, batch_count),
+                                    dim3(32, 32), 0, stream, copymat_from_buffer, m, nrhs, B,
                                     shiftB, ldb, strideB, ipiv_savedB, info_mask(info));
         }
     }
@@ -304,9 +310,9 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                     dim3(1, check_threads, 1), 0, stream, m, A, shiftA, lda,
                                     strideA, info);
 
-            // save elements of B that will be overwritten by TRSM for cases where info is nonzero
-            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                                    dim3(32, 32), 0, stream, copymat_to_buffer, m, nrhs, B, shiftB,
+            // save elements of B that will be overwritten in cases where info is nonzero
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksmax, copyblocksy, batch_count),
+                                    dim3(32, 32), 0, stream, copymat_to_buffer, n, nrhs, B, shiftB,
                                     ldb, strideB, ipiv_savedB, info_mask(info));
 
             // solve LY = B overwriting B with Y (here Y = QX)
@@ -328,9 +334,9 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                 scalars, (T*)work_x_temp, (T*)workArr_temp_arr, (T*)diag_trfac_invA,
                 (T**)trfact_workTrmm_invA_arr);
 
-            // restore elements of B that were overwritten by TRSM and ORMLQ/UNMLQ in cases where info is nonzero
-            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
-                                    dim3(32, 32), 0, stream, copymat_from_buffer, m, nrhs, B,
+            // restore elements of B that were overwritten in cases where info is nonzero
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksmax, copyblocksy, batch_count),
+                                    dim3(32, 32), 0, stream, copymat_from_buffer, n, nrhs, B,
                                     shiftB, ldb, strideB, ipiv_savedB, info_mask(info));
         }
         else
@@ -346,8 +352,8 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                     dim3(1, check_threads, 1), 0, stream, m, A, shiftA, lda,
                                     strideA, info);
 
-            // save elements of B that will be overwritten by TRSM for cases where info is nonzero
-            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+            // save elements of B that will be overwritten in cases where info is nonzero
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksmin, copyblocksy, batch_count),
                                     dim3(32, 32), 0, stream, copymat_to_buffer, m, nrhs, B, shiftB,
                                     ldb, strideB, ipiv_savedB, info_mask(info));
 
@@ -358,8 +364,8 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                 shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count, optim_mem, work_x_temp,
                 workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
 
-            // restore elements of B that were overwritten by TRSM in cases where info is nonzero
-            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
+            // restore elements of B that were overwritten in cases where info is nonzero
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksmin, copyblocksy, batch_count),
                                     dim3(32, 32), 0, stream, copymat_from_buffer, m, nrhs, B,
                                     shiftB, ldb, strideB, ipiv_savedB, info_mask(info));
         }

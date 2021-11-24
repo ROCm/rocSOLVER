@@ -36,6 +36,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_gels.cpp
   lapack/roclapack_gels_batched.cpp
   lapack/roclapack_gels_strided_batched.cpp
+  lapack/roclapack_gels_outofplace.cpp
   # triangular factorizations
   lapack/roclapack_getf2.cpp
   lapack/roclapack_getf2_batched.cpp

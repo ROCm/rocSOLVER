@@ -257,8 +257,7 @@ void gels_getError(const rocblas_handle handle,
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        const rocblas_int rowsB = (trans == rocblas_operation_none) ? m : n;
-        err = norm_error('I', rowsB, nrhs, ldb, hB[b], hBRes[b]);
+        err = norm_error('I', max(m, n), nrhs, ldb, hB[b], hBRes[b]);
         *max_err = err > *max_err ? err : *max_err;
     }
 
