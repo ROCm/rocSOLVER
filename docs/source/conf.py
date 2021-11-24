@@ -16,7 +16,7 @@ if read_the_docs_build:
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.mathjax', 'breathe']
+extensions = ['sphinx.ext.mathjax', 'breathe', 'm2r2']
 breathe_projects = { "rocSOLVER": "../docBin/xml" }
 breathe_default_project = "rocSOLVER"
 breathe_domain_by_extension = {
@@ -31,7 +31,9 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown'}
 
 # The master toctree document.
 master_doc = 'index'
