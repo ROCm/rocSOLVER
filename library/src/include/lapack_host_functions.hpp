@@ -33,7 +33,7 @@ inline rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int
     return size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
 }
 
-/** This function determine workspace size fir the internal trsm **/
+/** This function determine workspace size for the internal trsm **/
 template <bool BATCHED, typename T>
 void rocsolver_trsm_mem(const rocblas_side side,
                         const rocblas_int m,

@@ -416,7 +416,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                            pivotidx, j, iipiv, m);
 
         // update trailing matrix
-        nextpiv = j + jb; //posicion for the matrix update
+        nextpiv = j + jb; //position for the matrix update
         mm = m - nextpiv; //size for the matrix update
         nn = n - nextpiv; //size for the matrix update
         if(nextpiv < n)
