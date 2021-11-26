@@ -86,7 +86,7 @@ inline rocblas_int get_index(rocblas_int* intervals, rocblas_int max, rocblas_in
 
     for(i = 0; i < max; ++i)
     {
-        if(dim < intervals[i])
+        if(dim <= intervals[i])
             break;
     }
 

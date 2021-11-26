@@ -9,10 +9,53 @@
 
 #pragma once
 
-#include "auxiliary/rocauxiliary_laswp.hpp"
+#include "lapack_host_functions.hpp"
 #include "rocblas.hpp"
 #include "roclapack_getf2.hpp"
 #include "rocsolver.h"
+
+/** Execute all permutations dictated by the panel factorization
+    in parallel (concurrency by rows and columns) **/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int n,
+                                          const rocblas_int offset,
+                                          const rocblas_int blk,
+                                          U AA,
+                                          const rocblas_int shiftA,
+                                          const rocblas_int lda,
+                                          const rocblas_stride strideA,
+                                          rocblas_int* pividx,
+                                          const rocblas_stride stridePI)
+{
+    int id = hipBlockIdx_z;
+    int tx = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int bdx = hipBlockDim_x;
+    int j = hipBlockIdx_y * hipBlockDim_y + ty;
+    if(j >= offset)
+        j += blk;
+
+    if(j < n)
+    {
+        // batch instance
+        T* A = load_ptr_batch(AA, id, shiftA, strideA);
+        rocblas_int* piv = pividx + id * stridePI;
+
+        // shared mem for temporary values
+        extern __shared__ double lmem[];
+        T* temp = (T*)lmem;
+
+        // do permutations in parallel (each tx perform a row swap)
+        rocblas_int idx1 = piv[tx];
+        rocblas_int idx2 = piv[idx1];
+        temp[tx + ty * bdx] = A[idx1 + j * lda];
+        A[idx1 + j * lda] = A[idx2 + j * lda];
+        __syncthreads();
+
+        // copy temp results back to A
+        A[tx + j * lda] = temp[tx + ty * bdx];
+    }
+}
 
 /** This function returns the outer block size based on defined variables
     tunable by the user (defined in ideal_sizes.hpp) **/
@@ -67,345 +110,155 @@ inline rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bo
 {
     rocblas_int blk;
 
-    if(ISBATCHED)
-    {
-        if(pivot)
-        {
-            if(n <= 72) // n = 16,32,48,64
-            {
-                if(m <= 64)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 88) // n = 80
-            {
-                if(m <= 55)
-                    blk = 64;
-                else
-                    blk = 16;
-            }
-            else // n = 96,112,128,144,160,176,192,208,224,240,256,...
-            {
-                if(m <= 64)
-                    blk = 64;
-                else
-                    blk = 16;
-            }
-        }
-        else
-        {
-            if(n <= 40) // n = 16,32
-            {
-                if(m <= 256)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 72) // n = 48,64
-            {
-                if(m <= 45)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 120) // n = 80,96,112
-            {
-                if(m <= 51)
-                    blk = 48;
-                else
-                    blk = 16;
-            }
-            else if(n <= 152) // n = 128,144
-            {
-                if(m <= 256)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else // n = 160,176,192,208,224,240,256,...
-            {
-                if(m <= 304)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-        }
-    }
+    /** TODO: We need to do especific tuning for batched and non-pivoting cases.
+        Constants could go to ideal_sizes.hpp. Leaving them here for now) **/
 
-    else
-    {
-        if(pivot)
-        {
-            if(n <= 40)
-            {
-                if(m <= 10240)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 56)
-            {
-                if(m <= 64)
-                    blk = 16;
-                else if(m <= 5760)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 72)
-            {
-                if(m <= 96)
-                    blk = 16;
-                else if(m <= 4224)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 88)
-            {
-                if(m <= 96)
-                    blk = 16;
-                else if(m <= 3776)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 104)
-            {
-                if(m <= 96)
-                    blk = 16;
-                else if(m <= 3200)
-                    blk = n;
-                else if(m <= 6784)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else if(n <= 120)
-            {
-                if(m <= 128)
-                    blk = 16;
-                else if(m <= 2880)
-                    blk = n;
-                else if(m <= 6272)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else if(n <= 136)
-            {
-                if(m <= 128)
-                    blk = 16;
-                else if(m <= 2880)
-                    blk = n;
-                else if(m <= 6784)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else if(n <= 152)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m < 176)
-                    blk = 32;
-                else if(m <= 2112)
-                    blk = n;
-                else if(m <= 8064)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else if(n <= 168)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m < 176)
-                    blk = 32;
-                else if(m <= 1568)
-                    blk = n;
-                else if(m <= 10496)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else if(n <= 184)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m < 208)
-                    blk = 32;
-                else if(m <= 1312)
-                    blk = n;
-                else if(m <= 2016)
-                    blk = 96;
-                else if(m <= 8960)
-                    blk = 32;
-                else
-                    blk = 16;
-            }
-            else if(n <= 200)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m < 256)
-                    blk = 32;
-                else if(m <= 1024)
-                    blk = n;
-                else if(m <= 1888)
-                    blk = 96;
-                else
-                    blk = 32;
-            }
-            else if(n <= 216)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m < 256)
-                    blk = 32;
-                else if(m <= 1376)
-                    blk = n;
-                else
-                    blk = 32;
-            }
-            else if(n <= 232)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m <= 256)
-                    blk = 32;
-                else if(m <= 928)
-                    blk = n;
-                else if(m <= 1312)
-                    blk = 128;
-                else
-                    blk = 32;
-            }
-            else if(n <= 248)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m <= 256)
-                    blk = 32;
-                else if(m <= 800)
-                    blk = n;
-                else if(m <= 1568)
-                    blk = 128;
-                else
-                    blk = 32;
-            }
-            else if(n <= 264)
-            {
-                if(m < 128)
-                    blk = 16;
-                else if(m <= 320)
-                    blk = 32;
-                else if(m <= 1440)
-                    blk = 128;
-                else
-                    blk = 32;
-            }
-            else
-            {
-                if(m < 128)
-                    blk = 16;
-                else
-                    blk = 32;
-            }
-        }
-        else
-        {
-            if(n <= 56) // n = 16,32,48
-            {
-                blk = n;
-            }
-            else if(n <= 72) // n = 64
-            {
-                if(m <= 8192)
-                    blk = n;
-                else
-                    blk = 32;
-            }
-            else if(n <= 88) // n = 80
-            {
-                if(m <= 64)
-                    blk = 64;
-                else if(m <= 2048)
-                    blk = 16;
-                else if(m <= 4992)
-                    blk = n;
-                else
-                    blk = 16;
-            }
-            else if(n <= 104) // n = 96
-            {
-                if(m <= 64)
-                    blk = 64;
-                else
-                    blk = 32;
-            }
-            else if(n <= 152) // n = 112,128,144
-            {
-                if(m < 64)
-                    blk = 80;
-                else
-                    blk = 32;
-            }
-            else // n = 160,176,192,208,224,240,256,...
-            {
-                if(m < 64)
-                    blk = 96;
-                else
-                    blk = 32;
-            }
-        }
-    }
+    // clang-format off
+    //if(ISBATCHED)
+    //{
+    //    if(pivot)
+    //    {
+    //    }
+    //    else
+    //    {
+    //    }
+    //}
+    //else
+    //{
+    //    if(pivot)
+    //    {
+            rocblas_int M = 9;
+            rocblas_int N = 5;
+            rocblas_int intervalsM[9] = {128, 256, 512, 640, 832, 1024, 1536, 4096, 8192};
+            rocblas_int intervalsN[5] = {48, 96, 192, 240, 320};
+            rocblas_int size[10][6] = {{ 0,  0, 16, 16, 16, 16},
+                                       { 0, 32, 16, 16, 16, 16},
+                                       {16,  8, 16, 16, 16, 16},
+                                       { 8,  8,  8,  8, 16, 16},
+                                       { 8,  8,  8,  8,  8, 16},
+                                       { 8,  8,  8,  8,  8,  8},
+                                       { 0, 16, 16, 16, 16, 16},
+                                       { 0, 16, 32, 32, 32, 32},
+                                       {16, 16, 16, 32, 32, 32},
+                                       {16, 16, 16, 16, 32, 32}};
+            blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+    //    }
+    //    else
+    //    {
+    //    }
+    //}
+    // clang-format on
+
+    if(blk == 0 || m < n)
+        blk = n;
 
     return blk;
 }
 
-/** Execute all permutations dictated by the panel factorization
-    in parallel (concurrency by rows and columns) **/
-template <typename T, typename U>
-ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int m,
-                                          const rocblas_int n,
-                                          const rocblas_int offset,
-                                          const rocblas_int blk,
-                                          U AA,
-                                          const rocblas_int shiftA,
-                                          const rocblas_int lda,
-                                          const rocblas_stride strideA,
-                                          rocblas_int* pividx)
+/** This is the implementation of the factorization of the
+    panel blocks in getrf **/
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+rocblas_status getrf_panelLU(rocblas_handle handle,
+                             const rocblas_int mm,
+                             const rocblas_int nn,
+                             const rocblas_int n,
+                             U A,
+                             const rocblas_int r_shiftA,
+                             const rocblas_int lda,
+                             const rocblas_stride strideA,
+                             rocblas_int* ipiv,
+                             const rocblas_int shiftP,
+                             const rocblas_stride strideP,
+                             rocblas_int* info,
+                             const rocblas_int batch_count,
+                             const bool pivot,
+                             T* scalars,
+                             void* work1,
+                             void* work2,
+                             void* work3,
+                             void* work4,
+                             const bool optim_mem,
+                             T* pivotval,
+                             rocblas_int* pivotidx,
+                             const rocblas_int offset,
+                             rocblas_int* permut_idx,
+                             const rocblas_stride stridePI)
 {
-    int id = hipBlockIdx_z;
-    int tx = hipThreadIdx_x;
-    int ty = hipThreadIdx_y;
-    int bdx = hipBlockDim_x;
-    int j = hipBlockIdx_y * hipBlockDim_y + ty;
-    if(j >= offset)
-        j += blk;
+    static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
-    if(j < n)
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    // constants to use when calling rocablas functions
+    T one = 1; // constant 1 in host
+    T minone = -1; // constant -1 in host
+
+    // r_shiftA is the row where the panel-block starts,
+    // the actual position of the panel-block in the matrix is:
+    rocblas_int shiftA = r_shiftA + idx2D(0, offset, lda);
+
+    rocblas_int blk = getrf_get_innerBlkSize<ISBATCHED>(mm, nn, pivot);
+    rocblas_int jb;
+    rocblas_int dimx, dimy, blocks, blocksy;
+    dim3 grid, threads;
+    size_t lmemsize;
+
+    // Main loop
+    for(rocblas_int k = 0; k < nn; k += blk)
     {
-        // batch instance
-        T* A = load_ptr_batch(AA, id, shiftA, strideA);
-        rocblas_int* piv = pividx + id * m;
+        jb = min(nn - k, blk); // number of columns/pivots in the inner block
 
-        // shared mem for temporary values
-        extern __shared__ double lmem[];
-        T* temp = (T*)lmem;
+        // factorize block
+        rocsolver_getf2_template<ISBATCHED, T>(handle, mm - k, jb, A, shiftA + idx2D(k, k, lda),
+                                               lda, strideA, ipiv, shiftP + k, strideP, info,
+                                               batch_count, scalars, pivotval, pivotidx, pivot,
+                                               offset + k, permut_idx, stridePI);
 
-        // do permutations in parallel (each tx perform a row swap)
-        rocblas_int idx1 = piv[tx];
-        rocblas_int idx2 = piv[idx1];
-        temp[tx + ty * bdx] = A[idx1 + j * lda];
-        A[idx1 + j * lda] = A[idx2 + j * lda];
-        __syncthreads();
+        if(pivot)
+        {
+            dimx = jb;
+            dimy = 1024 / dimx;
+            blocks = (n - jb - 1) / dimy + 1;
+            grid = dim3(1, blocks, batch_count);
+            threads = dim3(dimx, dimy, 1);
+            lmemsize = dimx * dimy * sizeof(T);
 
-        // copy temp results back to A
-        A[tx + j * lda] = temp[tx + ty * bdx];
+            // swap rows
+            ROCSOLVER_LAUNCH_KERNEL(getrf_row_permutate<T>, grid, threads, lmemsize, stream, n,
+                                    offset + k, jb, A, r_shiftA + k, lda, strideA, permut_idx,
+                                    stridePI);
+        }
+
+        // update trailing sub-block
+        if(k + jb < nn)
+        {
+            rocsolver_trsm<BATCHED, STRIDED, T>(handle, jb, nn - k - jb, A, shiftA + idx2D(k, k, lda),
+                                                shiftA + idx2D(k, k + jb, lda), lda, strideA,
+                                                batch_count, optim_mem, work1, work2, work3, work4);
+
+            if(k + jb < mm)
+                rocblasCall_gemm<BATCHED, STRIDED, T>(
+                    handle, rocblas_operation_none, rocblas_operation_none, mm - k - jb,
+                    nn - k - jb, jb, &minone, A, shiftA + idx2D(k + jb, k, lda), lda, strideA, A,
+                    shiftA + idx2D(k, k + jb, lda), lda, strideA, &one, A,
+                    shiftA + idx2D(k + jb, k + jb, lda), lda, strideA, batch_count, nullptr);
+            /** This would be the call to the internal gemm, leaving it
+                    commented here until we are sure it won't be needed **/
+            /*dimx = std::min({mm - k - jb, (4096 / jb) / 2, 32});
+                dimy = std::min({nn - k - jb, (4096 / jb) / 2, 32});
+                blocks = (mm - k - jb - 1) / dimx + 1;
+                blocksy = (nn - k - jb - 1) / dimy + 1;
+                grid = dim3(blocks, blocksy, batch_count);
+                threads = dim3(dimx, dimy, 1);
+                lmemsize = jb * (dimx + dimy) * sizeof(T);
+                hipLaunchKernelGGL(gemm_kernel<T>, grid, threads, lmemsize, stream, mm - k - jb,
+                                   nn - k - jb, jb, A, shiftA + idx2D(k + jb, k, lda),
+                                   shiftA + idx2D(k, k + jb, lda),
+                                   shiftA + idx2D(k + jb, k + jb, lda), lda, strideA);*/
+        }
     }
+
+    return rocblas_status_success;
 }
 
 /** Return the sizes of the different workspace arrays **/
@@ -445,8 +298,10 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
 
     rocblas_int dim = min(m, n);
     rocblas_int blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
-
     if(blk == 1)
+        blk = dim;
+
+    if(blk == 0)
     {
         // requirements for one single GETF2
         rocsolver_getf2_getMemorySize<ISBATCHED, T>(m, n, pivot, batch_count, size_scalars,
@@ -462,24 +317,18 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
     }
     else
     {
-        // requirements for calling GETF2 for the sub blocks
-        rocsolver_getf2_getMemorySize<ISBATCHED, T>(m, blk, pivot, batch_count, size_scalars,
-                                                    size_pivotval, size_pivotidx);
+        // requirements for largest possible GETF2 for the sub blocks
+        // (largest block panel dimension is 512)
+        rocsolver_getf2_getMemorySize<ISBATCHED, T>(m, min(dim, 512), pivot, batch_count,
+                                                    size_scalars, size_pivotval, size_pivotidx);
 
-        // to store info about singularity and pivots of sub blocks
+        // extra workspace to store info about singularity and pivots of sub blocks
         *size_iinfo = sizeof(rocblas_int) * batch_count;
         *size_iipiv = pivot ? m * sizeof(rocblas_int) * batch_count : 0;
 
-        // extra workspace (for calling TRSM)
-        // (Note: TRSM workspace size is less than expected when the number of rows is multiple of 128.
-        //  For this reason, when trying to set up a workspace that fits all the TRSM calls for m <= blk,
-        //  blk cannot be multiple of 128.)
-        rocblas_int mm = (blk % 128 != 0) ? blk : blk + 1;
-        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, mm, n, batch_count, size_work1,
-                                         size_work2, size_work3, size_work4);
-
-        // always allocate all required memory for TRSM optimal performance
-        *optim_mem = true;
+        // extra workspace for calling largest possible TRSM
+        rocsolver_trsm_mem<BATCHED, T>(rocblas_side_left, min(dim, 512), n, batch_count, size_work1,
+                                       size_work2, size_work3, size_work4, optim_mem);
     }
 }
 
@@ -519,7 +368,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
     rocblas_int dim = min(m, n);
-    rocblas_int blocks;
+    rocblas_int blocks, blocksy;
     dim3 grid, threads;
 
     // quick return if no dimensions
@@ -535,7 +384,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     // size of outer blocks
     rocblas_int blk = getrf_get_blksize<ISBATCHED>(dim, pivot);
 
-    if(blk == 1)
+    if(blk == 0)
         return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
                                                       shiftP, strideP, info, batch_count, scalars,
                                                       pivotval, pivotidx, pivot);
@@ -544,89 +393,61 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
+    T one = 1;
+    T minone = -1;
 
-    // constants to use when calling rocablas functions
-    T one = 1; // constant 1 in host
-    T minone = -1; // constant -1 in host
-
-    rocblas_int jb, jb1, blk1, dimx, dimy;
+    rocblas_int jb, dimx, dimy;
+    rocblas_int nextpiv, mm, nn;
     size_t lmemsize;
+    rocblas_int j = 0;
 
-    // MAIN LOOP =====>
+    if(blk == 1)
+        blk = dim;
+
+    // MAIN LOOP
     for(rocblas_int j = 0; j < dim; j += blk)
     {
-        jb = min(dim - j, blk); // number of columns/pivots in the block
-        blk1 = getrf_get_innerBlkSize<ISBATCHED>(m - j, jb, pivot); // size of inner blocks
+        jb = min(dim - j, blk);
 
-        // LOOP FACTORIZING INNER BLOCKS =====>
-        for(rocblas_int k = 0; k < jb; k += blk1)
-        {
-            jb1 = min(jb - k, blk1); // number of columns/pivots in the inner block
-
-            // factorize inner block panel
-            rocsolver_getf2_template<ISBATCHED, T>(
-                handle, m - j - k, jb1, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA, ipiv,
-                shiftP + j + k, strideP, info, batch_count, scalars, pivotval, pivotidx, pivot,
-                j + k, iipiv, m);
-
-            if(pivot)
-            {
-                dimx = jb1;
-                dimy = 1024 / dimx;
-                blocks = (n - 1 - jb1) / dimy + 1;
-                grid = dim3(1, blocks, batch_count);
-                threads = dim3(dimx, dimy, 1);
-                lmemsize = dimx * dimy * sizeof(T);
-
-                // swap rows
-                ROCSOLVER_LAUNCH_KERNEL(getrf_row_permutate<T>, grid, threads, lmemsize, stream, m,
-                                        n, j + k, jb1, A, shiftA + idx2D(j + k, 0, lda), lda,
-                                        strideA, iipiv);
-            }
-
-            // update trailing sub-block
-            if(k + jb1 < jb)
-            {
-                rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
-                                             rocblas_operation_none, rocblas_diagonal_unit, jb1,
-                                             jb - k - jb1, &one, A,
-                                             shiftA + idx2D(j + k, j + k, lda), lda, strideA, A,
-                                             shiftA + idx2D(j + k, j + k + jb1, lda), lda, strideA,
-                                             batch_count, optim_mem, work1, work2, work3, work4);
-
-                if(k + jb1 < m - j)
-                {
-                    rocblasCall_gemm<BATCHED, STRIDED, T>(
-                        handle, rocblas_operation_none, rocblas_operation_none, m - j - k - jb1,
-                        jb - k - jb1, jb1, &minone, A, shiftA + idx2D(j + k + jb1, j + k, lda), lda,
-                        strideA, A, shiftA + idx2D(j + k, j + k + jb1, lda), lda, strideA, &one, A,
-                        shiftA + idx2D(j + k + jb1, j + k + jb1, lda), lda, strideA, batch_count,
-                        nullptr);
-                }
-            }
-        }
-        // <===== (LOOP FACTORIZING INNER BLOCKS)
+        // factorize inner block panel
+        getrf_panelLU<BATCHED, STRIDED, T>(handle, m - j, jb, n, A, shiftA + j, lda, strideA, ipiv,
+                                           shiftP + j, strideP, info, batch_count, pivot, scalars,
+                                           work1, work2, work3, work4, optim_mem, pivotval,
+                                           pivotidx, j, iipiv, m);
 
         // update trailing matrix
-        if(j + jb < n)
+        nextpiv = j + jb; //position for the matrix update
+        mm = m - nextpiv; //size for the matrix update
+        nn = n - nextpiv; //size for the matrix update
+        if(nextpiv < n)
         {
-            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
-                                         rocblas_operation_none, rocblas_diagonal_unit, jb,
-                                         n - j - jb, &one, A, shiftA + idx2D(j, j, lda), lda,
-                                         strideA, A, shiftA + idx2D(j, j + jb, lda), lda, strideA,
-                                         batch_count, optim_mem, work1, work2, work3, work4);
+            rocsolver_trsm<BATCHED, STRIDED, T>(handle, jb, nn, A, shiftA + idx2D(j, j, lda),
+                                                shiftA + idx2D(j, nextpiv, lda), lda, strideA,
+                                                batch_count, optim_mem, work1, work2, work3, work4);
 
-            if(j + jb < m)
+            if(nextpiv < m)
             {
                 rocblasCall_gemm<BATCHED, STRIDED, T>(
-                    handle, rocblas_operation_none, rocblas_operation_none, m - j - jb, n - j - jb,
-                    jb, &minone, A, shiftA + idx2D(j + jb, j, lda), lda, strideA, A,
-                    shiftA + idx2D(j, j + jb, lda), lda, strideA, &one, A,
-                    shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count, nullptr);
+                    handle, rocblas_operation_none, rocblas_operation_none, mm, nn, jb, &minone, A,
+                    shiftA + idx2D(nextpiv, j, lda), lda, strideA, A,
+                    shiftA + idx2D(j, nextpiv, lda), lda, strideA, &one, A,
+                    shiftA + idx2D(nextpiv, nextpiv, lda), lda, strideA, batch_count, nullptr);
+                /** This would be the call to the internal gemm, leaving it
+                        commented here until we are sure it won't be needed **/
+                /*dimx = std::min({mm, (4096 / jb) / 2, 32});
+                    dimy = std::min({nn, (4096 / jb) / 2, 32});
+                    blocks = (mm - 1) / dimx + 1;
+                    blocksy = (nn - 1) / dimy + 1;
+                    grid = dim3(blocks, blocksy, batch_count);
+                    threads = dim3(dimx, dimy, 1);
+                    lmemsize = jb * (dimx + dimy) * sizeof(T);
+                    hipLaunchKernelGGL(gemm_kernel<T>, grid, threads, lmemsize, stream, mm,
+                                       nn, jb, A, shiftA + idx2D(nextpiv, j, lda),
+                                       shiftA + idx2D(j, nextpiv, lda),
+                                       shiftA + idx2D(nextpiv, nextpiv, lda), lda, strideA);*/
             }
         }
     }
-    // <===== (MAIN LOOP)
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
