@@ -23,13 +23,13 @@
     which is instrumental for parallel row permutations in GETRF **/
 template <typename T>
 ROCSOLVER_KERNEL void
-    getf2_permut_init(const rocblas_int m, rocblas_int* permutA, const rocblas_stride stride)
+    getf2_permut_init(const rocblas_int m, rocblas_int* permutA, const rocblas_stride stridePI)
 {
     int id = hipBlockIdx_y;
     int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
     // batch instance
-    rocblas_int* permut = permutA + id * stride;
+    rocblas_int* permut = permutA + id * stridePI;
 
     // initialize
     if(i < m)
@@ -53,7 +53,7 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
                                               rocblas_int* info,
                                               const rocblas_int offset,
                                               rocblas_int* permut_idx,
-                                              const rocblas_stride stride)
+                                              const rocblas_stride stridePI)
 {
     using S = decltype(std::real(T{}));
 
@@ -80,7 +80,7 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
             // update row order of final permutated matrix
             if(permut_idx)
             {
-                rocblas_int* permut = permut_idx + id * stride;
+                rocblas_int* permut = permut_idx + id * stridePI;
                 if(exch != j)
                     swap(permut[j], permut[exch]);
             }
@@ -334,7 +334,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                                         const bool pivot,
                                         const rocblas_int offset = 0,
                                         rocblas_int* permut_idx = nullptr,
-                                        const rocblas_stride stride = 0)
+                                        const rocblas_stride stridePI = 0)
 {
     ROCSOLVER_ENTER("getf2", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
                     "bc:", batch_count);
@@ -366,7 +366,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         threads = dim3(256, 1, 1);
         grid = dim3(blocks, batch_count, 1);
         ROCSOLVER_LAUNCH_KERNEL(getf2_permut_init<T>, grid, threads, 0, stream, m, permut_idx,
-                                stride);
+                                stridePI);
     }
 
 #ifdef OPTIMAL
@@ -376,7 +376,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         if((n <= 20) || (n <= 28 && m > 4) || (n <= 36 && m > 10) || (n <= 44 && m > 14)
            || (n <= 52 && m > 16) || (n <= 60 && m > 32))
             return getf2_run_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
-                                      info, batch_count, pivot, offset, permut_idx, stride);
+                                      info, batch_count, pivot, offset, permut_idx, stridePI);
     }
     else
     {
@@ -384,7 +384,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         if((n <= 36 && m <= 1024) || (n <= 44 && m <= 600) || (n <= 84 && m <= 512)
            || (n <= 92 && m <= 472) || (n <= 100 && m <= 344) || (n <= 128 && m <= 256))
             return getf2_run_panel<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
-                                      info, batch_count, pivot, offset, permut_idx, stride);
+                                      info, batch_count, pivot, offset, permut_idx, stridePI);
     }
 #endif
 
@@ -415,7 +415,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
             // adjust pivot indices, apply row interchanges and check singularity
             ROCSOLVER_LAUNCH_KERNEL(getf2_check_singularity<T>, gridPivot, threadsPivot, 0, stream,
                                     n, j, A, shiftA, lda, strideA, ipiv, shiftP, strideP, pivotval,
-                                    pivotidx, info, offset, permut_idx, stride);
+                                    pivotidx, info, offset, permut_idx, stridePI);
         }
         else
             // check singularity
