@@ -54,15 +54,15 @@ protected:
     double* dA;
     rocblas_int *dP, *dinfo;
 
-    const rocblas_int m = 300;
-    const rocblas_int n = 300;
-    const rocblas_int m_small = 80;
-    const rocblas_int n_small = 80;
+    const rocblas_int m = 1500;
+    const rocblas_int n = 1500;
+    const rocblas_int m_small = 750;
+    const rocblas_int n_small = 750;
     const rocblas_int lda = m;
     const rocblas_stride stA = lda * n;
     const rocblas_stride stP = n;
-    const rocblas_int bc = 500;
-    const rocblas_int bc_small = 25;
+    const rocblas_int bc = 8;
+    const rocblas_int bc_small = 8;
 };
 
 /*************************************/
