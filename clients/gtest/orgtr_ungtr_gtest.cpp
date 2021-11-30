@@ -18,7 +18,7 @@ typedef std::tuple<vector<int>, int> orgtr_tuple;
 // case when n = 0 and uplo = 'U' will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
-const vector<int> uplo = {0, 1};
+const vector<int> uplo_range = {0, 1};
 
 // for checkin_lapack tests
 const vector<vector<int>> size_range = {
@@ -102,10 +102,10 @@ TEST_P(UNGTR, __double_complex)
     run_tests<rocblas_double_complex>();
 }
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, ORGTR, Combine(ValuesIn(large_size_range), ValuesIn(uplo)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, ORGTR, Combine(ValuesIn(large_size_range), ValuesIn(uplo_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORGTR, Combine(ValuesIn(size_range), ValuesIn(uplo)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORGTR, Combine(ValuesIn(size_range), ValuesIn(uplo_range)));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, UNGTR, Combine(ValuesIn(large_size_range), ValuesIn(uplo)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, UNGTR, Combine(ValuesIn(large_size_range), ValuesIn(uplo_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNGTR, Combine(ValuesIn(size_range), ValuesIn(uplo)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNGTR, Combine(ValuesIn(size_range), ValuesIn(uplo_range)));
