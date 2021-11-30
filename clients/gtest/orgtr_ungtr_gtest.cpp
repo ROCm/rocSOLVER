@@ -102,10 +102,14 @@ TEST_P(UNGTR, __double_complex)
     run_tests<rocblas_double_complex>();
 }
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, ORGTR, Combine(ValuesIn(large_size_range), ValuesIn(uplo_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         ORGTR,
+                         Combine(ValuesIn(large_size_range), ValuesIn(uplo_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, ORGTR, Combine(ValuesIn(size_range), ValuesIn(uplo_range)));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, UNGTR, Combine(ValuesIn(large_size_range), ValuesIn(uplo_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         UNGTR,
+                         Combine(ValuesIn(large_size_range), ValuesIn(uplo_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, UNGTR, Combine(ValuesIn(size_range), ValuesIn(uplo_range)));
