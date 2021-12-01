@@ -38,7 +38,7 @@ def runCI =
     {
         platform, project->
 
-        def gfilter = '*checkin_lapack*'
+        def gfilter = 'checkin*'
         commonGroovy.runTestCommand(platform, project, gfilter)
     }
 
