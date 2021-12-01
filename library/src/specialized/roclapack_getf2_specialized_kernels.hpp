@@ -55,7 +55,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     // shared memory (for communication between threads in group)
     // (SHUFFLES DO NOT IMPROVE PERFORMANCE IN THIS CASE)
     extern __shared__ double lmem[];
-    T* common = (T*)lmem;
+    T* common = reinterpret_cast<T*>(lmem);
     common += ty * max(m, DIM);
 
     // local variables
@@ -163,7 +163,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     // shared memory (for communication between threads in group)
     // (SHUFFLES DO NOT IMPROVE PERFORMANCE IN THIS CASE)
     extern __shared__ double lmem[];
-    T* common = (T*)lmem;
+    T* common = reinterpret_cast<T*>(lmem);
     T* val = common + hipBlockDim_y * DIM;
     common += ty * DIM;
 
@@ -247,10 +247,10 @@ ROCSOLVER_KERNEL void getf2_panel_kernel(const rocblas_int m,
 
     // shared memory (for communication between threads in group)
     extern __shared__ double lmem[];
-    T* x = (T*)lmem;
+    T* x = reinterpret_cast<T*>(lmem);
     T* y = x + bdx;
-    S* sval = (S*)(y + n);
-    rocblas_int* sidx = (rocblas_int*)(sval + bdx);
+    S* sval = reinterpret_cast<S*>(y + n);
+    rocblas_int* sidx = reinterpret_cast<rocblas_int*>(sval + bdx);
     __shared__ T val;
 
     // local variables
@@ -404,7 +404,7 @@ ROCSOLVER_KERNEL void getf2_npvt_panel_kernel(const rocblas_int m,
 
     // shared memory (for communication between threads in group)
     extern __shared__ double lmem[];
-    T* x = (T*)lmem;
+    T* x = reinterpret_cast<T*>(lmem);
     T* y = x + bdx;
     __shared__ T val;
 
@@ -499,7 +499,7 @@ ROCSOLVER_KERNEL void getf2_scale_update_kernel(const rocblas_int m,
     // shared data arrays
     T pivot, val;
     extern __shared__ double lmem[];
-    T* x = (T*)lmem;
+    T* x = reinterpret_cast<T*>(lmem);
     T* y = x + hipBlockDim_x;
 
     // batch instance

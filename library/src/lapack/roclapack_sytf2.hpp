@@ -30,7 +30,7 @@ __device__ void sytf2_device_upper(const rocblas_int tid,
     __shared__ rocblas_int _info;
     int i, j;
     int k = n - 1;
-    int kstep, kp, kk;
+    int kp, kk;
 
     // shared variables for iamax
     __shared__ S absakk;
@@ -43,7 +43,7 @@ __device__ void sytf2_device_upper(const rocblas_int tid,
 
     while(k >= 0)
     {
-        kstep = 1;
+        int kstep = 1;
 
         // find max off-diagonal entry in column k
         iamax<MAX_THDS>(tid, k, A + k * lda, 1, sval, sidx);
@@ -201,7 +201,7 @@ __device__ void sytf2_device_lower(const rocblas_int tid,
     __shared__ rocblas_int _info;
     int i, j;
     int k = 0;
-    int kstep, kp, kk;
+    int kp, kk;
 
     // shared variables for iamax
     __shared__ S absakk;
@@ -214,7 +214,7 @@ __device__ void sytf2_device_lower(const rocblas_int tid,
 
     while(k < n)
     {
-        kstep = 1;
+        int kstep = 1;
 
         // find max off-diagonal entry in column k
         iamax<MAX_THDS>(tid, n - k - 1, A + (k + 1) + k * lda, 1, sval, sidx);
