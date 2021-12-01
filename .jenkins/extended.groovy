@@ -40,7 +40,7 @@ def runCI =
     {
         platform, project->
 
-        def gfilter = '*daily_lapack*'
+        def gfilter = 'daily*'
         commonGroovy.runTestCommand(platform, project, gfilter)
     }
 

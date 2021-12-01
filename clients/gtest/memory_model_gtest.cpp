@@ -27,7 +27,7 @@ static bool unset_environment_variable(const char* name)
 #endif
 }
 
-class MEMORY_MODEL : public ::testing::Test
+class checkin_misc_MEMORY_MODEL : public ::testing::Test
 {
 protected:
     void SetUp() override
@@ -54,21 +54,21 @@ protected:
     double* dA;
     rocblas_int *dP, *dinfo;
 
-    const rocblas_int m = 300;
-    const rocblas_int n = 300;
-    const rocblas_int m_small = 80;
-    const rocblas_int n_small = 80;
+    const rocblas_int m = 1500;
+    const rocblas_int n = 1500;
+    const rocblas_int m_small = 750;
+    const rocblas_int n_small = 750;
     const rocblas_int lda = m;
     const rocblas_stride stA = lda * n;
     const rocblas_stride stP = n;
-    const rocblas_int bc = 500;
-    const rocblas_int bc_small = 25;
+    const rocblas_int bc = 8;
+    const rocblas_int bc_small = 8;
 };
 
 /*************************************/
 /***** rocblas_managed (default) *****/
 /*************************************/
-TEST_F(MEMORY_MODEL, rocblas_managed)
+TEST_F(checkin_misc_MEMORY_MODEL, rocblas_managed)
 {
     size_t size, size1;
     rocblas_status status;
@@ -139,7 +139,7 @@ TEST_F(MEMORY_MODEL, rocblas_managed)
     EXPECT_EQ(rocblas_destroy_handle(handle), rocblas_status_success);
 }
 
-TEST_F(MEMORY_MODEL, user_managed)
+TEST_F(checkin_misc_MEMORY_MODEL, user_managed)
 {
     size_t size;
     rocblas_status status;
@@ -273,7 +273,7 @@ TEST_F(MEMORY_MODEL, user_managed)
 /*************************************/
 /******** user owned workspace *******/
 /*************************************/
-TEST_F(MEMORY_MODEL, user_owned)
+TEST_F(checkin_misc_MEMORY_MODEL, user_owned)
 {
     size_t size;
     rocblas_status status;
