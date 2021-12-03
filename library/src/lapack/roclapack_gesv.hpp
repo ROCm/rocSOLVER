@@ -47,7 +47,8 @@ rocblas_status rocsolver_gesv_argCheck(rocblas_handle handle,
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void rocsolver_gesv_getMemorySize(const rocblas_int n,
+void rocsolver_gesv_getMemorySize(
+                                  const rocblas_int n,
                                   const rocblas_int nrhs,
                                   const rocblas_int batch_count,
                                   size_t* size_scalars,
@@ -88,7 +89,7 @@ void rocsolver_gesv_getMemorySize(const rocblas_int n,
         size_pivotval, size_pivotidx, size_iipiv, size_iinfo, &opt1);
 
     // workspace required for calling GETRS
-    rocsolver_getrs_getMemorySize<BATCHED, T>(n, nrhs, batch_count, &w1, &w2, &w3, &w4, &opt2);
+    rocsolver_getrs_getMemorySize<BATCHED, T>(rocblas_operation_none, n, nrhs, batch_count, &w1, &w2, &w3, &w4, &opt2);
 
     *size_work1 = std::max(*size_work1, w1);
     *size_work2 = std::max(*size_work2, w2);

@@ -66,7 +66,8 @@ void rocsolver_potrs_getMemorySize(const rocblas_int n,
     }
 
     // workspace required for calling TRSM
-    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, n, nrhs, batch_count, size_work1,
+    // rocblas_operation_none will always allocate at least as much as the transpose
+    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, rocblas_operation_none, n, nrhs, batch_count, size_work1,
                                      size_work2, size_work3, size_work4);
 
     // always allocate all required memory for TRSM optimal performance

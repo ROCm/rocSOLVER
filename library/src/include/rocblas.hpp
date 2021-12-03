@@ -1549,6 +1549,7 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
 // trsm memory sizes
 template <bool BATCHED, typename T>
 void rocblasCall_trsm_mem(rocblas_side side,
+                          rocblas_operation transA,
                           rocblas_int m,
                           rocblas_int n,
                           rocblas_int batch_count,
@@ -1562,8 +1563,8 @@ void rocblasCall_trsm_mem(rocblas_side side,
         no_opt_size could be used in the future if we generalize the use of
         rocblas_workmode parameter **/
 
-    rocblas_internal_trsm_workspace_size<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
-        side, m, n, batch_count, 0, x_temp, x_temp_arr, invA, invA_arr, &no_opt_size);
+    rocblas_internal_trsm_workspace_size<ROCBLAS_TRSM_BLOCK, ROCBLAS_TRSM_MEM_GUARD, BATCHED, T>(
+        side, transA, m, n, batch_count, 0, x_temp, x_temp_arr, invA, invA_arr, &no_opt_size);
 }
 
 // trsm
@@ -1598,7 +1599,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                   "bc:", batch_count);
 
     U supplied_invA = nullptr;
-    return rocblas_internal_trsm_template<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
+    return rocblas_internal_trsm_template<ROCBLAS_TRSM_BLOCK, ROCBLAS_TRSM_MEM_GUARD, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, alpha, cast2constType(A), offset_A, lda, stride_A,
         B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA, invA_arr,
         cast2constType(supplied_invA), 0);
@@ -1645,7 +1646,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                             batch_count);
 
     U supplied_invA = nullptr;
-    return rocblas_internal_trsm_template<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
+    return rocblas_internal_trsm_template<ROCBLAS_TRSM_BLOCK, ROCBLAS_TRSM_MEM_GUARD, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, alpha, cast2constType((U)workArr), offset_A, lda,
         stride_A, B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA,
         invA_arr, cast2constType(supplied_invA), 0);

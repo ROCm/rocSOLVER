@@ -78,7 +78,10 @@ void rocsolver_sygvd_hegvd_getMemorySize(const rocblas_eform itype,
         if(itype == rocblas_eform_ax || itype == rocblas_eform_abx)
         {
             // requirements for calling TRSM
-            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, n, n, batch_count, &temp1, &temp2,
+            rocblas_operation trans
+                = (uplo == rocblas_fill_upper ? rocblas_operation_none
+                                              : rocblas_operation_conjugate_transpose);
+            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, trans, n, n, batch_count, &temp1, &temp2,
                                              &temp3, &temp4);
             *size_work1 = max(*size_work1, temp1);
             *size_work2 = max(*size_work2, temp2);
