@@ -2,8 +2,8 @@
   "registries": [
     {
       "kind": "git",
-      "baseline": "c0ed6c5c2828f6dd1fbf2f554445308fce84ae89",
-      "repository": "https://github.com/cgmb/rocm-vcpkg",
+      "baseline": "d9ab59cf053aafec41b990793c1e9a704d0efceb",
+      "repository": "git@github.com:ROCmSoftwarePlatform/rocm-vcpkg-registry.git",
       "packages": [
         "cblas",
         "lapack-reference",
