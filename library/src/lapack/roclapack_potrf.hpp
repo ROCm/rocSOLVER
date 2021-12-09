@@ -73,11 +73,13 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
 
         // extra requirements for calling TRSM
         if(uplo == rocblas_fill_upper)
-            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, jb, n - jb, batch_count, &s2,
-                                             size_work2, size_work3, size_work4);
+            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left,
+                                             rocblas_operation_conjugate_transpose, jb, n - jb,
+                                             batch_count, &s2, size_work2, size_work3, size_work4);
         else
-            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, n - jb, jb, batch_count, &s2,
-                                             size_work2, size_work3, size_work4);
+            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right,
+                                             rocblas_operation_conjugate_transpose, n - jb, jb,
+                                             batch_count, &s2, size_work2, size_work3, size_work4);
 
         *size_work1 = max(s1, s2);
 

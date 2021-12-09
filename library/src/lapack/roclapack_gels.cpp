@@ -47,7 +47,7 @@ rocblas_status rocsolver_gels_impl(rocblas_handle handle,
     // extra requirements for calling ORMQR/ORMLQ and to copy B
     size_t size_ipiv;
     rocsolver_gels_getMemorySize<false, false, T>(
-        m, n, nrhs, batch_count, &size_scalars, &size_work_x_temp, &size_workArr_temp_arr,
+        trans, m, n, nrhs, batch_count, &size_scalars, &size_work_x_temp, &size_workArr_temp_arr,
         &size_diag_trfac_invA, &size_trfact_workTrmm_invA_arr, &size_ipiv, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
