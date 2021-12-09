@@ -1549,6 +1549,7 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
 // trsm memory sizes
 template <bool BATCHED, typename T>
 void rocblasCall_trsm_mem(rocblas_side side,
+                          rocblas_operation transA,
                           rocblas_int m,
                           rocblas_int n,
                           rocblas_int batch_count,
@@ -1563,7 +1564,7 @@ void rocblasCall_trsm_mem(rocblas_side side,
         rocblas_workmode parameter **/
 
     rocblas_internal_trsm_workspace_size<ROCBLAS_TRSM_BLOCK, BATCHED, T>(
-        side, m, n, batch_count, 0, x_temp, x_temp_arr, invA, invA_arr, &no_opt_size);
+        side, transA, m, n, batch_count, 0, x_temp, x_temp_arr, invA, invA_arr, &no_opt_size);
 }
 
 // trsm
