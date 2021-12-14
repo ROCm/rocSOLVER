@@ -216,8 +216,8 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     t1 = n * blk * sizeof(T) * batch_count;
 
     // requirements for calling TRSM
-    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, n, blk + 1, batch_count, &w1a, &w2a, &w3a,
-                                     &w4a);
+    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none, n, blk + 1,
+                                     batch_count, &w1a, &w2a, &w3a, &w4a);
 
     *size_work1 = max(w1a, w1b);
     *size_work2 = max(w2a, w2b);

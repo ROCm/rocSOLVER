@@ -58,8 +58,9 @@ void rocsolver_trsm_mem(const rocblas_side side,
         //  blk cannot be multiple of 128.)
         //        rocblas_int mm = (blk % 128 != 0) ? blk : blk + 1;
         rocblas_int mm = (m % 128 != 0) ? m : m + 1;
-        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, mm, n, batch_count, size_work1,
-                                         size_work2, size_work3, size_work4);
+        // rocblas_operation doesn't matter here as we're ensuring m is not a multiple of 128 and isn't used in this case
+        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, rocblas_operation_none, mm, n,
+                                         batch_count, size_work1, size_work2, size_work3, size_work4);
     }
     else
     {

@@ -48,7 +48,8 @@ rocblas_status rocsolver_getrs_argCheck(rocblas_handle handle,
 }
 
 template <bool BATCHED, typename T>
-void rocsolver_getrs_getMemorySize(const rocblas_int n,
+void rocsolver_getrs_getMemorySize(rocblas_operation trans,
+                                   const rocblas_int n,
                                    const rocblas_int nrhs,
                                    const rocblas_int batch_count,
                                    size_t* size_work1,
@@ -69,7 +70,7 @@ void rocsolver_getrs_getMemorySize(const rocblas_int n,
     }
 
     // workspace required for calling TRSM
-    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, n, nrhs, batch_count, size_work1,
+    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, trans, n, nrhs, batch_count, size_work1,
                                      size_work2, size_work3, size_work4);
 
     // always allocate all required memory for TRSM optimal performance
