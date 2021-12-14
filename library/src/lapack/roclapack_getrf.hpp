@@ -43,7 +43,7 @@ ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int n,
 
         // shared mem for temporary values
         extern __shared__ double lmem[];
-        T* temp = reinterpret_cast<T*>(lmem);
+        T* temp = (T*)lmem;
 
         // do permutations in parallel (each tx perform a row swap)
         rocblas_int idx1 = piv[tx];

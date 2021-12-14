@@ -854,7 +854,7 @@ ROCSOLVER_KERNEL void gemm_kernel(const rocblas_int m,
 
     // shared mem setup
     extern __shared__ double lmem[];
-    T* a = reinterpret_cast<T*>(lmem);
+    T* a = (T*)lmem;
     T* b = a + k * bdx;
     T c;
 
@@ -912,7 +912,7 @@ ROCSOLVER_KERNEL void trsm2_kernel(const rocblas_int m,
 
     // shared mem setup
     extern __shared__ double lmem[];
-    T* b = reinterpret_cast<T*>(lmem);
+    T* b = (T*)lmem;
     T c;
 
     if(j < n)

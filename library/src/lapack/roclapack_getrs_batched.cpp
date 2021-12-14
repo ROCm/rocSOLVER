@@ -41,7 +41,7 @@ rocblas_status rocsolver_getrs_batched_impl(rocblas_handle handle,
     // size of workspace (for calling TRSM)
     bool optim_mem;
     size_t size_work1, size_work2, size_work3, size_work4;
-    rocsolver_getrs_getMemorySize<true, T>(n, nrhs, batch_count, &size_work1, &size_work2,
+    rocsolver_getrs_getMemorySize<true, T>(trans, n, nrhs, batch_count, &size_work1, &size_work2,
                                            &size_work3, &size_work4, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
