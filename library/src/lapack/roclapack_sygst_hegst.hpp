@@ -59,10 +59,11 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_eform itype,
         if(itype == rocblas_eform_ax)
         {
             // extra requirements for calling TRSM
-            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, n - kb, kb, batch_count, &temp1,
-                                             &temp2, &temp3, &temp4);
-            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, n - kb, kb, batch_count, &temp5,
-                                             &temp6, &temp7, &temp8);
+            // rocblas_operation_none will always allocate at least as much as the transpose
+            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, rocblas_operation_none, n - kb, kb,
+                                             batch_count, &temp1, &temp2, &temp3, &temp4);
+            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none, n - kb, kb,
+                                             batch_count, &temp5, &temp6, &temp7, &temp8);
 
             *size_work_x_temp = max(*size_work_x_temp, max(temp1, temp5));
             *size_workArr_temp_arr = max(*size_workArr_temp_arr, max(temp2, temp6));
