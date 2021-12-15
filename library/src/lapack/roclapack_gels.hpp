@@ -39,7 +39,7 @@ ROCSOLVER_KERNEL void gels_set_zero(const rocblas_int k1,
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void rocsolver_gels_getMemorySize(rocblas_operation trans,
+void rocsolver_gels_getMemorySize(const rocblas_operation trans,
                                   const rocblas_int m,
                                   const rocblas_int n,
                                   const rocblas_int nrhs,
