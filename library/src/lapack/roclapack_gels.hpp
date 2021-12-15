@@ -92,7 +92,7 @@ void rocsolver_gels_getMemorySize(const rocblas_operation trans,
         ROCSOLVER_ASSUME_X(gexxf_scalars == ormxx_scalars, "GELQF and ORMLQ use the same scalars");
     }
 
-    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, std::min(m, n), nrhs, batch_count,
+    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, trans, std::min(m, n), nrhs, batch_count,
                                      &trsm_x_temp, &trsm_x_temp_arr, &trsm_invA, &trsm_invA_arr);
 
     // TODO: rearrange to minimize total size

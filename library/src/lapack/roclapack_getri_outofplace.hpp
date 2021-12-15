@@ -30,8 +30,8 @@ void rocsolver_getri_outofplace_getMemorySize(const rocblas_int n,
     }
 
     // requirements for calling GETRS
-    rocsolver_getrs_getMemorySize<BATCHED, T>(n, n, batch_count, size_work1, size_work2, size_work3,
-                                              size_work4, optim_mem);
+    rocsolver_getrs_getMemorySize<BATCHED, T>(rocblas_operation_none, n, n, batch_count, size_work1,
+                                              size_work2, size_work3, size_work4, optim_mem);
 }
 
 template <typename T>
