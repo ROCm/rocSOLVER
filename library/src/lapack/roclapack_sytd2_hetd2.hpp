@@ -213,10 +213,10 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
     // configure kernels
-    rocblas_int blocks = (n - 1) / BLOCKSIZE + 1;
+    rocblas_int blocks = (n - 1) / BS1 + 1;
     dim3 grid_n(blocks, batch_count);
-    dim3 threads(BLOCKSIZE, 1, 1);
-    blocks = (batch_count - 1) / BLOCKSIZE + 1;
+    dim3 threads(BS1, 1, 1);
+    blocks = (batch_count - 1) / BS1 + 1;
     dim3 grid_b(blocks, 1);
 
     rocblas_stride stridet = 1; //stride for tmptau

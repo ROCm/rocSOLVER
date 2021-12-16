@@ -1,5 +1,5 @@
 /************************************************************************
- * Derived from the BSD3-licensed
+ * Derived from the BS2D3-licensed
  * LAPACK routine (version 3.7.0) --
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
@@ -113,7 +113,7 @@ rocblas_status rocsolver_orgtr_ungtr_template(rocblas_handle handle,
 
     rocblas_stride strideW = rocblas_stride(n - 1) * n / 2; // number of elements to copy
     rocblas_int ldw = n - 1;
-    rocblas_int blocks = (n - 2) / BS + 1;
+    rocblas_int blocks = (n - 2) / BS2 + 1;
 
     if(uplo == rocblas_fill_upper)
     {
@@ -121,13 +121,14 @@ rocblas_status rocsolver_orgtr_ungtr_template(rocblas_handle handle,
         // first superdiagonal and must be shifted left
 
         // copy
-        ROCSOLVER_LAUNCH_KERNEL(copyshift_left<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
-                                stream, true, n - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
+        ROCSOLVER_LAUNCH_KERNEL(copyshift_left<T>, dim3(blocks, blocks, batch_count),
+                                dim3(BS2, BS2), 0, stream, true, n - 1, A, shiftA, lda, strideA,
+                                work, 0, ldw, strideW);
 
         // shift
-        ROCSOLVER_LAUNCH_KERNEL(copyshift_left<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS),
-                                0, stream, false, n - 1, A, shiftA, lda, strideA, work, 0, ldw,
-                                strideW);
+        ROCSOLVER_LAUNCH_KERNEL(copyshift_left<T>, dim3(blocks, blocks, batch_count),
+                                dim3(BS2, BS2), 0, stream, false, n - 1, A, shiftA, lda, strideA,
+                                work, 0, ldw, strideW);
 
         // result
         rocsolver_orgql_ungql_template<BATCHED, STRIDED, T>(
@@ -141,14 +142,14 @@ rocblas_status rocsolver_orgtr_ungtr_template(rocblas_handle handle,
         // first subdiagonal and must be shifted right
 
         // copy
-        ROCSOLVER_LAUNCH_KERNEL(copyshift_right<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS),
-                                0, stream, true, n - 1, A, shiftA, lda, strideA, work, 0, ldw,
-                                strideW);
+        ROCSOLVER_LAUNCH_KERNEL(copyshift_right<T>, dim3(blocks, blocks, batch_count),
+                                dim3(BS2, BS2), 0, stream, true, n - 1, A, shiftA, lda, strideA,
+                                work, 0, ldw, strideW);
 
         // shift
-        ROCSOLVER_LAUNCH_KERNEL(copyshift_right<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS),
-                                0, stream, false, n - 1, A, shiftA, lda, strideA, work, 0, ldw,
-                                strideW);
+        ROCSOLVER_LAUNCH_KERNEL(copyshift_right<T>, dim3(blocks, blocks, batch_count),
+                                dim3(BS2, BS2), 0, stream, false, n - 1, A, shiftA, lda, strideA,
+                                work, 0, ldw, strideW);
 
         // result
         rocsolver_orgqr_ungqr_template<BATCHED, STRIDED, T>(

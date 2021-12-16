@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Derived from the BSD3-licensed
+ * Derived from the BS2D3-licensed
  * LAPACK routine (version 3.7.1) --
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
@@ -11,6 +11,8 @@
 
 #include "rocblas.hpp"
 #include "rocsolver.h"
+
+#define THDS 256 // size of thread-blocks for calling the laswp kernel
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void laswp_kernel(const rocblas_int n,
@@ -113,9 +115,9 @@ rocblas_status rocsolver_laswp_template(rocblas_handle handle,
     if(n == 0 || batch_count == 0)
         return rocblas_status_success;
 
-    rocblas_int blocksPivot = (n - 1) / LASWP_BLOCKSIZE + 1;
+    rocblas_int blocksPivot = (n - 1) / THDS + 1;
     dim3 gridPivot(blocksPivot, batch_count, 1);
-    dim3 threads(LASWP_BLOCKSIZE, 1, 1);
+    dim3 threads(THDS, 1, 1);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);

@@ -18,6 +18,9 @@
  * ===========================================================================
  */
 
+#define BS1 256 // generic 1 dimensional thread-block size used to call common kernels
+#define BS2 32 // generic 2 dimensional thread-block size used to call common kernels
+
 // **********************************************************
 // device functions that are used by many kernels
 // **********************************************************

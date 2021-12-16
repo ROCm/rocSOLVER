@@ -4,20 +4,30 @@
 
 #pragma once
 
-// These are used by different common kernels
-//(TODO: identify functions and name accordingly)
-#define BLOCKSIZE 256
-#define BS 32
+/*! \file
+    \brief ideal_sizes.hpp gathers all constants that can be tuned for performance.
+ *********************************************************************************/
 
-// laswp
-#define LASWP_BLOCKSIZE 256
+// org2r/orgqr, org2l/orgql, ung2r/ungqr and ung2l/ungql
+#define xxGQx_xxGQx2_SWITCHSIZE 128
+#define xxGQx_BLOCKSIZE 64
 
-// orgxx/ungxx
-#define ORGxx_UNGxx_SWITCHSIZE 128
-#define ORGxx_UNGxx_BLOCKSIZE 64
+// orgr2/orgrq, orgl2/orglq, ungr2/ungrq and ungl2/unglq
+#define xxGxQ_xxGxQ2_SWITCHSIZE 128
+#define xxGxQ_BLOCKSIZE 64
 
-// ormxx/unmxx
-#define ORMxx_ORMxx_BLOCKSIZE 32
+// orm2r/ormqr, orm2l/ormql, unm2r/unmqr and unm2l/unmql
+#define xxMQx_BLOCKSIZE 64
+
+// ormr2/ormrq, orml2/ormlq, unmr2/unmrq and unml2/unmlq
+#define xxMxQ_BLOCKSIZE 64
+
+//// orgxx/ungxx
+//#define ORGxx_UNGxx_SWITCHSIZE 128
+//#define ORGxx_UNGxx_BLOCKSIZE 64
+
+//// ormxx/unmxx
+//#define ORMxx_ORMxx_BLOCKSIZE 32
 
 // getf2/getfr
 #define GETF2_MAX_COLS 64 //always <= wavefront size
@@ -48,7 +58,7 @@
 #define GETRI_BATCH_INTERVALS 505, 2049
 #define GETRI_BATCH_BLKSIZES 32, 0, 256
 
-// TRTRI
+// trtri
 #define TRTRI_MAX_COLS 64 //always <= wavefront size
 #define TRTRI_NUM_INTERVALS 1
 #define TRTRI_INTERVALS 0
@@ -60,47 +70,29 @@
 // potf2/potrf
 #define POTRF_POTF2_SWITCHSIZE 64
 
-// geqx2/geqxf
+// geqr2/geqrf and geql2/geqlf
 #define GEQxF_GEQx2_SWITCHSIZE 128
-#define GEQxF_GEQx2_BLOCKSIZE 64
+#define GEQxF_BLOCKSIZE 64
 
-// gexq2/gexqf
+// gerq2/gerqf and gelq2/gelqf
 #define GExQF_GExQ2_SWITCHSIZE 128
-#define GExQF_GExQ2_BLOCKSIZE 64
+#define GExQF_BLOCKSIZE 64
 
 // gebd2/gebrd
 #define GEBRD_GEBD2_SWITCHSIZE 32
 
-// xxtd2/xxtrd
-#define xxTRD_xxTD2_BLOCKSIZE 32
+// sytd2/sytrd and hetd2/hetrd
+#define xxTRD_BLOCKSIZE 32
 #define xxTRD_xxTD2_SWITCHSIZE 64
 
-// xxgs2/xxgst
-#define xxGST_xxGS2_BLOCKSIZE 64
+// sygs2/sygst and hegs2/hegst
+#define xxGST_BLOCKSIZE 64
 
 // gesvd
 #define THIN_SVD_SWITCH 1.6
 
-// STEDC
+// stedc
 #define STEDC_MIN_DC_SIZE 32
 
-// lasyf/sytf2/sytrf
-// MAX_THDS sizes must be one of 128, 256, 512, or 1024
-#define LASYF_MAX_THDS 256
-#define SYTF2_MAX_THDS 256
-#define SYTRF_MAX_THDS 256
+// sytf2/sytrf
 #define SYTRF_BLOCKSIZE 256
-
-// THESE FOLLOWING VALUES ARE TO MATCH ROCBLAS C++ INTERFACE
-// THEY ARE DEFINED/TUNNED IN ROCBLAS
-#define ROCBLAS_AXPY_NB 256
-#define ROCBLAS_SCAL_NB 256
-#define ROCBLAS_DOT_NB 512
-#define ROCBLAS_TRMV_NB 512
-#define ROCBLAS_TRMM_REAL_NB 32
-#define ROCBLAS_TRMM_COMPLEX_NB 16
-#define ROCBLAS_IAMAX_NB 1024
-#define ROCBLAS_TRSV_BLOCK 64
-#define ROCBLAS_TRSV_Z_BLOCK 32
-#define ROCBLAS_TRSM_BLOCK 128
-#define ROCBLAS_TRTRI_NB 16

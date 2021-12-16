@@ -1,5 +1,5 @@
 /************************************************************************
- * Derived from the BSD3-licensed
+ * Derived from the BS2D3-licensed
  * LAPACK routine (version 3.7.1) --
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
@@ -12,6 +12,10 @@
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
+
+#define LASYF_MAX_THDS                                    \
+    256 // thread-block size for calling the lasyf kernel \
+        // MAX_THDS sizes must be one of 128, 256, 512, or 1024
 
 template <int MAX_THDS, typename T, typename S>
 __device__ void lasyf_device_upper(const rocblas_int tid,
@@ -622,9 +626,9 @@ rocblas_status rocsolver_lasyf_template(rocblas_handle handle,
     if(n == 0 || nb == 0)
     {
         // set info = 0
-        rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+        rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
         dim3 gridReset(blocksReset, 1, 1);
-        dim3 threadsReset(BLOCKSIZE, 1, 1);
+        dim3 threadsReset(BS1, 1, 1);
         ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, kb, batch_count, 0);
         ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, info, batch_count, 0);
 

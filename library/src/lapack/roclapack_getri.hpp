@@ -328,7 +328,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     }
 #endif
 
-    rocblas_int threads = min(((n - 1) / 64 + 1) * 64, BLOCKSIZE);
+    rocblas_int threads = min(((n - 1) / 64 + 1) * 64, BS1);
     rocblas_int ldw = n;
     rocblas_stride strideW = n * n;
 

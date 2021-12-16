@@ -1,5 +1,5 @@
 /************************************************************************
- * Derived from the BSD3-licensed
+ * Derived from the BS2D3-licensed
  * LAPACK routine (version 3.7.0) --
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
@@ -42,9 +42,9 @@ void rocsolver_ormql_unmql_getMemorySize(const rocblas_side side,
     rocsolver_orm2l_unm2l_getMemorySize<BATCHED, T>(side, m, n, k, batch_count, size_scalars,
                                                     size_AbyxORwork, size_diagORtmptr, size_workArr);
 
-    if(k > ORMxx_ORMxx_BLOCKSIZE)
+    if(k > xxMQx_BLOCKSIZE)
     {
-        rocblas_int jb = ORMxx_ORMxx_BLOCKSIZE;
+        rocblas_int jb = xxMQx_BLOCKSIZE;
 
         // requirements for calling larft
         rocsolver_larft_getMemorySize<BATCHED, T>(max(m, n), min(jb, k), batch_count, &unused,
@@ -97,12 +97,12 @@ rocblas_status rocsolver_ormql_unmql_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     // if the matrix is small, use the unblocked variant of the algorithm
-    if(k <= ORMxx_ORMxx_BLOCKSIZE)
+    if(k <= xxMQx_BLOCKSIZE)
         return rocsolver_orm2l_unm2l_template<T>(
             handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C, shiftC, ldc,
             strideC, batch_count, scalars, AbyxORwork, diagORtmptr, workArr);
 
-    rocblas_int ldw = ORMxx_ORMxx_BLOCKSIZE;
+    rocblas_int ldw = xxMQx_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
     // determine limits and indices

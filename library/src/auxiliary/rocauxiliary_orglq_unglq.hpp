@@ -1,5 +1,5 @@
 /************************************************************************
- * Derived from the BSD3-licensed
+ * Derived from the BS2D3-licensed
  * LAPACK routine (version 3.7.0) --
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
@@ -41,7 +41,7 @@ void rocsolver_orglq_unglq_getMemorySize(const rocblas_int m,
     rocsolver_orgl2_ungl2_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars,
                                                     size_Abyx_tmptr, size_workArr);
 
-    if(k <= ORGxx_UNGxx_SWITCHSIZE)
+    if(k <= xxGxQ_xxGxQ2_SWITCHSIZE)
     {
         *size_work = 0;
         *size_trfact = 0;
@@ -49,8 +49,8 @@ void rocsolver_orglq_unglq_getMemorySize(const rocblas_int m,
 
     else
     {
-        rocblas_int jb = ORGxx_UNGxx_BLOCKSIZE;
-        rocblas_int j = ((k - ORGxx_UNGxx_SWITCHSIZE - 1) / jb) * jb;
+        rocblas_int jb = xxGxQ_BLOCKSIZE;
+        rocblas_int j = ((k - xxGxQ_xxGxQ2_SWITCHSIZE - 1) / jb) * jb;
         rocblas_int kk = min(k, j + jb);
 
         // size of workspace is maximum of what is needed by larft and larfb.
@@ -95,16 +95,16 @@ rocblas_status rocsolver_orglq_unglq_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     // if the matrix is small, use the unblocked variant of the algorithm
-    if(k <= ORGxx_UNGxx_SWITCHSIZE)
+    if(k <= xxGxQ_xxGxQ2_SWITCHSIZE)
         return rocsolver_orgl2_ungl2_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv,
                                                  strideP, batch_count, scalars, Abyx_tmptr, workArr);
 
-    rocblas_int ldw = ORGxx_UNGxx_BLOCKSIZE;
+    rocblas_int ldw = xxGxQ_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
     // start of first blocked block
-    rocblas_int jb = ORGxx_UNGxx_BLOCKSIZE;
-    rocblas_int j = ((k - ORGxx_UNGxx_SWITCHSIZE - 1) / jb) * jb;
+    rocblas_int jb = ldw;
+    rocblas_int j = ((k - xxGxQ_xxGxQ2_SWITCHSIZE - 1) / jb) * jb;
 
     // start of the unblocked block
     rocblas_int kk = min(k, j + jb);

@@ -46,7 +46,7 @@ void rocsolver_geqlf_getMemorySize(const rocblas_int m,
     else
     {
         size_t w1, w2, unused, s1, s2;
-        rocblas_int jb = GEQxF_GEQx2_BLOCKSIZE;
+        rocblas_int jb = GEQxF_BLOCKSIZE;
 
         // size to store the temporary triangular factor
         *size_Abyx_norms_trfact = sizeof(T) * jb * jb * batch_count;
@@ -106,13 +106,13 @@ rocblas_status rocsolver_geqlf_template(rocblas_handle handle,
                                            diag_tmptr);
 
     rocblas_int k = min(m, n); // total number of pivots
-    rocblas_int nb = GEQxF_GEQx2_BLOCKSIZE;
+    rocblas_int nb = GEQxF_BLOCKSIZE;
     rocblas_int ki = ((k - GEQxF_GEQx2_SWITCHSIZE - 1) / nb) * nb;
     rocblas_int kk = min(k, ki + nb);
     rocblas_int jb, j = k - kk + ki;
     rocblas_int mu = m, nu = n;
 
-    rocblas_int ldw = GEQxF_GEQx2_BLOCKSIZE;
+    rocblas_int ldw = GEQxF_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
     while(j >= k - kk)
