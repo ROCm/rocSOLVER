@@ -57,7 +57,7 @@ void rocsolver_sygvd_hegvd_getMemorySize(const rocblas_eform itype,
     *size_iinfo = max(*size_iinfo, sizeof(rocblas_int) * batch_count);
 
     // requirements for calling SYGST/HEGST
-    rocsolver_sygst_hegst_getMemorySize<BATCHED, T>(itype, n, batch_count, &unused, &temp1, &temp2,
+    rocsolver_sygst_hegst_getMemorySize<BATCHED, T>(uplo, itype, n, batch_count, &unused, &temp1, &temp2,
                                                     &temp3, &temp4, &opt2);
     *size_work1 = max(*size_work1, temp1);
     *size_work2 = max(*size_work2, temp2);
