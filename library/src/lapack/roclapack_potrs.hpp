@@ -67,12 +67,14 @@ void rocsolver_potrs_getMemorySize(const rocblas_int n,
 
     // workspace required for calling TRSM
     // call with both rocblas_operation_none and rocblas_operation_conjugate_transpose and take maximum memory
-    size_t size_work1_temp1, size_work1_temp2, size_work2_temp1, size_work2_temp2,
-           size_work3_temp1, size_work3_temp2, size_work4_temp1, size_work4_temp2;
+    size_t size_work1_temp1, size_work1_temp2, size_work2_temp1, size_work2_temp2, size_work3_temp1,
+        size_work3_temp2, size_work4_temp1, size_work4_temp2;
     rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, rocblas_operation_none, n, nrhs,
-                                     batch_count, &size_work1_temp1, &size_work2_temp1, &size_work3_temp1, &size_work4_temp1);
-    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, rocblas_operation_conjugate_transpose, n, nrhs,
-                                     batch_count, &size_work1_temp2, &size_work2_temp2, &size_work3_temp2, &size_work4_temp2);
+                                     batch_count, &size_work1_temp1, &size_work2_temp1,
+                                     &size_work3_temp1, &size_work4_temp1);
+    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, rocblas_operation_conjugate_transpose, n,
+                                     nrhs, batch_count, &size_work1_temp2, &size_work2_temp2,
+                                     &size_work3_temp2, &size_work4_temp2);
 
     *size_work1 = std::max(size_work1_temp1, size_work1_temp2);
     *size_work2 = std::max(size_work2_temp1, size_work2_temp2);

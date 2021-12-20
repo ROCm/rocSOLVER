@@ -62,13 +62,19 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_fill uplo,
             // extra requirements for calling TRSM
             if(uplo == rocblas_fill_upper)
             {
-                rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, rocblas_operation_conjugate_transpose, n - kb, kb, batch_count, &temp1, &temp2, &temp3, &temp4);
-                rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none, n - kb, kb, batch_count, &temp5, &temp6, &temp7, &temp8);
+                rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left,
+                                                 rocblas_operation_conjugate_transpose, n - kb, kb,
+                                                 batch_count, &temp1, &temp2, &temp3, &temp4);
+                rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none, n - kb,
+                                                 kb, batch_count, &temp5, &temp6, &temp7, &temp8);
             }
             else
             {
-                rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, rocblas_operation_none, n - kb, kb, batch_count, &temp1, &temp2, &temp3, &temp4);
-                rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_conjugate_transpose, n - kb, kb, batch_count, &temp5, &temp6, &temp7, &temp8);
+                rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, rocblas_operation_none, n - kb,
+                                                 kb, batch_count, &temp1, &temp2, &temp3, &temp4);
+                rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right,
+                                                 rocblas_operation_conjugate_transpose, n - kb, kb,
+                                                 batch_count, &temp5, &temp6, &temp7, &temp8);
             }
 
             *size_work_x_temp = max(*size_work_x_temp, max(temp1, temp5));
