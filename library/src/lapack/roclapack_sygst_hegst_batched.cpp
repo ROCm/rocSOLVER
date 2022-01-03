@@ -44,7 +44,7 @@ rocblas_status rocsolver_sygst_hegst_batched_impl(rocblas_handle handle,
     // size of reusable workspace (and for calling SYGS2/HEGS2 and TRSM)
     bool optim_mem;
     size_t size_work_x_temp, size_workArr_temp_arr, size_store_wcs_invA, size_invA_arr;
-    rocsolver_sygst_hegst_getMemorySize<true, T>(itype, n, batch_count, &size_scalars,
+    rocsolver_sygst_hegst_getMemorySize<true, T>(uplo, itype, n, batch_count, &size_scalars,
                                                  &size_work_x_temp, &size_workArr_temp_arr,
                                                  &size_store_wcs_invA, &size_invA_arr, &optim_mem);
 
