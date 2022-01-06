@@ -2,7 +2,7 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## [(Unreleased) rocSOLVER]
+## rocSOLVER 3.16.0 for ROCm 5.0.0
 ### Added
 - Symmetric matrix factorizations:
     - LASYF
