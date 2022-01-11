@@ -44,17 +44,9 @@ def runTestCommand (platform, project, gfilter)
                 set -ex
                 cd ${project.paths.project_build_prefix}/build/${buildType}/clients/staging
                 ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}
-                if (( \$? != 0 )); then
-                    exit 1
-                fi
-
                 if [ -f ./test-rocsolver-dlopen ]; then
                   ./test-rocsolver-dlopen --gtest_color=yes
                 fi
-                if (( \$? != 0 )); then
-                    exit 1
-                fi
-
                 ${hmmTestCommand}
                 """
 
