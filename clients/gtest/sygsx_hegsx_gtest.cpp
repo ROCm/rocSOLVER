@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -11,7 +11,7 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<vector<int>, vector<char>> sygst_tuple;
+typedef std::tuple<vector<int>, vector<printable_char>> sygst_tuple;
 
 // each matrix_size_range is a {n, lda, ldb}
 
@@ -20,7 +20,7 @@ typedef std::tuple<vector<int>, vector<char>> sygst_tuple;
 // case when n = 0, itype = 1, and uplo = U will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
-const vector<vector<char>> type_range = {{'1', 'L'}, {'2', 'L'}, {'1', 'U'}, {'3', 'U'}};
+const vector<vector<printable_char>> type_range = {{'1', 'L'}, {'2', 'L'}, {'1', 'U'}, {'3', 'U'}};
 
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
@@ -44,7 +44,7 @@ const vector<vector<int>> large_matrix_size_range = {
 Arguments sygst_setup_arguments(sygst_tuple tup)
 {
     vector<int> matrix_size = std::get<0>(tup);
-    vector<char> type = std::get<1>(tup);
+    vector<printable_char> type = std::get<1>(tup);
 
     Arguments arg;
 

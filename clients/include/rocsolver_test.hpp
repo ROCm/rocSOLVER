@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <limits>
 #include <ostream>
+#include <stdexcept>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -97,22 +98,25 @@ inline T sconj(T scalar)
     return std::conj(scalar);
 }
 
-// A struct implicity convertable to and from char, used so we can customize
-// Google Test printing for LAPACK char arguments without affecting the default
-// char output.
-struct rocsolver_op_char
+// A struct implicity convertable to and from char, used so we can customize Google Test
+// output for LAPACK char arguments without affecting the default char output.
+class printable_char
 {
-    rocsolver_op_char(char c)
-        : data(c)
+    char value;
+
+public:
+    printable_char(char c)
+        : value(c)
     {
+        if(c < 0x20 || c >= 0x7F)
+            throw std::invalid_argument(fmt::format(
+                "printable_char must be a printable ASCII character (received {:#x})", c));
     }
 
     operator char() const
     {
-        return data;
+        return value;
     }
-
-    char data;
 };
 
 // gtest printers
@@ -122,7 +126,7 @@ inline std::ostream& operator<<(std::ostream& os, rocblas_status x)
     return os << rocblas_status_to_string(x);
 }
 
-inline std::ostream& operator<<(std::ostream& os, rocsolver_op_char x)
+inline std::ostream& operator<<(std::ostream& os, printable_char x)
 {
-    return os << x.data;
+    return os << char(x);
 }

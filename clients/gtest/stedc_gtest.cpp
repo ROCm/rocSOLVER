@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -11,19 +11,16 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<vector<int>, vector<int>> stedc_tuple;
+typedef std::tuple<vector<int>, printable_char> stedc_tuple;
 
 // each size_range vector is a {N, ldc}
 
 // each op_range vector is a {e}
-// if e = 0, then evect = 'N'
-// if e = 1, then evect = 'I'
-// if e = 2, then evect = 'V'
 
 // case when N == 0 and evect == N will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
-const vector<vector<int>> op_range = {{0}, {1}, {2}};
+const vector<printable_char> op_range = {'N', 'I', 'V'};
 
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
@@ -44,14 +41,14 @@ const vector<vector<int>> large_matrix_size_range = {{192, 192}, {256, 270}, {30
 Arguments stedc_setup_arguments(stedc_tuple tup)
 {
     vector<int> size = std::get<0>(tup);
-    vector<int> op = std::get<1>(tup);
+    char op = std::get<1>(tup);
 
     Arguments arg;
 
     arg.set<rocblas_int>("n", size[0]);
     arg.set<rocblas_int>("ldc", size[1]);
 
-    arg.set<char>("evect", (op[0] == 0 ? 'N' : (op[0] == 1 ? 'I' : 'V')));
+    arg.set<char>("evect", op);
 
     arg.timing = 0;
 
