@@ -38,11 +38,11 @@ these are not run-time arguments of the associated API functions.
 geqr2/geqrf and geql2/geqlf functions
 ======================================
 
-The orthogonal factorizations from the left (QR or QL factorizations) are implemented in two routines:
+The orthogonal factorizations from the left (QR or QL factorizations) are implemented in two versions,
 blocked and unblocked. The unblocked routines (GEQR2 or GEQL2) are based on BLAS level II operations and work applying
 Householder reflectors one column at a time. The blocked routines (GEQRF or GEQLF), providing the matrix is large enough,
 factorize a block of columns at each step using the unblocked functions, and apply the resulting block reflectors to
-update the trailing submatrices. The application of the block reflectors is based on matrix-matrix operations (BLAS level III) which,
+update the rest of the matrix. The application of the block reflectors is based on matrix-matrix operations (BLAS level III) which,
 in general, could have better performance on the GPU.
 
 GEQxF_BLOCKSIZE
@@ -60,11 +60,11 @@ GEQxF_GEQx2_SWITCHSIZE
 gerq2/gerqf and gelq2/gelqf functions
 ========================================
 
-The orthogonal factorizations from the right (RQ or LQ factorizations) are implemented in two routines:
+The orthogonal factorizations from the right (RQ or LQ factorizations) are implemented in two versions,
 blocked and unblocked. The unblocked routines (GERQ2 or GELQ2) are based on BLAS level II operations and work applying
 Householder reflectors one row at a time. The blocked routines (GERQF or GELQF), providing the matrix is large enough,
 factorize a block of rows at each step using the unblocked functions, and apply the resulting block reflectors to
-update the trailing submatrices. The application of the block reflectors is based on matrix-matrix operations (BLAS level III) which,
+update the rest of the matrix. The application of the block reflectors is based on matrix-matrix operations (BLAS level III) which,
 in general, could have better performance on the GPU.
 
 GExQF_BLOCKSIZE
@@ -132,7 +132,8 @@ As with the generators of orthonormal/unitary matrices, the routines to multiply
 matrix C by a matrix Q with orthonormal columns are implemented in blocked and unblocked versions.
 The unblocked routines (ORM2R/UNM2R and ORM2L/UNM2L),
 based on BLAS level II operations, work by multiplying one Householder reflector at a time, while the
-blocked routines (ORMQR/UNMQR and ORMQL/UNMQL) apply a set of reflectors at each step.
+blocked routines (ORMQR/UNMQR and ORMQL/UNMQL), apply a set of reflectors at each step, providing there
+is enough reflectors to start with.
 The application of the block reflectors is based on matrix-matrix operations (BLAS level III) which,
 in general, could have better performance on the GPU.
 
@@ -151,7 +152,8 @@ As with the generators orthonormal/unitary matrices, the routines to multiply a 
 matrix C by a matrix Q with orthonormal rows are implemented in blocked and unblocked versions.
 The unblocked routines (ORMR2/UNMR2 and ORML2/UNML2),
 based on BLAS level II operations, work by multiplying one Householder reflector at a time, while the
-blocked routines (ORMRQ/UNMRQ and ORMLQ/UNMLQ) apply a set of reflectors at each step.
+blocked routines (ORMRQ/UNMRQ and ORMLQ/UNMLQ) apply a set of reflectors at each step, providing there
+is enough reflectors to start with.
 The application of the block reflectors is based on matrix-matrix operations (BLAS level III) which,
 in general, could have better performance on the GPU.
 
@@ -169,7 +171,7 @@ gebd2/gebrd and labrd functions
 The computation of the bidiagonal form of a matrix is implemented in blocked and
 unblocked versions. The unblocked routines (GEBD2 and the auxiliary LABRD), based on BLAS level II operations,
 apply Householder reflections to one column and row at a time. The blocked routine (GEBRD), providing the matrix is large enough,
-reduces a block of rows and columns at each step using the unblocked function LABRD, and apply the resulting block reflectors to
+reduces a leading block of rows and columns at each step using the unblocked function LABRD, and apply the resulting block reflectors to
 update the trailing submatrix. The application of the block reflectors is based on matrix-matrix operations (BLAS level III) which,
 in general, could have better performance on the GPU.
 
@@ -188,9 +190,9 @@ GEBRD_GEBD2_SWITCHSIZE
 gesvd function
 ==================
 
-The Singular Value Decomposition could be speed up for matrices with sufficiently more rows than
+The Singular Value Decomposition of a matrix A could be speed up for matrices with sufficiently more rows than
 columns (or columns than rows) by starting with a QR factorization (or LQ
-factorization) and working with the triangular factor afterwards.
+factorization) of A, and working with the triangular factor afterwards.
 
 THIN_SVD_SWITCH
 ------------------
@@ -207,8 +209,8 @@ The computation of the tridiagonal form of a symmetric/hermitian matrix is imple
 unblocked versions. The unblocked routines (SYTD2/HETD2 and the auxiliary LATRD), based on BLAS level II operations,
 apply Householder reflections to one column/row at a time. The blocked routine (SYTRD), providing the matrix is large enough,
 reduces a block of rows and columns at each step using the unblocked function LATRD, and apply the resulting block reflector to
-update the trailing submatrix. The application of the block reflectors is based on matrix-matrix operations (BLAS level III) which,
-in general, could have better performance on the GPU
+update the rest of the matrix. The application of the block reflectors is based on matrix-matrix operations (BLAS level III) which,
+in general, could have better performance on the GPU.
 
 xxTRD_BLOCKSIZE
 ----------------------
@@ -225,6 +227,13 @@ xxTRD_xxTD2_SWITCHSIZE
 sygs2/sygst and hegs2/hegst functions
 ======================================
 
+The reduction of a symmetric/hermitian-definite generalized eigenproblem to standard form is implemented in
+blocked and unblocked versions. The unblocked routines (SYGS2/HEGS2) reduce the matrix A
+one column/row at a time with vector operations and rank-2 updates (BLAS level II). The blocked
+routines (SYGST/HEGST), providing A is large enough, reduce a leading block of A at each step using
+the unblocked methods, and update the trailing matrix with BLAS level III operations (matrix products
+and rank-2k updates) which, in general, could have better performance on the GPU.
+
 xxGST_BLOCKSIZE
 ------------------------
 .. doxygendefine:: xxGST_BLOCKSIZE
@@ -233,8 +242,12 @@ xxGST_BLOCKSIZE
 
 
 
-stedc function
-===================
+syevd, heevd and stedc functions
+====================================
+
+When running SYEVD/HEEVD, the computation of the eigenvectors of the associated tridiagonal matrix
+can be speed up using a divide-and-conquer
+approach (implemented in STEDC), providing the size of the independent block is large enough.
 
 STEDC_MIN_DC_SIZE
 -------------------
@@ -247,22 +260,37 @@ STEDC_MIN_DC_SIZE
 potf2/potrf functions
 =========================
 
-POTRF_POTF2_SWITCHSIZE
+The Cholesky factorization is implemented in blocked (right-looking) and unblocked versions. The unblocked
+routine (POTF2), based on BLAS level II operations, computes one diagonal element at a time,
+and scales the corresponding row/column. The blocked routine (POTRF), providing the matrix is large enough,
+factorizes a leading block of rows/columns at each step using the unblocked algorithm, and updates the trailing matrix with BLAS level III
+operations (symmetric rank-k updates) which, in general, could have better performance on the GPU.
+
+POTRF_BLOCKSIZE
 ------------------------
-.. doxygendefine:: POTRF_POTF2_SWITCHSIZE
+.. doxygendefine:: POTRF_BLOCKSIZE
 
 (As of the current rocSOLVER release, this constant has not been tuned for any particular case).
 
 
 
-sytf2/sytrf functions
-=======================
+sytf2/sytrf and lasyf functions
+=================================
+
+The Bunch-Kaufman factorization is implemented in blocked and unblocked versions. The unblocked routine (SYTF2)
+generates one 1-by-1 or 2-by-2 diagonal block at a time and applies a rank-1 update. The blocked routine, providing
+the matrix is large enough, executes a partial factorization of a given maximum number of diagonal elements (LASYF) at each step,
+an updates the rest of the matrix with matrix-matrix operations (BLAS level III) which, in general, could have better performance on the GPU.
 
 SYTRF_BLOCKSIZE
 ----------------
 .. doxygendefine:: SYTRF_BLOCKSIZE
 
-(As of the current rocSOLVER release, this constant has not been tuned for any particular case).
+SYTRF_SYTF2_SWITCHSIZE
+-----------------------
+.. doxygendefine:: SYTRF_SYTF2_SWITCHSIZE
+
+(As of the current rocSOLVER release, these constants have not been tuned for any particular case).
 
 
 

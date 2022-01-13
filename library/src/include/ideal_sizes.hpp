@@ -20,7 +20,7 @@
     the unblocked to the blocked algorithm when executing GEQRF or GEQLF.
 
     \details GEQRF or GEQLF will factorize blocks of GEQxF_BLOCKSIZE columns at a time until
-    the trailing submatrix has no more than GEQxF_GEQx2_SWITCHSIZE rows or columns; at this point the last block,
+    the rest of the matrix has no more than GEQxF_GEQx2_SWITCHSIZE rows or columns; at this point the last block,
     if any, will be factorized with the unblocked algorithm (GEQR2 or GEQL2).*/
 #define GEQxF_GEQx2_SWITCHSIZE 128
 
@@ -36,7 +36,7 @@
     the unblocked to the blocked algorithm when executing GERQF or GELQF.
 
     \details GERQF or GELQF will factorize blocks of GExQF_BLOCKSIZE rows at a time until
-    the trailing submatrix has no more than GExQF_GExQ2_SWITCHSIZE rows or columns; at this point the last block,
+    the rest of the matrix has no more than GExQF_GExQ2_SWITCHSIZE rows or columns; at this point the last block,
     if any, will be factorized with the unblocked algorithm (GERQ2 or GELQ2).*/
 #define GExQF_GExQ2_SWITCHSIZE 128
 
@@ -79,8 +79,9 @@
 /*! \brief Determines the size of the block reflector that multiplies the matrix C at each
     step with the blocked algorithm (ORMQR/UNMQR or ORMQL/UNMQL).
 
-    \details If the total number of Householder reflectors is not multiple of xxMQx_BLOCKSIZE,
-    the last block that updates C could have a smaller size.*/
+    \details xxMQx_BLOCKSIZE also acts as a switch size; if the total number of reflectors is not greater than xxMQx_BLOCKSIZE (k <= xxMQx_BLOCKSIZE),
+    ORMQR/UNMQR or ORMQL/UNMQL will directly call the unblocked routines (ORM2R/UNM2R or ORM2L/UNM2L). However, when k is not multiple of xxMQx_BLOCKSIZE,
+    the last block that updates C in the blocked process is allowed to be smaller than xxMQx_BLOCKSIZE.*/
 #define xxMQx_BLOCKSIZE 64
 
 
@@ -90,8 +91,9 @@
 /*! \brief Determines the size of the block reflector that multiplies the matrix C at each
     step with the blocked algorithm (ORMRQ/UNMRQ or ORMLQ/UNMLQ).
 
-    \details If the total number of Householder reflectors is not multiple of xxMxQ_BLOCKSIZE,
-    the last block that updates C could have a smaller size.*/
+    \details xxMxQ_BLOCKSIZE also acts as a switch size; if the total number of reflectors is not greater than xxMxQ_BLOCKSIZE (k <= xxMxQ_BLOCKSIZE),
+    ORMRQ/UNMRQ or ORMLQ/UNMLQ will directly call the unblocked routines (ORMR2/UNMR2 or ORML2/UNML2). However, when k is not multiple of xxMxQ_BLOCKSIZE,
+    the last block that updates C in the blocked process is allowed to be smaller than xxMxQ_BLOCKSIZE.*/
 #define xxMxQ_BLOCKSIZE 64
 
 
@@ -133,7 +135,7 @@
     the unblocked to the blocked algorithm when executing SYTRD/HETRD.
 
     \details SYTRD/HETRD will use LATRD to reduce blocks of xxTRD_BLOCKSIZE rows and columns at a time until
-    the trailing submatrix has no more than xxTRD_xxTD2_SWITCHSIZE rows or columns; at this point the last block,
+    the rest of the matrix has no more than xxTRD_xxTD2_SWITCHSIZE rows or columns; at this point the last block,
     if any, will be reduced with the unblocked algorithm (SYTD2/HETD2).*/
 #define xxTRD_xxTD2_SWITCHSIZE 64
 
@@ -141,25 +143,64 @@
 
 /***************** sygs2/sygst and hegs2/hegst ********************************
 *******************************************************************************/
+/*! \brief Determines the size of the leading block that is reduced to standard form at each step
+    when using the blocked algorithm (SYGST/HEGST).
+
+    \details xxGST_BLOCKSIZE also acts as a switch size; if the original size of the problem is not larger than xxGST_BLOCKSIZE (n <= xxGST_BLOCKSIZE),
+    SYGST/HEGST will directly call the unblocked routines (SYGS2/HEGS2). However, when n is not
+    multiple of xxGST_BLOCKSIZE, the last block reduced in the blocked process is allowed to be smaller than xxGST_BLOCKSIZE. */
 #define xxGST_BLOCKSIZE 64
 
 
 
 /****************************** stedc *****************************************
 *******************************************************************************/
+/*! \brief Determines the minimum size required for the eigenvectors of an independent block of
+    a tridiagonal matrix to be computed using the divide-and-conquer algorithm (STEDC).
+
+    \details If the size of the block is not greater than STEDC_MIN_DC_SIZE (bs <= STEDC_MIN_DC_SIZE),
+    the eigenvectors are computed with the normal QR algorithm. */
 #define STEDC_MIN_DC_SIZE 32
 
 
 
 /************************** potf2/potrf ***************************************
 *******************************************************************************/
-#define POTRF_POTF2_SWITCHSIZE 64
+/*! \brief Determines the size of the leading block that is factorized at each step
+    when using the blocked algorithm (POTRF).
+
+    \details POTRF_BLOCKSIZE also acts as a switch size; if the original matrix dimension is not larger
+    than POTRF_BLOCKSIZE (n <= POTRF_BLOCKSIZE),
+    POTRF will directly call the unblocked routine (POTF2). However, when n is not
+    multiple of POTRF_BLOCKSIZE, the last block factorized in the blocked process is allowed to be smaller
+    than POTRF_BLOCKSIZE.*/
+#define POTRF_BLOCKSIZE 64
 
 
 
 /*************************** sytf2/sytrf **************************************
 *******************************************************************************/
-#define SYTRF_BLOCKSIZE 256
+/*! \brief Determines the maximum size of the partial factorization executed at each step
+    when using the blocked algorithm (SYTRF). */
+#define SYTRF_BLOCKSIZE 64
+
+/*! \brief Determines the size at which rocSOLVER switchs from
+    the unblocked to the blocked algorithm when executing SYTRF.
+
+    \details SYTRF will use LASYF to factorize a submatrix of at most SYTRF_BLOCKSIZE columns at a time until
+    the rest of the matrix has no more than SYTRF_SYTF2_SWITCHSIZE columns; at this point the last block,
+    if any, will be factorized with the unblocked algorithm (SYTF2).*/
+#define SYTRF_SYTF2_SWITCHSIZE 128
+
+
+
+
+
+
+
+
+
+
 
 
 

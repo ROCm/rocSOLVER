@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -50,7 +50,8 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         return;
     }
 
-    if(n < POTRF_POTF2_SWITCHSIZE)
+    rocblas_int nb = POTRF_BLOCKSIZE;
+    if(n < nb)
     {
         // requirements for calling a single POTF2
         rocsolver_potf2_getMemorySize<T>(n, batch_count, size_scalars, size_work1, size_pivots);
@@ -62,7 +63,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
     }
     else
     {
-        rocblas_int jb = POTRF_POTF2_SWITCHSIZE;
+        rocblas_int jb = nb;
         size_t s1, s2;
 
         // size to store info about positiveness of each subblock
@@ -135,7 +136,8 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
 
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
     // algorithm
-    if(n < POTRF_POTF2_SWITCHSIZE)
+    rocblas_int nb = POTRF_BLOCKSIZE;
+    if(n < nb)
         return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info,
                                            batch_count, scalars, (T*)work1, pivots);
 
@@ -153,10 +155,10 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     if(uplo == rocblas_fill_upper)
     {
         // Compute the Cholesky factorization A = U'*U.
-        for(rocblas_int j = 0; j < n; j += POTRF_POTF2_SWITCHSIZE)
+        for(rocblas_int j = 0; j < n; j += nb)
         {
             // Factor diagonal and subdiagonal blocks
-            jb = min(n - j, POTRF_POTF2_SWITCHSIZE); // number of columns in the block
+            jb = min(n - j, nb); // number of columns in the block
             ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
@@ -184,10 +186,10 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     else
     {
         // Compute the Cholesky factorization A = L*L'.
-        for(rocblas_int j = 0; j < n; j += POTRF_POTF2_SWITCHSIZE)
+        for(rocblas_int j = 0; j < n; j += nb)
         {
             // Factor diagonal and subdiagonal blocks
-            jb = min(n - j, POTRF_POTF2_SWITCHSIZE); // number of columns in the block
+            jb = min(n - j, nb); // number of columns in the block
             ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);

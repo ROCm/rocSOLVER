@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -224,7 +224,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
             ROCSOLVER_LAUNCH_KERNEL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, A,
                                     shiftA, strideA, idx2D(j, j, lda), j, pivots, info);
 
-            // Compute elements J+1:N of row J
+            // Compute elements J+1:N of column J
             if(j < n - 1)
             {
                 if(COMPLEX)

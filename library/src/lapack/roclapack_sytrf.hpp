@@ -5,7 +5,7 @@
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
  *
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -56,7 +56,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
 
     while(k >= 0)
     {
-        if(k >= SYTRF_BLOCKSIZE)
+        if(k >= SYTRF_SYTF2_SWITCHSIZE)
         {
             lasyf_device_upper<SYTRF_MAX_THDS>(tid, k + 1, SYTRF_BLOCKSIZE, &kb, A, lda, ipiv,
                                                &iinfo, W, sidx, sval);
@@ -111,7 +111,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
 
     while(k < n)
     {
-        if(k < n - SYTRF_BLOCKSIZE)
+        if(k < n - SYTRF_SYTF2_SWITCHSIZE)
         {
             lasyf_device_lower<SYTRF_MAX_THDS>(tid, n - k, SYTRF_BLOCKSIZE, &kb, A + k + k * lda,
                                                lda, ipiv + k, &iinfo, W, sidx, sval);
@@ -151,7 +151,7 @@ void rocsolver_sytrf_getMemorySize(const rocblas_int n, const rocblas_int batch_
     }
 
     // size of workspace
-    if(n > SYTRF_BLOCKSIZE)
+    if(n > SYTRF_SYTF2_SWITCHSIZE)
         rocsolver_lasyf_getMemorySize<T>(n, SYTRF_BLOCKSIZE, batch_count, size_work);
     else
         *size_work = 0;
