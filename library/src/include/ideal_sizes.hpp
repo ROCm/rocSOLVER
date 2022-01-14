@@ -8,15 +8,13 @@
     \brief ideal_sizes.hpp gathers all constants that can be tuned for performance.
  *********************************************************************************/
 
-
-
 /***************** geqr2/geqrf and geql2/geqlf ********************************
 *******************************************************************************/
 /*! \brief Determines the size of the block column factorized at each step
     in the blocked QR or QL algorithm (GEQRF or GEQLF). */
 #define GEQxF_BLOCKSIZE 64
 
-/*! \brief Determines the size at which rocSOLVER switchs from
+/*! \brief Determines the size at which rocSOLVER switches from
     the unblocked to the blocked algorithm when executing GEQRF or GEQLF.
 
     \details GEQRF or GEQLF will factorize blocks of GEQxF_BLOCKSIZE columns at a time until
@@ -24,15 +22,13 @@
     if any, will be factorized with the unblocked algorithm (GEQR2 or GEQL2).*/
 #define GEQxF_GEQx2_SWITCHSIZE 128
 
-
-
 /***************** gerq2/gerqf and gelq2/gelqf ********************************
 *******************************************************************************/
 /*! \brief Determines the size of the block row factorized at each step
     in the blocked RQ or LQ algorithm (GERQF or GELQF). */
 #define GExQF_BLOCKSIZE 64
 
-/*! \brief Determines the size at which rocSOLVER switchs from
+/*! \brief Determines the size at which rocSOLVER switches from
     the unblocked to the blocked algorithm when executing GERQF or GELQF.
 
     \details GERQF or GELQF will factorize blocks of GExQF_BLOCKSIZE rows at a time until
@@ -40,23 +36,19 @@
     if any, will be factorized with the unblocked algorithm (GERQ2 or GELQ2).*/
 #define GExQF_GExQ2_SWITCHSIZE 128
 
-
-
 /******** org2r/orgqr, org2l/orgql, ung2r/ungqr and ung2l/ungql ***************
 *******************************************************************************/
 /*! \brief Determines the size of the block reflector that is applied at each step when
     generating a matrix Q with orthonormal columns with the blocked algorithm (ORGQR/UNGQR or ORGQL/UNGQL). */
 #define xxGQx_BLOCKSIZE 64
 
-/*! \brief Determines the size at which rocSOLVER switchs from
+/*! \brief Determines the size at which rocSOLVER switches from
     the unblocked to the blocked algorithm when executing ORGQR/UNGQR or ORGQL/UNGQL.
 
     \details ORGQR/UNGQR or ORGQL/UNGQL will accumulate xxGQx_BLOCKSIZE reflectors at a time until
-    there is no more than xxGQx_xxGQx2_SWITCHSIZE reflectors left; the remaining reflectors, if any,
-    are applied one by one with the unblocked algorithm (ORG2R/UNG2R or ORG2L/UNG2L).*/
+    there are no more than xxGQx_xxGQx2_SWITCHSIZE reflectors left; the remaining reflectors, if any,
+    are applied one by one using the unblocked algorithm (ORG2R/UNG2R or ORG2L/UNG2L).*/
 #define xxGQx_xxGQx2_SWITCHSIZE 128
-
-
 
 /******** orgr2/orgrq, orgl2/orglq, ungr2/ungrq and ungl2/unglq **************
 *******************************************************************************/
@@ -64,15 +56,13 @@
     generating a matrix Q with orthonormal rows with the blocked algorithm (ORGRQ/UNGRQ or ORGLQ/UNGLQ). */
 #define xxGxQ_BLOCKSIZE 64
 
-/*! \brief Determines the size at which rocSOLVER switchs from
+/*! \brief Determines the size at which rocSOLVER switches from
     the unblocked to the blocked algorithm when executing ORGRQ/UNGRQ or ORGLQ/UNGLQ.
 
     \details ORGRQ/UNGRQ or ORGLQ/UNGLQ will accumulate xxGxQ_BLOCKSIZE reflectors at a time until
-    there is no more than xxGxQ_xxGxQ2_SWITCHSIZE reflectors left; the remaining  reflectors, if any,
-    are applied one by one with the unblocked algorithm (ORGR2/UNGR2 or ORGL2/UNGL2).*/
+    there are no more than xxGxQ_xxGxQ2_SWITCHSIZE reflectors left; the remaining reflectors, if any,
+    are applied one by one using the unblocked algorithm (ORGR2/UNGR2 or ORGL2/UNGL2).*/
 #define xxGxQ_xxGxQ2_SWITCHSIZE 128
-
-
 
 /********* orm2r/ormqr, orm2l/ormql, unm2r/unmqr and unm2l/unmql **************
 *******************************************************************************/
@@ -80,11 +70,9 @@
     step with the blocked algorithm (ORMQR/UNMQR or ORMQL/UNMQL).
 
     \details xxMQx_BLOCKSIZE also acts as a switch size; if the total number of reflectors is not greater than xxMQx_BLOCKSIZE (k <= xxMQx_BLOCKSIZE),
-    ORMQR/UNMQR or ORMQL/UNMQL will directly call the unblocked routines (ORM2R/UNM2R or ORM2L/UNM2L). However, when k is not multiple of xxMQx_BLOCKSIZE,
+    ORMQR/UNMQR or ORMQL/UNMQL will directly call the unblocked routines (ORM2R/UNM2R or ORM2L/UNM2L). However, when k is not a multiple of xxMQx_BLOCKSIZE,
     the last block that updates C in the blocked process is allowed to be smaller than xxMQx_BLOCKSIZE.*/
 #define xxMQx_BLOCKSIZE 64
-
-
 
 /********* ormr2/ormrq, orml2/ormlq, unmr2/unmrq and unml2/unmlq ***************
 *******************************************************************************/
@@ -92,11 +80,9 @@
     step with the blocked algorithm (ORMRQ/UNMRQ or ORMLQ/UNMLQ).
 
     \details xxMxQ_BLOCKSIZE also acts as a switch size; if the total number of reflectors is not greater than xxMxQ_BLOCKSIZE (k <= xxMxQ_BLOCKSIZE),
-    ORMRQ/UNMRQ or ORMLQ/UNMLQ will directly call the unblocked routines (ORMR2/UNMR2 or ORML2/UNML2). However, when k is not multiple of xxMxQ_BLOCKSIZE,
+    ORMRQ/UNMRQ or ORMLQ/UNMLQ will directly call the unblocked routines (ORMR2/UNMR2 or ORML2/UNML2). However, when k is not a multiple of xxMxQ_BLOCKSIZE,
     the last block that updates C in the blocked process is allowed to be smaller than xxMxQ_BLOCKSIZE.*/
 #define xxMxQ_BLOCKSIZE 64
-
-
 
 /**************************** gebd2/gebrd *************************************
 *******************************************************************************/
@@ -104,15 +90,13 @@
     when using the blocked algorithm (GEBRD). */
 #define GEBRD_BLOCKSIZE 32
 
-/*! \brief Determines the size at which rocSOLVER switchs from
+/*! \brief Determines the size at which rocSOLVER switches from
     the unblocked to the blocked algorithm when executing GEBRD.
 
     \details GEBRD will use LABRD to reduce blocks of GEBRD_BLOCKSIZE rows and columns at a time until
     the trailing submatrix has no more than GEBRD_GEBD2_SWITCHSIZE rows or columns; at this point the last block,
     if any, will be reduced with the unblocked algorithm (GEBD2).*/
 #define GEBRD_GEBD2_SWITCHSIZE 32
-
-
 
 /******************************* gesvd ****************************************
 *******************************************************************************/
@@ -123,15 +107,13 @@
     n >= THIN_SVD_SWITCH*m, then the thin SVD is computed.*/
 #define THIN_SVD_SWITCH 1.6
 
-
-
 /******************* sytd2/sytrd and hetd2/hetrd *******************************
 *******************************************************************************/
 /*! \brief Determines the size of the leading block that is reduced to tridiagonal form at each step
     when using the blocked algorithm (SYTRD/HETRD). */
 #define xxTRD_BLOCKSIZE 32
 
-/*! \brief Determines the size at which rocSOLVER switchs from
+/*! \brief Determines the size at which rocSOLVER switches from
     the unblocked to the blocked algorithm when executing SYTRD/HETRD.
 
     \details SYTRD/HETRD will use LATRD to reduce blocks of xxTRD_BLOCKSIZE rows and columns at a time until
@@ -139,19 +121,15 @@
     if any, will be reduced with the unblocked algorithm (SYTD2/HETD2).*/
 #define xxTRD_xxTD2_SWITCHSIZE 64
 
-
-
 /***************** sygs2/sygst and hegs2/hegst ********************************
 *******************************************************************************/
 /*! \brief Determines the size of the leading block that is reduced to standard form at each step
     when using the blocked algorithm (SYGST/HEGST).
 
     \details xxGST_BLOCKSIZE also acts as a switch size; if the original size of the problem is not larger than xxGST_BLOCKSIZE (n <= xxGST_BLOCKSIZE),
-    SYGST/HEGST will directly call the unblocked routines (SYGS2/HEGS2). However, when n is not
+    SYGST/HEGST will directly call the unblocked routines (SYGS2/HEGS2). However, when n is not a
     multiple of xxGST_BLOCKSIZE, the last block reduced in the blocked process is allowed to be smaller than xxGST_BLOCKSIZE. */
 #define xxGST_BLOCKSIZE 64
-
-
 
 /****************************** stedc *****************************************
 *******************************************************************************/
@@ -162,8 +140,6 @@
     the eigenvectors are computed with the normal QR algorithm. */
 #define STEDC_MIN_DC_SIZE 32
 
-
-
 /************************** potf2/potrf ***************************************
 *******************************************************************************/
 /*! \brief Determines the size of the leading block that is factorized at each step
@@ -171,12 +147,10 @@
 
     \details POTRF_BLOCKSIZE also acts as a switch size; if the original matrix dimension is not larger
     than POTRF_BLOCKSIZE (n <= POTRF_BLOCKSIZE),
-    POTRF will directly call the unblocked routine (POTF2). However, when n is not
+    POTRF will directly call the unblocked routine (POTF2). However, when n is not a
     multiple of POTRF_BLOCKSIZE, the last block factorized in the blocked process is allowed to be smaller
     than POTRF_BLOCKSIZE.*/
 #define POTRF_BLOCKSIZE 64
-
-
 
 /*************************** sytf2/sytrf **************************************
 *******************************************************************************/
@@ -184,25 +158,13 @@
     when using the blocked algorithm (SYTRF). */
 #define SYTRF_BLOCKSIZE 64
 
-/*! \brief Determines the size at which rocSOLVER switchs from
+/*! \brief Determines the size at which rocSOLVER switches from
     the unblocked to the blocked algorithm when executing SYTRF.
 
     \details SYTRF will use LASYF to factorize a submatrix of at most SYTRF_BLOCKSIZE columns at a time until
     the rest of the matrix has no more than SYTRF_SYTF2_SWITCHSIZE columns; at this point the last block,
     if any, will be factorized with the unblocked algorithm (SYTF2).*/
 #define SYTRF_SYTF2_SWITCHSIZE 128
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**************************** getf2/getfr *************************************
 *******************************************************************************/
@@ -223,8 +185,6 @@
 #define GETRF_NPVT_BATCH_INTERVALS 33, 148, 1216
 #define GETRF_NPVT_BATCH_BLKSIZES 0, 16, 32, 256
 
-
-
 /****************************** getri *****************************************
 *******************************************************************************/
 #define GETRI_MAX_COLS 64 //always <= wavefront size
@@ -237,8 +197,6 @@
 #define GETRI_BATCH_INTERVALS 505, 2049
 #define GETRI_BATCH_BLKSIZES 32, 0, 256
 
-
-
 /***************************** trtri ******************************************
 *******************************************************************************/
 #define TRTRI_MAX_COLS 64 //always <= wavefront size
@@ -248,4 +206,3 @@
 #define TRTRI_BATCH_NUM_INTERVALS 3
 #define TRTRI_BATCH_INTERVALS 32, 245, 1009
 #define TRTRI_BATCH_BLKSIZES 0, 16, 32, 0
-
