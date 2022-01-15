@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -15,7 +15,7 @@
 #include "rocsolver_logger.hpp"
 
 // THESE FOLLOWING VALUES ARE TO MATCH ROCBLAS C++ INTERFACE
-// THEY ARE DEFINED/TUNNED IN ROCBLAS
+// THEY ARE DEFINED/TUNED IN ROCBLAS
 #define ROCBLAS_AXPY_NB 256
 #define ROCBLAS_SCAL_NB 256
 #define ROCBLAS_DOT_NB 512

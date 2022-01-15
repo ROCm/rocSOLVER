@@ -11,11 +11,13 @@
 /***************** geqr2/geqrf and geql2/geqlf ********************************
 *******************************************************************************/
 /*! \brief Determines the size of the block column factorized at each step
-    in the blocked QR or QL algorithm (GEQRF or GEQLF). */
+    in the blocked QR or QL algorithm (GEQRF or GEQLF). It also applies to the
+    corresponding batched and strided-batched routines. */
 #define GEQxF_BLOCKSIZE 64
 
 /*! \brief Determines the size at which rocSOLVER switches from
-    the unblocked to the blocked algorithm when executing GEQRF or GEQLF.
+    the unblocked to the blocked algorithm when executing GEQRF or GEQLF. It also applies to the
+    corresponding batched and strided-batched routines.
 
     \details GEQRF or GEQLF will factorize blocks of GEQxF_BLOCKSIZE columns at a time until
     the rest of the matrix has no more than GEQxF_GEQx2_SWITCHSIZE rows or columns; at this point the last block,
@@ -25,11 +27,13 @@
 /***************** gerq2/gerqf and gelq2/gelqf ********************************
 *******************************************************************************/
 /*! \brief Determines the size of the block row factorized at each step
-    in the blocked RQ or LQ algorithm (GERQF or GELQF). */
+    in the blocked RQ or LQ algorithm (GERQF or GELQF). It also applies to the
+    corresponding batched and strided-batched routines. */
 #define GExQF_BLOCKSIZE 64
 
 /*! \brief Determines the size at which rocSOLVER switches from
-    the unblocked to the blocked algorithm when executing GERQF or GELQF.
+    the unblocked to the blocked algorithm when executing GERQF or GELQF. It also applies to the
+    corresponding batched and strided-batched routines.
 
     \details GERQF or GELQF will factorize blocks of GExQF_BLOCKSIZE rows at a time until
     the rest of the matrix has no more than GExQF_GExQ2_SWITCHSIZE rows or columns; at this point the last block,
@@ -87,21 +91,24 @@
 /**************************** gebd2/gebrd *************************************
 *******************************************************************************/
 /*! \brief Determines the size of the leading block that is reduced to bidiagonal form at each step
-    when using the blocked algorithm (GEBRD). */
+    when using the blocked algorithm (GEBRD). It also applies to the
+    corresponding batched and strided-batched routines.*/
 #define GEBRD_BLOCKSIZE 32
 
 /*! \brief Determines the size at which rocSOLVER switches from
-    the unblocked to the blocked algorithm when executing GEBRD.
+    the unblocked to the blocked algorithm when executing GEBRD. It also applies to the
+    corresponding batched and strided-batched routines.
 
     \details GEBRD will use LABRD to reduce blocks of GEBRD_BLOCKSIZE rows and columns at a time until
     the trailing submatrix has no more than GEBRD_GEBD2_SWITCHSIZE rows or columns; at this point the last block,
     if any, will be reduced with the unblocked algorithm (GEBD2).*/
-#define GEBRD_GEBD2_SWITCHSIZE 32
+#define GEBRD_GEBD2_SWITCHSIZE 64
 
 /******************************* gesvd ****************************************
 *******************************************************************************/
 /*! \brief Determines the factor by which one dimension of a matrix should exceed
-    the other dimension for the thin SVD to be computed when executing GESVD.
+    the other dimension for the thin SVD to be computed when executing GESVD. It also applies to the
+    corresponding batched and strided-batched routines.
 
     \details When a m-by-n matrix A is passed to GESVD, if m >= THIN_SVD_SWITCH*n or
     n >= THIN_SVD_SWITCH*m, then the thin SVD is computed.*/
@@ -110,11 +117,13 @@
 /******************* sytd2/sytrd and hetd2/hetrd *******************************
 *******************************************************************************/
 /*! \brief Determines the size of the leading block that is reduced to tridiagonal form at each step
-    when using the blocked algorithm (SYTRD/HETRD). */
+    when using the blocked algorithm (SYTRD/HETRD). It also applies to the
+    corresponding batched and strided-batched routines.*/
 #define xxTRD_BLOCKSIZE 32
 
 /*! \brief Determines the size at which rocSOLVER switches from
-    the unblocked to the blocked algorithm when executing SYTRD/HETRD.
+    the unblocked to the blocked algorithm when executing SYTRD/HETRD. It also applies to the
+    corresponding batched and strided-batched routines.
 
     \details SYTRD/HETRD will use LATRD to reduce blocks of xxTRD_BLOCKSIZE rows and columns at a time until
     the rest of the matrix has no more than xxTRD_xxTD2_SWITCHSIZE rows or columns; at this point the last block,
@@ -124,11 +133,12 @@
 /***************** sygs2/sygst and hegs2/hegst ********************************
 *******************************************************************************/
 /*! \brief Determines the size of the leading block that is reduced to standard form at each step
-    when using the blocked algorithm (SYGST/HEGST).
+    when using the blocked algorithm (SYGST/HEGST). It also applies to the
+    corresponding batched and strided-batched routines.
 
     \details xxGST_BLOCKSIZE also acts as a switch size; if the original size of the problem is not larger than xxGST_BLOCKSIZE (n <= xxGST_BLOCKSIZE),
     SYGST/HEGST will directly call the unblocked routines (SYGS2/HEGS2). However, when n is not a
-    multiple of xxGST_BLOCKSIZE, the last block reduced in the blocked process is allowed to be smaller than xxGST_BLOCKSIZE. */
+    multiple of xxGST_BLOCKSIZE, the last block reduced in the blocked process is allowed to be smaller than xxGST_BLOCKSIZE.*/
 #define xxGST_BLOCKSIZE 64
 
 /****************************** stedc *****************************************
@@ -143,23 +153,29 @@
 /************************** potf2/potrf ***************************************
 *******************************************************************************/
 /*! \brief Determines the size of the leading block that is factorized at each step
-    when using the blocked algorithm (POTRF).
-
-    \details POTRF_BLOCKSIZE also acts as a switch size; if the original matrix dimension is not larger
-    than POTRF_BLOCKSIZE (n <= POTRF_BLOCKSIZE),
-    POTRF will directly call the unblocked routine (POTF2). However, when n is not a
-    multiple of POTRF_BLOCKSIZE, the last block factorized in the blocked process is allowed to be smaller
-    than POTRF_BLOCKSIZE.*/
+    when using the blocked algorithm (POTRF). It also applies to the
+    corresponding batched and strided-batched routines.*/
 #define POTRF_BLOCKSIZE 64
+
+/*! \brief Determines the size at which rocSOLVER switches from
+    the unblocked to the blocked algorithm when executing POTRF. It also applies to the
+    corresponding batched and strided-batched routines.
+
+    \details POTRF will factorize blocks of POTRF_BLOCKSIZE columns at a time until
+    the rest of the matrix has no more than POTRF_POTF2_SWITCHSIZE columns; at this point the last block,
+    if any, will be factorized with the unblocked algorithm (POTF2).*/
+#define POTRF_POTF2_SWITCHSIZE 128
 
 /*************************** sytf2/sytrf **************************************
 *******************************************************************************/
 /*! \brief Determines the maximum size of the partial factorization executed at each step
-    when using the blocked algorithm (SYTRF). */
+    when using the blocked algorithm (SYTRF). It also applies to the
+    corresponding batched and strided-batched routines.*/
 #define SYTRF_BLOCKSIZE 64
 
 /*! \brief Determines the size at which rocSOLVER switches from
-    the unblocked to the blocked algorithm when executing SYTRF.
+    the unblocked to the blocked algorithm when executing SYTRF. It also applies to the
+    corresponding batched and strided-batched routines.
 
     \details SYTRF will use LASYF to factorize a submatrix of at most SYTRF_BLOCKSIZE columns at a time until
     the rest of the matrix has no more than SYTRF_SYTF2_SWITCHSIZE columns; at this point the last block,

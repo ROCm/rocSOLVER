@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -13,9 +13,9 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-#define LASYF_MAX_THDS                                    \
-    256 // thread-block size for calling the lasyf kernel \
-        // MAX_THDS sizes must be one of 128, 256, 512, or 1024
+/** thread-block size for calling the lasyf kernel.
+    (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/
+#define LASYF_MAX_THDS 256
 
 template <int MAX_THDS, typename T, typename S>
 __device__ void lasyf_device_upper(const rocblas_int tid,

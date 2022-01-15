@@ -242,7 +242,8 @@ xxGST_BLOCKSIZE
 syevd, heevd and stedc functions
 ====================================
 
-When running SYEVD/HEEVD, the computation of the eigenvectors of the associated tridiagonal matrix
+When running SYEVD/HEEVD (or the corresponding batched and strided-batched routines),
+the computation of the eigenvectors of the associated tridiagonal matrix
 can be sped up using a divide-and-conquer
 approach (implemented in STEDC), provided the size of the independent block is large enough.
 
@@ -267,7 +268,11 @@ POTRF_BLOCKSIZE
 ------------------------
 .. doxygendefine:: POTRF_BLOCKSIZE
 
-(As of the current rocSOLVER release, this constant has not been tuned for any particular case).
+POTRF_POTF2_SWITCHSIZE
+------------------------
+.. doxygendefine:: POTRF_POTF2_SWITCHSIZE
+
+(As of the current rocSOLVER release, these constants have not been tuned for any particular case).
 
 
 

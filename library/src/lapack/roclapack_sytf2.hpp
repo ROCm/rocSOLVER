@@ -5,7 +5,7 @@
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
  *
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -14,9 +14,9 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-#define SYTF2_MAX_THDS                                    \
-    256 // thread-block size for calling the sytf2 kernel \
-        // MAX_THDS sizes must be one of 128, 256, 512, or 1024
+/** thread-block size for calling the sytf2 kernel.
+    (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/
+#define SYTF2_MAX_THDS 256
 
 template <int MAX_THDS, typename T, typename S>
 __device__ void sytf2_device_upper(const rocblas_int tid,

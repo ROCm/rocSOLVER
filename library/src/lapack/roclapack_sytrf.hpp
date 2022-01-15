@@ -15,9 +15,9 @@
 #include "roclapack_sytf2.hpp"
 #include "rocsolver.h"
 
-#define SYTRF_MAX_THDS                                    \
-    256 // thread-block size for calling the sytrf kernel \
-        // MAX_THDS sizes must be one of 128, 256, 512, or 1024
+/** thread-block size for calling the sytrf kernel.
+    (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/
+#define SYTRF_MAX_THDS 256
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
