@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -320,9 +320,9 @@ void testing_steqr(Arguments& argus)
     size_t size_C = ldc * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_DRes = (argus.unit_check || argus.norm_check) ? size_D : 0;
-    size_t size_ERes = (argus.unit_check || argus.norm_check) ? size_E : 0;
-    size_t size_CRes = (argus.unit_check || argus.norm_check) ? size_C : 0;
+    size_t size_DRes = argus.norm_check ? size_D : 0;
+    size_t size_ERes = argus.norm_check ? size_E : 0;
+    size_t size_CRes = argus.norm_check ? size_C : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || (evect != rocblas_evect_none && ldc < n));
@@ -390,7 +390,7 @@ void testing_steqr(Arguments& argus)
     }
 
     // check computations
-    if(argus.unit_check || argus.norm_check)
+    if(argus.norm_check)
         steqr_getError<T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hDRes, hE, hERes, hC, hCRes,
                           hInfo, hInfoRes, &max_error);
 
@@ -401,8 +401,7 @@ void testing_steqr(Arguments& argus)
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+    ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)

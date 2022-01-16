@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -560,7 +560,7 @@ void testing_gesvd(Arguments& argus)
     size_t size_E = size_t(min(m, n) - 1);
     size_t size_V = size_t(ldv) * n;
     size_t size_U = size_t(ldu) * m;
-    if(argus.unit_check || argus.norm_check)
+    if(argus.norm_check)
     {
         size_VT = size_t(ldvT) * nT;
         size_UT = size_t(lduT) * mT;
@@ -730,7 +730,7 @@ void testing_gesvd(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
         {
             gesvd_getError<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU, ldu,
                                        stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, leftvT, rightvT,
@@ -772,7 +772,7 @@ void testing_gesvd(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
         {
             gesvd_getError<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU, ldu,
                                        stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, leftvT, rightvT,
@@ -793,7 +793,6 @@ void testing_gesvd(Arguments& argus)
 
     // validate results for rocsolver-test
     // using 2 * min(m, n) * machine_precision as tolerance
-    if(argus.unit_check)
     {
         ROCSOLVER_TEST_CHECK(T, max_error, 2 * min(m, n));
         if(svects)

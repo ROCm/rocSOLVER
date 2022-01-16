@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -210,7 +210,7 @@ void testing_laswp(Arguments& argus)
     size_t size_P = k1 + size_t(k2 - k1) * abs(inc);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_Ar = (argus.unit_check || argus.norm_check) ? size_A : 0;
+    size_t size_Ar = argus.norm_check ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < 1 || !inc || k1 < 1 || k2 < 1 || k2 < k1);
@@ -268,7 +268,7 @@ void testing_laswp(Arguments& argus)
     }
 
     // check computations
-    if(argus.unit_check || argus.norm_check)
+    if(argus.norm_check)
         laswp_getError<T>(handle, n, dA, lda, k1, k2, dIpiv, inc, hA, hAr, hIpiv, &max_error);
 
     // collect performance data
@@ -278,8 +278,7 @@ void testing_laswp(Arguments& argus)
 
     // validate results for rocsolver-test
     // no tolerance
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, 0);
+    ROCSOLVER_TEST_CHECK(T, max_error, 0);
 
     // output results for rocsolver-bench
     if(argus.timing)

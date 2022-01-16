@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -265,7 +265,7 @@ void testing_geqr2_geqrf(Arguments& argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
+    rocblas_stride stARes = argus.norm_check ? stA : 0;
 
     // check non-supported values
     // N/A
@@ -275,7 +275,7 @@ void testing_geqr2_geqrf(Arguments& argus)
     size_t size_P = size_t(min(m, n));
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
+    size_t size_ARes = argus.norm_check ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = (m < 0 || n < 0 || lda < m || bc < 0);
@@ -345,7 +345,7 @@ void testing_geqr2_geqrf(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
             geqr2_geqrf_getError<STRIDED, GEQRF, T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, hA,
                                                     hARes, hIpiv, &max_error);
 
@@ -382,7 +382,7 @@ void testing_geqr2_geqrf(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
             geqr2_geqrf_getError<STRIDED, GEQRF, T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, hA,
                                                     hARes, hIpiv, &max_error);
 
@@ -419,7 +419,7 @@ void testing_geqr2_geqrf(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
             geqr2_geqrf_getError<STRIDED, GEQRF, T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, hA,
                                                     hARes, hIpiv, &max_error);
 
@@ -433,8 +433,7 @@ void testing_geqr2_geqrf(Arguments& argus)
     // validate results for rocsolver-test
     // using m * machine_precision as tolerance
     // (for possibly singular of ill-conditioned matrices we could use m*min(m,n))
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, m);
+    ROCSOLVER_TEST_CHECK(T, max_error, m);
 
     // output results for rocsolver-bench
     if(argus.timing)

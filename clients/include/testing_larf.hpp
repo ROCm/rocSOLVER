@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -251,7 +251,7 @@ void testing_larf(Arguments& argus)
     size_t stx = size_x * abs(inc);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_Ar = (argus.unit_check || argus.norm_check) ? size_A : 0;
+    size_t size_Ar = argus.norm_check ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = (m < 0 || n < 0 || !inc || lda < m);
@@ -314,7 +314,7 @@ void testing_larf(Arguments& argus)
     }
 
     // check computations
-    if(argus.unit_check || argus.norm_check)
+    if(argus.norm_check)
         larf_getError<T>(handle, side, m, n, dx, inc, dt, dA, lda, xx, hx, ht, hA, hAr, &max_error);
 
     // collect performance data
@@ -324,8 +324,7 @@ void testing_larf(Arguments& argus)
 
     // validate results for rocsolver-test
     // using size_x * machine_precision as tolerance
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, size_x);
+    ROCSOLVER_TEST_CHECK(T, max_error, size_x);
 
     // output results for rocsolver-bench
     if(argus.timing)

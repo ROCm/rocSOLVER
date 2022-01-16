@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2016-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include <fmt/core.h>
@@ -61,10 +61,6 @@ int main(int argc, char* argv[])
 try
 {
     Arguments argus;
-
-    // disable unit_check in client benchmark, it is only
-    // used in gtest unit test
-    argus.unit_check = 0;
 
     // enable timing check,otherwise no performance data collected
     argus.timing = 1;

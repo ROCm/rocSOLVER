@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -403,7 +403,7 @@ void testing_sytxx_hetxx(Arguments& argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
+    rocblas_stride stARes = argus.norm_check ? stA : 0;
 
     // check non-supported values
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
@@ -432,7 +432,7 @@ void testing_sytxx_hetxx(Arguments& argus)
     size_t size_tau = n - 1;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
+    size_t size_ARes = argus.norm_check ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < n || bc < 0);
@@ -518,7 +518,7 @@ void testing_sytxx_hetxx(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
             sytxx_hetxx_getError<STRIDED, SYTRD, T>(handle, uplo, n, dA, lda, stA, dD, stD, dE, stE,
                                                     dTau, stP, bc, hA, hARes, hD, hE, hTau,
                                                     &max_error);
@@ -553,7 +553,7 @@ void testing_sytxx_hetxx(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
             sytxx_hetxx_getError<STRIDED, SYTRD, T>(handle, uplo, n, dA, lda, stA, dD, stD, dE, stE,
                                                     dTau, stP, bc, hA, hARes, hD, hE, hTau,
                                                     &max_error);
@@ -567,8 +567,7 @@ void testing_sytxx_hetxx(Arguments& argus)
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+    ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)

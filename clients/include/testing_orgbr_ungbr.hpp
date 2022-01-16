@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -271,7 +271,7 @@ void testing_orgbr_ungbr(Arguments& argus)
 
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_Ar = (argus.unit_check || argus.norm_check) ? size_A : 0;
+    size_t size_Ar = argus.norm_check ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = ((m < 0 || n < 0 || k < 0 || lda < m) || (row && (m > n || m < min(n, k)))
@@ -331,7 +331,7 @@ void testing_orgbr_ungbr(Arguments& argus)
     }
 
     // check computations
-    if(argus.unit_check || argus.norm_check)
+    if(argus.norm_check)
         orgbr_ungbr_getError<T>(handle, storev, m, n, k, dA, lda, dIpiv, hA, hAr, hIpiv, &max_error);
 
     // collect performance data
@@ -342,8 +342,7 @@ void testing_orgbr_ungbr(Arguments& argus)
     // validate results for rocsolver-test
     // using s * machine_precision as tolerance
     rocblas_int s = row ? n : m;
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, s);
+    ROCSOLVER_TEST_CHECK(T, max_error, s);
 
     // output results for rocsolver-bench
     if(argus.timing)

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -24,8 +24,7 @@ class Arguments : private std::map<std::string, variable_value>
 
 public:
     // test options
-    rocblas_int norm_check = 0;
-    rocblas_int unit_check = 1;
+    rocblas_int norm_check = 1;
     rocblas_int timing = 0;
     rocblas_int perf = 0;
     rocblas_int singular = 0;

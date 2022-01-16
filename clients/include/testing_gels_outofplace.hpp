@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -415,8 +415,8 @@ void testing_gels_outofplace(Arguments& argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
-    rocblas_stride stXRes = (argus.unit_check || argus.norm_check) ? stX : 0;
+    rocblas_stride stBRes = argus.norm_check ? stB : 0;
+    rocblas_stride stXRes = argus.norm_check ? stX : 0;
 
     // check non-supported values
     bool invalid_value = ((COMPLEX && trans == rocblas_operation_transpose)
@@ -448,8 +448,8 @@ void testing_gels_outofplace(Arguments& argus)
     size_t size_X = size_t(ldx) * nrhs;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_BRes = (argus.unit_check || argus.norm_check) ? size_B : 0;
-    size_t size_XRes = (argus.unit_check || argus.norm_check) ? size_X : 0;
+    size_t size_BRes = argus.norm_check ? size_B : 0;
+    size_t size_XRes = argus.norm_check ? size_X : 0;
 
     // check invalid sizes
     bool invalid_size = (m < 0 || n < 0 || nrhs < 0 || lda < m
@@ -537,7 +537,7 @@ void testing_gels_outofplace(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
             gels_outofplace_getError<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb,
                                                  stB, dX, ldx, stX, dInfo, bc, hA, hB, hBRes, hX,
                                                  hXRes, hInfo, hInfoRes, &max_error, argus.singular);
@@ -586,7 +586,7 @@ void testing_gels_outofplace(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
             gels_outofplace_getError<STRIDED, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb,
                                                  stB, dX, ldx, stX, dInfo, bc, hA, hB, hBRes, hX,
                                                  hXRes, hInfo, hInfoRes, &max_error, argus.singular);
@@ -600,8 +600,7 @@ void testing_gels_outofplace(Arguments& argus)
     }
     // validate results for rocsolver-test
     // using max(m,n) * machine_precision as tolerance
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, max(m, n));
+    ROCSOLVER_TEST_CHECK(T, max_error, max(m, n));
 
     // output results for rocsolver-bench
     if(argus.timing)

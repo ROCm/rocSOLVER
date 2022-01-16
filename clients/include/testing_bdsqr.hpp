@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -540,7 +540,7 @@ void testing_bdsqr(Arguments& argus)
     }
 
     // check computations
-    if(argus.unit_check || argus.norm_check)
+    if(argus.norm_check)
     {
         host_strided_batch_vector<S> hDRes(size_D, 1, size_D, 1);
         host_strided_batch_vector<S> hERes(size_E, 1, size_E, 1);
@@ -586,12 +586,9 @@ void testing_bdsqr(Arguments& argus)
 
     // validate results for rocsolver-test
     // using 2 * n * machine_precision as tolerance
-    if(argus.unit_check)
-    {
-        ROCSOLVER_TEST_CHECK(T, max_error, 2 * n);
-        if(nv || nu || nc)
-            ROCSOLVER_TEST_CHECK(T, max_errorv, 2 * n);
-    }
+    ROCSOLVER_TEST_CHECK(T, max_error, 2 * n);
+    if(nv || nu || nc)
+        ROCSOLVER_TEST_CHECK(T, max_errorv, 2 * n);
 
     // output results for rocsolver-bench
     if(argus.timing)

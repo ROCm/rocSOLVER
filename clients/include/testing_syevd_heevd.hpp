@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -414,8 +414,8 @@ void testing_syevd_heevd(Arguments& argus)
     size_t size_A = size_t(lda) * n;
     size_t size_D = n;
     size_t size_E = size_D;
-    size_t size_Ares = (argus.unit_check || argus.norm_check) ? size_A : 0;
-    size_t size_Dres = (argus.unit_check || argus.norm_check) ? size_D : 0;
+    size_t size_Ares = argus.norm_check ? size_A : 0;
+    size_t size_Dres = argus.norm_check ? size_D : 0;
 
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
@@ -503,7 +503,7 @@ void testing_syevd_heevd(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
         {
             syevd_heevd_getError<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE, stE,
                                              dinfo, bc, hA, hAres, hD, hDres, hinfo, hinfoRes,
@@ -542,7 +542,7 @@ void testing_syevd_heevd(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
         {
             syevd_heevd_getError<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE, stE,
                                              dinfo, bc, hA, hAres, hD, hDres, hinfo, hinfoRes,
@@ -560,8 +560,7 @@ void testing_syevd_heevd(Arguments& argus)
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+    ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)

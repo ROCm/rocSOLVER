@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -323,8 +323,8 @@ void testing_lasyf(Arguments& argus)
     size_t size_Ipiv = n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
-    size_t size_IpivRes = (argus.unit_check || argus.norm_check) ? size_Ipiv : 0;
+    size_t size_ARes = argus.norm_check ? size_A : 0;
+    size_t size_IpivRes = argus.norm_check ? size_Ipiv : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || nb < 0 || nb > n || lda < n);
@@ -391,7 +391,7 @@ void testing_lasyf(Arguments& argus)
     }
 
     // check computations
-    if(argus.unit_check || argus.norm_check)
+    if(argus.norm_check)
         lasyf_getError<T>(handle, uplo, n, nb, dKB, dA, lda, dIpiv, dInfo, hKB, hKBRes, hA, hARes,
                           hIpiv, hIpivRes, hInfo, hInfoRes, &max_error, argus.singular);
 
@@ -403,8 +403,7 @@ void testing_lasyf(Arguments& argus)
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+    ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)

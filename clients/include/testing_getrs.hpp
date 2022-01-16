@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -309,7 +309,7 @@ void testing_getrs(Arguments& argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
+    rocblas_stride stBRes = argus.norm_check ? stB : 0;
 
     // check non-supported values
     // N/A
@@ -320,7 +320,7 @@ void testing_getrs(Arguments& argus)
     size_t size_P = size_t(n);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_BRes = (argus.unit_check || argus.norm_check) ? size_B : 0;
+    size_t size_BRes = argus.norm_check ? size_B : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || nrhs < 0 || lda < n || ldb < n || bc < 0);
@@ -396,7 +396,7 @@ void testing_getrs(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
             getrs_getError<STRIDED, T>(handle, trans, n, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb,
                                        stB, bc, hA, hIpiv, hB, hBRes, &max_error);
 
@@ -437,7 +437,7 @@ void testing_getrs(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
             getrs_getError<STRIDED, T>(handle, trans, n, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb,
                                        stB, bc, hA, hIpiv, hB, hBRes, &max_error);
 
@@ -450,8 +450,7 @@ void testing_getrs(Arguments& argus)
 
     // validate results for rocsolver-test
     // using m * machine_precision as tolerance
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+    ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)

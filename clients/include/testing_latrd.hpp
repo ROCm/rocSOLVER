@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -285,8 +285,8 @@ void testing_latrd(Arguments& argus)
     size_t size_W = ldw * k;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
-    size_t size_WRes = (argus.unit_check || argus.norm_check) ? size_W : 0;
+    size_t size_ARes = argus.norm_check ? size_A : 0;
+    size_t size_WRes = argus.norm_check ? size_W : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || k < 0 || k > n || lda < n || ldw < n);
@@ -353,7 +353,7 @@ void testing_latrd(Arguments& argus)
     }
 
     // check computations
-    if(argus.unit_check || argus.norm_check)
+    if(argus.norm_check)
         latrd_getError<T>(handle, uplo, n, k, dA, lda, dE, dTau, dW, ldw, hA, hARes, hE, hTau, hW,
                           hWRes, &max_error);
 
@@ -364,8 +364,7 @@ void testing_latrd(Arguments& argus)
 
     // validate results for rocsolver-test
     // using k*n * machine_precision as tolerance
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, k * n);
+    ROCSOLVER_TEST_CHECK(T, max_error, k * n);
 
     // output results for rocsolver-bench
     if(argus.timing)

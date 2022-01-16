@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -192,8 +192,8 @@ void testing_sterf(Arguments& argus)
     size_t size_E = n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_DRes = (argus.unit_check || argus.norm_check) ? size_D : 0;
-    size_t size_ERes = (argus.unit_check || argus.norm_check) ? size_E : 0;
+    size_t size_DRes = argus.norm_check ? size_D : 0;
+    size_t size_ERes = argus.norm_check ? size_E : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0);
@@ -253,7 +253,7 @@ void testing_sterf(Arguments& argus)
     }
 
     // check computations
-    if(argus.unit_check || argus.norm_check)
+    if(argus.norm_check)
         sterf_getError<T>(handle, n, dD, dE, dInfo, hD, hDRes, hE, hERes, hInfo, &max_error);
 
     // collect performance data
@@ -263,8 +263,7 @@ void testing_sterf(Arguments& argus)
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+    ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)

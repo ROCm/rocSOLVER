@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -317,9 +317,9 @@ void testing_labrd(Arguments& argus)
     size_t size_Y = ldy * nb;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
-    size_t size_XRes = (argus.unit_check || argus.norm_check) ? size_X : 0;
-    size_t size_YRes = (argus.unit_check || argus.norm_check) ? size_Y : 0;
+    size_t size_ARes = argus.norm_check ? size_A : 0;
+    size_t size_XRes = argus.norm_check ? size_X : 0;
+    size_t size_YRes = argus.norm_check ? size_Y : 0;
 
     // check invalid sizes
     bool invalid_size = (m < 0 || n < 0 || nb < 0 || nb > min(m, n) || lda < m || ldx < m || ldy < n);
@@ -402,7 +402,7 @@ void testing_labrd(Arguments& argus)
     }
 
     // check computations
-    if(argus.unit_check || argus.norm_check)
+    if(argus.norm_check)
         labrd_getError<T>(handle, m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy, hA,
                           hARes, hD, hE, hTauq, hTaup, hX, hXRes, hY, hYRes, &max_error);
 
@@ -414,8 +414,7 @@ void testing_labrd(Arguments& argus)
 
     // validate results for rocsolver-test
     // using nb * max(m,n) * machine_precision as tolerance
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, nb * max(m, n));
+    ROCSOLVER_TEST_CHECK(T, max_error, nb * max(m, n));
 
     // output results for rocsolver-bench
     if(argus.timing)

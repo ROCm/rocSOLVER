@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -314,7 +314,7 @@ void testing_posv(Arguments& argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
+    rocblas_stride stBRes = argus.norm_check ? stB : 0;
 
     // check non-supported values
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
@@ -340,7 +340,7 @@ void testing_posv(Arguments& argus)
     size_t size_B = size_t(ldb) * nrhs;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_BRes = (argus.unit_check || argus.norm_check) ? size_B : 0;
+    size_t size_BRes = argus.norm_check ? size_B : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || nrhs < 0 || lda < n || ldb < n || bc < 0);
@@ -415,7 +415,7 @@ void testing_posv(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
             posv_getError<STRIDED, T>(handle, uplo, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo, bc,
                                       hA, hB, hBRes, hInfo, hInfoRes, &max_error, argus.singular);
 
@@ -456,7 +456,7 @@ void testing_posv(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
             posv_getError<STRIDED, T>(handle, uplo, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo, bc,
                                       hA, hB, hBRes, hInfo, hInfoRes, &max_error, argus.singular);
 
@@ -469,8 +469,7 @@ void testing_posv(Arguments& argus)
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+    ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)

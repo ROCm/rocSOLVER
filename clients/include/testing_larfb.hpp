@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -394,7 +394,7 @@ void testing_larfb(Arguments& argus)
     size_t size_A = size_t(lda) * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_Ar = (argus.unit_check || argus.norm_check) ? size_A : 0;
+    size_t size_Ar = argus.norm_check ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = (m < 0 || n < 0 || k < 1 || ldt < k || lda < m || (row && ldv < k)
@@ -458,7 +458,7 @@ void testing_larfb(Arguments& argus)
     }
 
     // check computations
-    if(argus.unit_check || argus.norm_check)
+    if(argus.norm_check)
         larfb_getError<T>(handle, side, trans, direct, storev, m, n, k, dV, ldv, dT, ldt, dA, lda,
                           hV, hT, hA, hAr, &max_error);
 
@@ -471,8 +471,7 @@ void testing_larfb(Arguments& argus)
     // validate results for rocsolver-test
     // using s * machine_precision as tolerance
     rocblas_int s = left ? m : n;
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, s);
+    ROCSOLVER_TEST_CHECK(T, max_error, s);
 
     // output results for rocsolver-bench
     if(argus.timing)

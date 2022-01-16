@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -353,8 +353,8 @@ void testing_sytf2_sytrf(Arguments& argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
-    rocblas_stride stPRes = (argus.unit_check || argus.norm_check) ? stP : 0;
+    rocblas_stride stARes = argus.norm_check ? stA : 0;
+    rocblas_stride stPRes = argus.norm_check ? stP : 0;
 
     // check non-supported values
     if(uplo == rocblas_fill_full)
@@ -381,8 +381,8 @@ void testing_sytf2_sytrf(Arguments& argus)
     size_t size_P = size_t(n);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
-    size_t size_PRes = (argus.unit_check || argus.norm_check) ? size_P : 0;
+    size_t size_ARes = argus.norm_check ? size_A : 0;
+    size_t size_PRes = argus.norm_check ? size_P : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < n || bc < 0);
@@ -460,7 +460,7 @@ void testing_sytf2_sytrf(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
             sytf2_sytrf_getError<STRIDED, SYTRF, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP,
                                                     dInfo, bc, hA, hARes, hIpiv, hIpivRes, hInfo,
                                                     hInfoRes, &max_error, argus.singular);
@@ -504,7 +504,7 @@ void testing_sytf2_sytrf(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.norm_check)
             sytf2_sytrf_getError<STRIDED, SYTRF, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP,
                                                     dInfo, bc, hA, hARes, hIpiv, hIpivRes, hInfo,
                                                     hInfoRes, &max_error, argus.singular);
@@ -519,8 +519,7 @@ void testing_sytf2_sytrf(Arguments& argus)
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
-    if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+    ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)
