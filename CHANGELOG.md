@@ -11,6 +11,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Deprecated
 ### Removed
 ### Fixed
+- Fixed missing synchronization in SYTRF with `rocblas_fill_lower` that could potentially
+  result in incorrect pivot values.
+
 ### Known Issues
 ### Security
 

@@ -122,6 +122,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
             sytf2_device_lower<SYTRF_MAX_THDS>(tid, n - k, A + k + k * lda, lda, ipiv + k, &iinfo,
                                                sidx, sval);
             ktemp = n;
+            __syncthreads();
         }
 
         if(tid == 0 && iinfo != 0 && info[bid] == 0)
