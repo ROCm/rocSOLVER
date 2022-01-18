@@ -3,22 +3,15 @@
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
 ## (Unreleased) rocSOLVER
-### Added
-### Optimized
 ### Changed
 - Moved license directory from `share/doc/rocSOLVER` to `share/doc/rocsolver`.
 
-### Deprecated
-### Removed
 ### Fixed
 - Fixed missing synchronization in SYTRF with `rocblas_fill_lower` that could potentially
   result in incorrect pivot values.
 
-### Known Issues
-### Security
 
-
-## (Unreleased) rocSOLVER 3.16.0
+## rocSOLVER 3.16.0 for ROCm 5.0.0
 ### Added
 - Symmetric matrix factorizations:
     - LASYF
