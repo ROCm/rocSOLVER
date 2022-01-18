@@ -6,6 +6,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 ### Optimized
 ### Changed
+- Moved license directory from `share/doc/rocSOLVER` to `share/doc/rocsolver`.
+
 ### Deprecated
 ### Removed
 ### Fixed
