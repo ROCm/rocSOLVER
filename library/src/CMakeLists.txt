@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # package_targets is used as a list of install target
@@ -281,11 +281,6 @@ endif()
 
 ############################################################
 # Installation
-
-# Force installation of LICENSE.md
-install(FILES "../../LICENSE.md"
-	DESTINATION "share/doc/rocSOLVER"
-)
 
 rocm_install_targets(
   TARGETS ${package_targets}
