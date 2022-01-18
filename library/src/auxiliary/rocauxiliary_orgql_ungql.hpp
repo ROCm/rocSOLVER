@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -41,7 +41,7 @@ void rocsolver_orgql_ungql_getMemorySize(const rocblas_int m,
     rocsolver_org2l_ung2l_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars,
                                                     size_Abyx_tmptr, size_workArr);
 
-    if(k <= ORGxx_UNGxx_SWITCHSIZE)
+    if(k <= xxGQx_xxGQx2_SWITCHSIZE)
     {
         *size_work = 0;
         *size_trfact = 0;
@@ -49,8 +49,8 @@ void rocsolver_orgql_ungql_getMemorySize(const rocblas_int m,
 
     else
     {
-        rocblas_int jb = ORGxx_UNGxx_BLOCKSIZE;
-        rocblas_int j = ((k - ORGxx_UNGxx_SWITCHSIZE - 1) / jb) * jb;
+        rocblas_int jb = xxGQx_BLOCKSIZE;
+        rocblas_int j = ((k - xxGQx_xxGQx2_SWITCHSIZE - 1) / jb) * jb;
         rocblas_int kk = min(k, j + jb);
 
         // size of workspace is maximum of what is needed by larft and larfb.
@@ -95,16 +95,16 @@ rocblas_status rocsolver_orgql_ungql_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     // if the matrix is small, use the unblocked variant of the algorithm
-    if(k <= ORGxx_UNGxx_SWITCHSIZE)
+    if(k <= xxGQx_xxGQx2_SWITCHSIZE)
         return rocsolver_org2l_ung2l_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv,
                                                  strideP, batch_count, scalars, Abyx_tmptr, workArr);
 
-    rocblas_int ldw = ORGxx_UNGxx_BLOCKSIZE;
+    rocblas_int ldw = xxGQx_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
-    // size of blocked part
-    rocblas_int jb = ORGxx_UNGxx_BLOCKSIZE;
-    rocblas_int kk = min(k, ((k - ORGxx_UNGxx_SWITCHSIZE + jb - 1) / jb) * jb);
+    // size of unblocked part
+    rocblas_int jb = ldw;
+    rocblas_int kk = min(k, ((k - xxGQx_xxGQx2_SWITCHSIZE + jb - 1) / jb) * jb);
 
     // start of first blocked block is j + n - k = n - kk
     rocblas_int j = k - kk;

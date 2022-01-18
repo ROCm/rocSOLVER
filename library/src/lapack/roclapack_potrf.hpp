@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -50,7 +50,8 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         return;
     }
 
-    if(n < POTRF_POTF2_SWITCHSIZE)
+    rocblas_int jb = POTRF_BLOCKSIZE;
+    if(n <= POTRF_POTF2_SWITCHSIZE)
     {
         // requirements for calling a single POTF2
         rocsolver_potf2_getMemorySize<T>(n, batch_count, size_scalars, size_work1, size_pivots);
@@ -62,7 +63,6 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
     }
     else
     {
-        rocblas_int jb = POTRF_POTF2_SWITCHSIZE;
         size_t s1, s2;
 
         // size to store info about positiveness of each subblock
@@ -117,9 +117,9 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(BLOCKSIZE, 1, 1);
+    dim3 threads(BS1, 1, 1);
 
     // info=0 (starting with a positive definite matrix)
     ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
@@ -135,7 +135,8 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
 
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
     // algorithm
-    if(n < POTRF_POTF2_SWITCHSIZE)
+    rocblas_int nb = POTRF_BLOCKSIZE;
+    if(n <= POTRF_POTF2_SWITCHSIZE)
         return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info,
                                            batch_count, scalars, (T*)work1, pivots);
 
@@ -144,7 +145,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     S s_one = 1;
     S s_minone = -1;
 
-    rocblas_int jb;
+    rocblas_int jb, j = 0;
 
     // (TODO: When the matrix is detected to be non positive definite, we need to
     //  prevent TRSM and HERK to modify further the input matrix; ideally with no
@@ -153,10 +154,10 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     if(uplo == rocblas_fill_upper)
     {
         // Compute the Cholesky factorization A = U'*U.
-        for(rocblas_int j = 0; j < n; j += POTRF_POTF2_SWITCHSIZE)
+        while(j < n - POTRF_POTF2_SWITCHSIZE)
         {
             // Factor diagonal and subdiagonal blocks
-            jb = min(n - j, POTRF_POTF2_SWITCHSIZE); // number of columns in the block
+            jb = min(n - j, nb); // number of columns in the block
             ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
@@ -179,15 +180,16 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                     A, shiftA + idx2D(j, j + jb, lda), lda, strideA, &s_one, A,
                     shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count);
             }
+            j += nb;
         }
     }
     else
     {
         // Compute the Cholesky factorization A = L*L'.
-        for(rocblas_int j = 0; j < n; j += POTRF_POTF2_SWITCHSIZE)
+        while(j < n - POTRF_POTF2_SWITCHSIZE)
         {
             // Factor diagonal and subdiagonal blocks
-            jb = min(n - j, POTRF_POTF2_SWITCHSIZE); // number of columns in the block
+            jb = min(n - j, nb); // number of columns in the block
             ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
@@ -210,7 +212,17 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                          &s_one, A, shiftA + idx2D(j + jb, j + jb, lda), lda,
                                          strideA, batch_count);
             }
+            j += nb;
         }
+    }
+
+    // factor last block
+    if(j < n)
+    {
+        rocsolver_potf2_template<T>(handle, uplo, n - j, A, shiftA + idx2D(j, j, lda), lda, strideA,
+                                    iinfo, batch_count, scalars, (T*)work1, pivots);
+        ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info, j,
+                                batch_count);
     }
 
     rocblas_set_pointer_mode(handle, old_mode);

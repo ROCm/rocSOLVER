@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -13,6 +13,20 @@
 #include "lib_device_helpers.hpp"
 #include "lib_host_helpers.hpp"
 #include "rocsolver_logger.hpp"
+
+// THESE FOLLOWING VALUES ARE TO MATCH ROCBLAS C++ INTERFACE
+// THEY ARE DEFINED/TUNED IN ROCBLAS
+#define ROCBLAS_AXPY_NB 256
+#define ROCBLAS_SCAL_NB 256
+#define ROCBLAS_DOT_NB 512
+#define ROCBLAS_TRMV_NB 512
+#define ROCBLAS_TRMM_REAL_NB 32
+#define ROCBLAS_TRMM_COMPLEX_NB 16
+#define ROCBLAS_IAMAX_NB 1024
+#define ROCBLAS_TRSV_BLOCK 64
+#define ROCBLAS_TRSV_Z_BLOCK 32
+#define ROCBLAS_TRSM_BLOCK 128
+#define ROCBLAS_TRTRI_NB 16
 
 template <typename T>
 struct rocblas_index_value_t;
