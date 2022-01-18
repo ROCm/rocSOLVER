@@ -220,6 +220,8 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     if(j < n)
         rocsolver_potf2_template<T>(handle, uplo, n-j, A, shiftA + idx2D(j, j, lda), lda,
                                     strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
+    ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo,
+                            info, j, batch_count);
 
 
     rocblas_set_pointer_mode(handle, old_mode);
