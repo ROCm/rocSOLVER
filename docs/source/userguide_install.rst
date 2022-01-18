@@ -39,6 +39,8 @@ rocSOLVER can be installed using a package manager. On Ubuntu, for example, use 
     sudo apt-get install rocsolver
 
 
+.. _userguide_install_source:
+
 Building & installing from source
 =====================================
 

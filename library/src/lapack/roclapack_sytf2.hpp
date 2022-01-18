@@ -5,7 +5,7 @@
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
  *
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -13,6 +13,10 @@
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
+
+/** thread-block size for calling the sytf2 kernel.
+    (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/
+#define SYTF2_MAX_THDS 256
 
 template <int MAX_THDS, typename T, typename S>
 __device__ void sytf2_device_upper(const rocblas_int tid,
@@ -474,9 +478,9 @@ rocblas_status rocsolver_sytf2_template(rocblas_handle handle,
     if(n == 0)
     {
         // set info = 0
-        rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+        rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
         dim3 gridReset(blocksReset, 1, 1);
-        dim3 threadsReset(BLOCKSIZE, 1, 1);
+        dim3 threadsReset(BS1, 1, 1);
         ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, info, batch_count, 0);
 
         return rocblas_status_success;

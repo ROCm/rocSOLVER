@@ -146,9 +146,9 @@ rocblas_status rocsolver_gels_outofplace_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(BLOCKSIZE, 1, 1);
+    dim3 threads(BS1, 1, 1);
 
     // info=0 (starting with a nonsingular matrix)
     ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
@@ -176,7 +176,7 @@ rocblas_status rocsolver_gels_outofplace_template(rocblas_handle handle,
 
     // constants in host memory
     const rocblas_stride strideP = std::min(m, n);
-    const rocblas_int check_threads = std::min(((std::min(m, n) - 1) / 64 + 1) * 64, BLOCKSIZE);
+    const rocblas_int check_threads = std::min(((std::min(m, n) - 1) / 64 + 1) * 64, BS1);
     const rocblas_int copyblocksmin = (std::min(m, n) - 1) / 32 + 1;
     const rocblas_int copyblocksmax = (std::max(m, n) - 1) / 32 + 1;
     const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;

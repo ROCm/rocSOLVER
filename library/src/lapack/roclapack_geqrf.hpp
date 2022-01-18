@@ -46,7 +46,7 @@ void rocsolver_geqrf_getMemorySize(const rocblas_int m,
     else
     {
         size_t w1, w2, unused, s1, s2;
-        rocblas_int jb = GEQxF_GEQx2_BLOCKSIZE;
+        rocblas_int jb = GEQxF_BLOCKSIZE;
 
         // size to store the temporary triangular factor
         *size_Abyx_norms_trfact = sizeof(T) * jb * jb * batch_count;
@@ -110,13 +110,14 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
     rocblas_int dim = min(m, n); // total number of pivots
     rocblas_int jb, j = 0;
 
-    rocblas_int ldw = GEQxF_GEQx2_BLOCKSIZE;
+    rocblas_int nb = GEQxF_BLOCKSIZE;
+    rocblas_int ldw = GEQxF_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
     while(j < dim - GEQxF_GEQx2_SWITCHSIZE)
     {
         // Factor diagonal and subdiagonal blocks
-        jb = min(dim - j, GEQxF_GEQx2_BLOCKSIZE); // number of columns in the block
+        jb = min(dim - j, nb); // number of columns in the block
         rocsolver_geqr2_template<T>(handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
                                     (ipiv + j), strideP, batch_count, scalars, work_workArr,
                                     Abyx_norms_trfact, diag_tmptr);
@@ -137,7 +138,7 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
                 shiftA + idx2D(j, j, lda), lda, strideA, Abyx_norms_trfact, 0, ldw, strideW, A,
                 shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count, diag_tmptr, workArr);
         }
-        j += GEQxF_GEQx2_BLOCKSIZE;
+        j += nb;
     }
 
     // factor last block
