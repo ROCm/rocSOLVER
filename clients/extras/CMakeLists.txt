@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 find_package(GTest REQUIRED)
@@ -30,4 +30,15 @@ if(UNIX AND BUILD_SHARED_LIBS)
     NAME test-rocsolver-dlopen
     COMMAND test-rocsolver-dlopen
   )
+
+  if(TARGET rocsolver-bench)
+    find_package(Python3 COMPONENTS Interpreter)
+    if(Python3_FOUND)
+      add_test(
+        NAME test-rocsolver-bench
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/test_rocsolver_bench.py"
+        WORKING_DIRECTORY "$<TARGET_FILE_DIR:rocsolver-bench>"
+      )
+    endif()
+  endif()
 endif()
