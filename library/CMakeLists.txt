@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # This is incremented when the ABI to the library changes
@@ -29,8 +29,8 @@ set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
 add_subdirectory(src)
 
 # Package-specific CPACK vars
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "rocblas (>= 2.43), rocblas (<< 2.44)")
-set(CPACK_RPM_PACKAGE_REQUIRES "rocblas >= 2.43, rocblas < 2.44")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "rocblas (>= 2.44), rocblas (<< 2.45)")
+set(CPACK_RPM_PACKAGE_REQUIRES "rocblas >= 2.44, rocblas < 2.45")
 
 if(OS_ID_sles)
   set(RPM_REQUIREMENTS "${RPM_REQUIREMENTS}, libLLVM7 >= 7.0.1")
