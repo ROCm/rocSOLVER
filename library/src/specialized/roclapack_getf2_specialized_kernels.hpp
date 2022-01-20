@@ -4,7 +4,7 @@
  * Factorization and inversion of a million matrices using GPUs: Challenges
  * and countermeasures. Procedia Computer Science, 108, 606-615.
  *
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -71,8 +71,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     for(int j = 0; j < DIM; ++j)
         rA[j] = A[myrow + j * lda];
 
-        // for each pivot (main loop)
-#pragma unroll DIM
+    // for each pivot (main loop)
     for(int k = 0; k < DIM; ++k)
     {
         // share current column
@@ -176,8 +175,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     for(int j = 0; j < DIM; ++j)
         rA[j] = A[myrow + j * lda];
 
-        // for each pivot (main loop)
-#pragma unroll DIM
+    // for each pivot (main loop)
     for(int k = 0; k < DIM; ++k)
     {
         // share pivot row and check singularity

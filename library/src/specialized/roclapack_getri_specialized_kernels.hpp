@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -81,7 +81,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
         diag[i] = -rA[i];
 
         // compute element i of each column j
-#pragma unroll
         for(rocblas_int j = 1; j < DIM; j++)
         {
             // share current column and diagonal
@@ -104,8 +103,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
     if(info[b] != 0)
         return;
 
-        //--- GETRI ---
-#pragma unroll
+    //--- GETRI ---
     for(rocblas_int j = DIM - 2; j >= 0; j--)
     {
         // extract lower triangular column (copy_and_zero)
