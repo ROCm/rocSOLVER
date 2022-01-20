@@ -29,7 +29,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
                        rocblas_int* ipivA,
                        const rocblas_int shiftP,
                        const rocblas_stride strideP,
-                       rocblas_int* infoA,
+                       rocblas_int* info,
                        const rocblas_int batch_count,
                        const rocblas_int offset,
                        rocblas_int* permut_idx,
@@ -50,7 +50,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     ipiv = load_ptr_batch<rocblas_int>(ipivA, id, shiftP, strideP);
     if(permut_idx)
         permut = permut_idx + id * stridePI;
-    rocblas_int* info = infoA + id;
 
     // shared memory (for communication between threads in group)
     // (SHUFFLES DO NOT IMPROVE PERFORMANCE IN THIS CASE)
@@ -72,16 +71,16 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
         rA[j] = A[myrow + j * lda];
 
     // for each pivot (main loop)
-    for(int k = 0; k < DIM; ++k)
+    for(int j = 0; j < DIM; ++j)
     {
         // share current column
-        common[myrow] = rA[k];
+        common[myrow] = rA[j];
         __syncthreads();
 
         // search pivot index
-        pivot_index = k;
-        pivot_value = common[k];
-        for(int i = k + 1; i < m; ++i)
+        pivot_index = j;
+        pivot_value = common[j];
+        for(int i = j + 1; i < m; ++i)
         {
             test_value = common[i];
             if(aabs<S>(pivot_value) < aabs<S>(test_value))
@@ -95,31 +94,31 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
         if(pivot_value != T(0))
             pivot_value = S(1) / pivot_value;
         else if(myinfo == 0)
-            myinfo = k + 1;
+            myinfo = j + 1;
 
         // swap rows (lazy swaping)
         if(myrow == pivot_index)
         {
-            myrow = k;
+            myrow = j;
             // share pivot row
-            for(int j = k + 1; j < DIM; ++j)
-                common[j] = rA[j];
+            for(int i = j + 1; i < DIM; ++i)
+                common[i] = rA[i];
         }
-        else if(myrow == k)
+        else if(myrow == j)
         {
             myrow = pivot_index;
             mypiv = pivot_index + 1;
-            if(permut_idx && pivot_index != k)
-                swap(permut[k], permut[pivot_index]);
+            if(permut_idx && pivot_index != j)
+                swap(permut[j], permut[pivot_index]);
         }
         __syncthreads();
 
         // scale current column and update trailing matrix
-        if(myrow > k)
+        if(myrow > j)
         {
-            rA[k] *= pivot_value;
-            for(int j = k + 1; j < DIM; ++j)
-                rA[j] -= rA[k] * common[j];
+            rA[j] *= pivot_value;
+            for(int i = j + 1; i < DIM; ++i)
+                rA[i] -= rA[j] * common[i];
         }
         __syncthreads();
     }
@@ -128,7 +127,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
     if(myrow < DIM)
         ipiv[myrow] = mypiv + offset;
     if(myrow == 0 && *info == 0 && myinfo > 0)
-        *info = myinfo + offset;
+        info[id] = myinfo + offset;
 #pragma unroll DIM
     for(int j = 0; j < DIM; ++j)
         A[myrow + j * lda] = rA[j];
@@ -142,7 +141,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
                             const rocblas_int shiftA,
                             const rocblas_int lda,
                             const rocblas_stride strideA,
-                            rocblas_int* infoA,
+                            rocblas_int* info,
                             const rocblas_int batch_count,
                             const rocblas_int offset)
 {
@@ -157,7 +156,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
 
     // batch instance
     T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
-    rocblas_int* info = infoA + id;
 
     // shared memory (for communication between threads in group)
     // (SHUFFLES DO NOT IMPROVE PERFORMANCE IN THIS CASE)
@@ -176,35 +174,35 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
         rA[j] = A[myrow + j * lda];
 
     // for each pivot (main loop)
-    for(int k = 0; k < DIM; ++k)
+    for(int j = 0; j < DIM; ++j)
     {
         // share pivot row and check singularity
-        if(myrow == k)
+        if(myrow == j)
         {
-            val[ty] = rA[k];
-            for(int j = k + 1; j < DIM; ++j)
-                common[j] = rA[j];
+            val[ty] = rA[j];
+            for(int i = j + 1; i < DIM; ++i)
+                common[i] = rA[i];
 
             if(val[ty] != T(0))
                 val[ty] = S(1) / val[ty];
             else if(myinfo == 0)
-                myinfo = k + 1;
+                myinfo = j + 1;
         }
         __syncthreads();
 
         // scale current column and update trailing matrix
-        if(myrow > k)
+        if(myrow > j)
         {
-            rA[k] *= val[ty];
-            for(int j = k + 1; j < DIM; ++j)
-                rA[j] -= rA[k] * common[j];
+            rA[j] *= val[ty];
+            for(int i = j + 1; i < DIM; ++i)
+                rA[i] -= rA[j] * common[i];
         }
         __syncthreads();
     }
 
     // write results to global memory
     if(myrow == 0 && *info == 0 && myinfo > 0)
-        *info = myinfo + offset;
+        info[id] = myinfo + offset;
 #pragma unroll DIM
     for(int j = 0; j < DIM; ++j)
         A[myrow + j * lda] = rA[j];
