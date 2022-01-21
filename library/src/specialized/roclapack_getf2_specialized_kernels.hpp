@@ -96,7 +96,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
         else if(myinfo == 0)
             myinfo = j + 1;
 
-        // swap rows (lazy swaping)
+        // swap rows (lazy swapping)
         if(myrow == pivot_index)
         {
             myrow = j;
