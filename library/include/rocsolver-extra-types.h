@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef ROCSOLVER_EXTRAS_H_
@@ -44,9 +44,9 @@ typedef enum rocblas_svect_
 {
     rocblas_svect_all = 191, /**< The entire associated orthogonal/unitary matrix is computed. */
     rocblas_svect_singular = 192, /**< Only the singular vectors are computed and
-                                    stored in output array. */
+                                       stored in output array. */
     rocblas_svect_overwrite = 193, /**< Only the singular vectors are computed and
-                                    overwrite the input matrix. */
+                                        overwrite the input matrix. */
     rocblas_svect_none = 194, /**< No singular vectors are computed. */
 } rocblas_svect;
 
@@ -56,7 +56,7 @@ typedef enum rocblas_svect_
 typedef enum rocblas_workmode_
 {
     rocblas_outofplace = 201, /**< Out-of-place computations are allowed; this
-                               requires extra device memory for workspace. */
+                                   requires extra device memory for workspace. */
     rocblas_inplace = 202, /**< If not enough memory is available, this forces in-place computations.  */
 } rocblas_workmode;
 
@@ -65,9 +65,9 @@ typedef enum rocblas_workmode_
 typedef enum rocblas_evect_
 {
     rocblas_evect_original = 211, /**< Compute eigenvectors for the original symmetric/Hermitian
-                                    matrix. */
+                                       matrix. */
     rocblas_evect_tridiagonal = 212, /**< Compute eigenvectors for the symmetric tridiagonal
-                                    matrix. */
+                                           matrix. */
     rocblas_evect_none = 213, /**< No eigenvectors are computed. */
 } rocblas_evect;
 
@@ -79,5 +79,26 @@ typedef enum rocblas_eform_
     rocblas_eform_abx = 222, /**< The problem is \f$ABx = \lambda x\f$. */
     rocblas_eform_bax = 223, /**< The problem is \f$BAx = \lambda x\f$. */
 } rocblas_eform;
+
+/*! \brief Used to specify the type of range in which eigenvalues will be found
+ *in partial eigenvalue decompositions
+ ********************************************************************************/
+typedef enum rocblas_erange_
+{
+    rocblas_erange_all = 231, /**< All eigenvalues will be found. */
+    rocblas_erange_value = 232, /**< All eigenvalues in the half-open interval
+                                     \f$(vl, vu]\f$ will be found. */
+    rocblas_erange_index = 233, /**< The \f$il\f$-th through \f$iu\f$-th eigenvalues will be found.*/
+} rocblas_erange;
+
+/*! \brief Used to specify whether the eigenvalues are grouped and ordered by blocks
+ ********************************************************************************/
+typedef enum rocblas_eorder_
+{
+    rocblas_eorder_blocks = 241, /**< The computed eigenvalues will be grouped by split-off
+                                      blocks and arranged in increasing order within each block. */
+    rocblas_eorder_entire = 242, /**< All computed eigenvalues of the entire matrix will be
+                                      ordered from smallest to largest. */
+} rocblas_eorder;
 
 #endif /* ROCSOLVER_EXTRAS_H_ */

@@ -39,4 +39,12 @@ rocblas_eform
 ---------------
 .. doxygenenum:: rocblas_eform
 
+rocblas_erange
+---------------
+.. doxygenenum:: rocblas_erange
+
+rocblas_eorder
+---------------
+.. doxygenenum:: rocblas_eorder
+
 

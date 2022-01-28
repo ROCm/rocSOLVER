@@ -154,6 +154,24 @@ struct formatter<rocsolver_logvalue<rocblas_eform>> : formatter<char>
     }
 };
 template <>
+struct formatter<rocsolver_logvalue<rocblas_erange>> : formatter<char>
+{
+    template <typename FormatCtx>
+    auto format(rocsolver_logvalue<rocblas_erange> wrapper, FormatCtx& ctx)
+    {
+        return formatter<char>::format(rocblas2char_erange(wrapper.value), ctx);
+    }
+};
+template <>
+struct formatter<rocsolver_logvalue<rocblas_eorder>> : formatter<char>
+{
+    template <typename FormatCtx>
+    auto format(rocsolver_logvalue<rocblas_eorder> wrapper, FormatCtx& ctx) ROCSOLVER_FMT_CONST
+    {
+        return formatter<char>::format(rocblas2char_eorder(wrapper.value), ctx);
+    }
+};
+template <>
 struct formatter<rocsolver_logvalue<rocblas_datatype>> : formatter<string_view>
 {
     template <typename FormatCtx>

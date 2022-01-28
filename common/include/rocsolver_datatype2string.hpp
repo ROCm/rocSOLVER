@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -134,6 +134,27 @@ constexpr auto rocblas2char_eform(rocblas_eform value)
     case rocblas_eform_ax: return '1';
     case rocblas_eform_abx: return '2';
     case rocblas_eform_bax: return '3';
+    }
+    return '\0';
+}
+
+constexpr auto rocblas2char_erange(rocblas_erange value)
+{
+    switch(value)
+    {
+    case rocblas_erange_all: return 'A';
+    case rocblas_erange_value: return 'V';
+    case rocblas_erange_index: return 'I';
+    }
+    return '\0';
+}
+
+constexpr auto rocblas2char_eorder(rocblas_eorder value)
+{
+    switch(value)
+    {
+    case rocblas_eorder_blocks: return 'B';
+    case rocblas_eorder_entire: return 'E';
     }
     return '\0';
 }
@@ -289,6 +310,27 @@ constexpr rocblas_eform char2rocblas_eform(char value)
     case '2': return rocblas_eform_abx;
     case '3': return rocblas_eform_bax;
     default: return static_cast<rocblas_eform>(-1);
+    }
+}
+
+constexpr rocblas_erange char2rocblas_erange(char value)
+{
+    switch(value)
+    {
+    case 'A': return rocblas_erange_all;
+    case 'V': return rocblas_erange_value;
+    case 'I': return rocblas_erange_index;
+    default: return static_cast<rocblas_erange>(-1);
+    }
+}
+
+constexpr rocblas_eorder char2rocblas_eorder(char value)
+{
+    switch(value)
+    {
+    case 'B': return rocblas_eorder_blocks;
+    case 'E': return rocblas_eorder_entire;
+    default: return static_cast<rocblas_eorder>(-1);
     }
 }
 
