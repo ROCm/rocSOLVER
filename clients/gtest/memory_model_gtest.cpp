@@ -1,6 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
- *
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include <stdlib.h>
@@ -9,23 +8,7 @@
 #include <rocblas.h>
 #include <rocsolver.h>
 
-static bool set_environment_variable(const char* name, const char* value)
-{
-#ifdef _WIN32
-    return _putenv_s(name, value) == 0;
-#else
-    return setenv(name, value, 0) == 0;
-#endif
-}
-
-static bool unset_environment_variable(const char* name)
-{
-#ifdef _WIN32
-    return _putenv_s(name, "") == 0;
-#else
-    return unsetenv(name) == 0;
-#endif
-}
+#include "client_environment_helpers.hpp"
 
 class checkin_misc_MEMORY_MODEL : public ::testing::Test
 {
