@@ -247,6 +247,13 @@ try
             "                           Stride for matrices/vectors E.\n"
             "                           ")
 
+        ("strideF",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for vectors ifail.\n"
+            "                           ")
+
+
         ("strideQ",
          value<rocblas_stride>(),
             "Matrix/vector stride parameter.\n"
@@ -275,6 +282,12 @@ try
          value<rocblas_stride>(),
             "Matrix/vector stride parameter.\n"
             "                           Stride for matrices/vectors V.\n"
+            "                           ")
+
+        ("strideW",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors W.\n"
             "                           ")
 
         // bdsqr options

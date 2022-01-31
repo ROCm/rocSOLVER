@@ -5625,6 +5625,234 @@ inline rocblas_status rocsolver_syevd_heevd(bool STRIDED,
 }
 /********************************************************/
 
+/******************** SYEVX/HEEVX ********************/
+// normal and strided_batched
+inline rocblas_status rocsolver_syevx_heevx(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_erange erange,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            float* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float vl,
+                                            float vu,
+                                            rocblas_int il,
+                                            rocblas_int iu,
+                                            rocblas_int* nev,
+                                            float* W,
+                                            rocblas_stride stW,
+                                            float* Z,
+                                            rocblas_int ldz,
+                                            rocblas_stride stZ,
+                                            rocblas_int* ifail,
+                                            rocblas_stride strideF,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return STRIDED
+        ? rocblas_status_not_implemented // rocsolver_ssyevx_strided_batched(handle, evect, erange, uplo, n, A, lda, stA, vl, vu, il, iu, nev, W, stW, Z, ldz, stZ, ifail, strideF, info, bc)
+        : rocblas_status_not_implemented; // rocsolver_ssyevx(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, nev, W, Z, ldz, ifail, info);
+}
+
+inline rocblas_status rocsolver_syevx_heevx(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_erange erange,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            double* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double vl,
+                                            double vu,
+                                            rocblas_int il,
+                                            rocblas_int iu,
+                                            rocblas_int* nev,
+                                            double* W,
+                                            rocblas_stride stW,
+                                            double* Z,
+                                            rocblas_int ldz,
+                                            rocblas_stride stZ,
+                                            rocblas_int* ifail,
+                                            rocblas_stride strideF,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return STRIDED
+        ? rocblas_status_not_implemented // rocsolver_dsyevx_strided_batched(handle, evect, erange, uplo, n, A, lda, stA, vl, vu, il, iu, nev, W, stW, Z, ldz, stZ, ifail, strideF, info, bc)
+        : rocblas_status_not_implemented; // rocsolver_dsyevx(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, nev, W, Z, ldz, ifail, info);
+}
+
+inline rocblas_status rocsolver_syevx_heevx(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_erange erange,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_float_complex* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float vl,
+                                            float vu,
+                                            rocblas_int il,
+                                            rocblas_int iu,
+                                            rocblas_int* nev,
+                                            float* W,
+                                            rocblas_stride stW,
+                                            rocblas_float_complex* Z,
+                                            rocblas_int ldz,
+                                            rocblas_stride stZ,
+                                            rocblas_int* ifail,
+                                            rocblas_stride strideF,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return STRIDED
+        ? rocblas_status_not_implemented // rocsolver_cheevx_strided_batched(handle, evect, erange, uplo, n, A, lda, stA, vl, vu, il, iu, nev, W, stW, Z, ldz, stZ, ifail, strideF, info, bc)
+        : rocblas_status_not_implemented; // rocsolver_cheevx(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, nev, W, Z, ldz, ifail, info);
+}
+
+inline rocblas_status rocsolver_syevx_heevx(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_erange erange,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_double_complex* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double vl,
+                                            double vu,
+                                            rocblas_int il,
+                                            rocblas_int iu,
+                                            rocblas_int* nev,
+                                            double* W,
+                                            rocblas_stride stW,
+                                            rocblas_double_complex* Z,
+                                            rocblas_int ldz,
+                                            rocblas_stride stZ,
+                                            rocblas_int* ifail,
+                                            rocblas_stride strideF,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return STRIDED
+        ? rocblas_status_not_implemented // rocsolver_zheevx_strided_batched(handle, evect, erange, uplo, n, A, lda, stA, vl, vu, il, iu, nev, W, stW, Z, ldz, stZ, ifail, strideF, info, bc)
+        : rocblas_status_not_implemented; // rocsolver_zheevx(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, nev, W, Z, ldz, ifail, info);
+}
+
+// batched
+inline rocblas_status rocsolver_syevx_heevx(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_erange erange,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            float* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float vl,
+                                            float vu,
+                                            rocblas_int il,
+                                            rocblas_int iu,
+                                            rocblas_int* nev,
+                                            float* W,
+                                            rocblas_stride stW,
+                                            float* const Z[],
+                                            rocblas_int ldz,
+                                            rocblas_stride stZ,
+                                            rocblas_int* ifail,
+                                            rocblas_stride strideF,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_ssyevx_batched(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, nev, W, stW, Z, ldz, ifail, strideF, info, bc);
+}
+
+inline rocblas_status rocsolver_syevx_heevx(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_erange erange,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            double* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double vl,
+                                            double vu,
+                                            rocblas_int il,
+                                            rocblas_int iu,
+                                            rocblas_int* nev,
+                                            double* W,
+                                            rocblas_stride stW,
+                                            double* const Z[],
+                                            rocblas_int ldz,
+                                            rocblas_stride stZ,
+                                            rocblas_int* ifail,
+                                            rocblas_stride strideF,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_dsyevx_batched(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, nev, W, stW, Z, ldz, ifail, strideF, info, bc);
+}
+
+inline rocblas_status rocsolver_syevx_heevx(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_erange erange,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_float_complex* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float vl,
+                                            float vu,
+                                            rocblas_int il,
+                                            rocblas_int iu,
+                                            rocblas_int* nev,
+                                            float* W,
+                                            rocblas_stride stW,
+                                            rocblas_float_complex* const Z[],
+                                            rocblas_int ldz,
+                                            rocblas_stride stZ,
+                                            rocblas_int* ifail,
+                                            rocblas_stride strideF,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_cheevx_batched(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, nev, W, stW, Z, ldz, ifail, strideF, info, bc);
+}
+
+inline rocblas_status rocsolver_syevx_heevx(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_erange erange,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_double_complex* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double vl,
+                                            double vu,
+                                            rocblas_int il,
+                                            rocblas_int iu,
+                                            rocblas_int* nev,
+                                            double* W,
+                                            rocblas_stride stW,
+                                            rocblas_double_complex* const Z[],
+                                            rocblas_int ldz,
+                                            rocblas_stride stZ,
+                                            rocblas_int* ifail,
+                                            rocblas_stride strideF,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_zheevx_batched(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, nev, W, stW, Z, ldz, ifail, strideF, info, bc);
+}
+/********************************************************/
+
 /******************** SYGV_HEGV ********************/
 // normal and strided_batched
 inline rocblas_status rocsolver_sygv_hegv(bool STRIDED,
