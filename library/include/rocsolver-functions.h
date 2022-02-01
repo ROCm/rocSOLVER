@@ -4019,7 +4019,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dstebz(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief STEIN computes the eigenvectors associated with a set of 
+    \brief STEIN computes the eigenvectors associated with a set of
     provided eigenvalues of a symmetric tridiagonal matrix.
 
     \details
@@ -14999,6 +14999,796 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
                                                                  const rocblas_stride strideD,
                                                                  double* E,
                                                                  const rocblas_stride strideE,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief SYEVX computes a set of the eigenvalues and optionally the eigenvectors of a
+    real symmetric matrix A.
+
+    \details
+    This function computes all the eigenvalues of A, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
+    or the il-th through iu-th eigenvalues, depending on the value of range. If evect is rocblas_evect_original,
+    the eigenvectors for these eigenvalues will be computed as well.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    erange      #rocblas_erange.\n
+                Specifies the type of range or interval of the eigenvalues to be computed.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrix A is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrix A.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A. On exit, the contents of A are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrix A.
+    @param[in]
+    vl          type. vl < vu.\n
+                The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues within a set of indices.
+    @param[in]
+    vu          type. vl < vu.\n
+                The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues within a set of indices.
+    @param[in]
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+                The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues in a half-open interval.
+    @param[in]
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+                The index of the largest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[out]
+    nev         pointer to a rocblas_int on the GPU.\n
+                The total number of eigenvalues found. If erange is rocblas_erange_all, nev = n.
+                If erange is rocblas_erange_index, nev = iu - il + 1. Otherwise, 0 <= nev <= n.
+    @param[out]
+    W           pointer to type. Array on the GPU of dimension n.\n
+                The first nev elements contain the computed eigenvalues. (The remaining elements
+                can be used as workspace for internal computations).
+    @param[out]
+    Z           pointer to type. Array on the GPU of dimension ldz*nev.\n
+                On exit, if evect is not rocblas_evect_none and info = 0, the first nev columns contain
+                the eigenvectors of A corresponding to the output eigenvalues. Not referenced if
+                evect is rocblas_evect_none.
+                Note: If erange is rocblas_range_value, then the value of nev is not known in advance.
+                The user should use an upper bound for nev (e.g. n, in the worst case) in order to make
+                Z large enough to hold all output eigenvectors.
+    @param[in]
+    ldz         rocblas_int. ldz >= n.\n
+                Specifies the leading dimension of matrix Z.
+    @param[out]
+    ifail       pointer to rocblas_int. Array on the GPU of dimension n.\n
+                If info = 0, the first nev elements of ifail are zero.
+                Otherwise, contains the indices of those eigenvectors that failed
+                to converge. Not referenced if evect is rocblas_evect_none.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, the algorithm did not converge. i columns of Z did not converge.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevx(rocblas_handle handle,
+                                                 const rocblas_evect evect,
+                                                 const rocblas_erange erange,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 float* A,
+                                                 const rocblas_int lda,
+                                                 const float vl,
+                                                 const float vu,
+                                                 const rocblas_int il,
+                                                 const rocblas_int iu,
+                                                 rocblas_int* nev,
+                                                 float* W,
+                                                 float* Z,
+                                                 const rocblas_int ldz,
+                                                 rocblas_int* ifail,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx(rocblas_handle handle,
+                                                 const rocblas_evect evect,
+                                                 const rocblas_erange erange,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 double* A,
+                                                 const rocblas_int lda,
+                                                 const double vl,
+                                                 const double vu,
+                                                 const rocblas_int il,
+                                                 const rocblas_int iu,
+                                                 rocblas_int* nev,
+                                                 double* W,
+                                                 double* Z,
+                                                 const rocblas_int ldz,
+                                                 rocblas_int* ifail,
+                                                 rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief HEEVX computes a set of the eigenvalues and optionally the eigenvectors of a
+    Hermitian matrix A.
+
+    \details
+    This function computes all the eigenvalues of A, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
+    or the il-th through iu-th eigenvalues, depending on the value of range. If evect is rocblas_evect_original,
+    the eigenvectors for these eigenvalues will be computed as well.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    erange      #rocblas_erange.\n
+                Specifies the type of range or interval of the eigenvalues to be computed.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrix A is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrix A.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A. On exit, the contents of A are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrix A.
+    @param[in]
+    vl          real type. vl < vu.\n
+                The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues within a set of indices.
+    @param[in]
+    vu          real type. vl < vu.\n
+                The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues within a set of indices.
+    @param[in]
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+                The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues in a half-open interval.
+    @param[in]
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+                The index of the largest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[out]
+    nev         pointer to a rocblas_int on the GPU.\n
+                The total number of eigenvalues found. If erange is rocblas_erange_all, nev = n.
+                If erange is rocblas_erange_index, nev = iu - il + 1. Otherwise, 0 <= nev <= n.
+    @param[out]
+    W           pointer to real type. Array on the GPU of dimension n.\n
+                The first nev elements contain the computed eigenvalues. (The remaining elements
+                can be used as workspace for internal computations).
+    @param[out]
+    Z           pointer to type. Array on the GPU of dimension ldz*nev.\n
+                On exit, if evect is not rocblas_evect_none and info = 0, the first nev columns contain
+                the eigenvectors of A corresponding to the output eigenvalues. Not referenced if
+                evect is rocblas_evect_none.
+                Note: If erange is rocblas_range_value, then the value of nev is not known in advance.
+                The user should use an upper bound for nev (e.g. n, in the worst case) in order to make
+                Z large enough to hold all output eigenvectors.
+    @param[in]
+    ldz         rocblas_int. ldz >= n.\n
+                Specifies the leading dimension of matrix Z.
+    @param[out]
+    ifail       pointer to rocblas_int. Array on the GPU of dimension n.\n
+                If info = 0, the first nev elements of ifail are zero.
+                Otherwise, contains the indices of those eigenvectors that failed
+                to converge. Not referenced if evect is rocblas_evect_none.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, the algorithm did not converge. i columns of Z did not converge.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cheevx(rocblas_handle handle,
+                                                 const rocblas_evect evect,
+                                                 const rocblas_erange erange,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_float_complex* A,
+                                                 const rocblas_int lda,
+                                                 const float vl,
+                                                 const float vu,
+                                                 const rocblas_int il,
+                                                 const rocblas_int iu,
+                                                 rocblas_int* nev,
+                                                 float* W,
+                                                 rocblas_float_complex* Z,
+                                                 const rocblas_int ldz,
+                                                 rocblas_int* ifail,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx(rocblas_handle handle,
+                                                 const rocblas_evect evect,
+                                                 const rocblas_erange erange,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_double_complex* A,
+                                                 const rocblas_int lda,
+                                                 const double vl,
+                                                 const double vu,
+                                                 const rocblas_int il,
+                                                 const rocblas_int iu,
+                                                 rocblas_int* nev,
+                                                 double* W,
+                                                 rocblas_double_complex* Z,
+                                                 const rocblas_int ldz,
+                                                 rocblas_int* ifail,
+                                                 rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief SYEVX_BATCHED computes a set of the eigenvalues and optionally the eigenvectors
+    of a batch of real symmetric matrices A_j.
+
+    \details
+    This function computes all the eigenvalues of A_j, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
+    or the il-th through iu-th eigenvalues, depending on the value of range. If evect is rocblas_evect_original,
+    the eigenvectors for these eigenvalues will be computed as well.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    erange      #rocblas_erange.\n
+                Specifies the type of range or interval of the eigenvalues to be computed.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrices A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A_j
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrices A_j.
+    @param[inout]
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j. On exit, the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+    @param[in]
+    vl          type. vl < vu.\n
+                The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues within a set of indices.
+    @param[in]
+    vu          type. vl < vu.\n
+                The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues within a set of indices.
+    @param[in]
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+                The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues in a half-open interval.
+    @param[in]
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+                The index of the largest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[out]
+    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                The total number of eigenvalues found. If erange is rocblas_erange_all, nev_j = n.
+                If erange is rocblas_erange_index, nev_j = iu - il + 1. Otherwise, 0 <= nev_j <= n.
+    @param[out]
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+                The first nev_j elements contain the computed eigenvalues. (The remaining elements
+                can be used as workspace for internal computations).
+    @param[in]
+    strideW     rocblas_stride.\n
+                Stride from the start of one vector W_j to the next one W_(j+1).
+                There is no restriction for the value of strideW. Normal use case is strideW >= n.
+    @param[out]
+    Z           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldz*nev_j.\n
+                On exit, if evect is not rocblas_evect_none and info = 0, the first nev_j columns contain
+                the eigenvectors of A_j corresponding to the output eigenvalues. Not referenced if
+                evect is rocblas_evect_none.
+                Note: If erange is rocblas_range_value, then the values of nev_j are not known in advance.
+                The user should use an upper bound for nev_j (e.g. n, in the worst case) in order to make
+                Z_j large enough to hold all output eigenvectors.
+    @param[in]
+    ldz         rocblas_int. ldz >= n.\n
+                Specifies the leading dimension of matrices Z_j.
+    @param[out]
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+                If info[j] = 0, the first nev_j elements of ifail_j are zero.
+                Otherwise, contains the indices of those eigenvectors that failed
+                to converge. Not referenced if evect is rocblas_evect_none.
+    @param[in]
+    strideF     rocblas_stride.\n
+                Stride from the start of one vector ifail_j to the next one ifail_(j+1).
+                There is no restriction for the value of strideF. Normal use case is strideF >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for matrix A_j.
+                If info[j] = i > 0, the algorithm did not converge. i columns of Z_j did not converge.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevx_batched(rocblas_handle handle,
+                                                         const rocblas_evect evect,
+                                                         const rocblas_erange erange,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         float* const A[],
+                                                         const rocblas_int lda,
+                                                         const float vl,
+                                                         const float vu,
+                                                         const rocblas_int il,
+                                                         const rocblas_int iu,
+                                                         rocblas_int* nev,
+                                                         float* W,
+                                                         const rocblas_stride strideW,
+                                                         float* const Z[],
+                                                         const rocblas_int ldz,
+                                                         rocblas_int* ifail,
+                                                         const rocblas_stride strideF,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_batched(rocblas_handle handle,
+                                                         const rocblas_evect evect,
+                                                         const rocblas_erange erange,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         double* const A[],
+                                                         const rocblas_int lda,
+                                                         const double vl,
+                                                         const double vu,
+                                                         const rocblas_int il,
+                                                         const rocblas_int iu,
+                                                         rocblas_int* nev,
+                                                         double* W,
+                                                         const rocblas_stride strideW,
+                                                         double* const Z[],
+                                                         const rocblas_int ldz,
+                                                         rocblas_int* ifail,
+                                                         const rocblas_stride strideF,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief HEEVX_BATCHED computes a set of the eigenvalues and optionally the eigenvectors
+    of a batch of Hermitian matrices A_j.
+
+    \details
+    This function computes all the eigenvalues of A_j, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
+    or the il-th through iu-th eigenvalues, depending on the value of range. If evect is rocblas_evect_original,
+    the eigenvectors for these eigenvalues will be computed as well.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    erange      #rocblas_erange.\n
+                Specifies the type of range or interval of the eigenvalues to be computed.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrices A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A_j
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrices A_j.
+    @param[inout]
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j. On exit, the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+    @param[in]
+    vl          real type. vl < vu.\n
+                The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues within a set of indices.
+    @param[in]
+    vu          real type. vl < vu.\n
+                The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues within a set of indices.
+    @param[in]
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+                The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues in a half-open interval.
+    @param[in]
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+                The index of the largest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[out]
+    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                The total number of eigenvalues found. If erange is rocblas_erange_all, nev_j = n.
+                If erange is rocblas_erange_index, nev_j = iu - il + 1. Otherwise, 0 <= nev_j <= n.
+    @param[out]
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+                The first nev_j elements contain the computed eigenvalues. (The remaining elements
+                can be used as workspace for internal computations).
+    @param[in]
+    strideW     rocblas_stride.\n
+                Stride from the start of one vector W_j to the next one W_(j+1).
+                There is no restriction for the value of strideW. Normal use case is strideW >= n.
+    @param[out]
+    Z           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldz*nev_j.\n
+                On exit, if evect is not rocblas_evect_none and info = 0, the first nev_j columns contain
+                the eigenvectors of A_j corresponding to the output eigenvalues. Not referenced if
+                evect is rocblas_evect_none.
+                Note: If erange is rocblas_range_value, then the values of nev_j are not known in advance.
+                The user should use an upper bound for nev_j (e.g. n, in the worst case) in order to make
+                Z_j large enough to hold all output eigenvectors.
+    @param[in]
+    ldz         rocblas_int. ldz >= n.\n
+                Specifies the leading dimension of matrices Z_j.
+    @param[out]
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+                If info[j] = 0, the first nev_j elements of ifail_j are zero.
+                Otherwise, contains the indices of those eigenvectors that failed
+                to converge. Not referenced if evect is rocblas_evect_none.
+    @param[in]
+    strideF     rocblas_stride.\n
+                Stride from the start of one vector ifail_j to the next one ifail_(j+1).
+                There is no restriction for the value of strideF. Normal use case is strideF >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for matrix A_j.
+                If info[j] = i > 0, the algorithm did not converge. i columns of Z_j did not converge.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cheevx_batched(rocblas_handle handle,
+                                                         const rocblas_evect evect,
+                                                         const rocblas_erange erange,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_float_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         const float vl,
+                                                         const float vu,
+                                                         const rocblas_int il,
+                                                         const rocblas_int iu,
+                                                         rocblas_int* nev,
+                                                         float* W,
+                                                         const rocblas_stride strideW,
+                                                         rocblas_float_complex* const Z[],
+                                                         const rocblas_int ldz,
+                                                         rocblas_int* ifail,
+                                                         const rocblas_stride strideF,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_batched(rocblas_handle handle,
+                                                         const rocblas_evect evect,
+                                                         const rocblas_erange erange,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_double_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         const double vl,
+                                                         const double vu,
+                                                         const rocblas_int il,
+                                                         const rocblas_int iu,
+                                                         rocblas_int* nev,
+                                                         double* W,
+                                                         const rocblas_stride strideW,
+                                                         rocblas_double_complex* const Z[],
+                                                         const rocblas_int ldz,
+                                                         rocblas_int* ifail,
+                                                         const rocblas_stride strideF,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief SYEVX_STRIDED_BATCHED computes a set of the eigenvalues and optionally the eigenvectors
+    of a batch of real symmetric matrices A_j.
+
+    \details
+    This function computes all the eigenvalues of A_j, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
+    or the il-th through iu-th eigenvalues, depending on the value of range. If evect is rocblas_evect_original,
+    the eigenvectors for these eigenvalues will be computed as well.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    erange      #rocblas_erange.\n
+                Specifies the type of range or interval of the eigenvalues to be computed.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrices A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A_j
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrices A_j.
+    @param[inout]
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
+                the algorithm converged; otherwise the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+    @param[in]
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[in]
+    vl          type. vl < vu.\n
+                The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues within a set of indices.
+    @param[in]
+    vu          type. vl < vu.\n
+                The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues within a set of indices.
+    @param[in]
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+                The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues in a half-open interval.
+    @param[in]
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+                The index of the largest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[out]
+    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                The total number of eigenvalues found. If erange is rocblas_erange_all, nev_j = n.
+                If erange is rocblas_erange_index, nev_j = iu - il + 1. Otherwise, 0 <= nev_j <= n.
+    @param[out]
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+                The first nev_j elements contain the computed eigenvalues. (The remaining elements
+                can be used as workspace for internal computations).
+    @param[in]
+    strideW     rocblas_stride.\n
+                Stride from the start of one vector W_j to the next one W_(j+1).
+                There is no restriction for the value of strideW. Normal use case is strideW >= n.
+    @param[out]
+    Z           pointer to type. Array on the GPU (the size depends on the value of strideZ).\n
+                On exit, if evect is not rocblas_evect_none and info = 0, the first nev_j columns contain
+                the eigenvectors of A_j corresponding to the output eigenvalues. Not referenced if
+                evect is rocblas_evect_none.
+    @param[in]
+    ldz         rocblas_int. ldz >= n.\n
+                Specifies the leading dimension of matrices Z_j.
+    @param[in]
+    strideZ     rocblas_stride.\n
+                Stride from the start of one matrix Z_j to the next one Z_(j+1).
+                There is no restriction for the value of strideZ. Normal use case is strideZ >= ldz*nev_j.
+                Note: If erange is rocblas_range_value, then the values of nev_j are not known in advance.
+                The user should use an upper bound for nev_j (e.g. n, in the worst case) in order to make
+                Z_j large enough to hold all output eigenvectors.
+    @param[out]
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+                If info[j] = 0, the first nev_j elements of ifail_j are zero.
+                Otherwise, contains the indices of those eigenvectors that failed
+                to converge. Not referenced if evect is rocblas_evect_none.
+    @param[in]
+    strideF     rocblas_stride.\n
+                Stride from the start of one vector ifail_j to the next one ifail_(j+1).
+                There is no restriction for the value of strideF. Normal use case is strideF >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for matrix A_j.
+                If info[j] = i > 0, the algorithm did not converge. i columns of Z_j did not converge.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevx_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_evect evect,
+                                                                 const rocblas_erange erange,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 float* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 const float vl,
+                                                                 const float vu,
+                                                                 const rocblas_int il,
+                                                                 const rocblas_int iu,
+                                                                 rocblas_int* nev,
+                                                                 float* W,
+                                                                 const rocblas_stride strideW,
+                                                                 float* Z,
+                                                                 const rocblas_int ldz,
+                                                                 const rocblas_stride strideZ,
+                                                                 rocblas_int* ifail,
+                                                                 const rocblas_stride strideF,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_evect evect,
+                                                                 const rocblas_erange erange,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 double* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 const double vl,
+                                                                 const double vu,
+                                                                 const rocblas_int il,
+                                                                 const rocblas_int iu,
+                                                                 rocblas_int* nev,
+                                                                 double* W,
+                                                                 const rocblas_stride strideW,
+                                                                 double* Z,
+                                                                 const rocblas_int ldz,
+                                                                 const rocblas_stride strideZ,
+                                                                 rocblas_int* ifail,
+                                                                 const rocblas_stride strideF,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief HEEVX_STRIDED_BATCHED computes a set of the eigenvalues and optionally the eigenvectors
+    of a batch of Hermitian matrices A_j.
+
+    \details
+    This function computes all the eigenvalues of A_j, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
+    or the il-th through iu-th eigenvalues, depending on the value of range. If evect is rocblas_evect_original,
+    the eigenvectors for these eigenvalues will be computed as well.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    erange      #rocblas_erange.\n
+                Specifies the type of range or interval of the eigenvalues to be computed.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrices A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A_j
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrices A_j.
+    @param[inout]
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
+                the algorithm converged; otherwise the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+    @param[in]
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[in]
+    vl          real type. vl < vu.\n
+                The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues within a set of indices.
+    @param[in]
+    vu          real type. vl < vu.\n
+                The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues within a set of indices.
+    @param[in]
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+                The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of A or the eigenvalues in a half-open interval.
+    @param[in]
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+                The index of the largest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[out]
+    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                The total number of eigenvalues found. If erange is rocblas_erange_all, nev_j = n.
+                If erange is rocblas_erange_index, nev_j = iu - il + 1. Otherwise, 0 <= nev_j <= n.
+    @param[out]
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+                The first nev_j elements contain the computed eigenvalues. (The remaining elements
+                can be used as workspace for internal computations).
+    @param[in]
+    strideW     rocblas_stride.\n
+                Stride from the start of one vector W_j to the next one W_(j+1).
+                There is no restriction for the value of strideW. Normal use case is strideW >= n.
+    @param[out]
+    Z           pointer to type. Array on the GPU (the size depends on the value of strideZ).\n
+                On exit, if evect is not rocblas_evect_none and info = 0, the first nev_j columns contain
+                the eigenvectors of A_j corresponding to the output eigenvalues. Not referenced if
+                evect is rocblas_evect_none.
+    @param[in]
+    ldz         rocblas_int. ldz >= n.\n
+                Specifies the leading dimension of matrices Z_j.
+    @param[in]
+    strideZ     rocblas_stride.\n
+                Stride from the start of one matrix Z_j to the next one Z_(j+1).
+                There is no restriction for the value of strideZ. Normal use case is strideZ >= ldz*nev_j.
+                Note: If erange is rocblas_range_value, then the values of nev_j are not known in advance.
+                The user should use an upper bound for nev_j (e.g. n, in the worst case) in order to make
+                Z_j large enough to hold all output eigenvectors.
+    @param[out]
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+                If info[j] = 0, the first nev_j elements of ifail_j are zero.
+                Otherwise, contains the indices of those eigenvectors that failed
+                to converge. Not referenced if evect is rocblas_evect_none.
+    @param[in]
+    strideF     rocblas_stride.\n
+                Stride from the start of one vector ifail_j to the next one ifail_(j+1).
+                There is no restriction for the value of strideF. Normal use case is strideF >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for matrix A_j.
+                If info[j] = i > 0, the algorithm did not converge. i columns of Z_j did not converge.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cheevx_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_evect evect,
+                                                                 const rocblas_erange erange,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_float_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 const float vl,
+                                                                 const float vu,
+                                                                 const rocblas_int il,
+                                                                 const rocblas_int iu,
+                                                                 rocblas_int* nev,
+                                                                 float* W,
+                                                                 const rocblas_stride strideW,
+                                                                 rocblas_float_complex* Z,
+                                                                 const rocblas_int ldz,
+                                                                 const rocblas_stride strideZ,
+                                                                 rocblas_int* ifail,
+                                                                 const rocblas_stride strideF,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_evect evect,
+                                                                 const rocblas_erange erange,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_double_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 const double vl,
+                                                                 const double vu,
+                                                                 const rocblas_int il,
+                                                                 const rocblas_int iu,
+                                                                 rocblas_int* nev,
+                                                                 double* W,
+                                                                 const rocblas_stride strideW,
+                                                                 rocblas_double_complex* Z,
+                                                                 const rocblas_int ldz,
+                                                                 const rocblas_stride strideZ,
+                                                                 rocblas_int* ifail,
+                                                                 const rocblas_stride strideF,
                                                                  rocblas_int* info,
                                                                  const rocblas_int batch_count);
 //! @}

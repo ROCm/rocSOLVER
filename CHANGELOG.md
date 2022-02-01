@@ -4,6 +4,10 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## (Unreleased) rocSOLVER
 ### Added
+- Eigensolver routines for symmetric/hermitian matrices with range specifiers:
+    - SYEVX (with batched and strided\_batched versions)
+    - HEEVX (with batched and strided\_batched versions)
+
 ### Optimized
 ### Changed
 ### Deprecated
