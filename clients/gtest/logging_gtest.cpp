@@ -4,8 +4,10 @@
 
 #if __has_include(<filesystem>)
 #include <filesystem>
+namespace fs = std::filesystem;
 #else
 #include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
 #endif
 #include <fstream>
 #include <vector>
@@ -21,12 +23,6 @@
 
 using ::testing::Matcher;
 using ::testing::MatchesRegex;
-
-#ifdef __cpp_lib_experimental_filesystem
-namespace fs = std::experimental::filesystem;
-#else
-namespace fs = std::filesystem;
-#endif
 
 class checkin_misc_LOGGING : public ::testing::Test
 {
@@ -88,7 +84,8 @@ TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_trace)
 
     fs::path temp_dir = fs::temp_directory_path();
     fs::path trace_filepath = temp_dir / fmt::format("trace.{}.log", nondeterministic_value());
-    scoped_envvar logpath_variable("ROCSOLVER_LOG_TRACE_PATH", trace_filepath.c_str());
+    scoped_envvar logpath_variable("ROCSOLVER_LOG_TRACE_PATH",
+                                   trace_filepath.generic_string().c_str());
 
     ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
     ASSERT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_trace), rocblas_status_success);
@@ -121,7 +118,7 @@ TEST_F(checkin_misc_LOGGING, rocsolver_log_path)
     fs::path temp_dir = fs::temp_directory_path();
     fs::path trace_filepath
         = temp_dir / fmt::format("rocsolver_log_path.{}.log", nondeterministic_value());
-    scoped_envvar logpath_variable("ROCSOLVER_LOG_PATH", trace_filepath.c_str());
+    scoped_envvar logpath_variable("ROCSOLVER_LOG_PATH", trace_filepath.generic_string().c_str());
 
     ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
     ASSERT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_trace), rocblas_status_success);
@@ -143,7 +140,8 @@ TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_bench)
 
     fs::path temp_dir = fs::temp_directory_path();
     fs::path bench_filepath = temp_dir / fmt::format("bench.{}.log", nondeterministic_value());
-    scoped_envvar logpath_variable("ROCSOLVER_LOG_BENCH_PATH", bench_filepath.c_str());
+    scoped_envvar logpath_variable("ROCSOLVER_LOG_BENCH_PATH",
+                                   bench_filepath.generic_string().c_str());
 
     ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
     ASSERT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_bench), rocblas_status_success);
@@ -173,7 +171,8 @@ TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_profile)
 
     fs::path temp_dir = fs::temp_directory_path();
     fs::path profile_filepath = temp_dir / fmt::format("profile.{}.log", nondeterministic_value());
-    scoped_envvar logpath_variable("ROCSOLVER_LOG_PROFILE_PATH", profile_filepath.c_str());
+    scoped_envvar logpath_variable("ROCSOLVER_LOG_PROFILE_PATH",
+                                   profile_filepath.generic_string().c_str());
 
     ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
     ASSERT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile), rocblas_status_success);
@@ -204,7 +203,8 @@ TEST_F(checkin_misc_LOGGING, rocsolver_log_write_profile)
 
     fs::path temp_dir = fs::temp_directory_path();
     fs::path profile_filepath = temp_dir / fmt::format("profile.{}.log", nondeterministic_value());
-    scoped_envvar logpath_variable("ROCSOLVER_LOG_PROFILE_PATH", profile_filepath.c_str());
+    scoped_envvar logpath_variable("ROCSOLVER_LOG_PROFILE_PATH",
+                                   profile_filepath.generic_string().c_str());
 
     ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
     ASSERT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile), rocblas_status_success);
@@ -240,7 +240,8 @@ TEST_F(checkin_misc_LOGGING, rocsolver_log_flush_profile)
 
     fs::path temp_dir = fs::temp_directory_path();
     fs::path profile_filepath = temp_dir / fmt::format("profile.{}.log", nondeterministic_value());
-    scoped_envvar logpath_variable("ROCSOLVER_LOG_PROFILE_PATH", profile_filepath.c_str());
+    scoped_envvar logpath_variable("ROCSOLVER_LOG_PROFILE_PATH",
+                                   profile_filepath.generic_string().c_str());
 
     ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
     ASSERT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile), rocblas_status_success);
@@ -281,7 +282,8 @@ TEST_F(checkin_misc_LOGGING, rocsolver_log_restore_defaults_resets_layer_mode)
 
     fs::path temp_dir = fs::temp_directory_path();
     fs::path trace_filepath = temp_dir / fmt::format("trace.{}.log", nondeterministic_value());
-    scoped_envvar logpath_variable("ROCSOLVER_LOG_TRACE_PATH", trace_filepath.c_str());
+    scoped_envvar logpath_variable("ROCSOLVER_LOG_TRACE_PATH",
+                                   trace_filepath.generic_string().c_str());
 
     ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
     ASSERT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_trace), rocblas_status_success);
@@ -308,7 +310,8 @@ TEST_F(checkin_misc_LOGGING, rocsolver_log_restore_defaults_resets_max_levels)
 
     fs::path temp_dir = fs::temp_directory_path();
     fs::path trace_filepath = temp_dir / fmt::format("trace.{}.log", nondeterministic_value());
-    scoped_envvar logpath_variable("ROCSOLVER_LOG_TRACE_PATH", trace_filepath.c_str());
+    scoped_envvar logpath_variable("ROCSOLVER_LOG_TRACE_PATH",
+                                   trace_filepath.generic_string().c_str());
 
     ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
     ASSERT_EQ(rocsolver_log_set_max_levels(2), rocblas_status_success);
