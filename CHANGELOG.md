@@ -14,6 +14,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Removed
 ### Fixed
 ### Known Issues
+- Performance of SYEVX/HEEVX is degraded, particularly for larger batch counts.
+
 ### Security
 
 
