@@ -184,8 +184,10 @@
 
 /**************************** getf2/getfr *************************************
 *******************************************************************************/
-#define GETF2_MAX_COLS 64 //always <= wavefront size
-#define GETF2_MAX_THDS 64
+#define GETF2_SPKER_MAX_M 1024  //always <= 1024
+#define GETF2_SPKER_MAX_N 256   //always <= 256
+//#define GETF2_MAX_COLS 64 //always <= wavefront size
+//#define GETF2_MAX_THDS 64
 #define GETF2_OPTIM_NGRP \
     16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
 #define GETRF_NUM_INTERVALS 4

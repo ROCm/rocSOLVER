@@ -5,7 +5,7 @@
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
  *
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -174,6 +174,117 @@ inline rocblas_int getf2_get_checksingularity_blksize(const rocblas_int n)
     return singular_thds;
 }
 
+
+/** Test if one of the specialized kernels can be used.
+    Returns 1 if the small kernel can be used.
+    Returns 2 if the panel kernel can be used.
+    Returns 0 otehrwise **/
+template <bool ISBATCHED>
+inline int select_spkernel(const rocblas_int m,
+                           const rocblas_int n,
+                           const bool pivot)
+{
+    int ker = 0;
+
+    if(ISBATCHED)
+    {
+        // Batch pivoting case
+        if(pivot)
+        {
+            if(n <= 28)
+                ker = (m <= 140) ? 1 : 2;
+
+            else if(n <= 36)
+                ker = (m <= 102) ? 1 : 2;
+
+            else if(n <= 44)
+                ker = (m <= 90) ? 1 : 2;
+
+            else if(n <= 52)
+                ker = (m <= 82) ? 1 : 2;
+
+            else if(n <= 60)
+                ker = (m <= 76 || (m > 252 && m <= 328)) ? 1 : 2;
+
+            else if(n <= 68)
+                ker = (m < n || (m > 236 && m <= 408)) ? 1 : 2;
+
+            else if((n <= 76 && m >= n) ||
+                    (n <= 84 && m >= n && m <= 512) ||
+                    (n <= 92 && m >= n && m <= 360) ||
+                    (n <= 100 && m >= n && m <= 328) ||
+                    (n <= 108 && m >= n && m <= 296) ||
+                    (n > 108 && m >= n && m <= 264))
+                ker = 2;
+        }
+        // Batch non-pivoting case
+        else
+        {
+            if(n <= 28)
+                ker = (m <= 512) ? 1 : 2;
+
+            else if(n <= 36)
+                ker = (m <= 66 || (m > 264 && m <= 512)) ? 1 : 2;
+
+            else if(n <= 44)
+                ker = (m < n || (m > 280 && m <= 448)) ? 1 : 2;
+
+            else if(n <= 52)
+                ker = (m < n || (m > 264 && m <= 320)) ? 1 : 2;
+
+            else if(n <= 60 && (m <= 32 || m > 38))
+                ker = (m < n || (m > 264 && m <= 448)) ? 1 : 2;
+
+            else if(n <= 68 && (m <= 32 || m > 44))
+                ker = (m < n || (m > 264 && m <= 384)) ? 1 : 2;
+
+            else if(n > 68 && m >= n)
+                ker = 2;
+        }
+    }
+    else
+    {
+        // Normal pivoting case
+        if(pivot)
+        {
+            if(n <= 20)
+                ker = (m <= 32) ? 1 : 2;
+
+            else if((n <= 28 && m >= 4) ||
+                    (n <= 36 && m >= 8 && m <= 512) ||
+                    (n <= 44 && m >= 16 && m <= 512) ||
+                    (n <= 52 && m >= 40 && m <= 512) ||
+                    (n <= 60 && m >= 52 && m <= 512) ||
+                    (n <= 68 && m >= 58 && m <= 512))
+                ker = (m < n) ? 1 : 2;
+
+            else if(n > 68 && m >= n && m <= 256)
+                ker = 2;
+        }
+        // Normal non-pivoting case
+        else
+        {
+            if(n <= 20)
+                ker = (m <= 512) ? 1 : 2;
+
+            else if(n <= 28 && m >= 4)
+                ker = (m < n || (m > 128 && m <= 512)) ? 1 : 2;
+
+            else if((n <= 36 && m >= 10 && m <= 512) ||
+                    (n <= 44 && m >= 30 && m <= 512))
+                ker = (m < n || m > 256) ? 1 : 2;
+
+            else if((n <= 52 && m >= n && m <= 512) ||
+                    (n <= 92 && m >= n && m <= 256) ||
+                    (n > 92 && m >= n && m <= 128))
+                ker = 2;
+        }
+    }
+
+    return ker;
+}
+
+
 /** Returns the thread block sizes used for the scale+update of trailing matrix**/
 inline void getf2_get_ger_blksize(const rocblas_int m,
                                   const rocblas_int n,
@@ -256,14 +367,10 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
     }
 
 #ifdef OPTIMAL
-    bool nomem = (m < n
-                  && (n <= 20 || (n <= 28 && m > 4) || (n <= 36 && m > 10) || (n <= 44 && m > 14)
-                      || (n <= 52 && m > 16) || (n <= 60 && m > 32)))
-        || (m >= n
-            && ((n <= 36 && m <= 1024) || (n <= 44 && m <= 600) || (n <= 84 && m <= 512)
-                || (n <= 92 && m <= 472) || (n <= 100 && m <= 344) || (n <= 128 && m <= 256)));
+    bool nomem = (m <= GETF2_SPKER_MAX_M && n <= GETF2_SPKER_MAX_N &&
+                    select_spkernel<ISBATCHED>(m,n,pivot));
 
-    // if using optimized algorithm for small sizes, no workspace needed
+    // no workspace needed if using optimized kernel for small sizes
     if(nomem)
     {
         *size_scalars = 0;
@@ -370,19 +477,17 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     }
 
 #ifdef OPTIMAL
-    if(m < n)
+    if(m <= GETF2_SPKER_MAX_M && n <= GETF2_SPKER_MAX_N)
     {
-        // Use specialized kernels for small fat matrices
-        if((n <= 20) || (n <= 28 && m > 4) || (n <= 36 && m > 10) || (n <= 44 && m > 14)
-           || (n <= 52 && m > 16) || (n <= 60 && m > 32))
+        int spker = select_spkernel<ISBATCHED>(m,n,pivot);
+
+        // Use specialized kernels for small matrices
+        if(spker == 1)
             return getf2_run_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
                                       info, batch_count, pivot, offset, permut_idx, stridePI);
-    }
-    else
-    {
+
         // use specialized kernels for small skinny matrices (panel factorization)
-        if((n <= 36 && m <= 1024) || (n <= 44 && m <= 600) || (n <= 84 && m <= 512)
-           || (n <= 92 && m <= 472) || (n <= 100 && m <= 344) || (n <= 128 && m <= 256))
+        if(spker == 2)
             return getf2_run_panel<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
                                       info, batch_count, pivot, offset, permut_idx, stridePI);
     }

@@ -4,7 +4,7 @@
  * Factorization and inversion of a million matrices using GPUs: Challenges
  * and countermeasures. Procedia Computer Science, 108, 606-615.
  *
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -20,7 +20,7 @@
 /** getf2_small_kernel takes care of of matrices with m < n
     m <= GETF2_MAX_THDS and n <= GETF2_MAX_COLS **/
 template <rocblas_int DIM, typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
+ROCSOLVER_KERNEL void __launch_bounds__(GETF2_SPKER_MAX_M)
     getf2_small_kernel(const rocblas_int m,
                        U AA,
                        const rocblas_int shiftA,
@@ -137,7 +137,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
 
 /** getf2_npvt_small_kernel (non pivoting version) **/
 template <rocblas_int DIM, typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
+ROCSOLVER_KERNEL void __launch_bounds__(GETF2_SPKER_MAX_M)
     getf2_npvt_small_kernel(const rocblas_int m,
                             U AA,
                             const rocblas_int shiftA,
@@ -180,7 +180,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
 #pragma unroll DIM
     for(int k = 0; k < DIM; ++k)
     {
-        // share pivot row and check singularity
+        // share pivot row
         if(myrow == k)
         {
             val[ty] = rA[k];
@@ -189,10 +189,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_MAX_THDS)
 
             if(val[ty] != T(0))
                 val[ty] = S(1) / val[ty];
-            else if(myinfo == 0)
-                myinfo = k + 1;
         }
         __syncthreads();
+
+        // check singularity
+        if(val[ty] == 0 && myinfo == 0)
+            myinfo = k + 1;
 
         // scale current column and update trailing matrix
         if(myrow > k)
