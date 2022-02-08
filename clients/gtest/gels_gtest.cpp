@@ -4,6 +4,7 @@
  * ************************************************************************ */
 
 #include "testing_gels.hpp"
+#include "testing_gels_outofplace.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -68,7 +69,7 @@ const vector<gels_params_B> large_matrix_sizeB_range = {
     {1000, 'N'},
 };
 
-Arguments gels_setup_arguments(gels_tuple tup)
+Arguments gels_setup_arguments(gels_tuple tup, bool outofplace)
 {
     gels_params_A matrix_sizeA = std::get<0>(tup);
     gels_params_B matrix_sizeB = std::get<1>(tup);
@@ -79,6 +80,9 @@ Arguments gels_setup_arguments(gels_tuple tup)
     arg.set<rocblas_int>("n", std::get<1>(matrix_sizeA));
     arg.set<rocblas_int>("lda", std::get<2>(matrix_sizeA));
     arg.set<rocblas_int>("ldb", std::get<3>(matrix_sizeA));
+
+    if(outofplace)
+        arg.set<rocblas_int>("ldx", std::get<3>(matrix_sizeA));
 
     arg.set<rocblas_int>("nrhs", std::get<0>(matrix_sizeB));
     arg.set<char>("trans", std::get<1>(matrix_sizeB));
@@ -101,7 +105,7 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = gels_setup_arguments(GetParam());
+        Arguments arg = gels_setup_arguments(GetParam(), false);
 
         if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nrhs") == 0)
             testing_gels_bad_arg<BATCHED, STRIDED, T>();
@@ -112,6 +116,30 @@ protected:
 
         arg.singular = 0;
         testing_gels<BATCHED, STRIDED, T>(arg);
+    }
+};
+
+class GELS_OUTOFPLACE : public ::TestWithParam<gels_tuple>
+{
+protected:
+    GELS_OUTOFPLACE() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = gels_setup_arguments(GetParam(), true);
+
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nrhs") == 0)
+            testing_gels_outofplace_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        if(arg.singular == 1)
+            testing_gels_outofplace<BATCHED, STRIDED, T>(arg);
+
+        arg.singular = 0;
+        testing_gels_outofplace<BATCHED, STRIDED, T>(arg);
     }
 };
 
@@ -133,6 +161,26 @@ TEST_P(GELS, __float_complex)
 }
 
 TEST_P(GELS, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
+TEST_P(GELS_OUTOFPLACE, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(GELS_OUTOFPLACE, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(GELS_OUTOFPLACE, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(GELS_OUTOFPLACE, __double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }
@@ -181,14 +229,20 @@ TEST_P(GELS, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
-// daily_lapack tests normal execution with medium to large sizes
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          GELS,
                          Combine(ValuesIn(large_matrix_sizeA_range),
                                  ValuesIn(large_matrix_sizeB_range)));
 
-// checkin_lapack tests normal execution with small sizes, invalid sizes,
-// quick returns, and corner cases
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          GELS,
+                         Combine(ValuesIn(matrix_sizeA_range), ValuesIn(matrix_sizeB_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         GELS_OUTOFPLACE,
+                         Combine(ValuesIn(large_matrix_sizeA_range),
+                                 ValuesIn(large_matrix_sizeB_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         GELS_OUTOFPLACE,
                          Combine(ValuesIn(matrix_sizeA_range), ValuesIn(matrix_sizeB_range)));

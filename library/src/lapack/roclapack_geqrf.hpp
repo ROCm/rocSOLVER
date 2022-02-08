@@ -15,7 +15,7 @@
 #include "roclapack_geqr2.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_geqrf_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
                                    const rocblas_int batch_count,
@@ -39,27 +39,27 @@ void rocsolver_geqrf_getMemorySize(const rocblas_int m,
     if(m <= GEQxF_GEQx2_SWITCHSIZE || n <= GEQxF_GEQx2_SWITCHSIZE)
     {
         // requirements for a single GEQR2 call
-        rocsolver_geqr2_getMemorySize<T, BATCHED>(m, n, batch_count, size_scalars, size_work_workArr,
+        rocsolver_geqr2_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars, size_work_workArr,
                                                   size_Abyx_norms_trfact, size_diag_tmptr);
         *size_workArr = 0;
     }
     else
     {
         size_t w1, w2, unused, s1, s2;
-        rocblas_int jb = GEQxF_GEQx2_BLOCKSIZE;
+        rocblas_int jb = GEQxF_BLOCKSIZE;
 
         // size to store the temporary triangular factor
         *size_Abyx_norms_trfact = sizeof(T) * jb * jb * batch_count;
 
         // requirements for calling GEQR2 with sub blocks
-        rocsolver_geqr2_getMemorySize<T, BATCHED>(m, jb, batch_count, size_scalars, &w1, &s2, &s1);
+        rocsolver_geqr2_getMemorySize<BATCHED, T>(m, jb, batch_count, size_scalars, &w1, &s2, &s1);
         *size_Abyx_norms_trfact = max(s2, *size_Abyx_norms_trfact);
 
         // requirements for calling LARFT
-        rocsolver_larft_getMemorySize<T, BATCHED>(m, jb, batch_count, &unused, &w2, size_workArr);
+        rocsolver_larft_getMemorySize<BATCHED, T>(m, jb, batch_count, &unused, &w2, size_workArr);
 
         // requirements for calling LARFB
-        rocsolver_larfb_getMemorySize<T, BATCHED>(rocblas_side_left, m, n - jb, jb, batch_count,
+        rocsolver_larfb_getMemorySize<BATCHED, T>(rocblas_side_left, m, n - jb, jb, batch_count,
                                                   &s2, &unused);
 
         *size_work_workArr = max(w1, w2);
@@ -110,13 +110,14 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
     rocblas_int dim = min(m, n); // total number of pivots
     rocblas_int jb, j = 0;
 
-    rocblas_int ldw = GEQxF_GEQx2_BLOCKSIZE;
+    rocblas_int nb = GEQxF_BLOCKSIZE;
+    rocblas_int ldw = GEQxF_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
     while(j < dim - GEQxF_GEQx2_SWITCHSIZE)
     {
         // Factor diagonal and subdiagonal blocks
-        jb = min(dim - j, GEQxF_GEQx2_BLOCKSIZE); // number of columns in the block
+        jb = min(dim - j, nb); // number of columns in the block
         rocsolver_geqr2_template<T>(handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
                                     (ipiv + j), strideP, batch_count, scalars, work_workArr,
                                     Abyx_norms_trfact, diag_tmptr);
@@ -137,7 +138,7 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
                 shiftA + idx2D(j, j, lda), lda, strideA, Abyx_norms_trfact, 0, ldw, strideW, A,
                 shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count, diag_tmptr, workArr);
         }
-        j += GEQxF_GEQx2_BLOCKSIZE;
+        j += nb;
     }
 
     // factor last block

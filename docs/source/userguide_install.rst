@@ -39,6 +39,8 @@ rocSOLVER can be installed using a package manager. On Ubuntu, for example, use 
     sudo apt-get install rocsolver
 
 
+.. _userguide_install_source:
+
 Building & installing from source
 =====================================
 
@@ -197,10 +199,10 @@ Manual building and installation
 Manual installation of all the external dependencies is not an easy task. Get more information on
 how to install each dependency at the corresponding documentation sites:
 
-* `CMake <https://cmake.org/>`_ (version >3.5 is required).
-* `Python <https://www.python.org/>`_ (version >2.7 is required. Python is installed by default on some systems, like Ubuntu).
+* `CMake <https://cmake.org/>`_ (version 3.16 is recommended).
 * `LAPACK <https://github.com/Reference-LAPACK/lapack-release>`_ (which internally depends on a Fortran compiler), and
 * `GoogleTest <https://github.com/google/googletest>`_
+* `fmt <https://github.com/fmtlib/fmt>`_
 
 Once all dependencies are installed (including ROCm and rocBLAS), rocSOLVER can be manually built using a combination of CMake and Make commands.
 Using CMake options can provide more flexibility in tailoring the building and installation process. Here we provide a list of examples

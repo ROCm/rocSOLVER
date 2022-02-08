@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -14,7 +14,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_orml2_unml2_getMemorySize(const rocblas_side side,
                                          const rocblas_int m,
                                          const rocblas_int n,
@@ -39,7 +39,7 @@ void rocsolver_orml2_unml2_getMemorySize(const rocblas_side side,
     *size_diag = sizeof(T) * batch_count;
 
     // memory requirements to call larf
-    rocsolver_larf_getMemorySize<T, BATCHED>(side, m, n, batch_count, size_scalars, size_Abyx,
+    rocsolver_larf_getMemorySize<BATCHED, T>(side, m, n, batch_count, size_scalars, size_Abyx,
                                              size_workArr);
 }
 
@@ -184,8 +184,8 @@ rocblas_status rocsolver_orml2_unml2_template(rocblas_handle handle,
 
         // insert one in A(i,i), i.e. the i-th element along the main diagonal,
         // to build/apply the householder matrix
-        hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag, 0,
-                           1, A, shiftA + idx2D(i, i, lda), lda, strideA, 1, true);
+        ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
+                                diag, 0, 1, A, shiftA + idx2D(i, i, lda), lda, strideA, 1, true);
 
         // Apply current Householder reflector
         rocsolver_larf_template(handle, side, nrow, ncol, A, shiftA + idx2D(i, i, lda), lda,
@@ -193,8 +193,8 @@ rocblas_status rocsolver_orml2_unml2_template(rocblas_handle handle,
                                 strideC, batch_count, scalars, Abyx, workArr);
 
         // restore original value of A(i,i)
-        hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag,
-                           0, 1, A, shiftA + idx2D(i, i, lda), lda, strideA, 1);
+        ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
+                                diag, 0, 1, A, shiftA + idx2D(i, i, lda), lda, strideA, 1);
 
         if(COMPLEX && i < nq - 1)
             rocsolver_lacgv_template<T>(handle, nq - i - 1, A, shiftA + idx2D(i, i + 1, lda), lda,

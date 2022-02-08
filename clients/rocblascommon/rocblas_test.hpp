@@ -21,12 +21,12 @@
 
 // Suppress warnings about hipMalloc(), hipFree() except in rocblas-test and
 // rocblas-bench
-#if !defined(GOOGLE_TEST) && !defined(ROCBLAS_BENCH)
+#if !defined(ROCSOLVER_CLIENTS_TEST) && !defined(ROCBLAS_BENCH)
 #undef hipMalloc
 #undef hipFree
 #endif
 
-#ifdef GOOGLE_TEST
+#ifdef ROCSOLVER_CLIENTS_TEST
 #include <gtest/gtest.h>
 
 // Extra macro so that macro arguments get expanded before calling Google Test
@@ -60,7 +60,7 @@
 
 #define EXPECT_ROCBLAS_STATUS ASSERT_EQ
 
-#else // GOOGLE_TEST
+#else // ROCSOLVER_CLIENTS_TEST
 
 inline void rocblas_expect_status(rocblas_status status, rocblas_status expect)
 {
@@ -103,7 +103,7 @@ inline void rocblas_expect_status(rocblas_status status, rocblas_status expect)
 
 #define EXPECT_ROCBLAS_STATUS rocblas_expect_status
 
-#endif // GOOGLE_TEST
+#endif // ROCSOLVER_CLIENTS_TEST
 
 #define CHECK_ROCBLAS_ERROR2(STATUS) EXPECT_ROCBLAS_STATUS(STATUS, rocblas_status_success)
 #define CHECK_ROCBLAS_ERROR(STATUS) CHECK_ROCBLAS_ERROR2(STATUS)

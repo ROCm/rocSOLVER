@@ -33,6 +33,30 @@ Options:
 )HELP_STR";
 // clang-format on
 
+static std::string rocblas_version()
+{
+    size_t size;
+    rocblas_get_version_string_size(&size);
+    std::string str(size - 1, '\0');
+    rocblas_get_version_string(str.data(), size);
+    return str;
+}
+
+static std::string rocsolver_version()
+{
+    size_t size;
+    rocsolver_get_version_string_size(&size);
+    std::string str(size - 1, '\0');
+    rocsolver_get_version_string(str.data(), size);
+    return str;
+}
+
+static void print_version_info()
+{
+    fmt::print("rocSOLVER version {} (with rocBLAS {})\n", rocsolver_version(), rocblas_version());
+    std::fflush(stdout);
+}
+
 int main(int argc, char* argv[])
 try
 {
@@ -46,8 +70,8 @@ try
     argus.timing = 1;
 
     std::string function;
-    char precision;
-    rocblas_int device_id;
+    char precision = 's';
+    rocblas_int device_id = 0;
 
     // take arguments and set default values
     // clang-format off
@@ -379,10 +403,13 @@ try
 
     argus.populate(vm);
 
-    // set device ID
     if(!argus.perf)
     {
+        print_version_info();
+
         rocblas_int device_count = query_device_property();
+        if(device_count <= 0)
+            throw std::runtime_error("No devices found");
         if(device_count <= device_id)
             throw std::invalid_argument("Invalid Device ID");
     }
@@ -414,8 +441,7 @@ try
 
     return 0;
 }
-
-catch(const std::invalid_argument& exp)
+catch(const std::exception& exp)
 {
     fmt::print(stderr, "{}\n", exp.what());
     return -1;

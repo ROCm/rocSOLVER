@@ -2,23 +2,26 @@
 # Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
-# Linking lapack library requires fortran flags
-enable_language(Fortran)
-find_package(cblas REQUIRED CONFIG)
 find_package(GTest REQUIRED)
 
 set(roclapack_test_source
   # linear systems solvers
   getri_gtest.cpp
   getrs_gtest.cpp
+  gesv_gtest.cpp
+  potrs_gtest.cpp
+  posv_gtest.cpp
+  potri_gtest.cpp
   trtri_gtest.cpp
   # least squares solvers
   gels_gtest.cpp
   # triangular factorizations
   getf2_getrf_gtest.cpp
   potf2_potrf_gtest.cpp
+  sytf2_sytrf_gtest.cpp
   # orthogonal factorizations
   geqr2_geqrf_gtest.cpp
+  gerq2_gerqf_gtest.cpp
   geql2_geqlf_gtest.cpp
   gelq2_gelqf_gtest.cpp
   # problem and matrix reductions (diagonalizations)
@@ -62,11 +65,15 @@ set(rocauxiliary_test_source
   steqr_gtest.cpp
   stedc_gtest.cpp
   latrd_gtest.cpp
+  # symmetric matrices
+  lasyf_gtest.cpp
 )
 
 set(others_test_source
   # unified memory model
   managed_malloc_gtest.cpp
+  # rocblas memory model
+  memory_model_gtest.cpp
 )
 
 set(rocsolver_test_source
@@ -82,7 +89,30 @@ add_executable(rocsolver-test
 
 add_armor_flags(rocsolver-test "${ARMOR_LEVEL}")
 
-target_compile_definitions(rocsolver-test PRIVATE GOOGLE_TEST)
+if(WIN32)
+  file(GLOB third_party_dlls
+    LIST_DIRECTORIES OFF
+    CONFIGURE_DEPENDS
+    ${cblas_DIR}/bin/*.dll
+    ${GTest_DIR}/bin/*.dll
+    $ENV{rocblas_DIR}/bin/*.dll
+    $ENV{HIP_DIR}/bin/*.dll
+    $ENV{HIP_DIR}/bin/hipinfo.exe
+    ${CMAKE_SOURCE_DIR}/rtest.*
+  )
+  foreach(file_i ${third_party_dlls})
+    add_custom_command(TARGET rocsolver-test
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND}
+      ARGS -E copy ${file_i} ${PROJECT_BINARY_DIR}/staging/
+    )
+  endforeach()
+  add_custom_command(TARGET rocsolver-test
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy_directory $ENV{rocblas_DIR}/bin/library ${PROJECT_BINARY_DIR}/staging/library
+  )
+endif()
 
 target_link_libraries(rocsolver-test PRIVATE
   cblas
@@ -92,10 +122,18 @@ target_link_libraries(rocsolver-test PRIVATE
   hip::device
   rocsolver-common
   clients-common
-  m
+  $<$<PLATFORM_ID:Linux>:m>
   roc::rocsolver
 )
 
 # Turn on f16c intrinsics
 target_compile_options(rocsolver-test PRIVATE -mf16c)
-target_compile_definitions(rocsolver-test PRIVATE ROCM_USE_FLOAT16)
+target_compile_definitions(rocsolver-test PRIVATE
+  ROCM_USE_FLOAT16
+  ROCSOLVER_CLIENTS_TEST
+)
+
+add_test(
+  NAME rocsolver-test
+  COMMAND rocsolver-test
+)

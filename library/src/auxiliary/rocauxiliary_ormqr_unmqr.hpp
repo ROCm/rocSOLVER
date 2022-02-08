@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -15,7 +15,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_ormqr_unmqr_getMemorySize(const rocblas_side side,
                                          const rocblas_int m,
                                          const rocblas_int n,
@@ -39,19 +39,19 @@ void rocsolver_ormqr_unmqr_getMemorySize(const rocblas_side side,
     }
 
     size_t unused;
-    rocsolver_orm2r_unm2r_getMemorySize<T, BATCHED>(side, m, n, k, batch_count, size_scalars,
+    rocsolver_orm2r_unm2r_getMemorySize<BATCHED, T>(side, m, n, k, batch_count, size_scalars,
                                                     size_AbyxORwork, size_diagORtmptr, size_workArr);
 
-    if(k > ORMxx_ORMxx_BLOCKSIZE)
+    if(k > xxMQx_BLOCKSIZE)
     {
-        rocblas_int jb = ORMxx_ORMxx_BLOCKSIZE;
+        rocblas_int jb = xxMQx_BLOCKSIZE;
 
         // requirements for calling larft
-        rocsolver_larft_getMemorySize<T, BATCHED>(max(m, n), min(jb, k), batch_count, &unused,
+        rocsolver_larft_getMemorySize<BATCHED, T>(max(m, n), min(jb, k), batch_count, &unused,
                                                   size_AbyxORwork, &unused);
 
         // requirements for calling larfb
-        rocsolver_larfb_getMemorySize<T, BATCHED>(side, m, n, min(jb, k), batch_count,
+        rocsolver_larfb_getMemorySize<BATCHED, T>(side, m, n, min(jb, k), batch_count,
                                                   size_diagORtmptr, &unused);
 
         // size of temporary array for triangular factor
@@ -97,12 +97,12 @@ rocblas_status rocsolver_ormqr_unmqr_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     // if the matrix is small, use the unblocked variant of the algorithm
-    if(k <= ORMxx_ORMxx_BLOCKSIZE)
+    if(k <= xxMQx_BLOCKSIZE)
         return rocsolver_orm2r_unm2r_template<T>(
             handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, C, shiftC, ldc,
             strideC, batch_count, scalars, AbyxORwork, diagORtmptr, workArr);
 
-    rocblas_int ldw = ORMxx_ORMxx_BLOCKSIZE;
+    rocblas_int ldw = xxMQx_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
     // determine limits and indices

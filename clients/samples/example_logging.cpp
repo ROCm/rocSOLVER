@@ -29,7 +29,7 @@ void get_example_matrix(std::vector<double>& hA,
 }
 
 // We use rocsolver_dgeqrf to factor a real M-by-N matrix, A.
-// See https://rocsolver.readthedocs.io/en/latest/userguide_api.html#c.rocsolver_dgeqrf
+// See https://rocsolver.readthedocs.io/en/latest/api_lapackfunc.html#c.rocsolver_dgeqrf
 // and https://rocsolver.readthedocs.io/en/latest/userguide_logging.html
 // and https://www.netlib.org/lapack/explore-html/df/dc5/group__variants_g_ecomputational_ga3766ea903391b5cf9008132f7440ec7b.html
 int main() {
@@ -58,7 +58,7 @@ int main() {
   hipMemcpy(dA, hA.data(), sizeof(double)*size_A, hipMemcpyHostToDevice);
 
   // begin trace logging and profile logging (max depth = 4)
-  rocsolver_log_set_layer_mode(rocblas_layer_mode_log_trace | rocblas_layer_mode_log_profile);
+  rocsolver_log_set_layer_mode(rocblas_layer_mode_log_trace | rocblas_layer_mode_log_profile | rocblas_layer_mode_ex_log_kernel);
   rocsolver_log_set_max_levels(4);
 
   // compute the QR factorization on the GPU

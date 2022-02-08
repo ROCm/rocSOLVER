@@ -61,6 +61,11 @@ LAPACK auxiliary functions
     :ref:`rocsolver_steqr <steqr>`, x, x, x, x
     :ref:`rocsolver_stedc <stedc>`, x, x, x, x
 
+.. csv-table:: Symmetric matrices
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_lasyf <lasyf>`, x, x, x, x
+
 .. csv-table:: Orthonormal matrices
     :header: "Function", "single", "double", "single complex", "double complex"
 
@@ -111,12 +116,16 @@ LAPACK main functions
     :ref:`rocsolver_potrf <potrf>`, x, x, x, x
     :ref:`rocsolver_getf2 <getf2>`, x, x, x, x
     :ref:`rocsolver_getrf <getrf>`, x, x, x, x
+    :ref:`rocsolver_sytf2 <sytf2>`, x, x, x, x
+    :ref:`rocsolver_sytrf <sytrf>`, x, x, x, x
 
 .. csv-table:: Orthogonal factorizations
     :header: "Function", "single", "double", "single complex", "double complex"
 
     :ref:`rocsolver_geqr2 <geqr2>`, x, x, x, x
     :ref:`rocsolver_geqrf <geqrf>`, x, x, x, x
+    :ref:`rocsolver_gerq2 <gerq2>`, x, x, x, x
+    :ref:`rocsolver_gerqf <gerqf>`, x, x, x, x
     :ref:`rocsolver_gelq2 <gelq2>`, x, x, x, x
     :ref:`rocsolver_gelqf <gelqf>`, x, x, x, x
     :ref:`rocsolver_geql2 <geql2>`, x, x, x, x
@@ -142,6 +151,10 @@ LAPACK main functions
     :ref:`rocsolver_trtri <trtri>`, x, x, x, x
     :ref:`rocsolver_getri <getri>`, x, x, x, x
     :ref:`rocsolver_getrs <getrs>`, x, x, x, x
+    :ref:`rocsolver_gesv <gesv>`, x, x, x, x
+    :ref:`rocsolver_potri <potri>`, x, x, x, x
+    :ref:`rocsolver_potrs <potrs>`, x, x, x, x
+    :ref:`rocsolver_posv <posv>`, x, x, x, x
 
 .. csv-table:: Least-square solvers
     :header: "Function", "single", "double", "single complex", "double complex"
@@ -177,6 +190,8 @@ LAPACK-like functions
 .. csv-table:: Linear-systems solvers
     :header: "Function", "single", "double", "single complex", "double complex"
 
+    :ref:`rocsolver_getri_npvt <getri_npvt>`, x, x, x, x
     :ref:`rocsolver_getri_outofplace <getri_outofplace>`, x, x, x, x
+    :ref:`rocsolver_getri_npvt_outofplace <getri_npvt_outofplace>`, x, x, x, x
 
 

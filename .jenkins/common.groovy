@@ -37,13 +37,19 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
 
 def runTestCommand (platform, project, gfilter)
 {
-    String sudo = auxiliary.sudo(platform.jenkinsLabel)
     String buildType = project.buildName.contains('Debug') ? 'debug' : 'release'
+    String hmmTestCommand = platform.jenkinsLabel.contains('gfx90a') ? 'HSA_XNACK=1 ./rocsolver-test --gtest_filter=*MANAGED_MALLOC*' : ''
+
     def command = """#!/usr/bin/env bash
-                set -x
+                set -ex
                 cd ${project.paths.project_build_prefix}/build/${buildType}/clients/staging
-                ${sudo} GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}
+                ./rocsolver-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}
+                if [ -f ./test-rocsolver-dlopen ]; then
+                  ./test-rocsolver-dlopen --gtest_color=yes
+                fi
+                ${hmmTestCommand}
                 """
+
 
     platform.runCommand(this, command)
     junit "${project.paths.project_build_prefix}/build/${buildType}/clients/staging/*.xml"

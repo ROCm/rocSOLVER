@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -15,13 +15,13 @@
 #include "rocsolver.h"
 
 template <typename T, typename U>
-__global__ void orgl2_init_ident(const rocblas_int m,
-                                 const rocblas_int n,
-                                 const rocblas_int k,
-                                 U A,
-                                 const rocblas_int shiftA,
-                                 const rocblas_int lda,
-                                 const rocblas_stride strideA)
+ROCSOLVER_KERNEL void orgl2_init_ident(const rocblas_int m,
+                                       const rocblas_int n,
+                                       const rocblas_int k,
+                                       U A,
+                                       const rocblas_int shiftA,
+                                       const rocblas_int lda,
+                                       const rocblas_stride strideA)
 {
     const auto blocksizex = hipBlockDim_x;
     const auto blocksizey = hipBlockDim_y;
@@ -45,7 +45,7 @@ __global__ void orgl2_init_ident(const rocblas_int m,
     }
 }
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_orgl2_ungl2_getMemorySize(const rocblas_int m,
                                          const rocblas_int n,
                                          const rocblas_int batch_count,
@@ -63,7 +63,7 @@ void rocsolver_orgl2_ungl2_getMemorySize(const rocblas_int m,
     }
 
     // memory requirements to call larf
-    rocsolver_larf_getMemorySize<T, BATCHED>(rocblas_side_right, m, n, batch_count, size_scalars,
+    rocsolver_larf_getMemorySize<BATCHED, T>(rocblas_side_right, m, n, batch_count, size_scalars,
                                              size_Abyx, size_workArr);
 }
 
@@ -130,8 +130,8 @@ rocblas_status rocsolver_orgl2_ungl2_template(rocblas_handle handle,
     // Initialize identity matrix (non used columns)
     rocblas_int blocksx = (m - 1) / 32 + 1;
     rocblas_int blocksy = (n - 1) / 32 + 1;
-    hipLaunchKernelGGL(orgl2_init_ident<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0,
-                       stream, m, n, k, A, shiftA, lda, strideA);
+    ROCSOLVER_LAUNCH_KERNEL(orgl2_init_ident<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32),
+                            0, stream, m, n, k, A, shiftA, lda, strideA);
 
     for(rocblas_int j = k - 1; j >= 0; --j)
     {
@@ -152,8 +152,8 @@ rocblas_status rocsolver_orgl2_ungl2_template(rocblas_handle handle,
         }
 
         // set the diagonal element and negative tau
-        hipLaunchKernelGGL(subtract_tau<T>, dim3(batch_count), dim3(1), 0, stream, j, j, A, shiftA,
-                           lda, strideA, ipiv + j, strideP);
+        ROCSOLVER_LAUNCH_KERNEL(subtract_tau<T>, dim3(batch_count), dim3(1), 0, stream, j, j, A,
+                                shiftA, lda, strideA, ipiv + j, strideP);
 
         if(COMPLEX)
             rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);
@@ -170,7 +170,8 @@ rocblas_status rocsolver_orgl2_ungl2_template(rocblas_handle handle,
 
     // restore values of tau
     blocksx = (k - 1) / 128 + 1;
-    hipLaunchKernelGGL(restau<T>, dim3(blocksx, batch_count), dim3(128), 0, stream, k, ipiv, strideP);
+    ROCSOLVER_LAUNCH_KERNEL(restau<T>, dim3(blocksx, batch_count), dim3(128), 0, stream, k, ipiv,
+                            strideP);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;

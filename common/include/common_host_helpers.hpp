@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -64,24 +65,61 @@ void print_to_stream(std::ostream& os,
                      const rocblas_int m,
                      const rocblas_int n,
                      T* A,
-                     const rocblas_int lda)
+                     const rocblas_int lda,
+                     const rocblas_fill uplo)
 {
     std::string s;
     bool empty = name.empty();
     if(!empty)
         s += fmt::format("{}-by-{} matrix: {}\n", m, n, name);
-    for(int i = 0; i < m; i++)
+
+    if(uplo == rocblas_fill_full)
     {
-        if(!empty)
-            s += "    ";
-        for(int j = 0; j < n; j++)
+        // normal case
+        for(int i = 0; i < m; i++)
         {
-            s += fmt::format("{}", A[j * lda + i]);
-            if(j < n - 1)
-                s += ", ";
+            if(!empty)
+                s += "    ";
+            for(int j = 0; j < n; j++)
+            {
+                s += fmt::format("{}", A[j * lda + i]);
+                if(j < n - 1)
+                    s += ", ";
+            }
+            s += '\n';
         }
-        s += '\n';
     }
+    else
+    {
+        // symmetric case
+        for(int i = 0; i < min(m, n); i++)
+        {
+            if(!empty)
+                s += "    ";
+            for(int j = 0; j < min(m, n); j++)
+            {
+                if(uplo == rocblas_fill_upper)
+                {
+                    if(i < j)
+                        s += fmt::format("{}", A[j * lda + i]);
+                    else
+                        s += fmt::format("{}", A[i * lda + j]);
+                }
+                else
+                {
+                    if(i > j)
+                        s += fmt::format("{}", A[j * lda + i]);
+                    else
+                        s += fmt::format("{}", A[i * lda + j]);
+                }
+
+                if(j < n - 1)
+                    s += ", ";
+            }
+            s += '\n';
+        }
+    }
+
     s += '\n';
     os << s;
     os.flush();
@@ -94,24 +132,61 @@ void print_to_stream(std::ostream& os,
                      const rocblas_int m,
                      const rocblas_int n,
                      T* A,
-                     const rocblas_int lda)
+                     const rocblas_int lda,
+                     const rocblas_fill uplo)
 {
     std::string s;
     bool empty = name.empty();
     if(!empty)
         s += fmt::format("{}-by-{} matrix: {}\n", m, n, name);
-    for(int i = 0; i < m; i++)
+
+    if(uplo == rocblas_fill_full)
     {
-        if(!empty)
-            s += "    ";
-        for(int j = 0; j < n; j++)
+        // normal case
+        for(int i = 0; i < m; i++)
         {
-            s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
-            if(j < n - 1)
-                s += ", ";
+            if(!empty)
+                s += "    ";
+            for(int j = 0; j < n; j++)
+            {
+                s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
+                if(j < n - 1)
+                    s += ", ";
+            }
+            s += '\n';
         }
-        s += '\n';
     }
+    else
+    {
+        // symmetric case
+        for(int i = 0; i < min(m, n); i++)
+        {
+            if(!empty)
+                s += "    ";
+            for(int j = 0; j < min(m, n); j++)
+            {
+                if(uplo == rocblas_fill_upper)
+                {
+                    if(i < j)
+                        s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
+                    else
+                        s += fmt::format("[{}+{}i]", A[i * lda + j].real(), A[i * lda + j].imag());
+                }
+                else
+                {
+                    if(i > j)
+                        s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
+                    else
+                        s += fmt::format("[{}+{}i]", A[i * lda + j].real(), A[i * lda + j].imag());
+                }
+
+                if(j < n - 1)
+                    s += ", ";
+            }
+            s += '\n';
+        }
+    }
+
     s += '\n';
     os << s;
     os.flush();
@@ -126,12 +201,13 @@ void print_device_matrix(std::ostream& os,
                          T* A,
                          const rocblas_int lda,
                          const rocblas_stride stride = 1,
-                         const rocblas_int idx = 0)
+                         const rocblas_int idx = 0,
+                         const rocblas_fill uplo = rocblas_fill_full)
 {
-    T hA[lda * n];
-    hipMemcpy(hA, A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+    std::vector<T> hA(lda * n);
+    hipMemcpy(hA.data(), A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
-    print_to_stream<T>(os, name, m, n, hA, lda);
+    print_to_stream<T>(os, name, m, n, hA.data(), lda, uplo);
 }
 
 /*! \brief Print data from a batched array on the GPU to screen*/
@@ -143,14 +219,15 @@ void print_device_matrix(std::ostream& os,
                          T* const A[],
                          const rocblas_int lda,
                          const rocblas_stride stride = 1,
-                         const rocblas_int idx = 0)
+                         const rocblas_int idx = 0,
+                         const rocblas_fill uplo = rocblas_fill_full)
 {
-    T hA[lda * n];
+    std::vector<T> hA(lda * n);
     T* AA[1];
     hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost);
-    hipMemcpy(hA, AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+    hipMemcpy(hA.data(), AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
-    print_to_stream<T>(os, name, m, n, hA, lda);
+    print_to_stream<T>(os, name, m, n, hA.data(), lda, uplo);
 }
 
 /*! \brief Print data from a normal or strided_batched array on the GPU to file*/
@@ -161,13 +238,14 @@ void print_device_matrix(const std::string file,
                          T* A,
                          const rocblas_int lda,
                          const rocblas_stride stride = 1,
-                         const rocblas_int idx = 0)
+                         const rocblas_int idx = 0,
+                         const rocblas_fill uplo = rocblas_fill_full)
 {
     std::ofstream os(file);
-    T hA[lda * n];
-    hipMemcpy(hA, A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+    std::vector<T> hA(lda * n);
+    hipMemcpy(hA.data(), A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
-    print_to_stream<T>(os, "", m, n, hA, lda);
+    print_to_stream<T>(os, "", m, n, hA.data(), lda, uplo);
 }
 
 /*! \brief Print data from a batched array on the GPU to file*/
@@ -178,15 +256,16 @@ void print_device_matrix(const std::string file,
                          T* const A[],
                          const rocblas_int lda,
                          const rocblas_stride stride = 1,
-                         const rocblas_int idx = 0)
+                         const rocblas_int idx = 0,
+                         const rocblas_fill uplo = rocblas_fill_full)
 {
     std::ofstream os(file);
-    T hA[lda * n];
+    std::vector<T> hA(lda * n);
     T* AA[1];
     hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost);
-    hipMemcpy(hA, AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+    hipMemcpy(hA.data(), AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
 
-    print_to_stream<T>(os, "", m, n, hA, lda);
+    print_to_stream<T>(os, "", m, n, hA.data(), lda, uplo);
 }
 
 /*! \brief Print data from a normal or strided_batched array on the CPU to screen*/
@@ -198,9 +277,10 @@ void print_host_matrix(std::ostream& os,
                        T* A,
                        const rocblas_int lda,
                        const rocblas_stride stride = 1,
-                       const rocblas_int idx = 0)
+                       const rocblas_int idx = 0,
+                       const rocblas_fill uplo = rocblas_fill_full)
 {
-    print_to_stream<T>(os, name, m, n, A + idx * stride, lda);
+    print_to_stream<T>(os, name, m, n, A + idx * stride, lda, uplo);
 }
 
 /*! \brief Print data from a batched array on the CPU to screen*/
@@ -212,9 +292,10 @@ void print_host_matrix(std::ostream& os,
                        T* const A[],
                        const rocblas_int lda,
                        const rocblas_stride stride = 1,
-                       const rocblas_int idx = 0)
+                       const rocblas_int idx = 0,
+                       const rocblas_fill uplo = rocblas_fill_full)
 {
-    print_to_stream<T>(os, name, m, n, A[idx], lda);
+    print_to_stream<T>(os, name, m, n, A[idx], lda, uplo);
 }
 
 /*! \brief Print data from a normal or strided_batched array on the CPU to file*/
@@ -225,10 +306,11 @@ void print_host_matrix(const std::string file,
                        T* A,
                        const rocblas_int lda,
                        const rocblas_stride stride = 1,
-                       const rocblas_int idx = 0)
+                       const rocblas_int idx = 0,
+                       const rocblas_fill uplo = rocblas_fill_full)
 {
     std::ofstream os(file);
-    print_to_stream<T>(os, "", m, n, A + idx * stride, lda);
+    print_to_stream<T>(os, "", m, n, A + idx * stride, lda, uplo);
 }
 
 /*! \brief Print data from a batched array on the CPU to file*/
@@ -239,10 +321,11 @@ void print_host_matrix(const std::string file,
                        T* const A[],
                        const rocblas_int lda,
                        const rocblas_stride stride = 1,
-                       const rocblas_int idx = 0)
+                       const rocblas_int idx = 0,
+                       const rocblas_fill uplo = rocblas_fill_full)
 {
     std::ofstream os(file);
-    print_to_stream<T>(os, "", m, n, A[idx], lda);
+    print_to_stream<T>(os, "", m, n, A[idx], lda, uplo);
 }
 
 /*! \brief  Debugging purpose, print out CPU and GPU result matrix */

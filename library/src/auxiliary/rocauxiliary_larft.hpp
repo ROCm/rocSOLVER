@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -14,19 +14,19 @@
 #include "rocsolver.h"
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-__global__ void set_triangular(const rocblas_int n,
-                               const rocblas_int k,
-                               U V,
-                               const rocblas_int shiftV,
-                               const rocblas_int ldv,
-                               const rocblas_stride strideV,
-                               T* tau,
-                               const rocblas_stride strideT,
-                               T* F,
-                               const rocblas_int ldf,
-                               const rocblas_stride strideF,
-                               const rocblas_direct direct,
-                               const rocblas_storev storev)
+ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
+                                     const rocblas_int k,
+                                     U V,
+                                     const rocblas_int shiftV,
+                                     const rocblas_int ldv,
+                                     const rocblas_stride strideV,
+                                     T* tau,
+                                     const rocblas_stride strideT,
+                                     T* F,
+                                     const rocblas_int ldf,
+                                     const rocblas_stride strideF,
+                                     const rocblas_direct direct,
+                                     const rocblas_storev storev)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -69,19 +69,19 @@ __global__ void set_triangular(const rocblas_int n,
 }
 
 template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void set_triangular(const rocblas_int n,
-                               const rocblas_int k,
-                               U V,
-                               const rocblas_int shiftV,
-                               const rocblas_int ldv,
-                               const rocblas_stride strideV,
-                               T* tau,
-                               const rocblas_stride strideT,
-                               T* F,
-                               const rocblas_int ldf,
-                               const rocblas_stride strideF,
-                               const rocblas_direct direct,
-                               const rocblas_storev storev)
+ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
+                                     const rocblas_int k,
+                                     U V,
+                                     const rocblas_int shiftV,
+                                     const rocblas_int ldv,
+                                     const rocblas_stride strideV,
+                                     T* tau,
+                                     const rocblas_stride strideT,
+                                     T* F,
+                                     const rocblas_int ldf,
+                                     const rocblas_stride strideF,
+                                     const rocblas_direct direct,
+                                     const rocblas_storev storev)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -124,7 +124,7 @@ __global__ void set_triangular(const rocblas_int n,
 }
 
 template <typename T>
-__global__ void set_tau(const rocblas_int k, T* tau, const rocblas_stride strideT)
+ROCSOLVER_KERNEL void set_tau(const rocblas_int k, T* tau, const rocblas_stride strideT)
 {
     const auto b = hipBlockIdx_y;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -136,7 +136,7 @@ __global__ void set_tau(const rocblas_int k, T* tau, const rocblas_stride stride
     }
 }
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_larft_getMemorySize(const rocblas_int n,
                                    const rocblas_int k,
                                    const rocblas_int batch_count,
@@ -248,9 +248,11 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     // setup tau (changing signs) and account for the non-stored 1's on the
     // householder vectors
     rocblas_int blocks = (k - 1) / 32 + 1;
-    hipLaunchKernelGGL(set_triangular, dim3(blocks, blocks, batch_count), dim3(32, 32), 0, stream,
-                       n, k, V, shiftV, ldv, strideV, tau, strideT, F, ldf, strideF, direct, storev);
-    hipLaunchKernelGGL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau, strideT);
+    ROCSOLVER_LAUNCH_KERNEL(set_triangular, dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
+                            stream, n, k, V, shiftV, ldv, strideV, tau, strideT, F, ldf, strideF,
+                            direct, storev);
+    ROCSOLVER_LAUNCH_KERNEL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau,
+                            strideT);
 
     if(direct == rocblas_forward_direction)
     {
@@ -341,7 +343,8 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     }
 
     // restore tau
-    hipLaunchKernelGGL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau, strideT);
+    ROCSOLVER_LAUNCH_KERNEL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau,
+                            strideT);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;

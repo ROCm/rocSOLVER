@@ -18,12 +18,12 @@
 
 /** Set results for the scalar case (n=1) **/
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-__global__ void scalar_case(const rocblas_evect evect,
-                            U AA,
-                            const rocblas_stride strideA,
-                            T* DD,
-                            const rocblas_stride strideD,
-                            rocblas_int bc)
+ROCSOLVER_KERNEL void scalar_case(const rocblas_evect evect,
+                                  U AA,
+                                  const rocblas_stride strideA,
+                                  T* DD,
+                                  const rocblas_stride strideD,
+                                  rocblas_int bc)
 {
     int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -39,12 +39,12 @@ __global__ void scalar_case(const rocblas_evect evect,
 }
 
 template <typename T, typename S, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void scalar_case(const rocblas_evect evect,
-                            U AA,
-                            const rocblas_stride strideA,
-                            S* DD,
-                            const rocblas_stride strideD,
-                            rocblas_int bc)
+ROCSOLVER_KERNEL void scalar_case(const rocblas_evect evect,
+                                  U AA,
+                                  const rocblas_stride strideA,
+                                  S* DD,
+                                  const rocblas_stride strideD,
+                                  rocblas_int bc)
 {
     int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -60,12 +60,12 @@ __global__ void scalar_case(const rocblas_evect evect,
 }
 
 /** Argument checking **/
-template <typename W, typename S>
+template <typename T, typename S>
 rocblas_status rocsolver_syev_heev_argCheck(rocblas_handle handle,
                                             const rocblas_evect evect,
                                             const rocblas_fill uplo,
                                             const rocblas_int n,
-                                            W A,
+                                            T A,
                                             const rocblas_int lda,
                                             S* D,
                                             S* E,
@@ -125,13 +125,13 @@ void rocsolver_syev_heev_getMemorySize(const rocblas_evect evect,
     size_t t1 = 0, t2 = 0;
 
     // requirements for tridiagonalization (sytrd/hetrd)
-    rocsolver_sytrd_hetrd_getMemorySize<T, BATCHED>(n, batch_count, size_scalars, &w1, &a1, &t1,
+    rocsolver_sytrd_hetrd_getMemorySize<BATCHED, T>(n, batch_count, size_scalars, &w1, &a1, &t1,
                                                     size_workArr);
 
     if(evect == rocblas_evect_original)
     {
         // extra requirements for orgtr/ungtr
-        rocsolver_orgtr_ungtr_getMemorySize<T, BATCHED>(uplo, n, batch_count, &unused, &w2, &a2,
+        rocsolver_orgtr_ungtr_getMemorySize<BATCHED, T>(uplo, n, batch_count, &unused, &w2, &a2,
                                                         &t2, &unused);
 
         // extra requirements for computing eigenvalues and vectors (steqr)
@@ -184,12 +184,12 @@ rocblas_status rocsolver_syev_heev_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(BLOCKSIZE, 1, 1);
+    dim3 threads(BS1, 1, 1);
 
     // info = 0
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
     if(n == 0)
@@ -198,15 +198,15 @@ rocblas_status rocsolver_syev_heev_template(rocblas_handle handle,
     // quick return for n = 1 (scalar case)
     if(n == 1)
     {
-        hipLaunchKernelGGL(scalar_case<T>, gridReset, threads, 0, stream, evect, A, strideA, D,
-                           strideD, batch_count);
+        ROCSOLVER_LAUNCH_KERNEL(scalar_case<T>, gridReset, threads, 0, stream, evect, A, strideA, D,
+                                strideD, batch_count);
         return rocblas_status_success;
     }
 
     // reduce A to tridiagonal form
-    rocsolver_sytrd_hetrd_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE,
-                                   tau, n, batch_count, scalars, (T*)work_stack, Abyx_norms_tmptr,
-                                   tmptau_trfact, workArr);
+    rocsolver_sytrd_hetrd_template<BATCHED>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E,
+                                            strideE, tau, n, batch_count, scalars, (T*)work_stack,
+                                            Abyx_norms_tmptr, tmptau_trfact, workArr);
 
     if(evect != rocblas_evect_original)
     {

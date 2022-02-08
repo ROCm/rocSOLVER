@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -57,41 +57,41 @@ class rocblas_nan_rng
 public:
     // Random integer
     template <typename T, std::enable_if_t<std::is_integral<T>{}, int> = 0>
-    explicit operator T()
+    explicit operator T() const
     {
         return std::uniform_int_distribution<T>{}(rocblas_rng);
     }
 
     // Random NaN double
-    explicit operator double()
+    explicit operator double() const
     {
         return random_nan_data<double, uint64_t, 52, 11>();
     }
 
     // Random NaN float
-    explicit operator float()
+    explicit operator float() const
     {
         return random_nan_data<float, uint32_t, 23, 8>();
     }
 
     // Random NaN half
-    explicit operator rocblas_half()
+    explicit operator rocblas_half() const
     {
         return random_nan_data<rocblas_half, uint16_t, 10, 5>();
     }
 
     // Random NaN bfloat16
-    explicit operator rocblas_bfloat16()
+    explicit operator rocblas_bfloat16() const
     {
         return random_nan_data<rocblas_bfloat16, uint16_t, 7, 8>();
     }
 
-    explicit operator rocblas_float_complex()
+    explicit operator rocblas_float_complex() const
     {
         return {float(*this), float(*this)};
     }
 
-    explicit operator rocblas_double_complex()
+    explicit operator rocblas_double_complex() const
     {
         return {double(*this), double(*this)};
     }
@@ -146,7 +146,7 @@ inline rocblas_bfloat16 random_generator<rocblas_bfloat16>()
 template <>
 inline int8_t random_generator<int8_t>()
 {
-    return std::uniform_int_distribution<int8_t>(1, 3)(rocblas_rng);
+    return int8_t(std::uniform_int_distribution<int>(1, 3)(rocblas_rng));
 };
 
 /*! \brief  generate a random number in HPL-like [-0.5,0.5] doubles  */
@@ -154,18 +154,4 @@ template <typename T>
 inline T random_hpl_generator()
 {
     return std::uniform_real_distribution<double>(-0.5, 0.5)(rocblas_rng);
-}
-
-/*! \brief  generate a random ASCII string of up to length n */
-inline std::string random_string(size_t n)
-{
-    std::string str;
-    if(n)
-    {
-        size_t len = std::uniform_int_distribution<size_t>(1, n)(rocblas_rng);
-        str.reserve(len);
-        for(size_t i = 0; i < len; ++i)
-            str.push_back(std::uniform_int_distribution<char>(0x20, 0x7E)(rocblas_rng));
-    }
-    return str;
 }

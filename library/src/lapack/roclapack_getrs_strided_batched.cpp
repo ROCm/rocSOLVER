@@ -38,16 +38,14 @@ rocblas_status rocsolver_getrs_strided_batched_impl(rocblas_handle handle,
 
     // memory workspace sizes:
     // size of workspace (for calling TRSM)
+    bool optim_mem;
     size_t size_work1, size_work2, size_work3, size_work4;
-    rocsolver_getrs_getMemorySize<false, T>(n, nrhs, batch_count, &size_work1, &size_work2,
-                                            &size_work3, &size_work4);
+    rocsolver_getrs_getMemorySize<false, T>(trans, n, nrhs, batch_count, &size_work1, &size_work2,
+                                            &size_work3, &size_work4, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2, size_work3,
                                                       size_work4);
-
-    // always allocate all required memory for TRSM optimal performance
-    bool optim_mem = true;
 
     // memory workspace allocation
     void *work1, *work2, *work3, *work4;
@@ -64,7 +62,7 @@ rocblas_status rocsolver_getrs_strided_batched_impl(rocblas_handle handle,
     // execution
     return rocsolver_getrs_template<false, T>(handle, trans, n, nrhs, A, shiftA, lda, strideA, ipiv,
                                               strideP, B, shiftB, ldb, strideB, batch_count, work1,
-                                              work2, work3, work4, optim_mem);
+                                              work2, work3, work4, optim_mem, true);
 }
 
 /*

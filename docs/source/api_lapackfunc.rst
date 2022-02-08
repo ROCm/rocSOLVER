@@ -5,7 +5,7 @@
 LAPACK Functions
 ********************
 
-LAPACK routines solve complex Numerical Linear Algebra problems. These functions are organized 
+LAPACK routines solve complex Numerical Linear Algebra problems. These functions are organized
 in the following categories:
 
 * :ref:`triangular`. Based on Gaussian elimination.
@@ -14,7 +14,7 @@ in the following categories:
 * :ref:`linears`. Based on triangular factorizations.
 * :ref:`leastsqr`. Based on orthogonal factorizations.
 * :ref:`eigens`. Eigenproblems for symmetric matrices.
-* :ref:`svds`. Singular values and related problems for general matrices. 
+* :ref:`svds`. Singular values and related problems for general matrices.
 
 .. note::
     Throughout the APIs' descriptions, we use the following notations:
@@ -22,11 +22,11 @@ in the following categories:
     * x[i] stands for the i-th element of vector x, while A[i,j] represents the element
       in the i-th row and j-th column of matrix A. Indices are 1-based, i.e. x[1] is the first
       element of x.
-    * If X is a real vector or matrix, :math:`X^T` indicates its transpose; if X is complex, then 
+    * If X is a real vector or matrix, :math:`X^T` indicates its transpose; if X is complex, then
       :math:`X^H` represents its conjugate transpose. When X could be real or complex, we use X' to
-      indicate X transposed or X conjugate transposed, accordingly. 
+      indicate X transposed or X conjugate transposed, accordingly.
     * x_i :math:`=x_i`; we sometimes use both notations, :math:`x_i` when displaying mathematical
-      equations, and x_i in the text describing the function parameters. 
+      equations, and x_i in the text describing the function parameters.
 
 
 
@@ -167,6 +167,70 @@ rocsolver_<type>getrf_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgetrf_strided_batched
 
+.. _sytf2:
+
+rocsolver_<type>sytf2()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zsytf2
+   :outline:
+.. doxygenfunction:: rocsolver_csytf2
+   :outline:
+.. doxygenfunction:: rocsolver_dsytf2
+   :outline:
+.. doxygenfunction:: rocsolver_ssytf2
+
+rocsolver_<type>sytf2_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zsytf2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_csytf2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dsytf2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssytf2_batched
+
+rocsolver_<type>sytf2_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zsytf2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_csytf2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dsytf2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssytf2_strided_batched
+
+.. _sytrf:
+
+rocsolver_<type>sytrf()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zsytrf
+   :outline:
+.. doxygenfunction:: rocsolver_csytrf
+   :outline:
+.. doxygenfunction:: rocsolver_dsytrf
+   :outline:
+.. doxygenfunction:: rocsolver_ssytrf
+
+rocsolver_<type>sytrf_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zsytrf_batched
+   :outline:
+.. doxygenfunction:: rocsolver_csytrf_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dsytrf_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssytrf_batched
+
+rocsolver_<type>sytrf_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zsytrf_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_csytrf_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dsytrf_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssytrf_strided_batched
+
 
 
 .. _orthogonal:
@@ -245,6 +309,70 @@ rocsolver_<type>geqrf_strided_batched()
 .. doxygenfunction:: rocsolver_dgeqrf_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgeqrf_strided_batched
+
+.. _gerq2:
+
+rocsolver_<type>gerq2()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgerq2
+   :outline:
+.. doxygenfunction:: rocsolver_cgerq2
+   :outline:
+.. doxygenfunction:: rocsolver_dgerq2
+   :outline:
+.. doxygenfunction:: rocsolver_sgerq2
+
+rocsolver_<type>gerq2_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgerq2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgerq2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgerq2_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgerq2_batched
+
+rocsolver_<type>gerq2_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgerq2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgerq2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgerq2_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgerq2_strided_batched
+
+.. _gerqf:
+
+rocsolver_<type>gerqf()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgerqf
+   :outline:
+.. doxygenfunction:: rocsolver_cgerqf
+   :outline:
+.. doxygenfunction:: rocsolver_dgerqf
+   :outline:
+.. doxygenfunction:: rocsolver_sgerqf
+
+rocsolver_<type>gerqf_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgerqf_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgerqf_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgerqf_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgerqf_batched
+
+rocsolver_<type>gerqf_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgerqf_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgerqf_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgerqf_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgerqf_strided_batched
 
 .. _geql2:
 
@@ -715,6 +843,134 @@ rocsolver_<type>getrs_strided_batched()
 .. doxygenfunction:: rocsolver_dgetrs_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgetrs_strided_batched
+
+.. _gesv:
+
+rocsolver_<type>gesv()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgesv
+   :outline:
+.. doxygenfunction:: rocsolver_cgesv
+   :outline:
+.. doxygenfunction:: rocsolver_dgesv
+   :outline:
+.. doxygenfunction:: rocsolver_sgesv
+
+rocsolver_<type>gesv_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgesv_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgesv_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgesv_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgesv_batched
+
+rocsolver_<type>gesv_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgesv_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgesv_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgesv_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgesv_strided_batched
+
+.. _potri:
+
+rocsolver_<type>potri()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zpotri
+   :outline:
+.. doxygenfunction:: rocsolver_cpotri
+   :outline:
+.. doxygenfunction:: rocsolver_dpotri
+   :outline:
+.. doxygenfunction:: rocsolver_spotri
+
+rocsolver_<type>potri_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zpotri_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cpotri_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dpotri_batched
+   :outline:
+.. doxygenfunction:: rocsolver_spotri_batched
+
+rocsolver_<type>potri_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zpotri_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cpotri_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dpotri_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_spotri_strided_batched
+
+.. _potrs:
+
+rocsolver_<type>potrs()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zpotrs
+   :outline:
+.. doxygenfunction:: rocsolver_cpotrs
+   :outline:
+.. doxygenfunction:: rocsolver_dpotrs
+   :outline:
+.. doxygenfunction:: rocsolver_spotrs
+
+rocsolver_<type>potrs_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zpotrs_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cpotrs_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dpotrs_batched
+   :outline:
+.. doxygenfunction:: rocsolver_spotrs_batched
+
+rocsolver_<type>potrs_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zpotrs_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cpotrs_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dpotrs_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_spotrs_strided_batched
+
+.. _posv:
+
+rocsolver_<type>posv()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zposv
+   :outline:
+.. doxygenfunction:: rocsolver_cposv
+   :outline:
+.. doxygenfunction:: rocsolver_dposv
+   :outline:
+.. doxygenfunction:: rocsolver_sposv
+
+rocsolver_<type>posv_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zposv_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cposv_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dposv_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sposv_batched
+
+rocsolver_<type>posv_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zposv_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cposv_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dposv_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sposv_strided_batched
 
 
 

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     April 2012
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -14,7 +14,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev,
                                          const rocblas_int m,
                                          const rocblas_int n,
@@ -42,7 +42,7 @@ void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev,
         // requirements for calling orgqr/ungqr
         if(m >= k)
         {
-            rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(m, n, k, batch_count, size_scalars,
+            rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(m, n, k, batch_count, size_scalars,
                                                             size_work, size_Abyx_tmptr, size_trfact,
                                                             size_workArr);
         }
@@ -50,7 +50,7 @@ void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev,
         {
             size_t s1 = sizeof(T) * batch_count * (m - 1) * m / 2;
             size_t s2;
-            rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(m - 1, m - 1, m - 1, batch_count,
+            rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(m - 1, m - 1, m - 1, batch_count,
                                                             size_scalars, &s2, size_Abyx_tmptr,
                                                             size_trfact, size_workArr);
             *size_work = max(s1, s2);
@@ -62,7 +62,7 @@ void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev,
         // requirements for calling orglq/unglq
         if(n > k)
         {
-            rocsolver_orglq_unglq_getMemorySize<T, BATCHED>(m, n, k, batch_count, size_scalars,
+            rocsolver_orglq_unglq_getMemorySize<BATCHED, T>(m, n, k, batch_count, size_scalars,
                                                             size_work, size_Abyx_tmptr, size_trfact,
                                                             size_workArr);
         }
@@ -70,7 +70,7 @@ void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev,
         {
             size_t s1 = sizeof(T) * batch_count * (n - 1) * n / 2;
             size_t s2;
-            rocsolver_orglq_unglq_getMemorySize<T, BATCHED>(n - 1, n - 1, n - 1, batch_count,
+            rocsolver_orglq_unglq_getMemorySize<BATCHED, T>(n - 1, n - 1, n - 1, batch_count,
                                                             size_scalars, &s2, size_Abyx_tmptr,
                                                             size_trfact, size_workArr);
             *size_work = max(s1, s2);
@@ -159,15 +159,17 @@ rocblas_status rocsolver_orgbr_ungbr_template(rocblas_handle handle,
             // first subdiagonal
             rocblas_stride strideW = rocblas_stride(m - 1) * m / 2; // number of elements to copy
             rocblas_int ldw = m - 1;
-            rocblas_int blocks = (m - 2) / BS + 1;
+            rocblas_int blocks = (m - 2) / BS2 + 1;
 
             // copy
-            hipLaunchKernelGGL(copyshift_right<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
-                               stream, true, m - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
+            ROCSOLVER_LAUNCH_KERNEL(copyshift_right<T>, dim3(blocks, blocks, batch_count),
+                                    dim3(BS2, BS2), 0, stream, true, m - 1, A, shiftA, lda, strideA,
+                                    work, 0, ldw, strideW);
 
             // shift
-            hipLaunchKernelGGL(copyshift_right<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
-                               stream, false, m - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
+            ROCSOLVER_LAUNCH_KERNEL(copyshift_right<T>, dim3(blocks, blocks, batch_count),
+                                    dim3(BS2, BS2), 0, stream, false, m - 1, A, shiftA, lda,
+                                    strideA, work, 0, ldw, strideW);
 
             // result
             rocsolver_orgqr_ungqr_template<BATCHED, STRIDED, T>(
@@ -192,15 +194,17 @@ rocblas_status rocsolver_orgbr_ungbr_template(rocblas_handle handle,
             // first superdiagonal
             rocblas_stride strideW = rocblas_stride(n - 1) * n / 2; // number of elements to copy
             rocblas_int ldw = n - 1;
-            rocblas_int blocks = (n - 2) / BS + 1;
+            rocblas_int blocks = (n - 2) / BS2 + 1;
 
             // copy
-            hipLaunchKernelGGL(copyshift_down<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
-                               stream, true, n - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
+            ROCSOLVER_LAUNCH_KERNEL(copyshift_down<T>, dim3(blocks, blocks, batch_count),
+                                    dim3(BS2, BS2), 0, stream, true, n - 1, A, shiftA, lda, strideA,
+                                    work, 0, ldw, strideW);
 
             // shift
-            hipLaunchKernelGGL(copyshift_down<T>, dim3(blocks, blocks, batch_count), dim3(BS, BS), 0,
-                               stream, false, n - 1, A, shiftA, lda, strideA, work, 0, ldw, strideW);
+            ROCSOLVER_LAUNCH_KERNEL(copyshift_down<T>, dim3(blocks, blocks, batch_count),
+                                    dim3(BS2, BS2), 0, stream, false, n - 1, A, shiftA, lda,
+                                    strideA, work, 0, ldw, strideW);
 
             // result
             rocsolver_orglq_unglq_template<BATCHED, STRIDED, T>(

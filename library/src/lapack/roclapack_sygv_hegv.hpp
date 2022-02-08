@@ -16,7 +16,7 @@
 #include "rocsolver.h"
 
 template <typename T>
-__global__ void sygv_update_info(T* info, T* iinfo, const rocblas_int n, const rocblas_int bc)
+ROCSOLVER_KERNEL void sygv_update_info(T* info, T* iinfo, const rocblas_int n, const rocblas_int bc)
 {
     int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -41,7 +41,8 @@ void rocsolver_sygv_hegv_getMemorySize(const rocblas_eform itype,
                                        size_t* size_work3,
                                        size_t* size_work4,
                                        size_t* size_pivots_workArr,
-                                       size_t* size_iinfo)
+                                       size_t* size_iinfo,
+                                       bool* optim_mem)
 {
     // if quick return no need of workspace
     if(n == 0 || batch_count == 0)
@@ -53,20 +54,22 @@ void rocsolver_sygv_hegv_getMemorySize(const rocblas_eform itype,
         *size_work4 = 0;
         *size_pivots_workArr = 0;
         *size_iinfo = 0;
+        *optim_mem = true;
         return;
     }
 
+    bool opt1, opt2, opt3 = true;
     size_t unused, temp1, temp2, temp3, temp4, temp5;
 
     // requirements for calling POTRF
     rocsolver_potrf_getMemorySize<BATCHED, T>(n, uplo, batch_count, size_scalars, size_work1,
                                               size_work2, size_work3, size_work4,
-                                              size_pivots_workArr, size_iinfo);
+                                              size_pivots_workArr, size_iinfo, &opt1);
     *size_iinfo = max(*size_iinfo, sizeof(rocblas_int) * batch_count);
 
     // requirements for calling SYGST/HEGST
-    rocsolver_sygst_hegst_getMemorySize<T, BATCHED>(itype, n, batch_count, &unused, &temp1, &temp2,
-                                                    &temp3, &temp4);
+    rocsolver_sygst_hegst_getMemorySize<BATCHED, T>(uplo, itype, n, batch_count, &unused, &temp1,
+                                                    &temp2, &temp3, &temp4, &opt2);
     *size_work1 = max(*size_work1, temp1);
     *size_work2 = max(*size_work2, temp2);
     *size_work3 = max(*size_work3, temp3);
@@ -85,18 +88,26 @@ void rocsolver_sygv_hegv_getMemorySize(const rocblas_eform itype,
     {
         if(itype == rocblas_eform_ax || itype == rocblas_eform_abx)
         {
+            rocblas_operation trans
+                = (uplo == rocblas_fill_upper ? rocblas_operation_none
+                                              : rocblas_operation_conjugate_transpose);
             // requirements for calling TRSM
-            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, n, n, batch_count, &temp1, &temp2,
-                                             &temp3, &temp4);
+            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, trans, n, n, batch_count, &temp1,
+                                             &temp2, &temp3, &temp4);
             *size_work1 = max(*size_work1, temp1);
             *size_work2 = max(*size_work2, temp2);
             *size_work3 = max(*size_work3, temp3);
             *size_work4 = max(*size_work4, temp4);
+
+            // always allocate all required memory for TRSM optimal performance
+            opt3 = true;
         }
     }
+
+    *optim_mem = opt1 && opt2 && opt3;
 }
 
-template <typename S, typename T>
+template <typename T, typename S>
 rocblas_status rocsolver_sygv_hegv_argCheck(rocblas_handle handle,
                                             const rocblas_eform itype,
                                             const rocblas_evect evect,
@@ -176,12 +187,12 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(BLOCKSIZE, 1, 1);
+    dim3 threads(BS1, 1, 1);
 
     // info=0 (starting with no errors)
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
     if(n == 0)
@@ -196,7 +207,7 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
     T one = 1;
 
     // perform Cholesky factorization of B
-    rocsolver_potrf_template<BATCHED, S, T>(handle, uplo, n, B, shiftB, ldb, strideB, info,
+    rocsolver_potrf_template<BATCHED, T, S>(handle, uplo, n, B, shiftB, ldb, strideB, info,
                                             batch_count, scalars, work1, work2, work3, work4,
                                             (T*)pivots_workArr, iinfo, optim_mem);
 
@@ -206,7 +217,7 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
         positive-definite case) **/
 
     // reduce to standard eigenvalue problem and solve
-    rocsolver_sygst_hegst_template<BATCHED, STRIDED, S, T>(
+    rocsolver_sygst_hegst_template<BATCHED, STRIDED, T, S>(
         handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
         scalars, work1, work2, work3, work4, optim_mem);
 
@@ -215,7 +226,8 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
         scalars, work1, (T*)work2, (T*)work3, (T*)work4, (T**)pivots_workArr);
 
     // combine info from POTRF with info from SYEV/HEEV
-    hipLaunchKernelGGL(sygv_update_info, gridReset, threads, 0, stream, info, iinfo, n, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(sygv_update_info, gridReset, threads, 0, stream, info, iinfo, n,
+                            batch_count);
 
     /** (TODO: Similarly, if only neig < n eigenvalues converged, TRSMM or TRMM below should not
         work with the entire matrix. Need to find a way to do this efficiently; for now we ignore

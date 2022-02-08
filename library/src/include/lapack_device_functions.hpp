@@ -5,6 +5,7 @@
 #pragma once
 
 #include "lib_device_helpers.hpp"
+#include "lib_macros.hpp"
 #include "rocsolver.h"
 
 /*
@@ -213,65 +214,84 @@ __device__ void trsm_kernel_right_lower(const rocblas_diagonal diag,
     }
 }
 
-template <typename T>
-__device__ void gemv_kernel(const rocblas_int m,
-                            const rocblas_int n,
-                            T* alpha,
-                            T* a,
-                            const rocblas_int lda,
-                            T* x,
-                            const rocblas_int incX,
-                            T* beta,
-                            T* y,
-                            const rocblas_int incY)
+/** GEMV device function to compute y = alpha * A * x + beta * y **/
+template <int MAX_THDS, typename T>
+__device__ void gemv(const rocblas_int tid,
+                     const rocblas_int m,
+                     const rocblas_int n,
+                     const T* alpha,
+                     T* A,
+                     const rocblas_int lda,
+                     T* x,
+                     const rocblas_int incx,
+                     const T* beta,
+                     T* y,
+                     const rocblas_int incy)
 {
-    // gemv kernel assuming no transpose
-    T yi;
-    for(int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
+    // gemv function assuming no transpose
+    T temp;
+    for(int i = tid; i < m; i += MAX_THDS)
     {
-        yi = 0;
-
-        if(*alpha != 0)
-        {
-            for(int k = 0; k < n; k++)
-                yi += a[i + k * lda] * x[k * incX];
-        }
-
-        y[i * incY] = *alpha * yi + *beta * y[i * incY];
+        temp = 0;
+        for(int j = 0; j < n; j++)
+            temp += A[i + j * lda] * x[j * incx];
+        y[i * incy] = *alpha * temp + *beta * y[i * incy];
     }
-    __syncthreads();
 }
 
-template <typename T>
-__device__ void gemm_kernel(const rocblas_int m,
+/** GEMM device function to compute C = alpha * A * B + beta * C **/
+template <int MAX_THDS, typename T>
+__device__ void gemm(const rocblas_int tid,
+                     const rocblas_int m,
+                     const rocblas_int n,
+                     const rocblas_int k,
+                     const T* alpha,
+                     T* A,
+                     const rocblas_int lda,
+                     T* B,
+                     const rocblas_int ldb,
+                     const T* beta,
+                     T* C,
+                     const rocblas_int ldc)
+{
+    // gemm function assuming no transpose
+    T temp;
+    for(int e = tid; e < m * n; e += MAX_THDS)
+    {
+        int i = e % m;
+        int j = e / m;
+        temp = 0;
+        for(int l = 0; l < k; l++)
+            temp += A[i + l * lda] * B[l + j * ldb];
+        C[i + j * ldc] = *alpha * temp + *beta * C[i + j * ldc];
+    }
+}
+
+/** GEMM device function to compute C = alpha * A * B' + beta * C **/
+template <int MAX_THDS, typename T>
+__device__ void gemm_btrans(const rocblas_int tid,
+                            const rocblas_int m,
                             const rocblas_int n,
                             const rocblas_int k,
-                            T* alpha,
-                            T* a,
+                            const T* alpha,
+                            T* A,
                             const rocblas_int lda,
-                            T* b,
+                            T* B,
                             const rocblas_int ldb,
-                            T* beta,
-                            T* c,
+                            const T* beta,
+                            T* C,
                             const rocblas_int ldc)
 {
-    // gemm kernel assuming no transpose
-    T cij;
-    for(int j = 0; j < n; j++)
+    // gemm function assuming B transpose
+    T temp;
+    for(int e = tid; e < m * n; e += MAX_THDS)
     {
-        for(int i = hipThreadIdx_y; i < m; i += hipBlockDim_y)
-        {
-            cij = 0;
-
-            if(*alpha != 0)
-            {
-                for(int l = 0; l < k; l++)
-                    cij += a[i + l * lda] * b[l + j * ldb];
-            }
-
-            c[i + j * ldc] = *alpha * cij + *beta * c[i + j * ldc];
-        }
-        __syncthreads();
+        int i = e % m;
+        int j = e / m;
+        temp = 0;
+        for(int l = 0; l < k; l++)
+            temp += A[i + l * lda] * B[j + l * ldb];
+        C[i + j * ldc] = *alpha * temp + *beta * C[i + j * ldc];
     }
 }
 
@@ -653,19 +673,136 @@ __device__ void lasrt_increasing(const rocblas_int n, T* D, rocblas_int* stack)
     }
 }
 
+/** IAMAX finds the maximum element of a given vector and its index.
+    MAX_THDS should be 128, 256, 512, or 1024, and sval and sidx should
+    be shared arrays of size MAX_THDS. **/
+template <int MAX_THDS, typename T, typename S>
+__device__ void iamax(const rocblas_int tid,
+                      const rocblas_int n,
+                      T* A,
+                      const rocblas_int incA,
+                      S* sval,
+                      rocblas_int* sidx)
+{
+    // local memory setup
+    S val1, val2;
+    rocblas_int idx1, idx2;
+
+    // read into shared memory while doing initial step
+    // (each thread reduce as many elements as needed to cover the original array)
+    val1 = 0;
+    idx1 = INT_MAX;
+    for(int i = tid; i < n; i += MAX_THDS)
+    {
+        val2 = aabs<S>(A[i * incA]);
+        idx2 = i + 1; // add one to make it 1-based index
+        if(val1 < val2 || idx1 == INT_MAX)
+        {
+            val1 = val2;
+            idx1 = idx2;
+        }
+    }
+    sval[tid] = val1;
+    sidx[tid] = idx1;
+    __syncthreads();
+
+    if(n <= 1)
+        return;
+
+        /** <========= Next do the reduction on the shared memory array =========>
+        (We halve the number of active threads at each step
+        reducing two elements in the shared array. **/
+
+#pragma unroll
+    for(int i = MAX_THDS / 2; i > warpSize; i /= 2)
+    {
+        if(tid < i)
+        {
+            val2 = sval[tid + i];
+            idx2 = sidx[tid + i];
+            if((val1 < val2) || (val1 == val2 && idx1 > idx2))
+            {
+                sval[tid] = val1 = val2;
+                sidx[tid] = idx1 = idx2;
+            }
+        }
+        __syncthreads();
+    }
+
+    // from this point, as all the active threads will form a single wavefront
+    // and work in lock-step, there is no need for synchronizations and barriers
+    if(tid < warpSize)
+    {
+        if(warpSize >= 64)
+        {
+            val2 = sval[tid + 64];
+            idx2 = sidx[tid + 64];
+            if((val1 < val2) || (val1 == val2 && idx1 > idx2))
+            {
+                sval[tid] = val1 = val2;
+                sidx[tid] = idx1 = idx2;
+            }
+        }
+        val2 = sval[tid + 32];
+        idx2 = sidx[tid + 32];
+        if((val1 < val2) || (val1 == val2 && idx1 > idx2))
+        {
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
+        }
+        val2 = sval[tid + 16];
+        idx2 = sidx[tid + 16];
+        if((val1 < val2) || (val1 == val2 && idx1 > idx2))
+        {
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
+        }
+        val2 = sval[tid + 8];
+        idx2 = sidx[tid + 8];
+        if((val1 < val2) || (val1 == val2 && idx1 > idx2))
+        {
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
+        }
+        val2 = sval[tid + 4];
+        idx2 = sidx[tid + 4];
+        if((val1 < val2) || (val1 == val2 && idx1 > idx2))
+        {
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
+        }
+        val2 = sval[tid + 2];
+        idx2 = sidx[tid + 2];
+        if((val1 < val2) || (val1 == val2 && idx1 > idx2))
+        {
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
+        }
+        val2 = sval[tid + 1];
+        idx2 = sidx[tid + 1];
+        if((val1 < val2) || (val1 == val2 && idx1 > idx2))
+        {
+            sval[tid] = val1 = val2;
+            sidx[tid] = idx1 = idx2;
+        }
+    }
+
+    // after the reduction, the maximum of the elements is in sval[0] and sidx[0]
+}
+
 /** AXPY computes a constant times a vector plus a vector. **/
 template <typename T, typename U, typename V>
-__global__ void axpy_kernel(const rocblas_int n,
-                            T* alpha,
-                            const rocblas_stride stride_alpha,
-                            U X,
-                            const rocblas_int shiftX,
-                            const rocblas_int incx,
-                            const rocblas_stride strideX,
-                            V Y,
-                            const rocblas_int shiftY,
-                            const rocblas_int incy,
-                            const rocblas_stride strideY)
+ROCSOLVER_KERNEL void axpy_kernel(const rocblas_int n,
+                                  T* alpha,
+                                  const rocblas_stride stride_alpha,
+                                  U X,
+                                  const rocblas_int shiftX,
+                                  const rocblas_int incx,
+                                  const rocblas_stride strideX,
+                                  V Y,
+                                  const rocblas_int shiftY,
+                                  const rocblas_int incy,
+                                  const rocblas_stride strideY)
 {
     rocblas_int b = hipBlockIdx_x;
     rocblas_int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -678,5 +815,122 @@ __global__ void axpy_kernel(const rocblas_int n,
 
         // axpy
         y[i * incy] = a[0] * x[i * incx] + y[i * incy];
+    }
+}
+
+/** Optimized kernel that executes a simple gemm A = BC
+    where A, B and C are sub blocks of the same matrix MM with
+    leading dimension ldim and stride. A, B and C are
+    located in MM by their respective shifts.
+
+    Call this kernel with 'batch_count' groups in z, and enough
+    groups in x and y to cover all the 'm' rows and 'n' columns of C.
+    Size of shared memory per group should be:
+    lmemsize = k * (hipBlockDim_x + hipBlockDim_y) * sizeof(T); **/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void gemm_kernel(const rocblas_int m,
+                                  const rocblas_int n,
+                                  const rocblas_int k,
+                                  U MM,
+                                  const rocblas_int shiftA,
+                                  const rocblas_int shiftB,
+                                  const rocblas_int shiftC,
+                                  const rocblas_int ldim,
+                                  const rocblas_stride stride)
+{
+    // indices
+    int id = hipBlockIdx_z;
+    int tx = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int bdx = hipBlockDim_x;
+    int bdy = hipBlockDim_y;
+    int i = hipBlockIdx_x * bdx + tx;
+    int j = hipBlockIdx_y * bdy + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(MM, id, shiftA, stride);
+    T* B = load_ptr_batch(MM, id, shiftB, stride);
+    T* C = load_ptr_batch(MM, id, shiftC, stride);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* a = reinterpret_cast<T*>(lmem);
+    T* b = a + k * bdx;
+    T c;
+
+    // local row and column of the shared arrays
+    a += tx * k;
+    b += ty * k;
+
+    // read A and B into shared mem
+    for(int kk = ty; kk < k; kk += bdy)
+        a[kk] = i < m ? A[i + kk * ldim] : 0;
+    for(int kk = tx; kk < k; kk += bdx)
+        b[kk] = j < n ? B[kk + j * ldim] : 0;
+    __syncthreads();
+
+    if(i < m && j < n)
+    {
+        // update c
+        c = C[i + j * ldim];
+        for(int kk = 0; kk < k; ++kk)
+            c -= a[kk] * b[kk];
+
+        // write back to global memory
+        C[i + j * ldim] = c;
+    }
+}
+
+/** Optimized kernel that solves a simple triangular system B <- Ax=B
+    with A unit matrix. A and B are sub blocks of the same matrix MM with
+    leading dimension ldim and stride. A and B are
+    located in MM by their respective shifts.
+
+    Call this kernel with 'batch_count' groups in z, and enough
+    groups in y to cover all the 'n' right-hand-sides (columns of B).
+    There should be only one group in x with hipBlockDim_x = m.
+    Size of shared memory per group should be:
+    lmemsize = hipBlockDim_y * sizeof(T); **/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void trsm2_kernel(const rocblas_int m,
+                                   const rocblas_int n,
+                                   U MM,
+                                   const rocblas_int shiftA,
+                                   const rocblas_int shiftB,
+                                   const rocblas_int ldim,
+                                   const rocblas_stride stride)
+{
+    int id = hipBlockIdx_z;
+    int i = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int bdy = hipBlockDim_y;
+    int j = hipBlockIdx_y * bdy + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(MM, id, shiftA, stride);
+    T* B = load_ptr_batch(MM, id, shiftB, stride);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c;
+
+    if(j < n)
+    {
+        // read data
+        c = B[i + j * ldim];
+
+        // solve for right-hand sides
+        for(int k = 0; k < m - 1; ++k)
+        {
+            __syncthreads();
+            if(i == k)
+                b[ty] = c;
+            __syncthreads();
+            c -= (i > k) ? A[i + k * ldim] * b[ty] : 0;
+        }
+
+        // move results back to global
+        B[i + j * ldim] = c;
     }
 }

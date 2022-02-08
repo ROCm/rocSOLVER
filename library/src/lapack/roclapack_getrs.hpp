@@ -48,13 +48,15 @@ rocblas_status rocsolver_getrs_argCheck(rocblas_handle handle,
 }
 
 template <bool BATCHED, typename T>
-void rocsolver_getrs_getMemorySize(const rocblas_int n,
+void rocsolver_getrs_getMemorySize(rocblas_operation trans,
+                                   const rocblas_int n,
                                    const rocblas_int nrhs,
                                    const rocblas_int batch_count,
                                    size_t* size_work1,
                                    size_t* size_work2,
                                    size_t* size_work3,
-                                   size_t* size_work4)
+                                   size_t* size_work4,
+                                   bool* optim_mem)
 {
     // if quick return, no workspace is needed
     if(n == 0 || nrhs == 0 || batch_count == 0)
@@ -63,12 +65,16 @@ void rocsolver_getrs_getMemorySize(const rocblas_int n,
         *size_work2 = 0;
         *size_work3 = 0;
         *size_work4 = 0;
+        *optim_mem = true;
         return;
     }
 
     // workspace required for calling TRSM
-    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, n, nrhs, batch_count, size_work1,
+    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, trans, n, nrhs, batch_count, size_work1,
                                      size_work2, size_work3, size_work4);
+
+    // always allocate all required memory for TRSM optimal performance
+    *optim_mem = true;
 }
 
 template <bool BATCHED, typename T, typename U>
@@ -91,7 +97,8 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
                                         void* work2,
                                         void* work3,
                                         void* work4,
-                                        bool optim_mem)
+                                        const bool optim_mem,
+                                        const bool pivot)
 {
     ROCSOLVER_ENTER("getrs", "trans:", trans, "n:", n, "nrhs:", nrhs, "shiftA:", shiftA,
                     "lda:", lda, "shiftB:", shiftB, "ldb:", ldb, "bc:", batch_count);
@@ -108,14 +115,15 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
-    // constants to use when calling rocablas functions
+    // constants to use when calling rocblas functions
     T one = 1; // constant 1 in host
 
     if(trans == rocblas_operation_none)
     {
         // first apply row interchanges to the right hand sides
-        rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0, strideP,
-                                    1, batch_count);
+        if(pivot)
+            rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0,
+                                        strideP, 1, batch_count);
 
         // solve L*X = B, overwriting B with X
         rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower, trans,
@@ -144,8 +152,9 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
                                      work3, work4);
 
         // then apply row interchanges to the solution vectors
-        rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0, strideP,
-                                    -1, batch_count);
+        if(pivot)
+            rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0,
+                                        strideP, -1, batch_count);
     }
 
     rocblas_set_pointer_mode(handle, old_mode);

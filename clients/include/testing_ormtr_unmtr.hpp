@@ -137,8 +137,7 @@ void ormtr_unmtr_initData(const rocblas_handle handle,
         }
 
         // compute sytrd/hetrd
-        cblas_sytrd_hetrd<S, T>(uplo, nq, hA[0], lda, D.data(), E.data(), hIpiv[0], hW.data(),
-                                size_W);
+        cblas_sytrd_hetrd<T>(uplo, nq, hA[0], lda, D.data(), E.data(), hIpiv[0], hW.data(), size_W);
     }
 
     if(GPU)
@@ -391,7 +390,7 @@ void testing_ormtr_unmtr(Arguments& argus)
                                    argus.profile, argus.perf);
 
     // validate results for rocsolver-test
-    // using n * machine_precision as tolerance
+    // using s * machine_precision as tolerance
     rocblas_int s = left ? m : n;
     if(argus.unit_check)
         ROCSOLVER_TEST_CHECK(T, max_error, s);

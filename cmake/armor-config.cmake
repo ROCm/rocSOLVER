@@ -9,7 +9,7 @@
 #           with optimizations enabled. e.g. -Og
 # 2 - Expensive correctness checks (debug iterators)
 macro(add_armor_flags target level)
-  if("${level}" GREATER "0")
+  if(UNIX AND "${level}" GREATER "0")
     if("${level}" GREATER "1")
       # Building with std debug iterators is enabled by the defines below, but
       # requires building C++ dependencies with the same defines.

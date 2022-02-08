@@ -17,6 +17,7 @@ def runCI =
     def prj = new rocProject('rocSOLVER', 'Extended')
 
     prj.timeout.compile = 600
+    prj.timeout.test = 420
     prj.defaults.ccache = true
 
     // customize for project
@@ -39,7 +40,7 @@ def runCI =
     {
         platform, project->
 
-        def gfilter = '*daily_lapack*'
+        def gfilter = 'daily*'
         commonGroovy.runTestCommand(platform, project, gfilter)
     }
 

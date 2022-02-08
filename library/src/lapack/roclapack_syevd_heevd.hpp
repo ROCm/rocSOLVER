@@ -51,7 +51,7 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
     size_t t1 = 0, t2 = 0;
 
     // requirements for tridiagonalization (sytrd/hetrd)
-    rocsolver_sytrd_hetrd_getMemorySize<T, BATCHED>(n, batch_count, size_scalars, &w11, &w21, &t1,
+    rocsolver_sytrd_hetrd_getMemorySize<BATCHED, T>(n, batch_count, size_scalars, &w11, &w21, &t1,
                                                     &unused);
 
     if(evect == rocblas_evect_original)
@@ -61,7 +61,7 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
                                                      &unused);
 
         // extra requirements for ormtr/unmtr
-        rocsolver_ormtr_unmtr_getMemorySize<T, BATCHED>(rocblas_side_left, uplo, n, n, batch_count,
+        rocsolver_ormtr_unmtr_getMemorySize<BATCHED, T>(rocblas_side_left, uplo, n, n, batch_count,
                                                         &unused, &w13, &w23, &w32, &unused);
 
         *size_work3 = std::max(w31, w32);
@@ -125,12 +125,12 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(BLOCKSIZE, 1, 1);
+    dim3 threads(BS1, 1, 1);
 
     // info = 0
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
     if(n == 0)
@@ -139,17 +139,17 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
     // quick return for n = 1 (scalar case)
     if(n == 1)
     {
-        hipLaunchKernelGGL(scalar_case<T>, gridReset, threads, 0, stream, evect, A, strideA, D,
-                           strideD, batch_count);
+        ROCSOLVER_LAUNCH_KERNEL(scalar_case<T>, gridReset, threads, 0, stream, evect, A, strideA, D,
+                                strideD, batch_count);
         return rocblas_status_success;
     }
 
     // TODO: Scale the matrix
 
     // reduce A to tridiagonal form
-    rocsolver_sytrd_hetrd_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE,
-                                   tau, n, batch_count, scalars, (T*)work1, (T*)work2, tmptau_W,
-                                   workArr);
+    rocsolver_sytrd_hetrd_template<BATCHED>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E,
+                                            strideE, tau, n, batch_count, scalars, (T*)work1,
+                                            (T*)work2, tmptau_W, workArr);
 
     if(evect != rocblas_evect_original)
     {
@@ -174,8 +174,8 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
 
         // copy matrix product into A
         const rocblas_int copyblocks = (n - 1) / 32 + 1;
-        hipLaunchKernelGGL(copy_mat<T>, dim3(copyblocks, copyblocks, batch_count), dim3(32, 32), 0,
-                           stream, n, n, tmptau_W, 0, ldw, strideW, A, shiftA, lda, strideA);
+        ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(copyblocks, copyblocks, batch_count), dim3(32, 32),
+                                0, stream, n, n, tmptau_W, 0, ldw, strideW, A, shiftA, lda, strideA);
     }
 
     return rocblas_status_success;

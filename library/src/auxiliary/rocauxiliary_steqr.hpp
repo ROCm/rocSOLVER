@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -283,21 +283,21 @@ __device__ void run_steqr(const rocblas_int n,
 }
 
 template <typename T, typename S, typename U>
-__global__ void steqr_kernel(const rocblas_int n,
-                             S* DD,
-                             const rocblas_stride strideD,
-                             S* EE,
-                             const rocblas_stride strideE,
-                             U CC,
-                             const rocblas_int shiftC,
-                             const rocblas_int ldc,
-                             const rocblas_stride strideC,
-                             rocblas_int* iinfo,
-                             S* WW,
-                             const rocblas_int max_iters,
-                             const S eps,
-                             const S ssfmin,
-                             const S ssfmax)
+ROCSOLVER_KERNEL void steqr_kernel(const rocblas_int n,
+                                   S* DD,
+                                   const rocblas_stride strideD,
+                                   S* EE,
+                                   const rocblas_stride strideE,
+                                   U CC,
+                                   const rocblas_int shiftC,
+                                   const rocblas_int ldc,
+                                   const rocblas_stride strideC,
+                                   rocblas_int* iinfo,
+                                   S* WW,
+                                   const rocblas_int max_iters,
+                                   const S eps,
+                                   const S ssfmin,
+                                   const S ssfmax)
 {
     // select bacth instance
     rocblas_int bid = hipBlockIdx_x;
@@ -395,17 +395,17 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(BLOCKSIZE, 1, 1);
+    dim3 threads(BS1, 1, 1);
 
     // info = 0
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
     if(n == 1 && evect != rocblas_evect_none)
-        hipLaunchKernelGGL(reset_batch_info<T>, dim3(1, batch_count), dim3(1, 1), 0, stream, C,
-                           strideC, n, 1);
+        ROCSOLVER_LAUNCH_KERNEL(reset_batch_info<T>, dim3(1, batch_count), dim3(1, 1), 0, stream, C,
+                                strideC, n, 1);
     if(n <= 1)
         return rocblas_status_success;
 
@@ -413,8 +413,8 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
     if(evect == rocblas_evect_tridiagonal)
     {
         rocblas_int blocks = (n - 1) / 32 + 1;
-        hipLaunchKernelGGL(init_ident<T>, dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                           stream, n, n, C, shiftC, ldc, strideC);
+        ROCSOLVER_LAUNCH_KERNEL(init_ident<T>, dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
+                                stream, n, n, C, shiftC, ldc, strideC);
     }
 
     S eps = get_epsilon<S>();
@@ -424,13 +424,13 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
     ssfmax = sqrt(ssfmax) / S(3.0);
 
     if(evect == rocblas_evect_none)
-        hipLaunchKernelGGL(sterf_kernel<S>, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
-                           strideD, E + shiftE, strideE, info, (rocblas_int*)work_stack, 30 * n,
-                           eps, ssfmin, ssfmax);
+        ROCSOLVER_LAUNCH_KERNEL(sterf_kernel<S>, dim3(batch_count), dim3(1), 0, stream, n,
+                                D + shiftD, strideD, E + shiftE, strideE, info,
+                                (rocblas_int*)work_stack, 30 * n, eps, ssfmin, ssfmax);
     else
-        hipLaunchKernelGGL((steqr_kernel<T>), dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
-                           strideD, E + shiftE, strideE, C, shiftC, ldc, strideC, info,
-                           (S*)work_stack, 30 * n, eps, ssfmin, ssfmax);
+        ROCSOLVER_LAUNCH_KERNEL((steqr_kernel<T>), dim3(batch_count), dim3(1), 0, stream, n,
+                                D + shiftD, strideD, E + shiftE, strideE, C, shiftC, ldc, strideC,
+                                info, (S*)work_stack, 30 * n, eps, ssfmin, ssfmax);
 
     return rocblas_status_success;
 }

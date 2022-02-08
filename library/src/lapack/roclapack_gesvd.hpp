@@ -180,13 +180,13 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
     const bool rightvO = (right_svect == rocblas_svect_overwrite);
     const bool rightvA = (right_svect == rocblas_svect_all);
     const bool rightvN = (right_svect == rocblas_svect_none);
-    const bool leadvS = row ? leftvS : rightvS;
+    //const bool leadvS = row ? leftvS : rightvS;
     const bool leadvO = row ? leftvO : rightvO;
     const bool leadvA = row ? leftvA : rightvA;
     const bool leadvN = row ? leftvN : rightvN;
-    const bool othervS = !row ? leftvS : rightvS;
+    //const bool othervS = !row ? leftvS : rightvS;
     const bool othervO = !row ? leftvO : rightvO;
-    const bool othervA = !row ? leftvA : rightvA;
+    //const bool othervA = !row ? leftvA : rightvA;
     const bool othervN = !row ? leftvN : rightvN;
     const bool thinSVD = (m >= THIN_SVD_SWITCH * n || n >= THIN_SVD_SWITCH * m);
     const bool fast_thinSVD = (thinSVD && fast_alg == rocblas_outofplace);
@@ -219,10 +219,10 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
 
     // workspace required for the bidiagonalization
     if(thinSVD)
-        rocsolver_gebrd_getMemorySize<T, BATCHED>(k, k, batch_count, size_scalars, &w[0], &a[0],
+        rocsolver_gebrd_getMemorySize<BATCHED, T>(k, k, batch_count, size_scalars, &w[0], &a[0],
                                                   &x[0], &y[0]);
     else
-        rocsolver_gebrd_getMemorySize<T, BATCHED>(m, n, batch_count, size_scalars, &w[0], &a[0],
+        rocsolver_gebrd_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars, &w[0], &a[0],
                                                   &x[0], &y[0]);
 
     // workspace required for the SVD of the bidiagonal form
@@ -232,45 +232,45 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
     if(thinSVD)
     {
         if(row)
-            rocsolver_geqrf_getMemorySize<T, BATCHED>(m, n, batch_count, &unused, &w[2], &x[1],
+            rocsolver_geqrf_getMemorySize<BATCHED, T>(m, n, batch_count, &unused, &w[2], &x[1],
                                                       &y[1], &unused);
         else
-            rocsolver_gelqf_getMemorySize<T, BATCHED>(m, n, batch_count, &unused, &w[2], &x[1],
+            rocsolver_gelqf_getMemorySize<BATCHED, T>(m, n, batch_count, &unused, &w[2], &x[1],
                                                       &y[1], &unused);
     }
 
     // extra requirements for orthonormal/unitary matrix generation
     // ormbr
     if(thinSVD && !fast_thinSVD && !leadvN)
-        rocsolver_ormbr_unmbr_getMemorySize<T, BATCHED>(storev_lead, side, m, n, k, batch_count,
+        rocsolver_ormbr_unmbr_getMemorySize<BATCHED, T>(storev_lead, side, m, n, k, batch_count,
                                                         &unused, &a[1], &y[2], &x[2], &unused);
     // orgbr
     if(thinSVD)
     {
         if(!othervN)
-            rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(storev_other, k, k, k, batch_count,
+            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(storev_other, k, k, k, batch_count,
                                                             &unused, &w[3], &a[2], &x[3], &unused);
 
         if(fast_thinSVD && !leadvN)
-            rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(storev_lead, k, k, k, batch_count,
+            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(storev_lead, k, k, k, batch_count,
                                                             &unused, &w[4], &a[3], &x[4], &unused);
     }
     else
     {
         mn = (row && leftvS) ? n : m;
         if(leftvS || leftvA)
-            rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(
+            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(
                 rocblas_column_wise, m, mn, n, batch_count, &unused, &w[3], &a[2], &x[3], &unused);
         else if(leftvO)
-            rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(
+            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(
                 rocblas_column_wise, m, k, n, batch_count, &unused, &w[3], &a[2], &x[3], &unused);
 
         mn = (!row && rightvS) ? m : n;
         if(rightvS || rightvA)
-            rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(rocblas_row_wise, mn, n, m, batch_count,
+            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(rocblas_row_wise, mn, n, m, batch_count,
                                                             &unused, &w[4], &a[3], &x[4], &unused);
         else if(rightvO)
-            rocsolver_orgbr_ungbr_getMemorySize<T, BATCHED>(rocblas_row_wise, k, n, m, batch_count,
+            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(rocblas_row_wise, k, n, m, batch_count,
                                                             &unused, &w[4], &a[3], &x[4], &unused);
     }
     // orgqr/orglq
@@ -279,19 +279,19 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
         if(leadvA)
         {
             if(row)
-                rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(kk, kk, k, batch_count, &unused,
+                rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(kk, kk, k, batch_count, &unused,
                                                                 &w[5], &a[4], &x[5], &unused);
             else
-                rocsolver_orglq_unglq_getMemorySize<T, BATCHED>(kk, kk, k, batch_count, &unused,
+                rocsolver_orglq_unglq_getMemorySize<BATCHED, T>(kk, kk, k, batch_count, &unused,
                                                                 &w[5], &a[4], &x[5], &unused);
         }
         else
         {
             if(row)
-                rocsolver_orgqr_ungqr_getMemorySize<T, BATCHED>(m, n, k, batch_count, &unused,
+                rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(m, n, k, batch_count, &unused,
                                                                 &w[5], &a[4], &x[5], &unused);
             else
-                rocsolver_orglq_unglq_getMemorySize<T, BATCHED>(m, n, k, batch_count, &unused,
+                rocsolver_orglq_unglq_getMemorySize<BATCHED, T>(m, n, k, batch_count, &unused,
                                                                 &w[5], &a[4], &x[5], &unused);
         }
     }
@@ -496,9 +496,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
             //*** STAGE 3: Bidiagonalization ***//
             // clean triangular factor
-            hipLaunchKernelGGL(set_zero<T>, dim3(blocks_k, blocks_k, batch_count),
-                               dim3(thread_count, thread_count, 1), 0, stream, k, k, A, shiftA, lda,
-                               strideA, uplo);
+            ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocks_k, blocks_k, batch_count),
+                                    dim3(thread_count, thread_count, 1), 0, stream, k, k, A, shiftA,
+                                    lda, strideA, uplo);
 
             rocsolver_gebrd_template<BATCHED, STRIDED>(
                 handle, k, k, A, shiftA, lda, strideA, S, strideS, E, strideE, tau, k,
@@ -528,9 +528,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             if(othervS || othervA)
             {
                 mn = row ? n : m;
-                hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_m, blocks_n, batch_count),
-                                   dim3(thread_count, thread_count, 1), 0, stream, mn, mn, A,
-                                   shiftA, lda, strideA, bufferC, shiftC, ldc, strideC);
+                ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_m, blocks_n, batch_count),
+                                        dim3(thread_count, thread_count, 1), 0, stream, mn, mn, A,
+                                        shiftA, lda, strideA, bufferC, shiftC, ldc, strideC);
             }
         }
 
@@ -548,14 +548,14 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
             if(leadvA)
                 // copy factorization to U or V when needed
-                hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_m, blocks_n, batch_count),
-                                   dim3(thread_count, thread_count, 1), 0, stream, m, n, A, shiftA,
-                                   lda, strideA, UV, shiftUV, lduv, strideUV);
+                ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_m, blocks_n, batch_count),
+                                        dim3(thread_count, thread_count, 1), 0, stream, m, n, A,
+                                        shiftA, lda, strideA, UV, shiftUV, lduv, strideUV);
 
             // copy the triangular part to be used in the bidiagonalization
-            hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
-                               dim3(thread_count, thread_count, 1), 0, stream, k, k, A, shiftA, lda,
-                               strideA, bufferT, shiftT, ldt, strideT, uplo);
+            ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
+                                    dim3(thread_count, thread_count, 1), 0, stream, k, k, A, shiftA,
+                                    lda, strideA, bufferT, shiftT, ldt, strideT, no_mask{}, uplo);
 
             //*** STAGE 2: generate orthonormal/unitary matrix from row/column compression ***//
             if(leadvA)
@@ -569,9 +569,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
             //*** STAGE 3: Bidiagonalization ***//
             // clean triangular factor
-            hipLaunchKernelGGL(set_zero<T>, dim3(blocks_k, blocks_k, batch_count),
-                               dim3(thread_count, thread_count, 1), 0, stream, k, k, bufferT,
-                               shiftT, ldt, strideT, uplo);
+            ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocks_k, blocks_k, batch_count),
+                                    dim3(thread_count, thread_count, 1), 0, stream, k, k, bufferT,
+                                    shiftT, ldt, strideT, uplo);
 
             rocsolver_gebrd_template<false, STRIDED>(
                 handle, k, k, bufferT, shiftT, ldt, strideT, S, strideS, E, strideE, tau, k,
@@ -580,9 +580,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
             if(!othervN)
                 // copy results to generate non-lead vectors if required
-                hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
-                                   dim3(thread_count, thread_count, 1), 0, stream, k, k, bufferT,
-                                   shiftT, ldt, strideT, bufferC, shiftC, ldc, strideC);
+                ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
+                                        dim3(thread_count, thread_count, 1), 0, stream, k, k,
+                                        bufferT, shiftT, ldt, strideT, bufferC, shiftC, ldc, strideC);
 
             //*** STAGE 4: generate orthonormal/unitary matrices from bidiagonalization ***//
             // for lead-dimension vectors
@@ -630,9 +630,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                         shiftC, ldc, strideC, batch_count, workArr);
 
                 // copy to overwrite A
-                hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_m, blocks_n, batch_count),
-                                   dim3(thread_count, thread_count, 1), 0, stream, m, n, bufferC,
-                                   shiftC, ldc, strideC, A, shiftA, lda, strideA);
+                ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_m, blocks_n, batch_count),
+                                        dim3(thread_count, thread_count, 1), 0, stream, m, n,
+                                        bufferC, shiftC, ldc, strideC, A, shiftA, lda, strideA);
             }
             else if(leadvS)
             {
@@ -650,9 +650,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
                 // overwrite A if required
                 if(othervO)
-                    hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
-                                       dim3(thread_count, thread_count, 1), 0, stream, k, k,
-                                       bufferC, shiftC, ldc, strideC, A, shiftA, lda, strideA);
+                    ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
+                                            dim3(thread_count, thread_count, 1), 0, stream, k, k,
+                                            bufferC, shiftC, ldc, strideC, A, shiftA, lda, strideA);
             }
             else
             {
@@ -669,15 +669,15 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                         shiftA, lda, strideA, batch_count, workArr);
 
                 // copy back to U/V
-                hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_m, blocks_n, batch_count),
-                                   dim3(thread_count, thread_count, 1), 0, stream, m, n, A, shiftA,
-                                   lda, strideA, UV, shiftUV, lduv, strideUV);
+                ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_m, blocks_n, batch_count),
+                                        dim3(thread_count, thread_count, 1), 0, stream, m, n, A,
+                                        shiftA, lda, strideA, UV, shiftUV, lduv, strideUV);
 
                 // overwrite A if required
                 if(othervO)
-                    hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
-                                       dim3(thread_count, thread_count, 1), 0, stream, k, k,
-                                       bufferC, shiftC, ldc, strideC, A, shiftA, lda, strideA);
+                    ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
+                                            dim3(thread_count, thread_count, 1), 0, stream, k, k,
+                                            bufferC, shiftC, ldc, strideC, A, shiftA, lda, strideA);
             }
         }
 
@@ -696,15 +696,16 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
             if(!leadvO)
                 // copy factorization to U or V when needed
-                hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_m, blocks_n, batch_count),
-                                   dim3(thread_count, thread_count, 1), 0, stream, m, n, A, shiftA,
-                                   lda, strideA, UV, shiftUV, lduv, strideUV);
+                ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_m, blocks_n, batch_count),
+                                        dim3(thread_count, thread_count, 1), 0, stream, m, n, A,
+                                        shiftA, lda, strideA, UV, shiftUV, lduv, strideUV);
 
             if(othervS || othervA || (leadvO && othervN))
                 // copy the triangular part
-                hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
-                                   dim3(thread_count, thread_count, 1), 0, stream, k, k, A, shiftA,
-                                   lda, strideA, bufferT, shiftT, ldt, strideT, uplo);
+                ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
+                                        dim3(thread_count, thread_count, 1), 0, stream, k, k, A,
+                                        shiftA, lda, strideA, bufferT, shiftT, ldt, strideT,
+                                        no_mask{}, uplo);
 
             //*** STAGE 2: generate orthonormal/unitary matrix from row/column compression ***//
             if(leadvO)
@@ -724,9 +725,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             if(othervS || othervA || (leadvO && othervN))
             {
                 // clean triangular factor
-                hipLaunchKernelGGL(set_zero<T>, dim3(blocks_k, blocks_k, batch_count),
-                                   dim3(thread_count, thread_count, 1), 0, stream, k, k, bufferT,
-                                   shiftT, ldt, strideT, uplo);
+                ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocks_k, blocks_k, batch_count),
+                                        dim3(thread_count, thread_count, 1), 0, stream, k, k,
+                                        bufferT, shiftT, ldt, strideT, uplo);
 
                 rocsolver_gebrd_template<false, STRIDED>(
                     handle, k, k, bufferT, shiftT, ldt, strideT, S, strideS, E, strideE, tau, k,
@@ -739,9 +740,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             else
             {
                 // clean triangular factor
-                hipLaunchKernelGGL(set_zero<T>, dim3(blocks_k, blocks_k, batch_count),
-                                   dim3(thread_count, thread_count, 1), 0, stream, k, k, A, shiftA,
-                                   lda, strideA, uplo);
+                ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocks_k, blocks_k, batch_count),
+                                        dim3(thread_count, thread_count, 1), 0, stream, k, k, A,
+                                        shiftA, lda, strideA, uplo);
 
                 rocsolver_gebrd_template<BATCHED, STRIDED>(
                     handle, k, k, A, shiftA, lda, strideA, S, strideS, E, strideE, tau, k,
@@ -836,9 +837,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
         {
             // copy data to matrix U where orthogonal matrix will be generated
             mn = (row && leftvS) ? n : m;
-            hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_m, blocks_k, batch_count),
-                               dim3(thread_count, thread_count, 1), 0, stream, m, k, A, shiftA, lda,
-                               strideA, U, shiftU, ldu, strideU);
+            ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_m, blocks_k, batch_count),
+                                    dim3(thread_count, thread_count, 1), 0, stream, m, k, A, shiftA,
+                                    lda, strideA, U, shiftU, ldu, strideU);
 
             rocsolver_orgbr_ungbr_template<false, STRIDED>(
                 handle, rocblas_column_wise, m, mn, n, U, shiftU, ldu, strideU, tau, k, batch_count,
@@ -849,9 +850,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
         {
             // copy data to matrix V where othogonal matrix will be generated
             mn = (!row && rightvS) ? m : n;
-            hipLaunchKernelGGL(copy_mat<T>, dim3(blocks_k, blocks_n, batch_count),
-                               dim3(thread_count, thread_count, 1), 0, stream, k, n, A, shiftA, lda,
-                               strideA, V, shiftV, ldv, strideV);
+            ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_k, blocks_n, batch_count),
+                                    dim3(thread_count, thread_count, 1), 0, stream, k, n, A, shiftA,
+                                    lda, strideA, V, shiftV, ldv, strideV);
 
             rocsolver_orgbr_ungbr_template<false, STRIDED>(
                 handle, rocblas_row_wise, mn, n, m, V, shiftV, ldv, strideV,

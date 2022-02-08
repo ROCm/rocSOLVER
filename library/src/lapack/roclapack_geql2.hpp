@@ -15,7 +15,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_geql2_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
                                    const rocblas_int batch_count,
@@ -37,7 +37,7 @@ void rocsolver_geql2_getMemorySize(const rocblas_int m,
     // size of Abyx_norms is maximum of what is needed by larf and larfg
     // size_work_workArr is maximum of re-usable work space and array of pointers to workspace
     size_t s1, s2, w1, w2;
-    rocsolver_larf_getMemorySize<T, BATCHED>(rocblas_side_left, m, n, batch_count, size_scalars,
+    rocsolver_larf_getMemorySize<BATCHED, T>(rocblas_side_left, m, n, batch_count, size_scalars,
                                              &s1, &w1);
     rocsolver_larfg_getMemorySize<T>(m, batch_count, &w2, &s2);
     *size_work_workArr = max(w1, w2);
@@ -105,14 +105,15 @@ rocblas_status rocsolver_geql2_template(rocblas_handle handle,
 
     for(rocblas_int j = 0; j < dim; j++)
     {
-        // generate Householder reflector to work on column j
+        // generate Householder reflector to work on column n - j - 1
         rocsolver_larfg_template(handle, m - j, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), A,
                                  shiftA + idx2D(0, n - j - 1, lda), 1, strideA, (ipiv + dim - j - 1),
                                  strideP, batch_count, (T*)work_workArr, Abyx_norms);
 
         // insert one in A(m-j-1,n-j-1) tobuild/apply the householder matrix
-        hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag, 0,
-                           1, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), lda, strideA, 1, true);
+        ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
+                                diag, 0, 1, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), lda,
+                                strideA, 1, true);
 
         // conjugate tau
         if(COMPLEX)
@@ -125,8 +126,9 @@ rocblas_status rocsolver_geql2_template(rocblas_handle handle,
                                 (T**)work_workArr);
 
         // restore original value of A(m-j-1,n-j-1)
-        hipLaunchKernelGGL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag,
-                           0, 1, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), lda, strideA, 1);
+        ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
+                                diag, 0, 1, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), lda,
+                                strideA, 1);
 
         // restore tau
         if(COMPLEX)

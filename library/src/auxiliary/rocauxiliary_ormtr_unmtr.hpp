@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -14,7 +14,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_ormtr_unmtr_getMemorySize(const rocblas_side side,
                                          const rocblas_fill uplo,
                                          const rocblas_int m,
@@ -41,12 +41,12 @@ void rocsolver_ormtr_unmtr_getMemorySize(const rocblas_side side,
 
     // requirements for calling ORMQL/UNMQL or ORMQR/UNMQR
     if(uplo == rocblas_fill_upper)
-        rocsolver_ormql_unmql_getMemorySize<T, BATCHED>(side, m, n, nq, batch_count, size_scalars,
+        rocsolver_ormql_unmql_getMemorySize<BATCHED, T>(side, m, n, nq, batch_count, size_scalars,
                                                         size_AbyxORwork, size_diagORtmptr,
                                                         size_trfact, size_workArr);
 
     else
-        rocsolver_ormqr_unmqr_getMemorySize<T, BATCHED>(side, m, n, nq, batch_count, size_scalars,
+        rocsolver_ormqr_unmqr_getMemorySize<BATCHED, T>(side, m, n, nq, batch_count, size_scalars,
                                                         size_AbyxORwork, size_diagORtmptr,
                                                         size_trfact, size_workArr);
 }
@@ -194,8 +194,8 @@ rocblas_status rocsolver_ormtr_unmtr_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, C, strideC,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, C, strideC,
+                            batch_count);
 
     return rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
         handle, side, uplo, trans, m, n, A, shiftA, lda, strideA, ipiv, strideP,

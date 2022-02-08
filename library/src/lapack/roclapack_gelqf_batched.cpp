@@ -36,11 +36,11 @@ rocblas_status rocsolver_gelqf_batched_impl(rocblas_handle handle,
     size_t size_scalars;
     // size of arrays of pointers (for batched cases) and re-usable workspace
     size_t size_work_workArr, size_workArr;
-    // extra requirements for calling GEQR2 and to store temporary triangular factor
+    // extra requirements for calling GELQ2 and to store temporary triangular factor
     size_t size_Abyx_norms_trfact;
-    // extra requirements for calling GEQR2 and LARFB
+    // extra requirements for calling GELQ2 and LARFB
     size_t size_diag_tmptr;
-    rocsolver_gelqf_getMemorySize<T, true>(m, n, batch_count, &size_scalars, &size_work_workArr,
+    rocsolver_gelqf_getMemorySize<true, T>(m, n, batch_count, &size_scalars, &size_work_workArr,
                                            &size_Abyx_norms_trfact, &size_diag_tmptr, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))

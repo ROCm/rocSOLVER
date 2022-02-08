@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # package_targets is used as a list of install target
@@ -10,12 +10,25 @@ set(rocsolver_lapack_source
   lapack/roclapack_getrs.cpp
   lapack/roclapack_getrs_batched.cpp
   lapack/roclapack_getrs_strided_batched.cpp
+  lapack/roclapack_gesv.cpp
+  lapack/roclapack_gesv_batched.cpp
+  lapack/roclapack_gesv_strided_batched.cpp
+  lapack/roclapack_gesv_outofplace.cpp
   lapack/roclapack_getri.cpp
   lapack/roclapack_getri_batched.cpp
   lapack/roclapack_getri_strided_batched.cpp
   lapack/roclapack_getri_outofplace.cpp
   lapack/roclapack_getri_outofplace_batched.cpp
   lapack/roclapack_getri_outofplace_strided_batched.cpp
+  lapack/roclapack_potrs.cpp
+  lapack/roclapack_potrs_batched.cpp
+  lapack/roclapack_potrs_strided_batched.cpp
+  lapack/roclapack_posv.cpp
+  lapack/roclapack_posv_batched.cpp
+  lapack/roclapack_posv_strided_batched.cpp
+  lapack/roclapack_potri.cpp
+  lapack/roclapack_potri_batched.cpp
+  lapack/roclapack_potri_strided_batched.cpp
   lapack/roclapack_trtri.cpp
   lapack/roclapack_trtri_batched.cpp
   lapack/roclapack_trtri_strided_batched.cpp
@@ -23,6 +36,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_gels.cpp
   lapack/roclapack_gels_batched.cpp
   lapack/roclapack_gels_strided_batched.cpp
+  lapack/roclapack_gels_outofplace.cpp
   # triangular factorizations
   lapack/roclapack_getf2.cpp
   lapack/roclapack_getf2_batched.cpp
@@ -36,10 +50,19 @@ set(rocsolver_lapack_source
   lapack/roclapack_potrf.cpp
   lapack/roclapack_potrf_batched.cpp
   lapack/roclapack_potrf_strided_batched.cpp
+  lapack/roclapack_sytf2.cpp
+  lapack/roclapack_sytf2_batched.cpp
+  lapack/roclapack_sytf2_strided_batched.cpp
+  lapack/roclapack_sytrf.cpp
+  lapack/roclapack_sytrf_batched.cpp
+  lapack/roclapack_sytrf_strided_batched.cpp
   # orthogonal factorizations
   lapack/roclapack_geqr2.cpp
   lapack/roclapack_geqr2_batched.cpp
   lapack/roclapack_geqr2_strided_batched.cpp
+  lapack/roclapack_gerq2.cpp
+  lapack/roclapack_gerq2_batched.cpp
+  lapack/roclapack_gerq2_strided_batched.cpp
   lapack/roclapack_geql2.cpp
   lapack/roclapack_geql2_batched.cpp
   lapack/roclapack_geql2_strided_batched.cpp
@@ -50,6 +73,9 @@ set(rocsolver_lapack_source
   lapack/roclapack_geqrf_batched.cpp
   lapack/roclapack_geqrf_ptr_batched.cpp
   lapack/roclapack_geqrf_strided_batched.cpp
+  lapack/roclapack_gerqf.cpp
+  lapack/roclapack_gerqf_batched.cpp
+  lapack/roclapack_gerqf_strided_batched.cpp
   lapack/roclapack_geqlf.cpp
   lapack/roclapack_geqlf_batched.cpp
   lapack/roclapack_geqlf_strided_batched.cpp
@@ -129,7 +155,37 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_steqr.cpp
   auxiliary/rocauxiliary_stedc.cpp
   auxiliary/rocauxiliary_latrd.cpp
+  # symmetric matrices
+  auxiliary/rocauxiliary_lasyf.cpp
 )
+
+if(OPTIMAL)
+  set(rocsolver_specialized_source
+    # getf2
+    specialized/roclapack_getf2_specialized_kernels_s.cpp
+    specialized/roclapack_getf2_specialized_kernels_d.cpp
+    specialized/roclapack_getf2_specialized_kernels_c.cpp
+    specialized/roclapack_getf2_specialized_kernels_z.cpp
+    specialized/roclapack_getf2_small_s.cpp
+    specialized/roclapack_getf2_small_d.cpp
+    specialized/roclapack_getf2_small_c.cpp
+    specialized/roclapack_getf2_small_z.cpp
+    specialized/roclapack_getf2_small_sb.cpp
+    specialized/roclapack_getf2_small_db.cpp
+    specialized/roclapack_getf2_small_cb.cpp
+    specialized/roclapack_getf2_small_zb.cpp
+    # getri
+    specialized/roclapack_getri_specialized_kernels_s.cpp
+    specialized/roclapack_getri_specialized_kernels_d.cpp
+    specialized/roclapack_getri_specialized_kernels_c.cpp
+    specialized/roclapack_getri_specialized_kernels_z.cpp
+    # trtri
+    specialized/roclapack_trtri_specialized_kernels_s.cpp
+    specialized/roclapack_trtri_specialized_kernels_d.cpp
+    specialized/roclapack_trtri_specialized_kernels_c.cpp
+    specialized/roclapack_trtri_specialized_kernels_z.cpp
+  )
+endif()
 
 set(auxiliaries
   common/buildinfo.cpp
@@ -141,6 +197,7 @@ prepend_path(".." rocsolver_headers_public relative_rocsolver_headers_public)
 add_library(rocsolver
   ${relative_rocsolver_headers_public}
   ${auxiliaries}
+  ${rocsolver_specialized_source}
   ${rocsolver_auxiliary_source}
   ${rocsolver_lapack_source}
 )
@@ -153,14 +210,14 @@ target_link_libraries(rocsolver
   PRIVATE
     $<BUILD_INTERFACE:rocsolver-common> # https://gitlab.kitware.com/cmake/cmake/-/issues/15415
     hip::device
-    --rtlib=compiler-rt
-    --unwindlib=libgcc
+    $<$<PLATFORM_ID:Linux>:--rtlib=compiler-rt>
+    $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
 
 if(ROCSOLVER_EMBED_FMT)
   target_link_libraries(rocsolver PRIVATE fmt::fmt-header-only)
 else()
-  target_link_libraries(rocsolver PUBLIC fmt::fmt)
+  target_link_libraries(rocsolver PRIVATE fmt::fmt)
 endif()
 
 # In ROCm 4.0 and earlier, the default maximum threads per block is 256
@@ -171,7 +228,7 @@ target_compile_options(rocsolver PRIVATE -Wno-pass-failed)
 
 target_include_directories(rocsolver
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/library/include>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:include>
   PRIVATE
@@ -202,9 +259,25 @@ endif()
 target_compile_definitions(rocsolver PRIVATE
   ROCM_USE_FLOAT16
   ROCBLAS_INTERNAL_API
+  ROCSOLVER_LIBRARY
 )
 
 add_armor_flags(rocsolver "${ARMOR_LEVEL}")
+
+if(WIN32)
+  if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
+    add_custom_command(TARGET rocsolver
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_BINARY_DIR}/staging/$<TARGET_FILE_NAME:rocsolver>" "${PROJECT_BINARY_DIR}/clients/staging/$<TARGET_FILE_NAME:rocsolver>"
+    )
+    if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+      add_custom_command(TARGET rocsolver
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_BINARY_DIR}/staging/rocsolver.pdb" "${PROJECT_BINARY_DIR}/clients/staging/rocsolver.pdb"
+      )
+    endif()
+  endif()
+endif()
 
 ############################################################
 # Installation

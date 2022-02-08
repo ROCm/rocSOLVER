@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -30,20 +30,20 @@
     to compute the eigenvalues/eigenvectors of a symmetric tridiagonal
     matrix given by D and E **/
 template <typename T, typename S, typename U>
-__global__ void stedc_kernel(const rocblas_int n,
-                             S* DD,
-                             const rocblas_stride strideD,
-                             S* EE,
-                             const rocblas_stride strideE,
-                             U CC,
-                             const rocblas_int shiftC,
-                             const rocblas_int ldc,
-                             const rocblas_stride strideC,
-                             rocblas_int* iinfo,
-                             S* WW,
-                             const S eps,
-                             const S ssfmin,
-                             const S ssfmax)
+ROCSOLVER_KERNEL void stedc_kernel(const rocblas_int n,
+                                   S* DD,
+                                   const rocblas_stride strideD,
+                                   S* EE,
+                                   const rocblas_stride strideE,
+                                   U CC,
+                                   const rocblas_int shiftC,
+                                   const rocblas_int ldc,
+                                   const rocblas_stride strideC,
+                                   rocblas_int* iinfo,
+                                   S* WW,
+                                   const S eps,
+                                   const S ssfmin,
+                                   const S ssfmax)
 {
     rocblas_int bid = hipBlockIdx_x;
 
@@ -151,9 +151,8 @@ void local_gemm(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
     rocblas_int blocks = (n - 1) / 32 + 1;
-    hipLaunchKernelGGL(copy_mat<T>, dim3(blocks, blocks, batch_count), dim3(32, 32), 0, stream, n,
-                       n, A, shiftA, lda, strideA, temp, shiftT, ldt, strideT, rocblas_fill_full,
-                       copymat_from_buffer);
+    ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks, blocks, batch_count), dim3(32, 32), 0, stream,
+                            copymat_from_buffer, n, n, A, shiftA, lda, strideA, temp);
 
     rocblas_set_pointer_mode(handle, old_mode);
 }
@@ -187,9 +186,9 @@ void local_gemm(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
     rocblas_int blocks = (n - 1) / 32 + 1;
-    hipLaunchKernelGGL((copy_mat<T, S, true>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                       stream, n, n, A, shiftA, lda, strideA, work, shiftT, ldt, strideT,
-                       rocblas_fill_full, copymat_to_buffer);
+    ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, true>), dim3(blocks, blocks, batch_count), dim3(32, 32),
+                            0, stream, copymat_to_buffer, n, n, A, shiftA, lda, strideA, work,
+                            rocblas_fill_full);
 
     // temp = work*B
     rocblasCall_gemm<BATCHED, STRIDED, S>(
@@ -197,14 +196,14 @@ void local_gemm(rocblas_handle handle,
         strideT, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt, strideT, batch_count, workArr);
 
     // real(A) = temp
-    hipLaunchKernelGGL((copy_mat<T, S, true>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                       stream, n, n, A, shiftA, lda, strideA, temp, shiftT, ldt, strideT,
-                       rocblas_fill_full, copymat_from_buffer);
+    ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, true>), dim3(blocks, blocks, batch_count), dim3(32, 32),
+                            0, stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, temp,
+                            rocblas_fill_full);
 
     // work = imag(A)
-    hipLaunchKernelGGL((copy_mat<T, S, false>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                       stream, n, n, A, shiftA, lda, strideA, work, shiftT, ldt, strideT,
-                       rocblas_fill_full, copymat_to_buffer);
+    ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, false>), dim3(blocks, blocks, batch_count),
+                            dim3(32, 32), 0, stream, copymat_to_buffer, n, n, A, shiftA, lda,
+                            strideA, work, rocblas_fill_full);
 
     // temp = work*B
     rocblasCall_gemm<BATCHED, STRIDED, S>(
@@ -212,9 +211,9 @@ void local_gemm(rocblas_handle handle,
         strideT, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt, strideT, batch_count, workArr);
 
     // imag(A) = temp
-    hipLaunchKernelGGL((copy_mat<T, S, false>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                       stream, n, n, A, shiftA, lda, strideA, temp, shiftT, ldt, strideT,
-                       rocblas_fill_full, copymat_from_buffer);
+    ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, false>), dim3(blocks, blocks, batch_count),
+                            dim3(32, 32), 0, stream, copymat_from_buffer, n, n, A, shiftA, lda,
+                            strideA, temp, rocblas_fill_full);
 
     rocblas_set_pointer_mode(handle, old_mode);
 }
@@ -358,17 +357,17 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(BLOCKSIZE, 1, 1);
+    dim3 threads(BS1, 1, 1);
 
     // info = 0
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
     if(n == 1 && evect != rocblas_evect_none)
-        hipLaunchKernelGGL(reset_batch_info<T>, dim3(1, batch_count), dim3(1, 1), 0, stream, C,
-                           strideC, n, 1);
+        ROCSOLVER_LAUNCH_KERNEL(reset_batch_info<T>, dim3(1, batch_count), dim3(1, 1), 0, stream, C,
+                                strideC, n, 1);
     if(n <= 1)
         return rocblas_status_success;
 
@@ -402,13 +401,13 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         if(evect == rocblas_evect_tridiagonal)
         {
             // initialize identity matrix in C
-            hipLaunchKernelGGL(init_ident<T>, dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                               stream, n, n, C, shiftC, ldc, strideC);
+            ROCSOLVER_LAUNCH_KERNEL(init_ident<T>, dim3(blocks, blocks, batch_count), dim3(32, 32),
+                                    0, stream, n, n, C, shiftC, ldc, strideC);
 
             // execute divide and conquer kernel
-            hipLaunchKernelGGL((stedc_kernel<T>), dim3(batch_count), dim3(1), 0, stream, n,
-                               D + shiftD, strideD, E + shiftE, strideE, C, shiftC, ldc, strideC,
-                               info, (S*)work_stack, eps, ssfmin, ssfmax);
+            ROCSOLVER_LAUNCH_KERNEL((stedc_kernel<T>), dim3(batch_count), dim3(1), 0, stream, n,
+                                    D + shiftD, strideD, E + shiftE, strideE, C, shiftC, ldc,
+                                    strideC, info, (S*)work_stack, eps, ssfmin, ssfmax);
         }
 
         // otherwise, an additional gemm will be required to update C
@@ -418,13 +417,13 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             rocblas_stride strideT = n * n;
 
             // initialize identity matrix in tempvect
-            hipLaunchKernelGGL(init_ident<S>, dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
-                               stream, n, n, tempvect, 0, ldt, strideT);
+            ROCSOLVER_LAUNCH_KERNEL(init_ident<S>, dim3(blocks, blocks, batch_count), dim3(32, 32),
+                                    0, stream, n, n, tempvect, 0, ldt, strideT);
 
             // execute divide and conquer kernel with tempvect
-            hipLaunchKernelGGL((stedc_kernel<S>), dim3(batch_count), dim3(1), 0, stream, n,
-                               D + shiftD, strideD, E + shiftE, strideE, tempvect, 0, ldt, strideT,
-                               info, (S*)work_stack, eps, ssfmin, ssfmax);
+            ROCSOLVER_LAUNCH_KERNEL((stedc_kernel<S>), dim3(batch_count), dim3(1), 0, stream, n,
+                                    D + shiftD, strideD, E + shiftE, strideE, tempvect, 0, ldt,
+                                    strideT, info, (S*)work_stack, eps, ssfmin, ssfmax);
 
             // update eigenvectors C <- C*tempvect
             local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, tempvect, tempgemm,

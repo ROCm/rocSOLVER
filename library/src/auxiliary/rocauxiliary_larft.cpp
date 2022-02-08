@@ -43,7 +43,7 @@ rocblas_status rocsolver_larft_impl(rocblas_handle handle,
     size_t size_work;
     // size of arrays of pointers (for batched cases)
     size_t size_workArr;
-    rocsolver_larft_getMemorySize<T, false>(n, k, batch_count, &size_scalars, &size_work,
+    rocsolver_larft_getMemorySize<false, T>(n, k, batch_count, &size_scalars, &size_work,
                                             &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))

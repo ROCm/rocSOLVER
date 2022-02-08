@@ -15,10 +15,14 @@
 #include "testing_gels.hpp"
 #include "testing_geql2_geqlf.hpp"
 #include "testing_geqr2_geqrf.hpp"
+#include "testing_gerq2_gerqf.hpp"
+#include "testing_gesv.hpp"
 #include "testing_gesvd.hpp"
 #include "testing_getf2_getrf.hpp"
 #include "testing_getf2_getrf_npvt.hpp"
 #include "testing_getri.hpp"
+#include "testing_getri_npvt.hpp"
+#include "testing_getri_npvt_outofplace.hpp"
 #include "testing_getri_outofplace.hpp"
 #include "testing_getrs.hpp"
 #include "testing_labrd.hpp"
@@ -28,6 +32,7 @@
 #include "testing_larfg.hpp"
 #include "testing_larft.hpp"
 #include "testing_laswp.hpp"
+#include "testing_lasyf.hpp"
 #include "testing_latrd.hpp"
 #include "testing_orgbr_ungbr.hpp"
 #include "testing_orglx_unglx.hpp"
@@ -39,7 +44,10 @@
 #include "testing_ormtr_unmtr.hpp"
 #include "testing_ormxl_unmxl.hpp"
 #include "testing_ormxr_unmxr.hpp"
+#include "testing_posv.hpp"
 #include "testing_potf2_potrf.hpp"
+#include "testing_potri.hpp"
+#include "testing_potrs.hpp"
 #include "testing_stedc.hpp"
 #include "testing_steqr.hpp"
 #include "testing_sterf.hpp"
@@ -48,6 +56,7 @@
 #include "testing_sygsx_hegsx.hpp"
 #include "testing_sygv_hegv.hpp"
 #include "testing_sygvd_hegvd.hpp"
+#include "testing_sytf2_sytrf.hpp"
 #include "testing_sytxx_hetxx.hpp"
 #include "testing_trtri.hpp"
 
@@ -80,6 +89,7 @@ class rocsolver_dispatcher
             {"bdsqr", testing_bdsqr<T>},
             {"steqr", testing_steqr<T>},
             {"stedc", testing_stedc<T>},
+            {"lasyf", testing_lasyf<T>},
             // potrf
             {"potf2", testing_potf2_potrf<false, false, 0, T>},
             {"potf2_batched", testing_potf2_potrf<true, true, 0, T>},
@@ -87,6 +97,18 @@ class rocsolver_dispatcher
             {"potrf", testing_potf2_potrf<false, false, 1, T>},
             {"potrf_batched", testing_potf2_potrf<true, true, 1, T>},
             {"potrf_strided_batched", testing_potf2_potrf<false, true, 1, T>},
+            // potrs
+            {"potrs", testing_potrs<false, false, T>},
+            {"potrs_batched", testing_potrs<true, true, T>},
+            {"potrs_strided_batched", testing_potrs<false, true, T>},
+            // posv
+            {"posv", testing_posv<false, false, T>},
+            {"posv_batched", testing_posv<true, true, T>},
+            {"posv_strided_batched", testing_posv<false, true, T>},
+            // potri
+            {"potri", testing_potri<false, false, T>},
+            {"potri_batched", testing_potri<true, true, T>},
+            {"potri_strided_batched", testing_potri<false, true, T>},
             // getrf_npvt
             {"getf2_npvt", testing_getf2_getrf_npvt<false, false, 0, T>},
             {"getf2_npvt_batched", testing_getf2_getrf_npvt<true, true, 0, T>},
@@ -109,6 +131,13 @@ class rocsolver_dispatcher
             {"geqrf_batched", testing_geqr2_geqrf<true, true, 1, T>},
             {"geqrf_strided_batched", testing_geqr2_geqrf<false, true, 1, T>},
             {"geqrf_ptr_batched", testing_geqr2_geqrf<true, false, 1, T>},
+            // gerqf
+            {"gerq2", testing_gerq2_gerqf<false, false, 0, T>},
+            {"gerq2_batched", testing_gerq2_gerqf<true, true, 0, T>},
+            {"gerq2_strided_batched", testing_gerq2_gerqf<false, true, 0, T>},
+            {"gerqf", testing_gerq2_gerqf<false, false, 1, T>},
+            {"gerqf_batched", testing_gerq2_gerqf<true, true, 1, T>},
+            {"gerqf_strided_batched", testing_gerq2_gerqf<false, true, 1, T>},
             // geqlf
             {"geql2", testing_geql2_geqlf<false, false, 0, T>},
             {"geql2_batched", testing_geql2_geqlf<true, true, 0, T>},
@@ -127,22 +156,34 @@ class rocsolver_dispatcher
             {"getrs", testing_getrs<false, false, T>},
             {"getrs_batched", testing_getrs<true, true, T>},
             {"getrs_strided_batched", testing_getrs<false, true, T>},
+            // gesv
+            {"gesv", testing_gesv<false, false, T>},
+            {"gesv_batched", testing_gesv<true, true, T>},
+            {"gesv_strided_batched", testing_gesv<false, true, T>},
             // gesvd
             {"gesvd", testing_gesvd<false, false, T>},
             {"gesvd_batched", testing_gesvd<true, true, T>},
             {"gesvd_strided_batched", testing_gesvd<false, true, T>},
-            // getri
-            {"getri", testing_getri<false, false, T>},
-            {"getri_batched", testing_getri<true, true, T>},
-            {"getri_strided_batched", testing_getri<false, true, T>},
             // trtri
             {"trtri", testing_trtri<false, false, T>},
             {"trtri_batched", testing_trtri<true, true, T>},
             {"trtri_strided_batched", testing_trtri<false, true, T>},
+            // getri
+            {"getri", testing_getri<false, false, T>},
+            {"getri_batched", testing_getri<true, true, T>},
+            {"getri_strided_batched", testing_getri<false, true, T>},
+            // getri_npvt
+            {"getri_npvt", testing_getri_npvt<false, false, T>},
+            {"getri_npvt_batched", testing_getri_npvt<true, true, T>},
+            {"getri_npvt_strided_batched", testing_getri_npvt<false, true, T>},
             // getri_outofplace
             {"getri_outofplace", testing_getri_outofplace<false, false, T>},
             {"getri_outofplace_batched", testing_getri_outofplace<true, true, T>},
             {"getri_outofplace_strided_batched", testing_getri_outofplace<false, true, T>},
+            // getri_npvt_outofplace
+            {"getri_npvt_outofplace", testing_getri_npvt_outofplace<false, false, T>},
+            {"getri_npvt_outofplace_batched", testing_getri_npvt_outofplace<true, true, T>},
+            {"getri_npvt_outofplace_strided_batched", testing_getri_npvt_outofplace<false, true, T>},
             // gels
             {"gels", testing_gels<false, false, T>},
             {"gels_batched", testing_gels<true, true, T>},
@@ -154,6 +195,13 @@ class rocsolver_dispatcher
             {"gebrd", testing_gebd2_gebrd<false, false, 1, T>},
             {"gebrd_batched", testing_gebd2_gebrd<true, true, 1, T>},
             {"gebrd_strided_batched", testing_gebd2_gebrd<false, true, 1, T>},
+            // sytrf
+            {"sytf2", testing_sytf2_sytrf<false, false, 0, T>},
+            {"sytf2_batched", testing_sytf2_sytrf<true, true, 0, T>},
+            {"sytf2_strided_batched", testing_sytf2_sytrf<false, true, 0, T>},
+            {"sytrf", testing_sytf2_sytrf<false, false, 1, T>},
+            {"sytrf_batched", testing_sytf2_sytrf<true, true, 1, T>},
+            {"sytrf_strided_batched", testing_sytf2_sytrf<false, true, 1, T>},
         };
 
         // Grab function from the map and execute

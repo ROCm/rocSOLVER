@@ -291,8 +291,8 @@ void sygv_hegv_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cblas_sygv_hegv(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(), lwork,
-                        rwork.data(), hInfo[b]);
+        cblas_sygv_hegv<T>(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(), lwork,
+                           rwork.data(), hInfo[b]);
     }
 
     // (We expect the used input matrices to always converge. Testing
@@ -427,8 +427,8 @@ void sygv_hegv_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cblas_sygv_hegv<S, T>(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(),
-                                  lwork, rwork.data(), hInfo[b]);
+            cblas_sygv_hegv<T>(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(),
+                               lwork, rwork.data(), hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
@@ -506,13 +506,13 @@ void testing_sygv_hegv(Arguments& argus)
                                                       (T* const*)nullptr, lda, stA,
                                                       (T* const*)nullptr, ldb, stB, (S*)nullptr, stD,
                                                       (S*)nullptr, stE, (rocblas_int*)nullptr, bc),
-                                  rocblas_status_invalid_size);
+                                  rocblas_status_invalid_value);
         else
             EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, uplo, n,
                                                       (T*)nullptr, lda, stA, (T*)nullptr, ldb, stB,
                                                       (S*)nullptr, stD, (S*)nullptr, stE,
                                                       (rocblas_int*)nullptr, bc),
-                                  rocblas_status_invalid_size);
+                                  rocblas_status_invalid_value);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_invalid_args);

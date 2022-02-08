@@ -4,7 +4,7 @@
 
 #include "roclapack_sygv_hegv.hpp"
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_sygv_hegv_batched_impl(rocblas_handle handle,
                                                 const rocblas_eform itype,
                                                 const rocblas_evect evect,
@@ -47,22 +47,20 @@ rocblas_status rocsolver_sygv_hegv_batched_impl(rocblas_handle handle,
     // size for constants in rocblas calls
     size_t size_scalars;
     // size of reusable workspaces (and for calling TRSM, SYGST/HEGST, and SYEV/HEEV)
+    bool optim_mem;
     size_t size_work1, size_work2, size_work3, size_work4;
     // extra requirements for calling POTRF and SYEV/HEEV
     size_t size_pivots_workArr;
     // size of temporary info array
     size_t size_iinfo;
     rocsolver_sygv_hegv_getMemorySize<true, T, S>(itype, evect, uplo, n, batch_count, &size_scalars,
-                                                  &size_work1, &size_work2, &size_work3,
-                                                  &size_work4, &size_pivots_workArr, &size_iinfo);
+                                                  &size_work1, &size_work2, &size_work3, &size_work4,
+                                                  &size_pivots_workArr, &size_iinfo, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
                                                       size_work3, size_work4, size_pivots_workArr,
                                                       size_iinfo);
-
-    // always allocate all required memory for TRSM optimal performance
-    bool optim_mem = true;
 
     // memory workspace allocation
     void *scalars, *work1, *work2, *work3, *work4, *pivots_workArr, *iinfo;
@@ -113,8 +111,8 @@ rocblas_status rocsolver_ssygv_batched(rocblas_handle handle,
                                        rocblas_int* info,
                                        const rocblas_int batch_count)
 {
-    return rocsolver_sygv_hegv_batched_impl<float, float>(
-        handle, itype, evect, uplo, n, A, lda, B, ldb, D, strideD, E, strideE, info, batch_count);
+    return rocsolver_sygv_hegv_batched_impl<float>(handle, itype, evect, uplo, n, A, lda, B, ldb, D,
+                                                   strideD, E, strideE, info, batch_count);
 }
 
 rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
@@ -133,8 +131,8 @@ rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
                                        rocblas_int* info,
                                        const rocblas_int batch_count)
 {
-    return rocsolver_sygv_hegv_batched_impl<double, double>(
-        handle, itype, evect, uplo, n, A, lda, B, ldb, D, strideD, E, strideE, info, batch_count);
+    return rocsolver_sygv_hegv_batched_impl<double>(handle, itype, evect, uplo, n, A, lda, B, ldb,
+                                                    D, strideD, E, strideE, info, batch_count);
 }
 
 rocblas_status rocsolver_chegv_batched(rocblas_handle handle,
@@ -153,7 +151,7 @@ rocblas_status rocsolver_chegv_batched(rocblas_handle handle,
                                        rocblas_int* info,
                                        const rocblas_int batch_count)
 {
-    return rocsolver_sygv_hegv_batched_impl<float, rocblas_float_complex>(
+    return rocsolver_sygv_hegv_batched_impl<rocblas_float_complex>(
         handle, itype, evect, uplo, n, A, lda, B, ldb, D, strideD, E, strideE, info, batch_count);
 }
 
@@ -173,7 +171,7 @@ rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
                                        rocblas_int* info,
                                        const rocblas_int batch_count)
 {
-    return rocsolver_sygv_hegv_batched_impl<double, rocblas_double_complex>(
+    return rocsolver_sygv_hegv_batched_impl<rocblas_double_complex>(
         handle, itype, evect, uplo, n, A, lda, B, ldb, D, strideD, E, strideE, info, batch_count);
 }
 

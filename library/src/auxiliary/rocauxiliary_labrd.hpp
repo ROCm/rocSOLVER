@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -14,7 +14,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_labrd_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
                                    const rocblas_int k,
@@ -50,7 +50,7 @@ void rocsolver_labrd_getMemorySize(const rocblas_int m,
     *size_work_workArr = max(s1, s2);
 }
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_labrd_argCheck(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,
@@ -88,7 +88,7 @@ rocblas_status rocsolver_labrd_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename S, typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,
@@ -168,8 +168,9 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                                      (tauq + j), strideQ, // tau
                                      batch_count, (T*)work_workArr, norms);
 
-            hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, D, j,
-                               strideD, A, shiftA + idx2D(j, j, lda), lda, strideA, 1, j < n - 1);
+            ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
+                                    D, j, strideD, A, shiftA + idx2D(j, j, lda), lda, strideA, 1,
+                                    j < n - 1);
 
             if(j < n - 1)
             {
@@ -240,9 +241,9 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                     (taup + j), strideP, // tau
                     batch_count, (T*)work_workArr, norms);
 
-                hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
-                                   E, j, strideE, A, shiftA + idx2D(j, j + 1, lda), lda, strideA, 1,
-                                   true);
+                ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
+                                        stream, E, j, strideE, A, shiftA + idx2D(j, j + 1, lda),
+                                        lda, strideA, 1, true);
 
                 // compute column j of X
                 rocblasCall_gemv<T>(
@@ -324,8 +325,9 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                                      (taup + j), strideP, // tau
                                      batch_count, (T*)work_workArr, norms);
 
-            hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, D, j,
-                               strideD, A, shiftA + idx2D(j, j, lda), lda, strideA, 1, j < m - 1);
+            ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
+                                    D, j, strideD, A, shiftA + idx2D(j, j, lda), lda, strideA, 1,
+                                    j < m - 1);
 
             if(j < m - 1)
             {
@@ -359,13 +361,13 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                                     shiftX + idx2D(j + 1, j, ldx), 1, strideX, batch_count);
 
                 if(COMPLEX)
+                {
                     rocsolver_lacgv_template<T>(handle, n - j, A, shiftA + idx2D(j, j, lda), lda,
                                                 strideA, batch_count);
-
-                // update column j of A
-                if(COMPLEX)
+                    // update column j of A
                     rocsolver_lacgv_template<T>(handle, j, Y, shiftY + idx2D(j, 0, ldy), ldy,
                                                 strideY, batch_count);
+                }
 
                 rocblasCall_gemv<T>(
                     handle, rocblas_operation_none, m - j - 1, j, cast2constType<T>(scalars), 0, A,
@@ -393,9 +395,9 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                     (tauq + j), strideQ, // tau
                     batch_count, (T*)work_workArr, norms);
 
-                hipLaunchKernelGGL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
-                                   E, j, strideE, A, shiftA + idx2D(j + 1, j, lda), lda, strideA, 1,
-                                   true);
+                ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
+                                        stream, E, j, strideE, A, shiftA + idx2D(j + 1, j, lda),
+                                        lda, strideA, 1, true);
 
                 // compute column j of Y
                 rocblasCall_gemv<T>(

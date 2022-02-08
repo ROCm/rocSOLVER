@@ -2,17 +2,49 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## [(unreleased) rocSOLVER for ROCm 4.5.0]
+## (Unreleased) rocSOLVER
 ### Added
-### Optimizations
+### Optimized
 ### Changed
-- Raised reference LAPACK version used for rocSOLVER test and benchmark clients to v3.9.1
-
+### Deprecated
 ### Removed
 ### Fixed
 ### Known Issues
+### Security
 
-## [rocSOLVER 3.14.0 for ROCm 4.4.0]
+
+## (Unreleased) rocSOLVER 3.17.0
+### Changed
+- Moved license directory from `share/doc/rocSOLVER` to `share/doc/rocsolver`.
+
+### Fixed
+- Fixed missing synchronization in SYTRF with `rocblas_fill_lower` that could potentially
+  result in incorrect pivot values.
+
+
+## rocSOLVER 3.16.0 for ROCm 5.0.0
+### Added
+- Symmetric matrix factorizations:
+    - LASYF
+    - SYTF2, SYTRF (with batched and strided\_batched versions)
+- Added `rocsolver_get_version_string_size` to help with version string queries
+- Added `rocblas_layer_mode_ex` and the ability to print kernel calls in the trace and profile logs
+- Expanded batched and strided\_batched sample programs.
+
+### Optimized
+- Improved general performance of LU factorization
+- Increased parallelism of specialized kernels when compiling from source, reducing build times on multi-core systems.
+
+### Changed
+- The rocsolver-test client now prints the rocSOLVER version used to run the tests,
+  rather than the version used to build them
+- The rocsolver-bench client now prints the rocSOLVER version used in the benchmark
+
+### Fixed
+- Added missing stdint.h include to rocsolver.h
+
+
+## rocSOLVER 3.15.0 for ROCm 4.5.0
 ### Added
 - Eigensolver routines for symmetric/hermitian matrices using Divide and Conquer algorithm:
     - STEDC
@@ -24,14 +56,41 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Added --mem\_query option to rocsolver-bench, which will print the amount of device memory required
   by a function.
 - Added --profile option to rocsolver-bench, which will print profile logging results for a function.
+- RQ factorization routines:
+    - GERQ2, GERQF (with batched and strided\_batched versions)
+- Linear solvers for general square systems:
+    - GESV (with batched and strided\_batched versions)
+- Linear solvers for symmetric/hermitian positive definite systems:
+    - POTRS (with batched and strided\_batched versions)
+    - POSV (with batched and strided\_batched versions)
+- Inverse of symmetric/hermitian positive definite matrices:
+    - POTRI (with batched and strided\_batched versions)
+- General matrix inversion without pivoting:
+    - GETRI\_NPVT (with batched and strided\_batched versions)
+    - GETRI\_NPVT\_OUTOFPLACE (with batched and strided\_batched versions)
+
+### Optimized
+- Improved performance of LU factorization (especially for large matrix sizes)
 
 ### Changed
 - The -h option of install.sh now prints a help message, instead of doing nothing.
 - libfmt 7.1 is now a dependency
 - Raised minimum requirement for building rocSOLVER from source to CMake 3.13
+- Raised reference LAPACK version used for rocSOLVER test and benchmark clients to v3.9.1
+- Minor CMake improvements for users building from source without install.sh:
+    - Removed fmt::fmt from rocsolver's public usage requirements
+    - Enabled small-size optimizations by default
+- Split packaging into a runtime package ('rocsolver') and a development package ('rocsolver-devel').
+  The development package depends on the runtime package. To aid in the transition, the runtime
+  package suggests the development package (except on CentOS 7). This use of the suggests feature
+  is deprecated and will be removed in a future ROCm release.
+
+### Fixed
+- Use of the GCC / Clang `__attribute__((deprecated(...)))` extension is now guarded by compiler
+  detection macros.
 
 
-## [rocSOLVER 3.13.0 for ROCm 4.3.0]
+## rocSOLVER 3.13.0 for ROCm 4.3.0
 ### Added
 - Linear solvers for general non-square systems:
     - GELS now supports underdetermined and transposed cases
@@ -40,7 +99,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Out-of-place general matrix inversion
     - GETRI\_OUTOFPLACE (with batched and strided\_batched versions)
 
-### Optimizations
+### Optimized
 - Improved general performance of matrix inversion (GETRI)
 
 ### Changed
@@ -53,7 +112,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
   on the command line.
 
 
-## [rocSOLVER 3.12.0 for ROCm 4.2.0]
+## rocSOLVER 3.12.0 for ROCm 4.2.0
 ### Added
 - Multi-level logging functionality
 - Implementation of the Thin-SVD algorithm
@@ -85,7 +144,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
   bug in the gemm\_batched routines of rocBLAS.
 
 
-## [rocSOLVER 3.11.0 for ROCm 4.1.0]
+## rocSOLVER 3.11.0 for ROCm 4.1.0
 ### Added
 - Eigensolver routines for symmetric/hermitian matrices:
     - STERF, STEQR
@@ -101,7 +160,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - HETD2, HETRD (with batched and strided\_batched versions)
 - Sample code and unit test for unified memory model/Heterogeneous Memory Management (HMM)
 
-### Optimizations
+### Optimized
 - Improved performance of LU factorization of small and mid-size matrices (n <= 2048)
 
 ### Changed
@@ -120,7 +179,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Fixed GESVD right singular vectors for 1x1 matrices
 
 
-## [rocSOLVER 3.10.0 for ROCm 3.10.0]
+## rocSOLVER 3.10.0 for ROCm 3.10.0
 ### Added
 - Orthonormal/Unitary matrix generator routines (reverse order):
     - ORG2L, UNG2L, ORGQL, UNGQL
@@ -136,7 +195,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Returned values in parameter info of functions dealing with singularities
 
 
-## [rocSOLVER 3.9.0 for ROCm 3.9.0]
+## rocSOLVER 3.9.0 for ROCm 3.9.0
 ### Added
 - Improved debug build mode for developers
 - QL factorization routines:
@@ -144,17 +203,17 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - SVD of general matrices routines:
     - GESVD (with batched and strided\_batched versions)
 
-### Optimizations
+### Optimized
 - Improved performance of mid-size matrix inversion (64 < n <= 2048)
 
 
-## [rocSOLVER 3.8.0 for ROCm 3.8.0]
+## rocSOLVER 3.8.0 for ROCm 3.8.0
 ### Added
 - Sample codes for C, C++ and FORTRAN
 - LU factorization without pivoting routines:
     - GETF2\_NPVT, GETRF\_NPVT (with batched and strided\_batched versions)
 
-### Optimizations
+### Optimized
 - Improved performance of LU factorization of mid-size matrices (64 < n <= 2048)
 - Improved performance of small-size matrix inversion (n <= 64)
 
@@ -162,7 +221,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Ensure the public API is C compatible
 
 
-## [rocSOLVER 3.7.0 for ROCm 3.7.0]
+## rocSOLVER 3.7.0 for ROCm 3.7.0
 ### Added
 - LU-factorization-based matrix inverse routines:
     - GETRI (with batched and strided\_batched versions)
@@ -173,7 +232,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Ensure congruency on the input data when executing performance tests (benchmarks)
 
 
-## [rocSOLVER 3.6.0 for ROCm 3.6.0]
+## rocSOLVER 3.6.0 for ROCm 3.6.0
 ### Added
 - Complex precision support for all existing rocSOLVER functions
 - Bidiagonalization routines:
@@ -181,14 +240,14 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - GEBD2, GEBRD (with batched and strided\_batched versions)
 - Integration of rocSOLVER to hipBLAS
 
-### Optimizations
+### Optimized
 - Improved performance of LU factorization of tiny matrices (n <= 64)
 
 ### Changed
 - Major clients refactoring to achieve better test coverage and benchmarking
 
 
-## [rocSOLVER 3.5.0 for ROCm 3.5.0]
+## rocSOLVER 3.5.0 for ROCm 3.5.0
 ### Added
 - Installation script and new build procedure
 - Documentation and integration with ReadTheDocs

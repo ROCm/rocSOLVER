@@ -1,12 +1,8 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 cmake_minimum_required(VERSION 3.13)
-
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # This has to be initialized before the project() command appears
 # Set the default build type to Release
@@ -22,9 +18,21 @@ endif()
 # ROCM_BUILD_ID is added to the package name by rocm-cmake. Unsetting it prevents that.
 unset(ENV{ROCM_BUILD_ID})
 
+# Disable ROCMClang detection to make CMake v3.21 work the same as CMake v3.20 and earlier.
+# https://gitlab.kitware.com/cmake/cmake/-/merge_requests/6533
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21.0 AND CMAKE_VERSION VERSION_LESS 3.21.3)
+  set(__skip_rocmclang ON)
+endif()
+message(STATUS "Using CMake ${CMAKE_VERSION}")
+
 project(rocsolver LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 option(ROCSOLVER_EMBED_FMT "Hide libfmt symbols" OFF)
+option(OPTIMAL "Build specialized kernels for small matrix sizes" ON)
 
 # Add our CMake helper files to the lookup path
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -46,14 +54,14 @@ include(ROCMCreatePackage)
 include(ROCMInstallTargets)
 include(ROCMPackageConfigHelpers)
 include(ROCMInstallSymlinks)
-include(ROCMCheckTargetIds OPTIONAL) # rocm-4.4: Require ROCMCheckTargetIds
+include(ROCMCheckTargetIds)
 
 include(os-detection)
 get_os_id(OS_ID)
 message(STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-set(VERSION_STRING "3.15.0")
+set(VERSION_STRING "3.18.0")
 rocm_setup_version(VERSION ${VERSION_STRING})
 
 # Workaround until llvm and hip CMake modules fix symlink logic in their config files
@@ -65,8 +73,6 @@ list(APPEND CMAKE_PREFIX_PATH
   /opt/rocm/llvm
   /opt/rocm/hip
 )
-
-option(BUILD_VERBOSE "Output additional build information" OFF)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(DEFAULT_ARMOR_LEVEL 1)
@@ -86,25 +92,22 @@ option(BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON)
 
 # Include helper functions and wrapper functions
 include(util)
+include(CMakeDependentOption)
+
+option(BUILD_TESTING "Build rocSOLVER tests" OFF)
+if(BUILD_TESTING)
+  enable_testing()
+endif()
 
 option(BUILD_LIBRARY "Build rocSOLVER library" ON)
 option_opposite(BUILD_LIBRARY SKIP_LIBRARY)
-option(BUILD_CLIENTS_TESTS "Build rocSOLVER unit tests" OFF)
-option(BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmarks" OFF)
+option(BUILD_CLIENTS_TESTS "Build rocSOLVER test client" "${BUILD_TESTING}")
+option(BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmark client" OFF)
 option(BUILD_CLIENTS_SAMPLES "Build rocSOLVER samples" OFF)
+cmake_dependent_option(BUILD_CLIENTS_EXTRA_TESTS "Build extra tests" OFF BUILD_TESTING OFF)
 option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
-
-if(BUILD_ADDRESS_SANITIZER)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -shared-libasan")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -shared-libasan")
-  add_link_options(-fuse-ld=lld)
-endif()
-
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
-if(BUILD_CODE_COVERAGE)
-  add_compile_options(-fprofile-arcs -ftest-coverage)
-  add_link_options(--coverage)
-endif()
+option(WERROR "Treat warnings as errors" OFF)
 
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
@@ -113,18 +116,16 @@ message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
 # Force library install path to lib (CentOS 7 defaults to lib64)
 set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for libraries" FORCE)
 
-# rocm-4.4: Require rocm_check_target_ids
-if(COMMAND rocm_check_target_ids)
-  # Query for compiler support of GPU archs
-  rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
-    TARGETS
-      gfx90a:xnack-
-      gfx90a:xnack+
-  )
-endif()
+# Query for compiler support of GPU archs
+rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
+  TARGETS
+    gfx90a:xnack-
+    gfx90a:xnack+
+)
+
 # Set this before finding hip so that hip::device has the required arch flags
 # added as usage requirements on its interface
-set(AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx1030;${OPTIONAL_AMDGPU_TARGETS}"
+set(AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx1010;gfx1030;${OPTIONAL_AMDGPU_TARGETS}"
   CACHE STRING "List of specific machine types for library to target")
 
 # Find HIP dependencies

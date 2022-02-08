@@ -2,7 +2,10 @@
 # Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 # ########################################################################
 
-project(rocsolver-clients LANGUAGES C CXX Fortran)
+project(rocsolver-clients LANGUAGES C CXX)
+if(UNIX)
+  enable_language(Fortran)
+endif()
 
 # Specify where to put the client binaries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
@@ -16,6 +19,10 @@ if(NOT TARGET rocsolver)
 endif()
 
 if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
+  # Linking lapack library requires fortran flags
+  find_package(cblas REQUIRED CONFIG)
+  target_include_directories(cblas SYSTEM INTERFACE ${CBLAS_INCLUDE_DIRS})
+
   add_library(clients-common INTERFACE)
   target_include_directories(clients-common INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -40,4 +47,8 @@ endif()
 
 if(BUILD_CLIENTS_SAMPLES)
   add_subdirectory(samples)
+endif()
+
+if(BUILD_CLIENTS_EXTRA_TESTS)
+  add_subdirectory(extras)
 endif()

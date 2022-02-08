@@ -1,22 +1,15 @@
+*****************************************
+Logging Functions and Library Information
+*****************************************
+
 .. _api_logging:
 
-******************
-Logging Functions
-******************
-
-These are functions that enable and control rocSOLVER's :ref:`logging-label` capabilities. Functions 
-are divided in two categories:
-
-* :ref:`initialize` functions. Used to initialize and terminate the logging. 
-* :ref:`profile` functions. Provide functionality for the profile logging mode. 
-
-
-.. _initialize:
-
-Logging set-up and tear-down
+Logging functions
 ===============================
 
-.. contents:: List of logging initialization functions
+These functions control rocSOLVER's :ref:`logging-label` capabilities.
+
+.. contents:: List of logging functions
    :local:
    :backlinks: top
 
@@ -40,17 +33,6 @@ rocsolver_log_restore_defaults()
 ---------------------------------
 .. doxygenfunction:: rocsolver_log_restore_defaults
 
-
-
-.. _profile:
-
-Profile logging
-==============================
-
-.. contents:: List of profile logging functions
-   :local:
-   :backlinks: top
-
 rocsolver_log_write_profile()
 ---------------------------------
 .. doxygenfunction:: rocsolver_log_write_profile
@@ -58,4 +40,23 @@ rocsolver_log_write_profile()
 rocsolver_log_flush_profile()
 ---------------------------------
 .. doxygenfunction:: rocsolver_log_flush_profile
+
+
+
+.. _libraryinfo:
+
+Library information
+===============================
+
+.. contents:: List of library information functions
+   :local:
+   :backlinks: top
+
+rocsolver_get_version_string()
+------------------------------------
+.. doxygenfunction:: rocsolver_get_version_string
+
+rocsolver_get_version_string_size()
+------------------------------------
+.. doxygenfunction:: rocsolver_get_version_string_size
 

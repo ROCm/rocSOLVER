@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2017
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -13,12 +13,12 @@
 #include "rocsolver.h"
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-__global__ void set_taubeta(T* tau,
-                            const rocblas_stride strideP,
-                            T* norms,
-                            U alpha,
-                            const rocblas_int shifta,
-                            const rocblas_stride stride)
+ROCSOLVER_KERNEL void set_taubeta(T* tau,
+                                  const rocblas_stride strideP,
+                                  T* norms,
+                                  U alpha,
+                                  const rocblas_int shifta,
+                                  const rocblas_stride stride)
 {
     int b = hipBlockIdx_x;
 
@@ -47,12 +47,12 @@ __global__ void set_taubeta(T* tau,
 }
 
 template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void set_taubeta(T* tau,
-                            const rocblas_stride strideP,
-                            T* norms,
-                            U alpha,
-                            const rocblas_int shifta,
-                            const rocblas_stride stride)
+ROCSOLVER_KERNEL void set_taubeta(T* tau,
+                                  const rocblas_stride strideP,
+                                  T* norms,
+                                  U alpha,
+                                  const rocblas_int shifta,
+                                  const rocblas_stride stride)
 {
     using S = decltype(std::real(T{}));
     int b = hipBlockIdx_x;
@@ -175,7 +175,8 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
     dim3 threads(1, 1, 1);
     if(n == 1 && !COMPLEX)
     {
-        hipLaunchKernelGGL(reset_batch_info<T>, gridReset, threads, 0, stream, tau, strideP, 1, 0);
+        ROCSOLVER_LAUNCH_KERNEL(reset_batch_info<T>, gridReset, threads, 0, stream, tau, strideP, 1,
+                                0);
         return rocblas_status_success;
     }
 
@@ -190,8 +191,8 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
 
     // set value of tau and beta and scalling factor for vector x
     // alpha <- beta, norms <- scaling
-    hipLaunchKernelGGL(set_taubeta<T>, dim3(batch_count), dim3(1), 0, stream, tau, strideP, norms,
-                       alpha, shifta, stridex);
+    ROCSOLVER_LAUNCH_KERNEL(set_taubeta<T>, dim3(batch_count), dim3(1), 0, stream, tau, strideP,
+                            norms, alpha, shifta, stridex);
 
     // compute vector v=x*norms
     rocblasCall_scal<T>(handle, n - 1, norms, 1, x, shiftx, incx, stridex, batch_count);

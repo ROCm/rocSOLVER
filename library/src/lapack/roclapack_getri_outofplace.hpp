@@ -15,7 +15,8 @@ void rocsolver_getri_outofplace_getMemorySize(const rocblas_int n,
                                               size_t* size_work1,
                                               size_t* size_work2,
                                               size_t* size_work3,
-                                              size_t* size_work4)
+                                              size_t* size_work4,
+                                              bool* optim_mem)
 {
     // if quick return, no need of workspace
     if(n == 0 || batch_count == 0)
@@ -24,12 +25,13 @@ void rocsolver_getri_outofplace_getMemorySize(const rocblas_int n,
         *size_work2 = 0;
         *size_work3 = 0;
         *size_work4 = 0;
+        *optim_mem = true;
         return;
     }
 
     // requirements for calling GETRS
-    rocsolver_getrs_getMemorySize<BATCHED, T>(n, n, batch_count, size_work1, size_work2, size_work3,
-                                              size_work4);
+    rocsolver_getrs_getMemorySize<BATCHED, T>(rocblas_operation_none, n, n, batch_count, size_work1,
+                                              size_work2, size_work3, size_work4, optim_mem);
 }
 
 template <typename T>
@@ -41,6 +43,7 @@ rocblas_status rocsolver_getri_outofplace_argCheck(rocblas_handle handle,
                                                    T C,
                                                    rocblas_int* ipiv,
                                                    rocblas_int* info,
+                                                   const bool pivot,
                                                    const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
@@ -57,7 +60,7 @@ rocblas_status rocsolver_getri_outofplace_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !A) || (n && !C) || (n && !ipiv) || (batch_count && !info))
+    if((n && !A) || (n && !C) || (n && pivot && !ipiv) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -83,7 +86,8 @@ rocblas_status rocsolver_getri_outofplace_template(rocblas_handle handle,
                                                    void* work2,
                                                    void* work3,
                                                    void* work4,
-                                                   bool optim_mem)
+                                                   const bool optim_mem,
+                                                   const bool pivot)
 {
     ROCSOLVER_ENTER("getri_outofplace", "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
                     "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
@@ -99,24 +103,24 @@ rocblas_status rocsolver_getri_outofplace_template(rocblas_handle handle,
     if(n == 0)
     {
         rocblas_int blocks = (batch_count - 1) / 32 + 1;
-        hipLaunchKernelGGL(reset_info, dim3(blocks, 1, 1), dim3(32, 1, 1), 0, stream, info,
-                           batch_count, 0);
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, dim3(blocks, 1, 1), dim3(32, 1, 1), 0, stream, info,
+                                batch_count, 0);
         return rocblas_status_success;
     }
 
     // check for singularities
-    hipLaunchKernelGGL(check_singularity<T>, dim3(batch_count, 1, 1), dim3(1, BLOCKSIZE, 1), 0,
-                       stream, n, A, shiftA, lda, strideA, info);
+    ROCSOLVER_LAUNCH_KERNEL(check_singularity<T>, dim3(batch_count, 1, 1), dim3(1, BS1, 1), 0,
+                            stream, n, A, shiftA, lda, strideA, info);
 
     // initialize C to the identity
-    rocblas_int blocks = (n - 1) / 32 + 1;
-    hipLaunchKernelGGL(init_ident<T>, dim3(blocks, blocks, batch_count), dim3(32, 32), 0, stream, n,
-                       n, C, shiftC, ldc, strideC);
+    rocblas_int blocks = (n - 1) / BS2 + 1;
+    ROCSOLVER_LAUNCH_KERNEL(init_ident<T>, dim3(blocks, blocks, batch_count), dim3(BS2, BS2), 0,
+                            stream, n, n, C, shiftC, ldc, strideC);
 
     // compute inverse
     rocsolver_getrs_template<BATCHED, T>(handle, rocblas_operation_none, n, n, A, shiftA, lda,
                                          strideA, ipiv, strideP, C, shiftC, ldc, strideC,
-                                         batch_count, work1, work2, work3, work4, optim_mem);
+                                         batch_count, work1, work2, work3, work4, optim_mem, pivot);
 
     return rocblas_status_success;
 }

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -218,34 +218,34 @@ __device__ void b2tQRstep(const rocblas_int n,
 /** BDSQRKERNEL implements the main loop of the bdsqr algorithm
     to compute the SVD of an upper bidiagonal matrix given by D and E **/
 template <typename T, typename S, typename W>
-__global__ void bdsqrKernel(const rocblas_int n,
-                            const rocblas_int nv,
-                            const rocblas_int nu,
-                            const rocblas_int nc,
-                            S* DD,
-                            const rocblas_stride strideD,
-                            S* EE,
-                            const rocblas_stride strideE,
-                            W VV,
-                            const rocblas_int shiftV,
-                            const rocblas_int ldv,
-                            const rocblas_stride strideV,
-                            W UU,
-                            const rocblas_int shiftU,
-                            const rocblas_int ldu,
-                            const rocblas_stride strideU,
-                            W CC,
-                            const rocblas_int shiftC,
-                            const rocblas_int ldc,
-                            const rocblas_stride strideC,
-                            rocblas_int* info,
-                            const rocblas_int maxiter,
-                            const S eps,
-                            const S sfm,
-                            const S tol,
-                            const S minshift,
-                            S* workA,
-                            const rocblas_stride strideW)
+ROCSOLVER_KERNEL void bdsqrKernel(const rocblas_int n,
+                                  const rocblas_int nv,
+                                  const rocblas_int nu,
+                                  const rocblas_int nc,
+                                  S* DD,
+                                  const rocblas_stride strideD,
+                                  S* EE,
+                                  const rocblas_stride strideE,
+                                  W VV,
+                                  const rocblas_int shiftV,
+                                  const rocblas_int ldv,
+                                  const rocblas_stride strideV,
+                                  W UU,
+                                  const rocblas_int shiftU,
+                                  const rocblas_int ldu,
+                                  const rocblas_stride strideU,
+                                  W CC,
+                                  const rocblas_int shiftC,
+                                  const rocblas_int ldc,
+                                  const rocblas_stride strideC,
+                                  rocblas_int* info,
+                                  const rocblas_int maxiter,
+                                  const S eps,
+                                  const S sfm,
+                                  const S tol,
+                                  const S minshift,
+                                  S* workA,
+                                  const rocblas_stride strideW)
 {
     rocblas_int bid = hipBlockIdx_x;
 
@@ -273,12 +273,12 @@ __global__ void bdsqrKernel(const rocblas_int n,
 
     rocblas_int k = n - 1; // k is the last element of last unconverged diagonal block
     rocblas_int iter = 0; // iter is the number of iterations (QR steps) applied
-    rocblas_int i;
     S sh, smax;
 
     // main loop
     while(k > 0 && iter < maxiter)
     {
+        rocblas_int i;
         // split the diagonal blocks
         for(rocblas_int j = 0; j < k + 1; ++j)
         {
@@ -395,23 +395,23 @@ __global__ void bdsqrKernel(const rocblas_int n,
 /** LOWER2UPPER kernel transforms a lower bidiagonal matrix given by D and E
     into an upper bidiagonal matrix via givens rotations **/
 template <typename T, typename S, typename W>
-__global__ void lower2upper(const rocblas_int n,
-                            const rocblas_int nu,
-                            const rocblas_int nc,
-                            S* DD,
-                            const rocblas_stride strideD,
-                            S* EE,
-                            const rocblas_stride strideE,
-                            W UU,
-                            const rocblas_int shiftU,
-                            const rocblas_int ldu,
-                            const rocblas_stride strideU,
-                            W CC,
-                            const rocblas_int shiftC,
-                            const rocblas_int ldc,
-                            const rocblas_stride strideC,
-                            S* workA,
-                            const rocblas_stride strideW)
+ROCSOLVER_KERNEL void lower2upper(const rocblas_int n,
+                                  const rocblas_int nu,
+                                  const rocblas_int nc,
+                                  S* DD,
+                                  const rocblas_stride strideD,
+                                  S* EE,
+                                  const rocblas_stride strideE,
+                                  W UU,
+                                  const rocblas_int shiftU,
+                                  const rocblas_int ldu,
+                                  const rocblas_stride strideU,
+                                  W CC,
+                                  const rocblas_int shiftC,
+                                  const rocblas_int ldc,
+                                  const rocblas_stride strideC,
+                                  S* workA,
+                                  const rocblas_stride strideW)
 {
     rocblas_int bid = hipBlockIdx_x;
     S f, g, c, s, r;
@@ -581,15 +581,16 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     // rotate to upper bidiagonal if necessary
     if(uplo == rocblas_fill_lower)
     {
-        hipLaunchKernelGGL((lower2upper<T>), dim3(batch_count), dim3(1), 0, stream, n, nu, nc, D,
-                           strideD, E, strideE, U, shiftU, ldu, strideU, C, shiftC, ldc, strideC,
-                           work, strideW);
+        ROCSOLVER_LAUNCH_KERNEL((lower2upper<T>), dim3(batch_count), dim3(1), 0, stream, n, nu, nc,
+                                D, strideD, E, strideE, U, shiftU, ldu, strideU, C, shiftC, ldc,
+                                strideC, work, strideW);
     }
 
     // main computation of SVD
-    hipLaunchKernelGGL((bdsqrKernel<T>), dim3(batch_count), dim3(1), 0, stream, n, nv, nu, nc, D,
-                       strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu, strideU, C,
-                       shiftC, ldc, strideC, info, maxiter, eps, sfm, tol, minshift, work, strideW);
+    ROCSOLVER_LAUNCH_KERNEL((bdsqrKernel<T>), dim3(batch_count), dim3(1), 0, stream, n, nv, nu, nc,
+                            D, strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu,
+                            strideU, C, shiftC, ldc, strideC, info, maxiter, eps, sfm, tol,
+                            minshift, work, strideW);
 
     return rocblas_status_success;
 }
@@ -627,8 +628,8 @@ void rocsolver_bdsqr_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, U, strideU,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, U, strideU,
+                            batch_count);
 
     rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, 0, D, strideD, E, strideE, V, shiftV, ldv,
                                 strideV, (T* const*)workArr, shiftU, ldu, strideU, C, shiftC, ldc,
@@ -668,8 +669,8 @@ void rocsolver_bdsqr_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, V, strideV,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, V, strideV,
+                            batch_count);
 
     rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, nc, D, strideD, E, strideE,
                                 (T* const*)workArr, shiftV, ldv, strideV, U, shiftU, ldu, strideU,

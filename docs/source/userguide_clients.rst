@@ -30,7 +30,7 @@ Testing rocSOLVER
 
 The ``rocsolver-test`` client executes a suite of `Google tests <https://github.com/google/googletest>`_ (*gtest*) that
 verifies the correct functioning of the library. The results computed by rocSOLVER, given random input data,
-are normally compared with the results computed by `NETLib LAPACK <https://www.netlib.org/lapack/>`_ on the CPU, or tested implicitly 
+are normally compared with the results computed by `NETLib LAPACK <https://www.netlib.org/lapack/>`_ on the CPU, or tested implicitly
 in the context of the solved problem. It will be built if the ``-c`` flag is passed to ``install.sh`` or if the ``-DBUILD_CLIENTS_TESTS=ON`` flag is
 passed to the CMake system.
 
@@ -114,7 +114,7 @@ equivalent to:
     ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100
 
 Other useful benchmarking options include the ``--perf`` flag, which will disable the LAPACK computation and only time \
-and print the rocSOLVER performance result; the ``-i`` (or ``--iters``) flag, which indicates the number of times to run the 
+and print the rocSOLVER performance result; the ``-i`` (or ``--iters``) flag, which indicates the number of times to run the
 GPU timing loop (the performance result would be the average of all the runs); and the ``--profile``
 flag, which enables :ref:`profile logging <log_profile>` indicating the maximum depth of the nested output.
 
@@ -124,9 +124,9 @@ flag, which enables :ref:`profile logging <log_profile>` indicating the maximum 
     ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100 --iters 20
     ./rocsolver-bench -f geqrf_strided_batched -r d -m 30 --batch_count 100 --profile 5
 
-In addition to the benchmarking functionality, the rocSOLVER bench client can also provide the norm of the error in the 
+In addition to the benchmarking functionality, the rocSOLVER bench client can also provide the norm of the error in the
 computations when the ``-v`` (or ``--verify``) flag is used; and return the amount of device memory required as workspace for the given function, if the
-``--mem_query`` flag is passed. 
+``--mem_query`` flag is passed.
 
 .. code-block:: bash
 
@@ -145,6 +145,6 @@ CMake system.
 Currently, sample code exists to demonstrate the following:
 
 * Basic use of rocSOLVER in C, C++, and Fortran, using the example of :ref:`rocsolver_geqrf <geqrf>`;
-* Use of rocSOLVER with the Heterogeneous Memory Management (HMM) model ; and
+* Use of batched and strided_batched functions, using :ref:`rocsolver_geqrf_batched <geqrf_batched>` and :ref:`rocsolver_geqrf_strided_batched <geqrf_strided_batched>` as examples;
+* Use of rocSOLVER with the Heterogeneous Memory Management (HMM) model; and
 * Use of rocSOLVER's :ref:`multi-level logging <logging-label>` functionality.
-

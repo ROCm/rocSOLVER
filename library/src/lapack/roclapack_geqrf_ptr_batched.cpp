@@ -13,7 +13,7 @@
  */
 
 template <typename T>
-__global__ void copy_array_to_ptrs(rocblas_stride n, T* const ptrs[], T* array)
+ROCSOLVER_KERNEL void copy_array_to_ptrs(rocblas_stride n, T* const ptrs[], T* array)
 {
     int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     int b = hipBlockIdx_y;
@@ -58,7 +58,7 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
     size_t size_Abyx_norms_trfact;
     // extra requirements for calling GEQR2 and LARFB
     size_t size_diag_tmptr;
-    rocsolver_geqrf_getMemorySize<T, true>(m, n, batch_count, &size_scalars, &size_work_workArr,
+    rocsolver_geqrf_getMemorySize<true, T>(m, n, batch_count, &size_scalars, &size_work_workArr,
                                            &size_Abyx_norms_trfact, &size_diag_tmptr, &size_workArr);
 
     // this is to mamange tau as a simple array ipiv
@@ -98,8 +98,8 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
         rocblas_get_stream(handle, &stream);
 
         rocblas_int blocks = (strideP - 1) / 32 + 1;
-        hipLaunchKernelGGL(copy_array_to_ptrs, dim3(blocks, batch_count), dim3(32, 1), 0, stream,
-                           strideP, tau, (T*)ipiv);
+        ROCSOLVER_LAUNCH_KERNEL(copy_array_to_ptrs, dim3(blocks, batch_count), dim3(32, 1), 0,
+                                stream, strideP, tau, (T*)ipiv);
     }
 
     return status;

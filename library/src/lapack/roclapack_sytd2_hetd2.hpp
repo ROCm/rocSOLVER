@@ -15,7 +15,8 @@
 
 /** set_tau kernel copies to tau the corresponding Householder scalars **/
 template <typename T>
-__global__ void set_tau(const rocblas_int batch_count, T* tmptau, T* tau, const rocblas_stride strideP)
+ROCSOLVER_KERNEL void
+    set_tau(const rocblas_int batch_count, T* tmptau, T* tau, const rocblas_stride strideP)
 {
     rocblas_int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -29,17 +30,17 @@ __global__ void set_tau(const rocblas_int batch_count, T* tmptau, T* tau, const 
 
 /** set_tridiag kernel copies results to set tridiagonal form in A, diagonal elements in D
     and off-diagonal elements in E **/
-template <typename S, typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-__global__ void set_tridiag(const rocblas_fill uplo,
-                            const rocblas_int n,
-                            U A,
-                            const rocblas_int shiftA,
-                            const rocblas_int lda,
-                            const rocblas_stride strideA,
-                            S* D,
-                            const rocblas_stride strideD,
-                            S* E,
-                            const rocblas_stride strideE)
+template <typename T, typename S, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+ROCSOLVER_KERNEL void set_tridiag(const rocblas_fill uplo,
+                                  const rocblas_int n,
+                                  U A,
+                                  const rocblas_int shiftA,
+                                  const rocblas_int lda,
+                                  const rocblas_stride strideA,
+                                  S* D,
+                                  const rocblas_stride strideD,
+                                  S* E,
+                                  const rocblas_stride strideE)
 {
     rocblas_int b = hipBlockIdx_y;
     rocblas_int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -65,17 +66,17 @@ __global__ void set_tridiag(const rocblas_fill uplo,
     }
 }
 
-template <typename S, typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void set_tridiag(const rocblas_fill uplo,
-                            const rocblas_int n,
-                            U A,
-                            const rocblas_int shiftA,
-                            const rocblas_int lda,
-                            const rocblas_stride strideA,
-                            S* D,
-                            const rocblas_stride strideD,
-                            S* E,
-                            const rocblas_stride strideE)
+template <typename T, typename S, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+ROCSOLVER_KERNEL void set_tridiag(const rocblas_fill uplo,
+                                  const rocblas_int n,
+                                  U A,
+                                  const rocblas_int shiftA,
+                                  const rocblas_int lda,
+                                  const rocblas_stride strideA,
+                                  S* D,
+                                  const rocblas_stride strideD,
+                                  S* E,
+                                  const rocblas_stride strideE)
 {
     rocblas_int b = hipBlockIdx_y;
     rocblas_int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -101,7 +102,7 @@ __global__ void set_tridiag(const rocblas_fill uplo,
     }
 }
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_sytd2_hetd2_getMemorySize(const rocblas_int n,
                                          const rocblas_int batch_count,
                                          size_t* size_scalars,
@@ -121,6 +122,8 @@ void rocsolver_sytd2_hetd2_getMemorySize(const rocblas_int n,
         return;
     }
 
+    size_t w_temp;
+
     // size of scalars (constants)
     *size_scalars = sizeof(T) * 3;
 
@@ -135,9 +138,13 @@ void rocsolver_sytd2_hetd2_getMemorySize(const rocblas_int n,
 
     // extra requirements to call LARFG
     rocsolver_larfg_getMemorySize<T>(n, batch_count, size_work, size_norms);
+
+    // extra requirements for calling symv/hemv
+    rocblasCall_symv_hemv_mem<BATCHED, T>(n, batch_count, &w_temp);
+    *size_work = std::max(*size_work, w_temp);
 }
 
-template <typename S, typename T, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocsolver_sytd2_hetd2_argCheck(rocblas_handle handle,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,
@@ -169,7 +176,7 @@ rocblas_status rocsolver_sytd2_hetd2_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename S, typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,
@@ -206,10 +213,10 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
     // configure kernels
-    rocblas_int blocks = (n - 1) / BLOCKSIZE + 1;
+    rocblas_int blocks = (n - 1) / BS1 + 1;
     dim3 grid_n(blocks, batch_count);
-    dim3 threads(BLOCKSIZE, 1, 1);
-    blocks = (batch_count - 1) / BLOCKSIZE + 1;
+    dim3 threads(BS1, 1, 1);
+    blocks = (batch_count - 1) / BS1 + 1;
     dim3 grid_b(blocks, 1);
 
     rocblas_stride stridet = 1; //stride for tmptau
@@ -226,15 +233,15 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
                                         tmptau, stridet, batch_count, work, norms);
 
             // 2. copy to E(j) the corresponding off-diagonal element of A, which is set to 1
-            hipLaunchKernelGGL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
-                               shiftA + idx2D(j + 1, j, lda), strideA, E + j, strideE);
+            ROCSOLVER_LAUNCH_KERNEL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
+                                    shiftA + idx2D(j + 1, j, lda), strideA, E + j, strideE);
 
             // 3. overwrite tau with w = tmptau*A*v - 1/2*tmptau*(tmptau*v'*A*v)*v
             // a. compute tmptau*A*v -> tau
             rocblasCall_symv_hemv<T>(handle, uplo, n - 1 - j, tmptau, stridet, A,
                                      shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, A,
                                      shiftA + idx2D(j + 1, j, lda), 1, strideA, scalars + 1, 0, tau,
-                                     j, 1, strideP, batch_count, workArr);
+                                     j, 1, strideP, batch_count, work, workArr);
 
             // b. compute scalar tmptau*v'*A*v=tau'*v -> norms
             rocblasCall_dot<COMPLEX, T>(handle, n - 1 - j, tau, j, 1, strideP, A,
@@ -245,8 +252,9 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
             // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes
             //  available, we can use it instead of the scale_axpy kernel, if it provides
             //  better performance.)
-            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, n - 1 - j, norms, tmptau,
-                               stridet, A, shiftA + idx2D(j + 1, j, lda), strideA, tau, j, strideP);
+            ROCSOLVER_LAUNCH_KERNEL(scale_axpy<T>, grid_n, threads, 0, stream, n - 1 - j, norms,
+                                    tmptau, stridet, A, shiftA + idx2D(j + 1, j, lda), strideA, tau,
+                                    j, strideP);
 
             // 4. apply the Householder reflector to A as a rank-2 update:
             // A = A - v*w' - w*v'
@@ -256,8 +264,8 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
                                      batch_count, workArr);
 
             // 5. Save the used housedholder scalar
-            hipLaunchKernelGGL(set_tau<T>, grid_b, threads, 0, stream, batch_count, tmptau, tau + j,
-                               strideP);
+            ROCSOLVER_LAUNCH_KERNEL(set_tau<T>, grid_b, threads, 0, stream, batch_count, tmptau,
+                                    tau + j, strideP);
         }
     }
 
@@ -273,14 +281,14 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
                                         batch_count, work, norms);
 
             // 2. copy to E(j-1) the corresponding off-diagonal element of A, which is set to 1
-            hipLaunchKernelGGL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
-                               shiftA + idx2D(j - 1, j, lda), strideA, E + j - 1, strideE);
+            ROCSOLVER_LAUNCH_KERNEL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
+                                    shiftA + idx2D(j - 1, j, lda), strideA, E + j - 1, strideE);
 
             // 3. overwrite tau with w = tmptau*A*v - 1/2*tmptau*tmptau*(v'*A*v*)v
             // a. compute tmptau*A*v -> tau
             rocblasCall_symv_hemv<T>(handle, uplo, j, tmptau, stridet, A, shiftA, lda, strideA, A,
                                      shiftA + idx2D(0, j, lda), 1, strideA, scalars + 1, 0, tau, 0,
-                                     1, strideP, batch_count, workArr);
+                                     1, strideP, batch_count, work, workArr);
 
             // b. compute scalar tmptau*v'*A*v=tau'*v -> norms
             rocblasCall_dot<COMPLEX, T>(handle, j, tau, 0, 1, strideP, A, shiftA + idx2D(0, j, lda),
@@ -290,8 +298,8 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
             // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes
             //  available, we can use it instead of the scale_axpy kernel if it provides
             //  better performance.)
-            hipLaunchKernelGGL(scale_axpy<T>, grid_n, threads, 0, stream, j, norms, tmptau, stridet,
-                               A, shiftA + idx2D(0, j, lda), strideA, tau, 0, strideP);
+            ROCSOLVER_LAUNCH_KERNEL(scale_axpy<T>, grid_n, threads, 0, stream, j, norms, tmptau,
+                                    stridet, A, shiftA + idx2D(0, j, lda), strideA, tau, 0, strideP);
 
             // 4. apply the Householder reflector to A as a rank-2 update:
             // A = A - v*w' - w*v'
@@ -300,14 +308,14 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
                                      batch_count, workArr);
 
             // 5. Save the used housedholder scalar
-            hipLaunchKernelGGL(set_tau<T>, grid_b, threads, 0, stream, batch_count, tmptau,
-                               tau + j - 1, strideP);
+            ROCSOLVER_LAUNCH_KERNEL(set_tau<T>, grid_b, threads, 0, stream, batch_count, tmptau,
+                                    tau + j - 1, strideP);
         }
     }
 
     // Copy results (set tridiagonal form in A)
-    hipLaunchKernelGGL((set_tridiag<S, T>), grid_n, threads, 0, stream, uplo, n, A, shiftA, lda,
-                       strideA, D, strideD, E, strideE);
+    ROCSOLVER_LAUNCH_KERNEL(set_tridiag<T>, grid_n, threads, 0, stream, uplo, n, A, shiftA, lda,
+                            strideA, D, strideD, E, strideE);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;

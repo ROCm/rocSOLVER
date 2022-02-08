@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -14,13 +14,13 @@
 #include "rocsolver.h"
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
-__global__ void sqrtDiagOnward(U A,
-                               const rocblas_int shiftA,
-                               const rocblas_int strideA,
-                               const size_t loc,
-                               const rocblas_int j,
-                               T* res,
-                               rocblas_int* info)
+ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
+                                     const rocblas_int shiftA,
+                                     const rocblas_int strideA,
+                                     const size_t loc,
+                                     const rocblas_int j,
+                                     T* res,
+                                     rocblas_int* info)
 {
     int id = hipBlockIdx_x;
 
@@ -45,13 +45,13 @@ __global__ void sqrtDiagOnward(U A,
 }
 
 template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
-__global__ void sqrtDiagOnward(U A,
-                               const rocblas_int shiftA,
-                               const rocblas_int strideA,
-                               const size_t loc,
-                               const rocblas_int j,
-                               T* res,
-                               rocblas_int* info)
+ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
+                                     const rocblas_int shiftA,
+                                     const rocblas_int strideA,
+                                     const size_t loc,
+                                     const rocblas_int j,
+                                     T* res,
+                                     rocblas_int* info)
 {
     int id = hipBlockIdx_x;
 
@@ -155,12 +155,12 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(BLOCKSIZE, 1, 1);
+    dim3 threads(BS1, 1, 1);
 
     // info=0 (starting with a positive definite matrix)
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return if no dimensions
     if(n == 0)
@@ -185,8 +185,8 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         shiftA + idx2D(0, j, lda), 1, strideA, batch_count, pivots,
                                         work);
 
-            hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, A, shiftA,
-                               strideA, idx2D(j, j, lda), j, pivots, info);
+            ROCSOLVER_LAUNCH_KERNEL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, A,
+                                    shiftA, strideA, idx2D(j, j, lda), j, pivots, info);
 
             // Compute elements J+1:N of row J
             if(j < n - 1)
@@ -221,10 +221,10 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         shiftA + idx2D(j, 0, lda), lda, strideA, batch_count,
                                         pivots, work);
 
-            hipLaunchKernelGGL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, A, shiftA,
-                               strideA, idx2D(j, j, lda), j, pivots, info);
+            ROCSOLVER_LAUNCH_KERNEL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, A,
+                                    shiftA, strideA, idx2D(j, j, lda), j, pivots, info);
 
-            // Compute elements J+1:N of row J
+            // Compute elements J+1:N of column J
             if(j < n - 1)
             {
                 if(COMPLEX)

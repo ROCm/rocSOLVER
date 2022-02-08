@@ -20,7 +20,7 @@
 typedef rocblas_half rocblas_half8 __attribute__((ext_vector_type(8)));
 typedef rocblas_half rocblas_half2 __attribute__((ext_vector_type(2)));
 
-#ifndef GOOGLE_TEST
+#ifndef ROCSOLVER_CLIENTS_TEST
 extern "C" __device__ rocblas_half2 llvm_fma_v2f16(rocblas_half2,
                                                    rocblas_half2,
                                                    rocblas_half2) __asm("llvm.fma.v2f16");
@@ -115,11 +115,11 @@ __forceinline__ __device__ __host__ T*
 {
     return p[block] + offset;
 }
-
+/*
 // Helper for batched functions with temporary memory, currently just trsm and
 // trsv. Copys addresses to array of pointers for batched versions.
 template <typename T>
-__global__ void setup_batched_array_kernel(T* src, rocblas_stride src_stride, T* dst[])
+ROCSOLVER_KERNEL void setup_batched_array_kernel(T* src, rocblas_stride src_stride, T* dst[])
 {
     dst[hipBlockIdx_x] = src + hipBlockIdx_x * src_stride;
 }
@@ -138,7 +138,7 @@ void setup_batched_array(hipStream_t stream,
 }
 
 template <typename T>
-__global__ void setup_device_pointer_array_kernel(T* src,
+ROCSOLVER_KERNEL void setup_device_pointer_array_kernel(T* src,
                                                   rocblas_stride src_stride,
                                                   T* dst[],
                                                   rocblas_int batch_count)
@@ -161,8 +161,8 @@ void setup_device_pointer_array(hipStream_t stream,
     hipLaunchKernelGGL(setup_device_pointer_array_kernel<T>, grid, threads, 0, stream, src,
                        src_stride, dst, batch_count);
 }
-
-#endif // GOOGLE_TEST
+*/
+#endif // ROCSOLVER_CLIENTS_TEST
 
 inline bool isAligned(const void* pointer, size_t byte_count)
 {

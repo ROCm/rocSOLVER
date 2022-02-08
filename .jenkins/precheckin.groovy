@@ -16,9 +16,10 @@ def runCI =
     def prj = new rocProject('rocSOLVER', 'PreCheckin')
 
     prj.timeout.compile = 600
+    prj.timeout.test = 45
     prj.defaults.ccache = true
     // customize for project
-    prj.paths.build_command = './install.sh -c'
+    prj.paths.build_command = './install.sh -c --cmake-arg -DWERROR=ON'
 
     // Define test architectures, optional rocm version argument is available
     def nodes = new dockerNodes(nodeDetails, jobName, prj)
@@ -37,7 +38,7 @@ def runCI =
     {
         platform, project->
 
-        def gfilter = '*checkin_lapack*'
+        def gfilter = 'checkin*'
         commonGroovy.runTestCommand(platform, project, gfilter)
     }
 

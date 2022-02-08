@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -14,7 +14,7 @@
 #include "rocblas.hpp"
 #include "rocsolver.h"
 
-template <typename T, bool BATCHED>
+template <bool BATCHED, typename T>
 void rocsolver_ormbr_unmbr_getMemorySize(const rocblas_storev storev,
                                          const rocblas_side side,
                                          const rocblas_int m,
@@ -42,12 +42,12 @@ void rocsolver_ormbr_unmbr_getMemorySize(const rocblas_storev storev,
 
     // requirements for calling ORMQR/UNMQR or ORMLQ/UNMLQ
     if(storev == rocblas_column_wise)
-        rocsolver_ormqr_unmqr_getMemorySize<T, BATCHED>(side, m, n, min(nq, k), batch_count,
+        rocsolver_ormqr_unmqr_getMemorySize<BATCHED, T>(side, m, n, min(nq, k), batch_count,
                                                         size_scalars, size_AbyxORwork,
                                                         size_diagORtmptr, size_trfact, size_workArr);
 
     else
-        rocsolver_ormlq_unmlq_getMemorySize<T, BATCHED>(side, m, n, min(nq, k), batch_count,
+        rocsolver_ormlq_unmlq_getMemorySize<BATCHED, T>(side, m, n, min(nq, k), batch_count,
                                                         size_scalars, size_AbyxORwork,
                                                         size_diagORtmptr, size_trfact, size_workArr);
 }
@@ -235,8 +235,8 @@ void rocsolver_ormbr_unmbr_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, C, strideC,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, C, strideC,
+                            batch_count);
 
     rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
         handle, storev, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP,
@@ -274,8 +274,8 @@ void rocsolver_ormbr_unmbr_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    hipLaunchKernelGGL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, A, strideA,
-                       batch_count);
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, A, strideA,
+                            batch_count);
 
     rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
         handle, storev, side, trans, m, n, k, (T* const*)workArr, shiftA, lda, strideA, ipiv,

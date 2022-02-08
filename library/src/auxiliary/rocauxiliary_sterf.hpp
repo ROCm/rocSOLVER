@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -31,17 +31,17 @@ __device__ void sterf_sq_e(const rocblas_int start, const rocblas_int end, T* E)
     to compute the eigenvalues of a symmetric tridiagonal matrix given by D
     and E **/
 template <typename T>
-__global__ void sterf_kernel(const rocblas_int n,
-                             T* DD,
-                             const rocblas_stride strideD,
-                             T* EE,
-                             const rocblas_stride strideE,
-                             rocblas_int* info,
-                             rocblas_int* stack,
-                             const rocblas_int max_iters,
-                             const T eps,
-                             const T ssfmin,
-                             const T ssfmax)
+ROCSOLVER_KERNEL void sterf_kernel(const rocblas_int n,
+                                   T* DD,
+                                   const rocblas_stride strideD,
+                                   T* EE,
+                                   const rocblas_stride strideE,
+                                   rocblas_int* info,
+                                   rocblas_int* stack,
+                                   const rocblas_int max_iters,
+                                   const T eps,
+                                   const T ssfmin,
+                                   const T ssfmax)
 {
     rocblas_int bid = hipBlockIdx_x;
 
@@ -343,12 +343,12 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(BLOCKSIZE, 1, 1);
+    dim3 threads(BS1, 1, 1);
 
     // info = 0
-    hipLaunchKernelGGL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
     if(n <= 1)
@@ -360,8 +360,8 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
     ssfmin = sqrt(ssfmin) / (eps * eps);
     ssfmax = sqrt(ssfmax) / T(3.0);
 
-    hipLaunchKernelGGL(sterf_kernel<T>, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
-                       strideD, E + shiftE, strideE, info, stack, 30 * n, eps, ssfmin, ssfmax);
+    ROCSOLVER_LAUNCH_KERNEL(sterf_kernel<T>, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
+                            strideD, E + shiftE, strideE, info, stack, 30 * n, eps, ssfmin, ssfmax);
 
     return rocblas_status_success;
 }
