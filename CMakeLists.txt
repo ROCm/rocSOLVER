@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 cmake_minimum_required(VERSION 3.13)
@@ -61,7 +61,7 @@ get_os_id(OS_ID)
 message(STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-set(VERSION_STRING "3.16.0")
+set(VERSION_STRING "3.17.0")
 rocm_setup_version(VERSION ${VERSION_STRING})
 
 # Workaround until llvm and hip CMake modules fix symlink logic in their config files
@@ -125,7 +125,7 @@ rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
 
 # Set this before finding hip so that hip::device has the required arch flags
 # added as usage requirements on its interface
-set(AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx1030;${OPTIONAL_AMDGPU_TARGETS}"
+set(AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx1010;gfx1030;${OPTIONAL_AMDGPU_TARGETS}"
   CACHE STRING "List of specific machine types for library to target")
 
 # Find HIP dependencies

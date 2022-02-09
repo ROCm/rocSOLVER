@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2017
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -107,6 +107,7 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
 
     T minone = -1;
     T one = 1;
+    rocblas_int nb = GEBRD_BLOCKSIZE;
     rocblas_int k = GEBRD_GEBD2_SWITCHSIZE;
     rocblas_int dim = min(m, n); // total number of pivots
     rocblas_int jb, j = 0;
@@ -126,7 +127,7 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
     while(j < dim - k)
     {
         // Reduce block to bidiagonal form
-        jb = min(dim - j, k); // number of rows and columns in the block
+        jb = min(dim - j, nb); // number of rows and columns in the block
         rocsolver_labrd_template<T>(handle, m - j, n - j, jb, A, shiftA + idx2D(j, j, lda), lda,
                                     strideA, D + j, strideD, E + j, strideE, tauq + j, strideQ,
                                     taup + j, strideP, X, shiftX, ldx, strideX, Y, shiftY, ldy,
@@ -165,7 +166,7 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
                                     strideA, jb);
         }
 
-        j += GEBRD_GEBD2_SWITCHSIZE;
+        j += nb;
     }
 
     // factor last block

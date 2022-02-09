@@ -109,7 +109,7 @@ rocblas_status rocsolver_gerq2_template(rocblas_handle handle,
             rocsolver_lacgv_template<T>(handle, n - j, A, shiftA + idx2D(m - j - 1, 0, lda), lda,
                                         strideA, batch_count);
 
-        // generate Householder reflector to work on row j
+        // generate Householder reflector to work on row m - j - 1
         rocsolver_larfg_template(handle, n - j, A, shiftA + idx2D(m - j - 1, n - j - 1, lda), A,
                                  shiftA + idx2D(m - j - 1, 0, lda), lda, strideA,
                                  (ipiv + dim - j - 1), strideP, batch_count, (T*)work_workArr,

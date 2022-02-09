@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # package_targets is used as a list of install target
@@ -36,6 +36,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_gels.cpp
   lapack/roclapack_gels_batched.cpp
   lapack/roclapack_gels_strided_batched.cpp
+  lapack/roclapack_gels_outofplace.cpp
   # triangular factorizations
   lapack/roclapack_getf2.cpp
   lapack/roclapack_getf2_batched.cpp

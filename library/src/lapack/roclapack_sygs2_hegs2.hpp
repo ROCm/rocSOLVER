@@ -118,8 +118,6 @@ void rocsolver_sygs2_hegs2_getMemorySize(const rocblas_eform itype,
         return;
     }
 
-    size_t temp1, temp2;
-
     // size of scalars (constants)
     *size_scalars = sizeof(T) * 3;
 
