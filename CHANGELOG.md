@@ -9,6 +9,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Deprecated
 ### Removed
 ### Fixed
+- Fixed compatibility with libfmt 8.1
+
 ### Known Issues
 ### Security
 
