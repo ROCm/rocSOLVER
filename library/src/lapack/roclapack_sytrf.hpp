@@ -5,7 +5,7 @@
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
  *
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -14,6 +14,10 @@
 #include "rocblas.hpp"
 #include "roclapack_sytf2.hpp"
 #include "rocsolver.h"
+
+/** thread-block size for calling the sytrf kernel.
+    (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/
+#define SYTRF_MAX_THDS 256
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
@@ -52,7 +56,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
 
     while(k >= 0)
     {
-        if(k >= SYTRF_BLOCKSIZE)
+        if(k >= SYTRF_SYTF2_SWITCHSIZE)
         {
             lasyf_device_upper<SYTRF_MAX_THDS>(tid, k + 1, SYTRF_BLOCKSIZE, &kb, A, lda, ipiv,
                                                &iinfo, W, sidx, sval);
@@ -107,7 +111,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
 
     while(k < n)
     {
-        if(k < n - SYTRF_BLOCKSIZE)
+        if(k < n - SYTRF_SYTF2_SWITCHSIZE)
         {
             lasyf_device_lower<SYTRF_MAX_THDS>(tid, n - k, SYTRF_BLOCKSIZE, &kb, A + k + k * lda,
                                                lda, ipiv + k, &iinfo, W, sidx, sval);
@@ -118,6 +122,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
             sytf2_device_lower<SYTRF_MAX_THDS>(tid, n - k, A + k + k * lda, lda, ipiv + k, &iinfo,
                                                sidx, sval);
             ktemp = n;
+            __syncthreads();
         }
 
         if(tid == 0 && iinfo != 0 && info[bid] == 0)
@@ -147,7 +152,7 @@ void rocsolver_sytrf_getMemorySize(const rocblas_int n, const rocblas_int batch_
     }
 
     // size of workspace
-    if(n > SYTRF_BLOCKSIZE)
+    if(n > SYTRF_SYTF2_SWITCHSIZE)
         rocsolver_lasyf_getMemorySize<T>(n, SYTRF_BLOCKSIZE, batch_count, size_work);
     else
         *size_work = 0;
@@ -181,9 +186,9 @@ rocblas_status rocsolver_sytrf_template(rocblas_handle handle,
     if(n == 0)
     {
         // set info = 0
-        rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+        rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
         dim3 gridReset(blocksReset, 1, 1);
-        dim3 threadsReset(BLOCKSIZE, 1, 1);
+        dim3 threadsReset(BS1, 1, 1);
         ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, info, batch_count, 0);
 
         return rocblas_status_success;

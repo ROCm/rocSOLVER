@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -273,12 +273,12 @@ ROCSOLVER_KERNEL void bdsqrKernel(const rocblas_int n,
 
     rocblas_int k = n - 1; // k is the last element of last unconverged diagonal block
     rocblas_int iter = 0; // iter is the number of iterations (QR steps) applied
-    rocblas_int i;
     S sh, smax;
 
     // main loop
     while(k > 0 && iter < maxiter)
     {
+        rocblas_int i;
         // split the diagonal blocks
         for(rocblas_int j = 0; j < k + 1; ++j)
         {

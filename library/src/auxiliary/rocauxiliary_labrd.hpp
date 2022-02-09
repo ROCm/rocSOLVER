@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -361,13 +361,13 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                                     shiftX + idx2D(j + 1, j, ldx), 1, strideX, batch_count);
 
                 if(COMPLEX)
+                {
                     rocsolver_lacgv_template<T>(handle, n - j, A, shiftA + idx2D(j, j, lda), lda,
                                                 strideA, batch_count);
-
-                // update column j of A
-                if(COMPLEX)
+                    // update column j of A
                     rocsolver_lacgv_template<T>(handle, j, Y, shiftY + idx2D(j, 0, ldy), ldy,
                                                 strideY, batch_count);
+                }
 
                 rocblasCall_gemv<T>(
                     handle, rocblas_operation_none, m - j - 1, j, cast2constType<T>(scalars), 0, A,

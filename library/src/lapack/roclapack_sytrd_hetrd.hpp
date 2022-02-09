@@ -39,7 +39,7 @@ void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
     // size required to store temporary matrix W
     if(n > xxTRD_xxTD2_SWITCHSIZE)
     {
-        s1 = n * xxTRD_xxTD2_BLOCKSIZE;
+        s1 = n * xxTRD_BLOCKSIZE;
         s1 *= sizeof(T) * batch_count;
     }
 
@@ -113,7 +113,7 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int k = xxTRD_xxTD2_BLOCKSIZE;
+    rocblas_int k = xxTRD_BLOCKSIZE;
     rocblas_int kk = xxTRD_xxTD2_SWITCHSIZE;
 
     // if the matrix is too small, use the unblocked variant of the algorithm
@@ -196,9 +196,9 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
     }
 
     // Copy results (set tridiagonal form in A)
-    rocblas_int blocks = (n - 1) / BLOCKSIZE + 1;
-    ROCSOLVER_LAUNCH_KERNEL(set_tridiag<T>, dim3(blocks, batch_count), dim3(BLOCKSIZE), 0, stream,
-                            uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE);
+    rocblas_int blocks = (n - 1) / BS1 + 1;
+    ROCSOLVER_LAUNCH_KERNEL(set_tridiag<T>, dim3(blocks, batch_count), dim3(BS1), 0, stream, uplo,
+                            n, A, shiftA, lda, strideA, D, strideD, E, strideE);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;

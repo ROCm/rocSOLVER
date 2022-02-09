@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -12,6 +12,10 @@
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver.h"
+
+/** thread-block size for calling the lasyf kernel.
+    (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/
+#define LASYF_MAX_THDS 256
 
 template <int MAX_THDS, typename T, typename S>
 __device__ void lasyf_device_upper(const rocblas_int tid,
@@ -35,7 +39,7 @@ __device__ void lasyf_device_upper(const rocblas_int tid,
     __shared__ rocblas_int _info;
     int i, j;
     int k = n - 1;
-    int kstep, kp, kk, kw, kkw;
+    int kp, kk, kw, kkw;
 
     // shared variables for iamax
     __shared__ S absakk;
@@ -60,7 +64,7 @@ __device__ void lasyf_device_upper(const rocblas_int tid,
             __syncthreads();
         }
 
-        kstep = 1;
+        int kstep = 1;
 
         // find max off-diagonal entry in column k
         iamax<MAX_THDS>(tid, k, W + kw * ldw, 1, sval, sidx);
@@ -271,7 +275,7 @@ __device__ void lasyf_device_lower(const rocblas_int tid,
     __shared__ rocblas_int _info;
     int i, j;
     int k = 0;
-    int kstep, kp, kk;
+    int kp, kk;
 
     // shared variables for iamax
     __shared__ S absakk;
@@ -291,7 +295,7 @@ __device__ void lasyf_device_lower(const rocblas_int tid,
         gemv<MAX_THDS>(tid, n - k, k, &minone, A + k, lda, W + k, ldw, &one, W + k + k * ldw, 1);
         __syncthreads();
 
-        kstep = 1;
+        int kstep = 1;
 
         // find max off-diagonal entry in column k
         iamax<MAX_THDS>(tid, n - k - 1, W + (k + 1) + k * ldw, 1, sval, sidx);
@@ -622,9 +626,9 @@ rocblas_status rocsolver_lasyf_template(rocblas_handle handle,
     if(n == 0 || nb == 0)
     {
         // set info = 0
-        rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+        rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
         dim3 gridReset(blocksReset, 1, 1);
-        dim3 threadsReset(BLOCKSIZE, 1, 1);
+        dim3 threadsReset(BS1, 1, 1);
         ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, kb, batch_count, 0);
         ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, info, batch_count, 0);
 

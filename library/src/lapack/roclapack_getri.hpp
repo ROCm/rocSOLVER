@@ -25,11 +25,10 @@ __device__ void copy_and_zero(const rocblas_int m,
 {
     // Copies the lower triangular part of the matrix to the workspace and then
     // replaces it with zeroes
-    int i, j;
     for(int k = hipThreadIdx_y; k < m * n; k += hipBlockDim_y)
     {
-        i = k % m;
-        j = k / m;
+        int i = k % m;
+        int j = k / m;
         if(i > j)
         {
             w[i + j * ldw] = a[i + j * lda];
@@ -44,11 +43,10 @@ __device__ void zero_work(const rocblas_int m, const rocblas_int n, T* w, const 
 {
     // Zeroes the workspace so that calls to gemm and trsm do not alter the matrix
     // (used for singular matrices)
-    int i, j;
     for(int k = hipThreadIdx_y; k < m * n; k += hipBlockDim_y)
     {
-        i = k % m;
-        j = k / m;
+        int i = k % m;
+        int j = k / m;
         w[i + j * ldw] = 0;
     }
     __syncthreads();
@@ -330,7 +328,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     }
 #endif
 
-    rocblas_int threads = min(((n - 1) / 64 + 1) * 64, BLOCKSIZE);
+    rocblas_int threads = min(((n - 1) / 64 + 1) * 64, BS1);
     rocblas_int ldw = n;
     rocblas_stride strideW = n * n;
 

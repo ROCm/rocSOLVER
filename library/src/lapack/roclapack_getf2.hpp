@@ -402,7 +402,6 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     dim3 gridPivot(blocks, batch_count, 1);
     rocblas_int c, mm, nn;
     rocblas_int sger_thds_x, sger_thds_y;
-    size_t lmemsize;
 
     for(rocblas_int j = 0; j < dim; ++j)
     {

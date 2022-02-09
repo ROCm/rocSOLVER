@@ -57,8 +57,8 @@ void rocsolver_sygvd_hegvd_getMemorySize(const rocblas_eform itype,
     *size_iinfo = max(*size_iinfo, sizeof(rocblas_int) * batch_count);
 
     // requirements for calling SYGST/HEGST
-    rocsolver_sygst_hegst_getMemorySize<BATCHED, T>(itype, n, batch_count, &unused, &temp1, &temp2,
-                                                    &temp3, &temp4, &opt2);
+    rocsolver_sygst_hegst_getMemorySize<BATCHED, T>(uplo, itype, n, batch_count, &unused, &temp1,
+                                                    &temp2, &temp3, &temp4, &opt2);
     *size_work1 = max(*size_work1, temp1);
     *size_work2 = max(*size_work2, temp2);
     *size_work3 = max(*size_work3, temp3);
@@ -137,9 +137,9 @@ rocblas_status rocsolver_sygvd_hegvd_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocksReset = (batch_count - 1) / BLOCKSIZE + 1;
+    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
-    dim3 threads(BLOCKSIZE, 1, 1);
+    dim3 threads(BS1, 1, 1);
 
     // info=0 (starting with no errors)
     ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
