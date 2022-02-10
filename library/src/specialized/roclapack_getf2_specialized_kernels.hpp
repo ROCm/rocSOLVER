@@ -20,7 +20,7 @@
 /** getf2_small_kernel takes care of of matrices with m < n
     m <= GETF2_MAX_THDS and n <= GETF2_MAX_COLS **/
 template <rocblas_int DIM, typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(GETF2_SPKER_MAX_M)
+ROCSOLVER_KERNEL void __launch_bounds__(GETF2_SSKER_MAX_M)
     getf2_small_kernel(const rocblas_int m,
                        U AA,
                        const rocblas_int shiftA,
@@ -137,7 +137,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_SPKER_MAX_M)
 
 /** getf2_npvt_small_kernel (non pivoting version) **/
 template <rocblas_int DIM, typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(GETF2_SPKER_MAX_M)
+ROCSOLVER_KERNEL void __launch_bounds__(GETF2_SSKER_MAX_M)
     getf2_npvt_small_kernel(const rocblas_int m,
                             U AA,
                             const rocblas_int shiftA,

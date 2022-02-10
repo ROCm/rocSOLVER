@@ -174,116 +174,207 @@ inline rocblas_int getf2_get_checksingularity_blksize(const rocblas_int n)
     return singular_thds;
 }
 
-
-/** Test if one of the specialized kernels can be used.
+/** This funcitons test if one of the specialized kernels can be used.
     Returns 1 if the small kernel can be used.
     Returns 2 if the panel kernel can be used.
     Returns 0 otehrwise **/
-template <bool ISBATCHED>
-inline int select_spkernel(const rocblas_int m,
-                           const rocblas_int n,
-                           const bool pivot)
+template <bool ISBATCHED, typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+inline int select_spkernel(const rocblas_int m, const rocblas_int n, const bool pivot)
 {
     int ker = 0;
 
     if(ISBATCHED)
     {
-        // Batch pivoting case
+        // Batch pivoting case (real precisions)
         if(pivot)
         {
             if(n <= 28)
+            {
                 ker = (m <= 140) ? 1 : 2;
-
-            else if(n <= 36)
-                ker = (m <= 102) ? 1 : 2;
-
+            }
             else if(n <= 44)
-                ker = (m <= 90) ? 1 : 2;
-
-            else if(n <= 52)
-                ker = (m <= 82) ? 1 : 2;
-
-            else if(n <= 60)
-                ker = (m <= 76 || (m > 252 && m <= 328)) ? 1 : 2;
-
-            else if(n <= 68)
-                ker = (m < n || (m > 236 && m <= 408)) ? 1 : 2;
-
-            else if((n <= 76 && m >= n) ||
-                    (n <= 84 && m >= n && m <= 512) ||
-                    (n <= 92 && m >= n && m <= 360) ||
-                    (n <= 100 && m >= n && m <= 328) ||
-                    (n <= 108 && m >= n && m <= 296) ||
-                    (n > 108 && m >= n && m <= 264))
+            {
+                ker = (m <= 256) ? 1 : 2;
+            }
+            else if((n <= 52 && (m <= 392 || m > 504)) || (n > 52 && n <= 60 && (m <= 392 || m > 624))
+                    || (n > 60 && n <= 68 && (m <= 296 || m > 864)))
+            {
+                ker = (m <= 256) ? 1 : 2;
+            }
+            else if((n > 68 && n <= 76 && m >= n && (m <= 296 || m > 592))
+                    || (n > 76 && n <= 92 && m >= n && (m <= 244 || m > 848))
+                    || (n > 92 && n <= 108 && m >= n && (m <= 256 || m > 592))
+                    || (n > 108 && m >= n && (m <= 164 || m > 736)))
+            {
                 ker = 2;
+            }
         }
-        // Batch non-pivoting case
+        // Batch non-pivoting case (real precisions)
         else
         {
-            if(n <= 28)
+            if(n <= 68)
+            {
                 ker = (m <= 512) ? 1 : 2;
-
-            else if(n <= 36)
-                ker = (m <= 66 || (m > 264 && m <= 512)) ? 1 : 2;
-
-            else if(n <= 44)
-                ker = (m < n || (m > 280 && m <= 448)) ? 1 : 2;
-
-            else if(n <= 52)
-                ker = (m < n || (m > 264 && m <= 320)) ? 1 : 2;
-
-            else if(n <= 60 && (m <= 32 || m > 38))
-                ker = (m < n || (m > 264 && m <= 448)) ? 1 : 2;
-
-            else if(n <= 68 && (m <= 32 || m > 44))
-                ker = (m < n || (m > 264 && m <= 384)) ? 1 : 2;
-
+            }
             else if(n > 68 && m >= n)
+            {
                 ker = 2;
+            }
         }
     }
     else
     {
-        // Normal pivoting case
+        // Normal pivoting case (real precisions)
         if(pivot)
         {
             if(n <= 20)
+            {
                 ker = (m <= 32) ? 1 : 2;
-
-            else if((n <= 28 && m >= 4) ||
-                    (n <= 36 && m >= 8 && m <= 512) ||
-                    (n <= 44 && m >= 16 && m <= 512) ||
-                    (n <= 52 && m >= 40 && m <= 512) ||
-                    (n <= 60 && m >= 52 && m <= 512) ||
-                    (n <= 68 && m >= 58 && m <= 512))
+            }
+            else if((n <= 28 && m >= 6) || (n > 28 && n <= 36 && m >= 8 && m <= 512)
+                    || (n > 36 && n <= 44 && m >= 10 && m <= 512)
+                    || (n > 44 && n <= 52 && m >= 16 && m <= 512)
+                    || (n > 52 && n <= 60 && m >= 44 && m <= 344))
+            {
                 ker = (m < n) ? 1 : 2;
-
-            else if(n > 68 && m >= n && m <= 256)
+            }
+            else if((n > 60 && n <= 68 && m >= n && m <= 344) || (n > 68 && m >= n && m <= 256))
+            {
                 ker = 2;
+            }
         }
-        // Normal non-pivoting case
+        // Normal non-pivoting case (real precisions)
         else
         {
-            if(n <= 20)
+            if((n <= 20) || (n <= 28 && m >= 6 && m <= 912))
+            {
                 ker = (m <= 512) ? 1 : 2;
-
-            else if(n <= 28 && m >= 4)
-                ker = (m < n || (m > 128 && m <= 512)) ? 1 : 2;
-
-            else if((n <= 36 && m >= 10 && m <= 512) ||
-                    (n <= 44 && m >= 30 && m <= 512))
-                ker = (m < n || m > 256) ? 1 : 2;
-
-            else if((n <= 52 && m >= n && m <= 512) ||
-                    (n <= 92 && m >= n && m <= 256) ||
-                    (n > 92 && m >= n && m <= 128))
+            }
+            else if((n > 28 && n <= 36 && m >= 6 && m <= 512)
+                    || (n > 36 && n <= 44 && m >= 10 && m <= 512))
+            {
+                ker = (m < n || m > 66) ? 1 : 2;
+            }
+            else if(n > 44 && n <= 52 && m >= 24 && m <= 512)
+            {
+                ker = (m < n || m > 128) ? 1 : 2;
+            }
+            else if((n > 52 && n <= 60 && m >= n && m <= 256)
+                    || (n > 60 && n <= 92 && m >= n && m <= 196) || (n > 92 && m >= n && m <= 128))
+            {
                 ker = 2;
+            }
         }
+    }
+
+    if(ker == 1 && (m > GETF2_SSKER_MAX_M || n > GETF2_SSKER_MAX_N))
+    {
+        ker = 2;
     }
 
     return ker;
 }
 
+/** Complex type version **/
+template <bool ISBATCHED, typename T, std::enable_if_t<is_complex<T>, int> = 0>
+inline int select_spkernel(const rocblas_int m, const rocblas_int n, const bool pivot)
+{
+    int ker = 0;
+
+    if(ISBATCHED)
+    {
+        // Batch pivoting case (complex precisions)
+        if(pivot)
+        {
+            if((n <= 20) || (n <= 28 && m <= 656) || (n > 28 && n <= 36 && m <= 504))
+            {
+                ker = (m <= 64) ? 1 : 2;
+            }
+            else if(n > 36 && n <= 44 && m >= 6 && m <= 624)
+            {
+                ker = (m < n || (m > 110 && m <= 132)) ? 1 : 2;
+            }
+            else if(n > 44 && n <= 52 && m >= 8 && m <= 504)
+            {
+                ker = (m <= 228) ? 1 : 2;
+            }
+            else if(n > 52 && n <= 60 && m >= 10 && m <= 504 && (m <= 256 || m > 448))
+            {
+                ker = (m <= 256) ? 1 : 2;
+            }
+            else if((n > 60 && n <= 68 && m >= n && m <= 656 && (m <= 148 || m > 328))
+                    || (n > 68 && n <= 76 && m >= n && m <= 896 && (m <= 148 || m > 204))
+                    || (n > 76 && n <= 124 && m >= n && (m <= 128 || m > 328))
+                    || (n > 124 && m >= n && m > 228))
+            {
+                ker = 2;
+            }
+        }
+        // Batch non-pivoting case (complex precisions)
+        else
+        {
+            if((n <= 20) || (n <= 28 && m <= 752) || (n > 28 && n <= 36 && m <= 608))
+            {
+                ker = (m <= 512) ? 1 : 2;
+            }
+            else if((n > 36 && n <= 52 && m >= n && m <= 608)
+                    || (n > 52 && n <= 68 && m >= n && m <= 736) || (n > 68 && m >= n))
+            {
+                ker = 2;
+            }
+        }
+    }
+    else
+    {
+        // Normal pivoting case (complex precisions)
+        if(pivot)
+        {
+            if(n <= 12)
+            {
+                ker = m < n ? 1 : 2;
+            }
+            else if((n <= 20 && m >= 6) || (n > 20 && n <= 28 && m >= 10 && m <= 512))
+            {
+                ker = (m < n) ? 1 : 2;
+            }
+            else if((n > 28 && n <= 36 && m >= n && m <= 368)
+                    || (n > 36 && n <= 60 && m >= n && m <= 336) || (n > 60 && m >= n && m <= 256))
+            {
+                ker = 2;
+            }
+        }
+        // Normal non-pivoting case (complex precisions)
+        else
+        {
+            if(n <= 12)
+            {
+                ker = (m < n || (m > 28 && m <= 512)) ? 1 : 2;
+            }
+            else if(n <= 20 && m <= 928)
+            {
+                ker = (m < n || (m > 128 && m <= 512)) ? 1 : 2;
+            }
+            else if(n > 20 && n <= 28 && m >= 8 && m <= 704)
+            {
+                ker = (m < n || (m > 288 && m <= 512)) ? 1 : 2;
+            }
+            else if((n > 28 && n <= 36 && m >= n && m <= 480)
+                    || (n > 36 && n <= 52 && m >= n && m <= 256)
+                    || (n > 52 && n <= 60 && m >= n && m <= 208)
+                    || (n > 60 && n <= 68 && m >= n && m <= 172) || (n > 68 && m >= n && m <= 128))
+            {
+                ker = 2;
+            }
+        }
+    }
+
+    if(ker == 1 && (m > GETF2_SSKER_MAX_M || n > GETF2_SSKER_MAX_N))
+    {
+        ker = 2;
+    }
+
+    return ker;
+}
 
 /** Returns the thread block sizes used for the scale+update of trailing matrix**/
 inline void getf2_get_ger_blksize(const rocblas_int m,
@@ -367,8 +458,8 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
     }
 
 #ifdef OPTIMAL
-    bool nomem = (m <= GETF2_SPKER_MAX_M && n <= GETF2_SPKER_MAX_N &&
-                    select_spkernel<ISBATCHED>(m,n,pivot));
+    bool nomem = (m <= GETF2_SPKER_MAX_M && n <= GETF2_SPKER_MAX_N
+                  && select_spkernel<ISBATCHED, T>(m, n, pivot));
 
     // no workspace needed if using optimized kernel for small sizes
     if(nomem)
@@ -479,17 +570,21 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
 #ifdef OPTIMAL
     if(m <= GETF2_SPKER_MAX_M && n <= GETF2_SPKER_MAX_N)
     {
-        int spker = select_spkernel<ISBATCHED>(m,n,pivot);
+        int spker = select_spkernel<ISBATCHED, T>(m, n, pivot);
 
         // Use specialized kernels for small matrices
         if(spker == 1)
+        {
             return getf2_run_small<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
                                       info, batch_count, pivot, offset, permut_idx, stridePI);
+        }
 
         // use specialized kernels for small skinny matrices (panel factorization)
         if(spker == 2)
+        {
             return getf2_run_panel<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP,
                                       info, batch_count, pivot, offset, permut_idx, stridePI);
+        }
     }
 #endif
 
@@ -552,9 +647,11 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         //if working with optimizations and matrix with few columns
 #ifdef OPTIMAL
         else
+        {
             // scale and update trailing matrix with local function
             getf2_run_scale_update(handle, mm, nn, pivotval, A, shiftA + idx2D(j, j, lda), lda,
                                    strideA, batch_count, sger_thds_x, sger_thds_y);
+        }
 #endif
     }
 
