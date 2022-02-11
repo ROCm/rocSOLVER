@@ -3,9 +3,6 @@
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
 ## (Unreleased) rocSOLVER
-### Changed
-- Moved license directory from `share/doc/rocSOLVER` to `share/doc/rocsolver`.
-
 ### Fixed
 - Fixed missing synchronization in SYTRF with `rocblas_fill_lower` that could potentially
   result in incorrect pivot values.
