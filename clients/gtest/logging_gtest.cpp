@@ -333,3 +333,48 @@ TEST_F(checkin_misc_LOGGING, rocsolver_log_restore_defaults_resets_max_levels)
     if(!HasFailure())
         EXPECT_TRUE(fs::remove(trace_filepath));
 }
+
+TEST_F(checkin_misc_LOGGING, trace_file_open_failure)
+{
+    rocblas_handle handle;
+    ASSERT_EQ(rocblas_create_handle(&handle), rocblas_status_success);
+
+    fs::path temp_dir = fs::temp_directory_path();
+    fs::path trace_filepath = temp_dir / "nonexistent_dir_sgkhx3pi/trace.log";
+    scoped_envvar logpath_variable("ROCSOLVER_LOG_TRACE_PATH", trace_filepath.c_str());
+
+    EXPECT_EQ(rocsolver_log_begin(), rocblas_status_internal_error);
+
+    ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
+    ASSERT_EQ(rocblas_destroy_handle(handle), rocblas_status_success);
+}
+
+TEST_F(checkin_misc_LOGGING, profile_file_open_failure)
+{
+    rocblas_handle handle;
+    ASSERT_EQ(rocblas_create_handle(&handle), rocblas_status_success);
+
+    fs::path temp_dir = fs::temp_directory_path();
+    fs::path profile_filepath = temp_dir / "nonexistent_dir_sgkhx3pi/profile.log";
+    scoped_envvar logpath_variable("ROCSOLVER_LOG_PROFILE_PATH", profile_filepath.c_str());
+
+    EXPECT_EQ(rocsolver_log_begin(), rocblas_status_internal_error);
+
+    ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
+    ASSERT_EQ(rocblas_destroy_handle(handle), rocblas_status_success);
+}
+
+TEST_F(checkin_misc_LOGGING, bench_file_open_failure)
+{
+    rocblas_handle handle;
+    ASSERT_EQ(rocblas_create_handle(&handle), rocblas_status_success);
+
+    fs::path temp_dir = fs::temp_directory_path();
+    fs::path bench_filepath = temp_dir / "nonexistent_dir_sgkhx3pi/bench.log";
+    scoped_envvar logpath_variable("ROCSOLVER_LOG_BENCH_PATH", bench_filepath.c_str());
+
+    EXPECT_EQ(rocsolver_log_begin(), rocblas_status_internal_error);
+
+    ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
+    ASSERT_EQ(rocblas_destroy_handle(handle), rocblas_status_success);
+}
