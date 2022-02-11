@@ -229,8 +229,10 @@ try
     logger->trace_os = logger->open_log_stream("ROCSOLVER_LOG_TRACE_PATH");
     logger->bench_os = logger->open_log_stream("ROCSOLVER_LOG_BENCH_PATH");
     logger->profile_os = logger->open_log_stream("ROCSOLVER_LOG_PROFILE_PATH");
-
-    return rocblas_status_success;
+    if(logger->trace_os->good() && logger->bench_os->good() && logger->profile_os->good())
+        return rocblas_status_success;
+    else
+        return rocblas_status_internal_error;
 }
 catch(...)
 {
