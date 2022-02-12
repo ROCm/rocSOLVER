@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -208,14 +208,13 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
     {
         jb = min(nn - k, blk); // number of columns/pivots in the inner block
 
-        // factorize block
-        rocsolver_getf2_template<ISBATCHED, T>(handle, mm - k, jb, A, shiftA + idx2D(k, k, lda),
-                                               lda, strideA, ipiv, shiftP + k, strideP, info,
-                                               batch_count, scalars, pivotval, pivotidx, pivot,
-                                               offset + k, permut_idx, stridePI);
-
         if(pivot)
         {
+            // factorize panel block
+            rocsolver_getf2_template<ISBATCHED, T>(handle, mm - k, jb, A, shiftA + idx2D(k, k, lda),
+                                                   lda, strideA, ipiv, shiftP + k, strideP, info,
+                                                   batch_count, scalars, pivotval, pivotidx, pivot,
+                                                   offset + k, permut_idx, stridePI);
             dimx = jb;
             dimy = 1024 / dimx;
             blocks = (n - jb - 1) / dimy + 1;
@@ -227,6 +226,21 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
             ROCSOLVER_LAUNCH_KERNEL(getrf_row_permutate<T>, grid, threads, lmemsize, stream, n,
                                     offset + k, jb, A, r_shiftA + k, lda, strideA, permut_idx,
                                     stridePI);
+        }
+        else
+        {
+            // factorize only diagonal block
+            rocsolver_getf2_template<ISBATCHED, T>(handle, jb, jb, A, shiftA + idx2D(k, k, lda),
+                                                   lda, strideA, ipiv, shiftP + k, strideP, info,
+                                                   batch_count, scalars, pivotval, pivotidx, pivot,
+                                                   offset + k, permut_idx, stridePI);
+
+            // update remaining rows in panel
+            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_right, rocblas_fill_upper,
+                                         rocblas_operation_none, rocblas_diagonal_non_unit,
+                                         mm - k - jb, jb, &one, A, shiftA + idx2D(k, k, lda), lda,
+                                         strideA, A, shiftA + idx2D(jb + k, k, lda), lda, strideA,
+                                         batch_count, optim_mem, work1, work2, work3, work4);
         }
 
         // update trailing sub-block
@@ -329,6 +343,16 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         // extra workspace for calling largest possible TRSM
         rocsolver_trsm_mem<BATCHED, T>(rocblas_side_left, min(dim, 512), n, batch_count, size_work1,
                                        size_work2, size_work3, size_work4, optim_mem);
+        if(!pivot)
+        {
+            size_t w1, w2, w3, w4;
+            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none,
+                                             min(dim, 512), n, batch_count, &w1, &w2, &w3, &w4);
+            *size_work1 = max(*size_work1, w1);
+            *size_work2 = max(*size_work2, w2);
+            *size_work3 = max(*size_work3, w3);
+            *size_work4 = max(*size_work4, w4);
+        }
     }
 }
 
