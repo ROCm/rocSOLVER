@@ -210,7 +210,7 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
 
         if(pivot)
         {
-            // factorize panel block
+            // factorize inner panel block
             rocsolver_getf2_template<ISBATCHED, T>(handle, mm - k, jb, A, shiftA + idx2D(k, k, lda),
                                                    lda, strideA, ipiv, shiftP + k, strideP, info,
                                                    batch_count, scalars, pivotval, pivotidx, pivot,
@@ -229,13 +229,13 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
         }
         else
         {
-            // factorize only diagonal block
+            // factorize only inner diagonal block
             rocsolver_getf2_template<ISBATCHED, T>(handle, jb, jb, A, shiftA + idx2D(k, k, lda),
                                                    lda, strideA, ipiv, shiftP + k, strideP, info,
                                                    batch_count, scalars, pivotval, pivotidx, pivot,
                                                    offset + k, permut_idx, stridePI);
 
-            // update remaining rows in panel
+            // update remaining rows in inner panel
             rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_right, rocblas_fill_upper,
                                          rocblas_operation_none, rocblas_diagonal_non_unit,
                                          mm - k - jb, jb, &one, A, shiftA + idx2D(k, k, lda), lda,
@@ -433,11 +433,29 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     {
         jb = min(dim - j, blk);
 
-        // factorize inner block panel
-        getrf_panelLU<BATCHED, STRIDED, T>(handle, m - j, jb, n, A, shiftA + j, lda, strideA, ipiv,
-                                           shiftP + j, strideP, info, batch_count, pivot, scalars,
-                                           work1, work2, work3, work4, optim_mem, pivotval,
-                                           pivotidx, j, iipiv, m);
+        if(pivot)
+        {
+            // factorize outer block panel
+            getrf_panelLU<BATCHED, STRIDED, T>(handle, m - j, jb, n, A, shiftA + j, lda, strideA,
+                                               ipiv, shiftP + j, strideP, info, batch_count, pivot,
+                                               scalars, work1, work2, work3, work4, optim_mem,
+                                               pivotval, pivotidx, j, iipiv, m);
+        }
+        else
+        {
+            // factorize only outer diagonal block
+            getrf_panelLU<BATCHED, STRIDED, T>(handle, jb, jb, n, A, shiftA + j, lda, strideA, ipiv,
+                                               shiftP + j, strideP, info, batch_count, pivot,
+                                               scalars, work1, work2, work3, work4, optim_mem,
+                                               pivotval, pivotidx, j, iipiv, m);
+
+            // update remaining rows in outer panel
+            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_right, rocblas_fill_upper,
+                                         rocblas_operation_none, rocblas_diagonal_non_unit,
+                                         m - j - jb, jb, &one, A, shiftA + idx2D(j, j, lda), lda,
+                                         strideA, A, shiftA + idx2D(jb + j, j, lda), lda, strideA,
+                                         batch_count, optim_mem, work1, work2, work3, work4);
+        }
 
         // update trailing matrix
         nextpiv = j + jb; //position for the matrix update
