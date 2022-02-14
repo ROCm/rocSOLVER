@@ -236,19 +236,19 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
                                                    offset + k, permut_idx, stridePI);
 
             // update remaining rows in inner panel
-            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_right, rocblas_fill_upper,
-                                         rocblas_operation_none, rocblas_diagonal_non_unit,
-                                         mm - k - jb, jb, &one, A, shiftA + idx2D(k, k, lda), lda,
-                                         strideA, A, shiftA + idx2D(jb + k, k, lda), lda, strideA,
-                                         batch_count, optim_mem, work1, work2, work3, work4);
+            rocsolver_trsmU<BATCHED, STRIDED, T>(handle, mm - k - jb, jb, A,
+                                                 shiftA + idx2D(k, k, lda),
+                                                 shiftA + idx2D(jb + k, k, lda), lda, strideA,
+                                                 batch_count, optim_mem, work1, work2, work3, work4);
         }
 
         // update trailing sub-block
         if(k + jb < nn)
         {
-            rocsolver_trsm<BATCHED, STRIDED, T>(handle, jb, nn - k - jb, A, shiftA + idx2D(k, k, lda),
-                                                shiftA + idx2D(k, k + jb, lda), lda, strideA,
-                                                batch_count, optim_mem, work1, work2, work3, work4);
+            rocsolver_trsmL<BATCHED, STRIDED, T>(handle, jb, nn - k - jb, A,
+                                                 shiftA + idx2D(k, k, lda),
+                                                 shiftA + idx2D(k, k + jb, lda), lda, strideA,
+                                                 batch_count, optim_mem, work1, work2, work3, work4);
 
             if(k + jb < mm)
                 rocblasCall_gemm<BATCHED, STRIDED, T>(
@@ -450,11 +450,9 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                                pivotval, pivotidx, j, iipiv, m);
 
             // update remaining rows in outer panel
-            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_right, rocblas_fill_upper,
-                                         rocblas_operation_none, rocblas_diagonal_non_unit,
-                                         m - j - jb, jb, &one, A, shiftA + idx2D(j, j, lda), lda,
-                                         strideA, A, shiftA + idx2D(jb + j, j, lda), lda, strideA,
-                                         batch_count, optim_mem, work1, work2, work3, work4);
+            rocsolver_trsmU<BATCHED, STRIDED, T>(handle, m - j - jb, jb, A, shiftA + idx2D(j, j, lda),
+                                                 shiftA + idx2D(jb + j, j, lda), lda, strideA,
+                                                 batch_count, optim_mem, work1, work2, work3, work4);
         }
 
         // update trailing matrix
@@ -463,9 +461,9 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
         nn = n - nextpiv; //size for the matrix update
         if(nextpiv < n)
         {
-            rocsolver_trsm<BATCHED, STRIDED, T>(handle, jb, nn, A, shiftA + idx2D(j, j, lda),
-                                                shiftA + idx2D(j, nextpiv, lda), lda, strideA,
-                                                batch_count, optim_mem, work1, work2, work3, work4);
+            rocsolver_trsmL<BATCHED, STRIDED, T>(handle, jb, nn, A, shiftA + idx2D(j, j, lda),
+                                                 shiftA + idx2D(j, nextpiv, lda), lda, strideA,
+                                                 batch_count, optim_mem, work1, work2, work3, work4);
 
             if(nextpiv < m)
             {

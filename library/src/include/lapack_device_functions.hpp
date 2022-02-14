@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -882,7 +882,7 @@ ROCSOLVER_KERNEL void gemm_kernel(const rocblas_int m,
 }
 
 /** Optimized kernel that solves a simple triangular system B <- Ax=B
-    with A unit matrix. A and B are sub blocks of the same matrix MM with
+    with A unit lower triangular matrix. A and B are sub blocks of the same matrix MM with
     leading dimension ldim and stride. A and B are
     located in MM by their respective shifts.
 
@@ -892,13 +892,13 @@ ROCSOLVER_KERNEL void gemm_kernel(const rocblas_int m,
     Size of shared memory per group should be:
     lmemsize = hipBlockDim_y * sizeof(T); **/
 template <typename T, typename U>
-ROCSOLVER_KERNEL void trsm2_kernel(const rocblas_int m,
-                                   const rocblas_int n,
-                                   U MM,
-                                   const rocblas_int shiftA,
-                                   const rocblas_int shiftB,
-                                   const rocblas_int ldim,
-                                   const rocblas_stride stride)
+ROCSOLVER_KERNEL void trsm2L_kernel(const rocblas_int m,
+                                    const rocblas_int n,
+                                    U MM,
+                                    const rocblas_int shiftA,
+                                    const rocblas_int shiftB,
+                                    const rocblas_int ldim,
+                                    const rocblas_stride stride)
 {
     int id = hipBlockIdx_z;
     int i = hipThreadIdx_x;
@@ -928,6 +928,69 @@ ROCSOLVER_KERNEL void trsm2_kernel(const rocblas_int m,
                 b[ty] = c;
             __syncthreads();
             c -= (i > k) ? A[i + k * ldim] * b[ty] : 0;
+        }
+
+        // move results back to global
+        B[i + j * ldim] = c;
+    }
+}
+
+/** Optimized kernel that solves a simple triangular system B <- xA=B
+    with A non-unit upper triangular matrix. A and B are sub blocks of the same matrix MM with
+    leading dimension ldim and stride. A and B are
+    located in MM by their respective shifts.
+
+    Call this kernel with 'batch_count' groups in z, and enough
+    groups in x to cover all the 'm' right-hand-sides (rows of B).
+    There should be only one group in y with hipBlockDim_y = n.
+    Size of shared memory per group should be:
+    lmemsize = hipBlockDim_x * sizeof(T); **/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void trsm2U_kernel(const rocblas_int m,
+                                    const rocblas_int n,
+                                    U MM,
+                                    const rocblas_int shiftA,
+                                    const rocblas_int shiftB,
+                                    const rocblas_int ldim,
+                                    const rocblas_stride stride)
+{
+    int id = hipBlockIdx_z;
+    int j = hipThreadIdx_y;
+    int tx = hipThreadIdx_x;
+    int bdx = hipBlockDim_x;
+    int i = hipBlockIdx_x * bdx + tx;
+
+    // batch instance
+    T* A = load_ptr_batch(MM, id, shiftA, stride);
+    T* B = load_ptr_batch(MM, id, shiftB, stride);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c, d;
+
+    if(i < m)
+    {
+        // read data
+        c = B[i + j * ldim];
+
+        // solve for right-hand sides
+        for(int k = 0; k < n - 1; ++k)
+        {
+            __syncthreads();
+            if(j == k)
+            {
+                d = A[j + j * ldim];
+                c = d != 0 ? c / d : c;
+                b[tx] = c;
+            }
+            __syncthreads();
+            c -= (j > k) ? A[k + j * ldim] * b[tx] : 0;
+        }
+        if(j == n - 1)
+        {
+            d = A[j + j * ldim];
+            c = d != 0 ? c / d : c;
         }
 
         // move results back to global
