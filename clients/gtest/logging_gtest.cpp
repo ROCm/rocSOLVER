@@ -378,3 +378,32 @@ TEST_F(checkin_misc_LOGGING, bench_file_open_failure)
     ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
     ASSERT_EQ(rocblas_destroy_handle(handle), rocblas_status_success);
 }
+
+TEST_F(checkin_misc_LOGGING, begin_twice_failure)
+{
+    rocblas_handle handle;
+    ASSERT_EQ(rocblas_create_handle(&handle), rocblas_status_success);
+
+    EXPECT_EQ(rocsolver_log_begin(), rocblas_status_success);
+    EXPECT_EQ(rocsolver_log_begin(), rocblas_status_internal_error);
+
+    ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
+    ASSERT_EQ(rocblas_destroy_handle(handle), rocblas_status_success);
+}
+
+TEST_F(checkin_misc_LOGGING, end_twice_failure)
+{
+    rocblas_handle handle;
+    ASSERT_EQ(rocblas_create_handle(&handle), rocblas_status_success);
+
+    EXPECT_EQ(rocsolver_log_begin(), rocblas_status_success);
+    EXPECT_EQ(rocsolver_log_end(), rocblas_status_success);
+    EXPECT_EQ(rocsolver_log_end(), rocblas_status_internal_error);
+
+    ASSERT_EQ(rocblas_destroy_handle(handle), rocblas_status_success);
+}
+
+TEST_F(checkin_misc_LOGGING, end_before_begin_failure)
+{
+    EXPECT_EQ(rocsolver_log_end(), rocblas_status_internal_error);
+}
