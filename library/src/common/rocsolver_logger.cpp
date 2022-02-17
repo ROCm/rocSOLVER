@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include <cerrno>
@@ -46,7 +46,7 @@ std::ostream* rocsolver_logger::open_log_stream(const char* environment_variable
     if((logfile = std::getenv(environment_variable)) != nullptr
        || (logfile = std::getenv("ROCSOLVER_LOG_PATH")) != nullptr)
     {
-        file_streams.emplace_front(logfile, std::ios::out | std::ios::app | std::ios::trunc);
+        file_streams.emplace_front(logfile);
         std::ostream& os = file_streams.front();
 
         // print version info only once per file
@@ -229,8 +229,10 @@ try
     logger->trace_os = logger->open_log_stream("ROCSOLVER_LOG_TRACE_PATH");
     logger->bench_os = logger->open_log_stream("ROCSOLVER_LOG_BENCH_PATH");
     logger->profile_os = logger->open_log_stream("ROCSOLVER_LOG_PROFILE_PATH");
-
-    return rocblas_status_success;
+    if(logger->trace_os->good() && logger->bench_os->good() && logger->profile_os->good())
+        return rocblas_status_success;
+    else
+        return rocblas_status_internal_error;
 }
 catch(...)
 {
