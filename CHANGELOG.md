@@ -6,6 +6,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Fixed
 - Fixed missing synchronization in SYTRF with `rocblas_fill_lower` that could potentially
   result in incorrect pivot values.
+- Fixed multi-level logging output to file with the `ROCSOLVER_LOG_PATH`,
+  `ROCSOLVER_LOG_TRACE_PATH`, `ROCSOLVER_LOG_BENCH_PATH` and `ROCSOLVER_LOG_PROFILE_PATH`
+  environment variables.
 
 
 ## rocSOLVER 3.16.0 for ROCm 5.0.0
