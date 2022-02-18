@@ -15,26 +15,134 @@
  * ===========================================================================
  */
 
+/** Constants for block size of trsm **/
+#define TRSM_NUMROWS_REAL 12
+#define TRSM_NUMCOLS_REAL 16
+#define TRSM_INTERVALSROW_REAL 40, 56, 80, 112, 144, 176, 208, 240, 288, 352, 480
+#define TRSM_INTERVALSCOL_REAL \
+    448, 768, 960, 1152, 1408, 1920, 2304, 2816, 3840, 4096, 4736, 4992, 5888, 7680, 9728
+#define TRSM_BLKSIZES_REAL                                           \
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},                \
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 24, 24, 24, 16},        \
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 32, 32, 32, 32, 32, 24, 16},     \
+        {1, 1, 1, 1, 1, 1, 1, 48, 48, 48, 48, 32, 32, 32, 24, 16},   \
+        {1, 1, 1, 1, 1, 1, 64, 64, 64, 48, 48, 32, 32, 32, 24, 16},  \
+        {1, 1, 1, 1, 1, 80, 80, 80, 56, 56, 40, 40, 40, 32, 32, 32}, \
+        {1, 1, 1, 1, 80, 80, 80, 80, 80, 48, 48, 48, 40, 32, 0, 0},  \
+        {1, 1, 1, 80, 80, 80, 80, 80, 56, 56, 32, 32, 32, 32, 0, 0}, \
+        {1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},            \
+        {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},            \
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},            \
+    {                                                                \
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0               \
+    }
+
+#define TRSM_NUMROWS_COMPLEX 10
+#define TRSM_NUMCOLS_COMPLEX 12
+#define TRSM_INTERVALSROW_COMPLEX 40, 56, 80, 112, 144, 208, 240, 288, 480
+#define TRSM_INTERVALSCOL_COMPLEX 704, 960, 1344, 1920, 2304, 2816, 3200, 3840, 4864, 5888, 7680
+#define TRSM_BLKSIZES_COMPLEX                                                                  \
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {1, 1, 1, 1, 1, 1, 1, 1, 1, 24, 24, 24},             \
+        {1, 1, 1, 1, 1, 1, 1, 1, 32, 32, 32, 32}, {1, 1, 1, 1, 1, 72, 72, 56, 48, 32, 32, 32}, \
+        {1, 1, 1, 1, 64, 64, 64, 64, 48, 32, 32, 32},                                          \
+        {1, 1, 1, 80, 80, 80, 64, 64, 48, 32, 32, 32},                                         \
+        {1, 1, 80, 80, 80, 80, 64, 64, 40, 40, 32, 32},                                        \
+        {1, 1, 72, 72, 64, 64, 64, 64, 32, 32, 32, 0},                                         \
+        {1, 80, 80, 80, 80, 80, 64, 64, 48, 40, 32, 0},                                        \
+    {                                                                                          \
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                                                     \
+    }
+
+#define TRSM_BATCH_NUMROWS_REAL 11
+#define TRSM_BATCH_NUMCOLS_REAL 17
+#define TRSM_BATCH_INTERVALSROW_REAL 20, 28, 40, 80, 112, 127, 208, 288, 352, 480
+#define TRSM_BATCH_INTERVALSCOL_REAL \
+    6, 10, 12, 22, 28, 30, 36, 42, 46, 50, 60, 96, 432, 928, 960, 1472
+#define TRSM_BATCH_BLKSIZES_REAL                                              \
+    {1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},                      \
+        {1, 1, 1, 1, 16, 16, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},               \
+        {1, 1, 1, 1, 16, 16, 16, 16, 16, 0, 0, 0, 0, 0, 0, 0, 0},             \
+        {1, 24, 24, 24, 24, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16},  \
+        {48, 48, 32, 32, 24, 24, 16, 16, 16, 32, 32, 32, 16, 16, 16, 16, 16}, \
+        {64, 64, 32, 32, 24, 24, 16, 16, 16, 32, 32, 32, 24, 24, 24, 24, 24}, \
+        {64, 64, 32, 32, 24, 24, 24, 24, 32, 32, 32, 32, 32, 24, 24, 24, 24}, \
+        {64, 64, 64, 32, 32, 32, 32, 40, 40, 40, 40, 32, 32, 24, 24, 32, 32}, \
+        {64, 64, 64, 32, 32, 32, 32, 40, 48, 48, 40, 32, 32, 32, 32, 32, 32}, \
+        {64, 64, 64, 32, 32, 32, 32, 40, 48, 48, 40, 32, 32, 32, 32, 32, 0},  \
+    {                                                                         \
+        64, 64, 64, 32, 32, 32, 48, 48, 48, 48, 40, 32, 32, 32, 0, 0, 0       \
+    }
+
+#define TRSM_BATCH_NUMROWS_COMPLEX 10
+#define TRSM_BATCH_NUMCOLS_COMPLEX 16
+#define TRSM_BATCH_INTERVALSROW_COMPLEX 20, 28, 40, 56, 80, 112, 144, 176, 480
+#define TRSM_BATCH_INTERVALSCOL_COMPLEX \
+    4, 12, 16, 28, 32, 40, 48, 50, 60, 72, 88, 176, 232, 400, 464
+#define TRSM_BATCH_BLKSIZES_COMPLEX                                      \
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},                    \
+        {1, 1, 1, 1, 1, 1, 1, 1, 8, 1, 1, 1, 1, 1, 1, 1},                \
+        {1, 1, 1, 1, 16, 16, 16, 16, 1, 1, 1, 16, 16, 16, 16, 16},       \
+        {1, 1, 1, 24, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16},   \
+        {1, 1, 32, 32, 32, 32, 32, 32, 32, 32, 32, 16, 16, 16, 16, 16},  \
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 48, 48, 32},             \
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 64, 64, 64, 64, 64, 32},          \
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 80, 80, 56, 56, 32, 32},          \
+        {1, 64, 32, 32, 32, 64, 48, 32, 32, 32, 32, 32, 32, 32, 32, 32}, \
+    {                                                                    \
+        1, 1, 1, 1, 1, 1, 64, 64, 64, 64, 64, 64, 64, 48, 48, 48         \
+    }
+
 /** This function returns the block size for the internal
     (blocked) trsm implementation **/
-inline rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
+template <bool ISBATCHED, typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
 {
-    rocblas_int M = 6;
-    rocblas_int N = 9;
-    rocblas_int intervalsM[6] = {96, 160, 224, 352, 416, 480};
-    rocblas_int intervalsN[9] = {256, 512, 768, 1024, 1280, 1536, 2048, 3072, 4096};
-    //clang-format off
-    rocblas_int size[7][10]
-        = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},       {1, 1, 1, 1, 64, 64, 64, 48, 48, 0},
-           {1, 1, 1, 64, 64, 64, 64, 48, 64, 0}, {1, 1, 64, 64, 64, 64, 64, 0, 0, 0},
-           {1, 1, 64, 64, 64, 64, 0, 0, 0, 0},   {1, 64, 64, 64, 64, 64, 0, 0, 0, 0},
-           {1, 64, 64, 64, 64, 0, 0, 0, 0, 0}};
-    //clang-format on
-    return size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+    if(ISBATCHED)
+    {
+        rocblas_int M = TRSM_BATCH_NUMROWS_REAL - 1;
+        rocblas_int N = TRSM_BATCH_NUMCOLS_REAL - 1;
+        rocblas_int intervalsM[] = {TRSM_BATCH_INTERVALSROW_REAL};
+        rocblas_int intervalsN[] = {TRSM_BATCH_INTERVALSCOL_REAL};
+        rocblas_int size[][TRSM_BATCH_NUMCOLS_REAL] = {TRSM_BATCH_BLKSIZES_REAL};
+        return size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+    }
+    else
+    {
+        rocblas_int M = TRSM_NUMROWS_REAL - 1;
+        rocblas_int N = TRSM_NUMCOLS_REAL - 1;
+        rocblas_int intervalsM[] = {TRSM_INTERVALSROW_REAL};
+        rocblas_int intervalsN[] = {TRSM_INTERVALSCOL_REAL};
+        rocblas_int size[][TRSM_NUMCOLS_REAL] = {TRSM_BLKSIZES_REAL};
+        return size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+    }
+}
+
+/** complex type version **/
+template <bool ISBATCHED, typename T, std::enable_if_t<is_complex<T>, int> = 0>
+rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
+{
+    if(ISBATCHED)
+    {
+        rocblas_int M = TRSM_BATCH_NUMROWS_COMPLEX - 1;
+        rocblas_int N = TRSM_BATCH_NUMCOLS_COMPLEX - 1;
+        rocblas_int intervalsM[] = {TRSM_BATCH_INTERVALSROW_COMPLEX};
+        rocblas_int intervalsN[] = {TRSM_BATCH_INTERVALSCOL_COMPLEX};
+        rocblas_int size[][TRSM_BATCH_NUMCOLS_COMPLEX] = {TRSM_BATCH_BLKSIZES_COMPLEX};
+        return size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+    }
+    else
+    {
+        rocblas_int M = TRSM_NUMROWS_COMPLEX - 1;
+        rocblas_int N = TRSM_NUMCOLS_COMPLEX - 1;
+        rocblas_int intervalsM[] = {TRSM_INTERVALSROW_COMPLEX};
+        rocblas_int intervalsN[] = {TRSM_INTERVALSCOL_COMPLEX};
+        rocblas_int size[][TRSM_NUMCOLS_COMPLEX] = {TRSM_BLKSIZES_COMPLEX};
+        return size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+    }
 }
 
 /** This function determine workspace size for the internal trsm **/
-template <bool BATCHED, typename T>
+template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_trsm_mem(const rocblas_side side,
                         const rocblas_int m,
                         const rocblas_int n,
@@ -45,8 +153,10 @@ void rocsolver_trsm_mem(const rocblas_side side,
                         size_t* size_work4,
                         bool* optim_mem)
 {
+    static constexpr bool ISBATCHED = BATCHED || STRIDED;
+
     // determine block size
-    rocblas_int blk = rocsolver_trsm_blksize(m, n);
+    rocblas_int blk = rocsolver_trsm_blksize<ISBATCHED, T>(m, n);
 
     if(blk == 1)
         blk = m;
@@ -102,6 +212,7 @@ void rocsolver_trsmL(rocblas_handle handle,
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
+    static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
     T one = 1; // constant 1 in host
     T minone = -1; // constant -1 in host
@@ -112,7 +223,7 @@ void rocsolver_trsmL(rocblas_handle handle,
     size_t lmemsize;
 
     // determine block size
-    rocblas_int blk = rocsolver_trsm_blksize(m, n);
+    rocblas_int blk = rocsolver_trsm_blksize<ISBATCHED, T>(m, n);
 
     if(blk == 1)
         blk = m;
@@ -183,6 +294,7 @@ void rocsolver_trsmU(rocblas_handle handle,
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
+    static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
     T one = 1; // constant 1 in host
     T minone = -1; // constant -1 in host
@@ -193,7 +305,7 @@ void rocsolver_trsmU(rocblas_handle handle,
     size_t lmemsize;
 
     // determine block size
-    rocblas_int blk = rocsolver_trsm_blksize(n, m);
+    rocblas_int blk = rocsolver_trsm_blksize<ISBATCHED, T>(n, m);
 
     if(blk == 1)
         blk = n;
