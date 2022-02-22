@@ -77,6 +77,29 @@ static void verify_file(const fs::path& filepath, const std::vector<std::string>
     ASSERT_EQ(line_number - 1, expected_lines.size()) << "missing lines in " << filepath;
 }
 
+TEST_F(checkin_misc_LOGGING, rocsolver_log_path)
+{
+    rocblas_handle handle;
+    ASSERT_EQ(rocblas_create_handle(&handle), rocblas_status_success);
+
+    fs::path temp_dir = fs::temp_directory_path();
+    fs::path trace_filepath
+        = temp_dir / fmt::format("rocsolver_log_path.{}.log", nondeterministic_value());
+    scoped_envvar logpath_variable("ROCSOLVER_LOG_PATH", trace_filepath.generic_string().c_str());
+
+    ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
+    ASSERT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_trace), rocblas_status_success);
+    ASSERT_EQ(rocsolver_log_set_max_levels(1), rocblas_status_success);
+    ASSERT_EQ(rocsolver_dgetrf_strided_batched(handle, m, n, dA, lda, stA, dP, stP, dinfo, bc),
+              rocblas_status_success);
+    ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
+
+    EXPECT_TRUE(fs::exists(trace_filepath));
+
+    if(!HasFailure())
+        EXPECT_TRUE(fs::remove(trace_filepath));
+}
+
 TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_trace)
 {
     rocblas_handle handle;
@@ -105,29 +128,6 @@ TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_trace)
     };
 
     verify_file(trace_filepath, expected_lines);
-
-    if(!HasFailure())
-        EXPECT_TRUE(fs::remove(trace_filepath));
-}
-
-TEST_F(checkin_misc_LOGGING, rocsolver_log_path)
-{
-    rocblas_handle handle;
-    ASSERT_EQ(rocblas_create_handle(&handle), rocblas_status_success);
-
-    fs::path temp_dir = fs::temp_directory_path();
-    fs::path trace_filepath
-        = temp_dir / fmt::format("rocsolver_log_path.{}.log", nondeterministic_value());
-    scoped_envvar logpath_variable("ROCSOLVER_LOG_PATH", trace_filepath.generic_string().c_str());
-
-    ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
-    ASSERT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_trace), rocblas_status_success);
-    ASSERT_EQ(rocsolver_log_set_max_levels(1), rocblas_status_success);
-    ASSERT_EQ(rocsolver_dgetrf_strided_batched(handle, m, n, dA, lda, stA, dP, stP, dinfo, bc),
-              rocblas_status_success);
-    ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
-
-    EXPECT_TRUE(fs::exists(trace_filepath));
 
     if(!HasFailure())
         EXPECT_TRUE(fs::remove(trace_filepath));
