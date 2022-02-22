@@ -4,6 +4,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## (Unreleased) rocSOLVER
 ### Added
+- Added tests for multi-level logging
+
 ### Optimized
 ### Changed
 ### Deprecated
@@ -16,9 +18,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 
 ## (Unreleased) rocSOLVER 3.17.0
-### Changed
-- Moved license directory from `share/doc/rocSOLVER` to `share/doc/rocsolver`.
-
 ### Fixed
 - Fixed missing synchronization in SYTRF with `rocblas_fill_lower` that could potentially
   result in incorrect pivot values.
