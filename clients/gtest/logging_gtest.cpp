@@ -32,11 +32,9 @@ protected:
     void SetUp() override
     {
         fs::path temp_dir = fs::temp_directory_path();
-        std::string test_name = log_filepath = temp_dir
-            / fmt::format("{}.{}.log", UnitTest::GetInstance()->current_test_info()->name(),
-                          nondeterministic_value());
-        fs::path nonexistent_dirpath = temp_dir
-            / fmt::format("nonexistent_{}", UnitTest::GetInstance()->current_test_info()->name());
+        std::string test_name = UnitTest::GetInstance()->current_test_info()->name();
+        log_filepath = temp_dir / fmt::format("{}.{}.log", test_name, nondeterministic_value());
+        fs::path nonexistent_dirpath = temp_dir / fmt::format("nonexistent_{}", test_name);
         ASSERT_FALSE(fs::exists(nonexistent_dirpath));
         invalid_log_filepath = nonexistent_dirpath / "invalid.log";
 
