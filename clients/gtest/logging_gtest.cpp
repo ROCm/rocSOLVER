@@ -299,7 +299,7 @@ TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_trace_tree)
 
     ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
     EXPECT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_trace), rocblas_status_success);
-    EXPECT_EQ(rocsolver_log_set_max_levels(10), rocblas_status_success);
+    EXPECT_EQ(rocsolver_log_set_max_levels(2), rocblas_status_success);
     EXPECT_EQ(rocsolver_dgetrf_strided_batched(handle, m, n, dA, lda, stA, dP, stP, dinfo, bc),
               rocblas_status_success);
     ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
@@ -325,7 +325,7 @@ TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_profile_tree)
 
     ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
     EXPECT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile), rocblas_status_success);
-    EXPECT_EQ(rocsolver_log_set_max_levels(10), rocblas_status_success);
+    EXPECT_EQ(rocsolver_log_set_max_levels(2), rocblas_status_success);
     EXPECT_EQ(rocsolver_dgetrf_strided_batched(handle, m, n, dA, lda, stA, dP, stP, dinfo, bc),
               rocblas_status_success);
     ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
@@ -349,7 +349,7 @@ TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_bench_tree)
 
     ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
     EXPECT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_bench), rocblas_status_success);
-    EXPECT_EQ(rocsolver_log_set_max_levels(10), rocblas_status_success);
+    EXPECT_EQ(rocsolver_log_set_max_levels(2), rocblas_status_success);
     EXPECT_EQ(rocsolver_dgetrf_strided_batched(handle, m, n, dA, lda, stA, dP, stP, dinfo, bc),
               rocblas_status_success);
     ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
@@ -360,64 +360,6 @@ TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_bench_tree)
         "rocBLAS Version: .*",
         ".*rocsolver-bench -f getrf_strided_batched -r d -m 25 -n 25 --lda 25 --strideA 625 "
         "--strideP 25 --batch_count 3",
-    };
-    verify_file(log_filepath, expected_lines);
-}
-
-TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_trace_kernel)
-{
-    rocblas_local_handle handle;
-    scoped_envvar logpath_variable("ROCSOLVER_LOG_TRACE_PATH", log_filepath.generic_string().c_str());
-
-    ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
-    EXPECT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_trace
-                                           | rocblas_layer_mode_ex_log_kernel),
-              rocblas_status_success);
-    EXPECT_EQ(rocsolver_log_set_max_levels(10), rocblas_status_success);
-    EXPECT_EQ(rocsolver_dgetrf_strided_batched(handle, m, n, dA, lda, stA, dP, stP, dinfo, bc),
-              rocblas_status_success);
-    ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
-
-    std::vector<std::string> expected_lines = {
-        "ROCSOLVER LOG FILE",
-        "rocSOLVER Version: .*",
-        "rocBLAS Version: .*",
-        ".*ENTER rocsolver_dgetrf_strided_batched trace tree.*",
-        ".*getrf.*m: 25, n: 25, shiftA: 0, lda: 25, shiftP: 0, bc: 3.*",
-        "    .*getf2.*m: 25, n: 25, shiftA: 0, lda: 25, shiftP: 0, bc: 3.*",
-        "        reset_info.*",
-        "        .*getf2_panel_kernel.*",
-        ".*EXIT rocsolver_dgetrf_strided_batched trace tree.*",
-        "\\s*",
-    };
-    verify_file(log_filepath, expected_lines);
-}
-
-TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_profile_kernel)
-{
-    rocblas_local_handle handle;
-    scoped_envvar logpath_variable("ROCSOLVER_LOG_PROFILE_PATH",
-                                   log_filepath.generic_string().c_str());
-
-    ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
-    EXPECT_EQ(rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile
-                                           | rocblas_layer_mode_ex_log_kernel),
-              rocblas_status_success);
-    EXPECT_EQ(rocsolver_log_set_max_levels(10), rocblas_status_success);
-    EXPECT_EQ(rocsolver_dgetrf_strided_batched(handle, m, n, dA, lda, stA, dP, stP, dinfo, bc),
-              rocblas_status_success);
-    ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
-
-    std::vector<std::string> expected_lines = {
-        "ROCSOLVER LOG FILE",
-        "rocSOLVER Version: .*",
-        "rocBLAS Version: .*",
-        ".*PROFILE.*",
-        ".*getrf.*Calls: 1, Total Time: .+ .+ .in nested functions: .+ .+.",
-        "    .*getf2.*Calls: 1, Total Time: .+ .+",
-        "        .*getf2_panel_kernel.*Calls: 1, Total Time: .+ .+",
-        "        reset_info.*Calls: 1, Total Time: .+ .+",
-        "\\s*",
     };
     verify_file(log_filepath, expected_lines);
 }
