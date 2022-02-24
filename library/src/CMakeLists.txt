@@ -245,7 +245,13 @@ set_target_properties(rocsolver PROPERTIES
   CXX_VISIBILITY_PRESET "hidden"
   VISIBILITY_INLINES_HIDDEN ON
 )
-generate_export_header(rocsolver EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsolver-export.h)
+generate_export_header(rocsolver EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-export.h)
+
+if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
+  include(${PROJECT_SOURCE_DIR}/cmake/rocsolver-backward-compat.cmake)
+  package_wrapper_headerfile("${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-export.h")
+  message (STATUS "Completed package_wrapper_headerfile() Configuration for Generated Files")
+endif( )
 
 # Following Boost conventions of prefixing 'lib' on static built libraries, across all platforms
 if(NOT BUILD_SHARED_LIBS)
@@ -287,16 +293,42 @@ rocm_install_targets(
   INCLUDE
     ${CMAKE_SOURCE_DIR}/library/include
     ${CMAKE_BINARY_DIR}/include
-  PREFIX rocsolver
 )
+
+install(
+DIRECTORY "${CMAKE_SOURCE_DIR}/library/include/" "${CMAKE_BINARY_DIR}/include/rocsolver/"
+  DESTINATION include/rocsolver
+  FILES_MATCHING
+  PATTERN "*.h"
+  PATTERN "*.hpp"
+  PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+)
+
+if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
+install(
+    DIRECTORY
+       "${PROJECT_BINARY_DIR}/include/"
+        DESTINATION "include/"
+  FILES_MATCHING
+  PATTERN "*.h"
+  PATTERN "*.hpp"
+  PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ )
+
+endif()
 
 rocm_export_targets(
   TARGETS roc::rocsolver
-  PREFIX rocsolver
   DEPENDS
     PACKAGE hip
     PACKAGE rocblas
   NAMESPACE roc::
 )
 
-rocm_install_symlink_subdir(rocsolver)
+if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
+  install(
+    DIRECTORY
+       "${PROJECT_BINARY_DIR}/rocsolver"
+        DESTINATION "." )
+  message( STATUS "Backward Compatible Sym Link Created for include directories" )
+endif()
+ 
