@@ -55,7 +55,7 @@
 
 #define TRSM_BATCH_NUMROWS_REAL 11
 #define TRSM_BATCH_NUMCOLS_REAL 17
-#define TRSM_BATCH_INTERVALSROW_REAL 20, 28, 40, 80, 112, 127, 208, 288, 352, 480
+#define TRSM_BATCH_INTERVALSROW_REAL 20, 28, 40, 80, 112, 176, 208, 288, 352, 480
 #define TRSM_BATCH_INTERVALSCOL_REAL \
     6, 10, 12, 22, 28, 30, 36, 42, 46, 50, 60, 96, 432, 928, 960, 1472
 #define TRSM_BATCH_BLKSIZES_REAL                                              \
@@ -97,6 +97,8 @@
 template <bool ISBATCHED, typename T, std::enable_if_t<!is_complex<T>, int> = 0>
 rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
 {
+    rocblas_int blk;
+
     if(ISBATCHED)
     {
         rocblas_int M = TRSM_BATCH_NUMROWS_REAL - 1;
@@ -104,7 +106,7 @@ rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
         rocblas_int intervalsM[] = {TRSM_BATCH_INTERVALSROW_REAL};
         rocblas_int intervalsN[] = {TRSM_BATCH_INTERVALSCOL_REAL};
         rocblas_int size[][TRSM_BATCH_NUMCOLS_REAL] = {TRSM_BATCH_BLKSIZES_REAL};
-        return size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+        blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
     }
     else
     {
@@ -113,14 +115,21 @@ rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
         rocblas_int intervalsM[] = {TRSM_INTERVALSROW_REAL};
         rocblas_int intervalsN[] = {TRSM_INTERVALSCOL_REAL};
         rocblas_int size[][TRSM_NUMCOLS_REAL] = {TRSM_BLKSIZES_REAL};
-        return size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+        blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
     }
+
+    if(blk == 1)
+        blk = m;
+
+    return blk;
 }
 
 /** complex type version **/
 template <bool ISBATCHED, typename T, std::enable_if_t<is_complex<T>, int> = 0>
 rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
 {
+    rocblas_int blk;
+
     if(ISBATCHED)
     {
         rocblas_int M = TRSM_BATCH_NUMROWS_COMPLEX - 1;
@@ -128,7 +137,7 @@ rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
         rocblas_int intervalsM[] = {TRSM_BATCH_INTERVALSROW_COMPLEX};
         rocblas_int intervalsN[] = {TRSM_BATCH_INTERVALSCOL_COMPLEX};
         rocblas_int size[][TRSM_BATCH_NUMCOLS_COMPLEX] = {TRSM_BATCH_BLKSIZES_COMPLEX};
-        return size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+        blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
     }
     else
     {
@@ -137,8 +146,13 @@ rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
         rocblas_int intervalsM[] = {TRSM_INTERVALSROW_COMPLEX};
         rocblas_int intervalsN[] = {TRSM_INTERVALSCOL_COMPLEX};
         rocblas_int size[][TRSM_NUMCOLS_COMPLEX] = {TRSM_BLKSIZES_COMPLEX};
-        return size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
+        blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
     }
+
+    if(blk == 1)
+        blk = m;
+
+    return blk;
 }
 
 /** This function determine workspace size for the internal trsm **/
@@ -151,36 +165,43 @@ void rocsolver_trsm_mem(const rocblas_side side,
                         size_t* size_work2,
                         size_t* size_work3,
                         size_t* size_work4,
-                        bool* optim_mem)
+                        bool* optim_mem,
+                        bool inblocked = false)
 {
-    static constexpr bool ISBATCHED = BATCHED || STRIDED;
+    // always allocate all required memory for TRSM optimal performance
+    *optim_mem = true;
 
-    // determine block size
-    rocblas_int blk = rocsolver_trsm_blksize<ISBATCHED, T>(m, n);
+    rocblas_int mm = m;
 
-    if(blk == 1)
-        blk = m;
+    if(!inblocked)
+    {
+        static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
-    if(blk == 0)
+        // determine block size
+        rocblas_int blk = rocsolver_trsm_blksize<ISBATCHED, T>(m, n);
+
+        if(blk > 0)
+        {
+            *size_work1 = 0;
+            *size_work2 = 0;
+            *size_work3 = 0;
+            *size_work4 = 0;
+            return;
+        }
+        else
+            mm = m;
+    }
+    else
     {
         // (Note: rocblas TRSM workspace size is less than expected when the number of rows is multiple of 128.
         //  For this reason, when trying to set up a workspace that fits all the TRSM calls for m <= blk,
         //  blk cannot be multiple of 128.)
         //        rocblas_int mm = (blk % 128 != 0) ? blk : blk + 1;
-        rocblas_int mm = (m % 128 != 0) ? m : m + 1;
-        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, rocblas_operation_none, mm, n,
-                                         batch_count, size_work1, size_work2, size_work3, size_work4);
-    }
-    else
-    {
-        *size_work1 = 0;
-        *size_work2 = 0;
-        *size_work3 = 0;
-        *size_work4 = 0;
+        mm = (m % 128 != 0) ? m : m + 1;
     }
 
-    // always allocate all required memory for TRSM optimal performance
-    *optim_mem = true;
+    rocblasCall_trsm_mem<BATCHED, T>(side, rocblas_operation_none, mm, n, batch_count, size_work1,
+                                     size_work2, size_work3, size_work4);
 }
 
 /** Internal TRSM (lower case):
@@ -224,9 +245,6 @@ void rocsolver_trsmL(rocblas_handle handle,
 
     // determine block size
     rocblas_int blk = rocsolver_trsm_blksize<ISBATCHED, T>(m, n);
-
-    if(blk == 1)
-        blk = m;
 
     if(blk == 0)
     {
@@ -306,9 +324,6 @@ void rocsolver_trsmU(rocblas_handle handle,
 
     // determine block size
     rocblas_int blk = rocsolver_trsm_blksize<ISBATCHED, T>(n, m);
-
-    if(blk == 1)
-        blk = n;
 
     if(blk == 0)
     {

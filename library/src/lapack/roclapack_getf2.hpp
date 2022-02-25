@@ -446,7 +446,8 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
                                    const rocblas_int batch_count,
                                    size_t* size_scalars,
                                    size_t* size_pivotval,
-                                   size_t* size_pivotidx)
+                                   size_t* size_pivotidx,
+                                   bool inblocked = false)
 {
     // if quick return no workspace needed
     if(m == 0 || n == 0 || batch_count == 0)
@@ -459,7 +460,7 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
 
 #ifdef OPTIMAL
     bool nomem = (m <= GETF2_SPKER_MAX_M && n <= GETF2_SPKER_MAX_N
-                  && select_spkernel<ISBATCHED, T>(m, n, pivot));
+                  && select_spkernel<ISBATCHED, T>(m, n, pivot) && !inblocked);
 
     // no workspace needed if using optimized kernel for small sizes
     if(nomem)
