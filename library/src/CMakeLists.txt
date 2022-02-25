@@ -296,9 +296,6 @@ rocm_install_targets(
     ${CMAKE_BINARY_DIR}/include
 )
 
-
-
-
 rocm_export_targets(
   TARGETS roc::rocsolver
   DEPENDS
@@ -308,7 +305,7 @@ rocm_export_targets(
 )
 
 if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
-  install(
+  rocm_install(
     DIRECTORY
        "${PROJECT_BINARY_DIR}/rocsolver"
         DESTINATION "." )
