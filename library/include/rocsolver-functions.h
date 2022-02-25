@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef _ROCLAPACK_FUNCTIONS_H
@@ -14884,57 +14884,57 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     \f]
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblem.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect     #rocblas_evect.\n
-              Specifies whether the eigenvectors are to be computed.
-              If evect is rocblas_evect_original, then the eigenvectors are computed.
-              rocblas_evect_tridiagonal is not supported.
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower parts of the matrices
-              A and B are stored. If uplo indicates lower (or upper),
-              then the upper (or lower) parts of A and B are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices
+                A and B are stored. If uplo indicates lower (or upper),
+                then the upper (or lower) parts of A and B are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the symmetric matrix A. On exit, if evect is original,
-              the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
-              part of the matrix A (including the diagonal) is destroyed,
-              depending on the value of uplo.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the symmetric matrix A. On exit, if evect is original,
+                the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
+                part of the matrix A (including the diagonal) is destroyed,
+                depending on the value of uplo.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    B         pointer to type. Array on the GPU of dimension ldb*n.\n
-              On entry, the symmetric positive definite matrix B. On exit, the
-              triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
+    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+                On entry, the symmetric positive definite matrix B. On exit, the
+                triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B.
     @param[out]
-    D         pointer to type. Array on the GPU of dimension n.\n
-              On exit, the eigenvalues in increasing order.
+    D           pointer to type. Array on the GPU of dimension n.\n
+                On exit, the eigenvalues in increasing order.
     @param[out]
-    E         pointer to type. Array on the GPU of dimension n.\n
-              This array is used to work internally with the tridiagonal matrix T associated with
-              the reduced eigenvalue problem.
-              On exit, if 0 < info <= n, it contains the unconverged off-diagonal elements of T
-              (or properly speaking, a tridiagonal matrix equivalent to T). The diagonal elements
-              of this matrix are in D; those that converged correspond to a subset of the
-              eigenvalues (not necessarily ordered).
+    E           pointer to type. Array on the GPU of dimension n.\n
+                This array is used to work internally with the tridiagonal matrix T associated with
+                the reduced eigenvalue problem.
+                On exit, if 0 < info <= n, it contains the unconverged off-diagonal elements of T
+                (or properly speaking, a tridiagonal matrix equivalent to T). The diagonal elements
+                of this matrix are in D; those that converged correspond to a subset of the
+                eigenvalues (not necessarily ordered).
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = j <= n, j off-diagonal elements of an intermediate
-              tridiagonal form did not converge to zero.
-              If info = n + j, the leading minor of order j of B is not
-              positive definite.
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i <= n, i off-diagonal elements of an intermediate
+                tridiagonal form did not converge to zero.
+                If info = n + i, the leading minor of order i of B is not
+                positive definite.
 
     ********************************************************************/
 
@@ -14993,57 +14993,57 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv(rocblas_handle handle,
     \f]
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblem.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect     #rocblas_evect.\n
-              Specifies whether the eigenvectors are to be computed.
-              If evect is rocblas_evect_original, then the eigenvectors are computed.
-              rocblas_evect_tridiagonal is not supported.
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower parts of the matrices
-              A and B are stored. If uplo indicates lower (or upper),
-              then the upper (or lower) parts of A and B are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices
+                A and B are stored. If uplo indicates lower (or upper),
+                then the upper (or lower) parts of A and B are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the hermitian matrix A. On exit, if evect is original,
-              the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
-              part of the matrix A (including the diagonal) is destroyed,
-              depending on the value of uplo.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the hermitian matrix A. On exit, if evect is original,
+                the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
+                part of the matrix A (including the diagonal) is destroyed,
+                depending on the value of uplo.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    B         pointer to type. Array on the GPU of dimension ldb*n.\n
-              On entry, the hermitian positive definite matrix B. On exit, the
-              triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
+    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+                On entry, the hermitian positive definite matrix B. On exit, the
+                triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B.
     @param[out]
-    D         pointer to real type. Array on the GPU of dimension n.\n
-              On exit, the eigenvalues in increasing order.
+    D           pointer to real type. Array on the GPU of dimension n.\n
+                On exit, the eigenvalues in increasing order.
     @param[out]
-    E         pointer to real type. Array on the GPU of dimension n.\n
-              This array is used to work internally with the tridiagonal matrix T associated with
-              the reduced eigenvalue problem.
-              On exit, if 0 < info <= n, it contains the unconverged off-diagonal elements of T
-              (or properly speaking, a tridiagonal matrix equivalent to T). The diagonal elements
-              of this matrix are in D; those that converged correspond to a subset of the
-              eigenvalues (not necessarily ordered).
+    E           pointer to real type. Array on the GPU of dimension n.\n
+                This array is used to work internally with the tridiagonal matrix T associated with
+                the reduced eigenvalue problem.
+                On exit, if 0 < info <= n, it contains the unconverged off-diagonal elements of T
+                (or properly speaking, a tridiagonal matrix equivalent to T). The diagonal elements
+                of this matrix are in D; those that converged correspond to a subset of the
+                eigenvalues (not necessarily ordered).
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = j <= n, j off-diagonal elements of an intermediate
-              tridiagonal form did not converge to zero.
-              If info = n + j, the leading minor of order j of B is not
-              positive definite.
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i <= n, i off-diagonal elements of an intermediate
+                tridiagonal form did not converge to zero.
+                If info = n + i, the leading minor of order i of B is not
+                positive definite.
 
     ********************************************************************/
 
@@ -15083,84 +15083,84 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype. The eigenvectors are computed depending on the
     value of evect.
 
-    When computed, the matrix \f$Z_i\f$ of eigenvectors is normalized as follows:
+    When computed, the matrix \f$Z_j\f$ of eigenvectors is normalized as follows:
 
     \f[
         \begin{array}{cl}
-        Z_i^T B_i Z_i=I & \: \text{if 1st or 2nd form, or}\\
-        Z_i^T B_i^{-1} Z_i=I & \: \text{if 3rd form.}
+        Z_j^T B_j Z_j=I & \: \text{if 1st or 2nd form, or}\\
+        Z_j^T B_j^{-1} Z_j=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect     #rocblas_evect.\n
-              Specifies whether the eigenvectors are to be computed.
-              If evect is rocblas_evect_original, then the eigenvectors are computed.
-              rocblas_evect_tridiagonal is not supported.
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower parts of the matrices
-              A_i and B_i are stored. If uplo indicates lower (or upper),
-              then the upper (or lower) parts of A_i and B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices
+                A_j and B_j are stored. If uplo indicates lower (or upper),
+                then the upper (or lower) parts of A_j and B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the symmetric matrices A_i. On exit, if evect is original,
-              the normalized matrix Z_i of eigenvectors. If evect is none, then the upper or lower triangular
-              part of the matrices A_i (including the diagonal) are destroyed,
-              depending on the value of uplo.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the symmetric matrices A_j. On exit, if evect is original,
+                the normalized matrix Z_j of eigenvectors. If evect is none, then the upper or lower triangular
+                part of the matrices A_j (including the diagonal) are destroyed,
+                depending on the value of uplo.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[out]
-    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
-              On entry, the symmetric positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+                On entry, the symmetric positive definite matrices B_j. On exit, the
+                triangular factor of B_j as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[out]
-    D         pointer to type. Array on the GPU (the size depends on the value of strideD).\n
-              On exit, the eigenvalues in increasing order.
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+                On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_i to the next one D_(i+1).
-              There is no restriction for the value of strideD. Normal use is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E         pointer to type. Array on the GPU (the size depends on the value of strideE).\n
-              This array is used to work internally with the tridiagonal matrix T_i associated with
-              the ith reduced eigenvalue problem.
-              On exit, if 0 < info[i] <= n, E_i contains the unconverged off-diagonal elements of T_i
-              (or properly speaking, a tridiagonal matrix equivalent to T_i). The diagonal elements
-              of this matrix are in D_i; those that converged correspond to a subset of the
-              eigenvalues (not necessarily ordered).
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+                This array is used to work internally with the tridiagonal matrix T_j associated with
+                the jth reduced eigenvalue problem.
+                On exit, if 0 < info[j] <= n, E_j contains the unconverged off-diagonal elements of T_j
+                (or properly speaking, a tridiagonal matrix equivalent to T_j). The diagonal elements
+                of this matrix are in D_j; those that converged correspond to a subset of the
+                eigenvalues (not necessarily ordered).
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_i to the next one E_(i+1).
-              There is no restriction for the value of strideE. Normal use is strideE >= n.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit of batch instance i.
-              If info[i] = j <= n, j off-diagonal elements of an intermediate
-              tridiagonal form did not converge to zero.
-              If info[i] = n + j, the leading minor of order j of B_i is not
-              positive definite.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit of batch instance j.
+                If info[j] = i <= n, i off-diagonal elements of an intermediate
+                tridiagonal form did not converge to zero.
+                If info[j] = n + i, the leading minor of order i of B_j is not
+                positive definite.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -15209,84 +15209,84 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype. The eigenvectors are computed depending on the
     value of evect.
 
-    When computed, the matrix \f$Z_i\f$ of eigenvectors is normalized as follows:
+    When computed, the matrix \f$Z_j\f$ of eigenvectors is normalized as follows:
 
     \f[
         \begin{array}{cl}
-        Z_i^H B_i Z_i=I & \: \text{if 1st or 2nd form, or}\\
-        Z_i^H B_i^{-1} Z_i=I & \: \text{if 3rd form.}
+        Z_j^H B_j Z_j=I & \: \text{if 1st or 2nd form, or}\\
+        Z_j^H B_j^{-1} Z_j=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect     #rocblas_evect.\n
-              Specifies whether the eigenvectors are to be computed.
-              If evect is rocblas_evect_original, then the eigenvectors are computed.
-              rocblas_evect_tridiagonal is not supported.
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower parts of the matrices
-              A_i and B_i are stored. If uplo indicates lower (or upper),
-              then the upper (or lower) parts of A_i and B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices
+                A_j and B_j are stored. If uplo indicates lower (or upper),
+                then the upper (or lower) parts of A_j and B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the hermitian matrices A_i. On exit, if evect is original,
-              the normalized matrix Z_i of eigenvectors. If evect is none, then the upper or lower triangular
-              part of the matrices A_i (including the diagonal) are destroyed,
-              depending on the value of uplo.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the hermitian matrices A_j. On exit, if evect is original,
+                the normalized matrix Z_j of eigenvectors. If evect is none, then the upper or lower triangular
+                part of the matrices A_j (including the diagonal) are destroyed,
+                depending on the value of uplo.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[out]
-    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
-              On entry, the hermitian positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+                On entry, the hermitian positive definite matrices B_j. On exit, the
+                triangular factor of B_j as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              On exit, the eigenvalues in increasing order.
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+                On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_i to the next one D_(i+1).
-              There is no restriction for the value of strideD. Normal use is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              This array is used to work internally with the tridiagonal matrix T_i associated with
-              the ith reduced eigenvalue problem.
-              On exit, if 0 < info[i] <= n, it contains the unconverged off-diagonal elements of T_i
-              (or properly speaking, a tridiagonal matrix equivalent to T_i). The diagonal elements
-              of this matrix are in D_i; those that converged correspond to a subset of the
-              eigenvalues (not necessarily ordered).
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+                This array is used to work internally with the tridiagonal matrix T_j associated with
+                the jth reduced eigenvalue problem.
+                On exit, if 0 < info[j] <= n, it contains the unconverged off-diagonal elements of T_j
+                (or properly speaking, a tridiagonal matrix equivalent to T_j). The diagonal elements
+                of this matrix are in D_j; those that converged correspond to a subset of the
+                eigenvalues (not necessarily ordered).
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_i to the next one E_(i+1).
-              There is no restriction for the value of strideE. Normal use is strideE >= n.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit of batch i.
-              If info[i] = j <= n, j off-diagonal elements of an intermediate
-              tridiagonal form did not converge to zero.
-              If info[i] = n + j, the leading minor of order j of B_i is not
-              positive definite.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit of batch j.
+                If info[j] = i <= n, i off-diagonal elements of an intermediate
+                tridiagonal form did not converge to zero.
+                If info[j] = n + i, the leading minor of order i of B_j is not
+                positive definite.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -15335,92 +15335,92 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype. The eigenvectors are computed depending on the
     value of evect.
 
-    When computed, the matrix \f$Z_i\f$ of eigenvectors is normalized as follows:
+    When computed, the matrix \f$Z_j\f$ of eigenvectors is normalized as follows:
 
     \f[
         \begin{array}{cl}
-        Z_i^T B_i Z_i=I & \: \text{if 1st or 2nd form, or}\\
-        Z_i^T B_i^{-1} Z_i=I & \: \text{if 3rd form.}
+        Z_j^T B_j Z_j=I & \: \text{if 1st or 2nd form, or}\\
+        Z_j^T B_j^{-1} Z_j=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect     #rocblas_evect.\n
-              Specifies whether the eigenvectors are to be computed.
-              If evect is rocblas_evect_original, then the eigenvectors are computed.
-              rocblas_evect_tridiagonal is not supported.
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower parts of the matrices
-              A_i and B_i are stored. If uplo indicates lower (or upper),
-              then the upper (or lower) parts of A_i and B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices
+                A_j and B_j are stored. If uplo indicates lower (or upper),
+                then the upper (or lower) parts of A_j and B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the symmetric matrices A_i. On exit, if evect is original,
-              the normalized matrix Z_i of eigenvectors. If evect is none, then the upper or lower triangular
-              part of the matrices A_i (including the diagonal) are destroyed,
-              depending on the value of uplo.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the symmetric matrices A_j. On exit, if evect is original,
+                the normalized matrix Z_j of eigenvectors. If evect is none, then the upper or lower triangular
+                part of the matrices A_j (including the diagonal) are destroyed,
+                depending on the value of uplo.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
     @param[out]
-    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-              On entry, the symmetric positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+                On entry, the symmetric positive definite matrices B_j. On exit, the
+                triangular factor of B_j as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[in]
-    strideB   rocblas_stride.\n
-              Stride from the start of one matrix B_i to the next one B_(i+1).
-              There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[out]
-    D         pointer to type. Array on the GPU (the size depends on the value of strideD).\n
-              On exit, the eigenvalues in increasing order.
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+                On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_i to the next one D_(i+1).
-              There is no restriction for the value of strideD. Normal use is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E         pointer to type. Array on the GPU (the size depends on the value of strideE).\n
-              This array is used to work internally with the tridiagonal matrix T_i associated with
-              the ith reduced eigenvalue problem.
-              On exit, if 0 < info[i] <= n, it contains the unconverged off-diagonal elements of T_i
-              (or properly speaking, a tridiagonal matrix equivalent to T_i). The diagonal elements
-              of this matrix are in D_i; those that converged correspond to a subset of the
-              eigenvalues (not necessarily ordered).
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+                This array is used to work internally with the tridiagonal matrix T_j associated with
+                the jth reduced eigenvalue problem.
+                On exit, if 0 < info[j] <= n, it contains the unconverged off-diagonal elements of T_j
+                (or properly speaking, a tridiagonal matrix equivalent to T_j). The diagonal elements
+                of this matrix are in D_j; those that converged correspond to a subset of the
+                eigenvalues (not necessarily ordered).
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_i to the next one E_(i+1).
-              There is no restriction for the value of strideE. Normal use is strideE >= n.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit of batch i.
-              If info[i] = j <= n, j off-diagonal elements of an intermediate
-              tridiagonal form did not converge to zero.
-              If info[i] = n + j, the leading minor of order j of B_i is not
-              positive definite.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit of batch j.
+                If info[j] = i <= n, i off-diagonal elements of an intermediate
+                tridiagonal form did not converge to zero.
+                If info[j] = n + i, the leading minor of order i of B_j is not
+                positive definite.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -15473,92 +15473,92 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_strided_batched(rocblas_handle h
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype. The eigenvectors are computed depending on the
     value of evect.
 
-    When computed, the matrix \f$Z_i\f$ of eigenvectors is normalized as follows:
+    When computed, the matrix \f$Z_j\f$ of eigenvectors is normalized as follows:
 
     \f[
         \begin{array}{cl}
-        Z_i^H B_i Z_i=I & \: \text{if 1st or 2nd form, or}\\
-        Z_i^H B_i^{-1} Z_i=I & \: \text{if 3rd form.}
+        Z_j^H B_j Z_j=I & \: \text{if 1st or 2nd form, or}\\
+        Z_j^H B_j^{-1} Z_j=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect     #rocblas_evect.\n
-              Specifies whether the eigenvectors are to be computed.
-              If evect is rocblas_evect_original, then the eigenvectors are computed.
-              rocblas_evect_tridiagonal is not supported.
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower parts of the matrices
-              A_i and B_i are stored. If uplo indicates lower (or upper),
-              then the upper (or lower) parts of A_i and B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices
+                A_j and B_j are stored. If uplo indicates lower (or upper),
+                then the upper (or lower) parts of A_j and B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the hermitian matrices A_i. On exit, if evect is original,
-              the normalized matrix Z_i of eigenvectors. If evect is none, then the upper or lower triangular
-              part of the matrices A_i (including the diagonal) are destroyed,
-              depending on the value of uplo.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the hermitian matrices A_j. On exit, if evect is original,
+                the normalized matrix Z_j of eigenvectors. If evect is none, then the upper or lower triangular
+                part of the matrices A_j (including the diagonal) are destroyed,
+                depending on the value of uplo.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
     @param[out]
-    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-              On entry, the hermitian positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+                On entry, the hermitian positive definite matrices B_j. On exit, the
+                triangular factor of B_j as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[in]
-    strideB   rocblas_stride.\n
-              Stride from the start of one matrix B_i to the next one B_(i+1).
-              There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              On exit, the eigenvalues in increasing order.
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+                On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_i to the next one D_(i+1).
-              There is no restriction for the value of strideD. Normal use is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              This array is used to work internally with the tridiagonal matrix T_i associated with
-              the ith reduced eigenvalue problem.
-              On exit, if 0 < info[i] <= n, it contains the unconverged off-diagonal elements of T_i
-              (or properly speaking, a tridiagonal matrix equivalent to T_i). The diagonal elements
-              of this matrix are in D_i; those that converged correspond to a subset of the
-              eigenvalues (not necessarily ordered).
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+                This array is used to work internally with the tridiagonal matrix T_j associated with
+                the jth reduced eigenvalue problem.
+                On exit, if 0 < info[j] <= n, it contains the unconverged off-diagonal elements of T_j
+                (or properly speaking, a tridiagonal matrix equivalent to T_j). The diagonal elements
+                of this matrix are in D_j; those that converged correspond to a subset of the
+                eigenvalues (not necessarily ordered).
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_i to the next one E_(i+1).
-              There is no restriction for the value of strideE. Normal use is strideE >= n.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit of batch i.
-              If info[i] = j <= n, j off-diagonal elements of an intermediate
-              tridiagonal form did not converge to zero.
-              If info[i] = n + j, the leading minor of order j of B_i is not
-              positive definite.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit of batch j.
+                If info[j] = i <= n, i off-diagonal elements of an intermediate
+                tridiagonal form did not converge to zero.
+                If info[j] = n + i, the leading minor of order i of B_j is not
+                positive definite.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -15630,59 +15630,59 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_strided_batched(rocblas_handle h
     \f]
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblem.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect     #rocblas_evect.\n
-              Specifies whether the eigenvectors are to be computed.
-              If evect is rocblas_evect_original, then the eigenvectors are computed.
-              rocblas_evect_tridiagonal is not supported.
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower parts of the matrices
-              A and B are stored. If uplo indicates lower (or upper),
-              then the upper (or lower) parts of A and B are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices
+                A and B are stored. If uplo indicates lower (or upper),
+                then the upper (or lower) parts of A and B are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the symmetric matrix A. On exit, if evect is original,
-              the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
-              part of the matrix A (including the diagonal) is destroyed,
-              depending on the value of uplo.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the symmetric matrix A. On exit, if evect is original,
+                the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
+                part of the matrix A (including the diagonal) is destroyed,
+                depending on the value of uplo.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    B         pointer to type. Array on the GPU of dimension ldb*n.\n
-              On entry, the symmetric positive definite matrix B. On exit, the
-              triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
+    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+                On entry, the symmetric positive definite matrix B. On exit, the
+                triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B.
     @param[out]
-    D         pointer to type. Array on the GPU of dimension n.\n
-              On exit, the eigenvalues in increasing order.
+    D           pointer to type. Array on the GPU of dimension n.\n
+                On exit, the eigenvalues in increasing order.
     @param[out]
-    E         pointer to type. Array on the GPU of dimension n.\n
-              This array is used to work internally with the tridiagonal matrix T associated with
-              the reduced eigenvalue problem.
-              On exit, if 0 < info <= n, it contains the unconverged off-diagonal elements of T
-              (or properly speaking, a tridiagonal matrix equivalent to T). The diagonal elements
-              of this matrix are in D; those that converged correspond to a subset of the
-              eigenvalues (not necessarily ordered).
+    E           pointer to type. Array on the GPU of dimension n.\n
+                This array is used to work internally with the tridiagonal matrix T associated with
+                the reduced eigenvalue problem.
+                On exit, if 0 < info <= n, it contains the unconverged off-diagonal elements of T
+                (or properly speaking, a tridiagonal matrix equivalent to T). The diagonal elements
+                of this matrix are in D; those that converged correspond to a subset of the
+                eigenvalues (not necessarily ordered).
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = j <= n and evect is rocblas_evect_none, j off-diagonal elements of an
-              intermediate tridiagonal form did not converge to zero.
-              If info = j <= n and evect is rocblas_evect_original, the algorithm failed to
-              compute an eigenvalue in the submatrix from [j/(n+1), j/(n+1)] to [j%(n+1), j%(n+1)].
-              If info = n + j, the leading minor of order j of B is not
-              positive definite.
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i <= n and evect is rocblas_evect_none, i off-diagonal elements of an
+                intermediate tridiagonal form did not converge to zero.
+                If info = i <= n and evect is rocblas_evect_original, the algorithm failed to
+                compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
+                If info = n + i, the leading minor of order i of B is not
+                positive definite.
 
     ********************************************************************/
 
@@ -15741,59 +15741,59 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd(rocblas_handle handle,
     \f]
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblem.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect     #rocblas_evect.\n
-              Specifies whether the eigenvectors are to be computed.
-              If evect is rocblas_evect_original, then the eigenvectors are computed.
-              rocblas_evect_tridiagonal is not supported.
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower parts of the matrices
-              A and B are stored. If uplo indicates lower (or upper),
-              then the upper (or lower) parts of A and B are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices
+                A and B are stored. If uplo indicates lower (or upper),
+                then the upper (or lower) parts of A and B are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the hermitian matrix A. On exit, if evect is original,
-              the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
-              part of the matrix A (including the diagonal) is destroyed,
-              depending on the value of uplo.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the hermitian matrix A. On exit, if evect is original,
+                the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
+                part of the matrix A (including the diagonal) is destroyed,
+                depending on the value of uplo.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    B         pointer to type. Array on the GPU of dimension ldb*n.\n
-              On entry, the hermitian positive definite matrix B. On exit, the
-              triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
+    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+                On entry, the hermitian positive definite matrix B. On exit, the
+                triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B.
     @param[out]
-    D         pointer to real type. Array on the GPU of dimension n.\n
-              On exit, the eigenvalues in increasing order.
+    D           pointer to real type. Array on the GPU of dimension n.\n
+                On exit, the eigenvalues in increasing order.
     @param[out]
-    E         pointer to real type. Array on the GPU of dimension n.\n
-              This array is used to work internally with the tridiagonal matrix T associated with
-              the reduced eigenvalue problem.
-              On exit, if 0 < info <= n, it contains the unconverged off-diagonal elements of T
-              (or properly speaking, a tridiagonal matrix equivalent to T). The diagonal elements
-              of this matrix are in D; those that converged correspond to a subset of the
-              eigenvalues (not necessarily ordered).
+    E           pointer to real type. Array on the GPU of dimension n.\n
+                This array is used to work internally with the tridiagonal matrix T associated with
+                the reduced eigenvalue problem.
+                On exit, if 0 < info <= n, it contains the unconverged off-diagonal elements of T
+                (or properly speaking, a tridiagonal matrix equivalent to T). The diagonal elements
+                of this matrix are in D; those that converged correspond to a subset of the
+                eigenvalues (not necessarily ordered).
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = j <= n and evect is rocblas_evect_none, j off-diagonal elements of an
-              intermediate tridiagonal form did not converge to zero.
-              If info = j <= n and evect is rocblas_evect_original, the algorithm failed to
-              compute an eigenvalue in the submatrix from [j/(n+1), j/(n+1)] to [j%(n+1), j%(n+1)].
-              If info = n + j, the leading minor of order j of B is not
-              positive definite.
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i <= n and evect is rocblas_evect_none, i off-diagonal elements of an
+                intermediate tridiagonal form did not converge to zero.
+                If info = i <= n and evect is rocblas_evect_original, the algorithm failed to
+                compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
+                If info = n + i, the leading minor of order i of B is not
+                positive definite.
 
     ********************************************************************/
 
@@ -15833,86 +15833,86 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype. The eigenvectors are computed using a divide-and-conquer algorithm, depending on the
     value of evect.
 
-    When computed, the matrix \f$Z_i\f$ of eigenvectors is normalized as follows:
+    When computed, the matrix \f$Z_j\f$ of eigenvectors is normalized as follows:
 
     \f[
         \begin{array}{cl}
-        Z_i^T B_i Z_i=I & \: \text{if 1st or 2nd form, or}\\
-        Z_i^T B_i^{-1} Z_i=I & \: \text{if 3rd form.}
+        Z_j^T B_j Z_j=I & \: \text{if 1st or 2nd form, or}\\
+        Z_j^T B_j^{-1} Z_j=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect     #rocblas_evect.\n
-              Specifies whether the eigenvectors are to be computed.
-              If evect is rocblas_evect_original, then the eigenvectors are computed.
-              rocblas_evect_tridiagonal is not supported.
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower parts of the matrices
-              A_i and B_i are stored. If uplo indicates lower (or upper),
-              then the upper (or lower) parts of A_i and B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices
+                A_j and B_j are stored. If uplo indicates lower (or upper),
+                then the upper (or lower) parts of A_j and B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the symmetric matrices A_i. On exit, if evect is original,
-              the normalized matrix Z_i of eigenvectors. If evect is none, then the upper or lower triangular
-              part of the matrices A_i (including the diagonal) are destroyed,
-              depending on the value of uplo.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the symmetric matrices A_j. On exit, if evect is original,
+                the normalized matrix Z_j of eigenvectors. If evect is none, then the upper or lower triangular
+                part of the matrices A_j (including the diagonal) are destroyed,
+                depending on the value of uplo.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[out]
-    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
-              On entry, the symmetric positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+                On entry, the symmetric positive definite matrices B_j. On exit, the
+                triangular factor of B_j as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[out]
-    D         pointer to type. Array on the GPU (the size depends on the value of strideD).\n
-              On exit, the eigenvalues in increasing order.
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+                On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_i to the next one D_(i+1).
-              There is no restriction for the value of strideD. Normal use is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E         pointer to type. Array on the GPU (the size depends on the value of strideE).\n
-              This array is used to work internally with the tridiagonal matrix T_i associated with
-              the ith reduced eigenvalue problem.
-              On exit, if 0 < info[i] <= n, it contains the unconverged off-diagonal elements of T_i
-              (or properly speaking, a tridiagonal matrix equivalent to T_i). The diagonal elements
-              of this matrix are in D_i; those that converged correspond to a subset of the
-              eigenvalues (not necessarily ordered).
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+                This array is used to work internally with the tridiagonal matrix T_j associated with
+                the jth reduced eigenvalue problem.
+                On exit, if 0 < info[j] <= n, it contains the unconverged off-diagonal elements of T_j
+                (or properly speaking, a tridiagonal matrix equivalent to T_j). The diagonal elements
+                of this matrix are in D_j; those that converged correspond to a subset of the
+                eigenvalues (not necessarily ordered).
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_i to the next one E_(i+1).
-              There is no restriction for the value of strideE. Normal use is strideE >= n.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit of batch i.
-              If info[i] = j <= n and evect is rocblas_evect_none, j off-diagonal elements of an
-              intermediate tridiagonal form did not converge to zero.
-              If info[i] = j <= n and evect is rocblas_evect_original, the algorithm failed to
-              compute an eigenvalue in the submatrix from [j/(n+1), j/(n+1)] to [j%(n+1), j%(n+1)].
-              If info[i] = n + j, the leading minor of order j of B_i is not
-              positive definite.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit of batch j.
+                If info[j] = i <= n and evect is rocblas_evect_none, i off-diagonal elements of an
+                intermediate tridiagonal form did not converge to zero.
+                If info[j] = i <= n and evect is rocblas_evect_original, the algorithm failed to
+                compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
+                If info[j] = n + i, the leading minor of order i of B_j is not
+                positive definite.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -15961,86 +15961,86 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype. The eigenvectors are computed using a divide-and-conquer algorithm, depending on the
     value of evect.
 
-    When computed, the matrix \f$Z_i\f$ of eigenvectors is normalized as follows:
+    When computed, the matrix \f$Z_j\f$ of eigenvectors is normalized as follows:
 
     \f[
         \begin{array}{cl}
-        Z_i^H B_i Z_i=I & \: \text{if 1st or 2nd form, or}\\
-        Z_i^H B_i^{-1} Z_i=I & \: \text{if 3rd form.}
+        Z_j^H B_j Z_j=I & \: \text{if 1st or 2nd form, or}\\
+        Z_j^H B_j^{-1} Z_j=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect     #rocblas_evect.\n
-              Specifies whether the eigenvectors are to be computed.
-              If evect is rocblas_evect_original, then the eigenvectors are computed.
-              rocblas_evect_tridiagonal is not supported.
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower parts of the matrices
-              A_i and B_i are stored. If uplo indicates lower (or upper),
-              then the upper (or lower) parts of A_i and B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices
+                A_j and B_j are stored. If uplo indicates lower (or upper),
+                then the upper (or lower) parts of A_j and B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the hermitian matrices A_i. On exit, if evect is original,
-              the normalized matrix Z_i of eigenvectors. If evect is none, then the upper or lower triangular
-              part of the matrices A_i (including the diagonal) are destroyed,
-              depending on the value of uplo.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the hermitian matrices A_j. On exit, if evect is original,
+                the normalized matrix Z_j of eigenvectors. If evect is none, then the upper or lower triangular
+                part of the matrices A_j (including the diagonal) are destroyed,
+                depending on the value of uplo.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[out]
-    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
-              On entry, the hermitian positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+                On entry, the hermitian positive definite matrices B_j. On exit, the
+                triangular factor of B_j as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              On exit, the eigenvalues in increasing order.
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+                On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_i to the next one D_(i+1).
-              There is no restriction for the value of strideD. Normal use is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              This array is used to work internally with the tridiagonal matrix T_i associated with
-              the ith reduced eigenvalue problem.
-              On exit, if 0 < info[i] <= n, it contains the unconverged off-diagonal elements of T_i
-              (or properly speaking, a tridiagonal matrix equivalent to T_i). The diagonal elements
-              of this matrix are in D_i; those that converged correspond to a subset of the
-              eigenvalues (not necessarily ordered).
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+                This array is used to work internally with the tridiagonal matrix T_j associated with
+                the jth reduced eigenvalue problem.
+                On exit, if 0 < info[j] <= n, it contains the unconverged off-diagonal elements of T_j
+                (or properly speaking, a tridiagonal matrix equivalent to T_j). The diagonal elements
+                of this matrix are in D_j; those that converged correspond to a subset of the
+                eigenvalues (not necessarily ordered).
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_i to the next one E_(i+1).
-              There is no restriction for the value of strideE. Normal use is strideE >= n.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit of batch i.
-              If info[i] = j <= n and evect is rocblas_evect_none, j off-diagonal elements of an
-              intermediate tridiagonal form did not converge to zero.
-              If info[i] = j <= n and evect is rocblas_evect_original, the algorithm failed to
-              compute an eigenvalue in the submatrix from [j/(n+1), j/(n+1)] to [j%(n+1), j%(n+1)].
-              If info[i] = n + j, the leading minor of order j of B_i is not
-              positive definite.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit of batch j.
+                If info[j] = i <= n and evect is rocblas_evect_none, i off-diagonal elements of an
+                intermediate tridiagonal form did not converge to zero.
+                If info[j] = i <= n and evect is rocblas_evect_original, the algorithm failed to
+                compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
+                If info[j] = n + i, the leading minor of order i of B_j is not
+                positive definite.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -16089,94 +16089,94 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype. The eigenvectors are computed using a divide-and-conquer algorithm, depending on the
     value of evect.
 
-    When computed, the matrix \f$Z_i\f$ of eigenvectors is normalized as follows:
+    When computed, the matrix \f$Z_j\f$ of eigenvectors is normalized as follows:
 
     \f[
         \begin{array}{cl}
-        Z_i^T B_i Z_i=I & \: \text{if 1st or 2nd form, or}\\
-        Z_i^T B_i^{-1} Z_i=I & \: \text{if 3rd form.}
+        Z_j^T B_j Z_j=I & \: \text{if 1st or 2nd form, or}\\
+        Z_j^T B_j^{-1} Z_j=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect     #rocblas_evect.\n
-              Specifies whether the eigenvectors are to be computed.
-              If evect is rocblas_evect_original, then the eigenvectors are computed.
-              rocblas_evect_tridiagonal is not supported.
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower parts of the matrices
-              A_i and B_i are stored. If uplo indicates lower (or upper),
-              then the upper (or lower) parts of A_i and B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices
+                A_j and B_j are stored. If uplo indicates lower (or upper),
+                then the upper (or lower) parts of A_j and B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the symmetric matrices A_i. On exit, if evect is original,
-              the normalized matrix Z_i of eigenvectors. If evect is none, then the upper or lower triangular
-              part of the matrices A_i (including the diagonal) are destroyed,
-              depending on the value of uplo.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the symmetric matrices A_j. On exit, if evect is original,
+                the normalized matrix Z_j of eigenvectors. If evect is none, then the upper or lower triangular
+                part of the matrices A_j (including the diagonal) are destroyed,
+                depending on the value of uplo.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
     @param[out]
-    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-              On entry, the symmetric positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+                On entry, the symmetric positive definite matrices B_j. On exit, the
+                triangular factor of B_j as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[in]
-    strideB   rocblas_stride.\n
-              Stride from the start of one matrix B_i to the next one B_(i+1).
-              There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[out]
-    D         pointer to type. Array on the GPU (the size depends on the value of strideD).\n
-              On exit, the eigenvalues in increasing order.
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+                On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_i to the next one D_(i+1).
-              There is no restriction for the value of strideD. Normal use is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E         pointer to type. Array on the GPU (the size depends on the value of strideE).\n
-              This array is used to work internally with the tridiagonal matrix T_i associated with
-              the ith reduced eigenvalue problem.
-              On exit, if 0 < info[i] <= n, it contains the unconverged off-diagonal elements of T_i
-              (or properly speaking, a tridiagonal matrix equivalent to T_i). The diagonal elements
-              of this matrix are in D_i; those that converged correspond to a subset of the
-              eigenvalues (not necessarily ordered).
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+                This array is used to work internally with the tridiagonal matrix T_j associated with
+                the jth reduced eigenvalue problem.
+                On exit, if 0 < info[j] <= n, it contains the unconverged off-diagonal elements of T_j
+                (or properly speaking, a tridiagonal matrix equivalent to T_j). The diagonal elements
+                of this matrix are in D_j; those that converged correspond to a subset of the
+                eigenvalues (not necessarily ordered).
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_i to the next one E_(i+1).
-              There is no restriction for the value of strideE. Normal use is strideE >= n.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit of batch i.
-              If info[i] = j <= n and evect is rocblas_evect_none, j off-diagonal elements of an
-              intermediate tridiagonal form did not converge to zero.
-              If info[i] = j <= n and evect is rocblas_evect_original, the algorithm failed to
-              compute an eigenvalue in the submatrix from [j/(n+1), j/(n+1)] to [j%(n+1), j%(n+1)].
-              If info[i] = n + j, the leading minor of order j of B_i is not
-              positive definite.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit of batch j.
+                If info[j] = i <= n and evect is rocblas_evect_none, i off-diagonal elements of an
+                intermediate tridiagonal form did not converge to zero.
+                If info[j] = i <= n and evect is rocblas_evect_original, the algorithm failed to
+                compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
+                If info[j] = n + i, the leading minor of order i of B_j is not
+                positive definite.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -16229,94 +16229,94 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_strided_batched(rocblas_handle 
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype. The eigenvectors are computed using a divide-and-conquer algorithm, depending on the
     value of evect.
 
-    When computed, the matrix \f$Z_i\f$ of eigenvectors is normalized as follows:
+    When computed, the matrix \f$Z_j\f$ of eigenvectors is normalized as follows:
 
     \f[
         \begin{array}{cl}
-        Z_i^H B_i Z_i=I & \: \text{if 1st or 2nd form, or}\\
-        Z_i^H B_i^{-1} Z_i=I & \: \text{if 3rd form.}
+        Z_j^H B_j Z_j=I & \: \text{if 1st or 2nd form, or}\\
+        Z_j^H B_j^{-1} Z_j=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect     #rocblas_evect.\n
-              Specifies whether the eigenvectors are to be computed.
-              If evect is rocblas_evect_original, then the eigenvectors are computed.
-              rocblas_evect_tridiagonal is not supported.
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower parts of the matrices
-              A_i and B_i are stored. If uplo indicates lower (or upper),
-              then the upper (or lower) parts of A_i and B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices
+                A_j and B_j are stored. If uplo indicates lower (or upper),
+                then the upper (or lower) parts of A_j and B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the hermitian matrices A_i. On exit, if evect is original,
-              the normalized matrix Z_i of eigenvectors. If evect is none, then the upper or lower triangular
-              part of the matrices A_i (including the diagonal) are destroyed,
-              depending on the value of uplo.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the hermitian matrices A_j. On exit, if evect is original,
+                the normalized matrix Z_j of eigenvectors. If evect is none, then the upper or lower triangular
+                part of the matrices A_j (including the diagonal) are destroyed,
+                depending on the value of uplo.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
     @param[out]
-    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-              On entry, the hermitian positive definite matrices B_i. On exit, the
-              triangular factor of B_i as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+                On entry, the hermitian positive definite matrices B_j. On exit, the
+                triangular factor of B_j as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[in]
-    strideB   rocblas_stride.\n
-              Stride from the start of one matrix B_i to the next one B_(i+1).
-              There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              On exit, the eigenvalues in increasing order.
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+                On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_i to the next one D_(i+1).
-              There is no restriction for the value of strideD. Normal use is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              This array is used to work internally with the tridiagonal matrix T_i associated with
-              the ith reduced eigenvalue problem.
-              On exit, if 0 < info[i] <= n, it contains the unconverged off-diagonal elements of T_i
-              (or properly speaking, a tridiagonal matrix equivalent to T_i). The diagonal elements
-              of this matrix are in D_i; those that converged correspond to a subset of the
-              eigenvalues (not necessarily ordered).
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+                This array is used to work internally with the tridiagonal matrix T_j associated with
+                the jth reduced eigenvalue problem.
+                On exit, if 0 < info[j] <= n, it contains the unconverged off-diagonal elements of T_j
+                (or properly speaking, a tridiagonal matrix equivalent to T_j). The diagonal elements
+                of this matrix are in D_j; those that converged correspond to a subset of the
+                eigenvalues (not necessarily ordered).
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_i to the next one E_(i+1).
-              There is no restriction for the value of strideE. Normal use is strideE >= n.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit of batch i.
-              If info[i] = j <= n and evect is rocblas_evect_none, j off-diagonal elements of an
-              intermediate tridiagonal form did not converge to zero.
-              If info[i] = j <= n and evect is rocblas_evect_original, the algorithm failed to
-              compute an eigenvalue in the submatrix from [j/(n+1), j/(n+1)] to [j%(n+1), j%(n+1)].
-              If info[i] = n + j, the leading minor of order j of B_i is not
-              positive definite.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit of batch j.
+                If info[j] = i <= n and evect is rocblas_evect_none, i off-diagonal elements of an
+                intermediate tridiagonal form did not converge to zero.
+                If info[j] = i <= n and evect is rocblas_evect_original, the algorithm failed to
+                compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
+                If info[j] = n + i, the leading minor of order i of B_j is not
+                positive definite.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
