@@ -55,6 +55,7 @@ include(ROCMInstallTargets)
 include(ROCMPackageConfigHelpers)
 include(ROCMInstallSymlinks)
 include(ROCMCheckTargetIds)
+include(ROCMHeaderWrapper)
 
 include(os-detection)
 get_os_id(OS_ID)
@@ -112,9 +113,12 @@ option(WERROR "Treat warnings as errors" OFF)
 # FOR HANDLING ENABLE/DISABLE OPTIONAL BACKWARD COMPATIBILITY for FILE/FOLDER REORG
 option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY "Build with file/folder reorg with backward compatibility enabled" OFF)
 if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
-  include(cmake/rocsolver-backward-compat.cmake)
-  package_wrapper_headers()
-  message (STATUS "Completed package_wrapper_headers()")
+  rocm_wrap_header_dir(
+    ${CMAKE_SOURCE_DIR}/library/include
+    PATTERNS "*.h"
+    GUARDS SYMLINK WRAPPER
+    WRAPPER_LOCATIONS include
+  )
 endif()
 
 

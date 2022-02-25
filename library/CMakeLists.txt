@@ -6,19 +6,8 @@
 set(rocsolver_SOVERSION 0.1)
 
 # Create version header from templated .in file using CMake info
-configure_file(include/rocsolver-version.h.in "${PROJECT_BINARY_DIR}/include/rocsolver-version.h")
+configure_file(include/rocsolver-version.h.in "${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-version.h")
 
-if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
-  include(${PROJECT_SOURCE_DIR}/cmake/rocsolver-backward-compat.cmake)
-  package_wrapper_headerfile( "${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-version.h" )
-  message( STATUS "Completed package_wrapper_headerfile() for rocblas version")
-endif( )
-
-# Copy source headers to build dir
-configure_file(include/rocsolver.h "${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver.h" COPYONLY)
-configure_file(include/rocsolver-aliases.h "${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-aliases.h" COPYONLY)
-configure_file(include/rocsolver-functions.h "${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-functions.h" COPYONLY)
-configure_file(include/rocsolver-extra-types.h "${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-extra-types.h" COPYONLY)
 
 
 set(rocsolver_headers_public

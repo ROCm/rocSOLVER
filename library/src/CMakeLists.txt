@@ -248,9 +248,11 @@ set_target_properties(rocsolver PROPERTIES
 generate_export_header(rocsolver EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-export.h)
 
 if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
-  include(${PROJECT_SOURCE_DIR}/cmake/rocsolver-backward-compat.cmake)
-  package_wrapper_headerfile("${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-export.h")
-  message (STATUS "Completed package_wrapper_headerfile() Configuration for Generated Files")
+  rocm_wrap_header_file(
+    rocsolver-version.h rocsolver-export.h
+    GUARDS SYMLINK WRAPPER
+    WRAPPER_LOCATIONS include rocsolver/include
+  )
 endif( )
 
 # Following Boost conventions of prefixing 'lib' on static built libraries, across all platforms
@@ -287,34 +289,15 @@ endif()
 
 ############################################################
 # Installation
-
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/library/include ${PROJECT_BINARY_DIR}/include/rocsolver)
 rocm_install_targets(
   TARGETS ${package_targets}
   INCLUDE
-    ${CMAKE_SOURCE_DIR}/library/include
     ${CMAKE_BINARY_DIR}/include
 )
 
-install(
-DIRECTORY "${CMAKE_SOURCE_DIR}/library/include/" "${CMAKE_BINARY_DIR}/include/rocsolver/"
-  DESTINATION include/rocsolver
-  FILES_MATCHING
-  PATTERN "*.h"
-  PATTERN "*.hpp"
-  PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
-)
 
-if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
-install(
-    DIRECTORY
-       "${PROJECT_BINARY_DIR}/include/"
-        DESTINATION "include/"
-  FILES_MATCHING
-  PATTERN "*.h"
-  PATTERN "*.hpp"
-  PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ )
 
-endif()
 
 rocm_export_targets(
   TARGETS roc::rocsolver
