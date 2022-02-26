@@ -362,9 +362,11 @@ void testing_latrd(Arguments& argus)
         latrd_getPerfData<T>(handle, uplo, n, k, dA, lda, dE, dTau, dW, ldw, hA, hE, hTau, hW,
                              &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
 
+#ifdef ROCSOLVER_CLIENTS_TEST
     // validate results for rocsolver-test
     // using k*n * machine_precision as tolerance
-    ROCSOLVER_TEST_CHECK(T, max_error, k * n);
+    ASSERT_LE(max_error, k * n * get_epsilon<T>());
+#endif
 
     // output results for rocsolver-bench
     if(argus.timing)

@@ -592,9 +592,11 @@ void testing_gebd2_gebrd(Arguments& argus)
                                                        hot_calls, argus.profile, argus.perf);
     }
 
+#ifdef ROCSOLVER_CLIENTS_TEST
     // validate results for rocsolver-test
     // using m*n * machine_precision as tolerance
-    ROCSOLVER_TEST_CHECK(T, max_error, m * n);
+    ASSERT_LE(max_error, m * n * get_epsilon<T>());
+#endif
 
     // output results for rocsolver-bench
     if(argus.timing)

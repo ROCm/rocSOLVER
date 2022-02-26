@@ -791,13 +791,13 @@ void testing_gesvd(Arguments& argus)
         }
     }
 
+#ifdef ROCSOLVER_CLIENTS_TEST
     // validate results for rocsolver-test
     // using 2 * min(m, n) * machine_precision as tolerance
-    {
-        ROCSOLVER_TEST_CHECK(T, max_error, 2 * min(m, n));
-        if(svects)
-            ROCSOLVER_TEST_CHECK(T, max_errorv, 2 * min(m, n));
-    }
+    ASSERT_LE(max_error, 2 * min(m, n) * get_epsilon<T>());
+    if(svects)
+        ASSERT_LE(max_errorv, 2 * min(m, n) * get_epsilon<T>());
+#endif
 
     // output results for rocsolver-bench
     if(argus.timing)

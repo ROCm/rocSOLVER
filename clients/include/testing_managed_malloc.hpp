@@ -295,9 +295,11 @@ void testing_managed_malloc(Arguments& argus)
     hipFree(dY);
     hipFree(dYRes);
 
+#ifdef ROCSOLVER_CLIENTS_TEST
     // validate results for rocsolver-test
     // using nb * max(m,n) * machine_precision as tolerance
-    ROCSOLVER_TEST_CHECK(T, max_error, nb * max(m, n));
+    ASSERT_LE(max_error, nb * max(m, n) * get_epsilon<T>());
+#endif
 
     // output results for rocsolver-bench
     if(argus.timing)

@@ -351,9 +351,11 @@ void testing_larft(Arguments& argus)
         larft_getPerfData<T>(handle, direct, storev, n, k, dV, ldv, dt, dT, ldt, hV, ht, hT,
                              &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
 
+#ifdef ROCSOLVER_CLIENTS_TEST
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
-    ROCSOLVER_TEST_CHECK(T, max_error, n);
+    ASSERT_LE(max_error, n * get_epsilon<T>());
+#endif
 
     // output results for rocsolver-bench
     if(argus.timing)

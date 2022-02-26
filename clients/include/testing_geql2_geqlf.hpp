@@ -393,10 +393,12 @@ void testing_geql2_geqlf(Arguments& argus)
                                                        hot_calls, argus.profile, argus.perf);
     }
 
+#ifdef ROCSOLVER_CLIENTS_TEST
     // validate results for rocsolver-test
     // using m * machine_precision as tolerance
     // (for possibly singular of ill-conditioned matrices we could use m*min(m,n))
-    ROCSOLVER_TEST_CHECK(T, max_error, m);
+    ASSERT_LE(max_error, m * get_epsilon<T>());
+#endif
 
     // output results for rocsolver-bench
     if(argus.timing)

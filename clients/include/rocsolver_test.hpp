@@ -25,12 +25,6 @@ constexpr double get_epsilon()
     return std::numeric_limits<S>::epsilon();
 }
 
-#ifdef ROCSOLVER_CLIENTS_TEST
-#define ROCSOLVER_TEST_CHECK(T, max_error, tol) ASSERT_LE((max_error), (tol)*get_epsilon<T>())
-#else // ROCSOLVER_CLIENTS_BENCH
-#define ROCSOLVER_TEST_CHECK(T, max_error, tol)
-#endif
-
 typedef enum rocsolver_inform_type_
 {
     inform_quick_return,

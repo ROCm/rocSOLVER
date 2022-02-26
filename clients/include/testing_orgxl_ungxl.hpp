@@ -285,9 +285,11 @@ void testing_orgxl_ungxl(Arguments& argus)
         orgxl_ungxl_getPerfData<GQL, T>(handle, m, n, k, dA, lda, dIpiv, hA, hIpiv, &gpu_time_used,
                                         &cpu_time_used, hot_calls, argus.profile, argus.perf);
 
+#ifdef ROCSOLVER_CLIENTS_TEST
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
-    ROCSOLVER_TEST_CHECK(T, max_error, n);
+    ASSERT_LE(max_error, n * get_epsilon<T>());
+#endif
 
     // output results for rocsolver-bench
     if(argus.timing)

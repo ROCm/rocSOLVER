@@ -412,9 +412,11 @@ void testing_labrd(Arguments& argus)
                              hD, hE, hTauq, hTaup, hX, hY, &gpu_time_used, &cpu_time_used,
                              hot_calls, argus.profile, argus.perf);
 
+#ifdef ROCSOLVER_CLIENTS_TEST
     // validate results for rocsolver-test
     // using nb * max(m,n) * machine_precision as tolerance
-    ROCSOLVER_TEST_CHECK(T, max_error, nb * max(m, n));
+    ASSERT_LE(max_error, nb * max(m, n) * get_epsilon<T>());
+#endif
 
     // output results for rocsolver-bench
     if(argus.timing)

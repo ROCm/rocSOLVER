@@ -584,11 +584,13 @@ void testing_bdsqr(Arguments& argus)
                              argus.profile, argus.perf);
     }
 
+#ifdef ROCSOLVER_CLIENTS_TEST
     // validate results for rocsolver-test
     // using 2 * n * machine_precision as tolerance
-    ROCSOLVER_TEST_CHECK(T, max_error, 2 * n);
+    ASSERT_LE(max_error, 2 * n * get_epsilon<T>());
     if(nv || nu || nc)
-        ROCSOLVER_TEST_CHECK(T, max_errorv, 2 * n);
+        ASSERT_LE(max_errorv, 2 * n * get_epsilon<T>());
+#endif
 
     // output results for rocsolver-bench
     if(argus.timing)

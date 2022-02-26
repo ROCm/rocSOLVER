@@ -452,9 +452,11 @@ void testing_getri(Arguments& argus)
                                           argus.profile, argus.perf, argus.singular);
     }
 
+#ifdef ROCSOLVER_CLIENTS_TEST
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
-    ROCSOLVER_TEST_CHECK(T, max_error, n);
+    ASSERT_LE(max_error, n * get_epsilon<T>());
+#endif
 
     // output results for rocsolver-bench
     if(argus.timing)

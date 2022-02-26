@@ -468,10 +468,12 @@ void testing_larfb(Arguments& argus)
                              lda, hV, hT, hA, &gpu_time_used, &cpu_time_used, hot_calls,
                              argus.profile, argus.perf);
 
+#ifdef ROCSOLVER_CLIENTS_TEST
     // validate results for rocsolver-test
     // using s * machine_precision as tolerance
     rocblas_int s = left ? m : n;
-    ROCSOLVER_TEST_CHECK(T, max_error, s);
+    ASSERT_LE(max_error, s * get_epsilon<T>());
+#endif
 
     // output results for rocsolver-bench
     if(argus.timing)

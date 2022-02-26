@@ -339,10 +339,12 @@ void testing_orgbr_ungbr(Arguments& argus)
         orgbr_ungbr_getPerfData<T>(handle, storev, m, n, k, dA, lda, dIpiv, hA, hIpiv, &gpu_time_used,
                                    &cpu_time_used, hot_calls, argus.profile, argus.perf);
 
+#ifdef ROCSOLVER_CLIENTS_TEST
     // validate results for rocsolver-test
     // using s * machine_precision as tolerance
     rocblas_int s = row ? n : m;
-    ROCSOLVER_TEST_CHECK(T, max_error, s);
+    ASSERT_LE(max_error, s * get_epsilon<T>());
+#endif
 
     // output results for rocsolver-bench
     if(argus.timing)

@@ -223,9 +223,11 @@ void testing_lacgv(Arguments& argus)
         lacgv_getPerfData<T>(handle, n, dA, inc, hA, &gpu_time_used, &cpu_time_used, hot_calls,
                              argus.profile, argus.perf);
 
+#ifdef ROCSOLVER_CLIENTS_TEST
     // validate results for rocsolver-test
     // no tolerance
-    ROCSOLVER_TEST_CHECK(T, max_error, 0);
+    ASSERT_LE(max_error, 0);
+#endif
 
     // output results for rocsolver-bench
     if(argus.timing)
