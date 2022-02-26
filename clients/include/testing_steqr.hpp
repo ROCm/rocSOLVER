@@ -400,9 +400,7 @@ void testing_steqr(Arguments& argus)
                              &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    // validate results for rocsolver-test
-    // using n * machine_precision as tolerance
-    ASSERT_LE(max_error, n * get_epsilon<T>());
+    ASSERT_LE(max_error, n * machine_precision<T>());
 #endif
 
     // output results for rocsolver-bench

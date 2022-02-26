@@ -593,9 +593,7 @@ void testing_gebd2_gebrd(Arguments& argus)
     }
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    // validate results for rocsolver-test
-    // using m*n * machine_precision as tolerance
-    ASSERT_LE(max_error, m * n * get_epsilon<T>());
+    ASSERT_LE(max_error, m * n * machine_precision<T>());
 #endif
 
     // output results for rocsolver-bench

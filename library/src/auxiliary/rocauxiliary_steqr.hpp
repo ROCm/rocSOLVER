@@ -417,7 +417,7 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
                                 stream, n, n, C, shiftC, ldc, strideC);
     }
 
-    S eps = get_epsilon<S>();
+    S eps = machine_precision<S>();
     S ssfmin = get_safemin<S>();
     S ssfmax = S(1.0) / ssfmin;
     ssfmin = sqrt(ssfmin) / (eps * eps);

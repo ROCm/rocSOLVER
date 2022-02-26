@@ -430,9 +430,7 @@ void testing_getf2_getrf_npvt(Arguments& argus)
     }
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    // validate results for rocsolver-test
-    // using min(m,n) * machine_precision as tolerance
-    ASSERT_LE(max_error, min(m, n) * get_epsilon<T>());
+    ASSERT_LE(max_error, min(m, n) * machine_precision<T>());
 #endif
 
     // output results for rocsolver-bench

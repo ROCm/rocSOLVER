@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -20,17 +20,10 @@
  */
 
 template <typename T>
-constexpr double get_epsilon()
-{
-    using S = decltype(std::real(T{}));
-    return std::numeric_limits<S>::epsilon();
-}
-
-template <typename T>
 constexpr double get_safemin()
 {
     using S = decltype(std::real(T{}));
-    auto eps = get_epsilon<S>();
+    auto eps = machine_precision<S>();
     auto s1 = std::numeric_limits<S>::min();
     auto s2 = 1 / std::numeric_limits<S>::max();
     if(s2 > s1)

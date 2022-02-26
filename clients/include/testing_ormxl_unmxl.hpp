@@ -388,10 +388,8 @@ void testing_ormxl_unmxl(Arguments& argus)
                                         argus.profile, argus.perf);
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    // validate results for rocsolver-test
-    // using s * machine_precision as tolerance
     rocblas_int s = left ? m : n;
-    ASSERT_LE(max_error, s * get_epsilon<T>());
+    ASSERT_LE(max_error, s * machine_precision<T>());
 #endif
 
     // output results for rocsolver-bench

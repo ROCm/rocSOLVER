@@ -340,10 +340,8 @@ void testing_orgbr_ungbr(Arguments& argus)
                                    &cpu_time_used, hot_calls, argus.profile, argus.perf);
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    // validate results for rocsolver-test
-    // using s * machine_precision as tolerance
     rocblas_int s = row ? n : m;
-    ASSERT_LE(max_error, s * get_epsilon<T>());
+    ASSERT_LE(max_error, s * machine_precision<T>());
 #endif
 
     // output results for rocsolver-bench

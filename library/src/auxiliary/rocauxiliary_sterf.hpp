@@ -354,7 +354,7 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
     if(n <= 1)
         return rocblas_status_success;
 
-    T eps = get_epsilon<T>();
+    T eps = machine_precision<T>();
     T ssfmin = get_safemin<T>();
     T ssfmax = T(1.0) / ssfmin;
     ssfmin = sqrt(ssfmin) / (eps * eps);

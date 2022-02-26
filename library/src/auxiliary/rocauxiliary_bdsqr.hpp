@@ -560,7 +560,7 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
 
     // set tolerance and max number of iterations:
     // machine precision (considering rounding strategy)
-    S eps = get_epsilon<S>() / 2;
+    S eps = machine_precision<S>() / 2;
     // safest minimum value such that 1/sfm does not overflow
     S sfm = get_safemin<S>();
     // max number of iterations (QR steps) before declaring not convergence

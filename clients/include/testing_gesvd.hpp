@@ -792,11 +792,9 @@ void testing_gesvd(Arguments& argus)
     }
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    // validate results for rocsolver-test
-    // using 2 * min(m, n) * machine_precision as tolerance
-    ASSERT_LE(max_error, 2 * min(m, n) * get_epsilon<T>());
+    ASSERT_LE(max_error, 2 * min(m, n) * machine_precision<T>());
     if(svects)
-        ASSERT_LE(max_errorv, 2 * min(m, n) * get_epsilon<T>());
+        ASSERT_LE(max_errorv, 2 * min(m, n) * machine_precision<T>());
 #endif
 
     // output results for rocsolver-bench

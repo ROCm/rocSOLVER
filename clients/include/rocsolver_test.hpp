@@ -18,13 +18,6 @@
 // reallocate workspace
 #define USE_ROCBLAS_REALLOC_ON_DEMAND true
 
-template <typename T>
-constexpr double get_epsilon()
-{
-    using S = decltype(std::real(T{}));
-    return std::numeric_limits<S>::epsilon();
-}
-
 typedef enum rocsolver_inform_type_
 {
     inform_quick_return,

@@ -600,9 +600,7 @@ void testing_gels_outofplace(Arguments& argus)
     }
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    // validate results for rocsolver-test
-    // using max(m,n) * machine_precision as tolerance
-    ASSERT_LE(max_error, max(m, n) * get_epsilon<T>());
+    ASSERT_LE(max_error, max(m, n) * machine_precision<T>());
 #endif
 
     // output results for rocsolver-bench

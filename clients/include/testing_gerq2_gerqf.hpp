@@ -394,10 +394,8 @@ void testing_gerq2_gerqf(Arguments& argus)
     }
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    // validate results for rocsolver-test
-    // using m * machine_precision as tolerance
     // (for possibly singular of ill-conditioned matrices we could use m*min(m,n))
-    ASSERT_LE(max_error, m * get_epsilon<T>());
+    ASSERT_LE(max_error, m * machine_precision<T>());
 #endif
 
     // output results for rocsolver-bench

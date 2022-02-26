@@ -296,9 +296,7 @@ void testing_managed_malloc(Arguments& argus)
     hipFree(dYRes);
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    // validate results for rocsolver-test
-    // using nb * max(m,n) * machine_precision as tolerance
-    ASSERT_LE(max_error, nb * max(m, n) * get_epsilon<T>());
+    ASSERT_LE(max_error, nb * max(m, n) * machine_precision<T>());
 #endif
 
     // output results for rocsolver-bench

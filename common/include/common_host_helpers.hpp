@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -21,6 +21,13 @@
  *    library and rocSOLVER client code.
  * ===========================================================================
  */
+
+template <typename T>
+constexpr double machine_precision()
+{
+    using S = decltype(std::real(T{}));
+    return std::numeric_limits<S>::epsilon();
+}
 
 /* =============================================================================================== */
 /* Timing functions.                                                                               */
