@@ -277,8 +277,6 @@ void testing_laswp(Arguments& argus)
                              &cpu_time_used, hot_calls, argus.profile, argus.perf);
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    // validate results for rocsolver-test
-    // no tolerance
     ASSERT_LE(max_error, 0);
 #endif
 

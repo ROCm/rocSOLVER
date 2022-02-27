@@ -224,8 +224,6 @@ void testing_lacgv(Arguments& argus)
                              argus.profile, argus.perf);
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    // validate results for rocsolver-test
-    // no tolerance
     ASSERT_LE(max_error, 0);
 #endif
 
