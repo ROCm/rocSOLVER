@@ -46,7 +46,13 @@ find_package(fmt REQUIRED)
 # ########################################################################
 
 # Get rocm-cmake
-include(get-rocm-cmake)
+# By default, rocm software stack is expected at /opt/rocm
+# set environment variable ROCM_PATH to change location
+if(NOT ROCM_PATH)
+  set(ROCM_PATH /opt/rocm)
+endif()
+
+find_package(ROCM 0.7.3 CONFIG QUIET PATHS ${ROCM_PATH})
 
 # Include the rocm-cmake components we use
 include(ROCMSetupVersion)
@@ -55,6 +61,7 @@ include(ROCMInstallTargets)
 include(ROCMPackageConfigHelpers)
 include(ROCMInstallSymlinks)
 include(ROCMCheckTargetIds)
+include(ROCMClients)
 
 include(os-detection)
 get_os_id(OS_ID)
@@ -142,8 +149,62 @@ if(BUILD_LIBRARY)
 endif()
 
 if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
+  rocm_package_setup_component(clients)
+  if(BUILD_CLIENTS_TESTS)
+    rocm_package_setup_client_component(tests)
+  endif()
+  if(BUILD_CLIENTS_BENCHMARKS)
+    rocm_package_setup_client_component(benchmarks)
+  endif()
+  if(BUILD_CLIENTS_SAMPLES)
+    rocm_package_setup_client_component(samples)
+  endif()
   add_subdirectory(clients)
 endif()
+
+
+
+# Package-specific CPACK vars
+rocm_package_add_dependencies(DEPENDS "rocblas >= 2.44" "rocblas < 2.45")
+
+if(OS_ID_sles)
+  rocm_package_add_rpm_dependencies(DEPENDS "libLLVM >= 7.0.1")
+endif()
+set(CPACK_RPM_PACKAGE_REQUIRES ${RPM_REQUIREMENTS})
+
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE.md")
+
+if(WIN32)
+  set(CPACK_SOURCE_GENERATOR "ZIP")
+  set(CPACK_GENERATOR "ZIP")
+  set(CMAKE_INSTALL_PREFIX "C:/hipSDK" CACHE PATH "Install path" FORCE)
+  set(INSTALL_PREFIX "C:/hipSDK")
+  set(CPACK_SET_DESTDIR OFF)
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY "C:/hipSDK")
+  set(CPACK_PACKAGING_INSTALL_PREFIX "")
+  set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+else()
+  if(NOT CPACK_PACKAGING_INSTALL_PREFIX)
+    set(CPACK_PACKAGING_INSTALL_PREFIX "${ROCM_PATH}")
+  endif()
+endif()
+
+set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
+  "\${CPACK_PACKAGING_INSTALL_PREFIX}"
+  "\${CPACK_PACKAGING_INSTALL_PREFIX}/include"
+  "\${CPACK_PACKAGING_INSTALL_PREFIX}/lib"
+)
+
+set(ROCSOLVER_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
+  CACHE PATH "Path placed into ldconfig file")
+
+rocm_create_package(
+  NAME rocsolver
+  DESCRIPTION "AMD ROCm SOLVER library"
+  MAINTAINER "RocSOLVER maintainer <rocsolver-maintainer@amd.com>"
+  LDCONFIG
+  LDCONFIG_DIR ${ROCSOLVER_CONFIG_DIR}
+)
 
 # Code Coverage Build Commands:
 #   make coverage_cleanup (clean coverage related files)

@@ -14,6 +14,8 @@ set_target_properties(test-header PROPERTIES
   C_EXTENSIONS OFF
 )
 
+rocm_install(TARGETS test-header COMPONENT tests)
+
 if(UNIX AND BUILD_SHARED_LIBS)
   add_executable(test-rocsolver-dlopen
     test_dlopen_main.cpp
@@ -30,4 +32,6 @@ if(UNIX AND BUILD_SHARED_LIBS)
     NAME test-rocsolver-dlopen
     COMMAND test-rocsolver-dlopen
   )
+
+  rocm_install(TARGETS test-rocsolver-dlopen COMPONENT tests)
 endif()

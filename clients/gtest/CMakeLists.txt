@@ -137,3 +137,5 @@ add_test(
   NAME rocsolver-test
   COMMAND rocsolver-test
 )
+
+rocm_install(TARGETS rocsolver-test COMPONENT tests)
