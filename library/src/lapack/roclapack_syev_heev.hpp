@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -57,41 +57,6 @@ ROCSOLVER_KERNEL void scalar_case(const rocblas_evect evect,
         if(evect == rocblas_evect_original)
             A[0] = T(1);
     }
-}
-
-/** Argument checking **/
-template <typename T, typename S>
-rocblas_status rocsolver_syev_heev_argCheck(rocblas_handle handle,
-                                            const rocblas_evect evect,
-                                            const rocblas_fill uplo,
-                                            const rocblas_int n,
-                                            T A,
-                                            const rocblas_int lda,
-                                            S* D,
-                                            S* E,
-                                            rocblas_int* info,
-                                            const rocblas_int batch_count = 1)
-{
-    // order is important for unit tests:
-
-    // 1. invalid/non-supported values
-    if((evect != rocblas_evect_original && evect != rocblas_evect_none)
-       || (uplo != rocblas_fill_lower && uplo != rocblas_fill_upper))
-        return rocblas_status_invalid_value;
-
-    // 2. invalid size
-    if(n < 0 || lda < n || batch_count < 0)
-        return rocblas_status_invalid_size;
-
-    // skip pointer check if querying memory size
-    if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_status_continue;
-
-    // 3. invalid pointers
-    if((n && !A) || (n && !E) || (n && !D) || (batch_count && !info))
-        return rocblas_status_invalid_pointer;
-
-    return rocblas_status_continue;
 }
 
 /** Helper to calculate workspace sizes **/
@@ -150,6 +115,41 @@ void rocsolver_syev_heev_getMemorySize(const rocblas_evect evect,
 
     // size of array for temporary householder scalars
     *size_tau = sizeof(T) * n * batch_count;
+}
+
+/** Argument checking **/
+template <typename T, typename S>
+rocblas_status rocsolver_syev_heev_argCheck(rocblas_handle handle,
+                                            const rocblas_evect evect,
+                                            const rocblas_fill uplo,
+                                            const rocblas_int n,
+                                            T A,
+                                            const rocblas_int lda,
+                                            S* D,
+                                            S* E,
+                                            rocblas_int* info,
+                                            const rocblas_int batch_count = 1)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    if((evect != rocblas_evect_original && evect != rocblas_evect_none)
+       || (uplo != rocblas_fill_lower && uplo != rocblas_fill_upper))
+        return rocblas_status_invalid_value;
+
+    // 2. invalid size
+    if(n < 0 || lda < n || batch_count < 0)
+        return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
+
+    // 3. invalid pointers
+    if((n && !A) || (n && !E) || (n && !D) || (batch_count && !info))
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename W>

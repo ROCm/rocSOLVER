@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -46,7 +46,7 @@ void sygv_hegv_checkBadArgs(const rocblas_handle handle,
                                               uplo, n, dA, lda, stA, dB, ldb, stB, dD, stD, dE, stE,
                                               dInfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, rocblas_fill(-1), n, dA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygv_hegv(STRIDED, handle, itype, evect, rocblas_fill_full, n, dA,
                                               lda, stA, dB, ldb, stB, dD, stD, dE, stE, dInfo, bc),
                           rocblas_status_invalid_value);
 
@@ -308,28 +308,24 @@ void sygv_hegv_getError(const rocblas_handle handle,
 
     double err;
 
-    if(evect == rocblas_evect_none)
+    for(rocblas_int b = 0; b < bc; ++b)
     {
-        // only eigenvalues needed; can compare with LAPACK
-
-        // error is ||hD - hDRes|| / ||hD||
-        // using frobenius norm
-        for(rocblas_int b = 0; b < bc; ++b)
+        if(evect == rocblas_evect_none)
         {
+            // only eigenvalues needed; can compare with LAPACK
+
+            // error is ||hD - hDRes|| / ||hD||
+            // using frobenius norm
             if(hInfoRes[b][0] == 0)
             {
                 err = norm_error('F', 1, n, 1, hD[b], hDRes[b]);
                 *max_err = err > *max_err ? err : *max_err;
             }
         }
-    }
-    else
-    {
-        // both eigenvalues and eigenvectors needed; need to implicitly test
-        // eigenvectors due to non-uniqueness of eigenvectors under scaling
-
-        for(rocblas_int b = 0; b < bc; ++b)
+        else
         {
+            // both eigenvalues and eigenvectors needed; need to implicitly test
+            // eigenvectors due to non-uniqueness of eigenvectors under scaling
             if(hInfoRes[b][0] == 0)
             {
                 T alpha = 1;
@@ -578,30 +574,34 @@ void testing_sygv_hegv(Arguments& argus)
         CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
 
+    // memory allocations (all cases)
+    // host
+    host_strided_batch_vector<S> hD(size_D, 1, stD, bc);
+    host_strided_batch_vector<S> hDRes(size_DRes, 1, stDRes, bc);
+    host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
+    host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
+    // device
+    device_strided_batch_vector<S> dD(size_D, 1, stD, bc);
+    device_strided_batch_vector<S> dE(size_E, 1, stE, bc);
+    device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
+    if(size_D)
+        CHECK_HIP_ERROR(dD.memcheck());
+    if(size_E)
+        CHECK_HIP_ERROR(dE.memcheck());
+    CHECK_HIP_ERROR(dInfo.memcheck());
+
     if(BATCHED)
     {
         // memory allocations
         host_batch_vector<T> hA(size_A, 1, bc);
         host_batch_vector<T> hARes(size_ARes, 1, bc);
         host_batch_vector<T> hB(size_B, 1, bc);
-        host_strided_batch_vector<S> hD(size_D, 1, stD, bc);
-        host_strided_batch_vector<S> hDRes(size_DRes, 1, stDRes, bc);
-        host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
-        host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
         device_batch_vector<T> dA(size_A, 1, bc);
         device_batch_vector<T> dB(size_B, 1, bc);
-        device_strided_batch_vector<S> dD(size_D, 1, stD, bc);
-        device_strided_batch_vector<S> dE(size_E, 1, stE, bc);
-        device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
         if(size_A)
             CHECK_HIP_ERROR(dA.memcheck());
         if(size_B)
             CHECK_HIP_ERROR(dB.memcheck());
-        if(size_D)
-            CHECK_HIP_ERROR(dD.memcheck());
-        if(size_E)
-            CHECK_HIP_ERROR(dE.memcheck());
-        CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check quick return
         if(n == 0 || bc == 0)
@@ -637,24 +637,12 @@ void testing_sygv_hegv(Arguments& argus)
         host_strided_batch_vector<T> hA(size_A, 1, stA, bc);
         host_strided_batch_vector<T> hARes(size_ARes, 1, stARes, bc);
         host_strided_batch_vector<T> hB(size_B, 1, stB, bc);
-        host_strided_batch_vector<S> hD(size_D, 1, stD, bc);
-        host_strided_batch_vector<S> hDRes(size_DRes, 1, stDRes, bc);
-        host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
-        host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
         device_strided_batch_vector<T> dA(size_A, 1, stA, bc);
         device_strided_batch_vector<T> dB(size_B, 1, stB, bc);
-        device_strided_batch_vector<S> dD(size_D, 1, stD, bc);
-        device_strided_batch_vector<S> dE(size_E, 1, stE, bc);
-        device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
         if(size_A)
             CHECK_HIP_ERROR(dA.memcheck());
         if(size_B)
             CHECK_HIP_ERROR(dB.memcheck());
-        if(size_D)
-            CHECK_HIP_ERROR(dD.memcheck());
-        if(size_E)
-            CHECK_HIP_ERROR(dE.memcheck());
-        CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check quick return
         if(n == 0 || bc == 0)

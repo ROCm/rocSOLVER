@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -229,7 +229,7 @@ rocblas_status rocsolver_sygv_hegv_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(sygv_update_info, gridReset, threads, 0, stream, info, iinfo, n,
                             batch_count);
 
-    /** (TODO: Similarly, if only neig < n eigenvalues converged, TRSMM or TRMM below should not
+    /** (TODO: Similarly, if only neig < n eigenvalues converged, TRSM or TRMM below should not
         work with the entire matrix. Need to find a way to do this efficiently; for now we ignore
         iinfo and set neig = n) **/
 
