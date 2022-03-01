@@ -3930,26 +3930,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
     If numerical accuracy is compromised, use the legacy-LAPACK-like API \ref rocsolver_sgetf2 "GETF2" routines instead.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix A to be factored.
-              On exit, the factors L and U from the factorization.
-              The unit diagonal elements of L are not stored.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix A to be factored.
+                On exit, the factors L and U from the factorization.
+                The unit diagonal elements of L are not stored.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = j > 0, U is singular. U[j,j] is the first zero element in the diagonal. The factorization from
-              this point might be incomplete.
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, U is singular. U[i,i] is the first zero element in the diagonal. The factorization from
+                this point might be incomplete.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2_npvt(rocblas_handle handle,
@@ -3990,40 +3990,40 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
     could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details, see the
     "Tuning rocSOLVER performance" section of the Library Design Guide).
 
-    The factorization of matrix \f$A_i\f$ in the batch has the form
+    The factorization of matrix \f$A_j\f$ in the batch has the form
 
     \f[
-        A_i = L_iU_i
+        A_j = L_jU_j
     \f]
 
-    where \f$L_i\f$ is lower triangular with unit
-    diagonal elements (lower trapezoidal if m > n), and \f$U_i\f$ is upper
+    where \f$L_j\f$ is lower triangular with unit
+    diagonal elements (lower trapezoidal if m > n), and \f$U_j\f$ is upper
     triangular (upper trapezoidal if m < n).
 
     Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable.
     If numerical accuracy is compromised, use the legacy-LAPACK-like API \ref rocsolver_sgetf2_batched "GETF2_BATCHED" routines instead.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all matrices A_i in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all matrices A_j in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_i to be factored.
-              On exit, the factors L_i and U_i from the factorizations.
-              The unit diagonal elements of L_i are not stored.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the factors L_j and U_j from the factorizations.
+                The unit diagonal elements of L_j are not stored.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for factorization of A_i.
-              If info[i] = j > 0, U_i is singular. U_i[j,j] is the first zero element in the diagonal. The factorization from
-              this point might be incomplete.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero element in the diagonal. The factorization from
+                this point might be incomplete.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -4071,44 +4071,44 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_batched(rocblas_handle han
     could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details, see the
     "Tuning rocSOLVER performance" section of the Library Design Guide).
 
-    The factorization of matrix \f$A_i\f$ in the batch has the form
+    The factorization of matrix \f$A_j\f$ in the batch has the form
 
     \f[
-        A_i = L_iU_i
+        A_j = L_jU_j
     \f]
 
-    where \f$L_i\f$ is lower triangular with unit
-    diagonal elements (lower trapezoidal if m > n), and \f$U_i\f$ is upper
+    where \f$L_j\f$ is lower triangular with unit
+    diagonal elements (lower trapezoidal if m > n), and \f$U_j\f$ is upper
     triangular (upper trapezoidal if m < n).
 
     Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable.
     If numerical accuracy is compromised, use the legacy-LAPACK-like API \ref rocsolver_sgetf2_strided_batched "GETF2_STRIDED_BATCHED" routines instead.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all matrices A_i in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_i to be factored.
-              On exit, the factors L_i and U_i from the factorization.
-              The unit diagonal elements of L_i are not stored.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the factors L_j and U_j from the factorization.
+                The unit diagonal elements of L_j are not stored.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for factorization of A_i.
-              If info[i] = j > 0, U_i is singular. U_i[j,j] is the first zero element in the diagonal. The factorization from
-              this point might be incomplete.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero element in the diagonal. The factorization from
+                this point might be incomplete.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -4174,26 +4174,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_strided_batched(rocblas_ha
     If numerical accuracy is compromised, use the legacy-LAPACK-like API \ref rocsolver_sgetrf "GETRF" routines instead.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix A to be factored.
-              On exit, the factors L and U from the factorization.
-              The unit diagonal elements of L are not stored.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix A to be factored.
+                On exit, the factors L and U from the factorization.
+                The unit diagonal elements of L are not stored.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = j > 0, U is singular. U[j,j] is the first zero element in the diagonal. The factorization from
-              this point might be incomplete.
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, U is singular. U[i,i] is the first zero element in the diagonal. The factorization from
+                this point might be incomplete.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_npvt(rocblas_handle handle,
@@ -4234,40 +4234,40 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
     could be executed with mid-size matrices if optimizations are enabled (default option). For more details, see the
     "Tuning rocSOLVER performance" section of the Library Design Guide).
 
-    The factorization of matrix \f$A_i\f$ in the batch has the form
+    The factorization of matrix \f$A_j\f$ in the batch has the form
 
     \f[
-        A_i = L_iU_i
+        A_j = L_jU_j
     \f]
 
-    where \f$L_i\f$ is lower triangular with unit
-    diagonal elements (lower trapezoidal if m > n), and \f$U_i\f$ is upper
+    where \f$L_j\f$ is lower triangular with unit
+    diagonal elements (lower trapezoidal if m > n), and \f$U_j\f$ is upper
     triangular (upper trapezoidal if m < n).
 
     Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable.
     If numerical accuracy is compromised, use the legacy-LAPACK-like API \ref rocsolver_sgetrf_batched "GETRF_BATCHED" routines instead.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all matrices A_i in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all matrices A_j in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_i to be factored.
-              On exit, the factors L_i and U_i from the factorizations.
-              The unit diagonal elements of L_i are not stored.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the factors L_j and U_j from the factorizations.
+                The unit diagonal elements of L_j are not stored.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for factorization of A_i.
-              If info[i] = j > 0, U_i is singular. U_i[j,j] is the first zero element in the diagonal. The factorization from
-              this point might be incomplete.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero element in the diagonal. The factorization from
+                this point might be incomplete.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -4316,44 +4316,44 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_batched(rocblas_handle han
     could be executed with mid-size matrices if optimizations are enabled (default option). For more details, see the
     "Tuning rocSOLVER performance" section of the Library Design Guide).
 
-    The factorization of matrix \f$A_i\f$ in the batch has the form
+    The factorization of matrix \f$A_j\f$ in the batch has the form
 
     \f[
-        A_i = L_iU_i
+        A_j = L_jU_j
     \f]
 
-    where \f$L_i\f$ is lower triangular with unit
-    diagonal elements (lower trapezoidal if m > n), and \f$U_i\f$ is upper
+    where \f$L_j\f$ is lower triangular with unit
+    diagonal elements (lower trapezoidal if m > n), and \f$U_j\f$ is upper
     triangular (upper trapezoidal if m < n).
 
     Note: Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable.
     If numerical accuracy is compromised, use the legacy-LAPACK-like API \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED" routines instead.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all matrices A_i in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_i to be factored.
-              On exit, the factors L_i and U_i from the factorization.
-              The unit diagonal elements of L_i are not stored.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the factors L_j and U_j from the factorization.
+                The unit diagonal elements of L_j are not stored.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for factorization of A_i.
-              If info[i] = j > 0, U_i is singular. U_i[j,j] is the first zero element in the diagonal. The factorization from
-              this point might be incomplete.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero element in the diagonal. The factorization from
+                this point might be incomplete.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -4417,31 +4417,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_strided_batched(rocblas_ha
     triangular (upper trapezoidal if m < n).
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix A to be factored.
-              On exit, the factors L and U from the factorization.
-              The unit diagonal elements of L are not stored.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix A to be factored.
+                On exit, the factors L and U from the factorization.
+                The unit diagonal elements of L are not stored.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU of dimension min(m,n).\n
-              The vector of pivot indices. Elements of ipiv are 1-based indices.
-              For 1 <= i <= min(m,n), the row i of the
-              matrix was interchanged with row ipiv[i].
-              Matrix P of the factorization can be derived from ipiv.
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension min(m,n).\n
+                The vector of pivot indices. Elements of ipiv are 1-based indices.
+                For 1 <= i <= min(m,n), the row i of the
+                matrix was interchanged with row ipiv[i].
+                Matrix P of the factorization can be derived from ipiv.
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = j > 0, U is singular. U[j,j] is the first zero pivot.
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, U is singular. U[i,i] is the first zero pivot.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetf2(rocblas_handle handle,
@@ -4486,48 +4486,48 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2(rocblas_handle handle,
     could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details, see the
     "Tuning rocSOLVER performance" section of the Library Design Guide).
 
-    The factorization of matrix \f$A_i\f$ in the batch has the form
+    The factorization of matrix \f$A_j\f$ in the batch has the form
 
     \f[
-        A_i = P_iL_iU_i
+        A_j = P_jL_jU_j
     \f]
 
-    where \f$P_i\f$ is a permutation matrix, \f$L_i\f$ is lower triangular with unit
-    diagonal elements (lower trapezoidal if m > n), and \f$U_i\f$ is upper
+    where \f$P_j\f$ is a permutation matrix, \f$L_j\f$ is lower triangular with unit
+    diagonal elements (lower trapezoidal if m > n), and \f$U_j\f$ is upper
     triangular (upper trapezoidal if m < n).
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all matrices A_i in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all matrices A_j in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_i to be factored.
-              On exit, the factors L_i and U_i from the factorizations.
-              The unit diagonal elements of L_i are not stored.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the factors L_j and U_j from the factorizations.
+                The unit diagonal elements of L_j are not stored.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors of pivot indices ipiv_i (corresponding to A_i).
-              Dimension of ipiv_i is min(m,n).
-              Elements of ipiv_i are 1-based indices.
-              For each instance A_i in the batch and for 1 <= j <= min(m,n), the row j of the
-              matrix A_i was interchanged with row ipiv_i[j].
-              Matrix P_i of the factorization can be derived from ipiv_i.
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors of pivot indices ipiv_j (corresponding to A_j).
+                Dimension of ipiv_j is min(m,n).
+                Elements of ipiv_j are 1-based indices.
+                For each instance A_j in the batch and for 1 <= i <= min(m,n), the row i of the
+                matrix A_j was interchanged with row ipiv_j[i].
+                Matrix P_j of the factorization can be derived from ipiv_j.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for factorization of A_i.
-              If info[i] = j > 0, U_i is singular. U_i[j,j] is the first zero pivot.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -4583,52 +4583,52 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(rocblas_handle handle,
     could be executed with small and mid-size matrices if optimizations are enabled (default option). For more details, see the
     "Tuning rocSOLVER performance" section of the Library Design Guide).
 
-    The factorization of matrix \f$A_i\f$ in the batch has the form
+    The factorization of matrix \f$A_j\f$ in the batch has the form
 
     \f[
-        A_i = P_iL_iU_i
+        A_j = P_jL_jU_j
     \f]
 
-    where \f$P_i\f$ is a permutation matrix, \f$L_i\f$ is lower triangular with unit
-    diagonal elements (lower trapezoidal if m > n), and \f$U_i\f$ is upper
+    where \f$P_j\f$ is a permutation matrix, \f$L_j\f$ is lower triangular with unit
+    diagonal elements (lower trapezoidal if m > n), and \f$U_j\f$ is upper
     triangular (upper trapezoidal if m < n).
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all matrices A_i in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_i to be factored.
-              On exit, the factors L_i and U_i from the factorization.
-              The unit diagonal elements of L_i are not stored.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the factors L_j and U_j from the factorization.
+                The unit diagonal elements of L_j are not stored.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors of pivots indices ipiv_i (corresponding to A_i).
-              Dimension of ipiv_i is min(m,n).
-              Elements of ipiv_i are 1-based indices.
-              For each instance A_i in the batch and for 1 <= j <= min(m,n), the row j of the
-              matrix A_i was interchanged with row ipiv_i[j].
-              Matrix P_i of the factorization can be derived from ipiv_i.
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors of pivots indices ipiv_j (corresponding to A_j).
+                Dimension of ipiv_j is min(m,n).
+                Elements of ipiv_j are 1-based indices.
+                For each instance A_j in the batch and for 1 <= i <= min(m,n), the row i of the
+                matrix A_j was interchanged with row ipiv_j[i].
+                Matrix P_j of the factorization can be derived from ipiv_j.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for factorization of A_i.
-              If info[i] = j > 0, U_i is singular. U_i[j,j] is the first zero pivot.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -4699,31 +4699,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(rocblas_handle 
     triangular (upper trapezoidal if m < n).
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix A to be factored.
-              On exit, the factors L and U from the factorization.
-              The unit diagonal elements of L are not stored.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix A to be factored.
+                On exit, the factors L and U from the factorization.
+                The unit diagonal elements of L are not stored.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU of dimension min(m,n).\n
-              The vector of pivot indices. Elements of ipiv are 1-based indices.
-              For 1 <= i <= min(m,n), the row i of the
-              matrix was interchanged with row ipiv[i].
-              Matrix P of the factorization can be derived from ipiv.
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension min(m,n).\n
+                The vector of pivot indices. Elements of ipiv are 1-based indices.
+                For 1 <= i <= min(m,n), the row i of the
+                matrix was interchanged with row ipiv[i].
+                Matrix P of the factorization can be derived from ipiv.
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = j > 0, U is singular. U[j,j] is the first zero pivot.
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, U is singular. U[i,i] is the first zero pivot.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf(rocblas_handle handle,
@@ -4768,48 +4768,48 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf(rocblas_handle handle,
     could be executed with mid-size matrices if optimizations are enabled (default option). For more details, see the
     "Tuning rocSOLVER performance" section of the Library Design Guide).
 
-    The factorization of matrix \f$A_i\f$ in the batch has the form
+    The factorization of matrix \f$A_j\f$ in the batch has the form
 
     \f[
-        A_i = P_iL_iU_i
+        A_j = P_jL_jU_j
     \f]
 
-    where \f$P_i\f$ is a permutation matrix, \f$L_i\f$ is lower triangular with unit
-    diagonal elements (lower trapezoidal if m > n), and \f$U_i\f$ is upper
+    where \f$P_j\f$ is a permutation matrix, \f$L_j\f$ is lower triangular with unit
+    diagonal elements (lower trapezoidal if m > n), and \f$U_j\f$ is upper
     triangular (upper trapezoidal if m < n).
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all matrices A_i in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all matrices A_j in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_i to be factored.
-              On exit, the factors L_i and U_i from the factorizations.
-              The unit diagonal elements of L_i are not stored.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the factors L_j and U_j from the factorizations.
+                The unit diagonal elements of L_j are not stored.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors of pivot indices ipiv_i (corresponding to A_i).
-              Dimension of ipiv_i is min(m,n).
-              Elements of ipiv_i are 1-based indices.
-              For each instance A_i in the batch and for 1 <= j <= min(m,n), the row j of the
-              matrix A_i was interchanged with row ipiv_i[j].
-              Matrix P_i of the factorization can be derived from ipiv_i.
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors of pivot indices ipiv_j (corresponding to A_j).
+                Dimension of ipiv_j is min(m,n).
+                Elements of ipiv_j are 1-based indices.
+                For each instance A_j in the batch and for 1 <= i <= min(m,n), the row i of the
+                matrix A_j was interchanged with row ipiv_j[i].
+                Matrix P_j of the factorization can be derived from ipiv_j.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for factorization of A_i.
-              If info[i] = j > 0, U_i is singular. U_i[j,j] is the first zero pivot.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -4865,52 +4865,52 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_batched(rocblas_handle handle,
     could be executed with mid-size matrices if optimizations are enabled (default option). For more details, see the
     "Tuning rocSOLVER performance" section of the Library Design Guide).
 
-    The factorization of matrix \f$A_i\f$ in the batch has the form
+    The factorization of matrix \f$A_j\f$ in the batch has the form
 
     \f[
-        A_i = P_iL_iU_i
+        A_j = P_jL_jU_j
     \f]
 
-    where \f$P_i\f$ is a permutation matrix, \f$L_i\f$ is lower triangular with unit
-    diagonal elements (lower trapezoidal if m > n), and \f$U_i\f$ is upper
+    where \f$P_j\f$ is a permutation matrix, \f$L_j\f$ is lower triangular with unit
+    diagonal elements (lower trapezoidal if m > n), and \f$U_j\f$ is upper
     triangular (upper trapezoidal if m < n).
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all matrices A_i in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_i to be factored.
-              On exit, the factors L_i and U_i from the factorization.
-              The unit diagonal elements of L_i are not stored.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the factors L_j and U_j from the factorization.
+                The unit diagonal elements of L_j are not stored.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors of pivots indices ipiv_i (corresponding to A_i).
-              Dimension of ipiv_i is min(m,n).
-              Elements of ipiv_i are 1-based indices.
-              For each instance A_i in the batch and for 1 <= j <= min(m,n), the row j of the
-              matrix A_i was interchanged with row ipiv_i[j].
-              Matrix P_i of the factorization can be derived from ipiv_i.
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors of pivots indices ipiv_j (corresponding to A_j).
+                Dimension of ipiv_j is min(m,n).
+                Elements of ipiv_j are 1-based indices.
+                For each instance A_j in the batch and for 1 <= i <= min(m,n), the row i of the
+                matrix A_j was interchanged with row ipiv_j[i].
+                Matrix P_j of the factorization can be derived from ipiv_j.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for factorization of A_i.
-              If info[i] = j > 0, U_i is singular. U_i[j,j] is the first zero pivot.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
