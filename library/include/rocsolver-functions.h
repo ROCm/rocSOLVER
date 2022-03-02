@@ -10054,7 +10054,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle 
     @param[in]
     ldb         rocblas_int. ldb >= n.\n
                 The leading dimension of B.
-
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_spotrs(rocblas_handle handle,
@@ -10146,7 +10145,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of instances (systems) in the batch.
-
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_spotrs_batched(rocblas_handle handle,
@@ -10250,7 +10248,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of instances (systems) in the batch.
-
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_spotrs_strided_batched(rocblas_handle handle,
@@ -10347,9 +10344,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs_strided_batched(rocblas_handle 
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
-                If info = j > 0, the leading minor of order j of A is not positive definite.
+                If info = i > 0, the leading minor of order i of A is not positive definite.
                 The solution could not be computed.
-
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sposv(rocblas_handle handle,
@@ -10444,7 +10440,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zposv(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of instances (systems) in the batch.
-
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sposv_batched(rocblas_handle handle,
@@ -10551,7 +10546,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zposv_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of instances (systems) in the batch.
-
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sposv_strided_batched(rocblas_handle handle,
@@ -10624,26 +10618,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zposv_strided_batched(rocblas_handle h
     \ref rocsolver_spotrf "POTRF".
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the factor L or U of the Cholesky factorization of A returned by
-              \ref rocsolver_spotrf "POTRF".
-              On exit, the inverses of A if info = 0.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the factor L or U of the Cholesky factorization of A returned by
+                \ref rocsolver_spotrf "POTRF".
+                On exit, the inverse of A if info = 0.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit for inversion of A.
-              If info = j > 0, A is singular. L[j,j] or U[j,j] is zero.
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit for inversion of A.
+                If info = i > 0, A is singular. L[i,i] or U[i,i] is zero.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_spotri(rocblas_handle handle,
@@ -10676,42 +10670,42 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief POTRI_BATCHED inverts a batch of symmetric/hermitian positive definite matrices \f$A_i\f$.
+    \brief POTRI_BATCHED inverts a batch of symmetric/hermitian positive definite matrices \f$A_j\f$.
 
     \details
-    The inverse of matrix \f$A_i\f$ in the batch is computed as
+    The inverse of matrix \f$A_j\f$ in the batch is computed as
 
     \f[
         \begin{array}{cl}
-        A_i^{-1} = U_i^{-1} {U_i^{-1}}' & \: \text{if uplo is upper, or}\\
-        A_i^{-1} = {L_i^{-1}}' L_i^{-1} & \: \text{if uplo is lower.}
+        A_j^{-1} = U_j^{-1} {U_j^{-1}}' & \: \text{if uplo is upper, or}\\
+        A_j^{-1} = {L_j^{-1}}' L_j^{-1} & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
-    where \f$U_i\f$ or \f$L_i\f$ is the triangular factor of the Cholesky factorization of \f$A_i\f$ returned by
+    where \f$U_j\f$ or \f$L_j\f$ is the triangular factor of the Cholesky factorization of \f$A_j\f$ returned by
     \ref rocsolver_spotrf_batched "POTRF_BATCHED".
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of matrix A_i.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of matrix A_j.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the factor L_i or U_i of the Cholesky factorization of A_i returned by
-              \ref rocsolver_spotrf_batched "POTRF_BATCHED".
-              On exit, the inverses of A_i if info[i] = 0.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the factor L_j or U_j of the Cholesky factorization of A_j returned by
+                \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+                On exit, the inverses of A_j if info[j] = 0.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for inversion of A_i.
-              If info[i] = j > 0, A_i is singular. L_i[j,j] or U_i[j,j] is zero.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for inversion of A_j.
+                If info[j] = i > 0, A_j is singular. L_j[i,i] or U_j[i,i] is zero.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -10751,46 +10745,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_batched(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief POTRI_STRIDED_BATCHED inverts a batch of symmetric/hermitian positive definite matrices \f$A_i\f$.
+    \brief POTRI_STRIDED_BATCHED inverts a batch of symmetric/hermitian positive definite matrices \f$A_j\f$.
 
     \details
-    The inverse of matrix \f$A_i\f$ in the batch is computed as
+    The inverse of matrix \f$A_j\f$ in the batch is computed as
 
     \f[
         \begin{array}{cl}
-        A_i^{-1} = U_i^{-1} {U_i^{-1}}' & \: \text{if uplo is upper, or}\\
-        A_i^{-1} = {L_i^{-1}}' L_i^{-1} & \: \text{if uplo is lower.}
+        A_j^{-1} = U_j^{-1} {U_j^{-1}}' & \: \text{if uplo is upper, or}\\
+        A_j^{-1} = {L_j^{-1}}' L_j^{-1} & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
-    where \f$U_i\f$ or \f$L_i\f$ is the triangular factor of the Cholesky factorization of \f$A_i\f$ returned by
+    where \f$U_j\f$ or \f$L_j\f$ is the triangular factor of the Cholesky factorization of \f$A_j\f$ returned by
     \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of matrix A_i.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of matrix A_j.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the factor L_i or U_i of the Cholesky factorization of A_i returned by
-              \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
-              On exit, the inverses of A_i if info[i] = 0.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the factor L_j or U_j of the Cholesky factorization of A_j returned by
+                \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+                On exit, the inverses of A_j if info[j] = 0.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for inversion of A_i.
-              If info[i] = j > 0, A_i is singular. L_i[j,j] or U_i[j,j] is zero.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for inversion of A_j.
+                If info[j] = i > 0, A_j is singular. L_j[i,i] or U_j[i,i] is zero.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
