@@ -16832,31 +16832,30 @@ ROCSOLVER_EXPORT rocblas_status
     triangular, depending on the value of diag.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrix A is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrix A is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    diag      rocblas_diagonal.\n
-              If diag indicates unit, then the diagonal elements of A are not referenced and
-              assumed to be one.
+    diag        rocblas_diagonal.\n
+                If diag indicates unit, then the diagonal elements of A are not referenced and
+                assumed to be one.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the triangular matrix.
-              On exit, the inverse of A if info = 0.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the triangular matrix.
+                On exit, the inverse of A if info = 0.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = i > 0, A is singular. A[i,i] is the first zero element in the diagonal.
-
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, A is singular. A[i,i] is the first zero element in the diagonal.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_strtri(rocblas_handle handle,
@@ -16900,34 +16899,33 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ztrtri(rocblas_handle handle,
     triangular, depending on the value of diag.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_j are stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A_j is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A_j is not used.
     @param[in]
-    diag      rocblas_diagonal.\n
-              If diag indicates unit, then the diagonal elements of matrices A_j are not referenced and
-              assumed to be one.
+    diag        rocblas_diagonal.\n
+                If diag indicates unit, then the diagonal elements of matrices A_j are not referenced and
+                assumed to be one.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the triangular matrices A_j.
-              On exit, the inverses of A_j if info[j] = 0.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the triangular matrices A_j.
+                On exit, the inverses of A_j if info[j] = 0.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[j] = 0, successful exit for inversion of A_j.
-              If info[j] = i > 0, A_j is singular. A_j[i,i] is the first zero element in the diagonal.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for inversion of A_j.
+                If info[j] = i > 0, A_j is singular. A_j[i,i] is the first zero element in the diagonal.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_strtri_batched(rocblas_handle handle,
@@ -16975,38 +16973,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ztrtri_batched(rocblas_handle handle,
     triangular, depending on the value of diag.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_j are stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A_j is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A_j is not used.
     @param[in]
-    diag      rocblas_diagonal.\n
-              If diag indicates unit, then the diagonal elements of matrices A_j are not referenced and
-              assumed to be one.
+    diag        rocblas_diagonal.\n
+                If diag indicates unit, then the diagonal elements of matrices A_j are not referenced and
+                assumed to be one.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the triangular matrices A_j.
-              On exit, the inverses of A_j if info[j] = 0.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the triangular matrices A_j.
+                On exit, the inverses of A_j if info[j] = 0.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[j] = 0, successful exit for inversion of A_j.
-              If info[j] = i > 0, A_j is singular. A_j[i,i] is the first zero element in the diagonal.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for inversion of A_j.
+                If info[j] = i > 0, A_j is singular. A_j[i,i] is the first zero element in the diagonal.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_strtri_strided_batched(rocblas_handle handle,
