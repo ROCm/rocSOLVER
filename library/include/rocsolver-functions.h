@@ -9178,41 +9178,40 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_npvt_strided_batched(rocblas_ha
     and a unique solution for X is chosen such that \f$|| X ||\f$ is minimal.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    trans     rocblas_operation.\n
-              Specifies the form of the system of equations.
+    trans       rocblas_operation.\n
+                Specifies the form of the system of equations.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of matrix A.
     @param[in]
-    nrhs      rocblas_int. nrhs >= 0.\n
-              The number of columns of matrices B and X;
-              i.e., the columns on the right hand side.
+    nrhs        rocblas_int. nrhs >= 0.\n
+                The number of columns of matrices B and X;
+                i.e., the columns on the right hand side.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix A.
-              On exit, the QR (or LQ) factorization of A as returned by \ref rocsolver_sgeqrf "GEQRF" (or \ref rocsolver_sgelqf "GELQF").
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A.
+                On exit, the QR (or LQ) factorization of A as returned by \ref rocsolver_sgeqrf "GEQRF" (or \ref rocsolver_sgelqf "GELQF").
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrix A.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrix A.
     @param[inout]
-    B         pointer to type. Array on the GPU of dimension ldb*nrhs.\n
-              On entry, the matrix B.
-              On exit, when info = 0, B is overwritten by the solution vectors (and the residuals in
-              the overdetermined cases) stored as columns.
+    B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
+                On entry, the matrix B.
+                On exit, when info = 0, B is overwritten by the solution vectors (and the residuals in
+                the overdetermined cases) stored as columns.
     @param[in]
-    ldb       rocblas_int. ldb >= max(m,n).\n
-              Specifies the leading dimension of matrix B.
+    ldb         rocblas_int. ldb >= max(m,n).\n
+                Specifies the leading dimension of matrix B.
     @param[out]
-    info      pointer to rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = j > 0, the solution could not be computed because input matrix A is
-              rank deficient; the j-th diagonal element of its triangular factor is zero.
-
+    info        pointer to rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, the solution could not be computed because input matrix A is
+                rank deficient; the i-th diagonal element of its triangular factor is zero.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgels(rocblas_handle handle,
@@ -9262,7 +9261,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
 
 /*! @{
     \brief GELS_BATCHED solves a batch of overdetermined (or underdetermined) linear systems
-    defined by a set of m-by-n matrices \f$A_i\f$, and corresponding matrices \f$B_i\f$, using the
+    defined by a set of m-by-n matrices \f$A_j\f$, and corresponding matrices \f$B_j\f$, using the
     QR factorizations computed by \ref rocsolver_sgeqrf_batched "GEQRF_BATCHED" (or the LQ factorizations computed by \ref rocsolver_sgelqf_batched "GELQF_BATCHED").
 
     \details
@@ -9270,60 +9269,60 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = B_i & \: \text{not transposed, or}\\
-        A_i' X_i = B_i & \: \text{transposed if real, or conjugate transposed if complex}
+        A_j X_j = B_j & \: \text{not transposed, or}\\
+        A_j' X_j = B_j & \: \text{transposed if real, or conjugate transposed if complex}
         \end{array}
     \f]
 
     If m >= n (or m < n in the case of transpose/conjugate transpose), the system is overdetermined
-    and a least-squares solution approximating X_i is found by minimizing
+    and a least-squares solution approximating X_j is found by minimizing
 
     \f[
-        || B_i - A_i  X_i || \quad \text{(or} \: || B_i - A_i' X_i ||\text{)}
+        || B_j - A_j  X_j || \quad \text{(or} \: || B_j - A_j' X_j ||\text{)}
     \f]
 
     If m < n (or m >= n in the case of transpose/conjugate transpose), the system is underdetermined
-    and a unique solution for X_i is chosen such that \f$|| X_i ||\f$ is minimal.
+    and a unique solution for X_j is chosen such that \f$|| X_j ||\f$ is minimal.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    trans     rocblas_operation.\n
-              Specifies the form of the system of equations.
+    trans       rocblas_operation.\n
+                Specifies the form of the system of equations.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all matrices A_i in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all matrices A_j in the batch.
     @param[in]
-    nrhs      rocblas_int. nrhs >= 0.\n
-              The number of columns of all matrices B_i and X_i in the batch;
-              i.e., the columns on the right hand side.
+    nrhs        rocblas_int. nrhs >= 0.\n
+                The number of columns of all matrices B_j and X_j in the batch;
+                i.e., the columns on the right hand side.
     @param[inout]
-    A         array of pointer to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_i.
-              On exit, the QR (or LQ) factorizations of A_i as returned by \ref rocsolver_sgeqrf_batched "GEQRF_BATCHED" (or \ref rocsolver_sgelqf_batched "GELQF_BATCHED").
+    A           array of pointer to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j.
+                On exit, the QR (or LQ) factorizations of A_j as returned by \ref rocsolver_sgeqrf_batched "GEQRF_BATCHED"
+                (or \ref rocsolver_sgelqf_batched "GELQF_BATCHED").
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[inout]
-    B         array of pointer to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
-              On entry, the matrices B_i.
-              On exit, when info[i] = 0, B_i is overwritten by the solution vectors (and the residuals in
-              the overdetermined cases) stored as columns.
+    B           array of pointer to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
+                On entry, the matrices B_j.
+                On exit, when info[j] = 0, B_j is overwritten by the solution vectors (and the residuals in
+                the overdetermined cases) stored as columns.
     @param[in]
-    ldb       rocblas_int. ldb >= max(m,n).\n
-              Specifies the leading dimension of matrices B_i.
+    ldb         rocblas_int. ldb >= max(m,n).\n
+                Specifies the leading dimension of matrices B_j.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for solution of A_i.
-              If info[i] = j > 0, the solution of A_i could not be computed because input
-              matrix A_i is rank deficient; the j-th diagonal element of its triangular factor is zero.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for solution of A_j.
+                If info[j] = i > 0, the solution of A_j could not be computed because input
+                matrix A_j is rank deficient; the i-th diagonal element of its triangular factor is zero.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-              Number of matrices in the batch.
-
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgels_batched(rocblas_handle handle,
@@ -9377,7 +9376,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_batched(rocblas_handle handle,
 
 /*! @{
     \brief GELS_STRIDED_BATCHED solves a batch of overdetermined (or underdetermined) linear
-    systems defined by a set of m-by-n matrices \f$A_i\f$, and corresponding matrices \f$B_i\f$,
+    systems defined by a set of m-by-n matrices \f$A_j\f$, and corresponding matrices \f$B_j\f$,
     using the QR factorizations computed by \ref rocsolver_sgeqrf_strided_batched "GEQRF_STRIDED_BATCHED"
     (or the LQ factorizations computed by \ref rocsolver_sgelqf_strided_batched "GELQF_STRIDED_BATCHED").
 
@@ -9386,69 +9385,68 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = B_i & \: \text{not transposed, or}\\
-        A_i' X_i = B_i & \: \text{transposed if real, or conjugate transposed if complex}
+        A_j X_j = B_j & \: \text{not transposed, or}\\
+        A_j' X_j = B_j & \: \text{transposed if real, or conjugate transposed if complex}
         \end{array}
     \f]
 
     If m >= n (or m < n in the case of transpose/conjugate transpose), the system is overdetermined
-    and a least-squares solution approximating X_i is found by minimizing
+    and a least-squares solution approximating X_j is found by minimizing
 
     \f[
-        || B_i - A_i  X_i || \quad \text{(or} \: || B_i - A_i' X_i ||\text{)}
+        || B_j - A_j  X_j || \quad \text{(or} \: || B_j - A_j' X_j ||\text{)}
     \f]
 
     If m < n (or m >= n in the case of transpose/conjugate transpose), the system is underdetermined
-    and a unique solution for X_i is chosen such that \f$|| X_i ||\f$ is minimal.
+    and a unique solution for X_j is chosen such that \f$|| X_j ||\f$ is minimal.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    trans     rocblas_operation.\n
-              Specifies the form of the system of equations.
+    trans       rocblas_operation.\n
+                Specifies the form of the system of equations.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all matrices A_i in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all matrices A_j in the batch.
     @param[in]
-    nrhs      rocblas_int. nrhs >= 0.\n
-              The number of columns of all matrices B_i and X_i in the batch;
-              i.e., the columns on the right hand side.
+    nrhs        rocblas_int. nrhs >= 0.\n
+                The number of columns of all matrices B_j and X_j in the batch;
+                i.e., the columns on the right hand side.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_i.
-              On exit, the QR (or LQ) factorizations of A_i as returned by \ref rocsolver_sgeqrf_strided_batched "GEQRF_STRIDED_BATCHED"
-              (or \ref rocsolver_sgelqf_strided_batched "GELQF_STRIDED_BATCHED").
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j.
+                On exit, the QR (or LQ) factorizations of A_j as returned by \ref rocsolver_sgeqrf_strided_batched "GEQRF_STRIDED_BATCHED"
+                (or \ref rocsolver_sgelqf_strided_batched "GELQF_STRIDED_BATCHED").
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[inout]
-    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-              On entry, the matrices B_i.
-              On exit, when info = 0, each B_i is overwritten by the solution vectors (and the residuals in
-              the overdetermined cases) stored as columns.
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+                On entry, the matrices B_j.
+                On exit, when info[j] = 0, each B_j is overwritten by the solution vectors (and the residuals in
+                the overdetermined cases) stored as columns.
     @param[in]
-    ldb       rocblas_int. ldb >= max(m,n).\n
-              Specifies the leading dimension of matrices B_i.
+    ldb         rocblas_int. ldb >= max(m,n).\n
+                Specifies the leading dimension of matrices B_j.
     @param[in]
-    strideB   rocblas_stride.\n
-              Stride from the start of one matrix B_i to the next one B_(i+1).
-              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for solution of A_i.
-              If info[i] = j > 0, the solution of A_i could not be computed because input
-              matrix A_i is rank deficient; the j-th diagonal element of its triangular factor is zero.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for solution of A_j.
+                If info[j] = i > 0, the solution of A_j could not be computed because input
+                matrix A_j is rank deficient; the i-th diagonal element of its triangular factor is zero.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
-              Number of matrices in the batch.
-
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgels_strided_batched(rocblas_handle handle,
