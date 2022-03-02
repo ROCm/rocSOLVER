@@ -251,8 +251,8 @@ rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
         }
     }
 
-    if(blk == 1)
-        blk = dim;
+    if(blk == 1 || blk == -1)
+        blk *= dim;
 
     return blk;
 }
@@ -298,8 +298,8 @@ rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
         }
     }
 
-    if(blk == 1)
-        blk = dim;
+    if(blk == 1 || blk == -1)
+        blk *= dim;
 
     return blk;
 }
