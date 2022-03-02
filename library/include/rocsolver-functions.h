@@ -4992,26 +4992,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_strided_batched(rocblas_handle 
     where the first i-1 elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix to be factored.
-              On exit, the elements on and above the diagonal contain the
-              factor R; the elements below the diagonal are the last m - i elements
-              of Householder vector v_i.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix to be factored.
+                On exit, the elements on and above the diagonal contain the
+                factor R; the elements below the diagonal are the last m - i elements
+                of Householder vector v_i.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
     @param[out]
-    ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
-              The Householder scalars.
-
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+                The Householder scalars.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqr2(rocblas_handle handle,
@@ -5075,34 +5074,33 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2(rocblas_handle handle,
     where the first i-1 elements of Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and above the diagonal contain the
-              factor R_j. The elements below the diagonal are the last m - i elements
-              of Householder vector v_(j_i).
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and above the diagonal contain the
+                factor R_j. The elements below the diagonal are the last m - i elements
+                of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqr2_batched(rocblas_handle handle,
@@ -5174,38 +5172,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_batched(rocblas_handle handle,
     where the first i-1 elements of Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and above the diagonal contain the
-              factor R_j. The elements below the diagonal are the last m - i elements
-              of Householder vector v_(j_i).
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and above the diagonal contain the
+                factor R_j. The elements below the diagonal are the last m - i elements
+                of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqr2_strided_batched(rocblas_handle handle,
@@ -5279,27 +5276,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched(rocblas_handle 
     where the last n-i elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix to be factored.
-              On exit, the elements on and above the (m-n)-th subdiagonal (when
-              m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
-              factor R; the elements below the sub/superdiagonal are the first i - 1
-              elements of Householder vector v_i.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix to be factored.
+                On exit, the elements on and above the (m-n)-th subdiagonal (when
+                m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
+                factor R; the elements below the sub/superdiagonal are the first i - 1
+                elements of Householder vector v_i.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
     @param[out]
-    ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
-              The Householder scalars.
-
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+                The Householder scalars.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgerq2(rocblas_handle handle,
@@ -5362,34 +5358,34 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerq2(rocblas_handle handle,
     where the last n-i elements of Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and above the (m-n)-th subdiagonal (when
-              m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
-              factor R_j; the elements below the sub/superdiagonal are the first i - 1
-              elements of Householder vector v_(j_i).
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and above the (m-n)-th subdiagonal (when
+                m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
+                factor R_j; the elements below the sub/superdiagonal are the first i - 1
+                elements of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgerq2_batched(rocblas_handle handle,
@@ -5460,39 +5456,38 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerq2_batched(rocblas_handle handle,
     where the last n-i elements of Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and above the (m-n)-th subdiagonal (when
-              m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
-              factor R_j; the elements below the sub/superdiagonal are the first i - 1
-              elements of Householder vector v_(j_i).
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and above the (m-n)-th subdiagonal (when
+                m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
+                factor R_j; the elements below the sub/superdiagonal are the first i - 1
+                elements of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgerq2_strided_batched(rocblas_handle handle,
@@ -5567,27 +5562,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerq2_strided_batched(rocblas_handle 
     where the last m-i elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix to be factored.
-              On exit, the elements on and below the (m-n)-th subdiagonal (when
-              m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
-              factor L; the elements above the sub/superdiagonal are the first i - 1
-              elements of Householder vector v_i.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix to be factored.
+                On exit, the elements on and below the (m-n)-th subdiagonal (when
+                m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
+                factor L; the elements above the sub/superdiagonal are the first i - 1
+                elements of Householder vector v_i.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
     @param[out]
-    ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
-              The Householder scalars.
-
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+                The Householder scalars.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgeql2(rocblas_handle handle,
@@ -5651,35 +5645,34 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2(rocblas_handle handle,
     where the last m-i elements of the Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the (m-n)-th subdiagonal (when
-              m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
-              factor L_j; the elements above the sub/superdiagonal are the first i - 1
-              elements of Householder vector v_(j_i).
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and below the (m-n)-th subdiagonal (when
+                m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
+                factor L_j; the elements above the sub/superdiagonal are the first i - 1
+                elements of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgeql2_batched(rocblas_handle handle,
@@ -5751,38 +5744,38 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_batched(rocblas_handle handle,
     where the last m-i elements of the Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the (m-n)-th subdiagonal (when
-              m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
-              factor L_j; the elements above the sub/superdiagonal are the first i - 1
-              elements of Householder vector v_(j_i).
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and below the (m-n)-th subdiagonal (when
+                m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
+                factor L_j; the elements above the sub/superdiagonal are the first i - 1
+                elements of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgeql2_strided_batched(rocblas_handle handle,
@@ -5856,26 +5849,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_strided_batched(rocblas_handle 
     where the first i-1 elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix to be factored.
-              On exit, the elements on and below the diagonal contain the
-              factor L; the elements above the diagonal are the last n - i elements
-              of Householder vector v_i.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix to be factored.
+                On exit, the elements on and below the diagonal contain the
+                factor L; the elements above the diagonal are the last n - i elements
+                of Householder vector v_i.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
     @param[out]
-    ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
-              The Householder scalars.
-
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+                The Householder scalars.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgelq2(rocblas_handle handle,
@@ -5938,33 +5930,33 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2(rocblas_handle handle,
     where the first i-1 elements of Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the diagonal contain the
-              factor L_j. The elements above the diagonal are the last n - i elements
-              of Householder vector v_(j_i).
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and below the diagonal contain the
+                factor L_j. The elements above the diagonal are the last n - i elements
+                of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgelq2_batched(rocblas_handle handle,
@@ -6037,36 +6029,35 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_batched(rocblas_handle handle,
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the diagonal contain the
-              factor L_j. The elements above the diagonal are the last n - i elements
-              of Householder vector v_(j_i).
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and below the diagonal contain the
+                factor L_j. The elements above the diagonal are the last n - i elements
+                of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgelq2_strided_batched(rocblas_handle handle,
@@ -6141,26 +6132,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_strided_batched(rocblas_handle 
     where the first i-1 elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix to be factored.
-              On exit, the elements on and above the diagonal contain the
-              factor R; the elements below the diagonal are the last m - i elements
-              of Householder vector v_i.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix to be factored.
+                On exit, the elements on and above the diagonal contain the
+                factor R; the elements below the diagonal are the last m - i elements
+                of Householder vector v_i.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
     @param[out]
-    ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
-              The Householder scalars.
-
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+                The Householder scalars.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf(rocblas_handle handle,
@@ -6224,33 +6214,33 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
     where the first i-1 elements of Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and above the diagonal contain the
-              factor R_j. The elements below the diagonal are the last m - i elements
-              of Householder vector v_(j_i).
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and above the diagonal contain the
+                factor R_j. The elements below the diagonal are the last m - i elements
+                of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf_batched(rocblas_handle handle,
@@ -6322,37 +6312,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched(rocblas_handle handle,
     where the first i-1 elements of Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and above the diagonal contain the
-              factor R_j. The elements below the diagonal are the last m - i elements
-              of Householder vector v_(j_i).
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and above the diagonal contain the
+                factor R_j. The elements below the diagonal are the last m - i elements
+                of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf_strided_batched(rocblas_handle handle,
@@ -6426,27 +6416,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(rocblas_handle 
     where the last n-i elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix to be factored.
-              On exit, the elements on and above the (m-n)-th subdiagonal (when
-              m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
-              factor R; the elements below the sub/superdiagonal are the first i - 1
-              elements of Householder vector v_i.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix to be factored.
+                On exit, the elements on and above the (m-n)-th subdiagonal (when
+                m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
+                factor R; the elements below the sub/superdiagonal are the first i - 1
+                elements of Householder vector v_i.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
     @param[out]
-    ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
-              The Householder scalars.
-
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+                The Householder scalars.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgerqf(rocblas_handle handle,
@@ -6509,34 +6498,34 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerqf(rocblas_handle handle,
     where the last n-i elements of Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and above the (m-n)-th subdiagonal (when
-              m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
-              factor R_j; the elements below the sub/superdiagonal are the first i - 1
-              elements of Householder vector v_(j_i).
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and above the (m-n)-th subdiagonal (when
+                m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
+                factor R_j; the elements below the sub/superdiagonal are the first i - 1
+                elements of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgerqf_batched(rocblas_handle handle,
@@ -6607,39 +6596,38 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerqf_batched(rocblas_handle handle,
     where the last n-i elements of Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and above the (m-n)-th subdiagonal (when
-              m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
-              factor R_j; the elements below the sub/superdiagonal are the first i - 1
-              elements of Householder vector v_(j_i).
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and above the (m-n)-th subdiagonal (when
+                m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
+                factor R_j; the elements below the sub/superdiagonal are the first i - 1
+                elements of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgerqf_strided_batched(rocblas_handle handle,
@@ -6714,26 +6702,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerqf_strided_batched(rocblas_handle 
     where the last m-i elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix to be factored.
-              On exit, the elements on and below the (m-n)-th subdiagonal (when
-              m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
-              factor L; the elements above the sub/superdiagonal are the first i - 1
-              elements of Householder vector v_i.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix to be factored.
+                On exit, the elements on and below the (m-n)-th subdiagonal (when
+                m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
+                factor L; the elements above the sub/superdiagonal are the first i - 1
+                elements of Householder vector v_i.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
     @param[out]
-    ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
-              The Householder scalars.
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+                The Householder scalars.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqlf(rocblas_handle handle,
@@ -6797,34 +6785,34 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf(rocblas_handle handle,
     where the last m-i elements of the Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the (m-n)-th subdiagonal (when
-              m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
-              factor L_j; the elements above the sub/superdiagonal are the first i - 1
-              elements of Householder vector v_(j_i).
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and below the (m-n)-th subdiagonal (when
+                m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
+                factor L_j; the elements above the sub/superdiagonal are the first i - 1
+                elements of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqlf_batched(rocblas_handle handle,
@@ -6896,38 +6884,38 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_batched(rocblas_handle handle,
     where the last m-i elements of the Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the (m-n)-th subdiagonal (when
-              m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
-              factor L_j; the elements above the sub/superdiagonal are the first i - 1
-              elements of Householder vector v_(j_i).
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and below the (m-n)-th subdiagonal (when
+                m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
+                factor L_j; the elements above the sub/superdiagonal are the first i - 1
+                elements of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqlf_strided_batched(rocblas_handle handle,
@@ -7001,26 +6989,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_strided_batched(rocblas_handle 
     where the first i-1 elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix to be factored.
-              On exit, the elements on and below the diagonal contain the
-              factor L; the elements above the diagonal are the last n - i elements
-              of Householder vector v_i.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix to be factored.
+                On exit, the elements on and below the diagonal contain the
+                factor L; the elements above the diagonal are the last n - i elements
+                of Householder vector v_i.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of A.
     @param[out]
-    ipiv      pointer to type. Array on the GPU of dimension min(m,n).\n
-              The Householder scalars.
-
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+                The Householder scalars.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgelqf(rocblas_handle handle,
@@ -7083,34 +7070,33 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf(rocblas_handle handle,
     where the first i-1 elements of Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the diagonal contain the
-              factor L_j. The elements above the diagonal are the last n - i elements
-              of Householder vector v_(j_i).
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and below the diagonal contain the
+                factor L_j. The elements above the diagonal are the last n - i elements
+                of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgelqf_batched(rocblas_handle handle,
@@ -7181,37 +7167,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_batched(rocblas_handle handle,
     where the first i-1 elements of Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on and below the diagonal contain the
-              factor L_j. The elements above the diagonal are the last n - i elements
-              of Householder vector v_(j_i).
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on and below the diagonal contain the
+                factor L_j. The elements above the diagonal are the last n - i elements
+                of Householder vector v_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors ipiv_j of corresponding Householder scalars.
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgelqf_strided_batched(rocblas_handle handle,
