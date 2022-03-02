@@ -9525,25 +9525,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_strided_batched(rocblas_handle h
     U is an upper triangular matrix and L is lower triangular.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix A to be factored. On exit, the lower or upper triangular factor.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A to be factored. On exit, the lower or upper triangular factor.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful factorization of matrix A.
-              If info = j > 0, the leading minor of order j of A is not positive definite.
-              The factorization stopped at this point.
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful factorization of matrix A.
+                If info = i > 0, the leading minor of order i of A is not positive definite.
+                The factorization stopped at this point.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_spotf2(rocblas_handle handle,
@@ -9582,37 +9582,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2(rocblas_handle handle,
     \details
     (This is the unblocked version of the algorithm).
 
-    The factorization of matrix \f$A_i\f$ in the batch has the form:
+    The factorization of matrix \f$A_j\f$ in the batch has the form:
 
     \f[
         \begin{array}{cl}
-        A_i = U_i'U_i & \: \text{if uplo is upper, or}\\
-        A_i = L_iL_i' & \: \text{if uplo is lower.}
+        A_j = U_j'U_j & \: \text{if uplo is upper, or}\\
+        A_j = L_jL_j' & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
-    \f$U_i\f$ is an upper triangular matrix and \f$L_i\f$ is lower triangular.
+    \f$U_j\f$ is an upper triangular matrix and \f$L_j\f$ is lower triangular.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of matrix A_i.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of matrix A_j.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_i to be factored. On exit, the upper or lower triangular factors.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j to be factored. On exit, the upper or lower triangular factors.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful factorization of matrix A_i.
-              If info[i] = j > 0, the leading minor of order j of A_i is not positive definite.
-              The i-th factorization stopped at this point.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful factorization of matrix A_j.
+                If info[j] = i > 0, the leading minor of order i of A_j is not positive definite.
+                The j-th factorization stopped at this point.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -9658,41 +9658,41 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_batched(rocblas_handle handle,
     \details
     (This is the unblocked version of the algorithm).
 
-    The factorization of matrix \f$A_i\f$ in the batch has the form:
+    The factorization of matrix \f$A_j\f$ in the batch has the form:
 
     \f[
         \begin{array}{cl}
-        A_i = U_i'U_i & \: \text{if uplo is upper, or}\\
-        A_i = L_iL_i' & \: \text{if uplo is lower.}
+        A_j = U_j'U_j & \: \text{if uplo is upper, or}\\
+        A_j = L_jL_j' & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
-    \f$U_i\f$ is an upper triangular matrix and \f$L_i\f$ is lower triangular.
+    \f$U_j\f$ is an upper triangular matrix and \f$L_j\f$ is lower triangular.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of matrix A_i.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of matrix A_j.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_i to be factored. On exit, the upper or lower triangular factors.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j to be factored. On exit, the upper or lower triangular factors.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA    rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful factorization of matrix A_i.
-              If info[i] = j > 0, the leading minor of order j of A_i is not positive definite.
-              The i-th factorization stopped at this point.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful factorization of matrix A_j.
+                If info[j] = i > 0, the leading minor of order i of A_j is not positive definite.
+                The j-th factorization stopped at this point.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -9754,25 +9754,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_strided_batched(rocblas_handle 
     U is an upper triangular matrix and L is lower triangular.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix A to be factored. On exit, the lower or upper triangular factor.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A to be factored. On exit, the lower or upper triangular factor.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful factorization of matrix A.
-              If info = j > 0, the leading minor of order j of A is not positive definite.
-              The factorization stopped at this point.
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful factorization of matrix A.
+                If info = i > 0, the leading minor of order i of A is not positive definite.
+                The factorization stopped at this point.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_spotrf(rocblas_handle handle,
@@ -9811,37 +9811,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf(rocblas_handle handle,
     \details
     (This is the blocked version of the algorithm).
 
-    The factorization of matrix \f$A_i\f$ in the batch has the form:
+    The factorization of matrix \f$A_j\f$ in the batch has the form:
 
     \f[
         \begin{array}{cl}
-        A_i = U_i'U_i & \: \text{if uplo is upper, or}\\
-        A_i = L_iL_i' & \: \text{if uplo is lower.}
+        A_j = U_j'U_j & \: \text{if uplo is upper, or}\\
+        A_j = L_jL_j' & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
-    \f$U_i\f$ is an upper triangular matrix and \f$L_i\f$ is lower triangular.
+    \f$U_j\f$ is an upper triangular matrix and \f$L_j\f$ is lower triangular.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of matrix A_i.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of matrix A_j.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_i to be factored. On exit, the upper or lower triangular factors.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j to be factored. On exit, the upper or lower triangular factors.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful factorization of matrix A_i.
-              If info[i] = j > 0, the leading minor of order j of A_i is not positive definite.
-              The i-th factorization stopped at this point.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful factorization of matrix A_j.
+                If info[j] = i > 0, the leading minor of order i of A_j is not positive definite.
+                The j-th factorization stopped at this point.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -9887,41 +9887,41 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_batched(rocblas_handle handle,
     \details
     (This is the blocked version of the algorithm).
 
-    The factorization of matrix \f$A_i\f$ in the batch has the form:
+    The factorization of matrix \f$A_j\f$ in the batch has the form:
 
     \f[
         \begin{array}{cl}
-        A_i = U_i'U_i & \: \text{if uplo is upper, or}\\
-        A_i = L_iL_i' & \: \text{if uplo is lower.}
+        A_j = U_j'U_j & \: \text{if uplo is upper, or}\\
+        A_j = L_jL_j' & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
-    \f$U_i\f$ is an upper triangular matrix and \f$L_i\f$ is lower triangular.
+    \f$U_j\f$ is an upper triangular matrix and \f$L_j\f$ is lower triangular.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the factorization is upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the factorization is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of matrix A_i.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of matrix A_j.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_i to be factored. On exit, the upper or lower triangular factors.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j to be factored. On exit, the upper or lower triangular factors.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful factorization of matrix A_i.
-              If info[i] = j > 0, the leading minor of order j of A_i is not positive definite.
-              The i-th factorization stopped at this point.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful factorization of matrix A_j.
+                If info[j] = i > 0, the leading minor of order i of A_j is not positive definite.
+                The j-th factorization stopped at this point.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
