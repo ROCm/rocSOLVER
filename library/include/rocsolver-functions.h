@@ -17107,37 +17107,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ztrtri_strided_batched(rocblas_handle 
     and \f$A[k+1,k+1]\f$, and \f$v\f$ is stored in the lower parts of columns \f$k\f$ and \f$k+1\f$ of \f$A\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrix A is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrix A is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the symmetric matrix A to be factored.
-              On exit, the block diagonal matrix D and the multipliers needed to
-              compute U or L.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the symmetric matrix A to be factored.
+                On exit, the block diagonal matrix D and the multipliers needed to
+                compute U or L.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
-              The vector of pivot indices. Elements of ipiv are 1-based indices.
-              For 1 <= k <= n, if ipiv[k] > 0 then rows and columns k and ipiv[k]
-              were interchanged and D[k,k] is a 1-by-1 diagonal block.
-              If, instead, ipiv[k] = ipiv[k-1] < 0 and uplo is upper (or ipiv[k]
-              = ipiv[k+1] < 0 and uplo is lower), then rows and columns k-1 and
-              -ipiv[k] (or rows and columns k+1 and -ipiv[k]) were interchanged
-              and D[k-1,k-1] to D[k,k] (or D[k,k] to D[k+1,k+1]) is a 2-by-2
-              diagonal block.
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The vector of pivot indices. Elements of ipiv are 1-based indices.
+                For 1 <= k <= n, if ipiv[k] > 0 then rows and columns k and ipiv[k]
+                were interchanged and D[k,k] is a 1-by-1 diagonal block.
+                If, instead, ipiv[k] = ipiv[k-1] < 0 and uplo is upper (or ipiv[k]
+                = ipiv[k+1] < 0 and uplo is lower), then rows and columns k-1 and
+                -ipiv[k] (or rows and columns k+1 and -ipiv[k]) were interchanged
+                and D[k-1,k-1] to D[k,k] (or D[k,k] to D[k+1,k+1]) is a 2-by-2
+                diagonal block.
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info[i] = j > 0, D is singular. D[j,j] is the first diagonal zero.
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, D is singular. D[i,i] is the first diagonal zero.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssytf2(rocblas_handle handle,
@@ -17184,31 +17184,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i = U_i D_i U_i^T & \: \text{or}\\
-        A_i = L_i D_i L_i^T &
+        A_j = U_j D_j U_j^T & \: \text{or}\\
+        A_j = L_j D_j L_j^T &
         \end{array}
     \f]
 
-    where \f$U_i\f$ or \f$L_i\f$ is a product of permutation and unit upper/lower
-    triangular matrices (depending on the value of uplo), and \f$D_i\f$ is a symmetric
-    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks \f$D_i(k)\f$.
+    where \f$U_j\f$ or \f$L_j\f$ is a product of permutation and unit upper/lower
+    triangular matrices (depending on the value of uplo), and \f$D_j\f$ is a symmetric
+    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks \f$D_j(k)\f$.
 
-    Specifically, \f$U_i\f$ and \f$L_i\f$ are computed as
+    Specifically, \f$U_j\f$ and \f$L_j\f$ are computed as
 
     \f[
         \begin{array}{cl}
-        U_i = P_i(n) U_i(n) \cdots P_i(k) U_i(k) \cdots & \: \text{and}\\
-        L_i = P_i(1) L_i(1) \cdots P_i(k) L_i(k) \cdots &
+        U_j = P_j(n) U_j(n) \cdots P_j(k) U_j(k) \cdots & \: \text{and}\\
+        L_j = P_j(1) L_j(1) \cdots P_j(k) L_j(k) \cdots &
         \end{array}
     \f]
 
     where \f$k\f$ decreases from \f$n\f$ to 1 (increases from 1 to \f$n\f$) in steps of 1 or 2,
-    depending on the order of block \f$D_i(k)\f$, and \f$P_i(k)\f$ is a permutation matrix defined by
-    \f$ipiv_i[k]\f$. If we let \f$s\f$ denote the order of block \f$D_i(k)\f$, then \f$U_i(k)\f$
-    and \f$L_i(k)\f$ are unit upper/lower triangular matrices defined as
+    depending on the order of block \f$D_j(k)\f$, and \f$P_j(k)\f$ is a permutation matrix defined by
+    \f$ipiv_j[k]\f$. If we let \f$s\f$ denote the order of block \f$D_j(k)\f$, then \f$U_j(k)\f$
+    and \f$L_j(k)\f$ are unit upper/lower triangular matrices defined as
 
     \f[
-        U_i(k) = \left[ \begin{array}{ccc}
+        U_j(k) = \left[ \begin{array}{ccc}
         I_{k-s} & v & 0 \\
         0 & I_s & 0 \\
         0 & 0 & I_{n-k}
@@ -17218,56 +17218,56 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2(rocblas_handle handle,
     and
 
     \f[
-        L_i(k) = \left[ \begin{array}{ccc}
+        L_j(k) = \left[ \begin{array}{ccc}
         I_{k-1} & 0 & 0 \\
         0 & I_s & 0 \\
         0 & v & I_{n-k-s+1}
         \end{array} \right].
     \f]
 
-    If \f$s = 1\f$, then \f$D_i(k)\f$ is stored in \f$A_i[k,k]\f$ and \f$v\f$ is stored in the upper/lower
-    part of column \f$k\f$ of \f$A_i\f$.
-    If \f$s = 2\f$ and uplo is upper, then \f$D_i(k)\f$ is stored in \f$A_i[k-1,k-1]\f$, \f$A_i[k-1,k]\f$,
-    and \f$A_i[k,k]\f$, and \f$v\f$ is stored in the upper parts of columns \f$k-1\f$ and \f$k\f$ of \f$A_i\f$.
-    If \f$s = 2\f$ and uplo is lower, then \f$D_i(k)\f$ is stored in \f$A_i[k,k]\f$, \f$A_i[k+1,k]\f$,
-    and \f$A_i[k+1,k+1]\f$, and \f$v\f$ is stored in the lower parts of columns \f$k\f$ and \f$k+1\f$ of \f$A_i\f$.
+    If \f$s = 1\f$, then \f$D_j(k)\f$ is stored in \f$A_j[k,k]\f$ and \f$v\f$ is stored in the upper/lower
+    part of column \f$k\f$ of \f$A_j\f$.
+    If \f$s = 2\f$ and uplo is upper, then \f$D_j(k)\f$ is stored in \f$A_j[k-1,k-1]\f$, \f$A_j[k-1,k]\f$,
+    and \f$A_j[k,k]\f$, and \f$v\f$ is stored in the upper parts of columns \f$k-1\f$ and \f$k\f$ of \f$A_j\f$.
+    If \f$s = 2\f$ and uplo is lower, then \f$D_j(k)\f$ is stored in \f$A_j[k,k]\f$, \f$A_j[k+1,k]\f$,
+    and \f$A_j[k+1,k+1]\f$, and \f$v\f$ is stored in the lower parts of columns \f$k\f$ and \f$k+1\f$ of \f$A_j\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_i are stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A_i is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A_j is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the symmetric matrices A_i to be factored.
-              On exit, the block diagonal matrices D_i and the multipliers needed to
-              compute U_i or L_i.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the symmetric matrices A_j to be factored.
+                On exit, the block diagonal matrices D_j and the multipliers needed to
+                compute U_j or L_j.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
-              The vector of pivot indices. Elements of ipiv are 1-based indices.
-              For 1 <= k <= n, if ipiv_i[k] > 0 then rows and columns k and ipiv_i[k]
-              were interchanged and D_i[k,k] is a 1-by-1 diagonal block.
-              If, instead, ipiv_i[k] = ipiv_i[k-1] < 0 and uplo is upper (or ipiv_i[k]
-              = ipiv_i[k+1] < 0 and uplo is lower), then rows and columns k-1 and
-              -ipiv_i[k] (or rows and columns k+1 and -ipiv_i[k]) were interchanged
-              and D_i[k-1,k-1] to D_i[k,k] (or D_i[k,k] to D_i[k+1,k+1]) is a 2-by-2
-              diagonal block.
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The vector of pivot indices. Elements of ipiv are 1-based indices.
+                For 1 <= k <= n, if ipiv_j[k] > 0 then rows and columns k and ipiv_j[k]
+                were interchanged and D_j[k,k] is a 1-by-1 diagonal block.
+                If, instead, ipiv_j[k] = ipiv_j[k-1] < 0 and uplo is upper (or ipiv_j[k]
+                = ipiv_j[k+1] < 0 and uplo is lower), then rows and columns k-1 and
+                -ipiv_j[k] (or rows and columns k+1 and -ipiv_j[k]) were interchanged
+                and D_j[k-1,k-1] to D_j[k,k] (or D_j[k,k] to D_j[k+1,k+1]) is a 2-by-2
+                diagonal block.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for factorization of A_i.
-              If info[i] = j > 0, D_i is singular. D_i[j,j] is the first diagonal zero.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of A_j.
+                If info[j] = i > 0, D_j is singular. D_j[i,i] is the first diagonal zero.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -17325,31 +17325,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i = U_i D_i U_i^T & \: \text{or}\\
-        A_i = L_i D_i L_i^T &
+        A_j = U_j D_j U_j^T & \: \text{or}\\
+        A_j = L_j D_j L_j^T &
         \end{array}
     \f]
 
-    where \f$U_i\f$ or \f$L_i\f$ is a product of permutation and unit upper/lower
-    triangular matrices (depending on the value of uplo), and \f$D_i\f$ is a symmetric
-    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks \f$D_i(k)\f$.
+    where \f$U_j\f$ or \f$L_j\f$ is a product of permutation and unit upper/lower
+    triangular matrices (depending on the value of uplo), and \f$D_j\f$ is a symmetric
+    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks \f$D_j(k)\f$.
 
-    Specifically, \f$U_i\f$ and \f$L_i\f$ are computed as
+    Specifically, \f$U_j\f$ and \f$L_j\f$ are computed as
 
     \f[
         \begin{array}{cl}
-        U_i = P_i(n) U_i(n) \cdots P_i(k) U_i(k) \cdots & \: \text{and}\\
-        L_i = P_i(1) L_i(1) \cdots P_i(k) L_i(k) \cdots &
+        U_j = P_j(n) U_j(n) \cdots P_j(k) U_j(k) \cdots & \: \text{and}\\
+        L_j = P_j(1) L_j(1) \cdots P_j(k) L_j(k) \cdots &
         \end{array}
     \f]
 
     where \f$k\f$ decreases from \f$n\f$ to 1 (increases from 1 to \f$n\f$) in steps of 1 or 2,
-    depending on the order of block \f$D_i(k)\f$, and \f$P_i(k)\f$ is a permutation matrix defined by
-    \f$ipiv_i[k]\f$. If we let \f$s\f$ denote the order of block \f$D_i(k)\f$, then \f$U_i(k)\f$
-    and \f$L_i(k)\f$ are unit upper/lower triangular matrices defined as
+    depending on the order of block \f$D_j(k)\f$, and \f$P_j(k)\f$ is a permutation matrix defined by
+    \f$ipiv_j[k]\f$. If we let \f$s\f$ denote the order of block \f$D_j(k)\f$, then \f$U_j(k)\f$
+    and \f$L_j(k)\f$ are unit upper/lower triangular matrices defined as
 
     \f[
-        U_i(k) = \left[ \begin{array}{ccc}
+        U_j(k) = \left[ \begin{array}{ccc}
         I_{k-s} & v & 0 \\
         0 & I_s & 0 \\
         0 & 0 & I_{n-k}
@@ -17359,60 +17359,60 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2_batched(rocblas_handle handle,
     and
 
     \f[
-        L_i(k) = \left[ \begin{array}{ccc}
+        L_j(k) = \left[ \begin{array}{ccc}
         I_{k-1} & 0 & 0 \\
         0 & I_s & 0 \\
         0 & v & I_{n-k-s+1}
         \end{array} \right].
     \f]
 
-    If \f$s = 1\f$, then \f$D_i(k)\f$ is stored in \f$A_i[k,k]\f$ and \f$v\f$ is stored in the upper/lower
-    part of column \f$k\f$ of \f$A_i\f$.
-    If \f$s = 2\f$ and uplo is upper, then \f$D_i(k)\f$ is stored in \f$A_i[k-1,k-1]\f$, \f$A_i[k-1,k]\f$,
-    and \f$A_i[k,k]\f$, and \f$v\f$ is stored in the upper parts of columns \f$k-1\f$ and \f$k\f$ of \f$A_i\f$.
-    If \f$s = 2\f$ and uplo is lower, then \f$D_i(k)\f$ is stored in \f$A_i[k,k]\f$, \f$A_i[k+1,k]\f$,
-    and \f$A_i[k+1,k+1]\f$, and \f$v\f$ is stored in the lower parts of columns \f$k\f$ and \f$k+1\f$ of \f$A_i\f$.
+    If \f$s = 1\f$, then \f$D_j(k)\f$ is stored in \f$A_j[k,k]\f$ and \f$v\f$ is stored in the upper/lower
+    part of column \f$k\f$ of \f$A_j\f$.
+    If \f$s = 2\f$ and uplo is upper, then \f$D_j(k)\f$ is stored in \f$A_j[k-1,k-1]\f$, \f$A_j[k-1,k]\f$,
+    and \f$A_j[k,k]\f$, and \f$v\f$ is stored in the upper parts of columns \f$k-1\f$ and \f$k\f$ of \f$A_j\f$.
+    If \f$s = 2\f$ and uplo is lower, then \f$D_j(k)\f$ is stored in \f$A_j[k,k]\f$, \f$A_j[k+1,k]\f$,
+    and \f$A_j[k+1,k+1]\f$, and \f$v\f$ is stored in the lower parts of columns \f$k\f$ and \f$k+1\f$ of \f$A_j\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_i are stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A_i is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A_j is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the symmetric matrices A_i to be factored.
-              On exit, the block diagonal matrices D_i and the multipliers needed to
-              compute U_i or L_i.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the symmetric matrices A_j to be factored.
+                On exit, the block diagonal matrices D_j and the multipliers needed to
+                compute U_j or L_j.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
-              The vector of pivot indices. Elements of ipiv are 1-based indices.
-              For 1 <= k <= n, if ipiv_i[k] > 0 then rows and columns k and ipiv_i[k]
-              were interchanged and D_i[k,k] is a 1-by-1 diagonal block.
-              If, instead, ipiv_i[k] = ipiv_i[k-1] < 0 and uplo is upper (or ipiv_i[k]
-              = ipiv_i[k+1] < 0 and uplo is lower), then rows and columns k-1 and
-              -ipiv_i[k] (or rows and columns k+1 and -ipiv_i[k]) were interchanged
-              and D_i[k-1,k-1] to D_i[k,k] (or D_i[k,k] to D_i[k+1,k+1]) is a 2-by-2
-              diagonal block.
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The vector of pivot indices. Elements of ipiv are 1-based indices.
+                For 1 <= k <= n, if ipiv_j[k] > 0 then rows and columns k and ipiv_j[k]
+                were interchanged and D_j[k,k] is a 1-by-1 diagonal block.
+                If, instead, ipiv_j[k] = ipiv_j[k-1] < 0 and uplo is upper (or ipiv_j[k]
+                = ipiv_j[k+1] < 0 and uplo is lower), then rows and columns k-1 and
+                -ipiv_j[k] (or rows and columns k+1 and -ipiv_j[k]) were interchanged
+                and D_j[k-1,k-1] to D_j[k,k] (or D_j[k,k] to D_j[k+1,k+1]) is a 2-by-2
+                diagonal block.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for factorization of A_i.
-              If info[i] = j > 0, D_i is singular. D_i[j,j] is the first diagonal zero.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of A_j.
+                If info[j] = i > 0, D_j is singular. D_j[i,i] is the first diagonal zero.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -17523,37 +17523,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2_strided_batched(rocblas_handle 
     and \f$A[k+1,k+1]\f$, and \f$v\f$ is stored in the lower parts of columns \f$k\f$ and \f$k+1\f$ of \f$A\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrix A is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrix A is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the symmetric matrix A to be factored.
-              On exit, the block diagonal matrix D and the multipliers needed to
-              compute U or L.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the symmetric matrix A to be factored.
+                On exit, the block diagonal matrix D and the multipliers needed to
+                compute U or L.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
-              The vector of pivot indices. Elements of ipiv are 1-based indices.
-              For 1 <= k <= n, if ipiv[k] > 0 then rows and columns k and ipiv[k]
-              were interchanged and D[k,k] is a 1-by-1 diagonal block.
-              If, instead, ipiv[k] = ipiv[k-1] < 0 and uplo is upper (or ipiv[k]
-              = ipiv[k+1] < 0 and uplo is lower), then rows and columns k-1 and
-              -ipiv[k] (or rows and columns k+1 and -ipiv[k]) were interchanged
-              and D[k-1,k-1] to D[k,k] (or D[k,k] to D[k+1,k+1]) is a 2-by-2
-              diagonal block.
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The vector of pivot indices. Elements of ipiv are 1-based indices.
+                For 1 <= k <= n, if ipiv[k] > 0 then rows and columns k and ipiv[k]
+                were interchanged and D[k,k] is a 1-by-1 diagonal block.
+                If, instead, ipiv[k] = ipiv[k-1] < 0 and uplo is upper (or ipiv[k]
+                = ipiv[k+1] < 0 and uplo is lower), then rows and columns k-1 and
+                -ipiv[k] (or rows and columns k+1 and -ipiv[k]) were interchanged
+                and D[k-1,k-1] to D[k,k] (or D[k,k] to D[k+1,k+1]) is a 2-by-2
+                diagonal block.
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info[i] = j > 0, D is singular. D[j,j] is the first diagonal zero.
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, D is singular. D[i,i] is the first diagonal zero.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssytrf(rocblas_handle handle,
@@ -17600,31 +17600,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i = U_i D_i U_i^T & \: \text{or}\\
-        A_i = L_i D_i L_i^T &
+        A_j = U_j D_j U_j^T & \: \text{or}\\
+        A_j = L_j D_j L_j^T &
         \end{array}
     \f]
 
-    where \f$U_i\f$ or \f$L_i\f$ is a product of permutation and unit upper/lower
-    triangular matrices (depending on the value of uplo), and \f$D_i\f$ is a symmetric
-    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks \f$D_i(k)\f$.
+    where \f$U_j\f$ or \f$L_j\f$ is a product of permutation and unit upper/lower
+    triangular matrices (depending on the value of uplo), and \f$D_j\f$ is a symmetric
+    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks \f$D_j(k)\f$.
 
-    Specifically, \f$U_i\f$ and \f$L_i\f$ are computed as
+    Specifically, \f$U_j\f$ and \f$L_j\f$ are computed as
 
     \f[
         \begin{array}{cl}
-        U_i = P_i(n) U_i(n) \cdots P_i(k) U_i(k) \cdots & \: \text{and}\\
-        L_i = P_i(1) L_i(1) \cdots P_i(k) L_i(k) \cdots &
+        U_j = P_j(n) U_j(n) \cdots P_j(k) U_j(k) \cdots & \: \text{and}\\
+        L_j = P_j(1) L_j(1) \cdots P_j(k) L_j(k) \cdots &
         \end{array}
     \f]
 
     where \f$k\f$ decreases from \f$n\f$ to 1 (increases from 1 to \f$n\f$) in steps of 1 or 2,
-    depending on the order of block \f$D_i(k)\f$, and \f$P_i(k)\f$ is a permutation matrix defined by
-    \f$ipiv_i[k]\f$. If we let \f$s\f$ denote the order of block \f$D_i(k)\f$, then \f$U_i(k)\f$
-    and \f$L_i(k)\f$ are unit upper/lower triangular matrices defined as
+    depending on the order of block \f$D_j(k)\f$, and \f$P_j(k)\f$ is a permutation matrix defined by
+    \f$ipiv_j[k]\f$. If we let \f$s\f$ denote the order of block \f$D_j(k)\f$, then \f$U_j(k)\f$
+    and \f$L_j(k)\f$ are unit upper/lower triangular matrices defined as
 
     \f[
-        U_i(k) = \left[ \begin{array}{ccc}
+        U_j(k) = \left[ \begin{array}{ccc}
         I_{k-s} & v & 0 \\
         0 & I_s & 0 \\
         0 & 0 & I_{n-k}
@@ -17634,56 +17634,56 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf(rocblas_handle handle,
     and
 
     \f[
-        L_i(k) = \left[ \begin{array}{ccc}
+        L_j(k) = \left[ \begin{array}{ccc}
         I_{k-1} & 0 & 0 \\
         0 & I_s & 0 \\
         0 & v & I_{n-k-s+1}
         \end{array} \right].
     \f]
 
-    If \f$s = 1\f$, then \f$D_i(k)\f$ is stored in \f$A_i[k,k]\f$ and \f$v\f$ is stored in the upper/lower
-    part of column \f$k\f$ of \f$A_i\f$.
-    If \f$s = 2\f$ and uplo is upper, then \f$D_i(k)\f$ is stored in \f$A_i[k-1,k-1]\f$, \f$A_i[k-1,k]\f$,
-    and \f$A_i[k,k]\f$, and \f$v\f$ is stored in the upper parts of columns \f$k-1\f$ and \f$k\f$ of \f$A_i\f$.
-    If \f$s = 2\f$ and uplo is lower, then \f$D_i(k)\f$ is stored in \f$A_i[k,k]\f$, \f$A_i[k+1,k]\f$,
-    and \f$A_i[k+1,k+1]\f$, and \f$v\f$ is stored in the lower parts of columns \f$k\f$ and \f$k+1\f$ of \f$A_i\f$.
+    If \f$s = 1\f$, then \f$D_j(k)\f$ is stored in \f$A_j[k,k]\f$ and \f$v\f$ is stored in the upper/lower
+    part of column \f$k\f$ of \f$A_j\f$.
+    If \f$s = 2\f$ and uplo is upper, then \f$D_j(k)\f$ is stored in \f$A_j[k-1,k-1]\f$, \f$A_j[k-1,k]\f$,
+    and \f$A_j[k,k]\f$, and \f$v\f$ is stored in the upper parts of columns \f$k-1\f$ and \f$k\f$ of \f$A_j\f$.
+    If \f$s = 2\f$ and uplo is lower, then \f$D_j(k)\f$ is stored in \f$A_j[k,k]\f$, \f$A_j[k+1,k]\f$,
+    and \f$A_j[k+1,k+1]\f$, and \f$v\f$ is stored in the lower parts of columns \f$k\f$ and \f$k+1\f$ of \f$A_j\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_i are stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A_i is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A_j is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the symmetric matrices A_i to be factored.
-              On exit, the block diagonal matrices D_i and the multipliers needed to
-              compute U_i or L_i.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the symmetric matrices A_j to be factored.
+                On exit, the block diagonal matrices D_j and the multipliers needed to
+                compute U_j or L_j.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
-              The vector of pivot indices. Elements of ipiv are 1-based indices.
-              For 1 <= k <= n, if ipiv_i[k] > 0 then rows and columns k and ipiv_i[k]
-              were interchanged and D_i[k,k] is a 1-by-1 diagonal block.
-              If, instead, ipiv_i[k] = ipiv_i[k-1] < 0 and uplo is upper (or ipiv_i[k]
-              = ipiv_i[k+1] < 0 and uplo is lower), then rows and columns k-1 and
-              -ipiv_i[k] (or rows and columns k+1 and -ipiv_i[k]) were interchanged
-              and D_i[k-1,k-1] to D_i[k,k] (or D_i[k,k] to D_i[k+1,k+1]) is a 2-by-2
-              diagonal block.
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The vector of pivot indices. Elements of ipiv are 1-based indices.
+                For 1 <= k <= n, if ipiv_j[k] > 0 then rows and columns k and ipiv_j[k]
+                were interchanged and D_j[k,k] is a 1-by-1 diagonal block.
+                If, instead, ipiv_j[k] = ipiv_j[k-1] < 0 and uplo is upper (or ipiv_j[k]
+                = ipiv_j[k+1] < 0 and uplo is lower), then rows and columns k-1 and
+                -ipiv_j[k] (or rows and columns k+1 and -ipiv_j[k]) were interchanged
+                and D_j[k-1,k-1] to D_j[k,k] (or D_j[k,k] to D_j[k+1,k+1]) is a 2-by-2
+                diagonal block.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for factorization of A_i.
-              If info[i] = j > 0, D_i is singular. D_i[j,j] is the first diagonal zero.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of A_j.
+                If info[j] = i > 0, D_j is singular. D_j[i,i] is the first diagonal zero.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -17741,31 +17741,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i = U_i D_i U_i^T & \: \text{or}\\
-        A_i = L_i D_i L_i^T &
+        A_j = U_j D_j U_j^T & \: \text{or}\\
+        A_j = L_j D_j L_j^T &
         \end{array}
     \f]
 
-    where \f$U_i\f$ or \f$L_i\f$ is a product of permutation and unit upper/lower
-    triangular matrices (depending on the value of uplo), and \f$D_i\f$ is a symmetric
-    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks \f$D_i(k)\f$.
+    where \f$U_j\f$ or \f$L_j\f$ is a product of permutation and unit upper/lower
+    triangular matrices (depending on the value of uplo), and \f$D_j\f$ is a symmetric
+    block diagonal matrix with 1-by-1 and 2-by-2 diagonal blocks \f$D_j(k)\f$.
 
-    Specifically, \f$U_i\f$ and \f$L_i\f$ are computed as
+    Specifically, \f$U_j\f$ and \f$L_j\f$ are computed as
 
     \f[
         \begin{array}{cl}
-        U_i = P_i(n) U_i(n) \cdots P_i(k) U_i(k) \cdots & \: \text{and}\\
-        L_i = P_i(1) L_i(1) \cdots P_i(k) L_i(k) \cdots &
+        U_j = P_j(n) U_j(n) \cdots P_j(k) U_j(k) \cdots & \: \text{and}\\
+        L_j = P_j(1) L_j(1) \cdots P_j(k) L_j(k) \cdots &
         \end{array}
     \f]
 
     where \f$k\f$ decreases from \f$n\f$ to 1 (increases from 1 to \f$n\f$) in steps of 1 or 2,
-    depending on the order of block \f$D_i(k)\f$, and \f$P_i(k)\f$ is a permutation matrix defined by
-    \f$ipiv_i[k]\f$. If we let \f$s\f$ denote the order of block \f$D_i(k)\f$, then \f$U_i(k)\f$
-    and \f$L_i(k)\f$ are unit upper/lower triangular matrices defined as
+    depending on the order of block \f$D_j(k)\f$, and \f$P_j(k)\f$ is a permutation matrix defined by
+    \f$ipiv_j[k]\f$. If we let \f$s\f$ denote the order of block \f$D_j(k)\f$, then \f$U_j(k)\f$
+    and \f$L_j(k)\f$ are unit upper/lower triangular matrices defined as
 
     \f[
-        U_i(k) = \left[ \begin{array}{ccc}
+        U_j(k) = \left[ \begin{array}{ccc}
         I_{k-s} & v & 0 \\
         0 & I_s & 0 \\
         0 & 0 & I_{n-k}
@@ -17775,60 +17775,60 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf_batched(rocblas_handle handle,
     and
 
     \f[
-        L_i(k) = \left[ \begin{array}{ccc}
+        L_j(k) = \left[ \begin{array}{ccc}
         I_{k-1} & 0 & 0 \\
         0 & I_s & 0 \\
         0 & v & I_{n-k-s+1}
         \end{array} \right].
     \f]
 
-    If \f$s = 1\f$, then \f$D_i(k)\f$ is stored in \f$A_i[k,k]\f$ and \f$v\f$ is stored in the upper/lower
-    part of column \f$k\f$ of \f$A_i\f$.
-    If \f$s = 2\f$ and uplo is upper, then \f$D_i(k)\f$ is stored in \f$A_i[k-1,k-1]\f$, \f$A_i[k-1,k]\f$,
-    and \f$A_i[k,k]\f$, and \f$v\f$ is stored in the upper parts of columns \f$k-1\f$ and \f$k\f$ of \f$A_i\f$.
-    If \f$s = 2\f$ and uplo is lower, then \f$D_i(k)\f$ is stored in \f$A_i[k,k]\f$, \f$A_i[k+1,k]\f$,
-    and \f$A_i[k+1,k+1]\f$, and \f$v\f$ is stored in the lower parts of columns \f$k\f$ and \f$k+1\f$ of \f$A_i\f$.
+    If \f$s = 1\f$, then \f$D_j(k)\f$ is stored in \f$A_j[k,k]\f$ and \f$v\f$ is stored in the upper/lower
+    part of column \f$k\f$ of \f$A_j\f$.
+    If \f$s = 2\f$ and uplo is upper, then \f$D_j(k)\f$ is stored in \f$A_j[k-1,k-1]\f$, \f$A_j[k-1,k]\f$,
+    and \f$A_j[k,k]\f$, and \f$v\f$ is stored in the upper parts of columns \f$k-1\f$ and \f$k\f$ of \f$A_j\f$.
+    If \f$s = 2\f$ and uplo is lower, then \f$D_j(k)\f$ is stored in \f$A_j[k,k]\f$, \f$A_j[k+1,k]\f$,
+    and \f$A_j[k+1,k+1]\f$, and \f$v\f$ is stored in the lower parts of columns \f$k\f$ and \f$k+1\f$ of \f$A_j\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_i are stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A_i is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A_j is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_i in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the symmetric matrices A_i to be factored.
-              On exit, the block diagonal matrices D_i and the multipliers needed to
-              compute U_i or L_i.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the symmetric matrices A_j to be factored.
+                On exit, the block diagonal matrices D_j and the multipliers needed to
+                compute U_j or L_j.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
-              The vector of pivot indices. Elements of ipiv are 1-based indices.
-              For 1 <= k <= n, if ipiv_i[k] > 0 then rows and columns k and ipiv_i[k]
-              were interchanged and D_i[k,k] is a 1-by-1 diagonal block.
-              If, instead, ipiv_i[k] = ipiv_i[k-1] < 0 and uplo is upper (or ipiv_i[k]
-              = ipiv_i[k+1] < 0 and uplo is lower), then rows and columns k-1 and
-              -ipiv_i[k] (or rows and columns k+1 and -ipiv_i[k]) were interchanged
-              and D_i[k-1,k-1] to D_i[k,k] (or D_i[k,k] to D_i[k+1,k+1]) is a 2-by-2
-              diagonal block.
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The vector of pivot indices. Elements of ipiv are 1-based indices.
+                For 1 <= k <= n, if ipiv_j[k] > 0 then rows and columns k and ipiv_j[k]
+                were interchanged and D_j[k,k] is a 1-by-1 diagonal block.
+                If, instead, ipiv_j[k] = ipiv_j[k-1] < 0 and uplo is upper (or ipiv_j[k]
+                = ipiv_j[k+1] < 0 and uplo is lower), then rows and columns k-1 and
+                -ipiv_j[k] (or rows and columns k+1 and -ipiv_j[k]) were interchanged
+                and D_j[k-1,k-1] to D_j[k,k] (or D_j[k,k] to D_j[k+1,k+1]) is a 2-by-2
+                diagonal block.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_i to the next one ipiv_(i+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[i] = 0, successful exit for factorization of A_i.
-              If info[i] = j > 0, D_i is singular. D_i[j,j] is the first diagonal zero.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of A_j.
+                If info[j] = i > 0, D_j is singular. D_j[i,i] is the first diagonal zero.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
