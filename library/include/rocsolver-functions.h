@@ -7278,40 +7278,39 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_strided_batched(rocblas_handle 
     while the first i-1 elements of the Householder vector \f$u_i\f$ are zero, and \f$u_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B.
-              If m >= n, the elements below the diagonal are the last m - i elements
-              of Householder vector v_i, and the elements above the
-              superdiagonal are the last n - i - 1 elements of Householder vector u_i.
-              If m < n, the elements below the subdiagonal are the last m - i - 1
-              elements of Householder vector v_i, and the elements above the
-              diagonal are the last n - i elements of Householder vector u_i.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix to be factored.
+                On exit, the elements on the diagonal and superdiagonal (if m >= n), or
+                subdiagonal (if m < n) contain the bidiagonal form B.
+                If m >= n, the elements below the diagonal are the last m - i elements
+                of Householder vector v_i, and the elements above the
+                superdiagonal are the last n - i - 1 elements of Householder vector u_i.
+                If m < n, the elements below the subdiagonal are the last m - i - 1
+                elements of Householder vector v_i, and the elements above the
+                diagonal are the last n - i elements of Householder vector u_i.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                specifies the leading dimension of A.
     @param[out]
-    D         pointer to real type. Array on the GPU of dimension min(m,n).\n
-              The diagonal elements of B.
+    D           pointer to real type. Array on the GPU of dimension min(m,n).\n
+                The diagonal elements of B.
     @param[out]
-    E         pointer to real type. Array on the GPU of dimension min(m,n)-1.\n
-              The off-diagonal elements of B.
+    E           pointer to real type. Array on the GPU of dimension min(m,n)-1.\n
+                The off-diagonal elements of B.
     @param[out]
-    tauq      pointer to type. Array on the GPU of dimension min(m,n).\n
-              The Householder scalars associated with matrix Q.
+    tauq        pointer to type. Array on the GPU of dimension min(m,n).\n
+                The Householder scalars associated with matrix Q.
     @param[out]
-    taup      pointer to type. Array on the GPU of dimension min(m,n).\n
-              The Householder scalars associated with matrix P.
-
+    taup        pointer to type. Array on the GPU of dimension min(m,n).\n
+                The Householder scalars associated with matrix P.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgebd2(rocblas_handle handle,
@@ -7393,61 +7392,60 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2(rocblas_handle handle,
     while the first i-1 elements of the Householder vector \f$u_{j_i}\f$ are zero, and \f$u_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B_j.
-              If m >= n, the elements below the diagonal are the last m - i elements
-              of Householder vector v_(j_i), and the elements above the
-              superdiagonal are the last n - i - 1 elements of Householder vector u_(j_i).
-              If m < n, the elements below the subdiagonal are the last m - i - 1
-              elements of Householder vector v_(j_i), and the elements above the
-              diagonal are the last n - i elements of Householder vector u_(j_i).
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on the diagonal and superdiagonal (if m >= n), or
+                subdiagonal (if m < n) contain the bidiagonal form B_j.
+                If m >= n, the elements below the diagonal are the last m - i elements
+                of Householder vector v_(j_i), and the elements above the
+                superdiagonal are the last n - i - 1 elements of Householder vector u_(j_i).
+                If m < n, the elements below the subdiagonal are the last m - i - 1
+                elements of Householder vector v_(j_i), and the elements above the
+                diagonal are the last n - i elements of Householder vector u_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of B_j.
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+                The diagonal elements of B_j.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_j to the next one D_(j+1).
-              There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of B_j.
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+                The off-diagonal elements of B_j.
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_j to the next one E_(j+1).
-              There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
     @param[out]
-    tauq      pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
-              Contains the vectors tauq_j of Householder scalars associated with matrices Q_j.
+    tauq        pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
+                Contains the vectors tauq_j of Householder scalars associated with matrices Q_j.
     @param[in]
-    strideQ   rocblas_stride.\n
-              Stride from the start of one vector tauq_j to the next one tauq_(j+1).
-              There is no restriction for the value
-              of strideQ. Normal use is strideQ >= min(m,n).
+    strideQ     rocblas_stride.\n
+                Stride from the start of one vector tauq_j to the next one tauq_(j+1).
+                There is no restriction for the value
+                of strideQ. Normal use is strideQ >= min(m,n).
     @param[out]
-    taup      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors taup_j of Householder scalars associated with matrices P_j.
+    taup        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors taup_j of Householder scalars associated with matrices P_j.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector taup_j to the next one taup_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector taup_j to the next one taup_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgebd2_batched(rocblas_handle handle,
@@ -7549,65 +7547,64 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_batched(rocblas_handle handle,
     while the first i-1 elements of the Householder vector \f$u_{j_i}\f$ are zero, and \f$u_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B_j.
-              If m >= n, the elements below the diagonal are the last m - i elements
-              of Householder vector v_(j_i), and the elements above the
-              superdiagonal are the last n - i - 1 elements of Householder vector u_(j_i).
-              If m < n, the elements below the subdiagonal are the last m - i - 1
-              elements of Householder vector v_(j_i), and the elements above the
-              diagonal are the last n - i elements of Householder vector u_(j_i).
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on the diagonal and superdiagonal (if m >= n), or
+                subdiagonal (if m < n) contain the bidiagonal form B_j.
+                If m >= n, the elements below the diagonal are the last m - i elements
+                of Householder vector v_(j_i), and the elements above the
+                superdiagonal are the last n - i - 1 elements of Householder vector u_(j_i).
+                If m < n, the elements below the subdiagonal are the last m - i - 1
+                elements of Householder vector v_(j_i), and the elements above the
+                diagonal are the last n - i elements of Householder vector u_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of B_j.
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+                The diagonal elements of B_j.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_j to the next one D_(j+1).
-              There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of B_j.
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+                The off-diagonal elements of B_j.
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_j to the next one E_(j+1).
-              There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
     @param[out]
-    tauq      pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
-              Contains the vectors tauq_j of Householder scalars associated with matrices Q_j.
+    tauq        pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
+                Contains the vectors tauq_j of Householder scalars associated with matrices Q_j.
     @param[in]
-    strideQ   rocblas_stride.\n
-              Stride from the start of one vector tauq_j to the next one tauq_(j+1).
-              There is no restriction for the value
-              of strideQ. Normal use is strideQ >= min(m,n).
+    strideQ     rocblas_stride.\n
+                Stride from the start of one vector tauq_j to the next one tauq_(j+1).
+                There is no restriction for the value
+                of strideQ. Normal use is strideQ >= min(m,n).
     @param[out]
-    taup      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors taup_j of Householder scalars associated with matrices P_j.
+    taup        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors taup_j of Householder scalars associated with matrices P_j.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector taup_j to the next one taup_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector taup_j to the next one taup_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgebd2_strided_batched(rocblas_handle handle,
@@ -7712,40 +7709,39 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_strided_batched(rocblas_handle 
     while the first i-1 elements of the Householder vector \f$u_i\f$ are zero, and \f$u_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of the matrix A.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of the matrix A.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrix to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B.
-              If m >= n, the elements below the diagonal are the last m - i elements
-              of Householder vector v_i, and the elements above the
-              superdiagonal are the last n - i - 1 elements of Householder vector u_i.
-              If m < n, the elements below the subdiagonal are the last m - i - 1
-              elements of Householder vector v_i, and the elements above the
-              diagonal are the last n - i elements of Householder vector u_i.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrix to be factored.
+                On exit, the elements on the diagonal and superdiagonal (if m >= n), or
+                subdiagonal (if m < n) contain the bidiagonal form B.
+                If m >= n, the elements below the diagonal are the last m - i elements
+                of Householder vector v_i, and the elements above the
+                superdiagonal are the last n - i - 1 elements of Householder vector u_i.
+                If m < n, the elements below the subdiagonal are the last m - i - 1
+                elements of Householder vector v_i, and the elements above the
+                diagonal are the last n - i elements of Householder vector u_i.
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              specifies the leading dimension of A.
+    lda         rocblas_int. lda >= m.\n
+                specifies the leading dimension of A.
     @param[out]
-    D         pointer to real type. Array on the GPU of dimension min(m,n).\n
-              The diagonal elements of B.
+    D           pointer to real type. Array on the GPU of dimension min(m,n).\n
+                The diagonal elements of B.
     @param[out]
-    E         pointer to real type. Array on the GPU of dimension min(m,n)-1.\n
-              The off-diagonal elements of B.
+    E           pointer to real type. Array on the GPU of dimension min(m,n)-1.\n
+                The off-diagonal elements of B.
     @param[out]
-    tauq      pointer to type. Array on the GPU of dimension min(m,n).\n
-              The Householder scalars associated with matrix Q.
+    tauq        pointer to type. Array on the GPU of dimension min(m,n).\n
+                The Householder scalars associated with matrix Q.
     @param[out]
-    taup      pointer to type. Array on the GPU of dimension min(m,n).\n
-              The Householder scalars associated with matrix P.
-
+    taup        pointer to type. Array on the GPU of dimension min(m,n).\n
+                The Householder scalars associated with matrix P.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgebrd(rocblas_handle handle,
@@ -7827,61 +7823,60 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd(rocblas_handle handle,
     while the first i-1 elements of the Householder vector \f$u_{j_i}\f$ are zero, and \f$u_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B_j.
-              If m >= n, the elements below the diagonal are the last m - i elements
-              of Householder vector v_(j_i), and the elements above the
-              superdiagonal are the last n - i - 1 elements of Householder vector u_(j_i).
-              If m < n, the elements below the subdiagonal are the last m - i - 1
-              elements of Householder vector v_(j_i), and the elements above the
-              diagonal are the last n - i elements of Householder vector u_(j_i).
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on the diagonal and superdiagonal (if m >= n), or
+                subdiagonal (if m < n) contain the bidiagonal form B_j.
+                If m >= n, the elements below the diagonal are the last m - i elements
+                of Householder vector v_(j_i), and the elements above the
+                superdiagonal are the last n - i - 1 elements of Householder vector u_(j_i).
+                If m < n, the elements below the subdiagonal are the last m - i - 1
+                elements of Householder vector v_(j_i), and the elements above the
+                diagonal are the last n - i elements of Householder vector u_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of B_j.
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+                The diagonal elements of B_j.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_j to the next one D_(j+1).
-              There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of B_j.
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+                The off-diagonal elements of B_j.
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_j to the next one E_(j+1).
-              There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
     @param[out]
-    tauq      pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
-              Contains the vectors tauq_j of Householder scalars associated with matrices Q_j.
+    tauq        pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
+                Contains the vectors tauq_j of Householder scalars associated with matrices Q_j.
     @param[in]
-    strideQ   rocblas_stride.\n
-              Stride from the start of one vector tauq_j to the next one tauq_(j+1).
-              There is no restriction for the value
-              of strideQ. Normal use is strideQ >= min(m,n).
+    strideQ     rocblas_stride.\n
+                Stride from the start of one vector tauq_j to the next one tauq_(j+1).
+                There is no restriction for the value
+                of strideQ. Normal use is strideQ >= min(m,n).
     @param[out]
-    taup      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors taup_j of Householder scalars associated with matrices P_j.
+    taup        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors taup_j of Householder scalars associated with matrices P_j.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector taup_j to the next one taup_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector taup_j to the next one taup_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgebrd_batched(rocblas_handle handle,
@@ -7983,65 +7978,64 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_batched(rocblas_handle handle,
     while the first i-1 elements of the Householder vector \f$u_{j_i}\f$ are zero, and \f$u_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    m         rocblas_int. m >= 0.\n
-              The number of rows of all the matrices A_j in the batch.
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all the matrices A_j in the batch.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of columns of all the matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all the matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the m-by-n matrices A_j to be factored.
-              On exit, the elements on the diagonal and superdiagonal (if m >= n), or
-              subdiagonal (if m < n) contain the bidiagonal form B_j.
-              If m >= n, the elements below the diagonal are the last m - i elements
-              of Householder vector v_(j_i), and the elements above the
-              superdiagonal are the last n - i - 1 elements of Householder vector u_(j_i).
-              If m < n, the elements below the subdiagonal are the last m - i - 1
-              elements of Householder vector v_(j_i), and the elements above the
-              diagonal are the last n - i elements of Householder vector u_(j_i).
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the m-by-n matrices A_j to be factored.
+                On exit, the elements on the diagonal and superdiagonal (if m >= n), or
+                subdiagonal (if m < n) contain the bidiagonal form B_j.
+                If m >= n, the elements below the diagonal are the last m - i elements
+                of Householder vector v_(j_i), and the elements above the
+                superdiagonal are the last n - i - 1 elements of Householder vector u_(j_i).
+                If m < n, the elements below the subdiagonal are the last m - i - 1
+                elements of Householder vector v_(j_i), and the elements above the
+                diagonal are the last n - i elements of Householder vector u_(j_i).
     @param[in]
-    lda       rocblas_int. lda >= m.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= m.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of B_j.
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+                The diagonal elements of B_j.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_j to the next one D_(j+1).
-              There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of B_j.
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+                The off-diagonal elements of B_j.
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_j to the next one E_(j+1).
-              There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
     @param[out]
-    tauq      pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
-              Contains the vectors tauq_j of Householder scalars associated with matrices Q_j.
+    tauq        pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
+                Contains the vectors tauq_j of Householder scalars associated with matrices Q_j.
     @param[in]
-    strideQ   rocblas_stride.\n
-              Stride from the start of one vector tauq_j to the next one tauq_(j+1).
-              There is no restriction for the value
-              of strideQ. Normal use is strideQ >= min(m,n).
+    strideQ     rocblas_stride.\n
+                Stride from the start of one vector tauq_j to the next one tauq_(j+1).
+                There is no restriction for the value
+                of strideQ. Normal use is strideQ >= min(m,n).
     @param[out]
-    taup      pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors taup_j of Householder scalars associated with matrices P_j.
+    taup        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors taup_j of Householder scalars associated with matrices P_j.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector taup_j to the next one taup_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= min(m,n).
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector taup_j to the next one taup_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgebrd_strided_batched(rocblas_handle handle,
