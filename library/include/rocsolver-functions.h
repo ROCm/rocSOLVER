@@ -13871,7 +13871,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_strided_batched(rocblas_handle 
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit. If info = i > 0, the algorithm did not converge.
                 i elements of E did not converge to zero.
-
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssyev(rocblas_handle handle,
@@ -13938,7 +13937,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev(rocblas_handle handle,
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit. If info = i > 0, the algorithm did not converge.
                 i elements of E did not converge to zero.
-
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cheev(rocblas_handle handle,
@@ -14017,7 +14015,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssyev_batched(rocblas_handle handle,
@@ -14102,7 +14099,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cheev_batched(rocblas_handle handle,
@@ -14191,7 +14187,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssyev_strided_batched(rocblas_handle handle,
@@ -14282,7 +14277,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_strided_batched(rocblas_handle h
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cheev_strided_batched(rocblas_handle handle,
@@ -14362,7 +14356,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_strided_batched(rocblas_handle h
                 i elements of E did not converge to zero.
                 If info = i > 0 and evect is rocblas_evect_original, the algorithm failed to
                 compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
-
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevd(rocblas_handle handle,
@@ -14433,7 +14426,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevd(rocblas_handle handle,
                 i elements of E did not converge to zero.
                 If info = i > 0 and evect is rocblas_evect_original, the algorithm failed to
                 compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
-
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cheevd(rocblas_handle handle,
@@ -14516,7 +14508,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevd_batched(rocblas_handle handle,
@@ -14605,7 +14596,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevd_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cheevd_batched(rocblas_handle handle,
@@ -14698,7 +14688,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevd_strided_batched(rocblas_handle handle,
@@ -14793,7 +14782,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevd_strided_batched(rocblas_handle 
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cheevd_strided_batched(rocblas_handle handle,
@@ -14904,7 +14892,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
                 tridiagonal form did not converge to zero.
                 If info = n + i, the leading minor of order i of B is not
                 positive definite.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygv(rocblas_handle handle,
@@ -15013,7 +15000,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv(rocblas_handle handle,
                 tridiagonal form did not converge to zero.
                 If info = n + i, the leading minor of order i of B is not
                 positive definite.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegv(rocblas_handle handle,
@@ -15133,7 +15119,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygv_batched(rocblas_handle handle,
@@ -15259,7 +15244,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegv_batched(rocblas_handle handle,
@@ -15393,7 +15377,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygv_strided_batched(rocblas_handle handle,
@@ -15531,7 +15514,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_strided_batched(rocblas_handle h
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegv_strided_batched(rocblas_handle handle,
@@ -15652,7 +15634,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_strided_batched(rocblas_handle h
                 compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
                 If info = n + i, the leading minor of order i of B is not
                 positive definite.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvd(rocblas_handle handle,
@@ -15763,7 +15744,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd(rocblas_handle handle,
                 compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
                 If info = n + i, the leading minor of order i of B is not
                 positive definite.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegvd(rocblas_handle handle,
@@ -15885,7 +15865,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvd_batched(rocblas_handle handle,
@@ -16013,7 +15992,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegvd_batched(rocblas_handle handle,
@@ -16149,7 +16127,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvd_strided_batched(rocblas_handle handle,
@@ -16289,7 +16266,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_strided_batched(rocblas_handle 
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegvd_strided_batched(rocblas_handle handle,
@@ -16342,30 +16318,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_strided_batched(rocblas_handle 
     where I is the identity matrix, and A is factorized as \f$A = PLU\f$ as given by \ref rocsolver_sgetrf "GETRF".
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrix A.
     @param[in]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              The factors L and U of the factorization A = P*L*U returned by \ref rocsolver_sgetrf "GETRF".
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                The factors L and U of the factorization A = P*L*U returned by \ref rocsolver_sgetrf "GETRF".
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[in]
-    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
-              The pivot indices returned by \ref rocsolver_sgetrf "GETRF".
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The pivot indices returned by \ref rocsolver_sgetrf "GETRF".
     @param[out]
-    C         pointer to type. Array on the GPU of dimension ldc*n.\n
-              If info = 0, the inverse of A. Otherwise, undefined.
+    C           pointer to type. Array on the GPU of dimension ldc*n.\n
+                If info = 0, the inverse of A. Otherwise, undefined.
     @param[in]
-    ldc       rocblas_int. ldc >= n.\n
-              Specifies the leading dimension of C.
+    ldc         rocblas_int. ldc >= n.\n
+                Specifies the leading dimension of C.
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = i > 0, U is singular. U[i,i] is the first zero pivot.
-
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, U is singular. U[i,i] is the first zero pivot.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_outofplace(rocblas_handle handle,
@@ -16418,37 +16393,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_outofplace(rocblas_handle handl
     where I is the identity matrix, and \f$A_j\f$ is factorized as \f$A_j = P_j  L_j  U_j\f$ as given by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[in]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-              The pivot indices returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+                The pivot indices returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(i+j).
-              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(i+j).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    C         array of pointers to type. Each pointer points to an array on the GPU of dimension ldc*n.\n
-              If info[j] = 0, the inverse of matrices A_j. Otherwise, undefined.
+    C           array of pointers to type. Each pointer points to an array on the GPU of dimension ldc*n.\n
+                If info[j] = 0, the inverse of matrices A_j. Otherwise, undefined.
     @param[in]
-    ldc       rocblas_int. ldc >= n.\n
-              Specifies the leading dimension of C_j.
+    ldc         rocblas_int. ldc >= n.\n
+                Specifies the leading dimension of C_j.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[j] = 0, successful exit for inversion of A_j.
-              If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for inversion of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_outofplace_batched(rocblas_handle handle,
@@ -16509,46 +16483,45 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_outofplace_batched(rocblas_hand
     where I is the identity matrix, and \f$A_j\f$ is factorized as \f$A_j = P_j  L_j  U_j\f$ as given by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[in]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by
-              \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                The factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by
+                \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[in]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-              The pivot indices returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+                The pivot indices returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    C         pointer to type. Array on the GPU (the size depends on the value of strideC).\n
-              If info[j] = 0, the inverse of matrices A_j. Otherwise, undefined.
+    C           pointer to type. Array on the GPU (the size depends on the value of strideC).\n
+                If info[j] = 0, the inverse of matrices A_j. Otherwise, undefined.
     @param[in]
-    ldc       rocblas_int. ldc >= n.\n
-              Specifies the leading dimension of C_j.
+    ldc         rocblas_int. ldc >= n.\n
+                Specifies the leading dimension of C_j.
     @param[in]
-    strideC   rocblas_stride.\n
-              Stride from the start of one matrix C_j to the next one C_(j+1).
-              There is no restriction for the value of strideC. Normal use case is strideC >= ldc*n
+    strideC     rocblas_stride.\n
+                Stride from the start of one matrix C_j to the next one C_(j+1).
+                There is no restriction for the value of strideC. Normal use case is strideC >= ldc*n
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[j] = 0, successful exit for inversion of A_j.
-              If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for inversion of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status
@@ -16621,27 +16594,26 @@ ROCSOLVER_EXPORT rocblas_status
     where I is the identity matrix, and A is factorized as \f$A = LU\f$ as given by \ref rocsolver_sgetrf_npvt "GETRF_NPVT".
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrix A.
     @param[in]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              The factors L and U of the factorization A = L*U returned by \ref rocsolver_sgetrf_npvt "GETRF_NPVT".
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                The factors L and U of the factorization A = L*U returned by \ref rocsolver_sgetrf_npvt "GETRF_NPVT".
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    C         pointer to type. Array on the GPU of dimension ldc*n.\n
-              If info = 0, the inverse of A. Otherwise, undefined.
+    C           pointer to type. Array on the GPU of dimension ldc*n.\n
+                If info = 0, the inverse of A. Otherwise, undefined.
     @param[in]
-    ldc       rocblas_int. ldc >= n.\n
-              Specifies the leading dimension of C.
+    ldc         rocblas_int. ldc >= n.\n
+                Specifies the leading dimension of C.
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = i > 0, U is singular. U[i,i] is the first zero pivot.
-
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, U is singular. U[i,i] is the first zero pivot.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_npvt_outofplace(rocblas_handle handle,
@@ -16691,30 +16663,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_npvt_outofplace(rocblas_handle 
     where I is the identity matrix, and \f$A_j\f$ is factorized as \f$A_j = L_j  U_j\f$ as given by \ref rocsolver_sgetrf_npvt_batched "GETRF_NPVT_BATCHED".
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[in]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              The factors L_j and U_j of the factorization A_j = L_j*U_j returned by \ref rocsolver_sgetrf_npvt_batched "GETRF_NPVT_BATCHED".
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                The factors L_j and U_j of the factorization A_j = L_j*U_j returned by \ref rocsolver_sgetrf_npvt_batched "GETRF_NPVT_BATCHED".
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    C         array of pointers to type. Each pointer points to an array on the GPU of dimension ldc*n.\n
-              If info[j] = 0, the inverse of matrices A_j. Otherwise, undefined.
+    C           array of pointers to type. Each pointer points to an array on the GPU of dimension ldc*n.\n
+                If info[j] = 0, the inverse of matrices A_j. Otherwise, undefined.
     @param[in]
-    ldc       rocblas_int. ldc >= n.\n
-              Specifies the leading dimension of C_j.
+    ldc         rocblas_int. ldc >= n.\n
+                Specifies the leading dimension of C_j.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[j] = 0, successful exit for inversion of A_j.
-              If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for inversion of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_npvt_outofplace_batched(rocblas_handle handle,
@@ -16770,39 +16741,38 @@ ROCSOLVER_EXPORT rocblas_status
     where I is the identity matrix, and \f$A_j\f$ is factorized as \f$A_j = L_j  U_j\f$ as given by \ref rocsolver_sgetrf_npvt_strided_batched "GETRF_NPVT_STRIDED_BATCHED".
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[in]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              The factors L_j and U_j of the factorization A_j = L_j*U_j returned by
-              \ref rocsolver_sgetrf_npvt_strided_batched "GETRF_NPVT_STRIDED_BATCHED".
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                The factors L_j and U_j of the factorization A_j = L_j*U_j returned by
+                \ref rocsolver_sgetrf_npvt_strided_batched "GETRF_NPVT_STRIDED_BATCHED".
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    C         pointer to type. Array on the GPU (the size depends on the value of strideC).\n
-              If info[j] = 0, the inverse of matrices A_j. Otherwise, undefined.
+    C           pointer to type. Array on the GPU (the size depends on the value of strideC).\n
+                If info[j] = 0, the inverse of matrices A_j. Otherwise, undefined.
     @param[in]
-    ldc       rocblas_int. ldc >= n.\n
-              Specifies the leading dimension of C_j.
+    ldc         rocblas_int. ldc >= n.\n
+                Specifies the leading dimension of C_j.
     @param[in]
-    strideC   rocblas_stride.\n
-              Stride from the start of one matrix C_j to the next one C_(j+1).
-              There is no restriction for the value of strideC. Normal use case is strideC >= ldc*n
+    strideC     rocblas_stride.\n
+                Stride from the start of one matrix C_j to the next one C_(j+1).
+                There is no restriction for the value of strideC. Normal use case is strideC >= ldc*n
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[j] = 0, successful exit for inversion of A_j.
-              If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for inversion of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status
